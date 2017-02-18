@@ -1,0 +1,2 @@
+﻿npm install
+set PYTHON=/usr/bin/python
