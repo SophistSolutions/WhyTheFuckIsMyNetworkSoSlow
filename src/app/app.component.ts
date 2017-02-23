@@ -1,7 +1,7 @@
 import { Component, OnInit }  from '@angular/core';
 
 import { Device }             from './device';
-import { DeviceService }      from './device.service';
+import { DataService }        from './data.service';
 
 
 @Component({
@@ -35,22 +35,21 @@ import { DeviceService }      from './device.service';
 	      color: white;
 	    }
 	`],
-	providers: [DeviceService]
+	providers: [DataService]
 })
 
 export class AppComponent implements OnInit {
 	devices: Device[];
 	selectedDevice: Device;
 
-	constructor(private deviceService: DeviceService) { }
+	constructor(private dataService: DataService) { }
 	
-	getDevices(): void {
-		this.deviceService.getDevices().then(devices => this.devices = devices);
+	ngOnInit() {
+		this.dataService.fetchData().subscribe(
+			(data) => this.devices = data
+		);
 	}
-	ngOnInit(): void {
-		this.getDevices();
-	}
-
+	
 	onSelect(device: Device): void {
     	this.selectedDevice = device;
   	}
