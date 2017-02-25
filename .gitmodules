@@ -1,0 +1,3 @@
+[submodule "ThirdPartyComponents/Stroika/Stroika"]
+	path = ThirdPartyComponents/Stroika/Stroika
+	url = git@github.com:SophistSolutions/Stroika.git
