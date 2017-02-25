@@ -7,6 +7,9 @@ STROIKA_CONFIG_PARAMS_COMMON=
 all:
 	$(MAKE) --directory=Stroika --no-print-directory all CONFIGURATION=$(CONFIGURATION)
 
+clobber:
+	$(MAKE) --directory=Stroika --no-print-directory clobber CONFIGURATION=$(CONFIGURATION)
+
 configure:
 	rm -rf Stroika/ConfigurationFiles;
 	if [ `uname` = "Darwin" ] ; then\
