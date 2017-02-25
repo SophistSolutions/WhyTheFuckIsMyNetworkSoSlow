@@ -4,15 +4,20 @@
 STROIKA_CONFIG_PARAMS_COMMON=
 
 
-all:
-	$(MAKE) --directory=Stroika --no-print-directory all CONFIGURATION=$(CONFIGURATION)
+all: Stroika/ConfigurationFiles
+	@echo "Building Stroika CONFIGURATION=$(CONFIGURATION)..."
+	@$(MAKE) --directory=Stroika --no-print-directory libraries CONFIGURATION=$(CONFIGURATION)
+	@echo "Building Stroika CONFIGURATION=$(CONFIGURATION)...done"
 
 clobber:
 	$(MAKE) --directory=Stroika --no-print-directory clobber CONFIGURATION=$(CONFIGURATION)
+	rm -rf Stroika/ConfigurationFiles
+	rm -rf ../../ConfigurationFiles
 
-configure:
-	rm -rf Stroika/ConfigurationFiles;
-	if [ `uname` = "Darwin" ] ; then\
+Stroika/ConfigurationFiles:
+	@echo Configuring...
+	@cd Stroika && ./ScriptsLib/MakeBuildRoot.sh ../../../
+	@if [ `uname` = "Darwin" ] ; then\
 		(cd Stroika && ./configure Debug $(STROIKA_CONFIG_PARAMS_COMMON));\
 		(cd Stroika && ./configure Release $(STROIKA_CONFIG_PARAMS_COMMON));\
 	elif [ `uname -o` = "Cygwin" ] ; then\
@@ -21,3 +26,4 @@ configure:
 		(cd Stroika && ./configure Debug $(STROIKA_CONFIG_PARAMS_COMMON));\
 		(cd Stroika && ./configure Release $(STROIKA_CONFIG_PARAMS_COMMON));\
 	fi
+	@echo Configuring...done
