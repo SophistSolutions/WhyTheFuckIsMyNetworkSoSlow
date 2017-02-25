@@ -1,3 +1,6 @@
+StroikaPlatformTargetBuildDir=../../../Builds/$(CONFIGURATION)/
+
+
 include	../Library/Configuration.mk
 include	../Library/SharedBuildRules.mk
 include	../Library/SharedMakeVariables.mk
