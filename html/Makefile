@@ -2,6 +2,12 @@ all:
 	gulp
 
 
+clean:
+	rm -f src/*.js	
+
+clobber: clean
+	rm -rf dist
+
 update-components:
 	# automate/autodetect - @todo
 	npm install
