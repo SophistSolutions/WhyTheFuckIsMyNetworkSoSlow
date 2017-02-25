@@ -7,13 +7,14 @@ MAKE_INDENT_LEVEL?=$(MAKELEVEL)
 ECHO?=$(shell $(StroikaRoot)ScriptsLib/GetDefaultShellVariable.sh ECHO)
 ECHO_BUILD_LINES?=0
 
-SrcDir				=	$(StroikaRoot)Samples/WebServer/
+#SrcDir				=	$(StroikaRoot)Samples/WebServer/
+SrcDir				=	../../../BackendApp/
 Includes				+=	-I.
 
-TARGETEXE				=	$(StroikaRoot)Builds/$(CONFIGURATION)/Samples_WebServer
+TARGETEXE				=	$(StroikaRoot)Builds/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow-Backend
 
 
-VPATH	=			$(SrcDir)/Sources/
+VPATH	=			$(SrcDir)/
 
 
 Objs	=	\
@@ -21,7 +22,7 @@ Objs	=	\
 
 
 all:
-	@$(StroikaRoot)/ScriptsLib/PrintLevelLeader.sh $(MAKE_INDENT_LEVEL) && $(ECHO) "Building Samples/WebServer:"
+	@$(StroikaRoot)/ScriptsLib/PrintLevelLeader.sh $(MAKE_INDENT_LEVEL) && $(ECHO) "Building WhyTheFuckIsMyNetworkSoSlow/BackendApp:"
 	@$(MAKE) --silent $(TARGETEXE) MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1)) ECHO_BUILD_LINES=$(ECHO_BUILD_LINES)
 
 
