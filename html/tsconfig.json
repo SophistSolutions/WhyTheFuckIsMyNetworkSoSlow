@@ -1,0 +1,21 @@
+{
+    "files": [
+        "src/main.ts",
+        "src/app/app.component.ts",
+        "src/app/app.module.ts",
+        "src/app/data.service.ts",
+        "src/app/device-details.component.ts",
+        "src/app/device-sidebar.component.ts",
+        "src/app/device.ts"
+    ],
+    "compilerOptions": {
+        "noImplicitAny": true,
+        "target": "es5",
+        "sourceMap": true,
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "lib": [ "es2015", "dom" ],
+        "noImplicitAny": true,
+        "suppressImplicitAnyIndexErrors": true        
+    }
+}

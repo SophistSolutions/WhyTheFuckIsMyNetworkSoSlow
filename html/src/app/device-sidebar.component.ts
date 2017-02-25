@@ -1,5 +1,6 @@
-import { Component, Input }  from '@angular/core';
+import { Component, Input, OnInit }  from '@angular/core';
 
+import { DataService } 		 from './data.service';
 import { Device }	         from './device';
 
 @Component ({
@@ -18,11 +19,12 @@ import { Device }	         from './device';
 					<p>-{{device.signalStrength}}dB <span class="glyphicon glyphicon-signal"></span></p>
 				</div>
 			</div>
-		</div>`
+		</div>`,
+	providers: [DataService]
 })
 
 export class DeviceSidebarComponent {
-	
+
 	@Input() device: Device;
 
 }
