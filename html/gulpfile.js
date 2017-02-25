@@ -16,42 +16,50 @@ var paths = {
 };
 
 gulp.task('clean', function () {
-    return del([
-        'dist/**/*'
-    ]);
+    return del(['dist']);
 });
 
-gulp.task('dependencies', function () {
-    return gulp.src(paths.dependencies)
+
+gulp.task('build', ["dependencies", "images", "copy-html","copy-styles", "copy-systemjs", "copy-mock-devices"], function() {});
+
+
+gulp.task('dependencies', ['clean'], function () {
+    var stream = gulp.src(paths.dependencies)
         .pipe(gulp.dest("dist/js"));
+    return stream;
 });
 
-gulp.task('images', function () {
-    return gulp.src(paths.images)
+gulp.task('images', ['clean'], function () {
+    var stream = gulp.src(paths.images)
         .pipe(gulp.dest("dist/images"));
+    return stream;
 });
 
-gulp.task("copy-html", function () {
-    return gulp.src(paths.pages)
+gulp.task("copy-html", ['clean'], function () {
+    var stream = gulp.src(paths.pages)
         .pipe(gulp.dest("dist"));
+    return stream;
 });
 
-gulp.task("copy-styles", function () {
-    return gulp.src(paths.styles)
+gulp.task("copy-styles", ['clean'], function () {
+    var stream = gulp.src(paths.styles)
         .pipe(gulp.dest("dist"));
+    return stream;
 });
 
-gulp.task("copy-systemjs", function () {
-    return gulp.src(paths.systemjs)
+gulp.task("copy-systemjs", ['clean'], function () {
+    var stream = gulp.src(paths.systemjs)
         .pipe(gulp.dest("dist"));
+    return stream;
 });
 
-gulp.task("copy-mock-devices", function () {
-    return gulp.src(paths.devices)
+gulp.task("copy-mock-devices", ['clean'], function () {
+    var stream = gulp.src(paths.devices)
         .pipe(gulp.dest("dist"));
+    return stream;
 });
 
-gulp.task('default', gulp.series('clean', gulp.parallel(["dependencies", "images", "copy-html","copy-styles", "copy-systemjs", "copy-mock-devices"], function () {
+gulp.task('default', ['build'], function () {
     return browserify({
         basedir: '.',
         debug: true,
@@ -63,4 +71,4 @@ gulp.task('default', gulp.series('clean', gulp.parallel(["dependencies", "images
     .bundle()
     .pipe(source('bundle.js'))
     .pipe(gulp.dest("dist"));
-})));
+});
