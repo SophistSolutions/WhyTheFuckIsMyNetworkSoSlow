@@ -3,6 +3,11 @@
 
 STROIKA_CONFIG_PARAMS_COMMON=
 
+STROIKA_CONFIG_PARAMS_DEBUG=--apply-default-debug-flags
+STROIKA_CONFIG_PARAMS_RELEASE=--apply-default-release-flags
+
+
+
 
 all: Stroika/ConfigurationFiles
 	@echo "Building Stroika CONFIGURATION=$(CONFIGURATION)..."
@@ -18,12 +23,12 @@ Stroika/ConfigurationFiles:
 	@echo Configuring...
 	@cd Stroika && ./ScriptsLib/MakeBuildRoot.sh ../../../
 	@if [ `uname` = "Darwin" ] ; then\
-		(cd Stroika && ./configure Debug $(STROIKA_CONFIG_PARAMS_COMMON));\
-		(cd Stroika && ./configure Release $(STROIKA_CONFIG_PARAMS_COMMON));\
+		(cd Stroika && ./configure Debug $(STROIKA_CONFIG_PARAMS_COMMON) $(STROIKA_CONFIG_PARAMS_DEBUG));\
+		(cd Stroika && ./configure Release $(STROIKA_CONFIG_PARAMS_COMMON) $(STROIKA_CONFIG_PARAMS_RELEASE));\
 	elif [ `uname -o` = "Cygwin" ] ; then\
 		make --directory=Stroika --no-print-directory  default-configurations;\
 	else\
-		(cd Stroika && ./configure Debug $(STROIKA_CONFIG_PARAMS_COMMON));\
-		(cd Stroika && ./configure Release $(STROIKA_CONFIG_PARAMS_COMMON));\
+		(cd Stroika && ./configure Debug $(STROIKA_CONFIG_PARAMS_COMMON) $(STROIKA_CONFIG_PARAMS_DEBUG));\
+		(cd Stroika && ./configure Release $(STROIKA_CONFIG_PARAMS_COMMON) $(STROIKA_CONFIG_PARAMS_RELEASE));\
 	fi
 	@echo Configuring...done
