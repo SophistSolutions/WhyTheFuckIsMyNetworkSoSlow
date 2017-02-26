@@ -1,0 +1,4 @@
+﻿ > building on Linux (BLOW) doesn't work
+ > even make clobber works poorly
+ 
+ 
