@@ -9,6 +9,15 @@
     <None Include="..\Unix\Makefile">
       <Filter>Projects\Unix</Filter>
     </None>
+    <None Include="..\..\Sources\WebServices\Model.inl">
+      <Filter>Sources\WebServices</Filter>
+    </None>
+    <None Include="..\..\Sources\WebServices\IWSAPI.inl">
+      <Filter>Sources\WebServices</Filter>
+    </None>
+    <None Include="..\..\Sources\WebServices\WSImpl.inl">
+      <Filter>Sources\WebServices</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Sources">
@@ -20,10 +29,33 @@
     <Filter Include="Projects\Unix">
       <UniqueIdentifier>{9e0d2153-02d5-49c2-9a0c-0c7a955dad41}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Sources\WebServices">
+      <UniqueIdentifier>{5e0bcf4e-d082-410f-afea-ed836dee9a83}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Main.cpp">
       <Filter>Sources</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\WebServices\Model.cpp">
+      <Filter>Sources\WebServices</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\WebServices\IWSAPI.cpp">
+      <Filter>Sources\WebServices</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\WebServices\WSImpl.cpp">
+      <Filter>Sources\WebServices</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Sources\WebServices\Model.h">
+      <Filter>Sources\WebServices</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\WebServices\IWSAPI.h">
+      <Filter>Sources\WebServices</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\WebServices\WSImpl.h">
+      <Filter>Sources\WebServices</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

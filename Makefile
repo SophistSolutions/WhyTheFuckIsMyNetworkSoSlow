@@ -1,6 +1,7 @@
 all:
 	$(MAKE) --directory=html --no-print-directory all
 	$(MAKE) --directory=ThirdPartyComponents --no-print-directory all CONFIGURATION=$(CONFIGURAITON)
+	$(MAKE) --directory=BackendApp --no-print-directory all CONFIGURATION=$(CONFIGURAITON)
 
 clean:
 	@$(MAKE) --directory=html --no-print-directory clean
@@ -13,3 +14,6 @@ clobber:
 
 update-submodules:
 	git submodule update --init --recursive
+
+format-code:
+	$(MAKE) --directory=BackendApp --no-print-directory format-code

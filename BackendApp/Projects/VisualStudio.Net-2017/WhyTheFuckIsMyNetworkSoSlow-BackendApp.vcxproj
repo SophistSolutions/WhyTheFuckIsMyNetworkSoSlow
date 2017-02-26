@@ -499,12 +499,18 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release-U-64|x64'">..\Library\Sources;..\..\Library\Sources;..\..\..\Library\Sources;..\..\..\..\Library\Sources;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release-U-32|x64'">..\Library\Sources;..\..\Library\Sources;..\..\..\Library\Sources;..\..\..\..\Library\Sources;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\WebServices\IWSAPI.cpp" />
+    <ClCompile Include="..\..\Sources\WebServices\Model.cpp" />
+    <ClCompile Include="..\..\Sources\WebServices\WSImpl.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\buildall_vs.pl" />
     <None Include="..\..\checkall_vs.pl" />
     <None Include="..\..\Makefile" />
     <None Include="..\..\ReadMe.md" />
+    <None Include="..\..\Sources\WebServices\IWSAPI.inl" />
+    <None Include="..\..\Sources\WebServices\Model.inl" />
+    <None Include="..\..\Sources\WebServices\WSImpl.inl" />
     <None Include="..\..\Todo.md" />
     <None Include="..\Unix\Makefile" />
   </ItemGroup>
@@ -521,6 +527,11 @@
     <ProjectReference Include="..\..\..\ThirdPartyComponents\Stroika\Stroika\Library\Projects\VisualStudio.Net-2017\Stroika-Frameworks-WebServer.vcxproj">
       <Project>{bb1903e4-c75b-430b-9e6f-8caea64bf194}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Sources\WebServices\IWSAPI.h" />
+    <ClInclude Include="..\..\Sources\WebServices\Model.h" />
+    <ClInclude Include="..\..\Sources\WebServices\WSImpl.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
