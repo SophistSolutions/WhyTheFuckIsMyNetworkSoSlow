@@ -1,6 +1,6 @@
 all:
 	$(MAKE) --directory=html --no-print-directory all
-	$(MAKE) --directory=ThirdPartyComponents --no-print-directory all
+	$(MAKE) --directory=ThirdPartyComponents --no-print-directory all CONFIGURATION=$(CONFIGURAITON)
 
 clean:
 	@$(MAKE) --directory=html --no-print-directory clean
