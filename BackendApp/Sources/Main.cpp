@@ -5,6 +5,7 @@
 
 #include <iostream>
 
+#include "Stroika/Foundation/Characters/ToString.h"
 #include "Stroika/Foundation/Execution/SignalHandlers.h"
 #include "Stroika/Foundation/Execution/WaitableEvent.h"
 #include "Stroika/Foundation/IO/Network/HTTP/Exception.h"
@@ -57,12 +58,12 @@ int main (int argc, const char* argv[])
     Execution::SignalHandlerRegistry::SafeSignalsManager safeSignals;
     try {
         ConnectionManager cm{SocketAddress (Network::V4::kAddrAny, 8080), kRouter_}; // listen and dispatch while this object exists
-        cm.SetServerHeader (String{L"Stroika-Sample-WebServer/1.0"});
+        cm.SetServerHeader (String{L"Why-The-Fuck-Is-My-Network-So-Slow/1.0"});
         Execution::WaitableEvent (Execution::WaitableEvent::eAutoReset).Wait (); // wait forever - til user hits ctrl-c
     }
     catch (...) {
-        cerr << "Exception - terminating..." << endl;
-        return EXIT_FAILURE;
+		cerr << "Error encountered: " << Characters::ToString (current_exception ()).AsNarrowSDKString () << " - terminating..." << endl;
+		return EXIT_FAILURE;
     }
     return EXIT_SUCCESS;
 }
