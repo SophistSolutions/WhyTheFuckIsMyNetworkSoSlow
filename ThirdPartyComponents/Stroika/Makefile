@@ -15,9 +15,9 @@ all: Stroika/ConfigurationFiles
 	@echo "Building Stroika CONFIGURATION=$(CONFIGURATION)...done"
 
 clobber:
-	$(MAKE) --directory=Stroika --no-print-directory clobber CONFIGURATION=$(CONFIGURATION)
-	rm -rf Stroika/ConfigurationFiles
-	rm -rf ../../ConfigurationFiles
+	-@$(MAKE) --directory=Stroika --no-print-directory --silent clobber CONFIGURATION=$(CONFIGURATION)
+	@rm -rf Stroika/ConfigurationFiles
+	@rm -rf ../../ConfigurationFiles
 
 Stroika/ConfigurationFiles:
 	@echo Configuring...
