@@ -5,6 +5,8 @@
 	ln -s `pwd`/Projects/Unix/Makefile ../IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow/Makefile
 	$(MAKE) --directory ../IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow all
 
+clean:
+	$(MAKE) --directory ../IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow clean
 
 format-code:
 	@../ThirdPartyComponents/Stroika/Stroika/ScriptsLib/FormatCode.sh Sources *.h *.inl *.cpp
