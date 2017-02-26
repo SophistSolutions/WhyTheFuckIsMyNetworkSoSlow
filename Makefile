@@ -9,6 +9,7 @@ clean:
 clobber:
 	@$(MAKE) --directory=html --no-print-directory clobber
 	@$(MAKE) --directory=ThirdPartyComponents --no-print-directory clobber
+	@rm -rf Builds IntermediateFiles ConfigurationFiles
 
 update-submodules:
 	git submodule update --init --recursive
