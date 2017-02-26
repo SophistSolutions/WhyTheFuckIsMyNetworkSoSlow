@@ -36,29 +36,27 @@ using Memory::BLOB;
  * '{"AppState":"Start"}' http://localhost:8080/SetAppState
  */
 
-
 using namespace WhyTheFuckIsMyNetworkSoSlow;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model;
 
-
 namespace {
     // Can declare arguments as Request*,Response*
-	void DefaultPage_ (Request*, Response* response)
-	{
-		response->writeln (L"<html><body><p>Hi Mom</p></body></html>");
-		response->SetContentType (
-			DataExchange::PredefinedInternetMediaType::Text_HTML_CT ());
-	}
-	void GetDevices_ (Request*, Response* response)
-	{
-		WSImpl	wsimpl;
-		response->write (DataExchange::Variant::JSON::Writer ().WriteAsBLOB (Device::kMapper.FromObject (wsimpl.GetDevices ())));
-//		response->writeln (L"<html><body><p>getdevices</p></body></html>");
-		response->SetContentType (DataExchange::PredefinedInternetMediaType::JSON_CT ());
-	}
-	// Can declare arguments as Message* message
+    void DefaultPage_ (Request*, Response* response)
+    {
+        response->writeln (L"<html><body><p>Hi Mom</p></body></html>");
+        response->SetContentType (
+            DataExchange::PredefinedInternetMediaType::Text_HTML_CT ());
+    }
+    void GetDevices_ (Request*, Response* response)
+    {
+        WSImpl wsimpl;
+        response->write (DataExchange::Variant::JSON::Writer ().WriteAsBLOB (Device::kMapper.FromObject (wsimpl.GetDevices ())));
+        //      response->writeln (L"<html><body><p>getdevices</p></body></html>");
+        response->SetContentType (DataExchange::PredefinedInternetMediaType::JSON_CT ());
+    }
+    // Can declare arguments as Message* message
     void SetAppState_ (Message* message)
     {
         String argsAsString =
@@ -70,12 +68,12 @@ namespace {
             DataExchange::PredefinedInternetMediaType::Text_HTML_CT ());
     }
     const Router kRouter_{Sequence<Route>{
-		Route{ RegularExpression (L"", RegularExpression::SyntaxType::eECMAScript), DefaultPage_ },
-		Route{ RegularExpression (L"Devices", RegularExpression::SyntaxType::eECMAScript), GetDevices_ },
-		Route{
-        RegularExpression (L"POST", RegularExpression::SyntaxType::eECMAScript),
-        RegularExpression (L"SetAppState",
-                            RegularExpression::SyntaxType::eECMAScript),
+        Route{RegularExpression (L"", RegularExpression::SyntaxType::eECMAScript), DefaultPage_},
+        Route{RegularExpression (L"Devices", RegularExpression::SyntaxType::eECMAScript), GetDevices_},
+        Route{
+            RegularExpression (L"POST", RegularExpression::SyntaxType::eECMAScript),
+            RegularExpression (L"SetAppState",
+                               RegularExpression::SyntaxType::eECMAScript),
             SetAppState_},
     }};
 }
