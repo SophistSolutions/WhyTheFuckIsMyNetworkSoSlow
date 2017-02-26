@@ -34,7 +34,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow {
                     String  network;
                     String  networkMask;
                     float   signalStrength{};
-                    boolean connected{};
+                    bool connected{};
 
                     nonvirtual String ToString () const;
 
