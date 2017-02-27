@@ -47,7 +47,7 @@ namespace {
             sFirstTime_ = false;
             sListener_.AddOnFoundCallback ([&](const SSDP::Advertisement& d) {
                 DbgTrace (L"Recieved SSDP advertisement: %s", Characters::ToString (d).c_str ());
-                String                                   location = d.fLocation;
+                String                                   location = d.fLocation.GetFullURL ();
                 Optional<bool>                           alive    = d.fAlive;
                 URL                                      locURL   = URL{location, URL::ParseOptions::eAsFullURL};
                 String                                   locHost  = locURL.GetHost ();
