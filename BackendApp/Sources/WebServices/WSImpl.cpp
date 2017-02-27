@@ -4,8 +4,10 @@
 #include "Stroika/Frameworks/StroikaPreComp.h"
 
 #include "Stroika/Foundation/Characters/ToString.h"
+#include "Stroika/Foundation/Configuration/SystemConfiguration.h"
 #include "Stroika/Foundation/Execution/Synchronized.h"
 #include "Stroika/Foundation/IO/Network/DNS.h"
+#include "Stroika/Foundation/IO/Network/Interface.h"
 
 #include "Stroika/Frameworks/UPnP/SSDP/Client/Listener.h"
 
@@ -68,23 +70,40 @@ namespace {
 Collection<BackendApp::WebServices::Device> WSImpl::GetDevices () const
 {
     static const Device kFakeDevicePrototype_ = Device{
-        L"Robert's Phone",
-        L"192.168.244.34",
-        L"fe80::ec4:7aff:fec7:7f1c",
+        L"name",
+        L"ipAddress",
+        L"ipv4",
+        L"ipv6",
         L"Phone",
         L"./images/phone.png",
         L"192.168.244.0/24",
         L"255.255.255.0",
         67,
-        true};
+        true,
+        false};
 
-    return GetSoFarDiscoveredDevices_ ().Select<Device> ([](const DiscoveryInfo_& d) {
+    Collection<BackendApp::WebServices::Device> devices = GetSoFarDiscoveredDevices_ ().Select<Device> ([](const DiscoveryInfo_& d) {
         Device newDev    = kFakeDevicePrototype_;
         newDev.ipv4      = d.fAddr.As<String> ();
+        newDev.ipAddress = d.fAddr.As<String> ();
         newDev.connected = d.alive;
         newDev.name      = d.server;
+        newDev.important = newDev.ipAddress.EndsWith (L".1"); //tmphack
         return newDev;
     });
+    for (IO::Network::Interface i : IO::Network::GetInterfaces ()) {
+        if (i.fType != IO::Network::Interface::Type::eLoopback and i.fStatus and i.fStatus->Contains (IO::Network::Interface::Status::eRunning) and not i.fBindings.empty ()) {
+            Device newDev    = kFakeDevicePrototype_;
+            newDev.ipv4      = i.fBindings.First ()->As<String> ();
+            newDev.ipAddress = newDev.ipv4;
+            newDev.connected = true;
+            newDev.name      = Configuration::GetSystemConfiguration_ComputerNames ().fHostname;
+            newDev.important = true;
+            devices.Add (newDev);
+        }
+    }
+    return devices;
+
 #if 0
 
     return Collection<Device>{

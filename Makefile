@@ -27,6 +27,7 @@ endif
 clobber:
 ifeq ($(CONFIGURATION),)
 	@rm -rf Builds IntermediateFiles ConfigurationFiles ThirdPartyComponents/Stroika/Stroika/{Builds,IntermediateFiles,ConfigurationFiles}
+	@$(MAKE) --directory=ThirdPartyComponents --no-print-directory clobber
 else
 	@$(MAKE) --directory=html --no-print-directory clobber
 	@$(MAKE) --directory=ThirdPartyComponents --no-print-directory clobber
