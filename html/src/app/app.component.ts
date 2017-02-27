@@ -29,14 +29,6 @@ import { DataService }        from './data.service';
 						[class.selected]="device === selectedDevice"
 						(click)="onSelect(device)">
 					</device-sidebar>
-
-					<hr>
-
-					<device-sidebar *ngFor="let device of devices"
-						[device]="device"
-						[class.selected]="device === selectedDevice"
-						(click)="onSelect(device)">
-					</device-sidebar>
 	          	</div>
 	          
 	            <div class="col-md-9 text-center well well-lg">NETWORK TOPOLOGY</div>
