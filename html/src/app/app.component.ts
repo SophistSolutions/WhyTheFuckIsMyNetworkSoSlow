@@ -16,19 +16,23 @@ import { DataService }        from './data.service';
 	        <div class="row">
 
 	          	<div class="col-md-3 well well-lg text-center" id="deviceList">
-	            	<device-sidebar *ngFor="let device of devices"
-						[device]="device"
-						[class.selected]="device === selectedDevice"
-						(click)="onSelect(device)">
-					</device-sidebar>
+	            	<div *ngFor="let device of devices">
+	            		<device-sidebar *ngIf="device.important==true"
+							[device]="device"
+							[class.selected]="device === selectedDevice"
+							(click)="onSelect(device)">
+						</device-sidebar>
+					</div>
 
 					<hr>
 
-					<device-sidebar *ngFor="let device of devices"
-						[device]="device"
-						[class.selected]="device === selectedDevice"
-						(click)="onSelect(device)">
-					</device-sidebar>
+	            	<div *ngFor="let device of devices">
+	            		<device-sidebar *ngIf="device.important==false"
+							[device]="device"
+							[class.selected]="device === selectedDevice"
+							(click)="onSelect(device)">
+						</device-sidebar>
+					</div>
 	          	</div>
 	          
 	            <div class="col-md-9 text-center well well-lg">NETWORK TOPOLOGY</div>
