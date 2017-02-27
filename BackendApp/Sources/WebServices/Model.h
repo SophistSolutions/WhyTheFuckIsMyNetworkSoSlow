@@ -26,15 +26,15 @@ namespace WhyTheFuckIsMyNetworkSoSlow {
                 /**
                  */
                 struct Device {
-                    String  name;
-                    String  ipv4;
-                    String  ipv6;
-                    String  type;
-                    String  image;
-                    String  network;
-                    String  networkMask;
-                    float   signalStrength{};
-                    bool connected{};
+                    String name;
+                    String ipv4;
+                    String ipv6;
+                    String type;
+                    String image;
+                    String network;
+                    String networkMask;
+                    float  signalStrength{};
+                    bool   connected{};
 
                     nonvirtual String ToString () const;
 

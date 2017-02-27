@@ -1,4 +1,9 @@
 ﻿ > building on Linux (BLOW) doesn't work
  > even make clobber works poorly
  
- 
+ >>> In discovery - look at location, and then fetch that location (at least sometimes) in xml
+		http://192.168.244.1:47956/rootDesc.xml
+
+		and that maybe info about the device - in that case it was - with <friendlyname> which we can diospaly and <deviceType>
+urn:schemas-upnp-org:device:InternetGatewayDevice:1
+</deviceType>
