@@ -1,0 +1,27 @@
+*.inf text eol=crlf diff
+*.bat text eol=crlf diff
+*.sln text eol=crlf diff
+*.wixproj text eol=crlf diff
+*.wxi text eol=crlf diff
+*.wxs text eol=crlf diff
+*.rtf binary
+*.xsd text eol=crlf diff
+*.wsdl text eol=crlf diff
+README text diff
+*Makefile* text eol=lf diff
+*.mk text eol=lf diff
+*.pl text eol=lf diff
+*.PATCH text eol=lf diff
+*.h text diff
+*.inl text diff
+*.cpp text diff
+*.txt text diff
+*.htm text diff
+*.ico binary
+*.bmp binary
+*.xml text eol=crlf diff
+*.manifest text eol=crlf diff
+*.rc text eol=crlf diff
+*.sh text eol=lf diff
+configure eol=lf diff
+STROIKA_VERSION text diff
