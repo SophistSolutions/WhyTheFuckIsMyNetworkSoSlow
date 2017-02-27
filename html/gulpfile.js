@@ -4,7 +4,8 @@ var browserify = require("browserify");
 var source = require('vinyl-source-stream');
 var tsify = require("tsify");
 var paths = {
-    pages:        ['src/*.html'],
+    pages:        ['src/*.html',
+                   'src/favicon.ico'],
     styles:       ['src/styles.css'],
     systemjs:     ['src/systemjs.config.extras.js',
                    'src/systemjs.config.js'],
