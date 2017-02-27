@@ -21,25 +21,26 @@ import { Device }	         from './device';
 			</div>
 		</div>`,
 	styles: [`
-	  .well {
-        margin:10px 0px 10px 0px;
-      }
 
-      .signal-strong {
-        background-color: #8cff66
-      }
+		.well {
+    		margin:10px 0px 10px 0px;
+    	}
 
-      .signal-medium {
-        background-color: #ffc266
-      }
+    	.signal-strong {
+    		background-color: #8cff66
+    	}
 
-      .signal-weak {
-        background-color: #ff6666;
-      }
+    	.signal-medium {
+    		background-color: #ffc266
+    	}
 
-      .signal-dead {
-        background-color: #b3b3b3;
-      }
+    	.signal-weak {
+    		background-color: #ff6666;
+    	}
+
+    	.signal-dead {
+    		background-color: #b3b3b3;
+    	}
     `],
     providers: [DataService]
 })
