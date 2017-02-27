@@ -11,7 +11,7 @@ export class DataService {
 	constructor(private http: Http) {}
 	
 	fetchData(){
-		return this.http.get('http://localhost:8080/Devices').map(
+		return this.http.get('./Devices.json').map(
 			(res)  => res.json() 
 		);
 	}

@@ -45,6 +45,13 @@ export class AppComponent implements OnInit {
 	constructor(private dataService: DataService) { }
 	
 	ngOnInit() {
+
+		setInterval(() => {
+			this.dataService.fetchData().subscribe(
+				(data) => this.devices = data
+			);
+		}, 1000 * 5);
+
 		this.dataService.fetchData().subscribe(
 			(data) => this.devices = data
 		);
