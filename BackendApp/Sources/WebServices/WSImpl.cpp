@@ -60,6 +60,12 @@ namespace {
 
 Collection<BackendApp::WebServices::Device> WSImpl::GetDevices () const
 {
+    static const Mapping<String, String> kNamePrettyPrintMapper_{
+        Common::KeyValuePair<String, String>{L"ASUSTeK UPnP/1.1 MiniUPnPd/1.9", L"ASUS Router"},
+        Common::KeyValuePair<String, String>{L"Microsoft-Windows/10.0 UPnP/1.0 UPnP-Device-Host/1.0", L"Antiphon"},
+        Common::KeyValuePair<String, String>{L"POSIX, UPnP/1.0, Intel MicroStack/1.0.1347", L"HP PhotoSmart"},
+    };
+
     using namespace IO::Network;
     static const Device kFakeDevicePrototype_ = Device{
         L"name",
@@ -67,7 +73,6 @@ Collection<BackendApp::WebServices::Device> WSImpl::GetDevices () const
         L"ipv4",
         L"ipv6",
         L"Phone",
-        L"./images/phone.png",
         L"192.168.244.0/24",
         L"255.255.255.0",
         67,
@@ -86,6 +91,10 @@ Collection<BackendApp::WebServices::Device> WSImpl::GetDevices () const
         newDev.connected = d.alive;
         newDev.name      = d.server;
         newDev.important = newDev.ipAddress.EndsWith (L".1"); //tmphack
+        if (newDev.ipAddress.EndsWith (L".1")) {
+            newDev.type = L"Router";
+        }
+        newDev.name = kNamePrettyPrintMapper_.LookupValue (newDev.name, newDev.name);
         return newDev;
     });
 
@@ -112,6 +121,7 @@ Collection<BackendApp::WebServices::Device> WSImpl::GetDevices () const
             newDev.name      = Configuration::GetSystemConfiguration_ComputerNames ().fHostname;
             newDev.important = true;
             newDev.type      = L"Laptop";
+            newDev.name      = kNamePrettyPrintMapper_.LookupValue (newDev.name, newDev.name);
             devices.Add (newDev);
         }
     }

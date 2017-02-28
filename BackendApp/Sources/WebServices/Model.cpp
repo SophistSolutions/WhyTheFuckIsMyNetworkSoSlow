@@ -30,7 +30,6 @@ const DataExchange::ObjectVariantMapper Device::kMapper = []() {
         ObjectVariantMapper::StructFieldInfo{L"ipv4", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, ipv4), ObjectVariantMapper::StructFieldInfo::NullFieldHandling::eOmit},
         ObjectVariantMapper::StructFieldInfo{L"ipv6", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, ipv6), ObjectVariantMapper::StructFieldInfo::NullFieldHandling::eOmit},
         ObjectVariantMapper::StructFieldInfo{L"type", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, type)},
-        ObjectVariantMapper::StructFieldInfo{L"image", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, image)},
         ObjectVariantMapper::StructFieldInfo{L"network", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, network)},
         ObjectVariantMapper::StructFieldInfo{L"networkMask", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, networkMask)},
         ObjectVariantMapper::StructFieldInfo{L"signalStrength", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, signalStrength)},

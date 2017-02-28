@@ -32,7 +32,6 @@ namespace WhyTheFuckIsMyNetworkSoSlow {
                     Optional<String> ipv4;
                     Optional<String> ipv6;
                     String           type;
-                    String           image;
                     String           network;
                     String           networkMask;
                     Optional<float>  signalStrength{};
