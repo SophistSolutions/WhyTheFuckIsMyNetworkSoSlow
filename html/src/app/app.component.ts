@@ -15,7 +15,7 @@ import { DataService }        from './data.service';
 
 	        <div class="row">
 
-	          	<div class="col-md-3 well well-lg text-center" id="deviceList">
+	          	<div class="col-md-3 col-sm-4 well well-lg text-center" id="deviceList">
 	            	<div *ngFor="let device of devices">
 	            		<device-sidebar *ngIf="device.important==true"
 							[device]="device"
@@ -35,7 +35,7 @@ import { DataService }        from './data.service';
 					</div>
 	          	</div>
 	          
-	            <div class="col-md-9 text-center well well-lg">NETWORK TOPOLOGY</div>
+	            <div class="col-md-9 col-sm-8 text-center well well-lg">NETWORK TOPOLOGY</div>
 	          
 	        </div>
 
@@ -43,9 +43,15 @@ import { DataService }        from './data.service';
 	    
 	styles: [`
 	    .selected {
-	      background-color: #CFD8DC !important;
-	      color: white;
+		    background-color: #CFD8DC !important;
+		    color: white;
 	    }
+
+	    #deviceList {
+	        overflow-y:scroll;
+	        height: 80vh;
+	        margin-bottom; 0px;
+      	}
 
 	    hr {
 		    display: block;
@@ -68,6 +74,10 @@ export class AppComponent implements OnInit {
 	
 	ngOnInit() {
 
+		this.dataService.fetchData().subscribe(
+			(data) => this.devices = data
+		);
+
 		/* Refreshes devices every 5 seconds */
 		setInterval(() => {
 			this.dataService.fetchData().subscribe(
@@ -75,9 +85,6 @@ export class AppComponent implements OnInit {
 			);
 		}, 1000 * 5);
 
-		this.dataService.fetchData().subscribe(
-			(data) => this.devices = data
-		);
 	}
 	
 	onSelect(device: Device): void {

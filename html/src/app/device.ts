@@ -4,7 +4,6 @@ export class Device {
   ipv4: string;
   ipv6: string;
   type: string;
-  image: string;
   network: string;
   networkMask: string;
   signalStrength: number;

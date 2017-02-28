@@ -45,7 +45,7 @@ import { Device }	         from './device';
 					</div>
 				</div>
 			</div>
-			
+
 		</div>`,
 	styles: [`
 
