@@ -8,7 +8,30 @@ import { Device }	         from './device';
   	   `<div class="row media well well-lg" id="deviceInformation">
 	  	    <div *ngIf="selectedDevice">
 		        <div class="media-left">
-		        	<img src="{{selectedDevice.image}}" alt="device-image" class="media-object img-rounded" style="width:100px">
+		        	<div *ngIf="selectedDevice.type=='Phone'">
+		        		<img src="./images/phone.png" alt="phone-image" class="media-object img-rounded" style="width:100px">
+		        	</div>
+		        	<div *ngIf="selectedDevice.type=='WAP'">
+		        		<img src="./images/WAP.png" alt="WAP-image" class="media-object img-rounded" style="width:100px">
+		        	</div>
+		        	<div *ngIf="selectedDevice.type=='Laptop'">
+		        		<img src="./images/laptop.png" alt="laptop-image" class="media-object img-rounded" style="width:100px">
+		        	</div>
+		        	<div *ngIf="selectedDevice.type=='Router'">
+		        		<img src="./images/router.png" alt="router-image" class="media-object img-rounded" style="width:100px">
+		        	</div>
+		        	<div *ngIf="selectedDevice.type=='Chromecast'">
+		        		<img src="./images/chromecast.png" alt="chromecast-image" class="media-object img-rounded" style="width:100px">
+		        	</div>
+		        	<div *ngIf="selectedDevice.type=='Printer'">
+		        		<img src="./images/printer.png" alt="printer-image" class="media-object img-rounded" style="width:100px">
+		        	</div>
+		        	<div *ngIf="selectedDevice.type=='Roku'">
+		        		<img src="./images/chromecast.png" alt="roku-image" class="media-object img-rounded" style="width:100px">
+		        	</div>
+		        	<div *ngIf="selectedDevice.type=='Tablet'">
+		        		<img src="./images/laptop.png" alt="tablet-image" class="media-object img-rounded" style="width:100px">
+		        	</div>
 		        </div>
 		        <div class="media-body text-left">
 		            <div class="col-md-3">
