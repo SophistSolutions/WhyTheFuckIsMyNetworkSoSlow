@@ -6,24 +6,37 @@ import { Device }	         from './device';
 @Component ({
 	selector: 'device-sidebar',
   	template: 
-  	   `<div class="well well-sm signal-strong rounded">
-			<div class="media">
-				<div class="media-left">
-				    <img src={{device.image}} alt="device-image" class="media-object img-rounded" style="max-width:70px; height: auto; display: inline-block;">
-				</div>
-				<div class="media-body text-right">
-					<div style="word-break: break-all;"><h4 class="media-heading text-success">{{device.name}} <span class="glyphicon glyphicon-ok-sign"></span></h4></div>
-					<p class="">{{device.type}}</p>								
-					<p>{{device.ipv4}}</p>
-					<p>{{device.ipv6}}</p>						
-					<p>-{{device.signalStrength}}dB <span class="glyphicon glyphicon-signal"></span></p>
+  	   `<div class="panel panel-success signal-strong rounded">
+
+	  	   	<div class="panel-heading"><p class="media-heading text-success">{{device.name}} <span class="glyphicon glyphicon-ok-sign"></span></p><span class="glyphicon glyphicon-option-vertical" style="display: inline; float: right;"aria-hidden="true"></span></div>
+	  		<div class="panel-body">
+				<div class="media">
+					<div class="media-left">
+					    <img src={{device.image}} alt="device-image" class="media-object img-rounded" style="max-width:70px; height: auto; display: inline-block;">
+					</div>
+					<div class="media-body text-right">
+						<p class="">{{device.type}}</p>								
+						<p>{{device.ipv4}}</p>
+						<p>{{device.ipv6}}</p>						
+						<p>-{{device.signalStrength}}dB <span class="glyphicon glyphicon-signal"></span></p>
+					</div>
 				</div>
 			</div>
 		</div>`,
 	styles: [`
 
-		.well {
+		.panel {
     		margin:10px 0px 10px 0px;
+    	}
+
+    	.panel-heading p {
+    		display: inline-block;
+    		font-weight: bold;
+    		white-space: nowrap;
+    		width: 100px;
+    		width:inherit;
+    		overflow:hidden
+    		text-overflow: ellipsis;
     	}
 
     	.signal-strong {
