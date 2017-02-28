@@ -49,12 +49,12 @@ import { DataService }        from './data.service';
 
 	    hr {
 		    display: block;
-		    margin-top: 0.5em;
-		    margin-bottom: 0.5em;
+		    margin-top: 1em;
+		    margin-bottom: 2em;
 		    margin-left: auto;
 		    margin-right: auto;
-		    border-style: inset;
-		    border-width: 4px;
+		    border-style: double;
+		    border-width: 8px 0px 8px 0px;
 	    }
 	`],
 	providers: [DataService]
