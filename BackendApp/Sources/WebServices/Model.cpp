@@ -22,11 +22,13 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model;
 const DataExchange::ObjectVariantMapper Device::kMapper = []() {
     using DataExchange::ObjectVariantMapper;
     ObjectVariantMapper mapper;
+    mapper.AddCommonType<Optional<String>> ();
+    mapper.AddCommonType<Optional<float>> ();
     mapper.AddClass<Device> ({
         ObjectVariantMapper::StructFieldInfo{L"name", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, name)},
         ObjectVariantMapper::StructFieldInfo{L"ipAddress", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, ipAddress)},
-        ObjectVariantMapper::StructFieldInfo{L"ipv4", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, ipv4)},
-        ObjectVariantMapper::StructFieldInfo{L"ipv6", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, ipv6)},
+        ObjectVariantMapper::StructFieldInfo{L"ipv4", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, ipv4), ObjectVariantMapper::StructFieldInfo::NullFieldHandling::eOmit},
+        ObjectVariantMapper::StructFieldInfo{L"ipv6", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, ipv6), ObjectVariantMapper::StructFieldInfo::NullFieldHandling::eOmit},
         ObjectVariantMapper::StructFieldInfo{L"type", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, type)},
         ObjectVariantMapper::StructFieldInfo{L"image", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, image)},
         ObjectVariantMapper::StructFieldInfo{L"network", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, network)},

@@ -8,6 +8,7 @@
 
 #include "Stroika/Foundation/Characters/String.h"
 #include "Stroika/Foundation/DataExchange/ObjectVariantMapper.h"
+#include "Stroika/Foundation/IO/Network/InternetAddress.h"
 #include "Stroika/Foundation/Memory/Optional.h"
 
 /**
@@ -26,17 +27,17 @@ namespace WhyTheFuckIsMyNetworkSoSlow {
                 /**
                  */
                 struct Device {
-                    String name;
-                    String ipAddress;
-                    String ipv4;
-                    String ipv6;
-                    String type;
-                    String image;
-                    String network;
-                    String networkMask;
-                    float  signalStrength{};
-                    bool   connected{};
-                    bool   important{};
+                    String           name;
+                    String           ipAddress;
+                    Optional<String> ipv4;
+                    Optional<String> ipv6;
+                    String           type;
+                    String           image;
+                    String           network;
+                    String           networkMask;
+                    Optional<float>  signalStrength{};
+                    bool             connected{};
+                    bool             important{};
 
                     nonvirtual String ToString () const;
 
