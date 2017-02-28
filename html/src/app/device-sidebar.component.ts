@@ -39,8 +39,7 @@ import { Device }	         from './device';
 					</div>
 					<div class="media-body text-right">
 						<p class="">{{device.type}}</p>								
-						<p>{{device.ipv4}}</p>
-						<p>{{device.ipv6}}</p>						
+						<p>{{device.ipAddress}}</p>					
 						<p>-{{device.signalStrength}}dB <span class="glyphicon glyphicon-signal"></span></p>
 					</div>
 				</div>
