@@ -8,7 +8,9 @@ import { Device }	         from './device';
   	template: 
   	   `<div class="panel panel-success signal-strong text-left rounded">
 
-	  	   	<div class="panel-heading"><p class="media-heading text-success">{{device.name}} <span class="glyphicon glyphicon-ok-sign"></span></p><span class="glyphicon glyphicon-option-vertical" style="display: inline; float: right;"aria-hidden="true"></span></div>
+	  	   	<div class="panel-heading">
+	  	   		<p class="media-heading text-success overflow-ellipsis">{{device.name}} <span class="glyphicon glyphicon-ok-sign"></span></p>
+	  	   	</div>
 	  		<div class="panel-body">
 				<div class="media">
 					<div class="media-left">
@@ -49,17 +51,14 @@ import { Device }	         from './device';
 	styles: [`
 
 		.panel {
-    		margin:10px 0px 10px 0px;
+    		margin: 10px 0px 10px 0px;
     	}
 
-    	.panel-heading p {
-    		display: inline-block;
-    		font-weight: bold;
-    		white-space: nowrap;
-    		width: 100px;
-    		width:inherit;
-    		overflow:hidden
+    	.overflow-ellipsis {
+    		margin: 0px 0px 0px 0px;
     		text-overflow: ellipsis;
+    		white-space: nowrap;
+    		overflow: hidden;
     	}
 
     	.signal-strong {
