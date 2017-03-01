@@ -35,7 +35,7 @@ import { Device }	         from './device';
 		        </div>
 		        <div class="media-body text-left">
 		            <div class="col-md-3">
-		                <h2>{{selectedDevice.name}}</h2>
+		                <h3>{{selectedDevice.name}}</h3>
 		                <p><span class="label label-success">Connected <span class="glyphicon glyphicon-ok-sign"></span></span></p>                         
 		            </div>
 
