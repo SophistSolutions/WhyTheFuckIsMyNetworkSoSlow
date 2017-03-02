@@ -40,9 +40,11 @@ import { Device }	         from './device';
 					    </div>
 					</div>
 					<div class="media-body text-right">
-						<p class="">{{device.type}}</p>								
-						<p>{{device.ipAddress}}</p>					
-						<p>-{{device.signalStrength}}dB <span class="glyphicon glyphicon-signal"></span></p>
+						<ul>
+							<li class="">{{device.type}}</li>								
+							<li>{{device.ipAddress}}</li>					
+							<li>-{{device.signalStrength}}dB <span class="glyphicon glyphicon-signal"></span></li>
+						</ul>
 					</div>
 				</div>
 			</div>
@@ -59,6 +61,10 @@ import { Device }	         from './device';
     		text-overflow: ellipsis;
     		white-space: nowrap;
     		overflow: hidden;
+    	}
+
+    	li {
+    		list-style-type: none;
     	}
 
     	.signal-strong {
