@@ -36,7 +36,9 @@ import { Device }	         from './device';
 		        <div class="media-body text-left">
 		            <div class="col-md-3">
 		                <h3>{{selectedDevice.name}}</h3>
-		                <p><span class="label label-success">Connected <span class="glyphicon glyphicon-ok-sign"></span></span></p>                         
+		                <div *ngIf="selectedDevice.important">
+		                	<p><span class="label label-success">Watch List <span class="glyphicon glyphicon-eye-open"></span></span></p>      
+		             	</div>                   
 		            </div>
 
 		            <div class="col-md-4">
