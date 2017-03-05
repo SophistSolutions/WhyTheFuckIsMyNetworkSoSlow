@@ -485,6 +485,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Sources\Discovery\Devices.cpp" />
+    <ClCompile Include="..\..\Sources\Discovery\Networks.cpp" />
     <ClCompile Include="..\..\Sources\Main.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug-U-64|Win32'">..\Library\Sources;..\..\Library\Sources;..\..\..\Library\Sources;..\..\..\..\Library\Sources;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug-U-32|Win32'">..\Library\Sources;..\..\Library\Sources;..\..\..\Library\Sources;..\..\..\..\Library\Sources;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -508,6 +510,8 @@
     <None Include="..\..\checkall_vs.pl" />
     <None Include="..\..\Makefile" />
     <None Include="..\..\ReadMe.md" />
+    <None Include="..\..\Sources\Discovery\Devices.inl" />
+    <None Include="..\..\Sources\Discovery\Networks.inl" />
     <None Include="..\..\Sources\WebServices\IWSAPI.inl" />
     <None Include="..\..\Sources\WebServices\Model.inl" />
     <None Include="..\..\Sources\WebServices\WSImpl.inl" />
@@ -532,6 +536,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Sources\Discovery\Devices.h" />
+    <ClInclude Include="..\..\Sources\Discovery\Networks.h" />
     <ClInclude Include="..\..\Sources\WebServices\IWSAPI.h" />
     <ClInclude Include="..\..\Sources\WebServices\Model.h" />
     <ClInclude Include="..\..\Sources\WebServices\WSImpl.h" />

@@ -4,68 +4,49 @@
 #include "Stroika/Frameworks/StroikaPreComp.h"
 
 #include "Stroika/Foundation/Characters/ToString.h"
-#include "Stroika/Foundation/Configuration/SystemConfiguration.h"
 #include "Stroika/Foundation/Containers/Set.h"
 #include "Stroika/Foundation/Execution/Synchronized.h"
-#include "Stroika/Foundation/IO/Network/DNS.h"
 #include "Stroika/Foundation/IO/Network/Interface.h"
 #include "Stroika/Foundation/IO/Network/LinkMonitor.h"
 
-#include "Stroika/Frameworks/UPnP/SSDP/Client/Listener.h"
+#include "../Discovery/Devices.h"
+#include "../Discovery/Networks.h"
 
 #include "WSImpl.h"
 
 using namespace std;
 
 using namespace Stroika::Foundation;
+using namespace Stroika::Foundation::Containers;
 using namespace Stroika::Foundation::Execution;
-using namespace Stroika::Frameworks::UPnP;
-using namespace Stroika::Frameworks::UPnP::SSDP;
 
 using namespace WhyTheFuckIsMyNetworkSoSlow;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices;
 
 namespace {
-    //tmphack - this goes elsewhere - in module to do background scanning/DB of machiens
-
-    struct DiscoveryInfo_ {
-        IO::Network::InternetAddress fAddr;
-        bool                         alive{};
-        String                       server;
-    };
-
-    Collection<DiscoveryInfo_> GetSoFarDiscoveredDevices_ ()
+    shared_ptr<Discovery::DeviceDiscoverer> GetDiscoverer_ ()
     {
-        static Synchronized<Mapping<String, DiscoveryInfo_>> sDiscoveredDevices_;
-        static SSDP::Client::Listener sListener_{
-            [&](const SSDP::Advertisement& d) {
-                DbgTrace (L"Recieved SSDP advertisement: %s", Characters::ToString (d).c_str ());
-                String                                   location = d.fLocation.GetFullURL ();
-                Optional<bool>                           alive    = d.fAlive;
-                URL                                      locURL   = URL{location, URL::ParseOptions::eAsFullURL};
-                String                                   locHost  = locURL.GetHost ();
-                Collection<IO::Network::InternetAddress> locAddrs = IO::Network::DNS::Default ().GetHostAddresses (locHost);
-                if (locHost.empty ()) {
-                    DbgTrace (L"oops - bad - probabkly should log - bad device resposne - find addr some other way");
-                }
-                else {
-                    sDiscoveredDevices_.rwget ()->Add (location, DiscoveryInfo_{locAddrs.Nth (0), alive.Value (true), d.fServer});
-                }
-            },
-            SSDP::Client::Listener::eAutoStart};
-        return sDiscoveredDevices_.cget ()->MappedValues ();
+        static Synchronized<Mapping<Discovery::Network, shared_ptr<Discovery::DeviceDiscoverer>>> sDiscovery_;
+
+        Collection<Discovery::Network> tmp = Discovery::CollectActiveNetworks ();
+
+        if (tmp.empty ()) {
+            Execution::Throw (Execution::StringException (L"no active network"));
+        }
+        Discovery::Network net = tmp.Nth (0);
+        auto               l   = sDiscovery_.rwget ();
+        if (auto i = l->Lookup (net)) {
+            return *i;
+        }
+        auto r = make_shared<Discovery::DeviceDiscoverer> (net);
+        l->Add (net, r);
+        return r;
     }
 }
 
 Collection<BackendApp::WebServices::Device> WSImpl::GetDevices () const
 {
-    static const Mapping<String, String> kNamePrettyPrintMapper_{
-        Common::KeyValuePair<String, String>{L"ASUSTeK UPnP/1.1 MiniUPnPd/1.9", L"ASUS Router"},
-        Common::KeyValuePair<String, String>{L"Microsoft-Windows/10.0 UPnP/1.0 UPnP-Device-Host/1.0", L"Antiphon"},
-        Common::KeyValuePair<String, String>{L"POSIX, UPnP/1.0, Intel MicroStack/1.0.1347", L"HP PhotoSmart"},
-    };
-
     using namespace IO::Network;
     static const Device kFakeDevicePrototype_ = Device{
         L"name",
@@ -79,51 +60,20 @@ Collection<BackendApp::WebServices::Device> WSImpl::GetDevices () const
         true,
         false};
 
-    Collection<BackendApp::WebServices::Device> devices = GetSoFarDiscoveredDevices_ ().Select<Device> ([](const DiscoveryInfo_& d) {
-        Device newDev    = kFakeDevicePrototype_;
-        newDev.ipAddress = d.fAddr.As<String> ();
-        if (auto o = d.fAddr.AsAddressFamily (InternetAddress::AddressFamily::V4)) {
+    Collection<BackendApp::WebServices::Device> devices = GetDiscoverer_ ()->GetActiveDevices ().Select<BackendApp::WebServices::Device> ([](const Discovery::Device& d) {
+        BackendApp::WebServices::Device newDev = kFakeDevicePrototype_;
+        newDev.ipAddress                       = d.ipAddress.As<String> ();
+        if (auto o = d.ipAddress.AsAddressFamily (InternetAddress::AddressFamily::V4)) {
             newDev.ipv4 = o->As<String> ();
         }
-        if (auto o = d.fAddr.AsAddressFamily (InternetAddress::AddressFamily::V6)) {
+        if (auto o = d.ipAddress.AsAddressFamily (InternetAddress::AddressFamily::V6)) {
             newDev.ipv6 = o->As<String> ();
         }
-        newDev.connected = d.alive;
-        newDev.name      = d.server;
-        newDev.important = newDev.ipAddress.EndsWith (L".1"); //tmphack
-        if (newDev.ipAddress.EndsWith (L".1")) {
-            newDev.type = L"Router";
-        }
-        newDev.name = kNamePrettyPrintMapper_.LookupValue (newDev.name, newDev.name);
+        newDev.connected = true;
+        newDev.name      = d.name;
+        newDev.type      = d.type;
+        newDev.important = newDev.type == L"Router" or newDev.ipAddress == IO::Network::GetPrimaryInternetAddress ();
         return newDev;
     });
-
-    InternetAddress thisMachineAddr = GetPrimaryInternetAddress ();
-
-    Containers::Set<InternetAddress> found;
-    for (IO::Network::Interface i : IO::Network::GetInterfaces ()) {
-        if (i.fType != Interface::Type::eLoopback and i.fStatus and i.fStatus->Contains (Interface::Status::eRunning) and not i.fBindings.Contains (thisMachineAddr)) {
-            Device newDev    = kFakeDevicePrototype_;
-            newDev.ipAddress = thisMachineAddr.As<String> ();
-            if (found.Contains (thisMachineAddr)) {
-                continue;
-            }
-            else {
-                found.Add (thisMachineAddr);
-            }
-            if (auto o = thisMachineAddr.AsAddressFamily (InternetAddress::AddressFamily::V4)) {
-                newDev.ipv4 = o->As<String> ();
-            }
-            if (auto o = thisMachineAddr.AsAddressFamily (InternetAddress::AddressFamily::V6)) {
-                newDev.ipv6 = o->As<String> ();
-            }
-            newDev.connected = true;
-            newDev.name      = Configuration::GetSystemConfiguration_ComputerNames ().fHostname;
-            newDev.important = true;
-            newDev.type      = L"Laptop";
-            newDev.name      = kNamePrettyPrintMapper_.LookupValue (newDev.name, newDev.name);
-            devices.Add (newDev);
-        }
-    }
     return devices;
 }

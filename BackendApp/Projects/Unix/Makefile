@@ -18,7 +18,7 @@ TARGETEXE				=	$(StroikaRoot)Builds/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow
 
 $(info pwd is [$(shell pwd)])
 $(info $$SrcDir is [${SrcDir}])
-VPATH	=			$(SrcDir)/Sources/ : $(SrcDir)/Sources/WebServices/
+VPATH	=			$(SrcDir)/Sources/ : $(SrcDir)/Sources/WebServices/ : $(SrcDir)/Sources/Discovery/
 
 
 Objs	=	\
@@ -26,6 +26,8 @@ Objs	=	\
 	$(ObjDir)IWSAPI.o\
 	$(ObjDir)Model.o\
 	$(ObjDir)WSImpl.o\
+	$(ObjDir)Devices.o\
+	$(ObjDir)Networks.o\
 
 
 all:

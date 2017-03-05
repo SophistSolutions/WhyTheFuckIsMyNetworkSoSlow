@@ -18,6 +18,12 @@
     <None Include="..\..\Sources\WebServices\WSImpl.inl">
       <Filter>Sources\WebServices</Filter>
     </None>
+    <None Include="..\..\Sources\Discovery\Devices.inl">
+      <Filter>Sources\Discovery</Filter>
+    </None>
+    <None Include="..\..\Sources\Discovery\Networks.inl">
+      <Filter>Sources\Discovery</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Sources">
@@ -31,6 +37,9 @@
     </Filter>
     <Filter Include="Sources\WebServices">
       <UniqueIdentifier>{5e0bcf4e-d082-410f-afea-ed836dee9a83}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Discovery">
+      <UniqueIdentifier>{f2648920-ef38-4096-a95e-4550c5118635}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -46,6 +55,12 @@
     <ClCompile Include="..\..\Sources\WebServices\WSImpl.cpp">
       <Filter>Sources\WebServices</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Discovery\Devices.cpp">
+      <Filter>Sources\Discovery</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Discovery\Networks.cpp">
+      <Filter>Sources\Discovery</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\WebServices\Model.h">
@@ -56,6 +71,12 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\WebServices\WSImpl.h">
       <Filter>Sources\WebServices</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Discovery\Devices.h">
+      <Filter>Sources\Discovery</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Discovery\Networks.h">
+      <Filter>Sources\Discovery</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

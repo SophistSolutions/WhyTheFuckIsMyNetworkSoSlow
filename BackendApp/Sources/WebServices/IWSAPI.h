@@ -10,9 +10,10 @@
 #include "Stroika/Foundation/Containers/Sequence.h"
 
 #include "Model.h"
+
 /**
-*
-*/
+ *
+ */
 
 namespace WhyTheFuckIsMyNetworkSoSlow {
     namespace BackendApp {
@@ -32,6 +33,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow {
                 virtual ~IWSAPI ()     = default;
 
             public:
+                /**
+                 *  curl  http://localhost:8080/Devices
+                 */
                 virtual Collection<Device> GetDevices () const = 0;
             };
         }
