@@ -24,7 +24,6 @@
 		  "name": "Robert's Mac",
 		  "ipv4": "192.168.244.114",
 		  "ipv6": "fe80::cc4:2aef:fec7:901c",
-		  "type": "Laptop",
 		  "network": "192.168.244.0/24",
   		  "networkMask": "255.255.255.0",
 		  "signalStrength": 0,

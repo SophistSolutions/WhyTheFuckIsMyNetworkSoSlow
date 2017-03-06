@@ -14,36 +14,43 @@ import { Device }	         from './device';
 	  		<div class="panel-body">
 				<div class="media">
 					<div class="media-left">
-					    <div *ngIf="device.type=='Phone'">
-					    	<img src="./images/phone.png" alt="phone-image" class="media-object img-rounded" style="max-width:70px; height: auto; display: inline-block;">
-					    </div>
-					    <div *ngIf="device.type=='WAP'">
-					    	<img src="./images/WAP.png" alt="WAP-image" class="media-object img-rounded" style="max-width:70px; height: auto; display: inline-block;">
-					    </div>
-					    <div *ngIf="device.type=='Laptop'">
-					    	<img src="./images/laptop.png" alt="laptop-image" class="media-object img-rounded" style="max-width:70px; height: auto; display: inline-block;">
-					    </div>
-					    <div *ngIf="device.type=='Router'">
-					    	<img src="./images/router.png" alt="router-image" class="media-object img-rounded" style="max-width:70px; height: auto; display: inline-block;">
-					    </div>
-					    <div *ngIf="device.type=='Chromecast'">
-					    	<img src="./images/chromecast.png" alt="chromecast-image" class="media-object img-rounded" style="max-width:70px; height: auto; display: inline-block;">
-					    </div>
-					    <div *ngIf="device.type=='Printer'">
-					    	<img src="./images/printer.png" alt="printer-image" class="media-object img-rounded" style="max-width:70px; height: auto; display: inline-block;">
-					    </div>
-					    <div *ngIf="device.type=='Roku'">
-					    	<img src="./images/chromecast.png" alt="roku-image" class="media-object img-rounded" style="max-width:70px; height: auto; display: inline-block;">
-					    </div>
-					    <div *ngIf="device.type=='Tablet'">
-					    	<img src="./images/laptop.png" alt="tablet-image" class="media-object img-rounded" style="max-width:70px; height: auto; display: inline-block;">
-					    </div>
+						<div *ngIf="device.type">
+						    <div *ngIf="device.type=='Phone'">
+						    	<img src="./images/phone.png" alt="phone-image" class="media-object img-rounded" style="max-width:70px; height: auto; display: inline-block;">
+						    </div>
+						    <div *ngIf="device.type=='WAP'">
+						    	<img src="./images/WAP.png" alt="WAP-image" class="media-object img-rounded" style="max-width:70px; height: auto; display: inline-block;">
+						    </div>
+						    <div *ngIf="device.type=='Laptop'">
+						    	<img src="./images/laptop.png" alt="laptop-image" class="media-object img-rounded" style="max-width:70px; height: auto; display: inline-block;">
+						    </div>
+						    <div *ngIf="device.type=='Router'">
+						    	<img src="./images/router.png" alt="router-image" class="media-object img-rounded" style="max-width:70px; height: auto; display: inline-block;">
+						    </div>
+						    <div *ngIf="device.type=='Chromecast'">
+						    	<img src="./images/chromecast.png" alt="chromecast-image" class="media-object img-rounded" style="max-width:70px; height: auto; display: inline-block;">
+						    </div>
+						    <div *ngIf="device.type=='Printer'">
+						    	<img src="./images/printer.png" alt="printer-image" class="media-object img-rounded" style="max-width:70px; height: auto; display: inline-block;">
+						    </div>
+						    <div *ngIf="device.type=='Roku'">
+						    	<img src="./images/chromecast.png" alt="roku-image" class="media-object img-rounded" style="max-width:70px; height: auto; display: inline-block;">
+						    </div>
+						    <div *ngIf="device.type=='Tablet'">
+						    	<img src="./images/laptop.png" alt="tablet-image" class="media-object img-rounded" style="max-width:70px; height: auto; display: inline-block;">
+						    </div>
+						</div>
+						<div *ngIf="!device.type">
+							<img src="http://placehold.it/150x150" alt="placeholder" class="media-object img-rounded" style="max-width:70px; height: auto; display: inline-block;">
+						</div>
 					</div>
 					<div class="media-body text-right">
 						<ul>
-							<li class="">{{device.type}}</li>								
-							<li>{{device.ipAddress}}</li>					
-							<li>-{{device.signalStrength}}dB <span class="glyphicon glyphicon-signal"></span></li>
+							<li>{{device.type}}</li>
+							<li>{{device.ipAddress}}</li>
+							<div *ngIf="device.signalStrength">
+								<li>-{{device.signalStrength}}dB <span class="glyphicon glyphicon-signal"></span></li>
+							</div>
 						</ul>
 					</div>
 				</div>
