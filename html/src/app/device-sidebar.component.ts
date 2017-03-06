@@ -41,13 +41,13 @@ import { Device }	         from './device';
 						    </div>
 						</div>
 						<div *ngIf="!device.type">
-							<img src="http://placehold.it/150x150" alt="placeholder" class="media-object img-rounded" style="max-width:70px; height: auto; display: inline-block;">
+							<img src="./images/unknown.png" alt="placeholder" class="media-object img-rounded" style="max-width:70px; height: auto; display: inline-block;">
 						</div>
 					</div>
 					<div class="media-body text-right">
 						<ul>
 							<li>{{device.type}}</li>
-							<li>{{device.ipAddress}}</li>
+							<li>{{device.ipAddresses[0]}}</li>
 							<div *ngIf="device.signalStrength">
 								<li>-{{device.signalStrength}}dB <span class="glyphicon glyphicon-signal"></span></li>
 							</div>
