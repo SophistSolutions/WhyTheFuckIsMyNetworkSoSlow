@@ -42,7 +42,9 @@ String Discovery::Device::ToString () const
     sb += L"{";
     sb += L"name: " + Characters::ToString (name) + L", ";
     sb += L"ipAddress: " + Characters::ToString (ipAddress) + L", ";
-    sb += L"type: " + Characters::ToString (type) + L", ";
+    if (type) {
+        sb += L"type: " + Characters::ToString (type) + L", ";
+    }
     sb += L"}";
     return sb.str ();
 }
@@ -79,10 +81,10 @@ public:
             newDev.name      = di.server;
             newDev.name      = kNamePrettyPrintMapper_.LookupValue (newDev.name, newDev.name);
             newDev.ipAddress = di.fAddr;
-            newDev.type      = L"Unknown";
+            newDev.type.clear ();
 
             if (newDev.ipAddress.As<String> ().EndsWith (L".1")) {
-                newDev.type = L"Router";
+                newDev.type = Discovery::DeviceType::eRouter;
             }
 
             results.Add (newDev);
@@ -130,7 +132,7 @@ private:
                     found.Add (thisMachineAddr);
                 }
                 newDev.name = Configuration::GetSystemConfiguration_ComputerNames ().fHostname;
-                newDev.type = L"Laptop";
+                newDev.type = DeviceType::eLaptop; //tmphack @todo fix
                 return newDev;
             }
         }

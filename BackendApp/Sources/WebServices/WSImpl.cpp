@@ -65,7 +65,7 @@ Collection<BackendApp::WebServices::Device> WSImpl::GetDevices () const
         newDev.connected = true;
         newDev.name      = d.name;
         newDev.type      = d.type;
-        newDev.important = newDev.type == L"Router" or newDev.ipAddresses.Contains (IO::Network::GetPrimaryInternetAddress ().As<String> ());
+        newDev.important = newDev.type == Device::DeviceType::eRouter or newDev.ipAddresses.Contains (IO::Network::GetPrimaryInternetAddress ().As<String> ());
         return newDev;
     });
     return devices;

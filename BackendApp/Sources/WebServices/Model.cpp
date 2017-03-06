@@ -19,9 +19,29 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model;
 
+/*
+ ********************************************************************************
+ **************************** Configuration::DefaultNames ***********************
+ ********************************************************************************
+ */
+namespace Stroika {
+    namespace Foundation {
+        namespace Configuration {
+            constexpr EnumNames<WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::Device::DeviceType> DefaultNames<WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::Device::DeviceType>::k;
+        }
+    }
+}
+
+/*
+ ********************************************************************************
+ ************************************* Device ***********************************
+ ********************************************************************************
+ */
 const DataExchange::ObjectVariantMapper Device::kMapper = []() {
     using DataExchange::ObjectVariantMapper;
     ObjectVariantMapper mapper;
+    mapper.AddCommonType<Device::DeviceType> ();
+    mapper.AddCommonType<Optional<Device::DeviceType>> ();
     mapper.AddCommonType<Optional<String>> ();
     mapper.AddCommonType<Optional<float>> ();
     mapper.AddCommonType<Sequence<String>> ();

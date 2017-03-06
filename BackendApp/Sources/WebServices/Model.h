@@ -15,7 +15,6 @@
 /**
  *
  */
-
 namespace WhyTheFuckIsMyNetworkSoSlow {
     namespace BackendApp {
         namespace WebServices {
@@ -34,7 +33,25 @@ namespace WhyTheFuckIsMyNetworkSoSlow {
                      * Bindings
                      */
                     Sequence<String> ipAddresses;
-                    String           type;
+
+                    /**
+                     */
+                    enum class DeviceType {
+                        eLaptop,
+                        eDesktop,
+                        eTablet,
+                        ePhone,
+                        eRouter,
+                        ePrinter,
+                        eInfrastructureDevice,
+
+                        Stroika_Define_Enum_Bounds (eLaptop, eInfrastructureDevice)
+                    };
+                    /**
+                     *  missing is unknown type of device
+                     */
+                    Optional<DeviceType> type;
+
                     /*
                      *  in CIDR notation.
                      */

@@ -11,6 +11,8 @@
 #include "Stroika/Foundation/IO/Network/InternetAddress.h"
 #include "Stroika/Foundation/Memory/Optional.h"
 
+#include "../WebServices/Model.h"
+
 #include "Networks.h"
 
 /**
@@ -27,13 +29,17 @@ namespace WhyTheFuckIsMyNetworkSoSlow {
             using Memory::Optional;
 
             /**
+             */
+            using DeviceType = WebServices::Model::Device::DeviceType;
+
+            /**
              *  Discovery::Device is the definition of a device in the discovery module. This is the level of detail
              *  captured by the discovery services.
              */
             struct Device {
-                String          name;
-                InternetAddress ipAddress;
-                String          type;
+                String               name;
+                InternetAddress      ipAddress;
+                Optional<DeviceType> type;
 
                 nonvirtual String ToString () const;
             };
