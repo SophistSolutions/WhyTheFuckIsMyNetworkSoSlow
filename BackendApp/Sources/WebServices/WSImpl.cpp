@@ -48,20 +48,9 @@ namespace {
 Collection<BackendApp::WebServices::Device> WSImpl::GetDevices () const
 {
     using namespace IO::Network;
-    static const Device kFakeDevicePrototype_ = Device{
-        L"name",
-        L"ipAddress",
-        L"ipv4",
-        L"ipv6",
-        L"Phone",
-        L"192.168.244.0/24",
-        L"255.255.255.0",
-        67,
-        true,
-        false};
 
     Collection<BackendApp::WebServices::Device> devices = GetDiscoverer_ ()->GetActiveDevices ().Select<BackendApp::WebServices::Device> ([](const Discovery::Device& d) {
-        BackendApp::WebServices::Device newDev = kFakeDevicePrototype_;
+        BackendApp::WebServices::Device newDev;
         newDev.ipAddress                       = d.ipAddress.As<String> ();
         if (auto o = d.ipAddress.AsAddressFamily (InternetAddress::AddressFamily::V4)) {
             newDev.ipv4 = o->As<String> ();
