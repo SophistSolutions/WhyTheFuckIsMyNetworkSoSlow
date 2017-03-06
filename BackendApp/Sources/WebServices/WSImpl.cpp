@@ -35,7 +35,8 @@ namespace {
             Execution::Throw (Execution::StringException (L"no active network"));
         }
         Discovery::Network net = tmp.Nth (0);
-        auto               l   = sDiscovery_.rwget ();
+
+        auto l = sDiscovery_.rwget ();
         if (auto i = l->Lookup (net)) {
             return *i;
         }
@@ -51,21 +52,32 @@ Collection<BackendApp::WebServices::Device> WSImpl::GetDevices () const
 
     Collection<BackendApp::WebServices::Device> devices = GetDiscoverer_ ()->GetActiveDevices ().Select<BackendApp::WebServices::Device> ([](const Discovery::Device& d) {
         BackendApp::WebServices::Device newDev;
-        newDev.ipAddresses.Append (d.ipAddress.As<String> ());
-        if (auto o = d.ipAddress.AsAddressFamily (InternetAddress::AddressFamily::V4)) {
-            if (not newDev.ipAddresses.Contains (d.ipAddress.As<String> ())) {
-                newDev.ipAddresses.Append (d.ipAddress.As<String> ());
+        d.ipAddresses.Apply ([&](const InternetAddress& a) {
+            // prefer having IPv4 addr at head of list
+            //
+            //@todo - CRAP CODE - RETHINK!!!
+            String addrStr = a.As<String> ();
+            if (not newDev.ipAddresses.Contains (addrStr)) {
+                if (auto o = a.AsAddressFamily (InternetAddress::AddressFamily::V4)) {
+                    if (newDev.ipAddresses.Contains (o->As<String> ())) {
+                        newDev.ipAddresses.Remove (newDev.ipAddresses.IndexOf (o->As<String> ()));
+                    }
+                    newDev.ipAddresses.Prepend (o->As<String> ());
+                }
+                if (not newDev.ipAddresses.Contains (addrStr)) {
+                    newDev.ipAddresses.Append (addrStr);
+                }
+                if (auto o = a.AsAddressFamily (InternetAddress::AddressFamily::V6)) {
+                    if (not newDev.ipAddresses.Contains (o->As<String> ())) {
+                        newDev.ipAddresses.Append (o->As<String> ());
+                    }
+                }
             }
-        }
-        if (auto o = d.ipAddress.AsAddressFamily (InternetAddress::AddressFamily::V6)) {
-            if (not newDev.ipAddresses.Contains (d.ipAddress.As<String> ())) {
-                newDev.ipAddresses.Append (d.ipAddress.As<String> ());
-            }
-        }
+        });
         newDev.connected = true;
         newDev.name      = d.name;
         newDev.type      = d.type;
-        newDev.important = newDev.type == Device::DeviceType::eRouter or newDev.ipAddresses.Contains (IO::Network::GetPrimaryInternetAddress ().As<String> ());
+        newDev.important = newDev.type == Device::DeviceType::eRouter or d.fThisDevice;
         return newDev;
     });
     return devices;

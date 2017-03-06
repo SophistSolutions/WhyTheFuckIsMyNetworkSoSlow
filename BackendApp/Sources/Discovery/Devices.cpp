@@ -31,6 +31,9 @@ using namespace WhyTheFuckIsMyNetworkSoSlow;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery;
 
+// Comment this in to turn on aggressive noisy DbgTrace in this module
+//#define USE_NOISY_TRACE_IN_THIS_MODULE_ 1
+
 /*
  ********************************************************************************
  ******************************* Discovery::Device ******************************
@@ -41,9 +44,12 @@ String Discovery::Device::ToString () const
     StringBuilder sb;
     sb += L"{";
     sb += L"name: " + Characters::ToString (name) + L", ";
-    sb += L"ipAddress: " + Characters::ToString (ipAddress) + L", ";
+    sb += L"ipAddress: " + Characters::ToString (ipAddresses) + L", ";
     if (type) {
         sb += L"type: " + Characters::ToString (type) + L", ";
+    }
+    if (fThisDevice) {
+        sb += L"This-Device: " + Characters::ToString (fThisDevice) + L", ";
     }
     sb += L"}";
     return sb.str ();
@@ -78,12 +84,12 @@ public:
         for (DiscoveryInfo_ di : GetSoFarDiscoveredDevices_ ()) {
             Discovery::Device newDev;
 
-            newDev.name      = di.server;
-            newDev.name      = kNamePrettyPrintMapper_.LookupValue (newDev.name, newDev.name);
-            newDev.ipAddress = di.fAddr;
+            newDev.name = di.server;
+            newDev.name = kNamePrettyPrintMapper_.LookupValue (newDev.name, newDev.name);
+            newDev.ipAddresses += di.fAddr;
             newDev.type.clear ();
 
-            if (newDev.ipAddress.As<String> ().EndsWith (L".1")) {
+            if (newDev.ipAddresses.Any ([](const InternetAddress& ia) { return ia.As<String> ().EndsWith (L".1"); })) {
                 newDev.type = Discovery::DeviceType::eRouter;
             }
 
@@ -118,25 +124,24 @@ private:
     }
     Optional<Discovery::Device> GetMyDevice_ () const
     {
-        InternetAddress thisMachineAddr = GetPrimaryInternetAddress ();
-
-        Containers::Set<InternetAddress> found;
+#if USE_NOISY_TRACE_IN_THIS_MODULE_
+        Debug::TraceContextBumper ctx{L"{}::GetMyDevice_"};
+#endif
+        DbgTrace (L"interfaces=%s", Characters::ToString (IO::Network::GetInterfaces ()).c_str ());
+        Discovery::Device newDev;
+        newDev.name        = Configuration::GetSystemConfiguration_ComputerNames ().fHostname;
+        newDev.type        = DeviceType::eLaptop; //tmphack @todo fix
+        newDev.fThisDevice = true;
         for (IO::Network::Interface i : IO::Network::GetInterfaces ()) {
-            if (i.fType != Interface::Type::eLoopback and i.fStatus and i.fStatus->Contains (Interface::Status::eRunning) and not i.fBindings.Contains (thisMachineAddr)) {
-                Discovery::Device newDev;
-                newDev.ipAddress = thisMachineAddr.As<String> ();
-                if (found.Contains (thisMachineAddr)) {
-                    continue;
-                }
-                else {
-                    found.Add (thisMachineAddr);
-                }
-                newDev.name = Configuration::GetSystemConfiguration_ComputerNames ().fHostname;
-                newDev.type = DeviceType::eLaptop; //tmphack @todo fix
-                return newDev;
+            if (i.fType != Interface::Type::eLoopback and i.fStatus and i.fStatus->Contains (Interface::Status::eRunning)) {
+                i.fBindings.Apply ([&](const InternetAddress& ia) {
+                    if (not ia.IsMulticastAddress ()) {
+                        newDev.ipAddresses += ia;
+                    }
+                });
             }
         }
-        return {};
+        return newDev;
     }
 };
 

@@ -25,6 +25,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow {
 
             using Characters::String;
             using Containers::Collection;
+            using Containers::Set;
             using IO::Network::InternetAddress;
             using Memory::Optional;
 
@@ -38,8 +39,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow {
              */
             struct Device {
                 String               name;
-                InternetAddress      ipAddress;
+                Set<InternetAddress> ipAddresses;
                 Optional<DeviceType> type;
+                bool                 fThisDevice{};
 
                 nonvirtual String ToString () const;
             };
