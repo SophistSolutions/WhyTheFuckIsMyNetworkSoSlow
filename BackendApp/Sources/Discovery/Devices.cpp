@@ -6,11 +6,15 @@
 #include "Stroika/Foundation/Characters/StringBuilder.h"
 #include "Stroika/Foundation/Characters/ToString.h"
 #include "Stroika/Foundation/Configuration/SystemConfiguration.h"
+#include "Stroika/Foundation/Containers/Set.h"
 #include "Stroika/Foundation/Execution/Synchronized.h"
 #include "Stroika/Foundation/IO/Network/DNS.h"
 #include "Stroika/Foundation/IO/Network/Interface.h"
 #include "Stroika/Foundation/IO/Network/LinkMonitor.h"
+#include "Stroika/Foundation/IO/Network/Transfer/Client.h"
+#include "Stroika/Foundation/IO/Network/Transfer/Connection.h"
 
+#include "Stroika/Frameworks/UPnP/DeviceDescription.h"
 #include "Stroika/Frameworks/UPnP/SSDP/Client/Listener.h"
 
 #include "Devices.h"
@@ -62,9 +66,9 @@ String Discovery::Device::ToString () const
  */
 class DeviceDiscoverer::Rep_ {
     struct DiscoveryInfo_ {
-        IO::Network::InternetAddress fAddr;
-        bool                         alive{};
-        String                       server;
+        Set<IO::Network::InternetAddress> fInternetAddresses;
+        bool                              alive{};
+        String                            server;
     };
 
     mutable Synchronized<Mapping<String, DiscoveryInfo_>> fDiscoveredDevices_;
@@ -72,22 +76,7 @@ class DeviceDiscoverer::Rep_ {
 
 public:
     Rep_ (const Network& forNetwork)
-        : fListener_{
-              [&](const SSDP::Advertisement& d) {
-                  DbgTrace (L"Recieved SSDP advertisement: %s", Characters::ToString (d).c_str ());
-                  String                                   location = d.fLocation.GetFullURL ();
-                  Optional<bool>                           alive    = d.fAlive;
-                  URL                                      locURL   = URL{location, URL::ParseOptions::eAsFullURL};
-                  String                                   locHost  = locURL.GetHost ();
-                  Collection<IO::Network::InternetAddress> locAddrs = IO::Network::DNS::Default ().GetHostAddresses (locHost);
-                  if (locHost.empty ()) {
-                      DbgTrace (L"oops - bad - probabkly should log - bad device resposne - find addr some other way");
-                  }
-                  else {
-                      fDiscoveredDevices_.rwget ()->Add (location, DiscoveryInfo_{locAddrs.Nth (0), alive.Value (true), d.fServer});
-                  }
-              },
-              SSDP::Client::Listener::eAutoStart}
+        : fListener_{[this](const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); }, SSDP::Client::Listener::eAutoStart}
     {
     }
     Collection<Discovery::Device> GetActiveDevices () const
@@ -103,7 +92,7 @@ public:
 
             newDev.name = di.server;
             newDev.name = kNamePrettyPrintMapper_.LookupValue (newDev.name, newDev.name);
-            newDev.ipAddresses += di.fAddr;
+            newDev.ipAddresses += di.fInternetAddresses;
             newDev.type.clear ();
 
             if (newDev.ipAddresses.Any ([](const InternetAddress& ia) { return ia.As<String> ().EndsWith (L".1"); })) {
@@ -143,6 +132,38 @@ private:
             }
         }
         return newDev;
+    }
+    void RecieveSSDPAdvertisement_ (const SSDP::Advertisement& d)
+    {
+        DbgTrace (L"Recieved SSDP advertisement: %s", Characters::ToString (d).c_str ());
+        String                                   location = d.fLocation.GetFullURL ();
+        Optional<bool>                           alive    = d.fAlive;
+        URL                                      locURL   = URL{location, URL::ParseOptions::eAsFullURL};
+        String                                   locHost  = locURL.GetHost ();
+        Collection<IO::Network::InternetAddress> locAddrs = IO::Network::DNS::Default ().GetHostAddresses (locHost);
+
+        String friendlyName = d.fServer; // if all else fails..
+
+        try {
+            IO::Network::Transfer::Connection c = IO::Network::Transfer::CreateConnection ();
+            c.SetURL (locURL);
+            IO::Network::Transfer::Response r = c.GET ();
+            if (r.GetSucceeded ()) {
+                Frameworks::UPnP::DeviceDescription deviceInfo = DeSerialize (r.GetData ());
+                friendlyName                                   = deviceInfo.fFriendlyName;
+                DbgTrace (L"found device description = %s", Characters::ToString (deviceInfo).c_str ());
+            }
+        }
+        catch (...) {
+            DbgTrace (L"shit"); /// @todo
+        }
+
+        if (locHost.empty ()) {
+            DbgTrace (L"oops - bad - probably should log - bad device resposne - find addr some other way");
+        }
+        else {
+            fDiscoveredDevices_.rwget ()->Add (location, DiscoveryInfo_{locAddrs, alive.Value (true), friendlyName});
+        }
     }
 };
 
