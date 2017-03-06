@@ -68,9 +68,26 @@ class DeviceDiscoverer::Rep_ {
     };
 
     mutable Synchronized<Mapping<String, DiscoveryInfo_>> fDiscoveredDevices_;
+    SSDP::Client::Listener fListener_;
 
 public:
     Rep_ (const Network& forNetwork)
+        : fListener_{
+              [&](const SSDP::Advertisement& d) {
+                  DbgTrace (L"Recieved SSDP advertisement: %s", Characters::ToString (d).c_str ());
+                  String                                   location = d.fLocation.GetFullURL ();
+                  Optional<bool>                           alive    = d.fAlive;
+                  URL                                      locURL   = URL{location, URL::ParseOptions::eAsFullURL};
+                  String                                   locHost  = locURL.GetHost ();
+                  Collection<IO::Network::InternetAddress> locAddrs = IO::Network::DNS::Default ().GetHostAddresses (locHost);
+                  if (locHost.empty ()) {
+                      DbgTrace (L"oops - bad - probabkly should log - bad device resposne - find addr some other way");
+                  }
+                  else {
+                      fDiscoveredDevices_.rwget ()->Add (location, DiscoveryInfo_{locAddrs.Nth (0), alive.Value (true), d.fServer});
+                  }
+              },
+              SSDP::Client::Listener::eAutoStart}
     {
     }
     Collection<Discovery::Device> GetActiveDevices () const
@@ -104,22 +121,6 @@ public:
 private:
     Collection<DiscoveryInfo_> GetSoFarDiscoveredDevices_ () const
     {
-        static SSDP::Client::Listener sListener_{
-            [&](const SSDP::Advertisement& d) {
-                DbgTrace (L"Recieved SSDP advertisement: %s", Characters::ToString (d).c_str ());
-                String                                   location = d.fLocation.GetFullURL ();
-                Optional<bool>                           alive    = d.fAlive;
-                URL                                      locURL   = URL{location, URL::ParseOptions::eAsFullURL};
-                String                                   locHost  = locURL.GetHost ();
-                Collection<IO::Network::InternetAddress> locAddrs = IO::Network::DNS::Default ().GetHostAddresses (locHost);
-                if (locHost.empty ()) {
-                    DbgTrace (L"oops - bad - probabkly should log - bad device resposne - find addr some other way");
-                }
-                else {
-                    fDiscoveredDevices_.rwget ()->Add (location, DiscoveryInfo_{locAddrs.Nth (0), alive.Value (true), d.fServer});
-                }
-            },
-            SSDP::Client::Listener::eAutoStart};
         return fDiscoveredDevices_.cget ()->MappedValues ();
     }
     Optional<Discovery::Device> GetMyDevice_ () const
