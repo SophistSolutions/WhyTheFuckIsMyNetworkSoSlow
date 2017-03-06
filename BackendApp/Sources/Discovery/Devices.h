@@ -16,7 +16,21 @@
 #include "Networks.h"
 
 /**
+ *  \note Design Note
+ *          Planned approach for Discovery
+ *              o   UPnP/SSDP
+ *              o   Ping
+ *              o   Self
+ *              o   ARP (?)
+ *              o   Promiscuous mode on ethernet, and peek at packets
+ *              o   Bonjour?
  *
+ *          Planned approach to identify devices *get names etc)
+ *              o   UPnP/SSDP
+ *              o   Bonjour?
+ *              o   TCP Window reverse-engineer
+ *              o   open ports
+ *              o   curl port 80 server header (and similar tricks for other protocols)
  */
 
 namespace WhyTheFuckIsMyNetworkSoSlow {
