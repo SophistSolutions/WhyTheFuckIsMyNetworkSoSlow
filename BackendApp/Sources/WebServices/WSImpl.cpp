@@ -51,13 +51,20 @@ Collection<BackendApp::WebServices::Device> WSImpl::GetDevices () const
 
     Collection<BackendApp::WebServices::Device> devices = GetDiscoverer_ ()->GetActiveDevices ().Select<BackendApp::WebServices::Device> ([](const Discovery::Device& d) {
         BackendApp::WebServices::Device newDev;
-        newDev.ipAddress                       = d.ipAddress.As<String> ();
+        newDev.ipAddress = d.ipAddress.As<String> ();
+        newDev.ipAddresses.Append (d.ipAddress.As<String> ());
         if (auto o = d.ipAddress.AsAddressFamily (InternetAddress::AddressFamily::V4)) {
             newDev.ipv4 = o->As<String> ();
+            if (not newDev.ipAddresses.Contains (d.ipAddress.As<String> ())) {
+                newDev.ipAddresses.Append (d.ipAddress.As<String> ());
+            }
         }
         if (auto o = d.ipAddress.AsAddressFamily (InternetAddress::AddressFamily::V6)) {
-            newDev.ipv6 = o->As<String> ();
+            if (not newDev.ipAddresses.Contains (d.ipAddress.As<String> ())) {
+                newDev.ipAddresses.Append (d.ipAddress.As<String> ());
+            }
         }
+
         newDev.connected = true;
         newDev.name      = d.name;
         newDev.type      = d.type;

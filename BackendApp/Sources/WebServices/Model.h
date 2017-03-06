@@ -7,13 +7,14 @@
 #include "Stroika/Frameworks/StroikaPreComp.h"
 
 #include "Stroika/Foundation/Characters/String.h"
+#include "Stroika/Foundation/Containers/Sequence.h"
 #include "Stroika/Foundation/DataExchange/ObjectVariantMapper.h"
 #include "Stroika/Foundation/IO/Network/InternetAddress.h"
 #include "Stroika/Foundation/Memory/Optional.h"
 
 /**
-*
-*/
+ *
+ */
 
 namespace WhyTheFuckIsMyNetworkSoSlow {
     namespace BackendApp {
@@ -22,6 +23,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow {
 
                 using namespace Stroika::Foundation;
                 using Characters::String;
+                using Containers::Sequence;
                 using Memory::Optional;
 
                 /**
@@ -31,11 +33,18 @@ namespace WhyTheFuckIsMyNetworkSoSlow {
                     String           ipAddress;
                     Optional<String> ipv4;
                     Optional<String> ipv6;
+                    /**
+                     * Bindings
+                     */
+                    Sequence<String> ipAddresses;
                     String           type;
-                    String           network;
-                    Optional<float>  signalStrength{};
-                    bool             connected{};
-                    bool             important{};
+                    /*
+                     *  in CIDR notation.
+                     */
+                    String          network;
+                    Optional<float> signalStrength{};
+                    bool            connected{};
+                    bool            important{};
 
                     nonvirtual String ToString () const;
 
