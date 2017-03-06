@@ -27,17 +27,12 @@ const DataExchange::ObjectVariantMapper Device::kMapper = []() {
     mapper.AddCommonType<Sequence<String>> ();
     mapper.AddClass<Device> ({
         ObjectVariantMapper::StructFieldInfo{L"name", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, name)},
-#if 0
-        ObjectVariantMapper::StructFieldInfo{L"ipAddress", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, ipAddress)},
-        ObjectVariantMapper::StructFieldInfo{L"ipv4", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, ipv4), ObjectVariantMapper::StructFieldInfo::NullFieldHandling::eOmit},
-        ObjectVariantMapper::StructFieldInfo{L"ipv6", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, ipv6), ObjectVariantMapper::StructFieldInfo::NullFieldHandling::eOmit},
-#endif
-            ObjectVariantMapper::StructFieldInfo{L"ipAddresses", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, ipAddresses)},
-            ObjectVariantMapper::StructFieldInfo{L"type", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, type)},
-            ObjectVariantMapper::StructFieldInfo{L"network", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, network)},
-            ObjectVariantMapper::StructFieldInfo{L"signalStrength", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, signalStrength), ObjectVariantMapper::StructFieldInfo::NullFieldHandling::eOmit},
-            ObjectVariantMapper::StructFieldInfo{L"connected", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, connected)},
-            ObjectVariantMapper::StructFieldInfo{L"important", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, important)},
+        ObjectVariantMapper::StructFieldInfo{L"ipAddresses", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, ipAddresses)},
+        ObjectVariantMapper::StructFieldInfo{L"type", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, type)},
+        ObjectVariantMapper::StructFieldInfo{L"network", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, network)},
+        ObjectVariantMapper::StructFieldInfo{L"signalStrength", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, signalStrength), ObjectVariantMapper::StructFieldInfo::NullFieldHandling::eOmit},
+        ObjectVariantMapper::StructFieldInfo{L"connected", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, connected)},
+        ObjectVariantMapper::StructFieldInfo{L"important", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, important)},
     });
     mapper.AddCommonType<Collection<Device>> ();
     return mapper;

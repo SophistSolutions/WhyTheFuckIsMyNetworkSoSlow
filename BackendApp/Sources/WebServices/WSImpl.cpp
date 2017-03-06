@@ -51,10 +51,8 @@ Collection<BackendApp::WebServices::Device> WSImpl::GetDevices () const
 
     Collection<BackendApp::WebServices::Device> devices = GetDiscoverer_ ()->GetActiveDevices ().Select<BackendApp::WebServices::Device> ([](const Discovery::Device& d) {
         BackendApp::WebServices::Device newDev;
-        newDev.ipAddress = d.ipAddress.As<String> ();
         newDev.ipAddresses.Append (d.ipAddress.As<String> ());
         if (auto o = d.ipAddress.AsAddressFamily (InternetAddress::AddressFamily::V4)) {
-            newDev.ipv4 = o->As<String> ();
             if (not newDev.ipAddresses.Contains (d.ipAddress.As<String> ())) {
                 newDev.ipAddresses.Append (d.ipAddress.As<String> ());
             }
@@ -64,11 +62,10 @@ Collection<BackendApp::WebServices::Device> WSImpl::GetDevices () const
                 newDev.ipAddresses.Append (d.ipAddress.As<String> ());
             }
         }
-
         newDev.connected = true;
         newDev.name      = d.name;
         newDev.type      = d.type;
-        newDev.important = newDev.type == L"Router" or newDev.ipAddress == IO::Network::GetPrimaryInternetAddress ();
+        newDev.important = newDev.type == L"Router" or newDev.ipAddresses.Contains (IO::Network::GetPrimaryInternetAddress ().As<String> ());
         return newDev;
     });
     return devices;

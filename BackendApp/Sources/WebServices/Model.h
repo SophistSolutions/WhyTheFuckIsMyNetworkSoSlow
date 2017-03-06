@@ -29,10 +29,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow {
                 /**
                  */
                 struct Device {
-                    String           name;
-                    String           ipAddress;
-                    Optional<String> ipv4;
-                    Optional<String> ipv6;
+                    String name;
                     /**
                      * Bindings
                      */
