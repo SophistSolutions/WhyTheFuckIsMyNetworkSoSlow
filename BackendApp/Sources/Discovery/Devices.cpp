@@ -144,6 +144,11 @@ private:
 
         String friendlyName = d.fServer; // if all else fails..
 
+        // @todo - Maintain cache with age apx 60 minutes - mapping URL to UPnP::DeviceDescription objects
+
+        /// @todo - Add Search support (once at startup, and then every 10 minutes? - config) - because it maybe some devices dont properly
+        /// broadcast, and only respond to search, plus gives better immediate feedback when we first start up (at least helpful for debugging)
+
         try {
             IO::Network::Transfer::Connection c = IO::Network::Transfer::CreateConnection ();
             c.SetURL (locURL);
@@ -155,7 +160,7 @@ private:
             }
         }
         catch (...) {
-            DbgTrace (L"shit"); /// @todo
+            DbgTrace (L"failed to fetch description: %s", Characters::ToString (current_exception ()).c_str ());
         }
 
         if (locHost.empty ()) {
