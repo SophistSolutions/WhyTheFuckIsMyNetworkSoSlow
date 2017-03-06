@@ -31,15 +31,27 @@ using namespace WhyTheFuckIsMyNetworkSoSlow;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery;
 
+/*
+ ********************************************************************************
+ ******************************* Discovery::Device ******************************
+ ********************************************************************************
+ */
 String Discovery::Device::ToString () const
 {
     StringBuilder sb;
+    sb += L"{";
     sb += L"name: " + Characters::ToString (name) + L", ";
     sb += L"ipAddress: " + Characters::ToString (ipAddress) + L", ";
     sb += L"type: " + Characters::ToString (type) + L", ";
+    sb += L"}";
     return sb.str ();
 }
 
+/*
+ ********************************************************************************
+ ************************** Discovery::DeviceDiscoverer *************************
+ ********************************************************************************
+ */
 class DeviceDiscoverer::Rep_ {
     struct DiscoveryInfo_ {
         IO::Network::InternetAddress fAddr;

@@ -26,6 +26,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow {
             using IO::Network::InternetAddress;
             using Memory::Optional;
 
+            /**
+             *  Discovery::Device is the definition of a device in the discovery module. This is the level of detail
+             *  captured by the discovery services.
+             */
             struct Device {
                 String          name;
                 InternetAddress ipAddress;
@@ -34,7 +38,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow {
                 nonvirtual String ToString () const;
             };
 
-            /*
+            /**
              *  DeviceDiscoverer is internally syncronized - so its methods can be called from any thread.
              */
             class DeviceDiscoverer {
