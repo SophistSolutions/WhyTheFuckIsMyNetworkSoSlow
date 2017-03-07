@@ -17,7 +17,7 @@ import { DataService }        from './data.service';
 	        <div class="row">
 
 	          	<div class="col-md-3 well well-lg text-center unround" id="deviceList">
-	            	<div *ngFor="let device of devices">
+	            	<div *ngFor="let device of devices | orderBy : 'name' ">
 	            		<device-sidebar *ngIf="device.important==true"
 							[device]="device"
 							[class.selected]="device === selectedDevice"
@@ -27,7 +27,7 @@ import { DataService }        from './data.service';
 
 					<hr>
 
-	            	<div *ngFor="let device of devices">
+	            	<div *ngFor="let device of devices | orderBy : 'name' ">
 	            		<device-sidebar *ngIf="device.important==false"
 							[device]="device"
 							[class.selected]="device === selectedDevice"
