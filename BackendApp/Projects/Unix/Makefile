@@ -16,8 +16,6 @@ Includes				+=	-I.
 
 TARGETEXE				=	$(StroikaRoot)Builds/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow-Backend
 
-$(info pwd is [$(shell pwd)])
-$(info $$SrcDir is [${SrcDir}])
 VPATH	=			$(SrcDir)/Sources/ : $(SrcDir)/Sources/WebServices/ : $(SrcDir)/Sources/Discovery/
 
 
