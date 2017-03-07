@@ -8,14 +8,15 @@ import { DataService }        from './data.service';
   selector: 'my-app',
   template: 
 	   `<div class="container-fluid">
-
+<!--
 	        <device-details
 				[selectedDevice]="selectedDevice">
 			</device-details>
+-->
 
 	        <div class="row">
 
-	          	<div class="col-md-3 col-sm-4 well well-lg text-center" id="deviceList">
+	          	<div class="col-md-3 well well-lg text-center unround" id="deviceList">
 	            	<div *ngFor="let device of devices">
 	            		<device-sidebar *ngIf="device.important==true"
 							[device]="device"
@@ -35,7 +36,7 @@ import { DataService }        from './data.service';
 					</div>
 	          	</div>
 	          
-	            <div class="col-md-9 col-sm-8 text-center well well-lg">NETWORK TOPOLOGY</div>
+	            <div class="col-md-9 text-center well well-lg unround" id="networkTopology"></div>
 	          
 	        </div>
 
@@ -49,14 +50,21 @@ import { DataService }        from './data.service';
 
 	    #deviceList {
 	        overflow-y:scroll;
-	        height: 80vh;
+	        height: 93vh;
 	        margin-bottom; 0px;
+	        padding-top: 0px;
+	        background:#acacac;
+	        border-color:#5A5A5A;
+      	}
+
+      	#networkTopology {
+      		height: 93vh;
+      		background:#acacac;
+	        border-color:#5A5A5A;
       	}
 
 	    hr {
 		    display: block;
-		    margin-top: 1em;
-		    margin-bottom: 2em;
 		    margin-left: auto;
 		    margin-right: auto;
 		    border-style: double;

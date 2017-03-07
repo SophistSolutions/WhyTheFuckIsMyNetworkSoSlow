@@ -6,7 +6,7 @@ import { Device }	         from './device';
 @Component ({
 	selector: 'device-sidebar',
   	template: 
-  	   `<div class="panel panel-success signal-strong text-left rounded">
+  	   `<div class="panel panel-success signal-strong text-left rounded" style="border:none;">
 
 	  	   	<div class="panel-heading">
 	  	   		<p class="media-heading text-success overflow-ellipsis">{{device.name}} <span *ngIf="device.important" class="glyphicon glyphicon-ok-sign"></span></p>
@@ -44,6 +44,7 @@ import { Device }	         from './device';
 							<img src="./images/unknown.png" alt="placeholder" class="media-object img-rounded" style="max-width:70px; height: auto; display: inline-block;">
 						</div>
 					</div>
+
 					<div class="media-body text-right">
 						<ul>
 							<li>{{device.type}}</li>
@@ -51,6 +52,18 @@ import { Device }	         from './device';
 							<div *ngIf="device.signalStrength">
 								<li>-{{device.signalStrength}}dB <span class="glyphicon glyphicon-signal"></span></li>
 							</div>
+						</ul>
+					</div>
+
+					<div *ngIf="device==selectedDevice">
+						<ul>
+							<li><span>IP addresses:</span>
+								<ul>
+									<div *ngFor="let ip of device.ipAddresses">
+										<li>{{ip}}</li>
+									</div>
+								</ul>
+							</li>
 						</ul>
 					</div>
 				</div>
@@ -62,6 +75,10 @@ import { Device }	         from './device';
 		.panel {
     		margin: 10px 0px 10px 0px;
     	}
+
+    	.panel-heading {
+	    	border-radius: 15px 15px 0px 0px;
+	    }
 
     	.overflow-ellipsis {
     		margin: 0px 0px 0px 0px;

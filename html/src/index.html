@@ -28,6 +28,11 @@
 
     <style>
 
+      body {
+        padding: 0px 0px 0px 0px;
+        margin: 0px 0px 0px 0px;
+      }
+
       #deviceInformation {
         min-height: 120px;
         height: 20vh;
@@ -42,14 +47,26 @@
       }
 
       .rounded {
-        border-radius: 10px;
+        border-radius: 15px;
+      }
+
+      .unround {
+        border-radius: 0px;
       }
 
     </style>
 
   </head>
 
-  <body>        
+  <body>
+    <nav class="navbar navbar-inverse unround" style="margin-bottom: 0px; height: 7vh;">
+        <div class="container-fluid">
+            <div class="navbar-header" style="float: left; padding: 15px; text-align: center; width: 100%;">
+                <a class="navbar-brand" style="float:none; font-size:200%;letter-spacing: 4px;" href="#">Network Visualizer</a>
+            </div>
+            <div class="navbar-right"><a href="#"><span class="glyphicon glyphicon-menu-hamburger"></span></a></div>
+        </div>
+    </nav>        
     <my-app>Loading AppComponent content here ...</my-app>
   </body>
 
