@@ -1,10 +1,10 @@
 ﻿SHELL=/bin/bash
 
 all:
-	mkdir -p ../IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow
-	rm -f ../IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow/Makefile
-	ln -s `pwd`/Projects/Unix/Makefile ../IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow/Makefile
-	$(MAKE) --directory ../IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow all
+	@mkdir -p ../IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow
+	@rm -f ../IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow/Makefile
+	@ln -s `pwd`/Projects/Unix/Makefile ../IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow/Makefile
+	@$(MAKE) --directory ../IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow -s all
 
 clean:
 	#$(MAKE) --directory ../IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow clean
