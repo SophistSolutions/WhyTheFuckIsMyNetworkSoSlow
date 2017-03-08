@@ -47,8 +47,8 @@ import { Device }	         from './device';
 
 					<div class="media-body text-right">
 						<ul>
-							<li>{{device.type}}</li>
 							<li>{{device.ipAddresses[0]}}</li>
+							<li>{{device.type}}</li>
 							<div *ngIf="device.signalStrength">
 								<li>-{{device.signalStrength}}dB <span class="glyphicon glyphicon-signal"></span></li>
 							</div>

@@ -1,7 +1,7 @@
 import { NgModule }        from '@angular/core';
 import { BrowserModule }   from '@angular/platform-browser';
 import { HttpModule }      from '@angular/http';
-import { Ng2OrderModule } from 'ng2-order-pipe';
+import { Ng2OrderModule }  from 'ng2-order-pipe';
 
 import { AppComponent }           from './app.component';
 import { DeviceSidebarComponent } from './device-sidebar.component';
