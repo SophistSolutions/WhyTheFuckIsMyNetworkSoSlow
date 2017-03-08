@@ -15,41 +15,41 @@ import { Device }	        		 from './device';
 					<div class="media-left">
 						<div *ngIf="device.type">
 						    <div *ngIf="device.type=='Phone'">
-						    	<img src="./images/phone.png" alt="phone-image" class="media-object img-rounded" style="max-width:70px; height: auto; display: inline-block;">
+						    	<img src="./images/phone.png" alt="phone-image" class="media-object img-rounded" style="max-width:50px; height: auto; display: inline-block;">
 						    </div>
 						    <div *ngIf="device.type=='WAP'">
-						    	<img src="./images/WAP.png" alt="WAP-image" class="media-object img-rounded" style="max-width:70px; height: auto; display: inline-block;">
+						    	<img src="./images/WAP.png" alt="WAP-image" class="media-object img-rounded" style="max-width:50px; height: auto; display: inline-block;">
 						    </div>
 						    <div *ngIf="device.type=='Laptop'">
-						    	<img src="./images/laptop.png" alt="laptop-image" class="media-object img-rounded" style="max-width:70px; height: auto; display: inline-block;">
+						    	<img src="./images/laptop.png" alt="laptop-image" class="media-object img-rounded" style="max-width:50px; height: auto; display: inline-block;">
 						    </div>
 						    <div *ngIf="device.type=='Router'">
-						    	<img src="./images/router.png" alt="router-image" class="media-object img-rounded" style="max-width:70px; height: auto; display: inline-block;">
+						    	<img src="./images/router.png" alt="router-image" class="media-object img-rounded" style="max-width:50px; height: auto; display: inline-block;">
 						    </div>
 						    <div *ngIf="device.type=='Chromecast'">
-						    	<img src="./images/chromecast.png" alt="chromecast-image" class="media-object img-rounded" style="max-width:70px; height: auto; display: inline-block;">
+						    	<img src="./images/chromecast.png" alt="chromecast-image" class="media-object img-rounded" style="max-width:50px; height: auto; display: inline-block;">
 						    </div>
 						    <div *ngIf="device.type=='Printer'">
-						    	<img src="./images/printer.png" alt="printer-image" class="media-object img-rounded" style="max-width:70px; height: auto; display: inline-block;">
+						    	<img src="./images/printer.png" alt="printer-image" class="media-object img-rounded" style="max-width:50px; height: auto; display: inline-block;">
 						    </div>
 						    <div *ngIf="device.type=='Roku'">
-						    	<img src="./images/chromecast.png" alt="roku-image" class="media-object img-rounded" style="max-width:70px; height: auto; display: inline-block;">
+						    	<img src="./images/chromecast.png" alt="roku-image" class="media-object img-rounded" style="max-width:50px; height: auto; display: inline-block;">
 						    </div>
 						    <div *ngIf="device.type=='Tablet'">
-						    	<img src="./images/laptop.png" alt="tablet-image" class="media-object img-rounded" style="max-width:70px; height: auto; display: inline-block;">
+						    	<img src="./images/laptop.png" alt="tablet-image" class="media-object img-rounded" style="max-width:50px; height: auto; display: inline-block;">
 						    </div>
 						</div>
 						<div *ngIf="!device.type">
-							<img src="./images/unknown.png" alt="placeholder" class="media-object img-rounded" style="max-width:70px; height: auto; display: inline-block;">
+							<img src="./images/unknown.png" alt="placeholder" class="media-object img-rounded" style="max-width:50px; height: auto; display: inline-block;">
 						</div>
 					</div>
 
 					<div class="media-body text-right">
 						<ul>
-							<li>{{device.ipAddresses[0]}}</li>
-							<li>{{device.type}}</li>
+							<li style="font-style: italic;">{{device.ipAddresses[0]}}</li>
+							<li style="font-style: italic;">{{device.type}}</li>
 							<div *ngIf="device.signalStrength">
-								<li>-{{device.signalStrength}}dB <span class="glyphicon glyphicon-signal"></span></li>
+								<li style="font-style: italic;">-{{device.signalStrength}}dB <span class="glyphicon glyphicon-signal"></span></li>
 							</div>
 						</ul>
 					</div>
@@ -59,10 +59,10 @@ import { Device }	        		 from './device';
 
 					<br/>
 					<ul style="margin:0px 0px 0px 0px;padding:0px 0px 0px 0px;">
-						<li><span>IP addresses:</span>
+						<li><p style="font-weight:bolder;">IP Addresses</p>
 							<ul>
 								<div *ngFor="let ip of device.ipAddresses">
-									<li>{{ip}}</li>
+									<li style="font-style: italic;">{{ip}}</li>
 								</div>
 							</ul>
 						</li>
