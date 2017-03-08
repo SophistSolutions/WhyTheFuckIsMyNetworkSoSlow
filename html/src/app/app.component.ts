@@ -92,7 +92,13 @@ export class AppComponent implements OnInit {
 	}
 	
 	onSelect(device: Device): void {
-    	this.selectedDeviceID = device.ipAddresses[0];
+		if (this.selectedDeviceID == device.ipAddresses[0]) {
+			this.selectedDeviceID = null;
+		}
+		else {
+    		this.selectedDeviceID = device.ipAddresses[0];
+		}
+		
   	}
 }
 
