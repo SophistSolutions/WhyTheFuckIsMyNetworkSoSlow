@@ -106,12 +106,12 @@ import { Device }	         from './device';
     	.signal-dead {
     		background-color: #b3b3b3;
     	}
-    `],
-    providers: [DataService]
+    `]
 })
 
 export class DeviceSidebarComponent {
 
 	@Input() device: Device;
+	@Input() selectedDevice: Device;
 
 }
