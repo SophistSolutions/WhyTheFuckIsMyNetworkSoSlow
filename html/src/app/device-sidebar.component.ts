@@ -1,7 +1,6 @@
 import { Component, Input, OnInit }  from '@angular/core';
 
-import { DataService } 		 from './data.service';
-import { Device }	         from './device';
+import { Device }	        		 from './device';
 
 @Component ({
 	selector: 'device-sidebar',

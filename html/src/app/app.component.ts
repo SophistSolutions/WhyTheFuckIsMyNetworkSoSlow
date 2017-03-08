@@ -8,11 +8,6 @@ import { DataService }        from './data.service';
   selector: 'my-app',
   template: 
 	   `<div class="container-fluid">
-<!--
-	        <device-details
-				[selectedDevice]="selectedDevice">
-			</device-details>
--->
 
 	        <div class="row">
 
@@ -82,7 +77,7 @@ export class AppComponent implements OnInit {
 			(data) => this.devices = data
 		);
 
-		/* Refreshes devices every 5 seconds */
+		// Refreshes devices every 5 seconds
 		setInterval(() => {
 			this.dataService.fetchData().subscribe(
 				(data) => this.devices = data
@@ -92,13 +87,14 @@ export class AppComponent implements OnInit {
 	}
 	
 	onSelect(device: Device): void {
+		// If already selected changes the selectedDeviceID to null to deselect
 		if (this.selectedDeviceID == device.ipAddresses[0]) {
 			this.selectedDeviceID = null;
 		}
 		else {
     		this.selectedDeviceID = device.ipAddresses[0];
 		}
-		
+
   	}
 }
 
