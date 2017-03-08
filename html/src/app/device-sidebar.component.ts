@@ -54,18 +54,21 @@ import { Device }	         from './device';
 							</div>
 						</ul>
 					</div>
+				</div>
 
-					<div *ngIf="device==selectedDevice">
-						<ul>
-							<li><span>IP addresses:</span>
-								<ul>
-									<div *ngFor="let ip of device.ipAddresses">
-										<li>{{ip}}</li>
-									</div>
-								</ul>
-							</li>
-						</ul>
-					</div>
+				<div *ngIf="device.ipAddresses[0]==selectedDeviceID">
+
+					<br/>
+					<ul style="margin:0px 0px 0px 0px;padding:0px 0px 0px 0px;">
+						<li><span>IP addresses:</span>
+							<ul>
+								<div *ngFor="let ip of device.ipAddresses">
+									<li>{{ip}}</li>
+								</div>
+							</ul>
+						</li>
+					</ul>
+
 				</div>
 			</div>
 
@@ -112,6 +115,6 @@ import { Device }	         from './device';
 export class DeviceSidebarComponent {
 
 	@Input() device: Device;
-	@Input() selectedDevice: Device;
+	@Input() selectedDeviceID: string;
 
 }

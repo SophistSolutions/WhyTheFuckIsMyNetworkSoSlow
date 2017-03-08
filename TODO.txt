@@ -1,4 +1,4 @@
-﻿ > building on Linux (BLOW) doesn't work
+ > building on Linux (BLOW) doesn't work
  > even make clobber works poorly
  
  >>> In discovery - look at location, and then fetch that location (at least sometimes) in xml
@@ -7,3 +7,6 @@
 		and that maybe info about the device - in that case it was - with <friendlyname> which we can diospaly and <deviceType>
 urn:schemas-upnp-org:device:InternetGatewayDevice:1
 </deviceType>
+
+
+> Need to make a UUID property for devices for fronted to use to identify selected or not

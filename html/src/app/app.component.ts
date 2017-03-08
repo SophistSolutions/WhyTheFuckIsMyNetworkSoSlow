@@ -19,9 +19,8 @@ import { DataService }        from './data.service';
 	          	<div class="col-md-3 well well-lg text-center unround" id="deviceList">
 	            	<div *ngFor="let device of devices | orderBy : 'name' ">
 	            		<device-sidebar *ngIf="device.important==true"
-							[class.selected]="device === selectedDevice"
 							[device]="device"
-							[selectedDevice]="selectedDevice"
+							[selectedDeviceID]="selectedDeviceID"
 							(click)="onSelect(device)">
 						</device-sidebar>
 					</div>
@@ -30,9 +29,8 @@ import { DataService }        from './data.service';
 
 	            	<div *ngFor="let device of devices | orderBy : 'name' ">
 	            		<device-sidebar *ngIf="device.important==false"
-							[class.selected]="device === selectedDevice"
 							[device]="device"
-							[selectedDevice]="selectedDevice"
+							[selectedDeviceID]="selectedDeviceID"
 							(click)="onSelect(device)">
 						</device-sidebar>
 					</div>
@@ -45,10 +43,6 @@ import { DataService }        from './data.service';
 	    </div>`,
 	    
 	styles: [`
-	    .selected {
-		    background-color: #CFD8DC !important;
-		    color: white;
-	    }
 
 	    #deviceList {
 	        overflow-y:scroll;
@@ -78,7 +72,7 @@ import { DataService }        from './data.service';
 
 export class AppComponent implements OnInit {
 	devices: Device[];
-	selectedDevice: Device;
+	selectedDeviceID: string;
 
 	constructor(private dataService: DataService) { }
 	
@@ -98,7 +92,7 @@ export class AppComponent implements OnInit {
 	}
 	
 	onSelect(device: Device): void {
-    	this.selectedDevice = device;
+    	this.selectedDeviceID = device.ipAddresses[0];
   	}
 }
 
