@@ -59,7 +59,7 @@ import { Device }	        		 from './device';
 
 					<br/>
 					<ul style="margin:0px 0px 0px 0px;padding:0px 0px 0px 0px;">
-						<li><p style="font-weight:bolder;">IP Addresses</p>
+						<li><p style="font-weight:500;">IP Addresses</p>
 							<ul>
 								<div *ngFor="let ip of device.ipAddresses">
 									<li style="font-style: italic;">{{ip}}</li>
@@ -80,6 +80,8 @@ import { Device }	        		 from './device';
 
     	.panel-heading {
 	    	border-radius: 15px 15px 0px 0px;
+	    	padding: 5px 0px 5px 17px;
+	    	font-weight:500;
 	    }
 
     	.overflow-ellipsis {

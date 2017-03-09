@@ -61,10 +61,19 @@
   <body>
     <nav class="navbar navbar-inverse unround" style="margin-bottom: 0px; height: 7vh;">
         <div class="container-fluid">
-            <div class="navbar-header" style="float: left; padding: 15px; text-align: center; width: 100%;">
-                <a class="navbar-brand" style="float:none; font-size:200%;letter-spacing: 4px;" href="#">Network Visualizer</a>
+            <div class="navbar-header" style="float: left;">
+                <div class="navbar-brand" style="font-size:200%;letter-spacing: 4px; padding-left:1em;">Network Visualizer</div>
             </div>
-            <div class="navbar-right"><a href="#"><span class="glyphicon glyphicon-menu-hamburger"></span></a></div>
+            <div class="">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="#" class="dropdown-toggle" data-toggle="dropdown"><span class="glyphicon glyphicon-menu-hamburger" style="font-size:1.2em;"></span></a></li>
+                    <ul class="dropdown-menu">
+                        <li><a href="#">Normal</a></li>
+                        <li class="active"><a href="#">Active</a></li>
+                        <li><a href="#">Normal</a></li>
+                    </ul>
+                </ul>
+            </div>
         </div>
     </nav>        
     <my-app>Loading AppComponent content here ...</my-app>
