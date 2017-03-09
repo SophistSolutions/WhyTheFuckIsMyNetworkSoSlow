@@ -94,7 +94,7 @@ export class AppComponent implements OnInit {
 		else {
     		this.selectedDeviceID = device.ipAddresses[0];
 		}
-
+		
   	}
 }
 
