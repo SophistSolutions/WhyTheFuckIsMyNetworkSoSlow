@@ -12,17 +12,17 @@ import { DataService }        from './data.service';
 	        <div class="row">
 
 	          	<div class="col-md-3 well well-lg text-center unround" id="deviceList">
-	            	<div *ngFor="let device of devices | orderBy : 'name' ">
+	            	<!-- <div *ngFor="let device of devices | orderBy : 'name' ">
 	            		<device-sidebar *ngIf="device.important==true"
 							[device]="device"
 							[selectedDeviceID]="selectedDeviceID"
 							(click)="onSelect(device)">
 						</device-sidebar>
-					</div>
+					</div> -->
 
 					<hr>
 
-	            	<div *ngFor="let device of devices | orderBy : 'name' ">
+	            	<div *ngFor="let device of (devices | sort)">
 	            		<device-sidebar *ngIf="device.important==false"
 							[device]="device"
 							[selectedDeviceID]="selectedDeviceID"
