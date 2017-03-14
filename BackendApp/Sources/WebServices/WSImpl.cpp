@@ -60,7 +60,7 @@ Collection<BackendApp::WebServices::Device> WSImpl::GetDevices () const
             if (not newDev.ipAddresses.Contains (addrStr)) {
                 if (auto o = a.AsAddressFamily (InternetAddress::AddressFamily::V4)) {
                     if (newDev.ipAddresses.Contains (o->As<String> ())) {
-                        newDev.ipAddresses.Remove (newDev.ipAddresses.IndexOf (o->As<String> ()));
+                        newDev.ipAddresses.Remove (*newDev.ipAddresses.IndexOf (o->As<String> ()));
                     }
                     newDev.ipAddresses.Prepend (o->As<String> ());
                 }
