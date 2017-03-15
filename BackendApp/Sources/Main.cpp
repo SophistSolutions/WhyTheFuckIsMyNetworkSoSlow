@@ -81,6 +81,10 @@ namespace {
 int main (int argc, const char* argv[])
 {
     Execution::SignalHandlerRegistry::SafeSignalsManager safeSignals;
+#if qPlatform_POSIX
+	Execution::SignalHandlerRegistry::Get ().SetSignalHandlers (SIGPIPE, Execution::SignalHandlerRegistry::kIGNORED);
+#endif
+
     try {
         ConnectionManager cm{
             SocketAddress (Network::V4::kAddrAny, 8080),
