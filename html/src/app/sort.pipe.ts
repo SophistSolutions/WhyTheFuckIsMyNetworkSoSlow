@@ -46,6 +46,23 @@ export class SortPipe implements PipeTransform {
 			});
 		}
 
+		if (sorter == 'type') {
+
+			return devices.sort( function(a:Device,b:Device) {
+				var typeA:string = a.type.toUpperCase();
+				var typeB:string = b.type.toUpperCase();
+
+				if (typeA < typeB) {
+					return -1;
+				}
+				if (typeA > typeB) {
+					return 1;
+				}
+
+				return 0;
+			});
+		}
+
 	}
 
 }

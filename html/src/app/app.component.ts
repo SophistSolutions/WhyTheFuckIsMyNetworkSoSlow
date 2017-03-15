@@ -12,7 +12,7 @@ import { DataService }        from './data.service';
 	        <div class="row">
 
 	          	<div class="col-md-3 well well-lg text-center unround" id="deviceList">
-	            	<div *ngFor="let device of (devices | sort: 'ipAddress')">
+	            	<div *ngFor="let device of (devices | sort: 'name')">
 	            		<device-sidebar *ngIf="device.important==true"
 							[device]="device"
 							[selectedDeviceID]="selectedDeviceID"
