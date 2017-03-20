@@ -12,7 +12,7 @@ import { DataService }        from './data.service';
 	        <div class="row">
 
 	          	<div class="col-md-3 well well-lg text-center unround" id="deviceList">
-	            	<div *ngFor="let device of (devices | sort: 'name')">
+	            	<div *ngFor="let device of (importantDevices | sort: 'name')">
 	            		<device-sidebar *ngIf="device.important==true"
 							[device]="device"
 							[selectedDeviceID]="selectedDeviceID"
@@ -22,7 +22,7 @@ import { DataService }        from './data.service';
 
 					<hr>
 
-	            	<div *ngFor="let device of (devices | sort: 'ipAddress')">
+	            	<div *ngFor="let device of (unimportantDevices | sort: 'name')">
 	            		<device-sidebar *ngIf="device.important==false"
 							[device]="device"
 							[selectedDeviceID]="selectedDeviceID"
@@ -66,7 +66,8 @@ import { DataService }        from './data.service';
 })
 
 export class AppComponent implements OnInit {
-	devices: Device[];
+	importantDevices: Device[];
+	unimportantDevices: Device[];
 	selectedDeviceID: string;
 
 	constructor(private dataService: DataService) { }
@@ -74,25 +75,33 @@ export class AppComponent implements OnInit {
 	ngOnInit() {
 
 		this.dataService.fetchData().subscribe(
-			(data) => this.devices = data
+			(data) => this.importantDevices = data
+		);
+		this.dataService.fetchData().subscribe(
+			(data) => this.unimportantDevices = data
 		);
 
 		// Refreshes devices every 5 seconds
 		setInterval(() => {
 			this.dataService.fetchData().subscribe(
-				(data) => this.devices = data
+				(data) => this.importantDevices = data
 			);
-		}, 1000 * 5);
+		}, 1000 * 50);
+		setInterval(() => {
+			this.dataService.fetchData().subscribe(
+				(data) => this.unimportantDevices = data
+			);
+		}, 1000 * 50);
 
 	}
 	
 	onSelect(device: Device): void {
 		// If already selected changes the selectedDeviceID to null to deselect
-		if (this.selectedDeviceID == device.ipAddresses[0]) {
+		if (this.selectedDeviceID === device.UUID) {
 			this.selectedDeviceID = null;
 		}
 		else {
-    		this.selectedDeviceID = device.ipAddresses[0];
+    		this.selectedDeviceID = device.UUID;
 		}
 		
   	}

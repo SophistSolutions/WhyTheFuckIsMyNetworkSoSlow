@@ -6,7 +6,8 @@
 		  "type": "Phone",
 		  "signalStrength": 67,
 		  "connected": true,
-		  "important": true
+		  "important": true,
+		  "UUID": "51908570922"
 	},
 	{
 		  "name": "WAP - Main",
@@ -14,7 +15,8 @@
 		  "type": "WAP",
 		  "signalStrength": 34,
 		  "connected": true,
-		  "important": false
+		  "important": false,
+		  "UUID": "51901570923"
 	},
 	{
 		  "name": "Robert's Mac",
@@ -23,7 +25,8 @@
 		  "type":"test",
 		  "signalStrength": 0,
 		  "connected": false,
-		  "important": false
+		  "important": false,
+		  "UUID": "516608570923"
 	},
 	{
 		  "name": "House Router",
@@ -32,7 +35,8 @@
 		  "type": "Router",
 		  "signalStrength": 36,
 		  "connected": true,
-		  "important": true
+		  "important": true,
+		  "UUID": "519085780923"
 	},
 	{
 		  "name": "Chromecast",
@@ -40,7 +44,8 @@
 		  "type": "Chromecast",
 		  "signalStrength": 137,
 		  "connected": true,
-		  "important": true
+		  "important": true,
+		  "UUID": "519082570923"
 	},
 	{
 		  "name": "Printer",
@@ -49,7 +54,8 @@
 		  "type": "Printer",
 		  "signalStrength": 42,
 		  "connected": true,
-		  "important": false
+		  "important": false,
+		  "UUID": "5131908570923"
 	},
 	{
 		  "name": "Lewis' Laptop",
@@ -57,7 +63,8 @@
 		  "type": "Laptop",
 		  "signalStrength": 42,
 		  "connected": true,
-		  "important": false
+		  "important": false,
+		  "UUID": "5190678570923"
 	},
 	{
 		  "name": "Roku",
@@ -65,7 +72,8 @@
 		  "type": "Roku",
 		  "signalStrength": 123,
 		  "connected": true,
-		  "important": false
+		  "important": false,
+		  "UUID": "5190859870923"
 	},
 	{
 		  "name": "Tablet",
@@ -74,7 +82,8 @@
 		  "type": "Tablet",
 		  "signalStrength": 12,
 		  "connected": true,
-		  "important": false
+		  "important": false,
+		  "UUID": "5190857090923"
 	}
 
 ]

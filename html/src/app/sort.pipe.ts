@@ -8,61 +8,76 @@ import { Device }			   from './device'
 
 export class SortPipe implements PipeTransform {
 
-	transform( devices: Device[], sorter: string ) {
+	transform( devices: Device[], sortBy: string ):any {
 
-		// For when if Devices has not yet been populated
+		// For when if Devices has not yet been populate
 		if (devices == null) return null;
-		
-		if (sorter == 'name') {
-			return devices.sort( function(a:Device,b:Device) {
-				var nameA:string = a.name.toUpperCase();
-				var nameB:string = b.name.toUpperCase();
 
-				if (nameA < nameB) {
-					return -1;
-				}
-				if (nameA > nameB) {
-					return 1;
-				}
+		switch (sortBy) {
 
-				return 0;
-			});
+			default:
+				devices.sort( function(a:Device,b:Device) {
+		 		var addressA:string = a.ipAddresses[0].toUpperCase();
+		 		var addressB:string = b.ipAddresses[0].toUpperCase();
+
+		 		if (addressA < addressB) {
+		 			return -1;
+		 		}
+		 		if (addressA > addressB) {
+		 			return 1;
+		 		}
+		 		return 0;
+		 		});
+		 		break;
+
+		 	case 'ipAddress':
+		 		devices.sort( function(a:Device,b:Device) {
+		 		var addressA:string = a.ipAddresses[0].toUpperCase();
+		 		var addressB:string = b.ipAddresses[0].toUpperCase();
+
+		 		if (addressA < addressB) {
+		 			return -1;
+		 		}
+		 		if (addressA > addressB) {
+		 			return 1;
+		 		}
+		 		return 0;
+		 		});
+		 		break;
+
+		 	case 'name':
+		 		devices.sort( function(a:Device,b:Device) {
+		 		var nameA:string = a.name.toUpperCase();
+		 		var nameB:string = b.name.toUpperCase();
+
+		 		if (nameA < nameB) {
+		 			return -1;
+		 		}
+		 		if (nameA > nameB) {
+		 			return 1;
+		 		}
+		 		return 0;
+		 		});
+		 		break;
+
+		 	case 'type':
+		 		devices.sort( function(a:Device,b:Device) {
+		 		var typeA:string = a.type.toUpperCase();
+		 		var typeB:string = b.type.toUpperCase();
+
+		 		if (typeA < typeB) {
+		 			return -1;
+		 		}
+		 		if (typeA > typeB) {
+		 			return 1;
+		 		}
+		 		return 0;
+		 		});
+		 		break;
+
 		}
 
-		if (sorter == 'ipAddress') {
-
-			return devices.sort( function(a:Device,b:Device) {
-				var addressA:string = a.ipAddresses[0].toUpperCase();
-				var addressB:string = b.ipAddresses[0].toUpperCase();
-
-				if (addressA < addressB) {
-					return -1;
-				}
-				if (addressA > addressB) {
-					return 1;
-				}
-
-				return 0;
-			});
-		}
-
-		if (sorter == 'type') {
-
-			return devices.sort( function(a:Device,b:Device) {
-				var typeA:string = a.type.toUpperCase();
-				var typeB:string = b.type.toUpperCase();
-
-				if (typeA < typeB) {
-					return -1;
-				}
-				if (typeA > typeB) {
-					return 1;
-				}
-
-				return 0;
-			});
-		}
+		return devices;
 
 	}
-
 }

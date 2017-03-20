@@ -29,7 +29,6 @@
     "core-js": "^2.4.1",
     "gulp": "^3.9.1",
     "gulp-cli": "^1.2.2",
-    "ng2-order-pipe": "^0.1.2",
     "rxjs": "^5.0.1",
     "systemjs": "^0.19.40",
     "zone.js": "^0.7.7"
@@ -40,7 +39,6 @@
     "gulp": "^3.9.1",
     "gulp-cli": "^1.2.2",
     "gulp-typescript": "^3.1.5",
-    "ng2-order-pipe": "^0.1.2",
     "tsify": "^3.0.1",
     "typescript": "^2.2.1",
     "vinyl-source-stream": "^1.1.0",
