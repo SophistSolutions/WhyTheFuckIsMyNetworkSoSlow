@@ -52,8 +52,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow {
              *  captured by the discovery services.
              */
             struct Device {
-                String               name;
-                Set<InternetAddress> ipAddresses;
+				String               name;
+				Set<InternetAddress> ipAddresses;
                 Optional<DeviceType> type;
                 bool                 fThisDevice{};
 
