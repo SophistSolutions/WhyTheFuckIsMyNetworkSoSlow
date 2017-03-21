@@ -55,7 +55,7 @@ import { Device }	        		 from './device';
 					</div>
 				</div>
 
-				<div *ngIf="device.UUID==selectedDeviceID">
+				<div *ngIf="device.persistentID==selectedDeviceID">
 
 					<br/>
 					<ul style="margin:0px 0px 0px 0px;padding:0px 0px 0px 0px;">

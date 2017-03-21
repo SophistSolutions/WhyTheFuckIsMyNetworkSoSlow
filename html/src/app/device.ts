@@ -6,5 +6,5 @@ export class Device {
   network: string;
   signalStrength: number;
   connected: boolean;
-  UUID: string;
+  persistentID: string;
 }

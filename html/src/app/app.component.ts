@@ -97,11 +97,11 @@ export class AppComponent implements OnInit {
 	
 	onSelect(device: Device): void {
 		// If already selected changes the selectedDeviceID to null to deselect
-		if (this.selectedDeviceID === device.UUID) {
+		if (this.selectedDeviceID === device.persistentID) {
 			this.selectedDeviceID = null;
 		}
 		else {
-    		this.selectedDeviceID = device.UUID;
+    		this.selectedDeviceID = device.persistentID;
 		}
 		
   	}

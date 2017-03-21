@@ -47,7 +47,7 @@ const DataExchange::ObjectVariantMapper Device::kMapper = []() {
     mapper.AddCommonType<Sequence<String>> ();
     DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
     mapper.AddClass<Device> ({
-        ObjectVariantMapper::StructFieldInfo{L"persistentDeviceID", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, persistentDeviceID)},
+        ObjectVariantMapper::StructFieldInfo{L"persistentID", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, persistentID)},
         ObjectVariantMapper::StructFieldInfo{L"name", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, name)},
         ObjectVariantMapper::StructFieldInfo{L"ipAddresses", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, ipAddresses)},
         ObjectVariantMapper::StructFieldInfo{L"type", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, type)},

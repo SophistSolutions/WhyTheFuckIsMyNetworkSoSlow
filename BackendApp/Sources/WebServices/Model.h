@@ -30,7 +30,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow {
                 struct Device {
                     /**
                      */
-                    String persistentDeviceID;
+                    String persistentID;
 
                     String name;
                     /**

@@ -97,7 +97,7 @@ Collection<BackendApp::WebServices::Device> WSImpl::GetDevices () const
         });
 
         newDev.connected          = true;
-        newDev.persistentDeviceID = LookupPersistentDeviceID_ (d);
+        newDev.persistentID = LookupPersistentDeviceID_ (d);
         newDev.name               = d.name;
         newDev.type               = d.type;
         newDev.important          = newDev.type == Device::DeviceType::eRouter or d.fThisDevice;
