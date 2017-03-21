@@ -46,10 +46,10 @@ const DataExchange::ObjectVariantMapper Device::kMapper = []() {
     mapper.AddCommonType<Optional<float>> ();
     mapper.AddCommonType<Sequence<String>> ();
     DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
-    mapper.AddClass<Device> ({ 
-		ObjectVariantMapper::StructFieldInfo{ L"persistentDeviceID", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, persistentDeviceID) },
-		ObjectVariantMapper::StructFieldInfo{ L"name", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, name) },
-		ObjectVariantMapper::StructFieldInfo{L"ipAddresses", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, ipAddresses)},
+    mapper.AddClass<Device> ({
+        ObjectVariantMapper::StructFieldInfo{L"persistentDeviceID", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, persistentDeviceID)},
+        ObjectVariantMapper::StructFieldInfo{L"name", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, name)},
+        ObjectVariantMapper::StructFieldInfo{L"ipAddresses", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, ipAddresses)},
         ObjectVariantMapper::StructFieldInfo{L"type", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, type)},
         ObjectVariantMapper::StructFieldInfo{L"network", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, network)},
         ObjectVariantMapper::StructFieldInfo{L"signalStrength", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, signalStrength), ObjectVariantMapper::StructFieldInfo::NullFieldHandling::eOmit},

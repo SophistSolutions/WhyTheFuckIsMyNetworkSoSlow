@@ -6,8 +6,8 @@
 #include "Stroika/Foundation/Characters/StringBuilder.h"
 #include "Stroika/Foundation/Characters/ToString.h"
 #include "Stroika/Foundation/Containers/Set.h"
-#include "Stroika/Foundation/Cryptography/Format.h"
 #include "Stroika/Foundation/Cryptography/Digest/Algorithm/MD5.h"
+#include "Stroika/Foundation/Cryptography/Format.h"
 #include "Stroika/Foundation/Execution/Synchronized.h"
 #include "Stroika/Foundation/IO/Network/Interface.h"
 #include "Stroika/Foundation/IO/Network/LinkMonitor.h"
@@ -51,20 +51,20 @@ namespace {
 }
 
 namespace {
-	//tmphack
-	String	LookupPersistentDeviceID_ (const Discovery::Device& d)
-	{
-		using IO::Network::InternetAddress;
-		SortedSet<InternetAddress> x{ d.ipAddresses };
-		StringBuilder sb;
-		if (not x.empty ()) {
-			sb += x.Nth (0).As<String> ();
-		}
-		sb += d.name;
-		using namespace Cryptography::Digest;
-		string tmp{ sb.str ().AsUTF8 () };
-		return Cryptography::Format<String> (Digester<Algorithm::MD5>::ComputeDigest (Memory::BLOB::Raw (tmp.c_str (), tmp.length ())));
-	}
+    //tmphack
+    String LookupPersistentDeviceID_ (const Discovery::Device& d)
+    {
+        using IO::Network::InternetAddress;
+        SortedSet<InternetAddress> x{d.ipAddresses};
+        StringBuilder              sb;
+        if (not x.empty ()) {
+            sb += x.Nth (0).As<String> ();
+        }
+        sb += d.name;
+        using namespace Cryptography::Digest;
+        string tmp{sb.str ().AsUTF8 ()};
+        return Cryptography::Format<String> (Digester<Algorithm::MD5>::ComputeDigest (Memory::BLOB::Raw (tmp.c_str (), tmp.length ())));
+    }
 }
 
 Collection<BackendApp::WebServices::Device> WSImpl::GetDevices () const
@@ -96,11 +96,11 @@ Collection<BackendApp::WebServices::Device> WSImpl::GetDevices () const
             }
         });
 
-        newDev.connected = true;
-		newDev.persistentDeviceID = LookupPersistentDeviceID_ (d);
-        newDev.name      = d.name;
-        newDev.type      = d.type;
-        newDev.important = newDev.type == Device::DeviceType::eRouter or d.fThisDevice;
+        newDev.connected          = true;
+        newDev.persistentDeviceID = LookupPersistentDeviceID_ (d);
+        newDev.name               = d.name;
+        newDev.type               = d.type;
+        newDev.important          = newDev.type == Device::DeviceType::eRouter or d.fThisDevice;
         return newDev;
     });
     return devices;

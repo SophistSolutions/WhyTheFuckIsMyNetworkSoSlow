@@ -82,7 +82,7 @@ int main (int argc, const char* argv[])
 {
     Execution::SignalHandlerRegistry::SafeSignalsManager safeSignals;
 #if qPlatform_POSIX
-	Execution::SignalHandlerRegistry::Get ().SetSignalHandlers (SIGPIPE, Execution::SignalHandlerRegistry::kIGNORED);
+    Execution::SignalHandlerRegistry::Get ().SetSignalHandlers (SIGPIPE, Execution::SignalHandlerRegistry::kIGNORED);
 #endif
 
     try {

@@ -28,12 +28,12 @@ namespace WhyTheFuckIsMyNetworkSoSlow {
                 /**
                  */
                 struct Device {
-					/**
-					 */
-					String persistentDeviceID;
+                    /**
+                     */
+                    String persistentDeviceID;
 
-					String name;
-					/**
+                    String name;
+                    /**
                      * Bindings
                      */
                     Sequence<String> ipAddresses;
