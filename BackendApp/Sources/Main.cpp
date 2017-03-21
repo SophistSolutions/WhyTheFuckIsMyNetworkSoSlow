@@ -55,7 +55,6 @@ namespace {
     {
         WSImpl wsimpl;
         response->write (DataExchange::Variant::JSON::Writer ().WriteAsBLOB (Device::kMapper.FromObject (wsimpl.GetDevices ())));
-        //      response->writeln (L"<html><body><p>getdevices</p></body></html>");
         response->SetContentType (DataExchange::PredefinedInternetMediaType::JSON_CT ());
     }
     // Can declare arguments as Message* message
