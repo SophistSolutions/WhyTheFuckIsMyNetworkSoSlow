@@ -3,7 +3,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { Device }			   from './device'
 
 @Pipe({
-	name: 'sort'
+	name: 'sortBy'
 })
 
 export class SortPipe implements PipeTransform {

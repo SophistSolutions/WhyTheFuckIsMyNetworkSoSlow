@@ -1,4 +1,4 @@
->> add modules so i can add the new page
+>> add modules and routing so i can add the new page
 
 >> make my own icons for devices
 
