@@ -4,9 +4,9 @@
         "src/app/app.component.ts",
         "src/app/app.module.ts",
         "src/app/data.service.ts",
-        "src/app/device-details.component.ts",
         "src/app/device-sidebar.component.ts",
-        "src/app/device.ts"
+        "src/app/device.ts",
+        "src/app/sort.pipe.ts"
     ],
     "compilerOptions": {
         "noImplicitAny": true,

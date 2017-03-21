@@ -4,7 +4,6 @@ import { HttpModule }      from '@angular/http';
 
 import { AppComponent }           from './app.component';
 import { DeviceSidebarComponent } from './device-sidebar.component';
-import { DeviceDetailsComponent } from './device-details.component';
 import { SortPipe }				  from './sort.pipe';
 
 @NgModule({
@@ -12,7 +11,6 @@ import { SortPipe }				  from './sort.pipe';
   				  HttpModule ],
   declarations: [ AppComponent,
   				  DeviceSidebarComponent,
-  				  DeviceDetailsComponent,
   				  SortPipe ],
   bootstrap:    [ AppComponent ]
 })
