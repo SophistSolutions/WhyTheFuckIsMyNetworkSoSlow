@@ -71,6 +71,12 @@ import { Device }	        		 from './device';
 				</div>
 			</div>
 
+			<div *ngIf="device.persistentID==selectedDeviceID && device.important==true">
+				<div class="panel-footer">
+					<p class="text-success text-center" style="font-weight:bold; letter-spacing: 2px;">HEALTHY</p>
+				</div>
+			</div>
+
 		</div>`,
 	styles: [`
 
@@ -82,6 +88,13 @@ import { Device }	        		 from './device';
 	    	border-radius: 15px 15px 0px 0px;
 	    	padding: 5px 0px 5px 17px;
 	    	font-weight:500;
+	    }
+
+	    .panel-footer {
+	    	border-radius: 0px 0px 15px 15px;
+	    	padding: 2px 0px 0px 0px;
+	    	font-weight:500;
+	    	background-color: #dff0d8;
 	    }
 
     	.overflow-ellipsis {

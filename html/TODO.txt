@@ -2,4 +2,10 @@
 
 >> make my own icons for devices
 
->> research how to impliment the drawing of the network topology 
+>> research how to implement the drawing of the network topology 
+
+>> neaten up and change the implementation of the two device lists for device sidebar
+
+>> change device color if it is a problem device
+
+>> integrate bootstrap directly with project so CDNs are not needed
