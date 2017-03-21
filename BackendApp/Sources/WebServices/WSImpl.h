@@ -28,6 +28,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow {
             public:
                 virtual Collection<Device> GetDevices () const override;
             };
+
+            void TmpHackAssureStartedMonitoring ();
         }
     }
 }

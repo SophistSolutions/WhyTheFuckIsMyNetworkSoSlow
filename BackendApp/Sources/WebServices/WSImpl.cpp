@@ -62,8 +62,7 @@ namespace {
         }
         sb += d.name;
         using namespace Cryptography::Digest;
-        string tmp{sb.str ().AsUTF8 ()};
-        return Cryptography::Format<String> (Digester<Algorithm::MD5>::ComputeDigest (Memory::BLOB::Raw (tmp.c_str (), tmp.length ())));
+        return Cryptography::Format<String> (Digester<Algorithm::MD5>::ComputeDigest (Memory::BLOB::Raw (sb.str ().AsUTF8 ())));
     }
 }
 
@@ -104,4 +103,9 @@ Collection<BackendApp::WebServices::Device> WSImpl::GetDevices () const
         return newDev;
     });
     return devices;
+}
+
+void WebServices::TmpHackAssureStartedMonitoring ()
+{
+    GetDiscoverer_ ();
 }
