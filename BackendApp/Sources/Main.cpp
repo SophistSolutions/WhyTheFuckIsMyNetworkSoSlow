@@ -16,6 +16,8 @@
 #include "Stroika/Frameworks/WebServer/ConnectionManager.h"
 #include "Stroika/Frameworks/WebServer/Router.h"
 
+#include "Discovery/Devices.h"
+
 #include "WebServices/WSImpl.h"
 using namespace std;
 
@@ -86,6 +88,7 @@ int main (int argc, const char* argv[])
 #endif
 
     try {
+        WebServices::TmpHackAssureStartedMonitoring ();
         ConnectionManager cm{
             SocketAddress (Network::V4::kAddrAny, 8080),
             kRouter_}; // listen and dispatch while this object exists
