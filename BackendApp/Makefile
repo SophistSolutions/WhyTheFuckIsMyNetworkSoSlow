@@ -1,14 +1,31 @@
-﻿SHELL=/bin/bash
+﻿TOP_ROOT=$(shell realpath ../)/
+StroikaPlatformTargetBuildDir=$(TOP_ROOT)Builds/$(CONFIGURATION)/
+
+include $(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/Library/Configuration.mk
+
+SrcDir				=	$(TOP_ROOT)BackendApp/
+
+include $(StroikaRoot)/Library/Projects/Unix/SharedBuildRules-Default.mk
+include $(StroikaRoot)/Library/Projects/Unix/SharedMakeVariables-Default.mk
+
+SHELL=/bin/bash
+
 
 all:
-	@mkdir -p ../IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow
-	@rm -f ../IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow/Makefile
-	@ln -s `pwd`/Projects/Unix/Makefile ../IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow/Makefile
-	@$(MAKE) --directory ../IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow -s all
+	@$(StroikaRoot)/ScriptsLib/CheckValidConfiguration.sh $(CONFIGURATION)
+	@### NO IDEA WHY MAKEFLAGS= is needed - @todo - DEBUG - but get link error otherwise
+	@$(MAKE) --directory=Sources --no-print-directory all CONFIGURATION=$(CONFIGURATION) MAKEFLAGS=
 
-clean:
-	#$(MAKE) --directory ../IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow clean
-	rm -f ../IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow
+
+clean::
+	@$(StroikaRoot)/ScriptsLib/CheckValidConfiguration.sh $(CONFIGURATION)
+	@$(MAKE) --directory=Sources --no-print-directory clean
+
+
+clobber::
+	@$(StroikaRoot)/ScriptsLib/CheckValidConfiguration.sh $(CONFIGURATION)
+	@$(MAKE) --directory=Sources --no-print-directory clobber
+
 
 format-code:
-	@../ThirdPartyComponents/Stroika/Stroika/ScriptsLib/FormatCode.sh Sources *.h *.inl *.cpp
+	@../ThirdPartyComponents/Stroika/StroikaRoot/ScriptsLib/FormatCode.sh Sources *.h *.inl *.cpp

@@ -95,11 +95,11 @@ Collection<BackendApp::WebServices::Device> WSImpl::GetDevices () const
             }
         });
 
-        newDev.connected          = true;
+        newDev.connected    = true;
         newDev.persistentID = LookupPersistentDeviceID_ (d);
-        newDev.name               = d.name;
-        newDev.type               = d.type;
-        newDev.important          = newDev.type == Device::DeviceType::eRouter or d.fThisDevice;
+        newDev.name         = d.name;
+        newDev.type         = d.type;
+        newDev.important    = newDev.type == Device::DeviceType::eRouter or d.fThisDevice;
         return newDev;
     });
     return devices;
