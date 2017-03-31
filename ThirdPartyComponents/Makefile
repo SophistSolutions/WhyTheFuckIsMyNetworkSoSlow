@@ -1,5 +1,4 @@
 all:
-	@echo making stroika...
 	@$(MAKE) --directory=Stroika --no-print-directory all CONFIGURATION=$(CONFIGURATION)
 
 clean:

@@ -521,12 +521,14 @@
     <None Include="..\..\Makefile" />
     <None Include="..\..\ReadMe.md" />
     <None Include="..\..\Sources\Discovery\Devices.inl" />
+    <None Include="..\..\Sources\Discovery\Makefile" />
     <None Include="..\..\Sources\Discovery\Networks.inl" />
+    <None Include="..\..\Sources\Makefile" />
     <None Include="..\..\Sources\WebServices\IWSAPI.inl" />
+    <None Include="..\..\Sources\WebServices\Makefile" />
     <None Include="..\..\Sources\WebServices\Model.inl" />
     <None Include="..\..\Sources\WebServices\WSImpl.inl" />
     <None Include="..\..\Todo.md" />
-    <None Include="..\Unix\Makefile" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\ThirdPartyComponents\Stroika\StroikaRoot\Library\Projects\VisualStudio.Net-2017\Stroika-Foundation.vcxproj">

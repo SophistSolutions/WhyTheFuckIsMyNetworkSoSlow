@@ -1,12 +1,12 @@
 ﻿TOP_ROOT=$(shell realpath ../)/
 StroikaPlatformTargetBuildDir=$(TOP_ROOT)Builds/$(CONFIGURATION)/
 
-include $(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/Library/Configuration.mk
+-include $(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/Library/Configuration.mk
 
 SrcDir				=	$(TOP_ROOT)BackendApp/
 
-include $(StroikaRoot)/Library/Projects/Unix/SharedBuildRules-Default.mk
-include $(StroikaRoot)/Library/Projects/Unix/SharedMakeVariables-Default.mk
+-include $(StroikaRoot)/Library/Projects/Unix/SharedBuildRules-Default.mk
+-include $(StroikaRoot)/Library/Projects/Unix/SharedMakeVariables-Default.mk
 
 SHELL=/bin/bash
 

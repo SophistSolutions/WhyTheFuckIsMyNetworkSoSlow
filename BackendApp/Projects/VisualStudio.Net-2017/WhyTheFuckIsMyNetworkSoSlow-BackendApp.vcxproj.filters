@@ -4,9 +4,6 @@
     <None Include="..\..\ReadMe.md" />
     <None Include="..\..\Todo.md" />
     <None Include="..\..\Makefile" />
-    <None Include="..\Unix\Makefile">
-      <Filter>Projects\Unix</Filter>
-    </None>
     <None Include="..\..\Sources\WebServices\Model.inl">
       <Filter>Sources\WebServices</Filter>
     </None>
@@ -22,6 +19,15 @@
     <None Include="..\..\Sources\Discovery\Networks.inl">
       <Filter>Sources\Discovery</Filter>
     </None>
+    <None Include="..\..\Sources\Makefile">
+      <Filter>Sources</Filter>
+    </None>
+    <None Include="..\..\Sources\Discovery\Makefile">
+      <Filter>Sources\Discovery</Filter>
+    </None>
+    <None Include="..\..\Sources\WebServices\Makefile">
+      <Filter>Sources\WebServices</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Sources">
@@ -29,9 +35,6 @@
     </Filter>
     <Filter Include="Projects">
       <UniqueIdentifier>{3babcae7-6fa9-41d6-bb3d-907ea899ad02}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Projects\Unix">
-      <UniqueIdentifier>{9e0d2153-02d5-49c2-9a0c-0c7a955dad41}</UniqueIdentifier>
     </Filter>
     <Filter Include="Sources\WebServices">
       <UniqueIdentifier>{5e0bcf4e-d082-410f-afea-ed836dee9a83}</UniqueIdentifier>

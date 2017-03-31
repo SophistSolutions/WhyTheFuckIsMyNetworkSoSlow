@@ -1,24 +1,30 @@
 SHELL=/bin/bash
 
+StroikaRoot=$(realpath ThirdPartyComponents/Stroika/StroikaRoot)/
+
+include $(StroikaRoot)/Library/Projects/Unix/SharedMakeVariables-Default.mk
+
 all:
-	@$(MAKE) --directory=ThirdPartyComponents/Stroika --no-print-directory configurations
+	@$(StroikaRoot)ScriptsLib/PrintLevelLeader.sh $(MAKE_INDENT_LEVEL) && $(ECHO) "Building WhyTheFuckIsMyNetworkSoSlow all{$(CONFIGURATION)}:"
+	@$(MAKE) --directory=ThirdPartyComponents/Stroika --no-print-directory --silent configurations MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
 ifeq ($(CONFIGURATION),)
-	@for i in `ThirdPartyComponents/Stroika/StroikaRoot/ScriptsLib/GetConfigurations.sh` ; do\
-		$(MAKE) --no-print-directory --silent all CONFIGURATION=$$i;\
+	@for i in `$(StroikaRoot)ScriptsLib/GetConfigurations.sh` ; do\
+		$(MAKE) --no-print-directory --silent all CONFIGURATION=$$i MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1));\
 	done
 else
-	@$(MAKE) --directory=ThirdPartyComponents --no-print-directory all CONFIGURATION=$(CONFIGURATION)
-	@ThirdPartyComponents/Stroika/StroikaRoot/ScriptsLib/CheckValidConfiguration.sh $(CONFIGURATION)
-	@$(MAKE) --directory=html --no-print-directory CONFIGURATION=$(CONFIGURATION) all
+	@$(MAKE) --directory=ThirdPartyComponents --no-print-directory all CONFIGURATION=$(CONFIGURATION) MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
+	@$(StroikaRoot)/ScriptsLib/CheckValidConfiguration.sh $(CONFIGURATION)
+	@$(MAKE) --directory=html --no-print-directory CONFIGURATION=$(CONFIGURATION) MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1)) all
 ifeq (,$(findstring CYGWIN,$(shell uname)))
-	@$(MAKE) --directory=BackendApp --no-print-directory all CONFIGURATION=$(CONFIGURATION)
+	@$(MAKE) --directory=BackendApp --no-print-directory all CONFIGURATION=$(CONFIGURATION) MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
 endif
 endif
 
 clean:
-	@$(MAKE) --directory=html --no-print-directory clean
+	@$(StroikaRoot)ScriptsLib/PrintLevelLeader.sh $(MAKE_INDENT_LEVEL) && $(ECHO) "Cleaning WhyTheFuckIsMyNetworkSoSlow{$(CONFIGURATION)}:"
+	@$(MAKE) --directory=html --no-print-directory clean MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
 ifeq ($(CONFIGURATION),)
-	@for i in `ThirdPartyComponents/Stroika/StroikaRoot/ScriptsLib/GetConfigurations.sh` ; do\
+	@for i in `$(StroikaRoot)/ScriptsLib/GetConfigurations.sh` ; do\
 		$(MAKE) --no-print-directory --silent clean CONFIGURATION=$$i;\
 	done
 else
@@ -26,13 +32,14 @@ else
 endif
 
 clobber:
+	@$(StroikaRoot)ScriptsLib/PrintLevelLeader.sh $(MAKE_INDENT_LEVEL) && $(ECHO) "Clobbering WhyTheFuckIsMyNetworkSoSlow{$(CONFIGURATION)}:"
 ifeq ($(CONFIGURATION),)
-	@rm -rf Builds IntermediateFiles ConfigurationFiles ThirdPartyComponents/Stroika/StroikaRoot/{Builds,IntermediateFiles,ConfigurationFiles}
-	@$(MAKE) --directory=ThirdPartyComponents --no-print-directory clobber
+	@rm -rf Builds IntermediateFiles ConfigurationFiles $(StroikaRoot)/StroikaRoot/{Builds,IntermediateFiles,ConfigurationFiles}
+	@$(MAKE) --directory=ThirdPartyComponents --no-print-directory clobber MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
 else
-	@$(MAKE) --directory=html --no-print-directory clobber
-	@$(MAKE) --directory=ThirdPartyComponents --no-print-directory clobber
-	@$(MAKE) --directory=BackendApp --no-print-directory clobber
+	@$(MAKE) --directory=html --no-print-directory clobber MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
+	@$(MAKE) --directory=ThirdPartyComponents --no-print-directory clobber MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
+	@$(MAKE) --directory=BackendApp --no-print-directory clobber MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
 endif
 
 update-submodules:
@@ -40,10 +47,10 @@ update-submodules:
 
 latest-submodules:
 ifeq ($(BRANCH),)
-	(cd ThirdPartyComponents/Stroika/StroikaRoot && git checkout V2-Release && git pull)
+	(cd $(StroikaRoot) && git checkout V2-Release && git pull)
 else
-	(cd ThirdPartyComponents/Stroika/StroikaRoot && git checkout $(BRANCH) && git pull)
+	(cd $(StroikaRoot) && git checkout $(BRANCH) && git pull)
 endif
 
 format-code:
-	$(MAKE) --directory=BackendApp --no-print-directory format-code
+	@$(MAKE) --directory=BackendApp --no-print-directory format-code
