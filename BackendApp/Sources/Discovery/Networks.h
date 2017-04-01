@@ -9,6 +9,7 @@
 #include "Stroika/Foundation/Characters/String.h"
 #include "Stroika/Foundation/Containers/Collection.h"
 #include "Stroika/Foundation/Containers/Sequence.h"
+#include "Stroika/Foundation/IO/Network/CIDR.h"
 #include "Stroika/Foundation/IO/Network/InternetAddress.h"
 
 /**
@@ -24,20 +25,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow {
 
             using Characters::String;
             using Containers::Collection;
-            using IO::Network::InternetAddress;
-            using Memory::Optional;
-
-            // @todo consider moving to Stroika
-            struct CIDR {
-                InternetAddress fBaseAddress;
-                unsigned int    fSignificantBits{}; // for IPv4 and class C, =24
-                bool operator== (const CIDR& rhs) const
-                {
-                    //tmphack - really only want to look at signficnaitn bits to compare
-                    return fBaseAddress == rhs.fBaseAddress and fSignificantBits == rhs.fSignificantBits;
-                }
-                nonvirtual String ToString () const;
-            };
+			using IO::Network::InternetAddress;
+			using IO::Network::CIDR;
+			using Memory::Optional;
 
             struct Network {
                 CIDR             fIPAddress;

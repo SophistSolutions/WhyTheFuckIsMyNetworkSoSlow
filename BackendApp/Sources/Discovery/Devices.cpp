@@ -177,6 +177,11 @@ DeviceDiscoverer::DeviceDiscoverer (const Discovery::Network& forNetwork)
 {
 }
 
+DeviceDiscoverer::~DeviceDiscoverer ()
+{
+	// Need to define DTOR here to have unique_ptr and Rep_ declared in CPP file
+}
+
 Collection<Discovery::Device> DeviceDiscoverer::GetActiveDevices () const
 {
     return fRep_->GetActiveDevices ();

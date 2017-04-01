@@ -29,20 +29,6 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery;
 
 /*
  ********************************************************************************
- ******************************** Discovery::CIDR *******************************
- ********************************************************************************
- */
-String Discovery::CIDR::ToString () const
-{
-    StringBuilder sb;
-    sb += L"{";
-    sb += L"BaseAddress: " + Characters::ToString (fBaseAddress) + L"/" + Characters::ToString ((int)fSignificantBits);
-    sb += L"}";
-    return sb.str ();
-}
-
-/*
- ********************************************************************************
  ***************************** Discovery::Network *******************************
  ********************************************************************************
  */
