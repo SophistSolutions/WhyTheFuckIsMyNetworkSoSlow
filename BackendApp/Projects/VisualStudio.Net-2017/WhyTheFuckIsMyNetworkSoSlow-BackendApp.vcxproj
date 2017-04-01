@@ -515,6 +515,7 @@
     </ClCompile>
     <ClCompile Include="..\..\Sources\WebServices\IWSAPI.cpp" />
     <ClCompile Include="..\..\Sources\WebServices\Model.cpp" />
+    <ClCompile Include="..\..\Sources\WebServices\WebServer.cpp" />
     <ClCompile Include="..\..\Sources\WebServices\WSImpl.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -527,6 +528,7 @@
     <None Include="..\..\Sources\WebServices\IWSAPI.inl" />
     <None Include="..\..\Sources\WebServices\Makefile" />
     <None Include="..\..\Sources\WebServices\Model.inl" />
+    <None Include="..\..\Sources\WebServices\WebServer.inl" />
     <None Include="..\..\Sources\WebServices\WSImpl.inl" />
     <None Include="..\..\Todo.md" />
   </ItemGroup>
@@ -552,6 +554,7 @@
     <ClInclude Include="..\..\Sources\Discovery\Networks.h" />
     <ClInclude Include="..\..\Sources\WebServices\IWSAPI.h" />
     <ClInclude Include="..\..\Sources\WebServices\Model.h" />
+    <ClInclude Include="..\..\Sources\WebServices\WebServer.h" />
     <ClInclude Include="..\..\Sources\WebServices\WSImpl.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

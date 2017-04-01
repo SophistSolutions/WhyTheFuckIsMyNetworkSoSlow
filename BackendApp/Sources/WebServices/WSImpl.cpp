@@ -66,6 +66,11 @@ namespace {
     }
 }
 
+/*
+ ********************************************************************************
+ ************************************* WSImpl ***********************************
+ ********************************************************************************
+ */
 Collection<BackendApp::WebServices::Device> WSImpl::GetDevices () const
 {
     using namespace IO::Network;
@@ -104,6 +109,12 @@ Collection<BackendApp::WebServices::Device> WSImpl::GetDevices () const
     });
     return devices;
 }
+
+/*
+ ********************************************************************************
+ **************** WebServices::TmpHackAssureStartedMonitoring *******************
+ ********************************************************************************
+ */
 
 void WebServices::TmpHackAssureStartedMonitoring ()
 {
