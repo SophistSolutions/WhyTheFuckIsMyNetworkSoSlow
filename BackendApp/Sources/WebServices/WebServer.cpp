@@ -48,6 +48,15 @@ public:
     Rep_ (const shared_ptr<IWSAPI>& wsImpl)
         : fWSAPI (wsImpl)
         , kRouter_{Sequence<Route>{
+              /*
+             *  To test this example:
+             *      o   Run the service (under the debugger if you wish)
+             *      o   curl  http://localhost:8080/ OR
+             *      o   curl  http://localhost:8080/Devices
+             *      o   curl  http://localhost:8080/FRED OR      (to see error handling)
+             *      o   curl -H "Content-Type: application/json" -X POST -d
+             * '{"AppState":"Start"}' http://localhost:8080/SetAppState
+             */
               Route{RegularExpression (L"", RegularExpression::SyntaxType::eECMAScript), DefaultPage_},
               Route{RegularExpression (L"Devices", RegularExpression::SyntaxType::eECMAScript), [=](Request* request, Response * response) { GetDevices_ (request, response); }},
               Route{RegularExpression (L"POST", RegularExpression::SyntaxType::eECMAScript), RegularExpression (L"SetAppState", RegularExpression::SyntaxType::eECMAScript), SetAppState_},

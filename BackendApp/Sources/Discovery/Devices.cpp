@@ -181,7 +181,3 @@ Collection<Discovery::Device> DeviceDiscoverer::GetActiveDevices () const
 {
     return fRep_->GetActiveDevices ();
 }
-
-DeviceDiscoverer::~DeviceDiscoverer ()
-{
-}

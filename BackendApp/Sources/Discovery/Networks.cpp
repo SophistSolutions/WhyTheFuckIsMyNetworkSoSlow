@@ -65,7 +65,7 @@ String Discovery::Network::ToString () const
  */
 Collection<Network> Discovery::CollectActiveNetworks ()
 {
-#if USE_NOISY_TRACE_IN_THIS_MODULE_ || 1
+#if USE_NOISY_TRACE_IN_THIS_MODULE_
     Debug::TraceContextBumper ctx{L"Discovery::CollectActiveNetworks"};
 #endif
     vector<Network> results;
@@ -93,7 +93,7 @@ Collection<Network> Discovery::CollectActiveNetworks ()
             }
         }
     }
-#if USE_NOISY_TRACE_IN_THIS_MODULE_ || 1
+#if USE_NOISY_TRACE_IN_THIS_MODULE_
     DbgTrace (L"returns: %s", Characters::ToString (results).c_str ());
 #endif
     return results;

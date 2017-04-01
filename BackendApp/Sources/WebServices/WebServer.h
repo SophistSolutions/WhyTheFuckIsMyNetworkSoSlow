@@ -21,18 +21,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow {
 
             using Containers::Collection;
 
-            /*
-             *  To test this example:
-             *      o   Run the service (under the debugger if you wish)
-             *      o   curl  http://localhost:8080/ OR
-             *      o   curl  http://localhost:8080/Devices
-             *      o   curl  http://localhost:8080/FRED OR      (to see error handling)
-             *      o   curl -H "Content-Type: application/json" -X POST -d
-             * '{"AppState":"Start"}' http://localhost:8080/SetAppState
-             */
-
             /**
-             *  Implementation of WebService calls.
+             *  WebServer handles basic HTTP web server technology, and translates to ISAPI interface web-service implementation methods.
              */
             class WebServer {
             public:

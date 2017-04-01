@@ -69,7 +69,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow {
                 DeviceDiscoverer (const DeviceDiscoverer&) = delete;
                 DeviceDiscoverer (const Network& forNetwork);
                 DeviceDiscoverer& operator= (const DeviceDiscoverer&) = delete;
-                ~DeviceDiscoverer ();
+                ~DeviceDiscoverer () = default;
 
             public:
                 nonvirtual Collection<Device> GetActiveDevices () const;
