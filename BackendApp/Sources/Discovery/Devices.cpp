@@ -79,10 +79,8 @@ class DeviceDiscoverer::Rep_ {
 public:
     Rep_ (const Network& forNetwork)
         : fListener_{[this](const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); }, SSDP::Client::Listener::eAutoStart}
-        , fSearcher_{}
+        , fSearcher_{ [this] (const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); }, SSDP::Client::Search::kRootDevice }
     {
-        fSearcher_.AddOnFoundCallback ([this](const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); });
-        fSearcher_.Start (L"upnp:rootdevice");
     }
     Collection<Discovery::Device> GetActiveDevices () const
     {
