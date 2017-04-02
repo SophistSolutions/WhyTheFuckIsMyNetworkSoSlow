@@ -16,6 +16,7 @@
 
 #include "Stroika/Frameworks/UPnP/DeviceDescription.h"
 #include "Stroika/Frameworks/UPnP/SSDP/Client/Listener.h"
+#include "Stroika/Frameworks/UPnP/SSDP/Client/Search.h"
 
 #include "Devices.h"
 
@@ -73,11 +74,15 @@ class DeviceDiscoverer::Rep_ {
 
     mutable Synchronized<Mapping<String, DiscoveryInfo_>> fDiscoveredDevices_;
     SSDP::Client::Listener fListener_;
+    SSDP::Client::Search   fSearcher_;
 
 public:
     Rep_ (const Network& forNetwork)
         : fListener_{[this](const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); }, SSDP::Client::Listener::eAutoStart}
+        , fSearcher_{}
     {
+        fSearcher_.AddOnFoundCallback ([this](const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); });
+        fSearcher_.Start (L"upnp:rootdevice");
     }
     Collection<Discovery::Device> GetActiveDevices () const
     {
@@ -179,7 +184,7 @@ DeviceDiscoverer::DeviceDiscoverer (const Discovery::Network& forNetwork)
 
 DeviceDiscoverer::~DeviceDiscoverer ()
 {
-	// Need to define DTOR here to have unique_ptr and Rep_ declared in CPP file
+    // Need to define DTOR here to have unique_ptr and Rep_ declared in CPP file
 }
 
 Collection<Discovery::Device> DeviceDiscoverer::GetActiveDevices () const

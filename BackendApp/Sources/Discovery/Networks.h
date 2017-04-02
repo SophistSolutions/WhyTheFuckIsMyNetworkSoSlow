@@ -25,9 +25,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow {
 
             using Characters::String;
             using Containers::Collection;
-			using IO::Network::InternetAddress;
-			using IO::Network::CIDR;
-			using Memory::Optional;
+            using IO::Network::InternetAddress;
+            using IO::Network::CIDR;
+            using Memory::Optional;
 
             struct Network {
                 CIDR             fIPAddress;
