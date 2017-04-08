@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26228.9
+VisualStudioVersion = 15.0.26403.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WhyTheFuckIsMyNetworkSoSlow-BackendApp", "..\..\BackendApp\Projects\VisualStudio.Net-2017\WhyTheFuckIsMyNetworkSoSlow-BackendApp.vcxproj", "{2E2192CA-3B55-45AD-A66A-3E43FAB9B42C}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -36,6 +36,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Stroika", "Stroika", "{53CC
 	ProjectSection(SolutionItems) = preProject
 		..\..\ThirdPartyComponents\Stroika\Makefile = ..\..\ThirdPartyComponents\Stroika\Makefile
 	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Stroika-Frameworks-WebService", "..\..\ThirdPartyComponents\Stroika\StroikaRoot\Library\Projects\VisualStudio.Net-2017\Stroika-Frameworks-WebService.vcxproj", "{9454F6D7-68B9-4C91-92D1-99958EC9EA42}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -275,6 +277,42 @@ Global
 		{3ADD4C32-1D77-47A2-9F23-83908A2446F6}.Release-U-64|x64.Build.0 = Release-U-64|x64
 		{3ADD4C32-1D77-47A2-9F23-83908A2446F6}.Release-U-64|x86.ActiveCfg = Release-U-64|Win32
 		{3ADD4C32-1D77-47A2-9F23-83908A2446F6}.Release-U-64|x86.Build.0 = Release-U-64|Win32
+		{9454F6D7-68B9-4C91-92D1-99958EC9EA42}.Debug-A-32|x64.ActiveCfg = Debug-A-32|x64
+		{9454F6D7-68B9-4C91-92D1-99958EC9EA42}.Debug-A-32|x64.Build.0 = Debug-A-32|x64
+		{9454F6D7-68B9-4C91-92D1-99958EC9EA42}.Debug-A-32|x86.ActiveCfg = Debug-A-32|Win32
+		{9454F6D7-68B9-4C91-92D1-99958EC9EA42}.Debug-A-32|x86.Build.0 = Debug-A-32|Win32
+		{9454F6D7-68B9-4C91-92D1-99958EC9EA42}.Debug-U-32|x64.ActiveCfg = Debug-U-32|x64
+		{9454F6D7-68B9-4C91-92D1-99958EC9EA42}.Debug-U-32|x64.Build.0 = Debug-U-32|x64
+		{9454F6D7-68B9-4C91-92D1-99958EC9EA42}.Debug-U-32|x86.ActiveCfg = Debug-U-32|Win32
+		{9454F6D7-68B9-4C91-92D1-99958EC9EA42}.Debug-U-32|x86.Build.0 = Debug-U-32|Win32
+		{9454F6D7-68B9-4C91-92D1-99958EC9EA42}.Debug-U-64|x64.ActiveCfg = Debug-U-64|x64
+		{9454F6D7-68B9-4C91-92D1-99958EC9EA42}.Debug-U-64|x64.Build.0 = Debug-U-64|x64
+		{9454F6D7-68B9-4C91-92D1-99958EC9EA42}.Debug-U-64|x86.ActiveCfg = Debug-U-64|Win32
+		{9454F6D7-68B9-4C91-92D1-99958EC9EA42}.Debug-U-64|x86.Build.0 = Debug-U-64|Win32
+		{9454F6D7-68B9-4C91-92D1-99958EC9EA42}.Release-A-32|x64.ActiveCfg = Release-A-32|x64
+		{9454F6D7-68B9-4C91-92D1-99958EC9EA42}.Release-A-32|x64.Build.0 = Release-A-32|x64
+		{9454F6D7-68B9-4C91-92D1-99958EC9EA42}.Release-A-32|x86.ActiveCfg = Release-A-32|Win32
+		{9454F6D7-68B9-4C91-92D1-99958EC9EA42}.Release-A-32|x86.Build.0 = Release-A-32|Win32
+		{9454F6D7-68B9-4C91-92D1-99958EC9EA42}.Release-DbgMemLeaks-U-32|x64.ActiveCfg = Release-DbgMemLeaks-U-32|x64
+		{9454F6D7-68B9-4C91-92D1-99958EC9EA42}.Release-DbgMemLeaks-U-32|x64.Build.0 = Release-DbgMemLeaks-U-32|x64
+		{9454F6D7-68B9-4C91-92D1-99958EC9EA42}.Release-DbgMemLeaks-U-32|x86.ActiveCfg = Release-DbgMemLeaks-U-32|Win32
+		{9454F6D7-68B9-4C91-92D1-99958EC9EA42}.Release-DbgMemLeaks-U-32|x86.Build.0 = Release-DbgMemLeaks-U-32|Win32
+		{9454F6D7-68B9-4C91-92D1-99958EC9EA42}.Release-Logging-U-32|x64.ActiveCfg = Release-Logging-U-32|x64
+		{9454F6D7-68B9-4C91-92D1-99958EC9EA42}.Release-Logging-U-32|x64.Build.0 = Release-Logging-U-32|x64
+		{9454F6D7-68B9-4C91-92D1-99958EC9EA42}.Release-Logging-U-32|x86.ActiveCfg = Release-Logging-U-32|Win32
+		{9454F6D7-68B9-4C91-92D1-99958EC9EA42}.Release-Logging-U-32|x86.Build.0 = Release-Logging-U-32|Win32
+		{9454F6D7-68B9-4C91-92D1-99958EC9EA42}.Release-Logging-U-64|x64.ActiveCfg = Release-Logging-U-64|x64
+		{9454F6D7-68B9-4C91-92D1-99958EC9EA42}.Release-Logging-U-64|x64.Build.0 = Release-Logging-U-64|x64
+		{9454F6D7-68B9-4C91-92D1-99958EC9EA42}.Release-Logging-U-64|x86.ActiveCfg = Release-Logging-U-64|Win32
+		{9454F6D7-68B9-4C91-92D1-99958EC9EA42}.Release-Logging-U-64|x86.Build.0 = Release-Logging-U-64|Win32
+		{9454F6D7-68B9-4C91-92D1-99958EC9EA42}.Release-U-32|x64.ActiveCfg = Release-U-32|x64
+		{9454F6D7-68B9-4C91-92D1-99958EC9EA42}.Release-U-32|x64.Build.0 = Release-U-32|x64
+		{9454F6D7-68B9-4C91-92D1-99958EC9EA42}.Release-U-32|x86.ActiveCfg = Release-U-32|Win32
+		{9454F6D7-68B9-4C91-92D1-99958EC9EA42}.Release-U-32|x86.Build.0 = Release-U-32|Win32
+		{9454F6D7-68B9-4C91-92D1-99958EC9EA42}.Release-U-64|x64.ActiveCfg = Release-U-64|x64
+		{9454F6D7-68B9-4C91-92D1-99958EC9EA42}.Release-U-64|x64.Build.0 = Release-U-64|x64
+		{9454F6D7-68B9-4C91-92D1-99958EC9EA42}.Release-U-64|x86.ActiveCfg = Release-U-64|Win32
+		{9454F6D7-68B9-4C91-92D1-99958EC9EA42}.Release-U-64|x86.Build.0 = Release-U-64|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

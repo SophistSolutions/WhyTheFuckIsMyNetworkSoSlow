@@ -79,7 +79,7 @@ class DeviceDiscoverer::Rep_ {
 public:
     Rep_ (const Network& forNetwork)
         : fListener_{[this](const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); }, SSDP::Client::Listener::eAutoStart}
-        , fSearcher_{ [this] (const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); }, SSDP::Client::Search::kRootDevice }
+        , fSearcher_{[this](const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); }, SSDP::Client::Search::kRootDevice}
     {
     }
     Collection<Discovery::Device> GetActiveDevices () const
