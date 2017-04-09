@@ -65,7 +65,12 @@ public:
                   RegularExpression::kAny,
                   [](Message* m) {}},
               Route{RegularExpression (L"", RegularExpression::eECMAScript), DefaultPage_},
-              Route{RegularExpression (L"Devices", RegularExpression::eECMAScript), [=](Message* m) { GetDevices_ (m); }},
+              Route{
+                  RegularExpression (L"Devices", RegularExpression::eECMAScript),
+                  cvt2Obj::mkRequestHandler (kDevices_, Device::kMapper, function<Collection<BackendApp::WebServices::Device> (void)>{[=]() { return fWSAPI->GetDevices (); }})
+                  //cvt2Obj::mkRequestHandler (kDevices_, Device::kMapper, [=] () -> Collection<BackendApp::WebServices::Device> { return fWSAPI->GetDevices (); })
+              }
+
           }}
         , fConnectionMgr_{SocketAddress (Network::V4::kAddrAny, 8080), kRouter_} // listen and dispatch while this object exists
     {
@@ -79,10 +84,6 @@ public:
                 kDevices_,
             },
             String_Constant{L"Web Methods"});
-    }
-    void GetDevices_ (Message* m)
-    {
-        WriteResponse (m->PeekResponse (), kDevices_, Device::kMapper.FromObject (fWSAPI->GetDevices ()));
     }
 };
 const WebServiceMethodDescription WebServer::Rep_::kDevices_{
