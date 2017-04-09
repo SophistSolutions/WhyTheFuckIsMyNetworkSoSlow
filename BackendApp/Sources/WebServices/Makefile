@@ -17,5 +17,6 @@ Objs	=	\
 	$(ObjDir)IWSAPI.o\
 	$(ObjDir)Model.o\
 	$(ObjDir)WSImpl.o\
+	$(ObjDir)WebServer.o\
 
 all:$(ObjDir) $(Objs)
