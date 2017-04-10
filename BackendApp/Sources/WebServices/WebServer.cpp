@@ -18,7 +18,8 @@
 
 #include "Stroika/Frameworks/WebServer/ConnectionManager.h"
 #include "Stroika/Frameworks/WebServer/Router.h"
-#include "Stroika/Frameworks/WebService/Basic.h"
+#include "Stroika/Frameworks/WebService/Server/Basic.h"
+#include "Stroika/Frameworks/WebService/Server/ObjectVariantMapper.h"
 
 #include "WebServer.h"
 
@@ -32,6 +33,8 @@ using namespace Stroika::Foundation::IO::Network;
 
 using namespace Stroika::Frameworks::WebServer;
 using namespace Stroika::Frameworks::WebService;
+using namespace Stroika::Frameworks::WebService::Server;
+using namespace Stroika::Frameworks::WebService::Server::ObjectVariantMapper;
 
 using namespace WhyTheFuckIsMyNetworkSoSlow;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp;
@@ -67,9 +70,7 @@ public:
               Route{RegularExpression (L"", RegularExpression::eECMAScript), DefaultPage_},
               Route{
                   RegularExpression (L"Devices", RegularExpression::eECMAScript),
-                  cvt2Obj::mkRequestHandler (kDevices_, Device::kMapper, function<Collection<BackendApp::WebServices::Device> (void)>{[=]() { return fWSAPI->GetDevices (); }})
-                  //cvt2Obj::mkRequestHandler (kDevices_, Device::kMapper, [=] () -> Collection<BackendApp::WebServices::Device> { return fWSAPI->GetDevices (); })
-              }
+                  mkRequestHandler (kDevices_, Device::kMapper, function<Collection<BackendApp::WebServices::Device> (void)>{[=]() { return fWSAPI->GetDevices (); }})}
 
           }}
         , fConnectionMgr_{SocketAddress (Network::V4::kAddrAny, 8080), kRouter_} // listen and dispatch while this object exists
