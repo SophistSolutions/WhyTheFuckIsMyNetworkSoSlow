@@ -19,7 +19,7 @@
 #include "Stroika/Frameworks/WebServer/ConnectionManager.h"
 #include "Stroika/Frameworks/WebServer/Router.h"
 #include "Stroika/Frameworks/WebService/Server/Basic.h"
-#include "Stroika/Frameworks/WebService/Server/ObjectVariantMapper.h"
+#include "Stroika/Frameworks/WebService/Server/VariantValue.h"
 
 #include "WebServer.h"
 
@@ -34,7 +34,7 @@ using namespace Stroika::Foundation::IO::Network;
 using namespace Stroika::Frameworks::WebServer;
 using namespace Stroika::Frameworks::WebService;
 using namespace Stroika::Frameworks::WebService::Server;
-using namespace Stroika::Frameworks::WebService::Server::ObjectVariantMapper;
+using namespace Stroika::Frameworks::WebService::Server::VariantValue;
 
 using namespace WhyTheFuckIsMyNetworkSoSlow;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp;
@@ -48,6 +48,9 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices;
 class WebServer::Rep_ {
 public:
     static const WebServiceMethodDescription kDevices_;
+
+private:
+	static constexpr unsigned int kMaxConcurrentConnections_{ 5 };
 
 private:
     shared_ptr<IWSAPI> fWSAPI;
@@ -73,7 +76,7 @@ public:
                   mkRequestHandler (kDevices_, Device::kMapper, function<Collection<BackendApp::WebServices::Device> (void)>{[=]() { return fWSAPI->GetDevices (); }})}
 
           }}
-        , fConnectionMgr_{SocketAddress (Network::V4::kAddrAny, 8080), kRouter_} // listen and dispatch while this object exists
+        , fConnectionMgr_{SocketAddress (Network::V4::kAddrAny, 8080), kRouter_, kMaxConcurrentConnections_ } // listen and dispatch while this object exists
     {
         fConnectionMgr_.SetServerHeader (String_Constant{L"Why-The-Fuck-Is-My-Network-So-Slow/1.0"});
     }
