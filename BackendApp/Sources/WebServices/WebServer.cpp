@@ -10,6 +10,7 @@
 #include "Stroika/Foundation/Cryptography/Digest/Algorithm/MD5.h"
 #include "Stroika/Foundation/Cryptography/Format.h"
 #include "Stroika/Foundation/DataExchange/Variant/JSON/Writer.h"
+#include "Stroika/Foundation/Execution/Module.h"
 #include "Stroika/Foundation/Execution/Synchronized.h"
 #include "Stroika/Foundation/IO/Network/HTTP/Exception.h"
 #include "Stroika/Foundation/IO/Network/HTTP/Headers.h"
@@ -17,6 +18,7 @@
 #include "Stroika/Foundation/Streams/TextReader.h"
 
 #include "Stroika/Frameworks/WebServer/ConnectionManager.h"
+#include "Stroika/Frameworks/WebServer/FileSystemRouter.h"
 #include "Stroika/Frameworks/WebServer/Router.h"
 #include "Stroika/Frameworks/WebService/Server/Basic.h"
 #include "Stroika/Frameworks/WebService/Server/VariantValue.h"
@@ -50,20 +52,25 @@ public:
     static const WebServiceMethodDescription kDevices_;
 
 private:
-	static constexpr unsigned int kMaxConcurrentConnections_{ 5 };
+    static constexpr unsigned int kMaxConcurrentConnections_{5};
+    static constexpr unsigned int kMaxGUIWebServerConcurrentConnections_{5};
+    static const String_Constant  kServerString_;
 
 private:
-    shared_ptr<IWSAPI> fWSAPI;
-    const Router       kRouter_;
-    ConnectionManager  fConnectionMgr_;
+    shared_ptr<IWSAPI> fWSAPI_;
+    const Router       fWSRouter_;
+    ConnectionManager  fWSConnectionMgr_;
+    const Router       fGUIWebRouter_;
+    ConnectionManager  fGUIWebConnectionMgr_;
 
 public:
     Rep_ (const shared_ptr<IWSAPI>& wsImpl)
-        : fWSAPI (wsImpl)
-        , kRouter_{Sequence<Route>{
+        : fWSAPI_ (wsImpl)
+        , fWSRouter_{Sequence<Route>{
               /*
                *  To test this example:
                *      o   Run the service (under the debugger if you wish)
+               *      o   curl  http://localhost/ -- to see web GUI
                *      o   curl  http://localhost:8080/ -- to see a list of available web-methods
                */
               Route{
@@ -73,12 +80,15 @@ public:
               Route{RegularExpression (L"", RegularExpression::eECMAScript), DefaultPage_},
               Route{
                   RegularExpression (L"Devices", RegularExpression::eECMAScript),
-                  mkRequestHandler (kDevices_, Device::kMapper, function<Collection<BackendApp::WebServices::Device> (void)>{[=]() { return fWSAPI->GetDevices (); }})}
+                  mkRequestHandler (kDevices_, Device::kMapper, function<Collection<BackendApp::WebServices::Device> (void)>{[=]() { return fWSAPI_->GetDevices (); }})}
 
           }}
-        , fConnectionMgr_{SocketAddress (Network::V4::kAddrAny, 8080), kRouter_, kMaxConcurrentConnections_ } // listen and dispatch while this object exists
+        , fWSConnectionMgr_{SocketAddresses (InternetAddresses_Any (), 8080), fWSRouter_, ConnectionManager::Options{kMaxConcurrentConnections_, Socket::BindFlags{true}, kServerString_}} // listen and dispatch while this object exists
+        , fGUIWebRouter_{Sequence<Route>{
+              Route{RegularExpression::kAny, FileSystemRouter{Execution::GetEXEDir () + L"html", {}, Sequence<String>{L"index.html"}}},
+          }}
+        , fGUIWebConnectionMgr_{SocketAddresses (InternetAddresses_Any (), 80), fGUIWebRouter_, ConnectionManager::Options{kMaxGUIWebServerConcurrentConnections_, Socket::BindFlags{true}, kServerString_}}
     {
-        fConnectionMgr_.SetServerHeader (String_Constant{L"Why-The-Fuck-Is-My-Network-So-Slow/1.0"});
     }
     static void DefaultPage_ (Request* request, Response* response)
     {
@@ -99,6 +109,7 @@ const WebServiceMethodDescription WebServer::Rep_::kDevices_{
     Sequence<String>{L"Fetch the list of known devices for the currently connected network.",
                      L"@todo - in the future - add support for parameters to this fetch - which can be used to filter/subset etc"},
 };
+const String_Constant WebServer::Rep_::kServerString_{L"Why-The-Fuck-Is-My-Network-So-Slow/1.0"};
 
 WebServer::WebServer (const shared_ptr<IWSAPI>& wsImpl)
     : fRep_ (make_shared<Rep_> (wsImpl))

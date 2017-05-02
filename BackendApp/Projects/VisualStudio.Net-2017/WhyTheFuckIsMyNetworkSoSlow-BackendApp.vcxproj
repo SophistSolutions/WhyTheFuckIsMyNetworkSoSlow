@@ -513,6 +513,7 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release-U-64|x64'">..\Library\Sources;..\..\Library\Sources;..\..\..\Library\Sources;..\..\..\..\Library\Sources;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release-U-32|x64'">..\Library\Sources;..\..\Library\Sources;..\..\..\Library\Sources;..\..\..\..\Library\Sources;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Service.cpp" />
     <ClCompile Include="..\..\Sources\WebServices\IWSAPI.cpp" />
     <ClCompile Include="..\..\Sources\WebServices\Model.cpp" />
     <ClCompile Include="..\..\Sources\WebServices\WebServer.cpp" />
@@ -525,6 +526,7 @@
     <None Include="..\..\Sources\Discovery\Makefile" />
     <None Include="..\..\Sources\Discovery\Networks.inl" />
     <None Include="..\..\Sources\Makefile" />
+    <None Include="..\..\Sources\Service.inl" />
     <None Include="..\..\Sources\WebServices\IWSAPI.inl" />
     <None Include="..\..\Sources\WebServices\Makefile" />
     <None Include="..\..\Sources\WebServices\Model.inl" />
@@ -555,6 +557,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Discovery\Devices.h" />
     <ClInclude Include="..\..\Sources\Discovery\Networks.h" />
+    <ClInclude Include="..\..\Sources\Service.h" />
     <ClInclude Include="..\..\Sources\WebServices\IWSAPI.h" />
     <ClInclude Include="..\..\Sources\WebServices\Model.h" />
     <ClInclude Include="..\..\Sources\WebServices\WebServer.h" />

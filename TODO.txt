@@ -1,4 +1,11 @@
- > building on Linux (BLOW) doesn't work
+
+
+
+>>>> FIX MAKEFILE TO CREATE HTML DIRECTORY SO WEBSITE RUNS MORE EASILY
+
+
+
+> building on Linux (BLOW) doesn't work
  > even make clobber works poorly
  
  >>> In discovery - look at location, and then fetch that location (at least sometimes) in xml
@@ -10,3 +17,6 @@ urn:schemas-upnp-org:device:InternetGatewayDevice:1
 
 
 > Need to make a UUID property for devices for fronted to use to identify selected or not
+
+
+>>>> Check for IF HAS PERMISSIONS TO OPEN PORT 80 and GIVE BETTER ERROR MESSAGE

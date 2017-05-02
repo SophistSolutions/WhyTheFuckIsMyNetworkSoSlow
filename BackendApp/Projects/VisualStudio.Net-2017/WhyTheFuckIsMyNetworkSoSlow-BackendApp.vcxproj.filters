@@ -31,6 +31,9 @@
     <None Include="..\..\Sources\WebServices\WebServer.inl">
       <Filter>Sources\WebServices</Filter>
     </None>
+    <None Include="..\..\Sources\Service.inl">
+      <Filter>Sources</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Sources">
@@ -68,6 +71,9 @@
     <ClCompile Include="..\..\Sources\WebServices\WebServer.cpp">
       <Filter>Sources\WebServices</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Service.cpp">
+      <Filter>Sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\WebServices\Model.h">
@@ -87,6 +93,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\WebServices\WebServer.h">
       <Filter>Sources\WebServices</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Service.h">
+      <Filter>Sources</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
