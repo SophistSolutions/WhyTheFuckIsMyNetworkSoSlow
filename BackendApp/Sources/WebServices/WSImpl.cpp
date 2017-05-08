@@ -115,7 +115,6 @@ Collection<BackendApp::WebServices::Device> WSImpl::GetDevices () const
  **************** WebServices::TmpHackAssureStartedMonitoring *******************
  ********************************************************************************
  */
-
 void WebServices::TmpHackAssureStartedMonitoring ()
 {
     GetDiscoverer_ ();

@@ -10,6 +10,7 @@
 #include "Stroika/Foundation/Characters/ToString.h"
 #include "Stroika/Foundation/Debug/Trace.h"
 #include "Stroika/Foundation/Execution/Finally.h"
+#include "Stroika/Foundation/Execution/Logger.h"
 #include "Stroika/Foundation/Execution/Sleep.h"
 #include "Stroika/Foundation/Execution/Thread.h"
 #include "Stroika/Foundation/Execution/WaitableEvent.h"
@@ -34,19 +35,18 @@ using namespace WhyTheFuckIsMyNetworkSoSlow;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices;
 
-#include "Stroika/Foundation/Execution/Logger.h"
 using Execution::Logger;
 
 namespace {
     const Main::ServiceDescription kServiceDescription_{
-        String_Constant (L"Test-Service"),
-        String_Constant (L"Test Service")};
+        String_Constant (L"WhyTheFuckIsMyNetworkSoSlow-Service"),
+        String_Constant (L"WhyTheFuckIsMyNetworkSoSlow Service")};
 }
 
 void WTFAppServiceRep::MainLoop (const std::function<void()>& startedCB)
 {
-	Debug::TraceContextBumper ctx{ "WTFAppServiceRep::MainLoop" };
-	auto&& cleanup = Execution::Finally ([&]() {
+    Debug::TraceContextBumper ctx{"WTFAppServiceRep::MainLoop"};
+    auto&&                    cleanup = Execution::Finally ([&]() {
         Thread::SuppressInterruptionInContext suppressSoWeActuallyShutDownOtherTaskWhenWereBeingShutDown;
         Logger::Get ().Log (Logger::Priority::eInfo, L"Beginning service shutdown");
     });
