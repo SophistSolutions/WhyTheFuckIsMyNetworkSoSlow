@@ -97,7 +97,7 @@ public:
             Sequence<WebServiceMethodDescription>{
                 kDevices_,
             },
-            String_Constant{L"Web Methods"});
+            DocsOptions{String_Constant{L"Web Methods"}});
     }
 };
 const WebServiceMethodDescription WebServer::Rep_::kDevices_{
