@@ -1,3 +1,5 @@
+export TOP_ROOT=$(shell realpath ../)/
+
 all:
 	@$(MAKE) --directory=Stroika --no-print-directory all CONFIGURATION=$(CONFIGURATION)
 

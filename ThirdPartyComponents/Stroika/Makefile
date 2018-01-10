@@ -1,4 +1,6 @@
-﻿IntermediateFiles=		../../IntermediateFiles/
+﻿export TOP_ROOT=$(shell realpath ../../)/
+
+IntermediateFiles=		../../IntermediateFiles/
 
 StroikaRoot=StroikaRoot/
 

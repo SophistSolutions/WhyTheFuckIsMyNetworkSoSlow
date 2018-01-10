@@ -1,4 +1,4 @@
-﻿TOP_ROOT=$(shell realpath ../)/
+﻿export TOP_ROOT=$(shell realpath ../)/
 StroikaPlatformTargetBuildDir=$(TOP_ROOT)Builds/$(CONFIGURATION)/
 
 -include $(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/Library/Configuration.mk
