@@ -103,7 +103,7 @@ public:
 const WebServiceMethodDescription WebServer::Rep_::kDevices_{
     String_Constant{L"Devices"},
     Set<String>{String_Constant{IO::Network::HTTP::Methods::kGet}},
-    DataExchange::PredefinedInternetMediaType::JSON_CT (),
+    DataExchange::PredefinedInternetMediaType::kJSON,
     {},
     Sequence<String>{L"curl http://localhost:8080/Devices"},
     Sequence<String>{L"Fetch the list of known devices for the currently connected network.",
