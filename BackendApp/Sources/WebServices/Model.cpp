@@ -45,8 +45,8 @@ const DataExchange::ObjectVariantMapper Device::kMapper = []() {
     mapper.AddCommonType<Optional<String>> ();
     mapper.AddCommonType<Optional<float>> ();
     mapper.AddCommonType<Sequence<String>> ();
-	DISABLE_COMPILER_MSC_WARNING_START (4573);
-	DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
+    DISABLE_COMPILER_MSC_WARNING_START (4573);
+    DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
     mapper.AddClass<Device> ({
         ObjectVariantMapper::StructFieldInfo{L"persistentID", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, persistentID)},
         ObjectVariantMapper::StructFieldInfo{L"name", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, name)},
@@ -57,9 +57,9 @@ const DataExchange::ObjectVariantMapper Device::kMapper = []() {
         ObjectVariantMapper::StructFieldInfo{L"connected", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, connected)},
         ObjectVariantMapper::StructFieldInfo{L"important", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, important)},
     });
-	DISABLE_COMPILER_GCC_WARNING_END ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
-	DISABLE_COMPILER_MSC_WARNING_END (4573);
-	mapper.AddCommonType<Collection<Device>> ();
+    DISABLE_COMPILER_GCC_WARNING_END ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
+    DISABLE_COMPILER_MSC_WARNING_END (4573);
+    mapper.AddCommonType<Collection<Device>> ();
     return mapper;
 }();
 

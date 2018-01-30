@@ -73,8 +73,8 @@ class DeviceDiscoverer::Rep_ {
     };
 
     mutable Synchronized<Mapping<String, DiscoveryInfo_>> fDiscoveredDevices_;
-    SSDP::Client::Listener fListener_;
-    SSDP::Client::Search   fSearcher_;
+    SSDP::Client::Listener                                fListener_;
+    SSDP::Client::Search                                  fSearcher_;
 
 public:
     Rep_ (const Network& forNetwork)

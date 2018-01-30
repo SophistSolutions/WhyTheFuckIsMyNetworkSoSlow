@@ -25,8 +25,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow {
 
             using Characters::String;
             using Containers::Collection;
-            using IO::Network::InternetAddress;
             using IO::Network::CIDR;
+            using IO::Network::InternetAddress;
             using Memory::Optional;
 
             struct Network {
