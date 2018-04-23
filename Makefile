@@ -15,9 +15,8 @@ else
 	@$(MAKE) --directory=ThirdPartyComponents --no-print-directory all CONFIGURATION=$(CONFIGURATION) MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
 	@$(StroikaRoot)/ScriptsLib/CheckValidConfiguration.sh $(CONFIGURATION)
 	@$(MAKE) --directory=html --no-print-directory CONFIGURATION=$(CONFIGURATION) MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1)) all
-ifeq (,$(findstring CYGWIN,$(shell uname)))
 	@$(MAKE) --directory=BackendApp --no-print-directory all CONFIGURATION=$(CONFIGURATION) MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
-endif
+	@rm -rf Builds/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow/html && mkdir Builds/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow/html && cp -r html/dist/* Builds/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow/html
 endif
 
 clean:
