@@ -1,4 +1,17 @@
 
+>>> NEXT SIMPLE FUNCTION
+	>	ComputeAverageTimeToInternet()
+		Run a tracert, and stop at the first public IP address. (or navigate to www.sophists.com, and www.google.com, and grab meet of two paths)
+
+		Maybe option for two notions of internet
+
+		>	Take that function - and somehow expopse it as REST WS API
+			grab current value, and keep running in background - every 5 minutes, and report statistics
+
+		>	This is a very primitive first draft/try - but the starting point for collecting stats
+
+
+
 
 
 >>>> FIX MAKEFILE TO CREATE HTML DIRECTORY SO WEBSITE RUNS MORE EASILY
