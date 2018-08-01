@@ -96,7 +96,7 @@ public:
             newDev.name = di.server;
             newDev.name = kNamePrettyPrintMapper_.LookupValue (newDev.name, newDev.name);
             newDev.ipAddresses += di.fInternetAddresses;
-            newDev.type.clear ();
+            newDev.type = nullopt;
 
             if (newDev.ipAddresses.Any ([](const InternetAddress& ia) { return ia.As<String> ().EndsWith (L".1"); })) {
                 newDev.type = Discovery::DeviceType::eRouter;
@@ -115,7 +115,7 @@ private:
     {
         return fDiscoveredDevices_.cget ()->MappedValues ();
     }
-    Optional<Discovery::Device> GetMyDevice_ () const
+    optional<Discovery::Device> GetMyDevice_ () const
     {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
         Debug::TraceContextBumper ctx{L"{}::GetMyDevice_"};
@@ -140,7 +140,7 @@ private:
     {
         DbgTrace (L"Recieved SSDP advertisement: %s", Characters::ToString (d).c_str ());
         String                                   location = d.fLocation.GetFullURL ();
-        Optional<bool>                           alive    = d.fAlive;
+        optional<bool>                           alive    = d.fAlive;
         URL                                      locURL   = URL{location, URL::ParseOptions::eAsFullURL};
         String                                   locHost  = locURL.GetHost ();
         Collection<IO::Network::InternetAddress> locAddrs = IO::Network::DNS::Default ().GetHostAddresses (locHost);
@@ -170,7 +170,7 @@ private:
             DbgTrace (L"oops - bad - probably should log - bad device resposne - find addr some other way");
         }
         else {
-            fDiscoveredDevices_.rwget ()->Add (location, DiscoveryInfo_{locAddrs, alive.Value (true), friendlyName});
+            fDiscoveredDevices_.rwget ()->Add (location, DiscoveryInfo_{locAddrs, alive.value_or (true), friendlyName});
         }
     }
 };

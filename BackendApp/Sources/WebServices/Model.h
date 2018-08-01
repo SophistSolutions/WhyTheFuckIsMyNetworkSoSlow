@@ -10,7 +10,6 @@
 #include "Stroika/Foundation/Containers/Sequence.h"
 #include "Stroika/Foundation/DataExchange/ObjectVariantMapper.h"
 #include "Stroika/Foundation/IO/Network/InternetAddress.h"
-#include "Stroika/Foundation/Memory/Optional.h"
 
 /**
  *
@@ -23,7 +22,6 @@ namespace WhyTheFuckIsMyNetworkSoSlow {
                 using namespace Stroika::Foundation;
                 using Characters::String;
                 using Containers::Sequence;
-                using Memory::Optional;
 
                 /**
                  */
@@ -33,6 +31,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow {
                     String persistentID;
 
                     String name;
+
                     /**
                      * Bindings
                      */
@@ -54,13 +53,13 @@ namespace WhyTheFuckIsMyNetworkSoSlow {
                     /**
                      *  missing is unknown type of device
                      */
-                    Optional<DeviceType> type;
+                    optional<DeviceType> type;
 
                     /*
                      *  in CIDR notation.
                      */
                     String          network;
-                    Optional<float> signalStrength{};
+                    optional<float> signalStrength{};
                     bool            connected{};
                     bool            important{};
 

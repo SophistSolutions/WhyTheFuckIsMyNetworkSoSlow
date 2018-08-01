@@ -27,11 +27,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow {
             using Containers::Collection;
             using IO::Network::CIDR;
             using IO::Network::InternetAddress;
-            using Memory::Optional;
 
             struct Network {
                 CIDR             fIPAddress;
-                Optional<String> fSSID;
+                optional<String> fSSID;
 
                 bool operator== (const Network& rhs) const
                 {
