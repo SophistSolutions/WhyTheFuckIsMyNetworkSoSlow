@@ -46,7 +46,7 @@ update-submodules:
 
 latest-submodules:
 ifeq ($(BRANCH),)
-	(cd $(StroikaRoot) && git checkout V2.0-Release && git pull)
+	(cd $(StroikaRoot) && git checkout V2.1-Release && git pull)
 else
 	(cd $(StroikaRoot) && git checkout $(BRANCH) && git pull)
 endif
