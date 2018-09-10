@@ -15,31 +15,28 @@
  *
  */
 
-namespace WhyTheFuckIsMyNetworkSoSlow {
-    namespace BackendApp {
-        namespace WebServices {
-            using namespace Model;
+namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
+    using namespace Model;
 
-            using Containers::Collection;
+    using Containers::Collection;
 
-            /**
-             */
-            class IWSAPI {
-            protected:
-                IWSAPI () = default;
+    /**
+     */
+    class IWSAPI {
+    protected:
+        IWSAPI () = default;
 
-            public:
-                IWSAPI (const IWSAPI&) = delete;
-                virtual ~IWSAPI ()     = default;
+    public:
+        IWSAPI (const IWSAPI&) = delete;
+        virtual ~IWSAPI ()     = default;
 
-            public:
-                /**
-                 *  curl  http://localhost:8080/Devices
-                 */
-                virtual Collection<Device> GetDevices () const = 0;
-            };
-        }
-    }
+    public:
+        /**
+         *  curl  http://localhost:8080/Devices
+         */
+        virtual Collection<Device> GetDevices () const = 0;
+    };
+
 }
 
 /*

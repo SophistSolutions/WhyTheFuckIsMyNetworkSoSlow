@@ -14,26 +14,24 @@
 *
 */
 
-namespace WhyTheFuckIsMyNetworkSoSlow {
-    namespace BackendApp {
-        namespace WebServices {
-            using namespace Model;
+namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
 
-            using Containers::Collection;
+    using namespace Model;
 
-            /**
+    using Containers::Collection;
+
+    /**
              *  WebServer handles basic HTTP web server technology, and translates to ISAPI interface web-service implementation methods.
              */
-            class WebServer {
-            public:
-                WebServer (const shared_ptr<IWSAPI>& wsImpl);
+    class WebServer {
+    public:
+        WebServer (const shared_ptr<IWSAPI>& wsImpl);
 
-            private:
-                class Rep_;
-                shared_ptr<Rep_> fRep_;
-            };
-        }
-    }
+    private:
+        class Rep_;
+        shared_ptr<Rep_> fRep_;
+    };
+
 }
 
 /*

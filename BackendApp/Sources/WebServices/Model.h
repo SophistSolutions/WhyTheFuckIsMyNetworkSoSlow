@@ -14,62 +14,58 @@
 /**
  *
  */
-namespace WhyTheFuckIsMyNetworkSoSlow {
-    namespace BackendApp {
-        namespace WebServices {
-            namespace Model {
+namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
-                using namespace Stroika::Foundation;
-                using Characters::String;
-                using Containers::Sequence;
+    using namespace Stroika::Foundation;
+    using Characters::String;
+    using Containers::Sequence;
 
-                /**
-                 */
-                struct Device {
-                    /**
-                     */
-                    String persistentID;
+    /**
+     */
+    struct Device {
+        /**
+         */
+        String persistentID;
 
-                    String name;
+        String name;
 
-                    /**
-                     * Bindings
-                     */
-                    Sequence<String> ipAddresses;
+        /**
+         * Bindings
+         */
+        Sequence<String> ipAddresses;
 
-                    /**
-                     */
-                    enum class DeviceType {
-                        eLaptop,
-                        eDesktop,
-                        eTablet,
-                        ePhone,
-                        eRouter,
-                        ePrinter,
-                        eInfrastructureDevice,
+        /**
+         */
+        enum class DeviceType {
+            eLaptop,
+            eDesktop,
+            eTablet,
+            ePhone,
+            eRouter,
+            ePrinter,
+            eInfrastructureDevice,
 
-                        Stroika_Define_Enum_Bounds (eLaptop, eInfrastructureDevice)
-                    };
-                    /**
-                     *  missing is unknown type of device
-                     */
-                    optional<DeviceType> type;
+            Stroika_Define_Enum_Bounds (eLaptop, eInfrastructureDevice)
+        };
 
-                    /*
-                     *  in CIDR notation.
-                     */
-                    String          network;
-                    optional<float> signalStrength{};
-                    bool            connected{};
-                    bool            important{};
+        /**
+         *  missing is unknown type of device
+         */
+        optional<DeviceType> type;
 
-                    nonvirtual String ToString () const;
+        /*
+         *  in CIDR notation.
+         */
+        String          network;
+        optional<float> signalStrength{};
+        bool            connected{};
+        bool            important{};
 
-                    static const DataExchange::ObjectVariantMapper kMapper;
-                };
-            }
-        }
-    }
+        nonvirtual String ToString () const;
+
+        static const DataExchange::ObjectVariantMapper kMapper;
+    };
+
 }
 
 /*

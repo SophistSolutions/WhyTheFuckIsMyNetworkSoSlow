@@ -14,24 +14,20 @@
 *
 */
 
-namespace WhyTheFuckIsMyNetworkSoSlow {
-    namespace BackendApp {
-        namespace WebServices {
-            using namespace Model;
+namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
 
-            using Containers::Collection;
+    using Containers::Collection;
 
-            /**
+    /**
              *  Implementation of WebService calls.
              */
-            class WSImpl : public IWSAPI {
-            public:
-                virtual Collection<Device> GetDevices () const override;
-            };
+    class WSImpl : public IWSAPI {
+    public:
+        virtual Collection<Device> GetDevices () const override;
+    };
 
-            void TmpHackAssureStartedMonitoring ();
-        }
-    }
+    void TmpHackAssureStartedMonitoring ();
+
 }
 
 /*

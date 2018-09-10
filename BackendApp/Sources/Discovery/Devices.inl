@@ -10,16 +10,8 @@
 ********************************************************************************
 */
 
-namespace WhyTheFuckIsMyNetworkSoSlow {
-    namespace BackendApp {
-        namespace Discovery {
+namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
 
-            /*
-********************************************************************************
-********************************* Service::Main ********************************
-********************************************************************************
-*/
-        }
-    }
 }
+
 #endif /*_WhyTheFuckIsMyNetworkSoSlow_BackendApp_Discovery_Devices_inl_*/

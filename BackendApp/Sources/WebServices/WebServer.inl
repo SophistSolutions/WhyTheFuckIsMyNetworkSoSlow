@@ -10,16 +10,7 @@
 ********************************************************************************
 */
 
-namespace WhyTheFuckIsMyNetworkSoSlow {
-    namespace BackendApp {
-        namespace WebServices {
-
-            /*
-********************************************************************************
-********************************* Service::Main ********************************
-********************************************************************************
-*/
-        }
-    }
+namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
 }
+
 #endif /*_WhyTheFuckIsMyNetworkSoSlow_BackendApp_WebServices_WebServer_inl_*/

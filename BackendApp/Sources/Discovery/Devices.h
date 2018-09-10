@@ -33,52 +33,49 @@
  *              o   curl port 80 server header (and similar tricks for other protocols)
  */
 
-namespace WhyTheFuckIsMyNetworkSoSlow {
-    namespace BackendApp {
-        namespace Discovery {
+namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
 
-            using Characters::String;
-            using Containers::Collection;
-            using Containers::Set;
-            using IO::Network::InternetAddress;
+    using Characters::String;
+    using Containers::Collection;
+    using Containers::Set;
+    using IO::Network::InternetAddress;
 
-            /**
-             */
-            using DeviceType = WebServices::Model::Device::DeviceType;
+    /**
+     */
+    using DeviceType = WebServices::Model::Device::DeviceType;
 
-            /**
-             *  Discovery::Device is the definition of a device in the discovery module. This is the level of detail
-             *  captured by the discovery services.
-             */
-            struct Device {
-                String               name;
-                Set<InternetAddress> ipAddresses;
-                optional<DeviceType> type;
-                bool                 fThisDevice{};
+    /**
+     *  Discovery::Device is the definition of a device in the discovery module. This is the level of detail
+     *  captured by the discovery services.
+     */
+    struct Device {
+        String               name;
+        Set<InternetAddress> ipAddresses;
+        optional<DeviceType> type;
+        bool                 fThisDevice{};
 
-                nonvirtual String ToString () const;
-            };
+        nonvirtual String ToString () const;
+    };
 
-            /**
-             *  DeviceDiscoverer is internally syncronized - so its methods can be called from any thread.
-             */
-            class DeviceDiscoverer {
-            public:
-                DeviceDiscoverer ()                        = delete;
-                DeviceDiscoverer (const DeviceDiscoverer&) = delete;
-                DeviceDiscoverer (const Network& forNetwork);
-                DeviceDiscoverer& operator= (const DeviceDiscoverer&) = delete;
-                ~DeviceDiscoverer ();
+    /**
+     *  DeviceDiscoverer is internally syncronized - so its methods can be called from any thread.
+     */
+    class DeviceDiscoverer {
+    public:
+        DeviceDiscoverer ()                        = delete;
+        DeviceDiscoverer (const DeviceDiscoverer&) = delete;
+        DeviceDiscoverer (const Network& forNetwork);
+        DeviceDiscoverer& operator= (const DeviceDiscoverer&) = delete;
+        ~DeviceDiscoverer ();
 
-            public:
-                nonvirtual Collection<Device> GetActiveDevices () const;
+    public:
+        nonvirtual Collection<Device> GetActiveDevices () const;
 
-            private:
-                class Rep_;
-                unique_ptr<Rep_> fRep_;
-            };
-        }
-    }
+    private:
+        class Rep_;
+        unique_ptr<Rep_> fRep_;
+    };
+
 }
 
 /*

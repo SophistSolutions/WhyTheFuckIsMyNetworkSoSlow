@@ -7,30 +7,17 @@
 #include "Stroika/Foundation/Containers/Collection.h"
 #include "Stroika/Foundation/DataExchange/Variant/JSON/Writer.h"
 
+#include "Model.h"
+
 using namespace std;
 
 using namespace Stroika::Foundation;
 using namespace Stroika::Foundation::Containers;
 
-#include "Model.h"
-
 using namespace WhyTheFuckIsMyNetworkSoSlow;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model;
-
-/*
- ********************************************************************************
- **************************** Configuration::DefaultNames ***********************
- ********************************************************************************
- */
-namespace Stroika {
-    namespace Foundation {
-        namespace Configuration {
-            constexpr EnumNames<WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::Device::DeviceType> DefaultNames<WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::Device::DeviceType>::k;
-        }
-    }
-}
 
 /*
  ********************************************************************************
@@ -47,15 +34,15 @@ const DataExchange::ObjectVariantMapper Device::kMapper = []() {
     mapper.AddCommonType<optional<String>> ();
     mapper.AddCommonType<optional<float>> ();
     mapper.AddCommonType<Sequence<String>> ();
-    mapper.AddClass<Device> ({
-        ObjectVariantMapper::StructFieldInfo{L"persistentID", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, persistentID)},
-        ObjectVariantMapper::StructFieldInfo{L"name", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, name)},
-        ObjectVariantMapper::StructFieldInfo{L"ipAddresses", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, ipAddresses)},
-        ObjectVariantMapper::StructFieldInfo{L"type", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, type)},
-        ObjectVariantMapper::StructFieldInfo{L"network", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, network)},
-        ObjectVariantMapper::StructFieldInfo{L"signalStrength", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, signalStrength), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        ObjectVariantMapper::StructFieldInfo{L"connected", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, connected)},
-        ObjectVariantMapper::StructFieldInfo{L"important", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, important)},
+    mapper.AddClass<Device> (initializer_list<ObjectVariantMapper::StructFieldInfo> {
+        {L"persistentID", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, persistentID)},
+        {L"name", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, name)},
+        {L"ipAddresses", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, ipAddresses)},
+        {L"type", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, type), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"network", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, network)},
+        {L"signalStrength", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, signalStrength), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"connected", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, connected)},
+        {L"important", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, important)},
     });
     mapper.AddCommonType<Collection<Device>> ();
     return mapper;

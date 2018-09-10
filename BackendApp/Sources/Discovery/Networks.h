@@ -16,33 +16,30 @@
  *
  */
 
-namespace WhyTheFuckIsMyNetworkSoSlow {
-    namespace BackendApp {
-        namespace Discovery {
+namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
 
-            using namespace Stroika;
-            using namespace Stroika::Foundation;
+    using namespace Stroika;
+    using namespace Stroika::Foundation;
 
-            using Characters::String;
-            using Containers::Collection;
-            using IO::Network::CIDR;
-            using IO::Network::InternetAddress;
+    using Characters::String;
+    using Containers::Collection;
+    using IO::Network::CIDR;
+    using IO::Network::InternetAddress;
 
-            struct Network {
-                CIDR             fIPAddress;
-                optional<String> fSSID;
+    struct Network {
+        CIDR             fIPAddress;
+        optional<String> fSSID;
 
-                bool operator== (const Network& rhs) const
-                {
-                    return fIPAddress == rhs.fIPAddress and fSSID == rhs.fSSID;
-                }
-
-                nonvirtual String ToString () const;
-            };
-
-            Collection<Network> CollectActiveNetworks ();
+        bool operator== (const Network& rhs) const
+        {
+            return fIPAddress == rhs.fIPAddress and fSSID == rhs.fSSID;
         }
-    }
+
+        nonvirtual String ToString () const;
+    };
+
+    Collection<Network> CollectActiveNetworks ();
+
 }
 
 /*
