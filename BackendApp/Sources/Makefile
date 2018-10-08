@@ -15,7 +15,8 @@ ifneq ($(CONFIGURATION),)
 	ProjectPlatformSubdir	=	$(shell perl $(StroikaRoot)ScriptsLib/PrintConfigurationVariable.pl $(CONFIGURATION) ProjectPlatformSubdir)
 endif
 
-TARGETEXE				=	$(StroikaRoot)Builds/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow-Backend
+TARGETEXEDir			=	$(StroikaRoot)Builds/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow/
+TARGETEXE				=	$(TARGETEXEDir)WhyTheFuckIsMyNetworkSoSlow-Backend
 
 
 SubDirs=\
@@ -29,6 +30,7 @@ SUBDIR_OBJS := $(foreach dir, $(SubDirs), $(shell $(MAKE) --directory $(dir) -s 
 
 Objs	=	\
 	$(ObjDir)Main.o\
+	$(ObjDir)Service.o\
 
 
 $(SubDirs):
@@ -40,6 +42,7 @@ $(SubDirs):
 all:
 	@$(StroikaRoot)/ScriptsLib/PrintLevelLeader.sh $(MAKE_INDENT_LEVEL) && $(ECHO) "Building WhyTheFuckIsMyNetworkSoSlow/BackendApp:"
 ifeq (Unix,$(ProjectPlatformSubdir))
+	@mkdir -p $(TARGETEXEDir)
 	@$(MAKE) --silent $(TARGETEXE) MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1)) ECHO_BUILD_LINES=$(ECHO_BUILD_LINES)
 else
 	@if [[ "$(CONFIGURATION)" == "Debug-U-32" || "$(CONFIGURATION)" == "Release-U-32" || "$(CONFIGURATION)" == "Debug-U-64" || "$(CONFIGURATION)" == "Release-U-64" ]] ; then\
@@ -53,9 +56,9 @@ endif
 $(TARGETEXE):	$(ObjDir) $(SubDirs) $(Objs)
 	@$(StroikaRoot)/ScriptsLib/PrintLevelLeader.sh $(MAKE_INDENT_LEVEL) && $(ECHO) "Linking $(subst $(StroikaRoot),\$$StroikaRoot/, $(TARGETEXE))..."
 	@if [ $(ECHO_BUILD_LINES) -eq 1 ]; then\
-	    $(StroikaRoot)/ScriptsLib/PrintLevelLeader.sh $$(($(MAKE_INDENT_LEVEL)+1)) && $(ECHO) "$(Linker) $(LinkerPrefixArgs) -o $(TARGETEXE) $(Objs) $(SUBDIR_OBJS) $(StroikaLinkerArgs) $(StroikaLibsWithSupportLibs)";\
+	    $(StroikaRoot)/ScriptsLib/PrintLevelLeader.sh $$(($(MAKE_INDENT_LEVEL)+1)) && $(ECHO) "$(Linker) $(StroikaLinkerPrefixArgs) -o $(TARGETEXE) $(Objs) $(SUBDIR_OBJS) $(StroikaLinkerSuffixArgs)";\
 	fi
-	@$(Linker) $(LinkerPrefixArgs) -o $(TARGETEXE) $(Objs) $(SUBDIR_OBJS) $(StroikaLinkerArgs) $(StroikaLibsWithSupportLibs)
+	@$(Linker) $(StroikaLinkerPrefixArgs) -o $(TARGETEXE) $(Objs) $(SUBDIR_OBJS) $(StroikaLinkerSuffixArgs)
 
 
 clean::
