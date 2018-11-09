@@ -139,11 +139,12 @@ private:
     void RecieveSSDPAdvertisement_ (const SSDP::Advertisement& d)
     {
         DbgTrace (L"Recieved SSDP advertisement: %s", Characters::ToString (d).c_str ());
-        String                                   location = d.fLocation.GetFullURL ();
-        optional<bool>                           alive    = d.fAlive;
-        URL                                      locURL   = URL{location, URL::ParseOptions::eAsFullURL};
-        String                                   locHost  = locURL.GetHost ();
-        Collection<IO::Network::InternetAddress> locAddrs = IO::Network::DNS::Default ().GetHostAddresses (locHost);
+        using IO::Network::InternetAddress;
+        String               location = d.fLocation.GetFullURL ();
+        optional<bool>       alive    = d.fAlive;
+        URL                  locURL   = URL{location, URL::ParseOptions::eAsFullURL};
+        String               locHost  = locURL.GetHost ();
+        Set<InternetAddress> locAddrs = Set<InternetAddress>{IO::Network::DNS::Default ().GetHostAddresses (locHost)};
 
         String friendlyName = d.fServer; // if all else fails..
 

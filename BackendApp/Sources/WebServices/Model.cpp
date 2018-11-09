@@ -34,7 +34,7 @@ const DataExchange::ObjectVariantMapper Device::kMapper = []() {
     mapper.AddCommonType<optional<String>> ();
     mapper.AddCommonType<optional<float>> ();
     mapper.AddCommonType<Sequence<String>> ();
-    mapper.AddClass<Device> (initializer_list<ObjectVariantMapper::StructFieldInfo> {
+    mapper.AddClass<Device> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
         {L"persistentID", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, persistentID)},
         {L"name", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, name)},
         {L"ipAddresses", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, ipAddresses)},
