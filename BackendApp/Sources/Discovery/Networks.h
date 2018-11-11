@@ -9,6 +9,7 @@
 #include "Stroika/Foundation/Characters/String.h"
 #include "Stroika/Foundation/Containers/Collection.h"
 #include "Stroika/Foundation/Containers/Sequence.h"
+#include "Stroika/Foundation/Containers/Set.h"
 #include "Stroika/Foundation/IO/Network/CIDR.h"
 #include "Stroika/Foundation/IO/Network/InternetAddress.h"
 
@@ -23,17 +24,19 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
 
     using Characters::String;
     using Containers::Collection;
+    using Containers::Set;
     using IO::Network::CIDR;
     using IO::Network::InternetAddress;
 
     struct Network {
-        CIDR             fIPAddress;
-        optional<String> fSSID;
+        CIDR        fIPAddress;
+        String      fFriendlyName;
+        Set<String> fSSIDs;
 
-        bool operator== (const Network& rhs) const
-        {
-            return fIPAddress == rhs.fIPAddress and fSSID == rhs.fSSID;
-        }
+        //bool operator== (const Network& rhs) const
+        //{
+         //   return fIPAddress == rhs.fIPAddress and fSSIDs == rhs.fSSIDs;
+        //}
 
         nonvirtual String ToString () const;
     };

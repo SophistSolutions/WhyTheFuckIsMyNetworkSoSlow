@@ -12,12 +12,6 @@
 
 namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
 
-    /*
-     ********************************************************************************
-     ********************************* Service::Main ********************************
-     ********************************************************************************
-     */
-
 }
 
 #endif /*_WhyTheFuckIsMyNetworkSoSlow_BackendApp_Discovery_Networks_inl_*/

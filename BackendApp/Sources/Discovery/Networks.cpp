@@ -37,9 +37,8 @@ String Discovery::Network::ToString () const
     StringBuilder sb;
     sb += L"{";
     sb += L"IP-Address: " + Characters::ToString (fIPAddress) + L", ";
-    if (fSSID) {
-        sb += L"SSID: " + Characters::ToString (fSSID) + L", ";
-    }
+    sb += L"Friendly-Name: " + Characters::ToString (fFriendlyName) + L", ";
+    sb += L"SSIDs: " + Characters::ToString (fSSIDs) + L", ";
     sb += L"}";
     return sb.str ();
 }
@@ -71,10 +70,10 @@ Collection<Network> Discovery::CollectActiveNetworks ()
                 });
                 //tmphack - just say CIDR 24  - til we can fix @todo - FIX
                 if (i.fType == Interface::Type::eWiredEthernet or i.fType == Interface::Type::eWIFI) {
-                    results.insert (results.begin (), Network{CIDR{useAddr, 24}, i.fFriendlyName});
+                    results.insert (results.begin (), Network{CIDR{useAddr, 24}, {i.fFriendlyName}});
                 }
                 else {
-                    results.push_back (Network{CIDR{useAddr, 24}, i.fFriendlyName});
+                    results.push_back (Network{CIDR{useAddr, 24}, {i.fFriendlyName}});
                 }
             }
         }
