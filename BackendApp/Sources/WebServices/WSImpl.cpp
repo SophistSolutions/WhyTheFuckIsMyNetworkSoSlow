@@ -31,7 +31,11 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices;
 namespace {
     shared_ptr<Discovery::DeviceDiscoverer> GetDiscoverer_ ()
     {
-        static Synchronized<Mapping<Discovery::Network, shared_ptr<Discovery::DeviceDiscoverer>>> sDiscovery_;
+        using Discovery::DeviceDiscoverer;
+        using Discovery::Network;
+        static Synchronized<Mapping<Network, shared_ptr<DeviceDiscoverer>>> sDiscovery_{
+            Common::DeclareEqualsComparer ([](Network l, Network r) { return l.fIPAddress == r.fIPAddress; })
+        };
 
         Collection<Discovery::Network> tmp = Discovery::CollectActiveNetworks ();
 
