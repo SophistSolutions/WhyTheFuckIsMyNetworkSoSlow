@@ -125,11 +125,11 @@ private:
         newDev.name        = Configuration::GetSystemConfiguration_ComputerNames ().fHostname;
         newDev.type        = DeviceType::eLaptop; //tmphack @todo fix
         newDev.fThisDevice = true;
-        for (IO::Network::Interface i : IO::Network::GetInterfaces ()) {
+        for (Interface i : IO::Network::GetInterfaces ()) {
             if (i.fType != Interface::Type::eLoopback and i.fStatus and i.fStatus->Contains (Interface::Status::eRunning)) {
-                i.fBindings.Apply ([&](const InternetAddress& ia) {
-                    if (not ia.IsMulticastAddress ()) {
-                        newDev.ipAddresses += ia;
+                i.fBindings.Apply ([&](const Interface::Binding& ia) {
+                    if (not ia.fInternetAddress.IsMulticastAddress ()) {
+                        newDev.ipAddresses += ia.fInternetAddress;
                     }
                 });
             }

@@ -54,26 +54,31 @@ Collection<Network> Discovery::CollectActiveNetworks ()
     Debug::TraceContextBumper ctx{L"Discovery::CollectActiveNetworks"};
 #endif
     vector<Network> results;
-    for (IO::Network::Interface i : IO::Network::GetInterfaces ()) {
+    for (Interface i : IO::Network::GetInterfaces ()) {
         if (i.fType != Interface::Type::eLoopback and i.fStatus and i.fStatus->Contains (Interface::Status::eRunning)) {
-            DbgTrace (L"i=%s", Characters::ToString (i).c_str ());
             // prefer the v4 IP addr if any, and otherwise show v6
             if (not i.fBindings.empty ()) {
-                DbgTrace (L"name=%s, BINDINGS=%s", i.fFriendlyName.c_str (), Characters::ToString (i.fBindings).c_str ());
-                InternetAddress useAddr = i.fBindings.Nth (0);
-                i.fBindings.Apply ([&](InternetAddress i) {
-                    if (useAddr.GetAddressFamily () != InternetAddress::AddressFamily::V4) {
-                        if (i.GetAddressFamily () == InternetAddress::AddressFamily::V4) {
-                            useAddr = i;
+                // @todo REWRITE to use 'scoring' to pick BEST address not just v4/non-multicast
+                Interface::Binding useBinding = i.fBindings.Nth (0);
+                i.fBindings.Apply ([&](Interface::Binding i) {
+                    if (useBinding.fInternetAddress.GetAddressFamily () != InternetAddress::AddressFamily::V4 or useBinding.fInternetAddress.IsMulticastAddress ()) {
+                        if (i.fInternetAddress.GetAddressFamily () == InternetAddress::AddressFamily::V4 and not i.fInternetAddress.IsMulticastAddress ()) {
+                            useBinding = i;
                         }
                     }
                 });
-                //tmphack - just say CIDR 24  - til we can fix @todo - FIX
-                if (i.fType == Interface::Type::eWiredEthernet or i.fType == Interface::Type::eWIFI) {
-                    results.insert (results.begin (), Network{CIDR{useAddr, 24}, {i.fFriendlyName}});
+                if (useBinding.fInternetAddress.GetAddressSize ()) {
+                    // Guess CIDR prefix is max (so one address - bad guess) - if we cannot read from adapter
+                    CIDR cidr{ useBinding.fInternetAddress, useBinding.fOnLinkPrefixLength.value_or (*useBinding.fInternetAddress.GetAddressSize () * 8) };
+                    if (i.fType == Interface::Type::eWiredEthernet or i.fType == Interface::Type::eWIFI) {
+                        results.insert (results.begin (), Network{cidr, {i.fFriendlyName}});
+                    }
+                    else {
+                        results.push_back (Network{cidr, {i.fFriendlyName}});
+                    }
                 }
                 else {
-                    results.push_back (Network{CIDR{useAddr, 24}, {i.fFriendlyName}});
+                    DbgTrace (L"Skipping interface %s - cuz bindings bad address", Characters::ToString (i).c_str ());
                 }
             }
         }
