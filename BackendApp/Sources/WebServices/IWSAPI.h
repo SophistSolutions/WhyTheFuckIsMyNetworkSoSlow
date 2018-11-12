@@ -35,6 +35,12 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
          *  curl  http://localhost:8080/Devices
          */
         virtual Collection<Device> GetDevices () const = 0;
+
+    public:
+        /**
+         *  curl  http://localhost:8080/Networks
+         */
+        virtual Collection<Network> GetNetworks () const = 0;
     };
 
 }

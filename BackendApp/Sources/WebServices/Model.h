@@ -9,6 +9,7 @@
 #include "Stroika/Foundation/Characters/String.h"
 #include "Stroika/Foundation/Containers/Sequence.h"
 #include "Stroika/Foundation/DataExchange/ObjectVariantMapper.h"
+#include "Stroika/Foundation/IO/Network/Interface.h"
 #include "Stroika/Foundation/IO/Network/InternetAddress.h"
 
 /**
@@ -19,6 +20,40 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
     using namespace Stroika::Foundation;
     using Characters::String;
     using Containers::Sequence;
+
+    // early draft - BASED ON IO::Network::Interface
+    struct Network {
+
+        String fInternalInterfaceID;
+
+        String fFriendlyName;
+
+        optional<String> fDescription;
+
+        optional<Common::GUID> fNetworkGUID;
+
+        using Type = IO::Network::Interface::Type;
+
+        optional<Type> fType;
+
+        optional<String> fHardwareAddress;
+
+        optional<uint64_t> fTransmitSpeedBaud;
+
+        optional<uint64_t> fReceiveLinkSpeedBaud;
+
+        using Binding = IO::Network::Interface::Binding;
+
+        /**
+         */
+        Containers::Collection<Binding> fBindings; // can be IPv4 or IPv6
+
+        using Status = IO::Network::Interface::Status;
+
+        /**
+         */
+        optional<Containers::Set<Status>> fStatus;
+    };
 
     /**
      */

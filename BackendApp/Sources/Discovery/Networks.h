@@ -35,7 +35,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
 
         //bool operator== (const Network& rhs) const
         //{
-         //   return fIPAddress == rhs.fIPAddress and fSSIDs == rhs.fSSIDs;
+        //   return fIPAddress == rhs.fIPAddress and fSSIDs == rhs.fSSIDs;
         //}
 
         nonvirtual String ToString () const;

@@ -50,6 +50,7 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices;
 class WebServer::Rep_ {
 public:
     static const WebServiceMethodDescription kDevices_;
+    static const WebServiceMethodDescription kNetworks_;
 
 private:
     static constexpr unsigned int kMaxConcurrentConnections_{5};
@@ -80,9 +81,10 @@ public:
               Route{RegularExpression (L"", RegularExpression::eECMAScript), DefaultPage_},
               Route{
                   RegularExpression (L"Devices", RegularExpression::eECMAScript),
-                  mkRequestHandler (kDevices_, Device::kMapper, function<Collection<BackendApp::WebServices::Device> (void)>{[=]() { return fWSAPI_->GetDevices (); }})}
-
-          }}
+                  mkRequestHandler (kDevices_, Device::kMapper, function<Collection<BackendApp::WebServices::Device> (void)>{[=]() { return fWSAPI_->GetDevices (); }})},
+              Route{
+                  RegularExpression (L"Networks", RegularExpression::eECMAScript),
+                  mkRequestHandler (kNetworks_, Device::kMapper, function<Collection<BackendApp::WebServices::Network> (void)>{[=]() { return fWSAPI_->GetNetworks (); }})}}}
         , fWSConnectionMgr_{SocketAddresses (InternetAddresses_Any (), 8080), fWSRouter_, ConnectionManager::Options{kMaxConcurrentConnections_, Socket::BindFlags{true}, kServerString_}} // listen and dispatch while this object exists
         , fGUIWebRouter_{Sequence<Route>{
               Route{RegularExpression::kAny, FileSystemRouter{Execution::GetEXEDir () + L"html", {}, Sequence<String>{L"index.html"}}},
@@ -96,6 +98,7 @@ public:
             response,
             Sequence<WebServiceMethodDescription>{
                 kDevices_,
+                kNetworks_,
             },
             DocsOptions{String_Constant{L"Web Methods"}});
     }
@@ -107,6 +110,15 @@ const WebServiceMethodDescription WebServer::Rep_::kDevices_{
     {},
     Sequence<String>{L"curl http://localhost:8080/Devices"},
     Sequence<String>{L"Fetch the list of known devices for the currently connected network.",
+                     L"@todo - in the future - add support for parameters to this fetch - which can be used to filter/subset etc"},
+};
+const WebServiceMethodDescription WebServer::Rep_::kNetworks_{
+    String_Constant{L"Networks"},
+    Set<String>{String_Constant{IO::Network::HTTP::Methods::kGet}},
+    DataExchange::PredefinedInternetMediaType::kJSON,
+    {},
+    Sequence<String>{L"curl http://localhost:8080/Networks"},
+    Sequence<String>{L"Fetch the list of known Networks.",
                      L"@todo - in the future - add support for parameters to this fetch - which can be used to filter/subset etc"},
 };
 const String_Constant WebServer::Rep_::kServerString_{L"Why-The-Fuck-Is-My-Network-So-Slow/1.0"};

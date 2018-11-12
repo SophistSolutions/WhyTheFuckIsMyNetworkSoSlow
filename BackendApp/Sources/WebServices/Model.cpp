@@ -29,6 +29,13 @@ DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof
 const DataExchange::ObjectVariantMapper Device::kMapper = []() {
     using DataExchange::ObjectVariantMapper;
     ObjectVariantMapper mapper;
+
+    // quickie draft
+    mapper.AddClass<Network> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+        {L"fFriendlyName", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fFriendlyName)},
+    });
+    mapper.AddCommonType<Collection<Network>> ();
+
     mapper.AddCommonType<Device::DeviceType> ();
     mapper.AddCommonType<optional<Device::DeviceType>> ();
     mapper.AddCommonType<optional<String>> ();

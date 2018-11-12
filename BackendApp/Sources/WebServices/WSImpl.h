@@ -19,11 +19,12 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
     using Containers::Collection;
 
     /**
-             *  Implementation of WebService calls.
-             */
+     *  Implementation of WebService calls.
+     */
     class WSImpl : public IWSAPI {
     public:
-        virtual Collection<Device> GetDevices () const override;
+        virtual Collection<Device>  GetDevices () const override;
+        virtual Collection<Network> GetNetworks () const override;
     };
 
     void TmpHackAssureStartedMonitoring ();

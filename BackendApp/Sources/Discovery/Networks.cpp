@@ -69,7 +69,7 @@ Collection<Network> Discovery::CollectActiveNetworks ()
                 });
                 if (useBinding.fInternetAddress.GetAddressSize ()) {
                     // Guess CIDR prefix is max (so one address - bad guess) - if we cannot read from adapter
-                    CIDR cidr{ useBinding.fInternetAddress, useBinding.fOnLinkPrefixLength.value_or (*useBinding.fInternetAddress.GetAddressSize () * 8) };
+                    CIDR cidr{useBinding.fInternetAddress, useBinding.fOnLinkPrefixLength.value_or (*useBinding.fInternetAddress.GetAddressSize () * 8)};
                     if (i.fType == Interface::Type::eWiredEthernet or i.fType == Interface::Type::eWIFI) {
                         results.insert (results.begin (), Network{cidr, {i.fFriendlyName}});
                     }
