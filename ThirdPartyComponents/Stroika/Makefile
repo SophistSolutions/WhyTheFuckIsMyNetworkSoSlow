@@ -15,4 +15,6 @@ all:
 
 clobber:
 	-@$(MAKE) --directory=StroikaRoot --no-print-directory --silent clobber CONFIGURATION=$(CONFIGURATION)
+ifeq ($(CONFIGURATION),)
 	@rm -rf StroikaRoot/ConfigurationFiles StroikaRoot/Builds StroikaRoot/IntermediateFiles
+endif

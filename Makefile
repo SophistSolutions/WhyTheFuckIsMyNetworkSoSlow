@@ -62,7 +62,7 @@ ifeq ($(CONFIGURATION),)
 		$(MAKE) --no-print-directory --silent clean CONFIGURATION=$$i;\
 	done
 else
-	@$(MAKE) --directory=ThirdPartyComponents --no-print-directory clean
+	@$(MAKE) --directory=ThirdPartyComponents CONFIGURATION=$(CONFIGURATION) --no-print-directory clean
 endif
 
 clobber:
@@ -71,9 +71,9 @@ ifeq ($(CONFIGURATION),)
 	@rm -rf Builds IntermediateFiles ConfigurationFiles $(StroikaRoot)/StroikaRoot/{Builds,IntermediateFiles,ConfigurationFiles}
 	@$(MAKE) --directory=ThirdPartyComponents --no-print-directory clobber MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
 else
-	@$(MAKE) --directory=html --no-print-directory clobber MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
-	@$(MAKE) --directory=ThirdPartyComponents --no-print-directory clobber MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
-	@$(MAKE) --directory=BackendApp --no-print-directory clobber MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
+	@$(MAKE) --directory=html --no-print-directory clobber CONFIGURATION=$(CONFIGURATION) MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
+	@$(MAKE) --directory=ThirdPartyComponents --no-print-directory clobber CONFIGURATION=$(CONFIGURATION) MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
+	@$(MAKE) --directory=BackendApp --no-print-directory clobber CONFIGURATION=$(CONFIGURATION) MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
 endif
 
 update-submodules:
