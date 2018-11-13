@@ -29,14 +29,11 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
     using IO::Network::InternetAddress;
 
     struct Network {
-        CIDR        fIPAddress;
+        CIDR        fNetworkAddress;
         String      fFriendlyName;
         Set<String> fSSIDs;
 
-        //bool operator== (const Network& rhs) const
-        //{
-        //   return fIPAddress == rhs.fIPAddress and fSSIDs == rhs.fSSIDs;
-        //}
+        IO::Network::Interface fInterfaceDetails;
 
         nonvirtual String ToString () const;
     };

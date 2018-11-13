@@ -34,7 +34,7 @@ namespace {
         using Discovery::DeviceDiscoverer;
         using Discovery::Network;
         static Synchronized<Mapping<Network, shared_ptr<DeviceDiscoverer>>> sDiscovery_{
-            Common::DeclareEqualsComparer ([](Network l, Network r) { return l.fIPAddress == r.fIPAddress; })};
+            Common::DeclareEqualsComparer ([](Network l, Network r) { return l.fNetworkAddress == r.fNetworkAddress; })};
 
         Collection<Discovery::Network> tmp = Discovery::CollectActiveNetworks ();
 
@@ -118,9 +118,13 @@ Collection<BackendApp::WebServices::Network> WSImpl::GetNetworks () const
     Collection<BackendApp::WebServices::Network> result;
 
     for (Discovery::Network n : Discovery::CollectActiveNetworks ()) {
-        BackendApp::WebServices::Network nw;
+        BackendApp::WebServices::Network nw{n.fNetworkAddress};
 
         nw.fFriendlyName = n.fFriendlyName;
+        if (n.fInterfaceDetails.fNetworkGUID) {
+            nw.fNetworkGUID = n.fInterfaceDetails.fNetworkGUID->ToString ();
+        }
+        nw.fNetworkAddress = n.fNetworkAddress;
 
         result += nw;
     }

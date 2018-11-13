@@ -36,7 +36,7 @@ String Discovery::Network::ToString () const
 {
     StringBuilder sb;
     sb += L"{";
-    sb += L"IP-Address: " + Characters::ToString (fIPAddress) + L", ";
+    sb += L"IP-Address: " + Characters::ToString (fNetworkAddress) + L", ";
     sb += L"Friendly-Name: " + Characters::ToString (fFriendlyName) + L", ";
     sb += L"SSIDs: " + Characters::ToString (fSSIDs) + L", ";
     sb += L"}";
@@ -69,12 +69,14 @@ Collection<Network> Discovery::CollectActiveNetworks ()
                 });
                 if (useBinding.fInternetAddress.GetAddressSize ()) {
                     // Guess CIDR prefix is max (so one address - bad guess) - if we cannot read from adapter
-                    CIDR cidr{useBinding.fInternetAddress, useBinding.fOnLinkPrefixLength.value_or (*useBinding.fInternetAddress.GetAddressSize () * 8)};
+                    CIDR    cidr{useBinding.fInternetAddress, useBinding.fOnLinkPrefixLength.value_or (*useBinding.fInternetAddress.GetAddressSize () * 8)};
+                    Network nw{cidr, {i.fFriendlyName}};
+                    nw.fInterfaceDetails = i;
                     if (i.fType == Interface::Type::eWiredEthernet or i.fType == Interface::Type::eWIFI) {
-                        results.insert (results.begin (), Network{cidr, {i.fFriendlyName}});
+                        results.insert (results.begin (), nw);
                     }
                     else {
-                        results.push_back (Network{cidr, {i.fFriendlyName}});
+                        results.push_back (nw);
                     }
                 }
                 else {

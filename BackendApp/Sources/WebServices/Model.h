@@ -9,6 +9,7 @@
 #include "Stroika/Foundation/Characters/String.h"
 #include "Stroika/Foundation/Containers/Sequence.h"
 #include "Stroika/Foundation/DataExchange/ObjectVariantMapper.h"
+#include "Stroika/Foundation/IO/Network/CIDR.h"
 #include "Stroika/Foundation/IO/Network/Interface.h"
 #include "Stroika/Foundation/IO/Network/InternetAddress.h"
 
@@ -20,27 +21,40 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
     using namespace Stroika::Foundation;
     using Characters::String;
     using Containers::Sequence;
+    using IO::Network::CIDR;
 
     // early draft - BASED ON IO::Network::Interface
     struct Network {
 
-        String fInternalInterfaceID;
+        Network ()
+            : Network (CIDR{IO::Network::V4::kAddrAny, 32})
 
-        String fFriendlyName;
+        {
+        }
+        Network (CIDR na)
+            : fNetworkAddress (na)
+        {
+        }
 
-        optional<String> fDescription;
+        CIDR fNetworkAddress;
 
-        optional<Common::GUID> fNetworkGUID;
+        ///String fInternalInterfaceID;
 
-        using Type = IO::Network::Interface::Type;
+        String fFriendlyName; //tmphack - list of interfaces attached to network
 
-        optional<Type> fType;
+        //optional<String> fDescription;
 
-        optional<String> fHardwareAddress;
+        optional<String> fNetworkGUID;
 
-        optional<uint64_t> fTransmitSpeedBaud;
+        //using Type = IO::Network::Interface::Type;
 
-        optional<uint64_t> fReceiveLinkSpeedBaud;
+        //optional<Type> fType;
+
+        //optional<String> fHardwareAddress;
+
+        //optional<uint64_t> fTransmitSpeedBaud;
+
+        //optional<uint64_t> fReceiveLinkSpeedBaud;
 
         using Binding = IO::Network::Interface::Binding;
 

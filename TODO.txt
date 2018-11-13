@@ -1,3 +1,31 @@
+>>>> REST API
+	/Network-Interfaces
+
+		LIST INTERFACES THERE
+
+	/Networks (already working)
+		BUT list pointer to network interfaces
+
+	/Devices
+		In here, list pointers to networks and pointers to network interfaces
+
+
+	// THEN do API
+		/Network-Interface/ID
+		/Network/ID
+		/Devices/ID
+
+	and change default for /Network-Interfaces etc to "details=false" ,but with details=true, list what we do now
+	and details=false, just the names.
+
+
+	//// MAYBE then add APIs
+	// to measure TIME BETWEEN NODES and TIME TO ADDRESS
+	// AND MAYBE HAVE "MONTIORS - where we defifine set of links to montir and then can check back on historical
+	values for those?"
+
+
+
 
 >>> NEXT SIMPLE FUNCTION
 	>	ComputeAverageTimeToInternet()
