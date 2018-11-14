@@ -1,6 +1,9 @@
 >>>> REST API
 	/Network-Interfaces
 
+
+		{{{ ADD DEFAULT GATEWAY TO INTERFACE - AND NETWORK - APIS - OPTIONAL - AND MAYBE ADD "DNS-SERVERS list to both as well - default-dns-server - default-gateway"}}}
+
 		LIST INTERFACES THERE
 
 	/Networks (already working)

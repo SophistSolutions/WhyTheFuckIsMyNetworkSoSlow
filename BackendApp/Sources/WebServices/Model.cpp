@@ -60,7 +60,7 @@ const ObjectVariantMapper Device::kMapper = []() {
 
     mapper.AddClass<NetworkInterface::Binding> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
         {L"Internet-Address", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface::Binding, fInternetAddress)},
-        {L"On-Link-Prefix-Length", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface::Binding, fOnLinkPrefixLength)},
+        {L"On-Link-Prefix-Length", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface::Binding, fOnLinkPrefixLength), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
     mapper.AddCommonType<Collection<NetworkInterface::Binding>> ();
     mapper.AddCommonType<NetworkInterface::Status> ();
@@ -71,12 +71,12 @@ const ObjectVariantMapper Device::kMapper = []() {
         {L"Internal-Interface-ID", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fInternalInterfaceID)},
         {L"GUID", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fGUID)},
         {L"Friendly-Name", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fFriendlyName)},
-        {L"Description", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fDescription)},
+        {L"Description", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fDescription), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"Network-GUID", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fNetworkGUID), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"Type", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fType)},
         {L"Hardware-Address", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fHardwareAddress)},
-        {L"Transmit-Speed-Baud", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fTransmitSpeedBaud)},
-        {L"Receive-Link-Speed-Baud", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fReceiveLinkSpeedBaud)},
+        {L"Transmit-Speed-Baud", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fTransmitSpeedBaud), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"Receive-Link-Speed-Baud", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fReceiveLinkSpeedBaud), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"Bindings", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fBindings)},
         {L"Status", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fStatus)},
 
