@@ -23,8 +23,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
      */
     class WSImpl : public IWSAPI {
     public:
-        virtual Collection<Device>  GetDevices () const override;
-        virtual Collection<Network> GetNetworks () const override;
+        virtual Collection<Device>           GetDevices () const override;
+        virtual Collection<Network>          GetNetworks () const override;
+        virtual Collection<NetworkInterface> GetNetworkInterfaces () const override;
     };
 
     void TmpHackAssureStartedMonitoring ();

@@ -15,6 +15,7 @@ vpath %cpp $(SrcDir)
 
 Objs	=	\
 	$(ObjDir)Devices.o\
+	$(ObjDir)NetworkInterfaces.o\
 	$(ObjDir)Networks.o\
 
 all:$(ObjDir) $(Objs)

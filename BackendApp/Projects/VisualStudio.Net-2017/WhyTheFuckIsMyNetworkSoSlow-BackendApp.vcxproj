@@ -498,6 +498,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Discovery\Devices.cpp" />
+    <ClCompile Include="..\..\Sources\Discovery\NetworkInterfaces.cpp" />
     <ClCompile Include="..\..\Sources\Discovery\Networks.cpp" />
     <ClCompile Include="..\..\Sources\Main.cpp">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug-U-64|Win32'">..\Library\Sources;..\..\Library\Sources;..\..\..\Library\Sources;..\..\..\..\Library\Sources;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -524,6 +525,7 @@
     <None Include="..\..\ReadMe.md" />
     <None Include="..\..\Sources\Discovery\Devices.inl" />
     <None Include="..\..\Sources\Discovery\Makefile" />
+    <None Include="..\..\Sources\Discovery\NetworkInterfaces.inl" />
     <None Include="..\..\Sources\Discovery\Networks.inl" />
     <None Include="..\..\Sources\Makefile" />
     <None Include="..\..\Sources\Service.inl" />
@@ -556,6 +558,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Discovery\Devices.h" />
+    <ClInclude Include="..\..\Sources\Discovery\NetworkInterfaces.h" />
     <ClInclude Include="..\..\Sources\Discovery\Networks.h" />
     <ClInclude Include="..\..\Sources\Service.h" />
     <ClInclude Include="..\..\Sources\WebServices\IWSAPI.h" />

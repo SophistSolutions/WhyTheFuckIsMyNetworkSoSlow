@@ -23,6 +23,80 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
     using Containers::Sequence;
     using IO::Network::CIDR;
 
+    /**
+     *  This roughly mimics the Stroika class IO::Network::Interface, or what you would see 
+     *  returned on windows ipconfig/all, or unix "ip link show"
+     * 
+     */
+    struct NetworkInterface {
+
+        /**
+         *  GUID for this interface - MANUFACTURED by WTF
+         */
+        String fGUID;
+
+        /**
+         *  @see IO::Network::Interface
+         */
+        String fInternalInterfaceID;
+
+        /**
+         *  @see IO::Network::Interface
+         */
+        String fFriendlyName;
+
+        /**
+         *  @see IO::Network::Interface
+         */
+        optional<String> fDescription;
+
+        /**
+         *  @see IO::Network::Interface
+         */
+        optional<Common::GUID> fNetworkGUID;
+
+        using Type = IO::Network::Interface::Type;
+
+        /**
+         *  @see IO::Network::Interface
+         */
+        optional<Type> fType;
+
+        /**
+         *  @see IO::Network::Interface
+         */
+        optional<String> fHardwareAddress;
+
+        /**
+         *  @see IO::Network::Interface
+         */
+        optional<uint64_t> fTransmitSpeedBaud;
+
+        /**
+         *  @see IO::Network::Interface
+         */
+        optional<uint64_t> fReceiveLinkSpeedBaud;
+
+        using Binding = IO::Network::Interface::Binding;
+
+        /**
+         *  @see IO::Network::Interface
+         */
+        Containers::Collection<Binding> fBindings; // can be IPv4 or IPv6
+
+        using Status = IO::Network::Interface::Status;
+
+        /**
+         *  @see IO::Network::Interface
+         */
+        optional<Containers::Set<Status>> fStatus;
+
+        /**
+         *  @see Characters::ToString ();
+         */
+        nonvirtual String ToString () const;
+    };
+
     // early draft - BASED ON IO::Network::Interface
     struct Network {
 
@@ -45,8 +119,6 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         //optional<String> fDescription;
 
         optional<String> fNetworkGUID;
-
-        //using Type = IO::Network::Interface::Type;
 
         //optional<Type> fType;
 

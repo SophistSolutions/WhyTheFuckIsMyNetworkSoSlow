@@ -51,6 +51,7 @@ class WebServer::Rep_ {
 public:
     static const WebServiceMethodDescription kDevices_;
     static const WebServiceMethodDescription kNetworks_;
+    static const WebServiceMethodDescription kNetworkInterfaces_;
 
 private:
     static constexpr unsigned int kMaxConcurrentConnections_{5};
@@ -78,13 +79,7 @@ public:
                   RegularExpression (IO::Network::HTTP::Methods::kOptions, RegularExpression::eECMAScript),
                   RegularExpression::kAny,
                   [](Message* m) {}},
-              Route{RegularExpression (L"", RegularExpression::eECMAScript), DefaultPage_},
-              Route{
-                  RegularExpression (L"Devices", RegularExpression::eECMAScript),
-                  mkRequestHandler (kDevices_, Device::kMapper, function<Collection<BackendApp::WebServices::Device> (void)>{[=]() { return fWSAPI_->GetDevices (); }})},
-              Route{
-                  RegularExpression (L"Networks", RegularExpression::eECMAScript),
-                  mkRequestHandler (kNetworks_, Device::kMapper, function<Collection<BackendApp::WebServices::Network> (void)>{[=]() { return fWSAPI_->GetNetworks (); }})}}}
+              Route{RegularExpression (L"", RegularExpression::eECMAScript), DefaultPage_}, Route{RegularExpression (L"Devices", RegularExpression::eECMAScript), mkRequestHandler (kDevices_, Device::kMapper, function<Collection<BackendApp::WebServices::Device> (void)>{[=]() { return fWSAPI_->GetDevices (); }})}, Route{RegularExpression (L"NetworkInterfaces", RegularExpression::eECMAScript), mkRequestHandler (kNetworkInterfaces_, Device::kMapper, function<Collection<BackendApp::WebServices::NetworkInterface> (void)>{[=]() { return fWSAPI_->GetNetworkInterfaces (); }})}, Route{RegularExpression (L"Networks", RegularExpression::eECMAScript), mkRequestHandler (kNetworks_, Device::kMapper, function<Collection<BackendApp::WebServices::Network> (void)>{[=]() { return fWSAPI_->GetNetworks (); }})}}}
         , fWSConnectionMgr_{SocketAddresses (InternetAddresses_Any (), 8080), fWSRouter_, ConnectionManager::Options{kMaxConcurrentConnections_, Socket::BindFlags{true}, kServerString_}} // listen and dispatch while this object exists
         , fGUIWebRouter_{Sequence<Route>{
               Route{RegularExpression::kAny, FileSystemRouter{Execution::GetEXEDir () + L"html", {}, Sequence<String>{L"index.html"}}},
@@ -98,6 +93,7 @@ public:
             response,
             Sequence<WebServiceMethodDescription>{
                 kDevices_,
+                kNetworkInterfaces_,
                 kNetworks_,
             },
             DocsOptions{String_Constant{L"Web Methods"}});
@@ -119,6 +115,15 @@ const WebServiceMethodDescription WebServer::Rep_::kNetworks_{
     {},
     Sequence<String>{L"curl http://localhost:8080/Networks"},
     Sequence<String>{L"Fetch the list of known Networks.",
+                     L"@todo - in the future - add support for parameters to this fetch - which can be used to filter/subset etc"},
+};
+const WebServiceMethodDescription WebServer::Rep_::kNetworkInterfaces_{
+    String_Constant{L"NetworkInterfaces"},
+    Set<String>{String_Constant{IO::Network::HTTP::Methods::kGet}},
+    DataExchange::PredefinedInternetMediaType::kJSON,
+    {},
+    Sequence<String>{L"curl http://localhost:8080/NetworkInterfaces"},
+    Sequence<String>{L"Fetch the list of known Network Interfaces.",
                      L"@todo - in the future - add support for parameters to this fetch - which can be used to filter/subset etc"},
 };
 const String_Constant WebServer::Rep_::kServerString_{L"Why-The-Fuck-Is-My-Network-So-Slow/1.0"};

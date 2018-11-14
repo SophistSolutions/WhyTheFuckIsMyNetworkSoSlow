@@ -13,6 +13,7 @@
 #include "Stroika/Foundation/IO/Network/LinkMonitor.h"
 
 #include "../Discovery/Devices.h"
+#include "../Discovery/NetworkInterfaces.h"
 #include "../Discovery/Networks.h"
 
 #include "WSImpl.h"
@@ -125,6 +126,31 @@ Collection<BackendApp::WebServices::Network> WSImpl::GetNetworks () const
             nw.fNetworkGUID = n.fInterfaceDetails.fNetworkGUID->ToString ();
         }
         nw.fNetworkAddress = n.fNetworkAddress;
+
+        result += nw;
+    }
+    return result;
+}
+
+Collection<BackendApp::WebServices::NetworkInterface> WSImpl::GetNetworkInterfaces () const
+{
+    Collection<BackendApp::WebServices::NetworkInterface> result;
+
+    for (Discovery::NetworkInterface n : Discovery::CollectActiveNetworkInterfaces ()) {
+        BackendApp::WebServices::NetworkInterface nw;
+
+        /**
+         */
+        nw.fInternalInterfaceID = n.fInternalInterfaceID;
+        nw.fFriendlyName        = n.fFriendlyName;
+        nw.fGUID                = n.fInternalInterfaceID; // wrong - must add GUID @todo
+
+        nw.fType                 = n.fType;
+        nw.fHardwareAddress      = n.fHardwareAddress;
+        nw.fTransmitSpeedBaud    = n.fTransmitSpeedBaud;
+        nw.fReceiveLinkSpeedBaud = n.fReceiveLinkSpeedBaud;
+        nw.fBindings             = n.fBindings;
+        nw.fStatus               = n.fStatus;
 
         result += nw;
     }
