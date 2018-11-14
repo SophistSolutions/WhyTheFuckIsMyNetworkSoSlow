@@ -32,6 +32,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
         /**
          *  GUID for this interface - MANUFACTURED by WTF
+         // @todo rename fID, and actually auto-generate it uniquly somehow (or OK to use iwndows based one)
          */
         String fGUID;
 
@@ -91,6 +92,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
          */
         optional<Containers::Set<Status>> fStatus;
 
+        // @todo add optional SSID
+
         /**
          *  @see Characters::ToString ();
          */
@@ -112,39 +115,34 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
         CIDR fNetworkAddress;
 
-        ///String fInternalInterfaceID;
-
         String fFriendlyName; //tmphack - list of interfaces attached to network
 
-        //optional<String> fDescription;
-
+        // Todo - WTF allocated ID - and one inherited from network interface (windows only) - CLARIFY - probably call OURs just fID (and change others in this module to match)
         optional<String> fNetworkGUID;
 
-        //optional<Type> fType;
+        // @todo add default-dns-servers and default-gateway
 
-        //optional<String> fHardwareAddress;
+        // PROBABLY idnetify same network - by default - as hash of default gateway's macaddr - or at least look at that to compare...
+        // thogh that doesnt quite work cuz if you cahnge router, you need o call it the same network.... It's just a big clue... Not sure how
+        // best to deal with this fuzzy identity notion
 
-        //optional<uint64_t> fTransmitSpeedBaud;
+        // @todo add SSIDs here
 
-        //optional<uint64_t> fReceiveLinkSpeedBaud;
-
-        using Binding = IO::Network::Interface::Binding;
-
-        /**
-         */
-        Containers::Collection<Binding> fBindings; // can be IPv4 or IPv6
-
+#if 0
         using Status = IO::Network::Interface::Status;
 
         /**
+          @todo NOT sure we want status for network - at least different sort of status 
          */
         optional<Containers::Set<Status>> fStatus;
+#endif
     };
 
     /**
      */
     struct Device {
         /**
+        @ tood rename as "fID" and just document perisstnet id
          */
         String persistentID;
 
@@ -152,6 +150,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
         /**
          * Bindings
+
+         redo this as Collection<InternetAddress>
          */
         Sequence<String> ipAddresses;
 
@@ -177,7 +177,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         /*
          *  in CIDR notation.
          */
-        String          network;
+        String network;
+
         optional<float> signalStrength{};
         bool            connected{};
         bool            important{};
