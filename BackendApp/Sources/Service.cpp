@@ -50,7 +50,7 @@ void WTFAppServiceRep::MainLoop (const std::function<void()>& startedCB)
         Thread::SuppressInterruptionInContext suppressSoWeActuallyShutDownOtherTaskWhenWereBeingShutDown;
         Logger::Get ().Log (Logger::Priority::eInfo, L"Beginning service shutdown");
     });
-    WebServices::TmpHackAssureStartedMonitoring ();
+    IgnoreExceptionsForCall (WebServices::TmpHackAssureStartedMonitoring ());
     WebServer webServer{make_shared<WSImpl> ()};
     startedCB (); // Notify service control mgr that the service has started
     Logger::Get ().Log (Logger::Priority::eInfo, L"Service started successfully");
