@@ -59,10 +59,10 @@ clean:
 	@$(MAKE) --directory=html --no-print-directory clean MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
 ifeq ($(CONFIGURATION),)
 	@for i in `$(StroikaRoot)/ScriptsLib/GetConfigurations.sh  --config-tags "$(CONFIGURATION_TAGS)"` ; do\
-		$(MAKE) --no-print-directory --silent clean CONFIGURATION=$$i;\
+		$(MAKE) --no-print-directory --silent clean CONFIGURATION=$$i MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1));\
 	done
 else
-	@$(MAKE) --directory=ThirdPartyComponents CONFIGURATION=$(CONFIGURATION) --no-print-directory clean
+	@$(MAKE) --directory=ThirdPartyComponents CONFIGURATION=$(CONFIGURATION) --no-print-directory clean MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
 endif
 
 clobber:
