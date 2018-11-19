@@ -28,71 +28,16 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
      *  returned on windows ipconfig/all, or unix "ip link show"
      * 
      */
-    struct NetworkInterface {
+    struct NetworkInterface : IO::Network::Interface {
+        NetworkInterface () = default;
+        NetworkInterface (const NetworkInterface& src) = default;
+        NetworkInterface (const IO::Network::Interface& src);
 
         /**
          *  GUID for this interface - MANUFACTURED by WTF
          // @todo rename fID, and actually auto-generate it uniquly somehow (or OK to use iwndows based one)
          */
         String fGUID;
-
-        /**
-         *  @see IO::Network::Interface
-         */
-        String fInternalInterfaceID;
-
-        /**
-         *  @see IO::Network::Interface
-         */
-        String fFriendlyName;
-
-        /**
-         *  @see IO::Network::Interface
-         */
-        optional<String> fDescription;
-
-        /**
-         *  @see IO::Network::Interface
-         */
-        optional<Common::GUID> fNetworkGUID;
-
-        using Type = IO::Network::Interface::Type;
-
-        /**
-         *  @see IO::Network::Interface
-         */
-        optional<Type> fType;
-
-        /**
-         *  @see IO::Network::Interface
-         */
-        optional<String> fHardwareAddress;
-
-        /**
-         *  @see IO::Network::Interface
-         */
-        optional<uint64_t> fTransmitSpeedBaud;
-
-        /**
-         *  @see IO::Network::Interface
-         */
-        optional<uint64_t> fReceiveLinkSpeedBaud;
-
-        using Binding = IO::Network::Interface::Binding;
-
-        /**
-         *  @see IO::Network::Interface
-         */
-        Containers::Collection<Binding> fBindings; // can be IPv4 or IPv6
-
-        using Status = IO::Network::Interface::Status;
-
-        /**
-         *  @see IO::Network::Interface
-         */
-        optional<Containers::Set<Status>> fStatus;
-
-        // @todo add optional SSID
 
         /**
          *  @see Characters::ToString ();

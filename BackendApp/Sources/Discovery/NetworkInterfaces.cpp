@@ -39,6 +39,27 @@ NetworkInterface::NetworkInterface (const IO::Network::Interface& src)
 
 /*
  ********************************************************************************
+ ******************* Discovery::CollectAllNetworkInterfaces *********************
+ ********************************************************************************
+ */
+Collection<NetworkInterface> Discovery::CollectAllNetworkInterfaces ()
+{
+#if USE_NOISY_TRACE_IN_THIS_MODULE_
+    Debug::TraceContextBumper ctx{L"Discovery::CollectAllNetworkInterfaces"};
+#endif
+    vector<NetworkInterface> results;
+    for (Interface i : IO::Network::GetInterfaces ()) {
+        NetworkInterface ni{i};
+        results.push_back (ni);
+    }
+#if USE_NOISY_TRACE_IN_THIS_MODULE_
+    DbgTrace (L"returns: %s", Characters::ToString (results).c_str ());
+#endif
+    return results;
+}
+
+/*
+ ********************************************************************************
  ***************** Discovery::CollectActiveNetworkInterfaces ********************
  ********************************************************************************
  */
@@ -47,11 +68,10 @@ Collection<NetworkInterface> Discovery::CollectActiveNetworkInterfaces ()
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
     Debug::TraceContextBumper ctx{L"Discovery::CollectActiveNetworkInterfaces"};
 #endif
-    vector<NetworkInterface> results;
-    for (Interface i : IO::Network::GetInterfaces ()) {
+    Collection<NetworkInterface> results;
+    for (NetworkInterface i : CollectAllNetworkInterfaces ()) {
         if (i.fType != Interface::Type::eLoopback and i.fStatus and i.fStatus->Contains (Interface::Status::eRunning)) {
-            NetworkInterface ni{i};
-            results.push_back (ni);
+            results += i;
         }
     }
 #if USE_NOISY_TRACE_IN_THIS_MODULE_

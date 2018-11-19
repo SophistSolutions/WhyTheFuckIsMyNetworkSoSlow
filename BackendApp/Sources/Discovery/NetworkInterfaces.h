@@ -30,6 +30,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
         NetworkInterface (const IO::Network::Interface& src);
     };
 
+    Collection<NetworkInterface> CollectAllNetworkInterfaces ();
     Collection<NetworkInterface> CollectActiveNetworkInterfaces ();
 
 }

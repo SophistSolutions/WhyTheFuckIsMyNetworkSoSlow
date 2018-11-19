@@ -136,21 +136,13 @@ Collection<BackendApp::WebServices::NetworkInterface> WSImpl::GetNetworkInterfac
 {
     Collection<BackendApp::WebServices::NetworkInterface> result;
 
-    for (Discovery::NetworkInterface n : Discovery::CollectActiveNetworkInterfaces ()) {
-        BackendApp::WebServices::NetworkInterface nw;
+    for (Discovery::NetworkInterface n : Discovery::CollectAllNetworkInterfaces ()) {
+        BackendApp::WebServices::NetworkInterface nw {n};
 
         /**
          */
-        nw.fInternalInterfaceID = n.fInternalInterfaceID;
-        nw.fFriendlyName        = n.fFriendlyName;
         nw.fGUID                = n.fInternalInterfaceID; // wrong - must add GUID @todo
 
-        nw.fType                 = n.fType;
-        nw.fHardwareAddress      = n.fHardwareAddress;
-        nw.fTransmitSpeedBaud    = n.fTransmitSpeedBaud;
-        nw.fReceiveLinkSpeedBaud = n.fReceiveLinkSpeedBaud;
-        nw.fBindings             = n.fBindings;
-        nw.fStatus               = n.fStatus;
 
         result += nw;
     }
