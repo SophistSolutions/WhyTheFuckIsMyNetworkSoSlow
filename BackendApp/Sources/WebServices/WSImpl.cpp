@@ -18,6 +18,9 @@
 
 #include "WSImpl.h"
 
+// Comment this in to turn on aggressive noisy DbgTrace in this module
+//#define USE_NOISY_TRACE_IN_THIS_MODULE_ 1
+
 using namespace std;
 
 using namespace Stroika::Foundation;
@@ -37,12 +40,12 @@ namespace {
         static Synchronized<Mapping<Network, shared_ptr<DeviceDiscoverer>>> sDiscovery_{
             Common::DeclareEqualsComparer ([](Network l, Network r) { return l.fNetworkAddress == r.fNetworkAddress; })};
 
-        Collection<Discovery::Network> tmp = Discovery::CollectActiveNetworks ();
+        Sequence<Discovery::Network> tmp = Discovery::CollectActiveNetworks ();
 
         if (tmp.empty ()) {
             Execution::Throw (Execution::StringException (L"no active network"));
         }
-        Discovery::Network net = tmp.Nth (0);
+        Discovery::Network net = tmp[0];
 
         auto l = sDiscovery_.rwget ();
         if (auto i = l->Lookup (net)) {
@@ -114,21 +117,23 @@ Collection<BackendApp::WebServices::Device> WSImpl::GetDevices () const
     return devices;
 }
 
-Collection<BackendApp::WebServices::Network> WSImpl::GetNetworks () const
+Sequence<BackendApp::WebServices::Network> WSImpl::GetNetworks () const
 {
-    Collection<BackendApp::WebServices::Network> result;
+    Sequence<BackendApp::WebServices::Network> result;
 
+    // @todo parameterize if we return all or just active networks
     for (Discovery::Network n : Discovery::CollectActiveNetworks ()) {
         BackendApp::WebServices::Network nw{n.fNetworkAddress};
 
-        nw.fFriendlyName = n.fFriendlyName;
-        if (n.fInterfaceDetails.fNetworkGUID) {
-            nw.fNetworkGUID = n.fInterfaceDetails.fNetworkGUID->ToString ();
-        }
-        nw.fNetworkAddress = n.fNetworkAddress;
+        nw.fFriendlyName       = n.fFriendlyName;
+        nw.fNetworkAddress     = n.fNetworkAddress;
+        nw.fAttachedInterfaces = n.fAttachedNetworkInterfaces;
 
         result += nw;
     }
+#if USE_NOISY_TRACE_IN_THIS_MODULE_
+    DbgTrace (L"returns: %s", Characters::ToString (result).c_str ());
+#endif
     return result;
 }
 
@@ -137,12 +142,11 @@ Collection<BackendApp::WebServices::NetworkInterface> WSImpl::GetNetworkInterfac
     Collection<BackendApp::WebServices::NetworkInterface> result;
 
     for (Discovery::NetworkInterface n : Discovery::CollectAllNetworkInterfaces ()) {
-        BackendApp::WebServices::NetworkInterface nw {n};
+        BackendApp::WebServices::NetworkInterface nw{n};
 
         /**
          */
-        nw.fGUID                = n.fInternalInterfaceID; // wrong - must add GUID @todo
-
+        nw.fGUID = n.fInternalInterfaceID; // wrong - must add GUID @todo
 
         result += nw;
     }

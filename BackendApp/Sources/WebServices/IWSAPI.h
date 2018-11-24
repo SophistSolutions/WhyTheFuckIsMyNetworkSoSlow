@@ -19,6 +19,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
     using namespace Model;
 
     using Containers::Collection;
+    using Containers::Sequence;
 
     /**
      */
@@ -40,7 +41,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
         /**
          *  curl  http://localhost:8080/Networks
          */
-        virtual Collection<Network> GetNetworks () const = 0;
+        virtual Sequence<Network> GetNetworks () const = 0;
 
     public:
         /**

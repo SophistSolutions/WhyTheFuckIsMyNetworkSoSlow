@@ -21,7 +21,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
     using namespace Stroika::Foundation;
     using Characters::String;
     using Containers::Sequence;
+    using Containers::Set;
     using IO::Network::CIDR;
+    using IO::Network::InternetAddress;
 
     /**
      *  This roughly mimics the Stroika class IO::Network::Interface, or what you would see 
@@ -29,7 +31,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
      * 
      */
     struct NetworkInterface : IO::Network::Interface {
-        NetworkInterface () = default;
+        NetworkInterface ()                            = default;
         NetworkInterface (const NetworkInterface& src) = default;
         NetworkInterface (const IO::Network::Interface& src);
 
@@ -45,7 +47,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         nonvirtual String ToString () const;
     };
 
-    // early draft - BASED ON IO::Network::Interface
+    // early draft
     struct Network {
 
         Network ()
@@ -60,10 +62,14 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
         CIDR fNetworkAddress;
 
-        String fFriendlyName; //tmphack - list of interfaces attached to network
+        optional<String> fFriendlyName; //tmphack - list of interfaces attached to network
 
         // Todo - WTF allocated ID - and one inherited from network interface (windows only) - CLARIFY - probably call OURs just fID (and change others in this module to match)
-        optional<String> fNetworkGUID;
+        String fGUID;
+
+        Set<String> fAttachedInterfaces;
+
+        optional<InternetAddress> fDefaultGateway;
 
         // @todo add default-dns-servers and default-gateway
 
@@ -81,6 +87,11 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
          */
         optional<Containers::Set<Status>> fStatus;
 #endif
+
+        /**
+         *  @see Characters::ToString ();
+         */
+        nonvirtual String ToString () const;
     };
 
     /**

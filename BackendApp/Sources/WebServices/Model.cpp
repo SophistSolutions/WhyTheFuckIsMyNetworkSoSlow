@@ -27,12 +27,61 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model;
 
 /*
  ********************************************************************************
+ ************************ Discovery::Network ***************************
+ ********************************************************************************
+ */
+String Network::ToString () const
+{
+    Characters::StringBuilder sb;
+    sb += L"{";
+    sb += L"fNetworkAddress: " + Characters::ToString (fNetworkAddress) + L", ";
+    sb += L"fFriendlyName: " + Characters::ToString (fFriendlyName) + L", ";
+    sb += L"fGUID: " + Characters::ToString (fGUID) + L", ";
+    sb += L"fAttachedInterfaces: " + Characters::ToString (fAttachedInterfaces) + L", ";
+    sb += L"}";
+    return sb.str ();
+}
+
+/*
+ ********************************************************************************
  ************************ Discovery::NetworkInterface ***************************
  ********************************************************************************
  */
 Model::NetworkInterface::NetworkInterface (const IO::Network::Interface& src)
     : Interface (src)
 {
+}
+
+String NetworkInterface::ToString () const
+{
+    Characters::StringBuilder sb;
+    sb += L"{";
+    sb += L"Internal-Interface-ID: " + Characters::ToString (fInternalInterfaceID) + L", ";
+    sb += L"Friendly-Name: " + Characters::ToString (fFriendlyName) + L", ";
+    if (fDescription) {
+        sb += L"Description: " + Characters::ToString (*fDescription) + L", ";
+    }
+    if (fNetworkGUID) {
+        sb += L"Network-GUID: " + Characters::ToString (*fNetworkGUID) + L", ";
+    }
+    if (fType) {
+        sb += L"Type: " + Characters::ToString (*fType) + L", ";
+    }
+    if (fHardwareAddress) {
+        sb += L"Hardware-Address: " + Characters::ToString (*fHardwareAddress) + L", ";
+    }
+    if (fTransmitSpeedBaud) {
+        sb += L"Transmit-Speed-Baud: " + Characters::ToString (*fTransmitSpeedBaud) + L", ";
+    }
+    if (fReceiveLinkSpeedBaud) {
+        sb += L"Receive-Link-Speed-Baud: " + Characters::ToString (*fReceiveLinkSpeedBaud) + L", ";
+    }
+    sb += L"Bindings: " + Characters::ToString (fBindings) + L", ";
+    if (fStatus) {
+        sb += L"Status: " + Characters::ToString (*fStatus) + L", ";
+    }
+    sb += L"}";
+    return sb.str ();
 }
 
 /*
@@ -67,7 +116,7 @@ const ObjectVariantMapper Device::kMapper = []() {
     mapper.AddCommonType<NetworkInterface::Type> ();
     mapper.AddCommonType<optional<NetworkInterface::Type>> ();
     mapper.AddCommonType<InternetAddress> ();
-
+    mapper.AddCommonType<optional<InternetAddress>> ();
 
     mapper.AddCommonType<IO::Network::Interface::WirelessInfo::State> ();
     mapper.AddCommonType<optional<IO::Network::Interface::WirelessInfo::State>> ();
@@ -105,7 +154,7 @@ const ObjectVariantMapper Device::kMapper = []() {
     mapper.AddCommonType<optional<Set<NetworkInterface::Status>>> ();
     mapper.AddClass<NetworkInterface> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
         {L"Internal-Interface-ID", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fInternalInterfaceID)},
-        {L"GUID", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fGUID)},
+        {L"ID", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fGUID)},
         {L"Friendly-Name", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fFriendlyName)},
         {L"Description", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fDescription), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"Network-GUID", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fNetworkGUID), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
@@ -119,14 +168,18 @@ const ObjectVariantMapper Device::kMapper = []() {
     });
     mapper.AddCommonType<Collection<NetworkInterface>> ();
 
+    mapper.AddCommonType<Set<String>> ();
+
     // quickie draft
     mapper.AddClass<Network> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-        {L"Attached-Interface-Friendly-Name-SB-LISTOFOWNINGINTERFACES", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fFriendlyName)},
+        {L"Friendly-Name", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fFriendlyName), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"Network-Address", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fNetworkAddress)},
-
-        {L"Network-GUID", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fNetworkGUID), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"Attached-Interfaces", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fAttachedInterfaces)},
+        {L"Default-Gateway", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fDefaultGateway)},
+        {L"ID", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fGUID)},
     });
     mapper.AddCommonType<Collection<Network>> ();
+    mapper.AddCommonType<Sequence<Network>> ();
 
     mapper.AddCommonType<Device::DeviceType> ();
     mapper.AddCommonType<optional<Device::DeviceType>> ();
@@ -152,36 +205,4 @@ DISABLE_COMPILER_MSC_WARNING_END (4573);
 String Device::ToString () const
 {
     return DataExchange::Variant::JSON::Writer ().WriteAsString (Device::kMapper.FromObject (*this));
-}
-
-String NetworkInterface::ToString () const
-{
-    Characters::StringBuilder sb;
-    sb += L"{";
-    sb += L"Internal-Interface-ID: " + Characters::ToString (fInternalInterfaceID) + L", ";
-    sb += L"Friendly-Name: " + Characters::ToString (fFriendlyName) + L", ";
-    if (fDescription) {
-        sb += L"Description: " + Characters::ToString (*fDescription) + L", ";
-    }
-    if (fNetworkGUID) {
-        sb += L"Network-GUID: " + Characters::ToString (*fNetworkGUID) + L", ";
-    }
-    if (fType) {
-        sb += L"Type: " + Characters::ToString (*fType) + L", ";
-    }
-    if (fHardwareAddress) {
-        sb += L"Hardware-Address: " + Characters::ToString (*fHardwareAddress) + L", ";
-    }
-    if (fTransmitSpeedBaud) {
-        sb += L"Transmit-Speed-Baud: " + Characters::ToString (*fTransmitSpeedBaud) + L", ";
-    }
-    if (fReceiveLinkSpeedBaud) {
-        sb += L"Receive-Link-Speed-Baud: " + Characters::ToString (*fReceiveLinkSpeedBaud) + L", ";
-    }
-    sb += L"Bindings: " + Characters::ToString (fBindings) + L", ";
-    if (fStatus) {
-        sb += L"Status: " + Characters::ToString (*fStatus) + L", ";
-    }
-    sb += L"}";
-    return sb.str ();
 }

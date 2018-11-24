@@ -50,6 +50,9 @@ Collection<NetworkInterface> Discovery::CollectAllNetworkInterfaces ()
     vector<NetworkInterface> results;
     for (Interface i : IO::Network::GetInterfaces ()) {
         NetworkInterface ni{i};
+        ni.fGUID = i.fInternalInterfaceID; // may need to redo this based on whats stored in database
+        // if we have guid for internal interfaceid, use that, and else compute hash of interface name, and use that.
+        // @todo redo fGUID
         results.push_back (ni);
     }
 #if USE_NOISY_TRACE_IN_THIS_MODULE_

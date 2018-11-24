@@ -26,6 +26,13 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
     using Containers::Set;
 
     struct NetworkInterface : IO::Network::Interface {
+
+        /**
+         *  GUID for this interface - MANUFACTURED by WTF
+         // @todo rename fID, and actually auto-generate it uniquly somehow (or OK to use iwndows based one)
+         */
+        String fGUID;
+
         NetworkInterface (const NetworkInterface& src) = default;
         NetworkInterface (const IO::Network::Interface& src);
     };

@@ -24,21 +24,22 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
 
     using Characters::String;
     using Containers::Collection;
+    using Containers::Sequence;
     using Containers::Set;
     using IO::Network::CIDR;
     using IO::Network::InternetAddress;
 
     struct Network {
-        CIDR        fNetworkAddress;
-        String      fFriendlyName;
-        Set<String> fSSIDs;
+        CIDR             fNetworkAddress;
+        optional<String> fFriendlyName;
+        String           fGUID;
 
-        IO::Network::Interface fInterfaceDetails;
+        Set<String> fAttachedNetworkInterfaces;
 
         nonvirtual String ToString () const;
     };
 
-    Collection<Network> CollectActiveNetworks ();
+    Sequence<Network> CollectActiveNetworks ();
 
 }
 
