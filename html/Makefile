@@ -8,14 +8,19 @@ include $(StroikaRoot)/Library/Projects/Unix/SharedMakeVariables-Default.mk
 
 
 all:
-	gulp
+	#tmphack - workaround fact that gulp stuff broken for now
+	mkdir -p dist
+	-gulp
 
 
 clean:
-	rm -f src/*.js	
+	@$(StroikaRoot)/ScriptsLib/PrintLevelLeader.sh $(MAKE_INDENT_LEVEL) && $(ECHO) "Clean HTML:"
+	@rm -f src/*.js	
 
-clobber: clean
-	rm -rf dist
+clobber: 
+	@$(StroikaRoot)/ScriptsLib/PrintLevelLeader.sh $(MAKE_INDENT_LEVEL) && $(ECHO) "Clobber HTML:"
+	@rm -f src/*.js	
+	@rm -rf dist
 
 update-components:
 	# automate/autodetect - @todo

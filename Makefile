@@ -9,12 +9,13 @@ CONFIGURATION_TAGS?=$(TAGS)
 
 .PHONY: configurations
 
+APPLY_CONFIGS=$(or $(CONFIGURATION), $(shell $(StroikaRoot)ScriptsLib/GetConfigurations --config-tags "$(CONFIGURATION_TAGS)"))
 
 all:
 	@$(StroikaRoot)ScriptsLib/PrintLevelLeader.sh $(MAKE_INDENT_LEVEL) && $(ECHO) "Building WhyTheFuckIsMyNetworkSoSlow all{$(CONFIGURATION)}:"
 	@$(MAKE) -silent ConfigurationFiles MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
 ifeq ($(CONFIGURATION),)
-	@for i in `$(MAKE) --silent list-configurations  CONFIGURATION_TAGS="$(CONFIGURATION_TAGS)"` ; do\
+	@for i in $(APPLY_CONFIGS) ; do\
 		$(MAKE) --no-print-directory --silent all CONFIGURATION=$$i MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1));\
 	done
 else
@@ -54,27 +55,28 @@ list-configurations list-configuration-tags:
 	@$(MAKE) --directory ThirdPartyComponents/Stroika/StroikaRoot --silent CONFIGURATION_TAGS="$(CONFIGURATION_TAGS)" $@
 
 
-clean:
-	@$(StroikaRoot)ScriptsLib/PrintLevelLeader.sh $(MAKE_INDENT_LEVEL) && $(ECHO) "Cleaning WhyTheFuckIsMyNetworkSoSlow{$(CONFIGURATION)}:"
-	@$(MAKE) --directory=html --no-print-directory clean MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
+
+clean clobber:
 ifeq ($(CONFIGURATION),)
-	@for i in `$(StroikaRoot)/ScriptsLib/GetConfigurations.sh  --config-tags "$(CONFIGURATION_TAGS)"` ; do\
-		$(MAKE) --no-print-directory --silent clean CONFIGURATION=$$i MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1));\
+	@$(StroikaRoot)ScriptsLib/PrintProgressLine.sh $(MAKE_INDENT_LEVEL) "$(shell echo $@) WhyTheFuckIsMyNetworkSoSlow:"
+ifeq ($(CONFIGURATION_TAGS),)
+ifeq ($@,clobber)
+	@rm -rf IntermediateFiles/*
+	@rm -rf Builds/*
+endif
+	@for i in $(APPLY_CONFIGS) ; do\
+		$(MAKE) --no-print-directory $@ CONFIGURATION=$$i MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1));\
 	done
+endif
 else
-	@$(MAKE) --directory=ThirdPartyComponents CONFIGURATION=$(CONFIGURATION) --no-print-directory clean MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
+	@$(StroikaRoot)ScriptsLib/CheckValidConfiguration.sh $(CONFIGURATION)
+	@$(StroikaRoot)ScriptsLib/PrintProgressLine.sh $(MAKE_INDENT_LEVEL) "$(shell echo $@) WhyTheFuckIsMyNetworkSoSlow {$(CONFIGURATION)}:"
+	@$(MAKE) --directory BackendApp --no-print-directory $@ CONFIGURATION=$(CONFIGURATION) MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
+	@$(MAKE) --directory html --no-print-directory $@ CONFIGURATION=$(CONFIGURATION) MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
+	@$(MAKE) --directory ThirdPartyComponents --no-print-directory $@ CONFIGURATION=$(CONFIGURATION) MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
 endif
 
-clobber:
-	@$(StroikaRoot)ScriptsLib/PrintLevelLeader.sh $(MAKE_INDENT_LEVEL) && $(ECHO) "Clobbering WhyTheFuckIsMyNetworkSoSlow{$(CONFIGURATION)}:"
-ifeq ($(CONFIGURATION),)
-	@rm -rf Builds IntermediateFiles ConfigurationFiles $(StroikaRoot)/StroikaRoot/{Builds,IntermediateFiles,ConfigurationFiles}
-	@$(MAKE) --directory=ThirdPartyComponents --no-print-directory clobber MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
-else
-	@$(MAKE) --directory=html --no-print-directory clobber CONFIGURATION=$(CONFIGURATION) MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
-	@$(MAKE) --directory=ThirdPartyComponents --no-print-directory clobber CONFIGURATION=$(CONFIGURATION) MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
-	@$(MAKE) --directory=BackendApp --no-print-directory clobber CONFIGURATION=$(CONFIGURATION) MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
-endif
+
 
 update-submodules:
 	git submodule update --init --recursive
