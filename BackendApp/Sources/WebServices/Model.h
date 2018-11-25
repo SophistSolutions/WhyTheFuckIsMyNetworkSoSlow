@@ -45,9 +45,12 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
          *  @see Characters::ToString ();
          */
         nonvirtual String ToString () const;
+
+        static const DataExchange::ObjectVariantMapper kMapper;
     };
 
-    // early draft
+    /**
+     */
     struct Network {
 
         Network ()
@@ -76,21 +79,14 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         // thogh that doesnt quite work cuz if you cahnge router, you need o call it the same network.... It's just a big clue... Not sure how
         // best to deal with this fuzzy identity notion
 
-        // @todo add SSIDs here
-
-#if 0
-        using Status = IO::Network::Interface::Status;
-
-        /**
-          @todo NOT sure we want status for network - at least different sort of status 
-         */
-        optional<Containers::Set<Status>> fStatus;
-#endif
+        // @todo add SSIDs here - as a good hint in identenifying same network
 
         /**
          *  @see Characters::ToString ();
          */
         nonvirtual String ToString () const;
+
+        static const DataExchange::ObjectVariantMapper kMapper;
     };
 
     /**

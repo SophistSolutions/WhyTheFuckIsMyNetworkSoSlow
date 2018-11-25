@@ -64,7 +64,6 @@ Sequence<Network> Discovery::CollectActiveNetworks ()
     MultiSet<CIDR>         cidrScores; // primitive attempt to find best interface to display
     for (NetworkInterface i : CollectActiveNetworkInterfaces ()) {
         if (not i.fBindings.empty ()) {
-            // @todo REWRITE to use 'scoring' to pick BEST address not just v4/non-multicast
             Interface::Binding useBinding = i.fBindings.Nth (0);
             i.fBindings.Apply ([&](Interface::Binding i) {
                 if (useBinding.fInternetAddress.GetAddressFamily () != InternetAddress::AddressFamily::V4 or useBinding.fInternetAddress.IsMulticastAddress ()) {
@@ -97,7 +96,7 @@ Sequence<Network> Discovery::CollectActiveNetworks ()
                 nw.fAttachedNetworkInterfaces += i.fGUID;
                 accumResults.Add (cidr, nw);
 
-                // quick hack attempt to put most important interfaces at top of list
+                // put most important interfaces at top of list
                 if ((i.fType == Interface::Type::eWiredEthernet or i.fType == Interface::Type::eWIFI) and i.fDescription and not i.fDescription->Contains (L"virtual", CompareOptions::eCaseInsensitive)) {
                     score += 1;
                 }

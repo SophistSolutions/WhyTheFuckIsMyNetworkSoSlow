@@ -25,6 +25,16 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model;
 
+#if qCompilerAndStdLib_lambda_expand_in_namespace_Buggy
+const ObjectVariantMapper klambda_expand_in_namespace_Buggy_workaround_Mapper_ = []() {
+    using IO::Network::CIDR;
+    ObjectVariantMapper mapper;
+    mapper.Add<CIDR> ([](const ObjectVariantMapper& mapper, const CIDR* obj) -> VariantValue { return obj->ToString (); },
+                      [](const ObjectVariantMapper& mapper, const VariantValue& d, CIDR* intoObj) -> void { *intoObj = CIDR{d.As<String> ()}; });
+    return mapper;
+}();
+#endif
+
 /*
  ********************************************************************************
  ********************************** Model::Network ******************************
@@ -43,6 +53,44 @@ String Network::ToString () const
     sb += L"}";
     return sb.str ();
 }
+
+DISABLE_COMPILER_MSC_WARNING_START (4573);
+DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
+const ObjectVariantMapper Network::kMapper = []() {
+    ObjectVariantMapper mapper;
+
+    using IO::Network::CIDR;
+#if qCompilerAndStdLib_lambda_expand_in_namespace_Buggy
+    mapper.Add (klambda_expand_in_namespace_Buggy_workaround_Mapper_);
+#else
+    mapper.Add<CIDR> ([](const ObjectVariantMapper& mapper, const CIDR* obj) -> VariantValue { return obj->ToString (); },
+                      [](const ObjectVariantMapper& mapper, const VariantValue& d, CIDR* intoObj) -> void { *intoObj = CIDR{d.As<String> ()}; });
+#endif
+
+    //  mapper.AddCommonType<NetworkInterface::Type> ();
+    //  mapper.AddCommonType<optional<NetworkInterface::Type>> ();
+    mapper.AddCommonType<InternetAddress> ();
+    // mapper.AddCommonType<optional<InternetAddress>> ();
+    mapper.AddCommonType<Sequence<InternetAddress>> ();
+
+    mapper.AddCommonType<Set<String>> ();
+
+    // quickie draft
+    mapper.AddClass<Network> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+        {L"Friendly-Name", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fFriendlyName), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"Network-Address", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fNetworkAddress)},
+        {L"Attached-Interfaces", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fAttachedInterfaces)},
+        {L"Gateways", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fGateways)},
+        {L"DNS-Servers", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fDNSServers)},
+        {L"ID", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fGUID)},
+    });
+    mapper.AddCommonType<Collection<Network>> ();
+    mapper.AddCommonType<Sequence<Network>> ();
+
+    return mapper;
+}();
+DISABLE_COMPILER_GCC_WARNING_END ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
+DISABLE_COMPILER_MSC_WARNING_END (4573);
 
 /*
  ********************************************************************************
@@ -64,34 +112,10 @@ String NetworkInterface::ToString () const
     return sb.str ();
 }
 
-/*
- ********************************************************************************
- ************************************* Device ***********************************
- ********************************************************************************
- */
-
-#if qCompilerAndStdLib_lambda_expand_in_namespace_Buggy
-const ObjectVariantMapper klambda_expand_in_namespace_Buggy_workaround_Mapper_ = []() {
-    using IO::Network::CIDR;
-    ObjectVariantMapper mapper;
-    mapper.Add<CIDR> ([](const ObjectVariantMapper& mapper, const CIDR* obj) -> VariantValue { return obj->ToString (); },
-                      [](const ObjectVariantMapper& mapper, const VariantValue& d, CIDR* intoObj) -> void { *intoObj = CIDR{d.As<String> ()}; });
-    return mapper;
-}();
-#endif
-
 DISABLE_COMPILER_MSC_WARNING_START (4573);
 DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
-const ObjectVariantMapper Device::kMapper = []() {
+const ObjectVariantMapper NetworkInterface::kMapper = []() {
     ObjectVariantMapper mapper;
-
-    using IO::Network::CIDR;
-#if qCompilerAndStdLib_lambda_expand_in_namespace_Buggy
-    mapper.Add (klambda_expand_in_namespace_Buggy_workaround_Mapper_);
-#else
-    mapper.Add<CIDR> ([](const ObjectVariantMapper& mapper, const CIDR* obj) -> VariantValue { return obj->ToString (); },
-                      [](const ObjectVariantMapper& mapper, const VariantValue& d, CIDR* intoObj) -> void { *intoObj = CIDR{d.As<String> ()}; });
-#endif
 
     mapper.AddCommonType<NetworkInterface::Type> ();
     mapper.AddCommonType<optional<NetworkInterface::Type>> ();
@@ -151,20 +175,26 @@ const ObjectVariantMapper Device::kMapper = []() {
     });
     mapper.AddCommonType<Collection<NetworkInterface>> ();
 
+    return mapper;
+}();
+DISABLE_COMPILER_GCC_WARNING_END ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
+DISABLE_COMPILER_MSC_WARNING_END (4573);
+
+/*
+ ********************************************************************************
+ ************************************* Device ***********************************
+ ********************************************************************************
+ */
+
+DISABLE_COMPILER_MSC_WARNING_START (4573);
+DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
+const ObjectVariantMapper Device::kMapper = []() {
+    ObjectVariantMapper mapper;
+
+    mapper.AddCommonType<InternetAddress> ();
+    mapper.AddCommonType<optional<InternetAddress>> ();
+    mapper.AddCommonType<Sequence<InternetAddress>> ();
     mapper.AddCommonType<Set<String>> ();
-
-    // quickie draft
-    mapper.AddClass<Network> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-        {L"Friendly-Name", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fFriendlyName), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"Network-Address", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fNetworkAddress)},
-        {L"Attached-Interfaces", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fAttachedInterfaces)},
-        {L"Gateways", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fGateways)},
-        {L"DNS-Servers", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fDNSServers)},
-        {L"ID", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fGUID)},
-    });
-    mapper.AddCommonType<Collection<Network>> ();
-    mapper.AddCommonType<Sequence<Network>> ();
-
     mapper.AddCommonType<Device::DeviceType> ();
     mapper.AddCommonType<optional<Device::DeviceType>> ();
     mapper.AddCommonType<optional<String>> ();

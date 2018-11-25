@@ -80,9 +80,9 @@ public:
                   RegularExpression::kAny,
                   [](Message* m) {}},
               Route{RegularExpression (L"", RegularExpression::eECMAScript), DefaultPage_},
-              Route{RegularExpression (L"Devices", RegularExpression::eECMAScript), mkRequestHandler (kDevices_, Device::kMapper, function<Collection<BackendApp::WebServices::Device> (void)>{[=]() { return fWSAPI_->GetDevices (); }})},
-              Route{RegularExpression (L"NetworkInterfaces", RegularExpression::eECMAScript), mkRequestHandler (kNetworkInterfaces_, Device::kMapper, function<Collection<BackendApp::WebServices::NetworkInterface> (void)>{[=]() { return fWSAPI_->GetNetworkInterfaces (); }})},
-              Route{RegularExpression (L"Networks", RegularExpression::eECMAScript), mkRequestHandler (kNetworks_, Device::kMapper, function<Sequence<BackendApp::WebServices::Network> (void)>{[=]() { return fWSAPI_->GetNetworks (); }})}}}
+              Route{RegularExpression (L"Devices", RegularExpression::eECMAScript), mkRequestHandler (kDevices_, Device::kMapper, function<Collection<Device> (void)>{[=]() { return fWSAPI_->GetDevices (); }})},
+              Route{RegularExpression (L"NetworkInterfaces", RegularExpression::eECMAScript), mkRequestHandler (kNetworkInterfaces_, NetworkInterface::kMapper, function<Collection<NetworkInterface> (void)>{[=]() { return fWSAPI_->GetNetworkInterfaces (); }})},
+              Route{RegularExpression (L"Networks", RegularExpression::eECMAScript), mkRequestHandler (kNetworks_, Network::kMapper, function<Sequence<Network> (void)>{[=]() { return fWSAPI_->GetNetworks (); }})}}}
         , fWSConnectionMgr_{SocketAddresses (InternetAddresses_Any (), 8080), fWSRouter_, ConnectionManager::Options{kMaxConcurrentConnections_, Socket::BindFlags{true}, kServerString_}} // listen and dispatch while this object exists
         , fGUIWebRouter_{Sequence<Route>{
               Route{RegularExpression::kAny, FileSystemRouter{Execution::GetEXEDir () + L"html", {}, Sequence<String>{L"index.html"}}},
