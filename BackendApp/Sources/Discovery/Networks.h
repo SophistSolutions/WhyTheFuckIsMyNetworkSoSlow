@@ -36,6 +36,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
 
         Set<String> fAttachedNetworkInterfaces;
 
+        Sequence<InternetAddress> fGateways;
+        Sequence<InternetAddress> fDNSServers;
+
         nonvirtual String ToString () const;
     };
 

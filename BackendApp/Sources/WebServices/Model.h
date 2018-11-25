@@ -69,9 +69,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
         Set<String> fAttachedInterfaces;
 
-        optional<InternetAddress> fDefaultGateway;
-
-        // @todo add default-dns-servers and default-gateway
+        Sequence<InternetAddress> fGateways;
+        Sequence<InternetAddress> fDNSServers;
 
         // PROBABLY idnetify same network - by default - as hash of default gateway's macaddr - or at least look at that to compare...
         // thogh that doesnt quite work cuz if you cahnge router, you need o call it the same network.... It's just a big clue... Not sure how
@@ -143,7 +142,6 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
         static const DataExchange::ObjectVariantMapper kMapper;
     };
-
 }
 
 /*

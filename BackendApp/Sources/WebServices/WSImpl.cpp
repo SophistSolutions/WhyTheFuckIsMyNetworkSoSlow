@@ -128,6 +128,8 @@ Sequence<BackendApp::WebServices::Network> WSImpl::GetNetworks () const
         nw.fFriendlyName       = n.fFriendlyName;
         nw.fNetworkAddress     = n.fNetworkAddress;
         nw.fAttachedInterfaces = n.fAttachedNetworkInterfaces;
+        nw.fDNSServers         = n.fDNSServers;
+        nw.fGateways           = n.fGateways;
 
         result += nw;
     }

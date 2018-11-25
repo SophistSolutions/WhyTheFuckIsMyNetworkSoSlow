@@ -9,6 +9,7 @@
 #include "Stroika/Foundation/Characters/StringBuilder.h"
 #include "Stroika/Foundation/Characters/ToString.h"
 #include "Stroika/Foundation/Containers/Mapping.h"
+#include "Stroika/Foundation/Containers/MultiSet.h"
 #include "Stroika/Foundation/IO/Network/Interface.h"
 #include "Stroika/Foundation/IO/Network/LinkMonitor.h"
 
@@ -39,9 +40,11 @@ String Discovery::Network::ToString () const
 {
     StringBuilder sb;
     sb += L"{";
+    sb += L"GUID: " + Characters::ToString (fGUID) + L", ";
     sb += L"IP-Address: " + Characters::ToString (fNetworkAddress) + L", ";
     sb += L"Friendly-Name: " + Characters::ToString (fFriendlyName) + L", ";
-    sb += L"GUID: " + Characters::ToString (fGUID) + L", ";
+    sb += L"Gateways: " + Characters::ToString (fGateways) + L", ";
+    sb += L"DNS-Servers: " + Characters::ToString (fDNSServers) + L", ";
     sb += L"Attached-Network-Interfaces: " + Characters::ToString (fAttachedNetworkInterfaces) + L", ";
     sb += L"}";
     return sb.str ();
@@ -58,7 +61,7 @@ Sequence<Network> Discovery::CollectActiveNetworks ()
     Debug::TraceContextBumper ctx{L"Discovery::CollectActiveNetworks"};
 #endif
     Mapping<CIDR, Network> accumResults;
-    Mapping<CIDR, float>   cidr2Score; // primitive attempt to find best interface to display
+    MultiSet<CIDR>         cidrScores; // primitive attempt to find best interface to display
     for (NetworkInterface i : CollectActiveNetworkInterfaces ()) {
         if (not i.fBindings.empty ()) {
             // @todo REWRITE to use 'scoring' to pick BEST address not just v4/non-multicast
@@ -74,16 +77,31 @@ Sequence<Network> Discovery::CollectActiveNetworks ()
                 // Guess CIDR prefix is max (so one address - bad guess) - if we cannot read from adapter
                 CIDR    cidr{useBinding.fInternetAddress, useBinding.fOnLinkPrefixLength.value_or (*useBinding.fInternetAddress.GetAddressSize () * 8)};
                 Network nw = accumResults.LookupValue (cidr, Network{cidr});
-                nw.fAttachedNetworkInterfaces += i.fGUID;
-                accumResults.Add (cidr, nw);
                 if (nw.fGUID.empty ()) {
                     nw.fGUID = i.fInternalInterfaceID; //tmphack - need some long term way to map/comapre to database and make these long-term
                 }
 
+                unsigned int score{};
+                for (auto gw : i.fGateways) {
+                    if (not nw.fGateways.Contains (gw)) {
+                        score += 20;
+                        nw.fGateways.Append (gw);
+                    }
+                }
+                for (auto dnss : i.fDNSServers) {
+                    if (not nw.fDNSServers.Contains (dnss)) {
+                        score += 5;
+                        nw.fDNSServers.Append (dnss);
+                    }
+                }
+                nw.fAttachedNetworkInterfaces += i.fGUID;
+                accumResults.Add (cidr, nw);
+
                 // quick hack attempt to put most important interfaces at top of list
                 if ((i.fType == Interface::Type::eWiredEthernet or i.fType == Interface::Type::eWIFI) and i.fDescription and not i.fDescription->Contains (L"virtual", CompareOptions::eCaseInsensitive)) {
-                    cidr2Score.Add (cidr, 1);
+                    score += 1;
                 }
+                cidrScores.Add (cidr, score);
             }
             else {
                 DbgTrace (L"Skipping interface %s - cuz bindings bad address", Characters::ToString (i).c_str ());
@@ -91,14 +109,11 @@ Sequence<Network> Discovery::CollectActiveNetworks ()
         }
     }
     Sequence<Network> results;
-    for (auto i : accumResults) {
-        if (cidr2Score.LookupValue (i.fKey, 0) >= 1) {
-            results.Prepend (i.fValue);
-        }
-        else {
-            results.Append (i.fValue);
-        }
+    for (auto i : cidrScores.OrderBy ([](const CountedValue<CIDR>&lhs, const CountedValue<CIDR>&rhs) -> bool { return lhs.fCount > rhs.fCount; })) {
+        results += *accumResults.Lookup (i.fValue);
     }
+    Assert (results.size () == cidrScores.size ());
+    Assert (results.size () == accumResults.size ());
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
     DbgTrace (L"returns: %s", Characters::ToString (results).c_str ());
 #endif
