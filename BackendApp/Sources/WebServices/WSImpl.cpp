@@ -125,6 +125,7 @@ Sequence<BackendApp::WebServices::Network> WSImpl::GetNetworks () const
     for (Discovery::Network n : Discovery::CollectActiveNetworks ()) {
         BackendApp::WebServices::Network nw{n.fNetworkAddress};
 
+        nw.fGUID               = n.fGUID;
         nw.fFriendlyName       = n.fFriendlyName;
         nw.fNetworkAddress     = n.fNetworkAddress;
         nw.fAttachedInterfaces = n.fAttachedNetworkInterfaces;

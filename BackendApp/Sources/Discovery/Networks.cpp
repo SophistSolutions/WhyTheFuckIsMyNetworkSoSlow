@@ -10,6 +10,8 @@
 #include "Stroika/Foundation/Characters/ToString.h"
 #include "Stroika/Foundation/Containers/Mapping.h"
 #include "Stroika/Foundation/Containers/MultiSet.h"
+#include "Stroika/Foundation/Cryptography/Digest/Algorithm/MD5.h"
+#include "Stroika/Foundation/Cryptography/Format.h"
 #include "Stroika/Foundation/IO/Network/Interface.h"
 #include "Stroika/Foundation/IO/Network/LinkMonitor.h"
 
@@ -76,8 +78,14 @@ Sequence<Network> Discovery::CollectActiveNetworks ()
                 // Guess CIDR prefix is max (so one address - bad guess) - if we cannot read from adapter
                 CIDR    cidr{useBinding.fInternetAddress, useBinding.fOnLinkPrefixLength.value_or (*useBinding.fInternetAddress.GetAddressSize () * 8)};
                 Network nw = accumResults.LookupValue (cidr, Network{cidr});
-                if (nw.fGUID.empty ()) {
-                    nw.fGUID = i.fInternalInterfaceID; //tmphack - need some long term way to map/comapre to database and make these long-term
+
+                // GUID for network is EITHER from OS, or try to figure one out of as  digest of a few facts. Will need to enahnce this a great deal
+                // going forward (for unix esp)
+                // -- LGP 2018-11-25
+                if (nw.fGUID == Common::GUID::Zero ()) {
+                    if (i.fNetworkGUID) {
+                        nw.fGUID = *i.fNetworkGUID;
+                    }
                 }
 
                 unsigned int score{};
@@ -107,6 +115,22 @@ Sequence<Network> Discovery::CollectActiveNetworks ()
             }
         }
     }
+
+    // now patch missing GUID if not already known
+    for (auto i = accumResults.begin (); i != accumResults.end (); ++i) {
+        if (i->fValue.fGUID == Common::GUID::Zero ()) {
+            StringBuilder sb;
+            using namespace Stroika::Foundation::Cryptography;
+            sb += Characters::ToString (i->fValue.fGateways);       // NO WHERE NEAR GOOD ENUF - take into account public IP ADDR and hardware address of router - but still ALLOW for any of these to float
+            sb += Characters::ToString (i->fValue.fNetworkAddress); // ""
+            using DIGESTER_ = Digest::Digester<Digest::Algorithm::MD5>;
+            string tmp      = sb.str ().AsUTF8 ();
+            auto   v        = i->fValue;
+            v.fGUID         = Cryptography::Format<Common::GUID> (DIGESTER_::ComputeDigest ((const std::byte*)tmp.c_str (), (const std::byte*)tmp.c_str () + tmp.length ()));
+            accumResults.Add (i->fKey, v);
+        }
+    }
+
     Sequence<Network> results;
     for (auto i : cidrScores.OrderBy ([](const CountedValue<CIDR>&lhs, const CountedValue<CIDR>&rhs) -> bool { return lhs.fCount > rhs.fCount; })) {
         results += *accumResults.Lookup (i.fValue);

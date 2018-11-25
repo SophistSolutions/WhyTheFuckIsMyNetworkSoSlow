@@ -15,6 +15,10 @@ Under docker:
 
 
 
+>>>> http://api.ipify.org/
+	GET MY PUBLIC IP ADDRESS (and show as detail in the network object)
+	http://myexternalip.com/raw
+
 
 
 
@@ -29,6 +33,11 @@ Under docker:
 
 	/Networks (already working)
 		BUT list pointer to network interfaces
+
+
+			>	EXIT TO INTERNET (whatsmyip)
+			>	My GEOLOC
+			>	Whats my ISP (?)
 
 	/Devices
 		In here, list pointers to networks and pointers to network interfaces

@@ -67,15 +67,9 @@ const ObjectVariantMapper Network::kMapper = []() {
                       [](const ObjectVariantMapper& mapper, const VariantValue& d, CIDR* intoObj) -> void { *intoObj = CIDR{d.As<String> ()}; });
 #endif
 
-    //  mapper.AddCommonType<NetworkInterface::Type> ();
-    //  mapper.AddCommonType<optional<NetworkInterface::Type>> ();
     mapper.AddCommonType<InternetAddress> ();
-    // mapper.AddCommonType<optional<InternetAddress>> ();
     mapper.AddCommonType<Sequence<InternetAddress>> ();
-
     mapper.AddCommonType<Set<String>> ();
-
-    // quickie draft
     mapper.AddClass<Network> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
         {L"Friendly-Name", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fFriendlyName), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"Network-Address", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fNetworkAddress)},
@@ -201,7 +195,7 @@ const ObjectVariantMapper Device::kMapper = []() {
     mapper.AddCommonType<optional<float>> ();
     mapper.AddCommonType<Sequence<String>> ();
     mapper.AddClass<Device> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-        {L"persistentID", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, persistentID)},
+        {L"ID", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, persistentID)},
         {L"name", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, name)},
         {L"ipAddresses", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, ipAddresses)},
         {L"type", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, type), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},

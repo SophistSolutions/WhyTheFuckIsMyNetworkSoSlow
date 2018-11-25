@@ -68,7 +68,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         optional<String> fFriendlyName; //tmphack - list of interfaces attached to network
 
         // Todo - WTF allocated ID - and one inherited from network interface (windows only) - CLARIFY - probably call OURs just fID (and change others in this module to match)
-        String fGUID;
+        Common::GUID fGUID;
 
         Set<String> fAttachedInterfaces;
 

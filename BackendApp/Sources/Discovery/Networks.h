@@ -31,8 +31,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
 
     struct Network {
         CIDR             fNetworkAddress;
+        Common::GUID     fGUID;
         optional<String> fFriendlyName;
-        String           fGUID;
 
         Set<String> fAttachedNetworkInterfaces;
 
