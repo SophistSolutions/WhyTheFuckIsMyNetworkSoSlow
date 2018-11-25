@@ -8,6 +8,8 @@
 
 #include "Stroika/Foundation/Characters/StringBuilder.h"
 #include "Stroika/Foundation/Characters/ToString.h"
+#include "Stroika/Foundation/Cryptography/Digest/Algorithm/MD5.h"
+#include "Stroika/Foundation/Cryptography/Format.h"
 #include "Stroika/Foundation/IO/Network/Interface.h"
 #include "Stroika/Foundation/IO/Network/LinkMonitor.h"
 
@@ -50,7 +52,18 @@ Collection<NetworkInterface> Discovery::CollectAllNetworkInterfaces ()
     vector<NetworkInterface> results;
     for (Interface i : IO::Network::GetInterfaces ()) {
         NetworkInterface ni{i};
-        ni.fGUID = i.fInternalInterfaceID; // may need to redo this based on whats stored in database
+
+        // If the network interface ID is already in the form of a GUID (windows) then re-use that, but otherwise, use digtest to form
+        // a GUID out of it.
+        try {
+            ni.fGUID = Common::GUID (i.fInternalInterfaceID); // may need to redo this based on whats stored in database
+        }
+        catch (...) {
+            using namespace Stroika::Foundation::Cryptography;
+            using DIGESTER_ = Digest::Digester<Digest::Algorithm::MD5>;
+            string tmp      = i.fInternalInterfaceID.AsUTF8 ();
+            ni.fGUID        = Cryptography::Format<Common::GUID> (DIGESTER_::ComputeDigest ((const std::byte*)tmp.c_str (), (const std::byte*)tmp.c_str () + tmp.length ()));
+        }
         // if we have guid for internal interfaceid, use that, and else compute hash of interface name, and use that.
         // @todo redo fGUID
         results.push_back (ni);

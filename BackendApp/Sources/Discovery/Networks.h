@@ -34,7 +34,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
         Common::GUID     fGUID;
         optional<String> fFriendlyName;
 
-        Set<String> fAttachedNetworkInterfaces;
+        Set<Common::GUID> fAttachedNetworkInterfaces;
 
         Sequence<InternetAddress> fGateways;
         Sequence<InternetAddress> fDNSServers;

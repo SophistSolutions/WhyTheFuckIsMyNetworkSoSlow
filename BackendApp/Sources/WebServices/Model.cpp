@@ -69,7 +69,7 @@ const ObjectVariantMapper Network::kMapper = []() {
 
     mapper.AddCommonType<InternetAddress> ();
     mapper.AddCommonType<Sequence<InternetAddress>> ();
-    mapper.AddCommonType<Set<String>> ();
+    mapper.AddCommonType<Set<Common::GUID>> ();
     mapper.AddClass<Network> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
         {L"Friendly-Name", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fFriendlyName), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"Network-Address", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fNetworkAddress)},
@@ -78,7 +78,6 @@ const ObjectVariantMapper Network::kMapper = []() {
         {L"DNS-Servers", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fDNSServers)},
         {L"ID", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fGUID)},
     });
-    mapper.AddCommonType<Collection<Network>> ();
     mapper.AddCommonType<Sequence<Network>> ();
 
     return mapper;

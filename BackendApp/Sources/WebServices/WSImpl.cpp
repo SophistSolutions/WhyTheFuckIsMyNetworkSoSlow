@@ -149,7 +149,7 @@ Collection<BackendApp::WebServices::NetworkInterface> WSImpl::GetNetworkInterfac
 
         /**
          */
-        nw.fGUID = n.fInternalInterfaceID; // wrong - must add GUID @todo
+        nw.fGUID = n.fGUID;
 
         result += nw;
     }

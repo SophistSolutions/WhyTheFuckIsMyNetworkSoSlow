@@ -39,7 +39,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
          *  GUID for this interface - MANUFACTURED by WTF
          // @todo rename fID, and actually auto-generate it uniquly somehow (or OK to use iwndows based one)
          */
-        String fGUID;
+        Common::GUID fGUID;
 
         /**
          *  @see Characters::ToString ();
@@ -70,7 +70,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         // Todo - WTF allocated ID - and one inherited from network interface (windows only) - CLARIFY - probably call OURs just fID (and change others in this module to match)
         Common::GUID fGUID;
 
-        Set<String> fAttachedInterfaces;
+        Set<Common::GUID> fAttachedInterfaces;
 
         Sequence<InternetAddress> fGateways;
         Sequence<InternetAddress> fDNSServers;
