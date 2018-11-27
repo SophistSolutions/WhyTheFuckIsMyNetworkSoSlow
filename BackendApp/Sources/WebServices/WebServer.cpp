@@ -97,6 +97,15 @@ public:
               Route{
                   RegularExpression (L"Devices", RegularExpression::eECMAScript),
                   mkRequestHandler (kDevices_, Device::kMapper, function<Collection<Device> (void)>{[=]() { return fWSAPI_->GetDevices (); }})},
+
+                  // This doesn't belong here - move to new WebService sample
+              Route{
+                  RegularExpression (L"plus", RegularExpression::eECMAScript),
+                  mkRequestHandler (WebServiceMethodDescription{{},{},DataExchange::PredefinedInternetMediaType::JSON_CT ()}, Device::kMapper, Traversal::Iterable<String> {L"arg1", L"arg2"}, function<double (double, double)>{[=](double arg1, double arg2) { return arg1 + arg2; }})},
+              Route{
+                  RegularExpression (L"test-void-return", RegularExpression::eECMAScript),
+                  mkRequestHandler (WebServiceMethodDescription{}, Device::kMapper, Traversal::Iterable<String> {L"err-if-more-than-10"}, function<void (double)>{[=](double check) { if (check > 10) {Execution::Throw (Execution::StringException (L"more than 10"));} }})},
+
               Route{
                   RegularExpression (L"NetworkInterfaces", RegularExpression::eECMAScript),
                   [=](Message* m) {
