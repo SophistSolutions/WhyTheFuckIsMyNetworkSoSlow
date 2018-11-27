@@ -60,14 +60,13 @@ clean clobber:
 ifeq ($(CONFIGURATION),)
 	@$(StroikaRoot)ScriptsLib/PrintProgressLine.sh $(MAKE_INDENT_LEVEL) "$(shell echo $@) WhyTheFuckIsMyNetworkSoSlow:"
 ifeq ($(CONFIGURATION_TAGS),)
-ifeq ($@,clobber)
-	@rm -rf IntermediateFiles/*
-	@rm -rf Builds/*
+	@if [ "$@" == "clobber" ] ; then \
+		rm -rf IntermediateFiles/* Builds/*;\
+	fi
 endif
 	@for i in $(APPLY_CONFIGS) ; do\
 		$(MAKE) --no-print-directory $@ CONFIGURATION=$$i MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1));\
 	done
-endif
 else
 	@$(StroikaRoot)ScriptsLib/CheckValidConfiguration.sh $(CONFIGURATION)
 	@$(StroikaRoot)ScriptsLib/PrintProgressLine.sh $(MAKE_INDENT_LEVEL) "$(shell echo $@) WhyTheFuckIsMyNetworkSoSlow {$(CONFIGURATION)}:"
