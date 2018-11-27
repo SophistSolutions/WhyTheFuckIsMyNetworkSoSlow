@@ -17,14 +17,10 @@ all:
 	@$(MAKE) --directory=Sources --no-print-directory all CONFIGURATION=$(CONFIGURATION) MAKEFLAGS=
 
 
-clean::
+clean clobber::
+	@$(StroikaRoot)/ScriptsLib/PrintLevelLeader.sh $(MAKE_INDENT_LEVEL) && $(ECHO) "$@ HTML:"
 	@$(StroikaRoot)/ScriptsLib/CheckValidConfiguration.sh $(CONFIGURATION)
-	@$(MAKE) --directory=Sources --no-print-directory clean
-
-
-clobber::
-	@$(StroikaRoot)/ScriptsLib/CheckValidConfiguration.sh $(CONFIGURATION)
-	@$(MAKE) --directory=Sources --no-print-directory clobber
+	@$(MAKE) --directory=Sources --no-print-directory $@
 
 
 format-code:
