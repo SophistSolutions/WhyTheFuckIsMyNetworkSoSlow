@@ -62,6 +62,8 @@ ifeq ($(CONFIGURATION),)
 ifeq ($(CONFIGURATION_TAGS),)
 	@if [ "$@" == "clobber" ] ; then \
 		rm -rf IntermediateFiles/* Builds/*;\
+		#sometimes called dist-clean;\
+		$(MAKE) --directory ThirdPartyComponents --no-print-directory $@ CONFIGURATION= MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1));\
 	fi
 endif
 	@for i in $(APPLY_CONFIGS) ; do\
