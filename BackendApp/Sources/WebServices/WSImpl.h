@@ -25,7 +25,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
     public:
         virtual Collection<Device>           GetDevices () const override;
         virtual Sequence<Network>            GetNetworks () const override;
-        virtual Collection<NetworkInterface> GetNetworkInterfaces () const override;
+        virtual Collection<String>           GetNetworkInterfaces () const override;
+        virtual Collection<NetworkInterface> GetNetworkInterfaces_Recurse () const override;
+        virtual NetworkInterface             GetNetworkInterface (const String& id) const override;
     };
 
     void TmpHackAssureStartedMonitoring ();

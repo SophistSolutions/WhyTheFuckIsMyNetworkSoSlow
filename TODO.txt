@@ -1,3 +1,15 @@
+ make TAGS=Unix clobber
+
+	doesnt work (?? or test at least)
+
+
+
+
+
+
+
+
+
 Under docker:
 
 00007fdd7e147700][0002.603]                  No speed for interface lo, errno=95

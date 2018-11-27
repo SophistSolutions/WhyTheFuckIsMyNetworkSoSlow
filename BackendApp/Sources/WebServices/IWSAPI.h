@@ -47,7 +47,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
         /**
          *  curl  http://localhost:8080/NetworkInterfaces
          */
-        virtual Collection<NetworkInterface> GetNetworkInterfaces () const = 0;
+        virtual Collection<String>           GetNetworkInterfaces () const                = 0;
+        virtual Collection<NetworkInterface> GetNetworkInterfaces_Recurse () const        = 0;
+        virtual NetworkInterface             GetNetworkInterface (const String& id) const = 0;
     };
 
 }

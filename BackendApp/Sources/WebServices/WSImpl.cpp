@@ -140,7 +140,17 @@ Sequence<BackendApp::WebServices::Network> WSImpl::GetNetworks () const
     return result;
 }
 
-Collection<BackendApp::WebServices::NetworkInterface> WSImpl::GetNetworkInterfaces () const
+Collection<String> WSImpl::GetNetworkInterfaces () const
+{
+    Collection<String> result;
+
+    for (Discovery::NetworkInterface n : Discovery::CollectAllNetworkInterfaces ()) {
+        result += Characters::ToString (n.fGUID);
+    }
+    return result;
+}
+
+Collection<BackendApp::WebServices::NetworkInterface> WSImpl::GetNetworkInterfaces_Recurse () const
 {
     Collection<BackendApp::WebServices::NetworkInterface> result;
 
@@ -154,6 +164,18 @@ Collection<BackendApp::WebServices::NetworkInterface> WSImpl::GetNetworkInterfac
         result += nw;
     }
     return result;
+}
+
+NetworkInterface WSImpl::GetNetworkInterface (const String& id) const
+{
+    Collection<BackendApp::WebServices::NetworkInterface> tmp = GetNetworkInterfaces_Recurse ();
+    // @todo quick hack impl
+    for (auto i : tmp) {
+        if (i.fGUID == Common::GUID{id}) {
+            return i;
+        }
+    }
+    Execution::Throw (Execution::StringException (L"no such id"));
 }
 
 /*

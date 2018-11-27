@@ -47,6 +47,18 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices;
  ********************************** WebServer ***********************************
  ********************************************************************************
  */
+namespace {
+    DISABLE_COMPILER_MSC_WARNING_START (4573);
+    DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
+    const DataExchange::ObjectVariantMapper kBasicsMapper_ = []() {
+        DataExchange::ObjectVariantMapper mapper;
+        mapper.AddCommonType<Collection<String>> ();
+        return mapper;
+    }();
+    DISABLE_COMPILER_GCC_WARNING_END ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
+    DISABLE_COMPILER_MSC_WARNING_END (4573);
+}
+
 class WebServer::Rep_ {
 public:
     static const WebServiceMethodDescription kDevices_;
@@ -79,16 +91,46 @@ public:
                   RegularExpression (IO::Network::HTTP::Methods::kOptions, RegularExpression::eECMAScript),
                   RegularExpression::kAny,
                   [](Message* m) {}},
-              Route{RegularExpression (L"", RegularExpression::eECMAScript), DefaultPage_},
-              Route{RegularExpression (L"Devices", RegularExpression::eECMAScript), mkRequestHandler (kDevices_, Device::kMapper, function<Collection<Device> (void)>{[=]() { return fWSAPI_->GetDevices (); }})},
-              Route{RegularExpression (L"NetworkInterfaces", RegularExpression::eECMAScript), mkRequestHandler (kNetworkInterfaces_, NetworkInterface::kMapper, function<Collection<NetworkInterface> (void)>{[=]() { return fWSAPI_->GetNetworkInterfaces (); }})},
-              Route{RegularExpression (L"Networks", RegularExpression::eECMAScript), mkRequestHandler (kNetworks_, Network::kMapper, function<Sequence<Network> (void)>{[=]() { return fWSAPI_->GetNetworks (); }})}}}
+              Route{
+                  RegularExpression (L"", RegularExpression::eECMAScript),
+                  DefaultPage_},
+              Route{
+                  RegularExpression (L"Devices", RegularExpression::eECMAScript),
+                  mkRequestHandler (kDevices_, Device::kMapper, function<Collection<Device> (void)>{[=]() { return fWSAPI_->GetDevices (); }})},
+              Route{
+                  RegularExpression (L"NetworkInterfaces", RegularExpression::eECMAScript),
+                  [=](Message* m) {
+                      ExpectedMethod (m->GetRequestReference (), kNetworkInterfaces_);
+                      Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
+                      if (args.LookupValue (L"recurse", false).As<bool> ()) {
+                          WriteResponse (m->PeekResponse (), kNetworkInterfaces_, NetworkInterface::kMapper.FromObject (fWSAPI_->GetNetworkInterfaces_Recurse ()));
+                      }
+                      else {
+                          WriteResponse (m->PeekResponse (), kNetworkInterfaces_, kBasicsMapper_.FromObject (fWSAPI_->GetNetworkInterfaces ()));
+                      }
+                  }},
+              Route{
+                  RegularExpression (L"NetworkInterface/.*", RegularExpression::eECMAScript),
+                  [=](Message* m) {
+                      // @todo parse out of REGULAR EXPRESSION - id
+                      String id = L"1ac5b672-a496-45c4-86d8-1f4939f9a236";
+                      ExpectedMethod (m->GetRequestReference (), kNetworkInterfaces_);
+                      WriteResponse (m->PeekResponse (), kNetworkInterfaces_, NetworkInterface::kMapper.FromObject (fWSAPI_->GetNetworkInterface (id)));
+                  }},
+              Route{
+                  RegularExpression (L"Networks", RegularExpression::eECMAScript),
+                  mkRequestHandler (kNetworks_, Network::kMapper, function<Sequence<Network> (void)>{[=]() { return fWSAPI_->GetNetworks (); }})}}}
         , fWSConnectionMgr_{SocketAddresses (InternetAddresses_Any (), 8080), fWSRouter_, ConnectionManager::Options{kMaxConcurrentConnections_, Socket::BindFlags{true}, kServerString_}} // listen and dispatch while this object exists
         , fGUIWebRouter_{Sequence<Route>{
               Route{RegularExpression::kAny, FileSystemRouter{Execution::GetEXEDir () + L"html", {}, Sequence<String>{L"index.html"}}},
           }}
         , fGUIWebConnectionMgr_{SocketAddresses (InternetAddresses_Any (), 80), fGUIWebRouter_, ConnectionManager::Options{kMaxGUIWebServerConcurrentConnections_, Socket::BindFlags{true}, kServerString_}}
     {
+        using VariantValue         = DataExchange::VariantValue;
+        Sequence<VariantValue> tmp = OrderParamValues (Iterable<String>{L"page", L"xxx"}, PickoutParamValuesFromURL (URL (L"http://www.sophist.com?page=5", URL::eFlexiblyAsUI)));
+        Assert (tmp.size () == 2);
+        Assert (tmp[0] == 5);
+        Assert (tmp[1] == nullptr);
     }
     static void DefaultPage_ (Request* request, Response* response)
     {
@@ -125,7 +167,7 @@ const WebServiceMethodDescription WebServer::Rep_::kNetworkInterfaces_{
     Set<String>{String_Constant{IO::Network::HTTP::Methods::kGet}},
     DataExchange::PredefinedInternetMediaType::kJSON,
     {},
-    Sequence<String>{L"curl http://localhost:8080/NetworkInterfaces"},
+    Sequence<String>{L"curl http://localhost:8080/NetworkInterfaces", L"curl http://localhost:8080/NetworkInterfaces?recurse=true"},
     Sequence<String>{L"Fetch the list of known Network Interfaces.",
                      L"@todo - in the future - add support for parameters to this fetch - which can be used to filter/subset etc"},
 };
