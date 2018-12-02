@@ -1,46 +1,9 @@
- make TAGS=Unix clobber
 
-	doesnt work (?? or test at least)
-
-
-----
-	-
-
-		CLEAN CHECKOUT
-
-			make all
-			(creates configs but builds nothing) - cuz must re-evaluate list of configs
-
-			---
+Add filter-Active=true, filter-Active=false for /NetworkInterfaces
 
 
 
-
-
-Under docker:
-
-00007fdd7e147700][0002.603]                  No speed for interface lo, errno=95
-[0x00007fdd7e147700][0002.603]                  ethtool_cmd_speed (&edata)=10000
-[0x00007fdd7e147700][0002.607]                  <IO::Network::Socket::Bind (sockAddr=INADDR_ANY:1900 bindFlags.fReUseAddr=true)/>
-[0x00007fdd7e147700][0002.607]                  <IO::Network::Socket::JoinMulticastGroup (iaddr=239.255.255.250 onInterface=INADDR_ANY)/>
-[0x00007fdd7e147700][0002.608]                  <IO::Network::Socket::Bind (sockAddr=in6addr_any:1900 bindFlags.fReUseAddr=true)/>
-[0x00007fdd7e147700][0002.609]                  <IO::Network::Socket::JoinMulticastGroup (iaddr=ff02::c onInterface=INADDR_ANY)> {
-[0x00007fdd7e147700][0002.655]                          errno_ErrorException::Throw (19) - throwing errno_ErrorException 'No such device (errno: 19)' from /usr/lib/x86_64-linux-gnu/libasan.so.4(+0x558c0) [0x7fdd84ca88c0]; ./Builds/Debug/WhyTheFuckIsMyNetworkSoSlow/WhyTheFuckIsMyNetworkSoSlow-Backend(Stroika::Foundation::Debug::BackTrace[abi:cxx11](unsigned int)+0x22b) [0x55bb03f5f5b5]; ./Builds/Debug/WhyTheFuckIsMyNetworkSoSlow/WhyTheFuckIsMyNetworkSoSlow-Backend(Stroika::Foundation::Execution::Private_::GetBT_ws[abi:cxx11]()+0xba) [0x55bb03f73834]; ./Builds/Debug/WhyTh
-
-
-
->>> HANDLE BETTER when multicast crap doesn't work. Seems common enough - just log it as an erorr and set some error state, but keep running
-!!!!
-
-
-
->>>> http://api.ipify.org/
-	GET MY PUBLIC IP ADDRESS (and show as detail in the network object)
-	http://myexternalip.com/raw
-
-
-
-
+	-----
 
 >>>> REST API
 	/Network-Interfaces
@@ -75,8 +38,34 @@ Under docker:
 	// to measure TIME BETWEEN NODES and TIME TO ADDRESS
 	// AND MAYBE HAVE "MONTIORS - where we defifine set of links to montir and then can check back on historical
 	values for those?"
+----
+
+Under docker:
+
+00007fdd7e147700][0002.603]                  No speed for interface lo, errno=95
+[0x00007fdd7e147700][0002.603]                  ethtool_cmd_speed (&edata)=10000
+[0x00007fdd7e147700][0002.607]                  <IO::Network::Socket::Bind (sockAddr=INADDR_ANY:1900 bindFlags.fReUseAddr=true)/>
+[0x00007fdd7e147700][0002.607]                  <IO::Network::Socket::JoinMulticastGroup (iaddr=239.255.255.250 onInterface=INADDR_ANY)/>
+[0x00007fdd7e147700][0002.608]                  <IO::Network::Socket::Bind (sockAddr=in6addr_any:1900 bindFlags.fReUseAddr=true)/>
+[0x00007fdd7e147700][0002.609]                  <IO::Network::Socket::JoinMulticastGroup (iaddr=ff02::c onInterface=INADDR_ANY)> {
+[0x00007fdd7e147700][0002.655]                          errno_ErrorException::Throw (19) - throwing errno_ErrorException 'No such device (errno: 19)' from /usr/lib/x86_64-linux-gnu/libasan.so.4(+0x558c0) [0x7fdd84ca88c0]; ./Builds/Debug/WhyTheFuckIsMyNetworkSoSlow/WhyTheFuckIsMyNetworkSoSlow-Backend(Stroika::Foundation::Debug::BackTrace[abi:cxx11](unsigned int)+0x22b) [0x55bb03f5f5b5]; ./Builds/Debug/WhyTheFuckIsMyNetworkSoSlow/WhyTheFuckIsMyNetworkSoSlow-Backend(Stroika::Foundation::Execution::Private_::GetBT_ws[abi:cxx11]()+0xba) [0x55bb03f73834]; ./Builds/Debug/WhyTh
 
 
+
+>>> HANDLE BETTER when multicast crap doesn't work. Seems common enough - just log it as an erorr and set some error state, but keep running
+!!!!
+
+-----
+
+
+>>>> http://api.ipify.org/
+	GET MY PUBLIC IP ADDRESS (and show as detail in the network object)
+	http://myexternalip.com/raw
+
+
+
+
+------------------------------------------
 
 
 >>> NEXT SIMPLE FUNCTION
@@ -92,14 +81,13 @@ Under docker:
 
 
 
-
-
->>>> FIX MAKEFILE TO CREATE HTML DIRECTORY SO WEBSITE RUNS MORE EASILY
-
-
+------------------------------
 
 > building on Linux (BLOW) doesn't work
- > even make clobber works poorly
+
+	(restest)
+
+ ----
  
  >>> In discovery - look at location, and then fetch that location (at least sometimes) in xml
 		http://192.168.244.1:47956/rootDesc.xml
