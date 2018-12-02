@@ -10,13 +10,14 @@ CONFIGURATION_TAGS?=$(TAGS)
 
 .PHONY: configurations
 
-APPLY_CONFIGS=$(or $(CONFIGURATION), $(shell $(StroikaRoot)ScriptsLib/GetConfigurations --config-tags "$(CONFIGURATION_TAGS)"))
+APPLY_CONFIGS::=$(or $(CONFIGURATION), $(shell $(StroikaRoot)ScriptsLib/GetConfigurations --config-tags "$(CONFIGURATION_TAGS)"))
 
 all:
 	@$(StroikaRoot)ScriptsLib/PrintLevelLeader.sh $(MAKE_INDENT_LEVEL) && $(ECHO) "Building WhyTheFuckIsMyNetworkSoSlow all{$(CONFIGURATION)}:"
 	@$(MAKE) -silent ConfigurationFiles MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
 ifeq ($(CONFIGURATION),)
-	@for i in $(APPLY_CONFIGS) ; do\
+	@#Cannot use APPLY_CONFIGS here because ConfigurationFiles may have changed and evaluated before here
+	@for i in `$(StroikaRoot)ScriptsLib/GetConfigurations --config-tags "$(CONFIGURATION_TAGS)"` ; do\
 		$(MAKE) --no-print-directory --silent all CONFIGURATION=$$i MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1));\
 	done
 else
@@ -63,13 +64,16 @@ ifeq ($(CONFIGURATION),)
 ifeq ($(CONFIGURATION_TAGS),)
 	@if [ "$@" == "clobber" ] ; then \
 		rm -rf IntermediateFiles/* Builds/*;\
-		#sometimes called dist-clean;\
-		$(MAKE) --directory ThirdPartyComponents --no-print-directory $@ CONFIGURATION= MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1));\
 	fi
-endif
+	@$(MAKE) --silent --directory html $@ MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1));
+	@# with no config specified, BackendApp NYI make clean/clobber (and not needed)
+	@#$(MAKE) --silent --directory BackendApp $@ MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1));
+	@$(MAKE) --silent --directory ThirdPartyComponents $@ MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1));
+else
 	@for i in $(APPLY_CONFIGS) ; do\
 		$(MAKE) --no-print-directory $@ CONFIGURATION=$$i MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1));\
 	done
+endif
 else
 	@$(StroikaRoot)ScriptsLib/CheckValidConfiguration.sh $(CONFIGURATION)
 	@$(StroikaRoot)ScriptsLib/PrintProgressLine.sh $(MAKE_INDENT_LEVEL) "WhyTheFuckIsMyNetworkSoSlow $(call FUNCTION_CAPITALIZE_WORD,$@) {$(CONFIGURATION)}:"
