@@ -1,7 +1,8 @@
 TOP_ROOT=$(shell realpath ../../../)/
 StroikaPlatformTargetBuildDir=$(TOP_ROOT)Builds/$(CONFIGURATION)/
+StroikaRoot=$(TOP_ROOT)ThirdPartyComponents/Stroika/StroikaRoot/
 
-include $(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/Library/Configuration.mk
+-include $(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/Library/Configuration.mk
 
 SrcDir				=	$(TOP_ROOT)BackendApp/Sources/Discovery/
 ObjDir				=	$(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/BackendApp/Discovery/

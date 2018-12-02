@@ -1,7 +1,9 @@
 TOP_ROOT=$(shell realpath ../../)/
-StroikaPlatformTargetBuildDir=$(TOP_ROOT)Builds/$(CONFIGURATION)/
+####delete-StroikaPlatformTargetBuildDir=$(TOP_ROOT)Builds/$(CONFIGURATION)/
 
-include $(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/Library/Configuration.mk
+StroikaRoot=$(TOP_ROOT)ThirdPartyComponents/Stroika/StroikaRoot/
+
+-include $(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/Library/Configuration.mk
 
 SrcDir				=	$(TOP_ROOT)BackendApp/Sources/
 ObjDir				=	$(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/BackendApp/
@@ -34,9 +36,10 @@ Objs	=	\
 
 
 $(SubDirs):
+	$(info subdirs)
 	@for sd in $(SubDirs);\
 	do\
-		$(MAKE) --directory $$sd all CONFIGURATION=$(CONFIGURATION);\
+		$(MAKE) --directory $$sd all;\
 	done
 
 all:
@@ -63,3 +66,4 @@ $(TARGETEXE):	$(ObjDir) $(SubDirs) $(Objs)
 
 clean::
 	@rm -f $(SUBDIR_OBJS)
+

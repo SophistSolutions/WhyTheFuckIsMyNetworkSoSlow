@@ -1,6 +1,8 @@
 ﻿export TOP_ROOT=$(shell realpath ../)/
 StroikaPlatformTargetBuildDir=$(TOP_ROOT)Builds/$(CONFIGURATION)/
+StroikaRoot=../ThirdPartyComponents/Stroika/StroikaRoot/
 
+include $(StroikaRoot)/ScriptsLib/Makefile-Common.mk
 -include $(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/Library/Configuration.mk
 
 SrcDir				=	$(TOP_ROOT)BackendApp/
@@ -18,10 +20,10 @@ all:
 
 
 clean clobber::
-	@$(StroikaRoot)/ScriptsLib/PrintLevelLeader.sh $(MAKE_INDENT_LEVEL) && $(ECHO) "$@ Backend:"
+	@$(StroikaRoot)/ScriptsLib/PrintLevelLeader.sh $(MAKE_INDENT_LEVEL) && $(ECHO) "WhyTheFuckIsMyNetworkSoSlow/Backend $(call FUNCTION_CAPITALIZE_WORD,$@) {$(CONFIGURATION)}:"
 	@$(StroikaRoot)/ScriptsLib/CheckValidConfiguration.sh $(CONFIGURATION)
-	@$(MAKE) --directory=Sources --no-print-directory $@
+	@$(MAKE) --directory=Sources --silent $@
 
 
 format-code:
-	@../ThirdPartyComponents/Stroika/StroikaRoot/ScriptsLib/FormatCode.sh Sources *.h *.inl *.cpp
+	@$(StroikaRoot)ScriptsLib/FormatCode.sh Sources *.h *.inl *.cpp

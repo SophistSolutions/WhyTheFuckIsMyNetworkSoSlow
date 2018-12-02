@@ -3,7 +3,7 @@
 	doesnt work (?? or test at least)
 
 
-
+----
 	-
 
 		CLEAN CHECKOUT
@@ -11,7 +11,7 @@
 			make all
 			(creates configs but builds nothing) - cuz must re-evaluate list of configs
 
-
+			---
 
 
 
