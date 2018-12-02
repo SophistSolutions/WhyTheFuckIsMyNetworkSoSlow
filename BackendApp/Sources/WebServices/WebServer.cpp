@@ -94,17 +94,18 @@ public:
               Route{
                   RegularExpression (L"", RegularExpression::eECMAScript),
                   DefaultPage_},
+
               Route{
                   RegularExpression (L"Devices", RegularExpression::eECMAScript),
                   mkRequestHandler (kDevices_, Device::kMapper, function<Collection<Device> (void)>{[=]() { return fWSAPI_->GetDevices (); }})},
 
-                  // This doesn't belong here - move to new WebService sample
+              // This doesn't belong here - move to new WebService sample
               Route{
                   RegularExpression (L"plus", RegularExpression::eECMAScript),
-                  mkRequestHandler (WebServiceMethodDescription{{},{},DataExchange::PredefinedInternetMediaType::JSON_CT ()}, Device::kMapper, Traversal::Iterable<String> {L"arg1", L"arg2"}, function<double (double, double)>{[=](double arg1, double arg2) { return arg1 + arg2; }})},
+                  mkRequestHandler (WebServiceMethodDescription{{}, {}, DataExchange::PredefinedInternetMediaType::JSON_CT ()}, Device::kMapper, Traversal::Iterable<String>{L"arg1", L"arg2"}, function<double(double, double)>{[=](double arg1, double arg2) { return arg1 + arg2; }})},
               Route{
                   RegularExpression (L"test-void-return", RegularExpression::eECMAScript),
-                  mkRequestHandler (WebServiceMethodDescription{}, Device::kMapper, Traversal::Iterable<String> {L"err-if-more-than-10"}, function<void (double)>{[=](double check) { if (check > 10) {Execution::Throw (Execution::StringException (L"more than 10"));} }})},
+                  mkRequestHandler (WebServiceMethodDescription{}, Device::kMapper, Traversal::Iterable<String>{L"err-if-more-than-10"}, function<void(double)>{[=](double check) { if (check > 10) {Execution::Throw (Execution::StringException (L"more than 10"));} }})},
 
               Route{
                   RegularExpression (L"NetworkInterfaces", RegularExpression::eECMAScript),
@@ -122,10 +123,19 @@ public:
                   RegularExpression (L"NetworkInterface/.*", RegularExpression::eECMAScript),
                   [=](Message* m) {
                       // @todo parse out of REGULAR EXPRESSION - id
-                      String id = L"1ac5b672-a496-45c4-86d8-1f4939f9a236";
-                      ExpectedMethod (m->GetRequestReference (), kNetworkInterfaces_);
-                      WriteResponse (m->PeekResponse (), kNetworkInterfaces_, NetworkInterface::kMapper.FromObject (fWSAPI_->GetNetworkInterface (id)));
+                      //tmphack way to grab id arg (til stroika router supports this)
+                      String tmp = m->PeekRequest ()->GetURL ().GetHostRelativePath ();
+                      if (auto i = tmp.RFind ('/')) {
+                          String id = L"1ac5b672-a496-45c4-86d8-1f4939f9a236";
+                          id        = tmp.SubString (*i + 1);
+                          ExpectedMethod (m->GetRequestReference (), kNetworkInterfaces_);
+                          WriteResponse (m->PeekResponse (), kNetworkInterfaces_, NetworkInterface::kMapper.FromObject (fWSAPI_->GetNetworkInterface (id)));
+                      }
+                      else {
+                          Execution::Throw (Execution::StringException (L"missing ID argument"));
+                      }
                   }},
+
               Route{
                   RegularExpression (L"Networks", RegularExpression::eECMAScript),
                   mkRequestHandler (kNetworks_, Network::kMapper, function<Sequence<Network> (void)>{[=]() { return fWSAPI_->GetNetworks (); }})}}}
