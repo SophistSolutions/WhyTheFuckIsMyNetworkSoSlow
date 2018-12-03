@@ -140,37 +140,52 @@ Sequence<BackendApp::WebServices::Network> WSImpl::GetNetworks () const
     return result;
 }
 
-Collection<String> WSImpl::GetNetworkInterfaces () const
+Collection<String> WSImpl::GetNetworkInterfaces (bool filterRunningOnly) const
 {
     Collection<String> result;
 
     for (Discovery::NetworkInterface n : Discovery::CollectAllNetworkInterfaces ()) {
-        result += Characters::ToString (n.fGUID);
+        bool passedFilter{true};
+        if (filterRunningOnly) {
+            if (n.fStatus.has_value () and not n.fStatus->Contains (IO::Network::Interface::Status::eConnected)) {
+                passedFilter = false;
+            }
+        }
+        if (passedFilter) {
+            result += Characters::ToString (n.fGUID);
+        }
     }
     return result;
 }
 
-Collection<BackendApp::WebServices::NetworkInterface> WSImpl::GetNetworkInterfaces_Recurse () const
+Collection<BackendApp::WebServices::NetworkInterface> WSImpl::GetNetworkInterfaces_Recurse (bool filterRunningOnly) const
 {
     Collection<BackendApp::WebServices::NetworkInterface> result;
 
     for (Discovery::NetworkInterface n : Discovery::CollectAllNetworkInterfaces ()) {
-        BackendApp::WebServices::NetworkInterface nw{n};
+        bool passedFilter{true};
+        if (filterRunningOnly) {
+            if (n.fStatus.has_value () and not n.fStatus->Contains (IO::Network::Interface::Status::eConnected)) {
+                passedFilter = false;
+            }
+        }
+        if (passedFilter) {
+            BackendApp::WebServices::NetworkInterface nw{n};
 
-        /**
-         */
-        nw.fGUID = n.fGUID;
+            /**
+             */
+            nw.fGUID = n.fGUID;
 
-        result += nw;
+            result += nw;
+        }
     }
     return result;
 }
 
 NetworkInterface WSImpl::GetNetworkInterface (const String& id) const
 {
-    Collection<BackendApp::WebServices::NetworkInterface> tmp = GetNetworkInterfaces_Recurse ();
     // @todo quick hack impl
-    for (auto i : tmp) {
+    for (auto i : GetNetworkInterfaces_Recurse (false)) {
         if (i.fGUID == Common::GUID{id}) {
             return i;
         }
