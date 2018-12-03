@@ -1,7 +1,9 @@
 
 Add filter-Active=true, filter-Active=false for /NetworkInterfaces
 
+---
 
+	Then convert DEVICES and Networks to new API style and docuemnt.
 
 	-----
 
