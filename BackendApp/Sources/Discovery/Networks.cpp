@@ -89,16 +89,20 @@ Sequence<Network> Discovery::CollectActiveNetworks ()
                 }
 
                 unsigned int score{};
-                for (auto gw : i.fGateways) {
-                    if (not nw.fGateways.Contains (gw)) {
-                        score += 20;
-                        nw.fGateways.Append (gw);
+                if (i.fGateways) {
+                    for (auto gw : *i.fGateways) {
+                        if (not nw.fGateways.Contains (gw)) {
+                            score += 20;
+                            nw.fGateways.Append (gw);
+                        }
                     }
                 }
-                for (auto dnss : i.fDNSServers) {
-                    if (not nw.fDNSServers.Contains (dnss)) {
-                        score += 5;
-                        nw.fDNSServers.Append (dnss);
+                if (i.fDNSServers) {
+                    for (auto dnss : *i.fDNSServers) {
+                        if (not nw.fDNSServers.Contains (dnss)) {
+                            score += 5;
+                            nw.fDNSServers.Append (dnss);
+                        }
                     }
                 }
                 nw.fAttachedNetworkInterfaces += i.fGUID;

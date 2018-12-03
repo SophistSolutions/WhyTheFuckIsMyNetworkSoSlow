@@ -115,6 +115,7 @@ const ObjectVariantMapper NetworkInterface::kMapper = []() {
     mapper.AddCommonType<InternetAddress> ();
     mapper.AddCommonType<optional<InternetAddress>> ();
     mapper.AddCommonType<Sequence<InternetAddress>> ();
+    mapper.AddCommonType<optional<Sequence<InternetAddress>>> ();
 
     mapper.AddCommonType<IO::Network::Interface::WirelessInfo::State> ();
     mapper.AddCommonType<optional<IO::Network::Interface::WirelessInfo::State>> ();
@@ -161,8 +162,8 @@ const ObjectVariantMapper NetworkInterface::kMapper = []() {
         {L"Transmit-Speed-Baud", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fTransmitSpeedBaud), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"Receive-Link-Speed-Baud", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fReceiveLinkSpeedBaud), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"Bindings", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fBindings)},
-        {L"Gateways", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fGateways)},
-        {L"DNS-Servers", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fDNSServers)},
+        {L"Gateways", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fGateways), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"DNS-Servers", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fDNSServers), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"Wireless-Information", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fWirelessInfo), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"Status", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fStatus)},
     });
