@@ -1,9 +1,5 @@
 
-Add filter-Active=true, filter-Active=false for /NetworkInterfaces
-
----
-
-	Then convert DEVICES and Networks to new API style and docuemnt.
+	Then convert DEVICES and Networks to new API style and docuemnt. (as did for NetworkInterfaces)
 
 	-----
 
@@ -22,18 +18,7 @@ Add filter-Active=true, filter-Active=false for /NetworkInterfaces
 			>	EXIT TO INTERNET (whatsmyip)
 			>	My GEOLOC
 			>	Whats my ISP (?)
-
-	/Devices
-		In here, list pointers to networks and pointers to network interfaces
-
-
-	// THEN do API
-		/Network-Interface/ID
-		/Network/ID
-		/Devices/ID
-
-	and change default for /Network-Interfaces etc to "details=false" ,but with details=true, list what we do now
-	and details=false, just the names.
+-----
 
 
 	//// MAYBE then add APIs

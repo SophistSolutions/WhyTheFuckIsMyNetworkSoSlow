@@ -128,8 +128,8 @@ public:
                       //tmphack way to grab id arg (til stroika router supports this)
                       String tmp = m->PeekRequest ()->GetURL ().GetHostRelativePath ();
                       if (auto i = tmp.RFind ('/')) {
-                          String id = L"1ac5b672-a496-45c4-86d8-1f4939f9a236";
-                          id        = tmp.SubString (*i + 1);
+                          String id;
+                          id = tmp.SubString (*i + 1);
                           ExpectedMethod (m->GetRequestReference (), kNetworkInterfaces_);
                           WriteResponse (m->PeekResponse (), kNetworkInterfaces_, NetworkInterface::kMapper.FromObject (fWSAPI_->GetNetworkInterface (id)));
                       }
@@ -147,6 +147,7 @@ public:
           }}
         , fGUIWebConnectionMgr_{SocketAddresses (InternetAddresses_Any (), 80), fGUIWebRouter_, ConnectionManager::Options{kMaxGUIWebServerConcurrentConnections_, Socket::BindFlags{true}, kServerString_}}
     {
+        // @todo - move this to some framework-specific regtests...
         using VariantValue         = DataExchange::VariantValue;
         Sequence<VariantValue> tmp = OrderParamValues (Iterable<String>{L"page", L"xxx"}, PickoutParamValuesFromURL (URL (L"http://www.sophist.com?page=5", URL::eFlexiblyAsUI)));
         Assert (tmp.size () == 2);
