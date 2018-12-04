@@ -27,6 +27,9 @@ SubDirs=\
 
 .PHONY: $(SubDirs)
 
+$(SubDirs): $(ObjDir)
+	@$(MAKE) --directory $@ -s
+
 SUBDIR_OBJS := $(foreach dir, $(SubDirs), $(shell $(MAKE) --directory $(dir) -s list-objs CONFIGURATION=$(CONFIGURATION)))
 
 
@@ -34,13 +37,6 @@ Objs	=	\
 	$(ObjDir)Main.o\
 	$(ObjDir)Service.o\
 
-
-$(SubDirs):
-	$(info subdirs)
-	@for sd in $(SubDirs);\
-	do\
-		$(MAKE) --directory $$sd all;\
-	done
 
 all:
 	@$(StroikaRoot)/ScriptsLib/PrintLevelLeader.sh $(MAKE_INDENT_LEVEL) && $(ECHO) "Building WhyTheFuckIsMyNetworkSoSlow/BackendApp:"
