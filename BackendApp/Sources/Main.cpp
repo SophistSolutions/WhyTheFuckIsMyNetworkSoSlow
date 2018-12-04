@@ -32,7 +32,7 @@ using namespace WhyTheFuckIsMyNetworkSoSlow;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp;
 
 namespace {
-    void _FatalErorrHandler_ (const Characters::SDKChar* msg)
+    void _FatalErorrHandler (const Characters::SDKChar* msg) noexcept
     {
         Thread::SuppressInterruptionInContext suppressCtx;
         DbgTrace (SDKSTR ("Fatal Error %s encountered"), msg);
@@ -44,7 +44,7 @@ namespace {
         Logger::Get ().Flush ();
         std::_Exit (EXIT_FAILURE); // skip
     }
-    void _FatalSignalHandler_ (Execution::SignalID signal)
+    void _FatalSignalHandler (Execution::SignalID signal) noexcept
     {
         Thread::SuppressInterruptionInContext suppressCtx;
         DbgTrace (L"Fatal Signal encountered: %s", Execution::SignalToName (signal).c_str ());
@@ -106,12 +106,12 @@ int main (int argc, const char* argv[])
     Execution::Platform::Windows::RegisterDefaultHandler_invalid_parameter ();
     Execution::Platform::Windows::StructuredException::RegisterHandler ();
 #endif
-    Debug::RegisterDefaultFatalErrorHandlers (_FatalErorrHandler_);
+    Debug::RegisterDefaultFatalErrorHandlers (_FatalErorrHandler);
 
     /*
      *  SetStandardCrashHandlerSignals not really needed, but helpful for many applications so you get a decent log message/debugging on crash.
      */
-    SignalHandlerRegistry::Get ().SetStandardCrashHandlerSignals (SignalHandler{_FatalSignalHandler_, SignalHandler::Type::eDirect});
+    SignalHandlerRegistry::Get ().SetStandardCrashHandlerSignals (SignalHandler{_FatalSignalHandler, SignalHandler::Type::eDirect});
 
 /*
      *  Ignore SIGPIPE is common practice/helpful in POSIX, but not required by the service manager.
