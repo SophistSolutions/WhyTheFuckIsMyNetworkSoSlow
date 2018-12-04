@@ -16,7 +16,7 @@ SHELL=/bin/bash
 all:
 	@$(StroikaRoot)/ScriptsLib/CheckValidConfiguration.sh $(CONFIGURATION)
 	@### NO IDEA WHY MAKEFLAGS= is needed - @todo - DEBUG - but get link error otherwise
-	@$(MAKE) --directory=Sources --no-print-directory all CONFIGURATION=$(CONFIGURATION) MAKEFLAGS=
+	@$(MAKE) --directory=Sources --no-print-directory all
 
 
 clean clobber::
