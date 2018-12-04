@@ -1,5 +1,4 @@
 TOP_ROOT=$(shell realpath ../../)/
-####delete-StroikaPlatformTargetBuildDir=$(TOP_ROOT)Builds/$(CONFIGURATION)/
 
 StroikaRoot=$(TOP_ROOT)ThirdPartyComponents/Stroika/StroikaRoot/
 
@@ -30,7 +29,8 @@ SubDirs=\
 $(SubDirs): $(ObjDir)
 	@$(MAKE) --directory $@ -s
 
-SUBDIR_OBJS := $(foreach dir, $(SubDirs), $(shell $(MAKE) --directory $(dir) -s list-objs CONFIGURATION=$(CONFIGURATION)))
+
+SUBDIR_OBJS := $(foreach dir, $(SubDirs), $(shell $(MAKE) --directory $(dir) -s list-objs))
 
 
 Objs	=	\
