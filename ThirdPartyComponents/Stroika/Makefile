@@ -1,8 +1,8 @@
 ﻿export TOP_ROOT=$(shell realpath ../../)/
+export StroikaRoot=$(shell realpath StroikaRoot)/
 
 IntermediateFiles=		../../IntermediateFiles/
 
-StroikaRoot=StroikaRoot/
 
 include $(StroikaRoot)/ScriptsLib/Makefile-Common.mk
 include $(StroikaRoot)/Library/Projects/Unix/SharedMakeVariables-Default.mk

@@ -2,7 +2,11 @@ TOP_ROOT=$(shell realpath ../../)/
 
 StroikaRoot=$(TOP_ROOT)ThirdPartyComponents/Stroika/StroikaRoot/
 
--include $(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/Library/Configuration.mk
+ifneq ($(CONFIGURATION),)
+	include $(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/Library/Configuration.mk
+
+	ProjectPlatformSubdir	=	$(shell $(StroikaRoot)ScriptsLib/GetConfigurationParameter $(CONFIGURATION) ProjectPlatformSubdir)
+endif
 
 SrcDir				=	$(TOP_ROOT)BackendApp/Sources/
 ObjDir				=	$(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/BackendApp/
@@ -12,9 +16,6 @@ include $(StroikaRoot)/Library/Projects/Unix/SharedMakeVariables-Default.mk
 
 Includes				+=	-I.
 
-ifneq ($(CONFIGURATION),)
-	ProjectPlatformSubdir	=	$(shell perl $(StroikaRoot)ScriptsLib/PrintConfigurationVariable.pl $(CONFIGURATION) ProjectPlatformSubdir)
-endif
 
 TARGETEXEDir			=	$(StroikaRoot)Builds/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow/
 TARGETEXE				=	$(TARGETEXEDir)WhyTheFuckIsMyNetworkSoSlow-Backend
