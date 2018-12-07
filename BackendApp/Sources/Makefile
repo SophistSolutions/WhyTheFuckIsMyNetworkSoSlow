@@ -1,12 +1,12 @@
 TOP_ROOT=$(shell realpath ../../)/
 
-StroikaRoot=$(TOP_ROOT)ThirdPartyComponents/Stroika/StroikaRoot/
+export StroikaRoot=$(TOP_ROOT)ThirdPartyComponents/Stroika/StroikaRoot/
 
 ifneq ($(CONFIGURATION),)
 	include $(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/Library/Configuration.mk
-
-	ProjectPlatformSubdir	=	$(shell $(StroikaRoot)ScriptsLib/GetConfigurationParameter $(CONFIGURATION) ProjectPlatformSubdir)
 endif
+
+include $(StroikaRoot)ScriptsLib/Makefile-Common.mk
 
 SrcDir				=	$(TOP_ROOT)BackendApp/Sources/
 ObjDir				=	$(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/BackendApp/

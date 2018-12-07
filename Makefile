@@ -1,6 +1,6 @@
 SHELL=/bin/bash
 
-StroikaRoot=$(realpath ThirdPartyComponents/Stroika/StroikaRoot)/
+export StroikaRoot=$(realpath ThirdPartyComponents/Stroika/StroikaRoot)/
 
 include $(StroikaRoot)/ScriptsLib/Makefile-Common.mk
 include $(StroikaRoot)/Library/Projects/Unix/SharedMakeVariables-Default.mk
@@ -57,7 +57,6 @@ list-configurations list-configuration-tags:
 	@$(MAKE) --directory ThirdPartyComponents/Stroika/StroikaRoot --silent CONFIGURATION_TAGS="$(CONFIGURATION_TAGS)" $@
 
 
-
 clean clobber:
 ifeq ($(CONFIGURATION),)
 	@$(StroikaRoot)ScriptsLib/PrintProgressLine.sh $(MAKE_INDENT_LEVEL) "WhyTheFuckIsMyNetworkSoSlow $(call FUNCTION_CAPITALIZE_WORD,$@):"
@@ -96,6 +95,7 @@ ifeq ($(BRANCH),)
 else
 	(cd $(StroikaRoot) && git checkout $(BRANCH) && git pull)
 endif
+
 
 format-code:
 	@$(MAKE) --directory=BackendApp --no-print-directory format-code
