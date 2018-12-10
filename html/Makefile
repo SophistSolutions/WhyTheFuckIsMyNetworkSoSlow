@@ -1,8 +1,7 @@
 TOP_ROOT=$(shell realpath ../)/
-StroikaPlatformTargetBuildDir=$(TOP_ROOT)Builds/$(CONFIGURATION)/
-StroikaRoot=$(realpath $(TOP_ROOT)ThirdPartyComponents/Stroika/StroikaRoot)/
+export StroikaRoot?=$(realpath $(TOP_ROOT)ThirdPartyComponents/Stroika/StroikaRoot)/
 
-SHELL=/bin/bash
+include $(StroikaRoot)/ScriptsLib/Makefile-Common.mk
 include $(StroikaRoot)/Library/Projects/Unix/SharedMakeVariables-Default.mk
 
 
@@ -22,12 +21,12 @@ clobber:
 	@rm -f src/*.js	
 	@rm -rf dist
 
+
 update-components:
 	# automate/autodetect - @todo
 	npm install
 	#figure out why this is needed and remove
 	npm install gulp-cli -g
-
 
 
 check-prerequisites:

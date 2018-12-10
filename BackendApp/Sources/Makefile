@@ -1,16 +1,15 @@
-TOP_ROOT=$(shell realpath ../../)/
-
-export StroikaRoot=$(TOP_ROOT)ThirdPartyComponents/Stroika/StroikaRoot/
+export TOP_ROOT?=$(shell realpath ../../)/
+export StroikaRoot?=$(TOP_ROOT)ThirdPartyComponents/Stroika/StroikaRoot/
 
 ifneq ($(CONFIGURATION),)
 	include $(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/Library/Configuration.mk
 endif
 
-include $(StroikaRoot)ScriptsLib/Makefile-Common.mk
 
 SrcDir				=	$(TOP_ROOT)BackendApp/Sources/
 ObjDir				=	$(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/BackendApp/
 
+include $(StroikaRoot)ScriptsLib/Makefile-Common.mk
 include $(StroikaRoot)/Library/Projects/Unix/SharedBuildRules-Default.mk
 include $(StroikaRoot)/Library/Projects/Unix/SharedMakeVariables-Default.mk
 

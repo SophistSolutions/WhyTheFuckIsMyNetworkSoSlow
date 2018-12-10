@@ -1,6 +1,5 @@
-﻿export TOP_ROOT=$(shell realpath ../)/
-StroikaPlatformTargetBuildDir=$(TOP_ROOT)Builds/$(CONFIGURATION)/
-export StroikaRoot=$(TOP_ROOT)ThirdPartyComponents/Stroika/StroikaRoot/
+﻿export TOP_ROOT?=$(shell realpath ../)/
+export StroikaRoot?=$(TOP_ROOT)ThirdPartyComponents/Stroika/StroikaRoot/
 
 ifneq ($(CONFIGURATION),)
 include $(StroikaRoot)IntermediateFiles/$(CONFIGURATION)/Library/Configuration.mk

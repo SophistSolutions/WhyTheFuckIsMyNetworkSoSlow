@@ -1,5 +1,4 @@
-SHELL=/bin/bash
-
+export TOP_ROOT?=$(shell realpath ./)/
 export StroikaRoot=$(realpath ThirdPartyComponents/Stroika/StroikaRoot)/
 
 include $(StroikaRoot)/ScriptsLib/Makefile-Common.mk

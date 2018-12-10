@@ -1,5 +1,5 @@
-﻿export TOP_ROOT=$(shell realpath ../../)/
-export StroikaRoot=$(shell realpath StroikaRoot)/
+﻿export TOP_ROOT?=$(shell realpath ../../)/
+export StroikaRoot?=$(shell realpath StroikaRoot)/
 
 IntermediateFiles=		../../IntermediateFiles/
 
