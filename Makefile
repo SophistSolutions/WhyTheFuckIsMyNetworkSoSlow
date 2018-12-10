@@ -60,10 +60,10 @@ clean clobber:
 ifeq ($(CONFIGURATION),)
 	@$(StroikaRoot)ScriptsLib/PrintProgressLine.sh $(MAKE_INDENT_LEVEL) "WhyTheFuckIsMyNetworkSoSlow $(call FUNCTION_CAPITALIZE_WORD,$@):"
 ifeq ($(CONFIGURATION_TAGS),)
-	@if [ "$@" == "clobber" ] ; then \
+	@if [ "$@"=="clobber" ] ; then \
 		rm -rf IntermediateFiles/* Builds/*;\
 	fi
-	@if [ "$@" == "clean" ] ; then \
+	@if [ "$@"=="clean" ] ; then \
 		rm -rf IntermediateFiles/*;\
 	fi
 	@$(MAKE) --silent --directory html $@ MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1));
