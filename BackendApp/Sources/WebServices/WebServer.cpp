@@ -53,6 +53,7 @@ namespace {
     const DataExchange::ObjectVariantMapper kBasicsMapper_ = []() {
         DataExchange::ObjectVariantMapper mapper;
         mapper.AddCommonType<Collection<String>> ();
+        mapper.AddCommonType<Sequence<String>> ();
         return mapper;
     }();
     DISABLE_COMPILER_GCC_WARNING_END ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
@@ -140,7 +141,34 @@ public:
 
               Route{
                   RegularExpression (L"Networks", RegularExpression::eECMAScript),
-                  mkRequestHandler (kNetworks_, Network::kMapper, function<Sequence<Network> (void)>{[=]() { return fWSAPI_->GetNetworks (); }})}}}
+                  [=](Message* m) {
+                      ExpectedMethod (m->GetRequestReference (), kNetworks_);
+                      Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
+                      if (args.LookupValue (L"recurse", false).As<bool> ()) {
+                          WriteResponse (m->PeekResponse (), kNetworkInterfaces_, Network::kMapper.FromObject (fWSAPI_->GetNetworks_Recurse ()));
+                      }
+                      else {
+                          WriteResponse (m->PeekResponse (), kNetworkInterfaces_, kBasicsMapper_.FromObject (fWSAPI_->GetNetworks ()));
+                      }
+                  }},
+              Route{
+                  RegularExpression (L"Network/.*", RegularExpression::eECMAScript),
+                  [=](Message* m) {
+                      // @todo parse out of REGULAR EXPRESSION - id
+                      //tmphack way to grab id arg (til stroika router supports this)
+                      String tmp = m->PeekRequest ()->GetURL ().GetHostRelativePath ();
+                      if (auto i = tmp.RFind ('/')) {
+                          String id;
+                          id = tmp.SubString (*i + 1);
+                          ExpectedMethod (m->GetRequestReference (), kNetworks_);
+                          WriteResponse (m->PeekResponse (), kNetworks_, Network::kMapper.FromObject (fWSAPI_->GetNetwork (id)));
+                      }
+                      else {
+                          Execution::Throw (Execution::StringException (L"missing ID argument"));
+                      }
+                  }},
+
+          }}
         , fWSConnectionMgr_{SocketAddresses (InternetAddresses_Any (), 8080), fWSRouter_, ConnectionManager::Options{kMaxConcurrentConnections_, Socket::BindFlags{true}, kServerString_}} // listen and dispatch while this object exists
         , fGUIWebRouter_{Sequence<Route>{
               Route{RegularExpression::kAny, FileSystemRouter{Execution::GetEXEDir () + L"html", {}, Sequence<String>{L"index.html"}}},
@@ -180,7 +208,7 @@ const WebServiceMethodDescription WebServer::Rep_::kNetworks_{
     Set<String>{String_Constant{IO::Network::HTTP::Methods::kGet}},
     DataExchange::PredefinedInternetMediaType::kJSON,
     {},
-    Sequence<String>{L"curl http://localhost:8080/Networks"},
+    Sequence<String>{L"curl http://localhost:8080/Networks", L"curl http://localhost:8080/Networks?recurse=true", L"curl http://localhost:8080/Network/{ID}"},
     Sequence<String>{L"Fetch the list of known Networks.",
                      L"@todo - in the future - add support for parameters to this fetch - which can be used to filter/subset etc"},
 };

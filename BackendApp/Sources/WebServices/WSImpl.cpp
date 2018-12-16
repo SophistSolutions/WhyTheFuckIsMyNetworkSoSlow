@@ -117,7 +117,16 @@ Collection<BackendApp::WebServices::Device> WSImpl::GetDevices () const
     return devices;
 }
 
-Sequence<BackendApp::WebServices::Network> WSImpl::GetNetworks () const
+Sequence<String> WSImpl::GetNetworks () const
+{
+    Sequence<String> result;
+    for (Discovery::Network n : Discovery::CollectActiveNetworks ()) {
+        result += Characters::ToString (n.fGUID);
+    }
+    return result;
+}
+
+Sequence<BackendApp::WebServices::Network> WSImpl::GetNetworks_Recurse () const
 {
     Sequence<BackendApp::WebServices::Network> result;
 
@@ -138,6 +147,17 @@ Sequence<BackendApp::WebServices::Network> WSImpl::GetNetworks () const
     DbgTrace (L"returns: %s", Characters::ToString (result).c_str ());
 #endif
     return result;
+}
+
+Network WSImpl::GetNetwork (const String& id) const
+{
+    // @todo quick hack impl
+    for (auto i : GetNetworks_Recurse ()) {
+        if (i.fGUID == Common::GUID{id}) {
+            return i;
+        }
+    }
+    Execution::Throw (Execution::StringException (L"no such id"));
 }
 
 Collection<String> WSImpl::GetNetworkInterfaces (bool filterRunningOnly) const

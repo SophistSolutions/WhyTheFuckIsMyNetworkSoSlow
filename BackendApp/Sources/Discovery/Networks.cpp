@@ -33,6 +33,20 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery;
 // Comment this in to turn on aggressive noisy DbgTrace in this module
 //#define USE_NOISY_TRACE_IN_THIS_MODULE_ 1
 
+namespace {
+    // for now, use the CIDR, @todo - but this needs TONS OF WORK - and probably persistence
+    Common::GUID ComputeGUIDForNetwork_ (const Discovery::Network& nw)
+    {
+        StringBuilder sb;
+        using namespace Stroika::Foundation::Cryptography;
+        using DIGESTER_ = Digest::Digester<Digest::Algorithm::MD5>;
+        sb += Characters::ToString (nw.fGateways);       // NO WHERE NEAR GOOD ENUF - take into account public IP ADDR and hardware address of router - but still ALLOW for any of these to float
+        sb += Characters::ToString (nw.fNetworkAddress); // ""
+        string tmp = sb.str ().AsUTF8 ();
+        return Cryptography::Format<Common::GUID> (DIGESTER_::ComputeDigest ((const std::byte*)tmp.c_str (), (const std::byte*)tmp.c_str () + tmp.length ()));
+    }
+}
+
 /*
  ********************************************************************************
  ***************************** Discovery::Network *******************************
@@ -79,15 +93,6 @@ Sequence<Network> Discovery::CollectActiveNetworks ()
                 CIDR    cidr{useBinding.fInternetAddress, useBinding.fOnLinkPrefixLength.value_or (*useBinding.fInternetAddress.GetAddressSize () * 8)};
                 Network nw = accumResults.LookupValue (cidr, Network{cidr});
 
-                // GUID for network is EITHER from OS, or try to figure one out of as  digest of a few facts. Will need to enahnce this a great deal
-                // going forward (for unix esp)
-                // -- LGP 2018-11-25
-                if (nw.fGUID == Common::GUID::Zero ()) {
-                    if (i.fNetworkGUID) {
-                        nw.fGUID = *i.fNetworkGUID;
-                    }
-                }
-
                 unsigned int score{};
                 if (i.fGateways) {
                     for (auto gw : *i.fGateways) {
@@ -106,6 +111,13 @@ Sequence<Network> Discovery::CollectActiveNetworks ()
                     }
                 }
                 nw.fAttachedNetworkInterfaces += i.fGUID;
+
+                // Stroika IO::Network::Interface::fNetworkGUID field appears useless - since only defined on windows and not really documented what it means
+                // and doesn't appear to vary interestingly (maybe didnt test enough) - like my virtual adapters and localhost adapter alll have same network as
+                // the real ethernet adapter).
+                // -- LGP 2018-12-16
+                nw.fGUID = ComputeGUIDForNetwork_ (nw);
+
                 accumResults.Add (cidr, nw);
 
                 // put most important interfaces at top of list

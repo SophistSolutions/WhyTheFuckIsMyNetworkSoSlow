@@ -41,7 +41,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
         /**
          *  curl  http://localhost:8080/Networks
          */
-        virtual Sequence<Network> GetNetworks () const = 0;
+        virtual Sequence<String>  GetNetworks () const                = 0;
+        virtual Sequence<Network> GetNetworks_Recurse () const        = 0;
+        virtual Network           GetNetwork (const String& id) const = 0;
 
     public:
         /**
