@@ -78,7 +78,17 @@ namespace {
  ************************************* WSImpl ***********************************
  ********************************************************************************
  */
-Collection<BackendApp::WebServices::Device> WSImpl::GetDevices () const
+
+Collection<String> WSImpl::GetDevices () const
+{
+    Collection<String> result;
+    for (BackendApp::WebServices::Device n : GetDevices_Recurse ()) {
+        result += n.persistentID;
+    }
+    return result;
+}
+
+Collection<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse () const
 {
     using namespace IO::Network;
 
@@ -115,6 +125,18 @@ Collection<BackendApp::WebServices::Device> WSImpl::GetDevices () const
         return newDev;
     });
     return devices;
+}
+
+Device WSImpl::GetDevice (const String& id) const
+{
+    // @todo quick hack impl
+    for (auto i : GetDevices_Recurse ()) {
+        if (i.persistentID == id) {
+         //   if (i.persistentID == Common::GUID{id}) {
+                return i;
+        }
+    }
+    Execution::Throw (Execution::StringException (L"no such id"));
 }
 
 Sequence<String> WSImpl::GetNetworks () const

@@ -1,24 +1,21 @@
 
-	Then convert DEVICES and Networks to new API style and docuemnt. (as did for NetworkInterfaces)
-
+for devices
+	use GUID not string and change name to ID
+	
+	add [in network] list of networks where device is found
+	
+	probably LOSE hte 'important' flag
+	
+	eitehr lose or document 'conneted'
 	-----
 
 >>>> REST API
-	/Network-Interfaces
-
-		{{{ ADD DEFAULT GATEWAY  NETWORK - APIS - OPTIONAL - AND MAYBE ADD "DNS-SERVERS list to both as well - default-dns-server - default-gateway"}}}
-
-		LIST INTERFACES THERE
-
 	/Networks (already working)
-		BUT list pointer to network interfaces
-
-
 			>	EXIT TO INTERNET (whatsmyip)
 			>	My GEOLOC
 			>	Whats my ISP (?)
------
 
+-----
 
 	//// MAYBE then add APIs
 	// to measure TIME BETWEEN NODES and TIME TO ADDRESS

@@ -96,9 +96,11 @@ public:
                   RegularExpression (L"", RegularExpression::eECMAScript),
                   DefaultPage_},
 
+#if 0
               Route{
                   RegularExpression (L"Devices", RegularExpression::eECMAScript),
-                  mkRequestHandler (kDevices_, Device::kMapper, function<Collection<Device> (void)>{[=]() { return fWSAPI_->GetDevices (); }})},
+                  mkRequestHandler (kDevices_, Device::kMapper, function<Collection<Device> (void)>{[=]() { return fWSAPI_->GetDevices_Recurse (); }})},
+#endif
 
               // This doesn't belong here - move to new WebService sample
               Route{
@@ -107,6 +109,37 @@ public:
               Route{
                   RegularExpression (L"test-void-return", RegularExpression::eECMAScript),
                   mkRequestHandler (WebServiceMethodDescription{}, Device::kMapper, Traversal::Iterable<String>{L"err-if-more-than-10"}, function<void(double)>{[=](double check) { if (check > 10) {Execution::Throw (Execution::StringException (L"more than 10"));} }})},
+
+              Route{
+                  RegularExpression (L"Devices", RegularExpression::eECMAScript),
+                  [=](Message* m) {
+                      constexpr bool kDefault_FilterRunningOnly_{true};
+                      ExpectedMethod (m->GetRequestReference (), kNetworkInterfaces_);
+                      Mapping<String, DataExchange::VariantValue> args              = PickoutParamValues (m->PeekRequest ());
+                      bool                                        filterRunningOnly = args.LookupValue (L"filter-RunningOnly", DataExchange::VariantValue{kDefault_FilterRunningOnly_}).As<bool> ();
+                      if (args.LookupValue (L"recurse", false).As<bool> ()) {
+                          WriteResponse (m->PeekResponse (), kDevices_, Device::kMapper.FromObject (fWSAPI_->GetDevices_Recurse ()));
+                      }
+                      else {
+                          WriteResponse (m->PeekResponse (), kDevices_, kBasicsMapper_.FromObject (fWSAPI_->GetDevices ()));
+                      }
+                  }},
+              Route{
+                  RegularExpression (L"Device/.*", RegularExpression::eECMAScript),
+                  [=](Message* m) {
+                      // @todo parse out of REGULAR EXPRESSION - id
+                      //tmphack way to grab id arg (til stroika router supports this)
+                      String tmp = m->PeekRequest ()->GetURL ().GetHostRelativePath ();
+                      if (auto i = tmp.RFind ('/')) {
+                          String id;
+                          id = tmp.SubString (*i + 1);
+                          ExpectedMethod (m->GetRequestReference (), kDevices_);
+                          WriteResponse (m->PeekResponse (), kDevices_, Device::kMapper.FromObject (fWSAPI_->GetDevice (id)));
+                      }
+                      else {
+                          Execution::Throw (Execution::StringException (L"missing ID argument"));
+                      }
+                  }},
 
               Route{
                   RegularExpression (L"NetworkInterfaces", RegularExpression::eECMAScript),
