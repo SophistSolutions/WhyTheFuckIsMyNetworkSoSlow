@@ -53,7 +53,7 @@ Collection<NetworkInterface> Discovery::CollectAllNetworkInterfaces ()
     for (Interface i : IO::Network::GetInterfaces ()) {
         NetworkInterface ni{i};
 
-        // If the network interface ID is already in the form of a GUID (windows) then re-use that, but otherwise, use digtest to form
+        // If the network interface ID is already in the form of a GUID (windows) then re-use that, but otherwise, use digest to form
         // a GUID out of it.
         try {
             ni.fGUID = Common::GUID (i.fInternalInterfaceID); // may need to redo this based on whats stored in database

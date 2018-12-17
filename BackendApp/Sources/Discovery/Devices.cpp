@@ -18,6 +18,8 @@
 #include "Stroika/Frameworks/UPnP/SSDP/Client/Listener.h"
 #include "Stroika/Frameworks/UPnP/SSDP/Client/Search.h"
 
+#include "NetworkInterfaces.h"
+
 #include "Devices.h"
 
 using namespace std;
@@ -73,12 +75,14 @@ class DeviceDiscoverer::Rep_ {
     };
 
     mutable Synchronized<Mapping<String, DiscoveryInfo_>> fDiscoveredDevices_;
+    Discovery::Network                                    fNetwork_;
     SSDP::Client::Listener                                fListener_;
     SSDP::Client::Search                                  fSearcher_;
 
 public:
     Rep_ (const Network& forNetwork)
-        : fListener_{[this](const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); }, SSDP::Client::Listener::eAutoStart}
+        : fNetwork_ (forNetwork)
+        , fListener_{[this](const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); }, SSDP::Client::Listener::eAutoStart}
         , fSearcher_{[this](const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); }, SSDP::Client::Search::kRootDevice}
     {
     }
@@ -96,8 +100,8 @@ public:
             newDev.name = di.server;
             newDev.name = kNamePrettyPrintMapper_.LookupValue (newDev.name, newDev.name);
             newDev.ipAddresses += di.fInternetAddresses;
-            newDev.type = nullopt;
-
+            newDev.type     = nullopt;
+            newDev.fNetwork = fNetwork_.fGUID;
             if (newDev.ipAddresses.Any ([](const InternetAddress& ia) { return ia.As<String> ().EndsWith (L".1"); })) {
                 newDev.type = Discovery::DeviceType::eRouter;
             }
@@ -125,6 +129,7 @@ private:
         newDev.name        = Configuration::GetSystemConfiguration_ComputerNames ().fHostname;
         newDev.type        = DeviceType::eLaptop; //tmphack @todo fix
         newDev.fThisDevice = true;
+        newDev.fNetwork    = fNetwork_.fGUID;
         for (Interface i : IO::Network::GetInterfaces ()) {
             if (i.fType != Interface::Type::eLoopback and i.fStatus and i.fStatus->Contains (Interface::Status::eRunning)) {
                 i.fBindings.Apply ([&](const Interface::Binding& ia) {
@@ -134,6 +139,7 @@ private:
                 });
             }
         }
+        newDev.fAttachedInterfaces = Set<Common::GUID>{Discovery::CollectAllNetworkInterfaces ().Select<Common::GUID> ([](auto iFace) { return iFace.fGUID; })};
         return newDev;
     }
     void RecieveSSDPAdvertisement_ (const SSDP::Advertisement& d)

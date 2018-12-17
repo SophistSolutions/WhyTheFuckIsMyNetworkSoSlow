@@ -1,14 +1,4 @@
 
-for devices
-	use GUID not string and change name to ID
-	
-	add [in network] list of networks where device is found
-	
-	probably LOSE hte 'important' flag
-	
-	eitehr lose or document 'conneted'
-	-----
-
 >>>> REST API
 	/Networks (already working)
 			>	EXIT TO INTERNET (whatsmyip)
@@ -21,6 +11,20 @@ for devices
 	// to measure TIME BETWEEN NODES and TIME TO ADDRESS
 	// AND MAYBE HAVE "MONTIORS - where we defifine set of links to montir and then can check back on historical
 	values for those?"
+
+
+====
+
+		>	Document new clearer design - Networks, NetworkIntraces, Devices
+
+		>	Document TIME aspect (param to queries saying "now" or "some temporal notion") - applies to top level queries and
+			queries in a network (filtered), or even queries by ID (e.g. /Device/xxxx?time=recent-average?)
+
+
+		>	Document prelim ideas on measurements, like device-2-device times (disatnce) and how they get stored
+
+
+
 ----
 
 Under docker:

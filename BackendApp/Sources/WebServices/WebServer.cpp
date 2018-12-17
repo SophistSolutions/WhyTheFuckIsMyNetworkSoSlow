@@ -232,7 +232,7 @@ const WebServiceMethodDescription WebServer::Rep_::kDevices_{
     Set<String>{String_Constant{IO::Network::HTTP::Methods::kGet}},
     DataExchange::PredefinedInternetMediaType::kJSON,
     {},
-    Sequence<String>{L"curl http://localhost:8080/Devices"},
+    Sequence<String>{L"curl http://localhost:8080/Devices", L"curl http://localhost:8080/Devices?recurse=true", L"curl http://localhost:8080/Devices/{ID}"},
     Sequence<String>{L"Fetch the list of known devices for the currently connected network.",
                      L"@todo - in the future - add support for parameters to this fetch - which can be used to filter/subset etc"},
 };
