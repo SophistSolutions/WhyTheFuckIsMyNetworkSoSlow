@@ -1,29 +1,38 @@
 
-	Then convert DEVICES and Networks to new API style and docuemnt. (as did for NetworkInterfaces)
-
-	-----
-
 >>>> REST API
-	/Network-Interfaces
-
-		{{{ ADD DEFAULT GATEWAY  NETWORK - APIS - OPTIONAL - AND MAYBE ADD "DNS-SERVERS list to both as well - default-dns-server - default-gateway"}}}
-
-		LIST INTERFACES THERE
-
 	/Networks (already working)
-		BUT list pointer to network interfaces
-
-
 			>	EXIT TO INTERNET (whatsmyip)
 			>	My GEOLOC
 			>	Whats my ISP (?)
+			>	Netweorks should NOT have  a SINGLE CDIR, but allow multiple - maybe one for ipv4 and one for ipv6??? That limit maybe OK.
+
 -----
 
+http://localhost:8080/Network/97979b96-9967-6696-95cb-6495706c66c9
+	ONLY prints ONE Network_Address - should print BOTH the IPv4 and IPv6 networks there.
+	its attached interafce http://localhost:8080/NetworkInterface/56f0fbd0-a2ec-4e00-9c05-61e449fdbfc4
+		shows several ipv6 addresses, with probably:
+			fe80::b80f:7c29:847f:2322/64 being the one I should label as the network? Maybe not. Maybe its fe80:: that is the network cuz the rest SB 0's... (lower 64 bits)
+			OR could be ff02::???
+
+-----
 
 	//// MAYBE then add APIs
 	// to measure TIME BETWEEN NODES and TIME TO ADDRESS
 	// AND MAYBE HAVE "MONTIORS - where we defifine set of links to montir and then can check back on historical
 	values for those?"
+
+
+====
+
+		>	Document new clearer design - Networks, NetworkIntraces, Devices
+
+		>	Document TIME aspect (param to queries saying "now" or "some temporal notion") - applies to top level queries and
+			queries in a network (filtered), or even queries by ID (e.g. /Device/xxxx?time=recent-average?)
+
+
+		>	Document prelim ideas on measurements, like device-2-device times (disatnce) and how they get stored
+
 ----
 
 Under docker:

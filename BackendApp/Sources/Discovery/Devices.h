@@ -49,16 +49,20 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
      *  captured by the discovery services.
      */
     struct Device {
-        String               name;
-        Set<InternetAddress> ipAddresses;
-        optional<DeviceType> type;
-        bool                 fThisDevice{};
+        String                      name;
+        Set<InternetAddress>        ipAddresses;
+        optional<DeviceType>        type;
+        bool                        fThisDevice{};
+        Common::GUID                fNetwork;
+        optional<Set<Common::GUID>> fAttachedInterfaces;
 
         nonvirtual String ToString () const;
     };
 
     /**
      *  DeviceDiscoverer is internally syncronized - so its methods can be called from any thread.
+     *
+     *  @todo this CURRENTLY only discovers for a single network, but we should discover devices on all networks (and merge them somehow when they are the smae device on multiple networks)
      */
     class DeviceDiscoverer {
     public:

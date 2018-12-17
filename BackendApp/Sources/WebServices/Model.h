@@ -92,10 +92,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
     /**
      */
     struct Device {
-        /**
-        @ tood rename as "fID" and just document perisstnet id
-         */
-        String persistentID;
+        Common::GUID fGUID;
 
         String name;
 
@@ -126,18 +123,22 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         optional<DeviceType> type;
 
         /*
-         *  in CIDR notation.
          */
-        String network;
+        Set<Common::GUID> fAttachedNetworks;
 
-        optional<float> signalStrength{};
-        bool            connected{};
-        bool            important{};
+        /**
+         *  This generally applies to 'this computer', but when we merge data across devices, we can see multiple devices with multiple interfaces.
+         *  You can use this to lookup details about wireless connections etc, associated with each network interface.
+         */
+        optional<Set<Common::GUID>> fAttachedNetworkInterfaces;
+
+        bool important{}; // CONSIDER DEPRECATING/LOSING - or generalizing to a float (0..1)???
 
         nonvirtual String ToString () const;
 
         static const DataExchange::ObjectVariantMapper kMapper;
     };
+
 }
 
 /*

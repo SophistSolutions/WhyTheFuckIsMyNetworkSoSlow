@@ -58,8 +58,13 @@ namespace {
 }
 
 namespace {
+    // @todo LIKE WITH NETWORK IDS - probably maintain a persistence cache mapping info - mostly HARDWARE ADDRESS - to a uniuque nummber (guidgen maybe).
+    // THEN we will always identify a device as the sam thing even if it appears with diferent IP address on different network
+    //
+    // must be careful about virtual devices (like VMs) which use fake hardware addresses, so need some way to tell differnt devices (and then one from another?)
+    //
     //tmphack
-    String LookupPersistentDeviceID_ (const Discovery::Device& d)
+    Common::GUID LookupPersistentDeviceID_ (const Discovery::Device& d)
     {
         using IO::Network::InternetAddress;
         SortedSet<InternetAddress> x{d.ipAddresses};
@@ -69,7 +74,7 @@ namespace {
         }
         sb += d.name;
         using namespace Cryptography::Digest;
-        return Cryptography::Format<String> (Digester<Algorithm::MD5>::ComputeDigest (Memory::BLOB::Raw (sb.str ().AsUTF8 ())));
+        return Cryptography::Format<Common::GUID> (Digester<Algorithm::MD5>::ComputeDigest (Memory::BLOB::Raw (sb.str ().AsUTF8 ())));
     }
 }
 
@@ -78,7 +83,17 @@ namespace {
  ************************************* WSImpl ***********************************
  ********************************************************************************
  */
-Collection<BackendApp::WebServices::Device> WSImpl::GetDevices () const
+
+Collection<String> WSImpl::GetDevices () const
+{
+    Collection<String> result;
+    for (BackendApp::WebServices::Device n : GetDevices_Recurse ()) {
+        result += Characters::ToString (n.fGUID);
+    }
+    return result;
+}
+
+Collection<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse () const
 {
     using namespace IO::Network;
 
@@ -107,17 +122,38 @@ Collection<BackendApp::WebServices::Device> WSImpl::GetDevices () const
             }
         });
 
-        newDev.connected    = true;
-        newDev.persistentID = LookupPersistentDeviceID_ (d);
-        newDev.name         = d.name;
-        newDev.type         = d.type;
-        newDev.important    = newDev.type == Device::DeviceType::eRouter or d.fThisDevice;
+        newDev.fGUID = LookupPersistentDeviceID_ (d);
+        newDev.name  = d.name;
+        newDev.type  = d.type;
+        newDev.fAttachedNetworks += d.fNetwork;
+        newDev.fAttachedNetworkInterfaces = d.fAttachedInterfaces; // @todo must merge += (but only when merging across differnt discoverers/networks)
+        newDev.important                  = newDev.type == Device::DeviceType::eRouter or d.fThisDevice;
         return newDev;
     });
     return devices;
 }
 
-Sequence<BackendApp::WebServices::Network> WSImpl::GetNetworks () const
+Device WSImpl::GetDevice (const String& id) const
+{
+    // @todo quick hack impl
+    for (auto i : GetDevices_Recurse ()) {
+        if (i.fGUID == Common::GUID{id}) {
+            return i;
+        }
+    }
+    Execution::Throw (Execution::StringException (L"no such id"));
+}
+
+Sequence<String> WSImpl::GetNetworks () const
+{
+    Sequence<String> result;
+    for (Discovery::Network n : Discovery::CollectActiveNetworks ()) {
+        result += Characters::ToString (n.fGUID);
+    }
+    return result;
+}
+
+Sequence<BackendApp::WebServices::Network> WSImpl::GetNetworks_Recurse () const
 {
     Sequence<BackendApp::WebServices::Network> result;
 
@@ -138,6 +174,17 @@ Sequence<BackendApp::WebServices::Network> WSImpl::GetNetworks () const
     DbgTrace (L"returns: %s", Characters::ToString (result).c_str ());
 #endif
     return result;
+}
+
+Network WSImpl::GetNetwork (const String& id) const
+{
+    // @todo quick hack impl
+    for (auto i : GetNetworks_Recurse ()) {
+        if (i.fGUID == Common::GUID{id}) {
+            return i;
+        }
+    }
+    Execution::Throw (Execution::StringException (L"no such id"));
 }
 
 Collection<String> WSImpl::GetNetworkInterfaces (bool filterRunningOnly) const

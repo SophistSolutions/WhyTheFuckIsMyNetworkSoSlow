@@ -10,21 +10,27 @@
 #include "Stroika/Foundation/Containers/Sequence.h"
 
 #include "IWSAPI.h"
+
 /**
-*
-*/
+ *
+ */
 
 namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
 
     using Containers::Collection;
+    using Containers::Sequence;
 
     /**
      *  Implementation of WebService calls.
      */
     class WSImpl : public IWSAPI {
     public:
-        virtual Collection<Device>           GetDevices () const override;
-        virtual Sequence<Network>            GetNetworks () const override;
+        virtual Collection<String>           GetDevices () const override;
+        virtual Collection<Device>           GetDevices_Recurse () const override;
+        virtual Device                       GetDevice (const String& id) const override;
+        virtual Sequence<String>             GetNetworks () const override;
+        virtual Sequence<Network>            GetNetworks_Recurse () const override;
+        virtual Network                      GetNetwork (const String& id) const override;
         virtual Collection<String>           GetNetworkInterfaces (bool filterRunningOnly) const override;
         virtual Collection<NetworkInterface> GetNetworkInterfaces_Recurse (bool filterRunningOnly) const override;
         virtual NetworkInterface             GetNetworkInterface (const String& id) const override;

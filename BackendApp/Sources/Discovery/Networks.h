@@ -30,6 +30,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
     using IO::Network::InternetAddress;
 
     struct Network {
+        // @todo if you have an IPv4 and IPv6 network they maybe merged into a single logical network
         CIDR             fNetworkAddress;
         Common::GUID     fGUID;
         optional<String> fFriendlyName;
