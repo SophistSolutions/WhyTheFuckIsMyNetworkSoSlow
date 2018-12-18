@@ -1,10 +1,4 @@
-Support
-	VERSION file and version tag the components
-	>>> THEN DO RELKEASE CUZ STABLISH NOW.... GOOD BREAKING POINT FOR v1.0d1 ;-)
 
-
-
------
 >>>> REST API
 	/Networks (already working)
 			>	EXIT TO INTERNET (whatsmyip)
