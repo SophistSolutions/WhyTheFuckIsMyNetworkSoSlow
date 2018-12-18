@@ -4,6 +4,8 @@ export StroikaRoot?=$(realpath ThirdPartyComponents/Stroika/StroikaRoot)/
 include $(StroikaRoot)/ScriptsLib/Makefile-Common.mk
 include $(StroikaRoot)/Library/Projects/Unix/SharedMakeVariables-Default.mk
 
+
+
 #Handy shortcut
 CONFIGURATION_TAGS?=$(TAGS)
 

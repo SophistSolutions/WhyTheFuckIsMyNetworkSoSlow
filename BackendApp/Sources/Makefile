@@ -38,12 +38,23 @@ Objs	=	\
 	$(ObjDir)Service.o\
 
 
+
+VERSION_FILE_IN=$(TOP_ROOT)VERSION
+VERSION_FILE_OUT=$(StroikaRoot)IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow/AppVersion.h
+$(VERSION_FILE_OUT):	$(VERSION_FILE_IN)
+	@mkdir -p $(StroikaRoot)IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow
+	@$(StroikaRoot)ScriptsLib/MakeVersionFile.sh $(VERSION_FILE_IN) $(VERSION_FILE_OUT) AppCPlusPlusVersion kAppVersion __WhyTheFuckIsMyNetworkSoSlow_AppVersion_H__
+
+
+$(ObjDir)Main.o $(ObjDir)Service.o:		$(VERSION_FILE_OUT)
+
 all:
 	@$(StroikaRoot)/ScriptsLib/PrintLevelLeader.sh $(MAKE_INDENT_LEVEL) && $(ECHO) "Building WhyTheFuckIsMyNetworkSoSlow/BackendApp:"
 ifeq (Unix,$(ProjectPlatformSubdir))
 	@mkdir -p $(TARGETEXEDir)
 	@$(MAKE) --silent $(TARGETEXE) MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1)) ECHO_BUILD_LINES=$(ECHO_BUILD_LINES)
 else
+	@$(MAKE) --silent $(VERSION_FILE_OUT)
 	@if [[ "$(CONFIGURATION)" == "Debug-U-32" || "$(CONFIGURATION)" == "Release-U-32" || "$(CONFIGURATION)" == "Debug-U-64" || "$(CONFIGURATION)" == "Release-U-64" ]] ; then\
 		perl $(StroikaRoot)ScriptsLib/RunArgumentsWithCommonBuildVars.pl $(CONFIGURATION) "MSBuild.exe /nologo /v:quiet /clp:NoSummary ../Projects/$(ProjectPlatformSubdir)/WhyTheFuckIsMyNetworkSoSlow-BackendApp.vcxproj /p:`$(StroikaRoot)ScriptsLib/GetVisualStudioConfigLine.pl $(CONFIGURATION)` /target:Build";\
 	else\
@@ -52,12 +63,17 @@ else
 endif
 
 
+
+
 $(TARGETEXE):	$(ObjDir) $(SubDirs) $(Objs)
 	@$(StroikaRoot)/ScriptsLib/PrintLevelLeader.sh $(MAKE_INDENT_LEVEL) && $(ECHO) "Linking $(subst $(StroikaRoot),\$$StroikaRoot/, $(TARGETEXE))..."
 	@if [ $(ECHO_BUILD_LINES) -eq 1 ]; then\
 	    $(StroikaRoot)/ScriptsLib/PrintLevelLeader.sh $$(($(MAKE_INDENT_LEVEL)+1)) && $(ECHO) "$(Linker) $(StroikaLinkerPrefixArgs) -o $(TARGETEXE) $(Objs) $(SUBDIR_OBJS) $(StroikaLinkerSuffixArgs)";\
 	fi
 	@$(Linker) $(StroikaLinkerPrefixArgs) -o $(TARGETEXE) $(Objs) $(SUBDIR_OBJS) $(StroikaLinkerSuffixArgs)
+
+
+
 
 
 clean::

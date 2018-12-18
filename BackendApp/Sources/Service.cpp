@@ -21,6 +21,8 @@
 #include "WebServices/WSImpl.h"
 #include "WebServices/WebServer.h"
 
+#include "AppVersion.h"
+
 #include "Service.h"
 
 using namespace std;
@@ -53,7 +55,7 @@ void WTFAppServiceRep::MainLoop (const std::function<void()>& startedCB)
     IgnoreExceptionsForCall (WebServices::TmpHackAssureStartedMonitoring ());
     WebServer webServer{make_shared<WSImpl> ()};
     startedCB (); // Notify service control mgr that the service has started
-    Logger::Get ().Log (Logger::Priority::eInfo, L"Service started successfully");
+    Logger::Get ().Log (Logger::Priority::eInfo, L"%s (version %s) service started successfully", kServiceDescription_.fPrettyName.c_str (), Characters::ToString (AppVersion::kVersion).c_str ());
     Execution::WaitableEvent (Execution::WaitableEvent::eAutoReset).Wait (); // wait til service shutdown ThreadAbortException
 }
 
