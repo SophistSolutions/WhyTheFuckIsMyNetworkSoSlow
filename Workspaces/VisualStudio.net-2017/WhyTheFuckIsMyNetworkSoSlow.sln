@@ -19,10 +19,14 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Stroika-Foundation", "..\..
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ROOT-FOLDER", "ROOT-FOLDER", "{8184CE9F-C478-4792-9649-C652C914C316}"
 	ProjectSection(SolutionItems) = preProject
+		..\..\.clang-format = ..\..\.clang-format
+		..\..\.gitattributes = ..\..\.gitattributes
 		..\..\.gitignore = ..\..\.gitignore
 		..\..\.gitmodules = ..\..\.gitmodules
 		..\..\Makefile = ..\..\Makefile
+		..\..\README.md = ..\..\README.md
 		..\..\TODO.txt = ..\..\TODO.txt
+		..\..\VERSION = ..\..\VERSION
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Stroika-Frameworks-UPnP", "..\..\ThirdPartyComponents\Stroika\StroikaRoot\Library\Projects\VisualStudio.Net-2017\Stroika-Frameworks-UPnP.vcxproj", "{3ADD4C32-1D77-47A2-9F23-83908A2446F6}"
@@ -320,5 +324,8 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{679BC6AD-01AF-4A16-9EF4-16BE283E2F97} = {8184CE9F-C478-4792-9649-C652C914C316}
 		{53CC012B-669C-4426-8E2A-776A0F3F35D0} = {679BC6AD-01AF-4A16-9EF4-16BE283E2F97}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {09E9F4A9-EC1B-4FA6-BC9C-7ECC8DEE6D7F}
 	EndGlobalSection
 EndGlobal

@@ -6,7 +6,7 @@ ifneq ($(CONFIGURATION),)
 endif
 
 SrcDir				=	$(TOP_ROOT)BackendApp/Sources/Discovery/
-ObjDir				=	$(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/BackendApp/Discovery/
+ObjDir				=	$(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow-Backend/Discovery/
 
 include $(StroikaRoot)/ScriptsLib/Makefile-Common.mk
 include $(StroikaRoot)/Library/Projects/Unix/SharedBuildRules-Default.mk
