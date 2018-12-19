@@ -4,7 +4,24 @@
 			>	EXIT TO INTERNET (whatsmyip)
 			>	My GEOLOC
 			>	Whats my ISP (?)
-			>	Netweorks should NOT have  a SINGLE CDIR, but allow multiple - maybe one for ipv4 and one for ipv6??? That limit maybe OK.
+			>	Network-Address should NOT have  a SINGLE CDIR, but allow multiple - maybe one for ipv4 and one for ipv6??? "Network-Addresses" That limit maybe OK.
+
+
+	For GEOLOC MAYBE:
+			https://ipstack.com/documentation
+
+			BETTER
+				http://ip-api.com/json/108.49.190.49
+				http://ip-api.com/docs/api:json
+			
+-----
+
+
+>>>> http://api.ipify.org/
+	GET MY PUBLIC IP ADDRESS (and show as detail in the network object)
+	http://myexternalip.com/raw
+
+
 
 -----
 
@@ -49,15 +66,6 @@ Under docker:
 
 >>> HANDLE BETTER when multicast crap doesn't work. Seems common enough - just log it as an erorr and set some error state, but keep running
 !!!!
-
------
-
-
->>>> http://api.ipify.org/
-	GET MY PUBLIC IP ADDRESS (and show as detail in the network object)
-	http://myexternalip.com/raw
-
-
 
 
 ------------------------------------------

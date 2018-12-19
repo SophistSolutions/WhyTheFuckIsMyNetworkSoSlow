@@ -40,6 +40,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
         Sequence<InternetAddress> fGateways;
         Sequence<InternetAddress> fDNSServers;
 
+        // whatsmyip
+        optional<Sequence<InternetAddress>> fExternalAddresses;
+
         nonvirtual String ToString () const;
     };
 

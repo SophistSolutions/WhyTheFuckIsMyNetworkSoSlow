@@ -14,6 +14,7 @@
 #include "Stroika/Foundation/Cryptography/Format.h"
 #include "Stroika/Foundation/IO/Network/Interface.h"
 #include "Stroika/Foundation/IO/Network/LinkMonitor.h"
+#include "Stroika/Foundation/IO/Network/Transfer/Client.h"
 
 #include "NetworkInterfaces.h"
 
@@ -111,6 +112,19 @@ Sequence<Network> Discovery::CollectActiveNetworks ()
                     }
                 }
                 nw.fAttachedNetworkInterfaces += i.fGUID;
+
+                ///tmphack
+                if (not nw.fGateways.empty ()) {
+                    try {
+                        // this goes throug the gateway, not necesarily this network, if we had multiple networks with gateways!
+                        auto&& connection = IO::Network::Transfer::CreateConnection ();
+                        connection.SetURL (IO::Network::URL{L"http://myexternalip.com/raw", IO::Network::URL::ParseOptions::eAsFullURL});
+                        Memory::AccumulateIf (&nw.fExternalAddresses, IO::Network::InternetAddress{connection.GET ().GetDataTextInputStream ().ReadAll ().Trim ()});
+                    }
+                    catch (...) {
+                        DbgTrace (L"ignore exception fetching public(external) IP address: %s", Characters::ToString (current_exception ()).c_str ());
+                    }
+                }
 
                 // Stroika IO::Network::Interface::fNetworkGUID field appears useless - since only defined on windows and not really documented what it means
                 // and doesn't appear to vary interestingly (maybe didnt test enough) - like my virtual adapters and localhost adapter alll have same network as

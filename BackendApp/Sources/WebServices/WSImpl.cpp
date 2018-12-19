@@ -167,6 +167,7 @@ Sequence<BackendApp::WebServices::Network> WSImpl::GetNetworks_Recurse () const
         nw.fAttachedInterfaces = n.fAttachedNetworkInterfaces;
         nw.fDNSServers         = n.fDNSServers;
         nw.fGateways           = n.fGateways;
+        nw.fExternalAddresses  = n.fExternalAddresses;
 
         result += nw;
     }

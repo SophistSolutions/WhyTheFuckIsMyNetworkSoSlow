@@ -81,6 +81,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
         // @todo add SSIDs here - as a good hint in identenifying same network
 
+        // whatsmyip
+        optional<Sequence<InternetAddress>> fExternalAddresses;
+
         /**
          *  @see Characters::ToString ();
          */
