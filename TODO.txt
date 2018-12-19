@@ -1,7 +1,21 @@
+See if I can update
+	        using Cache::CallerStalenessCache;
+
+			to use void as first KEY argument - and make that work.
+
+		THEN - do SyncrhonizedCallerStalenessCache like others to be more performant (when no need to update)
+---
+
+
+	THEN do 
+	    optional<pair<ISPInfo,GEOLOCINFO>> Lookuxxx_ (optional<Time::DurationSecondsType> allowedStaleness = {})
+		.. using http://ip-api.com/json/108.49.190.49
+		define two structs each optional - and return them (maybe array) in result for network
+		http://localhost:8080/Network/97979b96-9967-6696-95cb-6495706c66c9
+
 
 >>>> REST API
 	/Networks (already working)
-			>	EXIT TO INTERNET (whatsmyip)
 			>	My GEOLOC
 			>	Whats my ISP (?)
 			>	Network-Address should NOT have  a SINGLE CDIR, but allow multiple - maybe one for ipv4 and one for ipv6??? "Network-Addresses" That limit maybe OK.
@@ -14,15 +28,6 @@
 				http://ip-api.com/json/108.49.190.49
 				http://ip-api.com/docs/api:json
 			
------
-
-
->>>> http://api.ipify.org/
-	GET MY PUBLIC IP ADDRESS (and show as detail in the network object)
-	http://myexternalip.com/raw
-
-
-
 -----
 
 http://localhost:8080/Network/97979b96-9967-6696-95cb-6495706c66c9

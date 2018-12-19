@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "Stroika/Foundation/Cache/CallerStalenessCache.h"
 #include "Stroika/Foundation/Characters/StringBuilder.h"
 #include "Stroika/Foundation/Characters/ToString.h"
 #include "Stroika/Foundation/Containers/Mapping.h"
@@ -45,6 +46,40 @@ namespace {
         sb += Characters::ToString (nw.fNetworkAddress); // ""
         string tmp = sb.str ().AsUTF8 ();
         return Cryptography::Format<Common::GUID> (DIGESTER_::ComputeDigest ((const std::byte*)tmp.c_str (), (const std::byte*)tmp.c_str () + tmp.length ()));
+    }
+}
+
+namespace {
+    optional<InternetAddress> LookupExternalInternetAddress_ (optional<Time::DurationSecondsType> allowedStaleness = {})
+    {
+        using Cache::CallerStalenessCache;
+        using Execution::Synchronized;
+        static Synchronized<CallerStalenessCache<int, optional<InternetAddress>>> sCache_;
+        return sCache_.rwget ()->Lookup (1, Time::GetTickCount () - allowedStaleness.value_or (30), []() -> optional<InternetAddress> {
+            /*
+			 * Alternative sources for this information:
+			 *
+			 *	o	http://api.ipify.org/
+			 *	o	http://myexternalip.com/raw
+			 */
+            static const IO::Network::URL kSources_[]{
+                IO::Network::URL{L"http://api.ipify.org/", IO::Network::URL::ParseOptions::eAsFullURL},
+                IO::Network::URL{L"http://myexternalip.com/raw", IO::Network::URL::ParseOptions::eAsFullURL},
+            };
+            // @todo - when one fails, we should try the other first
+            for (auto&& url : kSources_) {
+                try {
+                    // this goes throug the gateway, not necesarily this network, if we had multiple networks with gateways!
+                    auto&& connection = IO::Network::Transfer::CreateConnection ();
+                    connection.SetURL (url);
+                    return IO::Network::InternetAddress{connection.GET ().GetDataTextInputStream ().ReadAll ().Trim ()};
+                }
+                catch (...) {
+                    DbgTrace (L"ignore exception fetching public(external) IP address: %s", Characters::ToString (current_exception ()).c_str ());
+                }
+            }
+            return nullopt;
+        });
     }
 }
 
@@ -113,17 +148,9 @@ Sequence<Network> Discovery::CollectActiveNetworks ()
                 }
                 nw.fAttachedNetworkInterfaces += i.fGUID;
 
-                ///tmphack
                 if (not nw.fGateways.empty ()) {
-                    try {
-                        // this goes throug the gateway, not necesarily this network, if we had multiple networks with gateways!
-                        auto&& connection = IO::Network::Transfer::CreateConnection ();
-                        connection.SetURL (IO::Network::URL{L"http://myexternalip.com/raw", IO::Network::URL::ParseOptions::eAsFullURL});
-                        Memory::AccumulateIf (&nw.fExternalAddresses, IO::Network::InternetAddress{connection.GET ().GetDataTextInputStream ().ReadAll ().Trim ()});
-                    }
-                    catch (...) {
-                        DbgTrace (L"ignore exception fetching public(external) IP address: %s", Characters::ToString (current_exception ()).c_str ());
-                    }
+                    ///tmphack - eventually support doing lookup through gateway from this network (all gateways on this network)
+                    Memory::AccumulateIf (&nw.fExternalAddresses, LookupExternalInternetAddress_ ());
                 }
 
                 // Stroika IO::Network::Interface::fNetworkGUID field appears useless - since only defined on windows and not really documented what it means
