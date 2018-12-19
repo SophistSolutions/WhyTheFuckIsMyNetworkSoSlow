@@ -38,7 +38,8 @@ namespace {
         using Discovery::DeviceDiscoverer;
         using Discovery::Network;
         static Synchronized<Mapping<Network, shared_ptr<DeviceDiscoverer>>> sDiscovery_{
-            Common::DeclareEqualsComparer ([](Network l, Network r) { return l.fNetworkAddress == r.fNetworkAddress; })};
+            Common::DeclareEqualsComparer ([](Network l, Network r) { return l.fGUID == r.fGUID; }),
+        };
 
         Sequence<Discovery::Network> tmp = Discovery::CollectActiveNetworks ();
 
@@ -159,11 +160,11 @@ Sequence<BackendApp::WebServices::Network> WSImpl::GetNetworks_Recurse () const
 
     // @todo parameterize if we return all or just active networks
     for (Discovery::Network n : Discovery::CollectActiveNetworks ()) {
-        BackendApp::WebServices::Network nw{n.fNetworkAddress};
+        BackendApp::WebServices::Network nw{n.fNetworkAddresses};
 
         nw.fGUID               = n.fGUID;
         nw.fFriendlyName       = n.fFriendlyName;
-        nw.fNetworkAddress     = n.fNetworkAddress;
+        nw.fNetworkAddresses   = n.fNetworkAddresses;
         nw.fAttachedInterfaces = n.fAttachedNetworkInterfaces;
         nw.fDNSServers         = n.fDNSServers;
         nw.fGateways           = n.fGateways;

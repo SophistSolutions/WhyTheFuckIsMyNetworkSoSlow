@@ -35,6 +35,16 @@ const ObjectVariantMapper klambda_expand_in_namespace_Buggy_workaround_Mapper_ =
 }();
 #endif
 
+namespace Stroika::Foundation::DataExchange {
+    template <>
+    CIDR ObjectVariantMapper::ToObject (const ToObjectMapperType<CIDR>& toObjectMapper, const VariantValue& v) const
+    {
+        CIDR tmp{InternetAddress{}, 32};
+        ToObject (toObjectMapper, v, &tmp);
+        return tmp;
+    }
+}
+
 /*
  ********************************************************************************
  ********************************** Model::Network ******************************
@@ -44,12 +54,12 @@ String Network::ToString () const
 {
     Characters::StringBuilder sb;
     sb += L"{";
-    sb += L"fNetworkAddress: " + Characters::ToString (fNetworkAddress) + L", ";
-    sb += L"fFriendlyName: " + Characters::ToString (fFriendlyName) + L", ";
-    sb += L"fGUID: " + Characters::ToString (fGUID) + L", ";
-    sb += L"fAttachedInterfaces: " + Characters::ToString (fAttachedInterfaces) + L", ";
-    sb += L"fGateways: " + Characters::ToString (fGateways) + L", ";
-    sb += L"fDNSServers: " + Characters::ToString (fDNSServers) + L", ";
+    sb += L"Network-Addresses: " + Characters::ToString (fNetworkAddresses) + L", ";
+    sb += L"Friendly-Name: " + Characters::ToString (fFriendlyName) + L", ";
+    sb += L"GUID: " + Characters::ToString (fGUID) + L", ";
+    sb += L"Attached-Interfaces: " + Characters::ToString (fAttachedInterfaces) + L", ";
+    sb += L"Gateways: " + Characters::ToString (fGateways) + L", ";
+    sb += L"DNS-Servers: " + Characters::ToString (fDNSServers) + L", ";
     sb += L"}";
     return sb.str ();
 }
@@ -66,7 +76,7 @@ const ObjectVariantMapper Network::kMapper = []() {
     mapper.Add<CIDR> ([](const ObjectVariantMapper& mapper, const CIDR* obj) -> VariantValue { return obj->ToString (); },
                       [](const ObjectVariantMapper& mapper, const VariantValue& d, CIDR* intoObj) -> void { *intoObj = CIDR{d.As<String> ()}; });
 #endif
-
+    mapper.AddCommonType<Sequence<CIDR>> ();
     mapper.AddCommonType<InternetAddress> ();
     mapper.AddCommonType<Sequence<InternetAddress>> ();
     mapper.AddCommonType<optional<InternetAddress>> ();
@@ -74,7 +84,7 @@ const ObjectVariantMapper Network::kMapper = []() {
     mapper.AddCommonType<Set<Common::GUID>> ();
     mapper.AddClass<Network> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
         {L"Friendly-Name", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fFriendlyName), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"Network-Address", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fNetworkAddress)},
+        {L"Network-Addresses", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fNetworkAddresses)},
         {L"Attached-Interfaces", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fAttachedInterfaces)},
         {L"Gateways", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fGateways)},
         {L"DNS-Servers", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fDNSServers)},

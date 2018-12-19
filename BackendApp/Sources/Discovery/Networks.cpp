@@ -42,8 +42,8 @@ namespace {
         StringBuilder sb;
         using namespace Stroika::Foundation::Cryptography;
         using DIGESTER_ = Digest::Digester<Digest::Algorithm::MD5>;
-        sb += Characters::ToString (nw.fGateways);       // NO WHERE NEAR GOOD ENUF - take into account public IP ADDR and hardware address of router - but still ALLOW for any of these to float
-        sb += Characters::ToString (nw.fNetworkAddress); // ""
+        sb += Characters::ToString (nw.fGateways);         // NO WHERE NEAR GOOD ENUF - take into account public IP ADDR and hardware address of router - but still ALLOW for any of these to float
+        sb += Characters::ToString (nw.fNetworkAddresses); // ""
         string tmp = sb.str ().AsUTF8 ();
         return Cryptography::Format<Common::GUID> (DIGESTER_::ComputeDigest ((const std::byte*)tmp.c_str (), (const std::byte*)tmp.c_str () + tmp.length ()));
     }
@@ -57,11 +57,11 @@ namespace {
         static Synchronized<CallerStalenessCache<int, optional<InternetAddress>>> sCache_;
         return sCache_.rwget ()->Lookup (1, Time::GetTickCount () - allowedStaleness.value_or (30), []() -> optional<InternetAddress> {
             /*
-			 * Alternative sources for this information:
-			 *
-			 *	o	http://api.ipify.org/
-			 *	o	http://myexternalip.com/raw
-			 */
+             * Alternative sources for this information:
+             *
+             *  o   http://api.ipify.org/
+             *  o   http://myexternalip.com/raw
+             */
             static const IO::Network::URL kSources_[]{
                 IO::Network::URL{L"http://api.ipify.org/", IO::Network::URL::ParseOptions::eAsFullURL},
                 IO::Network::URL{L"http://myexternalip.com/raw", IO::Network::URL::ParseOptions::eAsFullURL},
@@ -93,7 +93,7 @@ String Discovery::Network::ToString () const
     StringBuilder sb;
     sb += L"{";
     sb += L"GUID: " + Characters::ToString (fGUID) + L", ";
-    sb += L"IP-Address: " + Characters::ToString (fNetworkAddress) + L", ";
+    sb += L"IP-Address: " + Characters::ToString (fNetworkAddresses) + L", ";
     sb += L"Friendly-Name: " + Characters::ToString (fFriendlyName) + L", ";
     sb += L"Gateways: " + Characters::ToString (fGateways) + L", ";
     sb += L"DNS-Servers: " + Characters::ToString (fDNSServers) + L", ";
@@ -127,7 +127,7 @@ Sequence<Network> Discovery::CollectActiveNetworks ()
             if (useBinding.fInternetAddress.GetAddressSize ()) {
                 // Guess CIDR prefix is max (so one address - bad guess) - if we cannot read from adapter
                 CIDR    cidr{useBinding.fInternetAddress, useBinding.fOnLinkPrefixLength.value_or (*useBinding.fInternetAddress.GetAddressSize () * 8)};
-                Network nw = accumResults.LookupValue (cidr, Network{cidr});
+                Network nw = accumResults.LookupValue (cidr, Network{{cidr}});
 
                 unsigned int score{};
                 if (i.fGateways) {
@@ -178,8 +178,8 @@ Sequence<Network> Discovery::CollectActiveNetworks ()
         if (i->fValue.fGUID == Common::GUID::Zero ()) {
             StringBuilder sb;
             using namespace Stroika::Foundation::Cryptography;
-            sb += Characters::ToString (i->fValue.fGateways);       // NO WHERE NEAR GOOD ENUF - take into account public IP ADDR and hardware address of router - but still ALLOW for any of these to float
-            sb += Characters::ToString (i->fValue.fNetworkAddress); // ""
+            sb += Characters::ToString (i->fValue.fGateways);         // NO WHERE NEAR GOOD ENUF - take into account public IP ADDR and hardware address of router - but still ALLOW for any of these to float
+            sb += Characters::ToString (i->fValue.fNetworkAddresses); // ""
             using DIGESTER_ = Digest::Digester<Digest::Algorithm::MD5>;
             string tmp      = sb.str ().AsUTF8 ();
             auto   v        = i->fValue;

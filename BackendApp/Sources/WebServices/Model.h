@@ -53,17 +53,13 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
      */
     struct Network {
 
-        Network ()
-            : Network (CIDR{IO::Network::V4::kAddrAny, 32})
-
-        {
-        }
-        Network (CIDR na)
-            : fNetworkAddress (na)
+        Network () = default;
+        Network (const Sequence<CIDR>& nas)
+            : fNetworkAddresses (nas)
         {
         }
 
-        CIDR fNetworkAddress;
+        Sequence<CIDR> fNetworkAddresses;
 
         optional<String> fFriendlyName; //tmphack - list of interfaces attached to network
 
