@@ -76,7 +76,7 @@ const ObjectVariantMapper Network::kMapper = []() {
     mapper.Add<CIDR> ([](const ObjectVariantMapper& mapper, const CIDR* obj) -> VariantValue { return obj->ToString (); },
                       [](const ObjectVariantMapper& mapper, const VariantValue& d, CIDR* intoObj) -> void { *intoObj = CIDR{d.As<String> ()}; });
 #endif
-    mapper.AddCommonType<Sequence<CIDR>> ();
+    mapper.AddCommonType<Set<CIDR>> ();
     mapper.AddCommonType<InternetAddress> ();
     mapper.AddCommonType<Sequence<InternetAddress>> ();
     mapper.AddCommonType<optional<InternetAddress>> ();

@@ -18,8 +18,6 @@ See if I can update
 	/Networks (already working)
 			>	My GEOLOC
 			>	Whats my ISP (?)
-			>	Network-Address should NOT have  a SINGLE CDIR, but allow multiple - maybe one for ipv4 and one for ipv6??? "Network-Addresses" That limit maybe OK.
-
 
 	For GEOLOC MAYBE:
 			https://ipstack.com/documentation

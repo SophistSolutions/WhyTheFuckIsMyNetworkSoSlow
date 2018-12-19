@@ -54,12 +54,15 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
     struct Network {
 
         Network () = default;
-        Network (const Sequence<CIDR>& nas)
+        Network (const Set<CIDR>& nas)
             : fNetworkAddresses (nas)
         {
         }
 
-        Sequence<CIDR> fNetworkAddresses;
+        /*
+         * This list of addresses will typically have one IPV4 and one IPV6 address
+         */
+        Set<CIDR> fNetworkAddresses;
 
         optional<String> fFriendlyName; //tmphack - list of interfaces attached to network
 
