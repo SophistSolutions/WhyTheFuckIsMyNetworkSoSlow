@@ -1,12 +1,4 @@
-See if I can update
-	        using Cache::CallerStalenessCache;
-
-			to use void as first KEY argument - and make that work.
-
-		THEN - do SyncrhonizedCallerStalenessCache like others to be more performant (when no need to update)
----
-
-
+ 
 	THEN do 
 	    optional<pair<ISPInfo,GEOLOCINFO>> Lookuxxx_ (optional<Time::DurationSecondsType> allowedStaleness = {})
 		.. using http://ip-api.com/json/108.49.190.49

@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "Stroika/Foundation/Cache/CallerStalenessCache.h"
+#include "Stroika/Foundation/Cache/SynchronizedCallerStalenessCache.h"
 #include "Stroika/Foundation/Characters/StringBuilder.h"
 #include "Stroika/Foundation/Characters/ToString.h"
 #include "Stroika/Foundation/Containers/Mapping.h"
@@ -52,10 +52,10 @@ namespace {
 namespace {
     optional<InternetAddress> LookupExternalInternetAddress_ (optional<Time::DurationSecondsType> allowedStaleness = {})
     {
-        using Cache::CallerStalenessCache;
+        using Cache::SynchronizedCallerStalenessCache;
         using Execution::Synchronized;
-        static Synchronized<CallerStalenessCache<int, optional<InternetAddress>>> sCache_;
-        return sCache_.rwget ()->Lookup (1, Time::GetTickCount () - allowedStaleness.value_or (30), []() -> optional<InternetAddress> {
+        static SynchronizedCallerStalenessCache<void, optional<InternetAddress>> sCache_;
+        return sCache_.Lookup (sCache_.Ago (allowedStaleness.value_or (30)), []() -> optional<InternetAddress> {
             /*
              * Alternative sources for this information:
              *
@@ -66,7 +66,7 @@ namespace {
                 IO::Network::URL{L"http://api.ipify.org/", IO::Network::URL::ParseOptions::eAsFullURL},
                 IO::Network::URL{L"http://myexternalip.com/raw", IO::Network::URL::ParseOptions::eAsFullURL},
             };
-            // @todo - when one fails, we should try the other first
+            // @todo - when one fails, we should try the other first next time
             for (auto&& url : kSources_) {
                 try {
                     // this goes throug the gateway, not necesarily this network, if we had multiple networks with gateways!
