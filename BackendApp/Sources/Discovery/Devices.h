@@ -39,6 +39,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
     using Containers::Collection;
     using Containers::Set;
     using IO::Network::InternetAddress;
+    using Stroika::Foundation::Common::GUID;
 
     /**
      */
@@ -49,12 +50,12 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
      *  captured by the discovery services.
      */
     struct Device {
-        String                      name;
-        Set<InternetAddress>        ipAddresses;
-        optional<DeviceType>        type;
-        bool                        fThisDevice{};
-        Common::GUID                fNetwork;
-        optional<Set<Common::GUID>> fAttachedInterfaces;
+        String               name;
+        Set<InternetAddress> ipAddresses;
+        optional<DeviceType> type;
+        bool                 fThisDevice{};
+        GUID                 fNetwork;
+        optional<Set<GUID>>  fAttachedInterfaces;
 
         nonvirtual String ToString () const;
     };

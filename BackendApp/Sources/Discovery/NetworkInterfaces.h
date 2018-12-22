@@ -24,6 +24,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
     using Characters::String;
     using Containers::Collection;
     using Containers::Set;
+    using Stroika::Foundation::Common::GUID;
 
     struct NetworkInterface : IO::Network::Interface {
 
@@ -31,7 +32,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
          *  GUID for this interface - MANUFACTURED by WTF
          // @todo rename fID, and actually auto-generate it uniquly somehow (or OK to use iwndows based one)
          */
-        Common::GUID fGUID;
+        GUID fGUID;
 
         NetworkInterface (const NetworkInterface& src) = default;
         NetworkInterface (const IO::Network::Interface& src);

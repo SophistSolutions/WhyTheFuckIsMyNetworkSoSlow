@@ -13,6 +13,9 @@
 #include "Stroika/Foundation/IO/Network/CIDR.h"
 #include "Stroika/Foundation/IO/Network/InternetAddress.h"
 
+#include "../Common/GEOLocation.h"
+#include "../Common/InternetServiceProvider.h"
+
 /**
  *
  */
@@ -28,14 +31,17 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
     using Containers::Set;
     using IO::Network::CIDR;
     using IO::Network::InternetAddress;
+    using Stroika::Foundation::Common::GUID;
+
+    using namespace BackendApp::Common;
 
     struct Network {
         // @todo if you have an IPv4 and IPv6 network they maybe merged into a single logical network
         Set<CIDR>        fNetworkAddresses;
-        Common::GUID     fGUID;
+        GUID             fGUID;
         optional<String> fFriendlyName;
 
-        Set<Common::GUID> fAttachedNetworkInterfaces;
+        Set<GUID> fAttachedNetworkInterfaces;
 
         Sequence<InternetAddress> fGateways;
         Sequence<InternetAddress> fDNSServers;
@@ -43,11 +49,14 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
         // whatsmyip
         optional<Sequence<InternetAddress>> fExternalAddresses;
 
+        optional<GEOLocationInformation> fGEOLocInfo;
+
+        optional<InternetServiceProvider> fISP;
+
         nonvirtual String ToString () const;
     };
 
     Sequence<Network> CollectActiveNetworks ();
-
 }
 
 /*

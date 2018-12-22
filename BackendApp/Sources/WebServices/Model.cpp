@@ -81,7 +81,23 @@ const ObjectVariantMapper Network::kMapper = []() {
     mapper.AddCommonType<Sequence<InternetAddress>> ();
     mapper.AddCommonType<optional<InternetAddress>> ();
     mapper.AddCommonType<optional<Sequence<InternetAddress>>> ();
-    mapper.AddCommonType<Set<Common::GUID>> ();
+    mapper.AddCommonType<Set<GUID>> ();
+
+    mapper.AddClass<Common::InternetServiceProvider> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+        {L"Name", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Common::InternetServiceProvider, name), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+    });
+    mapper.AddCommonType<optional<Common::InternetServiceProvider>> ();
+
+    mapper.AddClass<Common::GEOLocationInformation> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+        {L"Country-Code", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Common::GEOLocationInformation, fCountryCode), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"City", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Common::GEOLocationInformation, fCity), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"Region-Code", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Common::GEOLocationInformation, fRegionCode), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"Postal-Code", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Common::GEOLocationInformation, fPostalCode), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        //{L"fLattitudeAndLongitude", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Common::GEOLocationInformation, fLattitudeAndLongitude), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+    });
+    //    optional<tuple<float, float>> fLattitudeAndLongitude; // Latitude/longitude
+    mapper.AddCommonType<optional<Common::GEOLocationInformation>> ();
+
     mapper.AddClass<Network> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
         {L"Friendly-Name", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fFriendlyName), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"Network-Addresses", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fNetworkAddresses)},
@@ -89,6 +105,8 @@ const ObjectVariantMapper Network::kMapper = []() {
         {L"Gateways", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fGateways)},
         {L"DNS-Servers", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fDNSServers)},
         {L"External-Addresses", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fExternalAddresses), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"Geographic-Location", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fGEOLocInformation), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"Internet-Service-Provider", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fInternetServiceProvider), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"ID", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fGUID)},
     });
     mapper.AddCommonType<Sequence<Network>> ();
@@ -201,8 +219,8 @@ const ObjectVariantMapper Device::kMapper = []() {
     mapper.AddCommonType<InternetAddress> ();
     mapper.AddCommonType<optional<InternetAddress>> ();
     mapper.AddCommonType<Sequence<InternetAddress>> ();
-    mapper.AddCommonType<Set<Common::GUID>> ();
-    mapper.AddCommonType<optional<Set<Common::GUID>>> ();
+    mapper.AddCommonType<Set<GUID>> ();
+    mapper.AddCommonType<optional<Set<GUID>>> ();
     mapper.AddCommonType<Device::DeviceType> ();
     mapper.AddCommonType<optional<Device::DeviceType>> ();
     mapper.AddCommonType<optional<String>> ();

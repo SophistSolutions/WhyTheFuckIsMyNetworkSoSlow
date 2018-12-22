@@ -28,6 +28,8 @@ using namespace Stroika::Foundation::Characters;
 using namespace Stroika::Foundation::Containers;
 using namespace Stroika::Foundation::Execution;
 
+using Stroika::Foundation::Common::GUID;
+
 using namespace WhyTheFuckIsMyNetworkSoSlow;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices;
@@ -38,7 +40,7 @@ namespace {
         using Discovery::DeviceDiscoverer;
         using Discovery::Network;
         static Synchronized<Mapping<Network, shared_ptr<DeviceDiscoverer>>> sDiscovery_{
-            Common::DeclareEqualsComparer ([](Network l, Network r) { return l.fGUID == r.fGUID; }),
+            Stroika::Foundation::Common::DeclareEqualsComparer ([](Network l, Network r) { return l.fGUID == r.fGUID; }),
         };
 
         Sequence<Discovery::Network> tmp = Discovery::CollectActiveNetworks ();
@@ -65,7 +67,7 @@ namespace {
     // must be careful about virtual devices (like VMs) which use fake hardware addresses, so need some way to tell differnt devices (and then one from another?)
     //
     //tmphack
-    Common::GUID LookupPersistentDeviceID_ (const Discovery::Device& d)
+    GUID LookupPersistentDeviceID_ (const Discovery::Device& d)
     {
         using IO::Network::InternetAddress;
         SortedSet<InternetAddress> x{d.ipAddresses};
@@ -75,7 +77,7 @@ namespace {
         }
         sb += d.name;
         using namespace Cryptography::Digest;
-        return Cryptography::Format<Common::GUID> (Digester<Algorithm::MD5>::ComputeDigest (Memory::BLOB::Raw (sb.str ().AsUTF8 ())));
+        return Cryptography::Format<GUID> (Digester<Algorithm::MD5>::ComputeDigest (Memory::BLOB::Raw (sb.str ().AsUTF8 ())));
     }
 }
 
@@ -84,7 +86,6 @@ namespace {
  ************************************* WSImpl ***********************************
  ********************************************************************************
  */
-
 Collection<String> WSImpl::GetDevices () const
 {
     Collection<String> result;
@@ -138,7 +139,7 @@ Device WSImpl::GetDevice (const String& id) const
 {
     // @todo quick hack impl
     for (auto i : GetDevices_Recurse ()) {
-        if (i.fGUID == Common::GUID{id}) {
+        if (i.fGUID == GUID{id}) {
             return i;
         }
     }
@@ -162,13 +163,15 @@ Sequence<BackendApp::WebServices::Network> WSImpl::GetNetworks_Recurse () const
     for (Discovery::Network n : Discovery::CollectActiveNetworks ()) {
         BackendApp::WebServices::Network nw{n.fNetworkAddresses};
 
-        nw.fGUID               = n.fGUID;
-        nw.fFriendlyName       = n.fFriendlyName;
-        nw.fNetworkAddresses   = n.fNetworkAddresses;
-        nw.fAttachedInterfaces = n.fAttachedNetworkInterfaces;
-        nw.fDNSServers         = n.fDNSServers;
-        nw.fGateways           = n.fGateways;
-        nw.fExternalAddresses  = n.fExternalAddresses;
+        nw.fGUID                    = n.fGUID;
+        nw.fFriendlyName            = n.fFriendlyName;
+        nw.fNetworkAddresses        = n.fNetworkAddresses;
+        nw.fAttachedInterfaces      = n.fAttachedNetworkInterfaces;
+        nw.fDNSServers              = n.fDNSServers;
+        nw.fGateways                = n.fGateways;
+        nw.fExternalAddresses       = n.fExternalAddresses;
+        nw.fGEOLocInformation       = n.fGEOLocInfo;
+        nw.fInternetServiceProvider = n.fISP;
 
         result += nw;
     }
@@ -182,7 +185,7 @@ Network WSImpl::GetNetwork (const String& id) const
 {
     // @todo quick hack impl
     for (auto i : GetNetworks_Recurse ()) {
-        if (i.fGUID == Common::GUID{id}) {
+        if (i.fGUID == GUID{id}) {
             return i;
         }
     }
@@ -235,7 +238,7 @@ NetworkInterface WSImpl::GetNetworkInterface (const String& id) const
 {
     // @todo quick hack impl
     for (auto i : GetNetworkInterfaces_Recurse (false)) {
-        if (i.fGUID == Common::GUID{id}) {
+        if (i.fGUID == GUID{id}) {
             return i;
         }
     }

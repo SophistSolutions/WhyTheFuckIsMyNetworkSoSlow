@@ -13,6 +13,9 @@
 #include "Stroika/Foundation/IO/Network/Interface.h"
 #include "Stroika/Foundation/IO/Network/InternetAddress.h"
 
+#include "../Common/GEOLocation.h"
+#include "../Common/InternetServiceProvider.h"
+
 /**
  *
  */
@@ -24,6 +27,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
     using Containers::Set;
     using IO::Network::CIDR;
     using IO::Network::InternetAddress;
+    using Stroika::Foundation::Common::GUID;
 
     /**
      *  This roughly mimics the Stroika class IO::Network::Interface, or what you would see 
@@ -39,7 +43,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
          *  GUID for this interface - MANUFACTURED by WTF
          // @todo rename fID, and actually auto-generate it uniquly somehow (or OK to use iwndows based one)
          */
-        Common::GUID fGUID;
+        GUID fGUID;
 
         /**
          *  @see Characters::ToString ();
@@ -67,9 +71,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         optional<String> fFriendlyName; //tmphack - list of interfaces attached to network
 
         // Todo - WTF allocated ID - and one inherited from network interface (windows only) - CLARIFY - probably call OURs just fID (and change others in this module to match)
-        Common::GUID fGUID;
+        GUID fGUID;
 
-        Set<Common::GUID> fAttachedInterfaces;
+        Set<GUID> fAttachedInterfaces;
 
         Sequence<InternetAddress> fGateways;
         Sequence<InternetAddress> fDNSServers;
@@ -83,6 +87,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         // whatsmyip
         optional<Sequence<InternetAddress>> fExternalAddresses;
 
+        optional<Common::GEOLocationInformation> fGEOLocInformation;
+
+        optional<Common::InternetServiceProvider> fInternetServiceProvider;
+
         /**
          *  @see Characters::ToString ();
          */
@@ -94,7 +102,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
     /**
      */
     struct Device {
-        Common::GUID fGUID;
+        GUID fGUID;
 
         String name;
 
@@ -126,13 +134,13 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
         /*
          */
-        Set<Common::GUID> fAttachedNetworks;
+        Set<GUID> fAttachedNetworks;
 
         /**
          *  This generally applies to 'this computer', but when we merge data across devices, we can see multiple devices with multiple interfaces.
          *  You can use this to lookup details about wireless connections etc, associated with each network interface.
          */
-        optional<Set<Common::GUID>> fAttachedNetworkInterfaces;
+        optional<Set<GUID>> fAttachedNetworkInterfaces;
 
         bool important{}; // CONSIDER DEPRECATING/LOSING - or generalizing to a float (0..1)???
 
@@ -140,7 +148,6 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
         static const DataExchange::ObjectVariantMapper kMapper;
     };
-
 }
 
 /*

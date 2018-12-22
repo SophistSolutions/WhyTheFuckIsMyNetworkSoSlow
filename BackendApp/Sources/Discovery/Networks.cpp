@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "Stroika/Foundation/Cache/Memoizer.h"
 #include "Stroika/Foundation/Cache/SynchronizedCallerStalenessCache.h"
 #include "Stroika/Foundation/Characters/StringBuilder.h"
 #include "Stroika/Foundation/Characters/ToString.h"
@@ -13,6 +14,7 @@
 #include "Stroika/Foundation/Containers/MultiSet.h"
 #include "Stroika/Foundation/Cryptography/Digest/Algorithm/MD5.h"
 #include "Stroika/Foundation/Cryptography/Format.h"
+#include "Stroika/Foundation/DataExchange/Variant/JSON/Reader.h"
 #include "Stroika/Foundation/IO/Network/Interface.h"
 #include "Stroika/Foundation/IO/Network/LinkMonitor.h"
 #include "Stroika/Foundation/IO/Network/Transfer/Client.h"
@@ -28,6 +30,10 @@ using namespace Stroika::Foundation::Characters;
 using namespace Stroika::Foundation::Containers;
 using namespace Stroika::Foundation::IO::Network;
 
+using DataExchange::VariantValue;
+using IO::Network::URL;
+using Stroika::Foundation::Common::GUID;
+
 using namespace WhyTheFuckIsMyNetworkSoSlow;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery;
@@ -37,7 +43,7 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery;
 
 namespace {
     // for now, use the CIDR, @todo - but this needs TONS OF WORK - and probably persistence
-    Common::GUID ComputeGUIDForNetwork_ (const Discovery::Network& nw)
+    GUID ComputeGUIDForNetwork_ (const Discovery::Network& nw)
     {
         StringBuilder sb;
         using namespace Stroika::Foundation::Cryptography;
@@ -45,7 +51,7 @@ namespace {
         sb += Characters::ToString (nw.fGateways);         // NO WHERE NEAR GOOD ENUF - take into account public IP ADDR and hardware address of router - but still ALLOW for any of these to float
         sb += Characters::ToString (nw.fNetworkAddresses); // ""
         string tmp = sb.str ().AsUTF8 ();
-        return Cryptography::Format<Common::GUID> (DIGESTER_::ComputeDigest ((const std::byte*)tmp.c_str (), (const std::byte*)tmp.c_str () + tmp.length ()));
+        return Cryptography::Format<GUID> (DIGESTER_::ComputeDigest ((const std::byte*)tmp.c_str (), (const std::byte*)tmp.c_str () + tmp.length ()));
     }
 }
 
@@ -53,18 +59,17 @@ namespace {
     optional<InternetAddress> LookupExternalInternetAddress_ (optional<Time::DurationSecondsType> allowedStaleness = {})
     {
         using Cache::SynchronizedCallerStalenessCache;
-        using Execution::Synchronized;
         static SynchronizedCallerStalenessCache<void, optional<InternetAddress>> sCache_;
-        return sCache_.Lookup (sCache_.Ago (allowedStaleness.value_or (30)), []() -> optional<InternetAddress> {
+        return sCache_.LookupValue (sCache_.Ago (allowedStaleness.value_or (30)), []() -> optional<InternetAddress> {
             /*
              * Alternative sources for this information:
              *
              *  o   http://api.ipify.org/
              *  o   http://myexternalip.com/raw
              */
-            static const IO::Network::URL kSources_[]{
-                IO::Network::URL{L"http://api.ipify.org/", IO::Network::URL::ParseOptions::eAsFullURL},
-                IO::Network::URL{L"http://myexternalip.com/raw", IO::Network::URL::ParseOptions::eAsFullURL},
+            static const URL kSources_[]{
+                URL{L"http://api.ipify.org/", URL::ParseOptions::eAsFullURL},
+                URL{L"http://myexternalip.com/raw", URL::ParseOptions::eAsFullURL},
             };
             // @todo - when one fails, we should try the other first next time
             for (auto&& url : kSources_) {
@@ -153,6 +158,11 @@ Sequence<Network> Discovery::CollectActiveNetworks ()
                     Memory::AccumulateIf (&nw.fExternalAddresses, LookupExternalInternetAddress_ ());
                 }
 
+                if (nw.fExternalAddresses and not nw.fExternalAddresses->empty ()) {
+                    nw.fGEOLocInfo = LookupGEOLocation ((*nw.fExternalAddresses)[0]);
+                    nw.fISP        = LookupInternetServiceProvider ((*nw.fExternalAddresses)[0]);
+                }
+
                 // Stroika IO::Network::Interface::fNetworkGUID field appears useless - since only defined on windows and not really documented what it means
                 // and doesn't appear to vary interestingly (maybe didnt test enough) - like my virtual adapters and localhost adapter alll have same network as
                 // the real ethernet adapter).
@@ -175,7 +185,7 @@ Sequence<Network> Discovery::CollectActiveNetworks ()
 
     // now patch missing GUID if not already known
     for (auto i = accumResults.begin (); i != accumResults.end (); ++i) {
-        if (i->fValue.fGUID == Common::GUID::Zero ()) {
+        if (i->fValue.fGUID == GUID::Zero ()) {
             StringBuilder sb;
             using namespace Stroika::Foundation::Cryptography;
             sb += Characters::ToString (i->fValue.fGateways);         // NO WHERE NEAR GOOD ENUF - take into account public IP ADDR and hardware address of router - but still ALLOW for any of these to float
@@ -183,7 +193,7 @@ Sequence<Network> Discovery::CollectActiveNetworks ()
             using DIGESTER_ = Digest::Digester<Digest::Algorithm::MD5>;
             string tmp      = sb.str ().AsUTF8 ();
             auto   v        = i->fValue;
-            v.fGUID         = Cryptography::Format<Common::GUID> (DIGESTER_::ComputeDigest ((const std::byte*)tmp.c_str (), (const std::byte*)tmp.c_str () + tmp.length ()));
+            v.fGUID         = Cryptography::Format<GUID> (DIGESTER_::ComputeDigest ((const std::byte*)tmp.c_str (), (const std::byte*)tmp.c_str () + tmp.length ()));
             accumResults.Add (i->fKey, v);
         }
     }

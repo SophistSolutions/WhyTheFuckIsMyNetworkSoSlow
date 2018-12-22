@@ -23,10 +23,12 @@ TARGETEXE				=	$(TARGETEXEDir)WhyTheFuckIsMyNetworkSoSlow-Backend
 
 
 SubDirs=\
+	Common \
 	Discovery \
 	WebServices \
 
 .PHONY: $(SubDirs)
+
 
 $(SubDirs): $(ObjDir)
 	@$(MAKE) --directory $@ -s

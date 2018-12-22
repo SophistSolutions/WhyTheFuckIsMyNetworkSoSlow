@@ -33,6 +33,8 @@ using namespace Stroika::Frameworks;
 using namespace Stroika::Frameworks::UPnP;
 
 using Execution::Synchronized;
+using Stroika::Foundation::Common::GUID;
+using Stroika::Foundation::Common::KeyValuePair;
 
 using namespace WhyTheFuckIsMyNetworkSoSlow;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp;
@@ -89,9 +91,9 @@ public:
     Collection<Discovery::Device> GetActiveDevices () const
     {
         static const Mapping<String, String> kNamePrettyPrintMapper_{
-            Common::KeyValuePair<String, String>{L"ASUSTeK UPnP/1.1 MiniUPnPd/1.9", L"ASUS Router"},
-            Common::KeyValuePair<String, String>{L"Microsoft-Windows/10.0 UPnP/1.0 UPnP-Device-Host/1.0", L"Antiphon"},
-            Common::KeyValuePair<String, String>{L"POSIX, UPnP/1.0, Intel MicroStack/1.0.1347", L"HP PhotoSmart"},
+            KeyValuePair<String, String>{L"ASUSTeK UPnP/1.1 MiniUPnPd/1.9", L"ASUS Router"},
+            KeyValuePair<String, String>{L"Microsoft-Windows/10.0 UPnP/1.0 UPnP-Device-Host/1.0", L"Antiphon"},
+            KeyValuePair<String, String>{L"POSIX, UPnP/1.0, Intel MicroStack/1.0.1347", L"HP PhotoSmart"},
         };
         Collection<Discovery::Device> results;
         for (DiscoveryInfo_ di : GetSoFarDiscoveredDevices_ ()) {
@@ -139,7 +141,8 @@ private:
                 });
             }
         }
-        newDev.fAttachedInterfaces = Set<Common::GUID>{Discovery::CollectAllNetworkInterfaces ().Select<Common::GUID> ([](auto iFace) { return iFace.fGUID; })};
+        auto aaa                   = Discovery::CollectAllNetworkInterfaces ().Select<GUID> ([](auto iFace) { return iFace.fGUID; });
+        newDev.fAttachedInterfaces = Set<GUID>{Discovery::CollectAllNetworkInterfaces ().Select<GUID> ([](auto iFace) { return iFace.fGUID; })};
         return newDev;
     }
     void RecieveSSDPAdvertisement_ (const SSDP::Advertisement& d)

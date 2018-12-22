@@ -37,6 +37,18 @@
     <None Include="..\..\Sources\Discovery\NetworkInterfaces.inl">
       <Filter>Sources\Discovery</Filter>
     </None>
+    <None Include="..\..\Sources\Common\GEOLocation.inl">
+      <Filter>Sources\Common</Filter>
+    </None>
+    <None Include="..\..\Sources\Common\InternetServiceProvider.inl">
+      <Filter>Sources\Common</Filter>
+    </None>
+    <None Include="..\..\Sources\Common\Makefile">
+      <Filter>Sources\Common</Filter>
+    </None>
+    <None Include="..\..\Sources\Common\GeoLocAndISPLookup.inl">
+      <Filter>Sources\Common</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Sources">
@@ -50,6 +62,9 @@
     </Filter>
     <Filter Include="Sources\Discovery">
       <UniqueIdentifier>{f2648920-ef38-4096-a95e-4550c5118635}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sources\Common">
+      <UniqueIdentifier>{d7204323-7b61-4f5b-8900-ba8f4f72e800}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -80,6 +95,15 @@
     <ClCompile Include="..\..\Sources\Discovery\NetworkInterfaces.cpp">
       <Filter>Sources\Discovery</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Common\GEOLocation.cpp">
+      <Filter>Sources\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Common\InternetServiceProvider.cpp">
+      <Filter>Sources\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Common\GeoLocAndISPLookup.cpp">
+      <Filter>Sources\Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\WebServices\Model.h">
@@ -105,6 +129,15 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Discovery\NetworkInterfaces.h">
       <Filter>Sources\Discovery</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Common\GEOLocation.h">
+      <Filter>Sources\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Common\InternetServiceProvider.h">
+      <Filter>Sources\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Common\GeoLocAndISPLookup.h">
+      <Filter>Sources\Common</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
