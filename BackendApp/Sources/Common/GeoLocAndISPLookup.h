@@ -9,7 +9,7 @@
 #include "Stroika/Foundation/Characters/String.h"
 #include "Stroika/Foundation/IO/Network/InternetAddress.h"
 
-#include "GEOLocation.h"
+#include "GeoLocation.h"
 #include "InternetServiceProvider.h"
 
 /**

@@ -13,7 +13,7 @@
 #include "Stroika/Foundation/IO/Network/Interface.h"
 #include "Stroika/Foundation/IO/Network/InternetAddress.h"
 
-#include "../Common/GEOLocation.h"
+#include "../Common/GeoLocation.h"
 #include "../Common/InternetServiceProvider.h"
 
 /**
