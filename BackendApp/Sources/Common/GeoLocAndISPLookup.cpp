@@ -37,7 +37,7 @@ namespace {
         }
         return ispName;
     }
-    optional<String> NormalizeISPName_ (optional<String>& ispName)
+    optional<String> NormalizeISPName_ (const optional<String>& ispName)
     {
         return ispName.has_value () ? NormalizeISPName_ (*ispName) : optional<String>{};
     }
