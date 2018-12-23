@@ -35,6 +35,6 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
  ***************************** Implementation Details ***************************
  ********************************************************************************
  */
-#include "GEOLocAndISPLookup.inl"
+#include "GeoLocAndISPLookup.inl"
 
 #endif /*_WhyTheFuckIsMyNetworkSoSlow_BackendApp_Common_GEOLocAndISPLookup_h_*/

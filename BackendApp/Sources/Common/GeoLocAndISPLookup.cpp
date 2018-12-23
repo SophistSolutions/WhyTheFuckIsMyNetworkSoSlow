@@ -10,7 +10,7 @@
 #include "Stroika/Foundation/DataExchange/Variant/JSON/Reader.h"
 #include "Stroika/Foundation/IO/Network/Transfer/Client.h"
 
-#include "GEOLocAndISPLookup.h"
+#include "GeoLocAndISPLookup.h"
 
 using namespace std;
 

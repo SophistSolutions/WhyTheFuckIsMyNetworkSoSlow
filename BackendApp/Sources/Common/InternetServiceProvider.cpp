@@ -6,7 +6,7 @@
 #include "Stroika/Foundation/Characters/StringBuilder.h"
 #include "Stroika/Foundation/Characters/ToString.h"
 
-#include "GEOLocAndISPLookup.h"
+#include "GeoLocAndISPLookup.h"
 
 #include "InternetServiceProvider.h"
 
