@@ -37,9 +37,6 @@
     <None Include="..\..\Sources\Discovery\NetworkInterfaces.inl">
       <Filter>Sources\Discovery</Filter>
     </None>
-    <None Include="..\..\Sources\Common\GEOLocation.inl">
-      <Filter>Sources\Common</Filter>
-    </None>
     <None Include="..\..\Sources\Common\InternetServiceProvider.inl">
       <Filter>Sources\Common</Filter>
     </None>
@@ -47,6 +44,9 @@
       <Filter>Sources\Common</Filter>
     </None>
     <None Include="..\..\Sources\Common\GeoLocAndISPLookup.inl">
+      <Filter>Sources\Common</Filter>
+    </None>
+    <None Include="..\..\Sources\Common\GeoLocation.inl">
       <Filter>Sources\Common</Filter>
     </None>
   </ItemGroup>
@@ -95,13 +95,13 @@
     <ClCompile Include="..\..\Sources\Discovery\NetworkInterfaces.cpp">
       <Filter>Sources\Discovery</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\Common\GEOLocation.cpp">
-      <Filter>Sources\Common</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\Common\InternetServiceProvider.cpp">
       <Filter>Sources\Common</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Sources\Common\GeoLocAndISPLookup.cpp">
+      <Filter>Sources\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Sources\Common\GeoLocation.cpp">
       <Filter>Sources\Common</Filter>
     </ClCompile>
   </ItemGroup>
@@ -130,13 +130,13 @@
     <ClInclude Include="..\..\Sources\Discovery\NetworkInterfaces.h">
       <Filter>Sources\Discovery</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Sources\Common\GEOLocation.h">
-      <Filter>Sources\Common</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Sources\Common\InternetServiceProvider.h">
       <Filter>Sources\Common</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Common\GeoLocAndISPLookup.h">
+      <Filter>Sources\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Common\GeoLocation.h">
       <Filter>Sources\Common</Filter>
     </ClInclude>
   </ItemGroup>

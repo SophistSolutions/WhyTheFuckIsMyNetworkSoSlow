@@ -24,7 +24,7 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common;
 
 /*
  ********************************************************************************
- *************** BackendApp::Common::InternetServiceProvider *********************
+ *************** BackendApp::Common::InternetServiceProvider ********************
  ********************************************************************************
  */
 String BackendApp::Common::InternetServiceProvider::ToString () const
@@ -38,7 +38,7 @@ String BackendApp::Common::InternetServiceProvider::ToString () const
 
 /*
  ********************************************************************************
- ******************** BackendApp::Common::LookupInternetServiceProvider *********************
+ ******************* BackendApp::Common::LookupInternetServiceProvider **********
  ********************************************************************************
  */
 optional<InternetServiceProvider> BackendApp::Common::LookupInternetServiceProvider (InternetAddress ia)

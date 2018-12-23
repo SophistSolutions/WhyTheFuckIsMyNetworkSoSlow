@@ -6,9 +6,9 @@
 #include "Stroika/Foundation/Characters/StringBuilder.h"
 #include "Stroika/Foundation/Characters/ToString.h"
 
-#include "GEOLocAndISPLookup.h"
+#include "GeoLocAndISPLookup.h"
 
-#include "GEOLocation.h"
+#include "GeoLocation.h"
 
 using namespace std;
 

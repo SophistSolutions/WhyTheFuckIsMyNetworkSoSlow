@@ -495,7 +495,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Common\GeoLocAndISPLookup.cpp" />
-    <ClCompile Include="..\..\Sources\Common\GEOLocation.cpp" />
+    <ClCompile Include="..\..\Sources\Common\GeoLocation.cpp" />
     <ClCompile Include="..\..\Sources\Common\InternetServiceProvider.cpp" />
     <ClCompile Include="..\..\Sources\Discovery\Devices.cpp" />
     <ClCompile Include="..\..\Sources\Discovery\NetworkInterfaces.cpp" />
@@ -524,7 +524,7 @@
     <None Include="..\..\Makefile" />
     <None Include="..\..\ReadMe.md" />
     <None Include="..\..\Sources\Common\GeoLocAndISPLookup.inl" />
-    <None Include="..\..\Sources\Common\GEOLocation.inl" />
+    <None Include="..\..\Sources\Common\GeoLocation.inl" />
     <None Include="..\..\Sources\Common\InternetServiceProvider.inl" />
     <None Include="..\..\Sources\Common\Makefile" />
     <None Include="..\..\Sources\Discovery\Devices.inl" />
@@ -562,7 +562,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Common\GeoLocAndISPLookup.h" />
-    <ClInclude Include="..\..\Sources\Common\GEOLocation.h" />
+    <ClInclude Include="..\..\Sources\Common\GeoLocation.h" />
     <ClInclude Include="..\..\Sources\Common\InternetServiceProvider.h" />
     <ClInclude Include="..\..\Sources\Discovery\Devices.h" />
     <ClInclude Include="..\..\Sources\Discovery\NetworkInterfaces.h" />

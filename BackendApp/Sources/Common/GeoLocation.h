@@ -1,8 +1,8 @@
 /*
  * Copyright(c) Sophist Solutions, Inc. 1990-2017.  All rights reserved
  */
-#ifndef _WhyTheFuckIsMyNetworkSoSlow_BackendApp_Common_GEOLocation_h_
-#define _WhyTheFuckIsMyNetworkSoSlow_BackendApp_Common_GEOLocation_h_ 1
+#ifndef _WhyTheFuckIsMyNetworkSoSlow_BackendApp_Common_GeoLocation_h_
+#define _WhyTheFuckIsMyNetworkSoSlow_BackendApp_Common_GeoLocation_h_ 1
 
 #include "Stroika/Frameworks/StroikaPreComp.h"
 
@@ -42,6 +42,6 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
  ***************************** Implementation Details ***************************
  ********************************************************************************
  */
-#include "GEOLocation.inl"
+#include "GeoLocation.inl"
 
-#endif /*_WhyTheFuckIsMyNetworkSoSlow_BackendApp_Common_GEOLocation_h_*/
+#endif /*_WhyTheFuckIsMyNetworkSoSlow_BackendApp_Common_GeoLocation_h_*/
