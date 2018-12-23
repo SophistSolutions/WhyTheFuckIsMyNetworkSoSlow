@@ -35,7 +35,7 @@ String BackendApp::Common::GEOLocationInformation::ToString () const
     sb += L"City: " + Characters::ToString (fCity) + L", ";
     sb += L"Region-Code: " + Characters::ToString (fRegionCode) + L", ";
     sb += L"Postal-Code: " + Characters::ToString (fPostalCode) + L", ";
-    //    sb += L"Lattitude-And-Longitude: " + Characters::ToString (fLattitudeAndLongitude) + L", ";
+    sb += L"Lattitude-And-Longitude: " + Characters::ToString (fLattitudeAndLongitude) + L", ";
     sb += L"}";
     return sb.str ();
 }

@@ -1,15 +1,4 @@
- 
-	THEN do 
-	    optional<pair<ISPInfo,GEOLOCINFO>> Lookuxxx_ (optional<Time::DurationSecondsType> allowedStaleness = {})
-		.. using http://ip-api.com/json/108.49.190.49
-		define two structs each optional - and return them (maybe array) in result for network
-		http://localhost:8080/Network/97979b96-9967-6696-95cb-6495706c66c9
-
-
->>>> REST API
-	/Networks (already working)
-			>	My GEOLOC
-			>	Whats my ISP (?)
+TWEAK AND DOCUEMNT (Below) - GEOLOC stuff
 
 	For GEOLOC MAYBE:
 			https://ipstack.com/documentation
@@ -18,6 +7,11 @@
 				http://ip-api.com/json/108.49.190.49
 				http://ip-api.com/docs/api:json
 			
+            //optional<tuple<float, float>> fLattitudeAndLongitude; // Latitude/longitude
+==== 
+BOB wants lowercase - dash - urls
+===
+THEN - next todo I think - is /operations/ping?target tracenroute?target?? think out.
 -----
 
 http://localhost:8080/Network/97979b96-9967-6696-95cb-6495706c66c9

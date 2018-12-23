@@ -50,6 +50,13 @@ namespace {
  */
 optional<tuple<GEOLocationInformation, InternetServiceProvider>> BackendApp::Common::GEOLocAndISPLookup (InternetAddress ia)
 {
+	/*
+	 *	Could fetch from https://ipstack.com/documentation but required signup for account.
+	 *
+	 *	Instead - for now - went with:
+	 *			http://ip-api.com/docs/api:json
+	 *			EXAMPLE: http://ip-api.com/json/108.49.190.49
+	 */
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
     Debug::TraceContextBumper ctx{L"GEOLocAndISPLookup"};
 #endif
@@ -66,9 +73,13 @@ optional<tuple<GEOLocationInformation, InternetServiceProvider>> BackendApp::Com
             geoloc.fCountryCode               = cvt (m.Lookup (L"countryCode"));
             geoloc.fCity                      = cvt (m.Lookup (L"city"));
             geoloc.fPostalCode                = cvt (m.Lookup (L"zip"));
-            InternetServiceProvider isp{};
+			optional<VariantValue> lat = m.Lookup (L"lat");
+			optional<VariantValue> lon = m.Lookup (L"lon");
+			if (lat and lon) {
+				geoloc.fLattitudeAndLongitude = make_tuple (lat->As<float> (), lon->As<float> ());
+			}
+			InternetServiceProvider isp{};
             isp.name = NormalizeISPName_ (cvt (m.Lookup (L"isp")));
-            //optional<tuple<float, float>> fLattitudeAndLongitude; // Latitude/longitude
             return make_tuple (geoloc, isp);
         },
         SynchronizedTimedCache<tuple<InternetAddress>, optional<tuple<GEOLocationInformation, InternetServiceProvider>>>{kInfoTimeoutInSeconds_}};
