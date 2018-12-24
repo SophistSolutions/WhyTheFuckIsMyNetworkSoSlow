@@ -34,6 +34,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
         virtual Collection<String>           GetNetworkInterfaces (bool filterRunningOnly) const override;
         virtual Collection<NetworkInterface> GetNetworkInterfaces_Recurse (bool filterRunningOnly) const override;
         virtual NetworkInterface             GetNetworkInterface (const String& id) const override;
+        virtual double                       Operation_Ping (const String& address) const override;
     };
 
     void TmpHackAssureStartedMonitoring ();

@@ -33,7 +33,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
 
     public:
         /**
-         *  curl  http://localhost:8080/Devices
+         *  curl  http://localhost:8080/devices
          */
         virtual Collection<String> GetDevices () const                = 0;
         virtual Collection<Device> GetDevices_Recurse () const        = 0;
@@ -41,7 +41,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
 
     public:
         /**
-         *  curl  http://localhost:8080/Networks
+         *  curl  http://localhost:8080/networks
          */
         virtual Sequence<String>  GetNetworks () const                = 0;
         virtual Sequence<Network> GetNetworks_Recurse () const        = 0;
@@ -49,11 +49,18 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
 
     public:
         /**
-         *  curl  http://localhost:8080/NetworkInterfaces
+         *  curl  http://localhost:8080/network-interfaces
          */
         virtual Collection<String>           GetNetworkInterfaces (bool filterRunningOnly) const         = 0;
         virtual Collection<NetworkInterface> GetNetworkInterfaces_Recurse (bool filterRunningOnly) const = 0;
         virtual NetworkInterface             GetNetworkInterface (const String& id) const                = 0;
+
+    public:
+        /**
+         *  curl  http://localhost:8080/operations/ping
+         *      return time to ping, or throw on failure
+         */
+        virtual double Operation_Ping (const String& address) const = 0;
     };
 
 }

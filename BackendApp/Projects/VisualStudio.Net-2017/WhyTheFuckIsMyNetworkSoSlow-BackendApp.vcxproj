@@ -544,6 +544,9 @@
     <ProjectReference Include="..\..\..\ThirdPartyComponents\Stroika\StroikaRoot\Library\Projects\VisualStudio.Net-2017\Stroika-Foundation.vcxproj">
       <Project>{5afc8e54-efa6-45a6-9e8f-7bb89c84ae5b}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\ThirdPartyComponents\Stroika\StroikaRoot\Library\Projects\VisualStudio.Net-2017\Stroika-Frameworks-NetworkMonitor.vcxproj">
+      <Project>{808123ca-811b-455b-a0b8-b93d289cb7b1}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\ThirdPartyComponents\Stroika\StroikaRoot\Library\Projects\VisualStudio.Net-2017\Stroika-Frameworks-Service.vcxproj">
       <Project>{76c03e61-1308-4973-abda-2e83210a5b52}</Project>
     </ProjectReference>

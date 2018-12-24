@@ -65,6 +65,7 @@ public:
     static const WebServiceMethodDescription kDevices_;
     static const WebServiceMethodDescription kNetworks_;
     static const WebServiceMethodDescription kNetworkInterfaces_;
+    static const WebServiceMethodDescription kOperations_;
 
 private:
     static constexpr unsigned int kMaxConcurrentConnections_{5};
@@ -201,6 +202,19 @@ public:
                       }
                   }},
 
+              Route{
+                  RegularExpression (L"operations/ping", RegularExpression::eECMAScript),
+                  [=](Message* m) {
+                      Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
+                      if (auto address = args.Lookup (L"target")) {
+                          ExpectedMethod (m->GetRequestReference (), kOperations_);
+                          WriteResponse (m->PeekResponse (), kOperations_, Network::kMapper.FromObject (fWSAPI_->Operation_Ping (address->As<String> ())));
+                      }
+                      else {
+                          Execution::Throw (Execution::StringException (L"missing target argument"));
+                      }
+                  }},
+
           }}
         , fWSConnectionMgr_{SocketAddresses (InternetAddresses_Any (), 8080), fWSRouter_, ConnectionManager::Options{kMaxConcurrentConnections_, Socket::BindFlags{true}, kServerString_}} // listen and dispatch while this object exists
         , fGUIWebRouter_{Sequence<Route>{
@@ -223,6 +237,7 @@ public:
                 kDevices_,
                 kNetworkInterfaces_,
                 kNetworks_,
+                kOperations_,
             },
             DocsOptions{String_Constant{L"Web Methods"}});
     }
@@ -253,6 +268,16 @@ const WebServiceMethodDescription WebServer::Rep_::kNetworkInterfaces_{
     Sequence<String>{L"curl http://localhost:8080/network-interfaces", L"curl http://localhost:8080/network-interfaces?recurse=true", L"curl http://localhost:8080/network-interfaces?filter-only-running=true"},
     Sequence<String>{L"Fetch the list of known Network Interfaces.",
                      L"[filter-only-running=true|false]?, recurse=true|false]?"},
+};
+const WebServiceMethodDescription WebServer::Rep_::kOperations_{
+    String_Constant{L"operations"},
+    Set<String>{String_Constant{IO::Network::HTTP::Methods::kGet}},
+    DataExchange::PredefinedInternetMediaType::kJSON,
+    {},
+    Sequence<String>{L"curl http://localhost:8080/operations/ping?target=address"},
+    Sequence<String>{
+        L"perform a wide variety of operations - mostly for debugging for now but may stay around.",
+    },
 };
 const String_Constant WebServer::Rep_::kServerString_{L"Why-The-Fuck-Is-My-Network-So-Slow/1.0"};
 
