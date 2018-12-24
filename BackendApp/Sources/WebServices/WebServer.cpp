@@ -111,7 +111,7 @@ public:
                   mkRequestHandler (WebServiceMethodDescription{}, Device::kMapper, Traversal::Iterable<String>{L"err-if-more-than-10"}, function<void(double)>{[=](double check) { if (check > 10) {Execution::Throw (Execution::StringException (L"more than 10"));} }})},
 
               Route{
-                  RegularExpression (L"Devices", RegularExpression::eECMAScript),
+                  RegularExpression (L"devices", RegularExpression::eECMAScript),
                   [=](Message* m) {
                       constexpr bool kDefault_FilterRunningOnly_{true};
                       ExpectedMethod (m->GetRequestReference (), kNetworkInterfaces_);
@@ -125,7 +125,7 @@ public:
                       }
                   }},
               Route{
-                  RegularExpression (L"Device/.*", RegularExpression::eECMAScript),
+                  RegularExpression (L"devices/.*", RegularExpression::eECMAScript),
                   [=](Message* m) {
                       // @todo parse out of REGULAR EXPRESSION - id
                       //tmphack way to grab id arg (til stroika router supports this)
@@ -142,7 +142,7 @@ public:
                   }},
 
               Route{
-                  RegularExpression (L"NetworkInterfaces", RegularExpression::eECMAScript),
+                  RegularExpression (L"network-interfaces", RegularExpression::eECMAScript),
                   [=](Message* m) {
                       constexpr bool kDefault_FilterRunningOnly_{true};
                       ExpectedMethod (m->GetRequestReference (), kNetworkInterfaces_);
@@ -156,7 +156,7 @@ public:
                       }
                   }},
               Route{
-                  RegularExpression (L"NetworkInterface/.*", RegularExpression::eECMAScript),
+                  RegularExpression (L"network-interfaces/.*", RegularExpression::eECMAScript),
                   [=](Message* m) {
                       // @todo parse out of REGULAR EXPRESSION - id
                       //tmphack way to grab id arg (til stroika router supports this)
@@ -173,7 +173,7 @@ public:
                   }},
 
               Route{
-                  RegularExpression (L"Networks", RegularExpression::eECMAScript),
+                  RegularExpression (L"networks", RegularExpression::eECMAScript),
                   [=](Message* m) {
                       ExpectedMethod (m->GetRequestReference (), kNetworks_);
                       Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
@@ -185,7 +185,7 @@ public:
                       }
                   }},
               Route{
-                  RegularExpression (L"Network/.*", RegularExpression::eECMAScript),
+                  RegularExpression (L"networks/.*", RegularExpression::eECMAScript),
                   [=](Message* m) {
                       // @todo parse out of REGULAR EXPRESSION - id
                       //tmphack way to grab id arg (til stroika router supports this)
@@ -228,29 +228,29 @@ public:
     }
 };
 const WebServiceMethodDescription WebServer::Rep_::kDevices_{
-    String_Constant{L"Devices"},
+    String_Constant{L"devices"},
     Set<String>{String_Constant{IO::Network::HTTP::Methods::kGet}},
     DataExchange::PredefinedInternetMediaType::kJSON,
     {},
-    Sequence<String>{L"curl http://localhost:8080/Devices", L"curl http://localhost:8080/Devices?recurse=true", L"curl http://localhost:8080/Devices/{ID}"},
+    Sequence<String>{L"curl http://localhost:8080/devices", L"curl http://localhost:8080/devices?recurse=true", L"curl http://localhost:8080/devices/{ID}"},
     Sequence<String>{L"Fetch the list of known devices for the currently connected network.",
                      L"@todo - in the future - add support for parameters to this fetch - which can be used to filter/subset etc"},
 };
 const WebServiceMethodDescription WebServer::Rep_::kNetworks_{
-    String_Constant{L"Networks"},
+    String_Constant{L"networks"},
     Set<String>{String_Constant{IO::Network::HTTP::Methods::kGet}},
     DataExchange::PredefinedInternetMediaType::kJSON,
     {},
-    Sequence<String>{L"curl http://localhost:8080/Networks", L"curl http://localhost:8080/Networks?recurse=true", L"curl http://localhost:8080/Network/{ID}"},
+    Sequence<String>{L"curl http://localhost:8080/networks", L"curl http://localhost:8080/networks?recurse=true", L"curl http://localhost:8080/networks/{ID}"},
     Sequence<String>{L"Fetch the list of known Networks.",
                      L"@todo - in the future - add support for parameters to this fetch - which can be used to filter/subset etc"},
 };
 const WebServiceMethodDescription WebServer::Rep_::kNetworkInterfaces_{
-    String_Constant{L"NetworkInterfaces"},
+    String_Constant{L"network-interfaces"},
     Set<String>{String_Constant{IO::Network::HTTP::Methods::kGet}},
     DataExchange::PredefinedInternetMediaType::kJSON,
     {},
-    Sequence<String>{L"curl http://localhost:8080/NetworkInterfaces", L"curl http://localhost:8080/NetworkInterfaces?recurse=true", L"curl http://localhost:8080/NetworkInterfaces?filter-RunningOnly=true"},
+    Sequence<String>{L"curl http://localhost:8080/network-interfaces", L"curl http://localhost:8080/network-interfaces?recurse=true", L"curl http://localhost:8080/network-interfaces?filter-RunningOnly=true"},
     Sequence<String>{L"Fetch the list of known Network Interfaces.",
                      L"[filter-RunningOnly=true|false]?, recurse=true|false]?"},
 };
