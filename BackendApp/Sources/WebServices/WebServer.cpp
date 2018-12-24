@@ -116,7 +116,7 @@ public:
                       constexpr bool kDefault_FilterRunningOnly_{true};
                       ExpectedMethod (m->GetRequestReference (), kNetworkInterfaces_);
                       Mapping<String, DataExchange::VariantValue> args              = PickoutParamValues (m->PeekRequest ());
-                      bool                                        filterRunningOnly = args.LookupValue (L"filter-RunningOnly", DataExchange::VariantValue{kDefault_FilterRunningOnly_}).As<bool> ();
+                      bool                                        filterRunningOnly = args.LookupValue (L"filter-only-running", DataExchange::VariantValue{kDefault_FilterRunningOnly_}).As<bool> ();
                       if (args.LookupValue (L"recurse", false).As<bool> ()) {
                           WriteResponse (m->PeekResponse (), kDevices_, Device::kMapper.FromObject (fWSAPI_->GetDevices_Recurse ()));
                       }
@@ -147,7 +147,7 @@ public:
                       constexpr bool kDefault_FilterRunningOnly_{true};
                       ExpectedMethod (m->GetRequestReference (), kNetworkInterfaces_);
                       Mapping<String, DataExchange::VariantValue> args              = PickoutParamValues (m->PeekRequest ());
-                      bool                                        filterRunningOnly = args.LookupValue (L"filter-RunningOnly", DataExchange::VariantValue{kDefault_FilterRunningOnly_}).As<bool> ();
+                      bool                                        filterRunningOnly = args.LookupValue (L"filter-only-running", DataExchange::VariantValue{kDefault_FilterRunningOnly_}).As<bool> ();
                       if (args.LookupValue (L"recurse", false).As<bool> ()) {
                           WriteResponse (m->PeekResponse (), kNetworkInterfaces_, NetworkInterface::kMapper.FromObject (fWSAPI_->GetNetworkInterfaces_Recurse (filterRunningOnly)));
                       }
@@ -250,9 +250,9 @@ const WebServiceMethodDescription WebServer::Rep_::kNetworkInterfaces_{
     Set<String>{String_Constant{IO::Network::HTTP::Methods::kGet}},
     DataExchange::PredefinedInternetMediaType::kJSON,
     {},
-    Sequence<String>{L"curl http://localhost:8080/network-interfaces", L"curl http://localhost:8080/network-interfaces?recurse=true", L"curl http://localhost:8080/network-interfaces?filter-RunningOnly=true"},
+    Sequence<String>{L"curl http://localhost:8080/network-interfaces", L"curl http://localhost:8080/network-interfaces?recurse=true", L"curl http://localhost:8080/network-interfaces?filter-only-running=true"},
     Sequence<String>{L"Fetch the list of known Network Interfaces.",
-                     L"[filter-RunningOnly=true|false]?, recurse=true|false]?"},
+                     L"[filter-only-running=true|false]?, recurse=true|false]?"},
 };
 const String_Constant WebServer::Rep_::kServerString_{L"Why-The-Fuck-Is-My-Network-So-Slow/1.0"};
 
