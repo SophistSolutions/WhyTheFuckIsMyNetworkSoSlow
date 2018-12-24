@@ -25,6 +25,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
     using IO::Network::InternetAddress;
 
     /**
+     *  \note currently ignoring 'isMobile', 'isTORuser', 'isProxyUser' - and maybe a few more. Not sure we can get these
+     *        reliably, nor that we need them.
      */
     optional<tuple<GEOLocationInformation, InternetServiceProvider>> GEOLocAndISPLookup (InternetAddress ia);
 

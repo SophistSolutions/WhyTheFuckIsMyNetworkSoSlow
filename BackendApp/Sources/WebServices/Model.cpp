@@ -83,6 +83,26 @@ const ObjectVariantMapper Network::kMapper = []() {
     mapper.AddCommonType<optional<Sequence<InternetAddress>>> ();
     mapper.AddCommonType<Set<GUID>> ();
 
+    if (true) {
+        // looks better as an object, than as an array
+        struct laglon_ {
+            float lat;
+            float lon;
+        };
+        mapper.AddClass<laglon_> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+            {L"Latitude", Stroika_Foundation_DataExchange_StructFieldMetaInfo (laglon_, lat)},
+            {L"Longitude", Stroika_Foundation_DataExchange_StructFieldMetaInfo (laglon_, lon)},
+        });
+        mapper.Add<tuple<float, float>> (
+            [](const ObjectVariantMapper& mapper, const tuple<float, float>* obj) -> VariantValue { return mapper.FromObject (laglon_{get<0> (*obj), get<1> (*obj)}); },
+            [](const ObjectVariantMapper& mapper, const VariantValue& d, tuple<float, float>* intoObj) -> void { auto tmp{ mapper.ToObject<laglon_> (d) }; *intoObj = make_tuple (tmp.lat, tmp.lon); });
+    }
+    else {
+        mapper.AddCommonType<tuple<float, float>> (); // works but represents as an array
+    }
+
+    mapper.AddCommonType<optional<tuple<float, float>>> ();
+
     mapper.AddClass<Common::InternetServiceProvider> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
         {L"Name", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Common::InternetServiceProvider, name), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
@@ -93,9 +113,8 @@ const ObjectVariantMapper Network::kMapper = []() {
         {L"City", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Common::GEOLocationInformation, fCity), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"Region-Code", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Common::GEOLocationInformation, fRegionCode), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"Postal-Code", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Common::GEOLocationInformation, fPostalCode), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        //{L"fLattitudeAndLongitude", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Common::GEOLocationInformation, fLattitudeAndLongitude), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"Coordinates", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Common::GEOLocationInformation, fLatitudeAndLongitude), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
-    //    optional<tuple<float, float>> fLattitudeAndLongitude; // Latitude/longitude
     mapper.AddCommonType<optional<Common::GEOLocationInformation>> ();
 
     mapper.AddClass<Network> (initializer_list<ObjectVariantMapper::StructFieldInfo>{

@@ -1,13 +1,4 @@
-TWEAK AND DOCUEMNT (Below) - GEOLOC stuff
 
-	For GEOLOC MAYBE:
-			https://ipstack.com/documentation
-
-			BETTER
-				http://ip-api.com/json/108.49.190.49
-				http://ip-api.com/docs/api:json
-			
-            //optional<tuple<float, float>> fLattitudeAndLongitude; // Latitude/longitude
 ==== 
 BOB wants lowercase - dash - urls
 ===

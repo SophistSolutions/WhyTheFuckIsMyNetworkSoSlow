@@ -26,9 +26,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
     struct GEOLocationInformation {
         optional<String>              fCountryCode; // Two-letter country code ISO 3166-1 alpha-2
         optional<String>              fCity;
-        optional<String>              fRegionCode;            // Region/state short code (FIPS or ISO)
-        optional<String>              fPostalCode;            // zipcode
-        optional<tuple<float, float>> fLattitudeAndLongitude; // Latitude/longitude
+        optional<String>              fRegionCode;           // Region/state short code (FIPS or ISO)
+        optional<String>              fPostalCode;           // zipcode
+        optional<tuple<float, float>> fLatitudeAndLongitude; // Latitude/longitude
 
         nonvirtual String ToString () const;
     };
