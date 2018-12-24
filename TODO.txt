@@ -1,7 +1,4 @@
 
-==== 
-BOB wants lowercase - dash - urls
-===
 THEN - next todo I think - is /operations/ping?target tracenroute?target?? think out.
 -----
 
