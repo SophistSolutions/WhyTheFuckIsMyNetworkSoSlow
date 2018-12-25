@@ -29,3 +29,5 @@ https://scotch.io/tutorials/create-a-desktop-quiz-application-using-vue-js-and-e
 https://www.red-gate.com/simple-talk/dotnet/net-development/introduction-to-vue-js-with-a-single-page-application-spa-in-visual-studio/
 https://www.youtube.com/watch?v=inGv59gCjIg&index=3&list=PLJNLwTPak6di8DuZNdRJEmNgFA-eIHcJ6
 
+
+https://markus.oberlehner.net/blog/should-i-store-this-data-in-vuex/
