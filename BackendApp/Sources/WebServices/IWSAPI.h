@@ -68,6 +68,12 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
          *      return time to ping, or throw on failure
          */
         virtual Operations::TraceRouteResults Operation_TraceRoute (const String& address, optional<bool> reverseDNSResults = {}) const = 0;
+
+    public:
+        /**
+         *  curl  http://localhost:8080/operations/dns/calculate-negative-lookup-time
+         */
+        virtual Time::Duration Operation_DNS_CalculateNegativeLookupTime () const = 0;
     };
 
 }

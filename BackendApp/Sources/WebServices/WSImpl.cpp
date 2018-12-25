@@ -330,6 +330,17 @@ Operations::TraceRouteResults WSImpl::Operation_TraceRoute (const String& addres
     return results;
 }
 
+Time::Duration WSImpl::Operation_DNS_CalculateNegativeLookupTime () const
+{
+    Debug::TraceContextBumper                      ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_DNS_CalculateNegativeLookupTime")};
+    uniform_int_distribution<mt19937::result_type> allUInt16Distribution{0, numeric_limits<uint32_t>::max ()};
+    static mt19937                                 sRng_{std::random_device () ()};
+    String                                         randomAddress = Characters::Format (L"www.xxxabc%d.com", allUInt16Distribution (sRng_));
+    Time::DurationSecondsType                      startAt       = Time::GetTickCount ();
+    IgnoreExceptionsForCall (IO::Network::DNS::Default ().GetHostAddress (randomAddress));
+    return Time::Duration{Time::GetTickCount () - startAt};
+}
+
 /*
  ********************************************************************************
  **************** WebServices::TmpHackAssureStartedMonitoring *******************

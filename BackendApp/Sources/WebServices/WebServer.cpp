@@ -230,6 +230,12 @@ public:
                           Execution::Throw (Execution::StringException (L"missing target argument"));
                       }
                   }},
+              Route{
+                  RegularExpression (L"operations/dns/calculate-negative-lookup-time", RegularExpression::eECMAScript),
+                  [=](Message* m) {
+                      ExpectedMethod (m->GetRequestReference (), kOperations_);
+                      WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_DNS_CalculateNegativeLookupTime ()));
+                  }},
 
           }}
         , fWSConnectionMgr_{SocketAddresses (InternetAddresses_Any (), 8080), fWSRouter_, ConnectionManager::Options{kMaxConcurrentConnections_, Socket::BindFlags{true}, kServerString_}} // listen and dispatch while this object exists
@@ -293,11 +299,13 @@ const WebServiceMethodDescription WebServer::Rep_::kOperations_{
     Sequence<String>{
         L"curl http://localhost:8080/operations/ping?target=www.google.com",
         L"curl http://localhost:8080/operations/traceroute?target=www.sophists.com",
+        L"curl http://localhost:8080/operations/dns/calculate-negative-lookup-time",
     },
     Sequence<String>{
         L"perform a wide variety of operations - mostly for debugging for now but may stay around.",
         L"/operations/ping?target=address; (address can be ipv4, ipv6 address, or dnsname)",
         L"/operations/traceroute?target=address[&reverse-dns-result=bool]+; (address can be ipv4, ipv6 address, or dnsname)",
+        L"/operations/dns/calculate-negative-lookup-time",
     },
 };
 const String_Constant WebServer::Rep_::kServerString_{L"Why-The-Fuck-Is-My-Network-So-Slow/1.0"};
