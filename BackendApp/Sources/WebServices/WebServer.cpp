@@ -208,7 +208,23 @@ public:
                       Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
                       if (auto address = args.Lookup (L"target")) {
                           ExpectedMethod (m->GetRequestReference (), kOperations_);
-                          WriteResponse (m->PeekResponse (), kOperations_, Network::kMapper.FromObject (fWSAPI_->Operation_Ping (address->As<String> ())));
+                          WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_Ping (address->As<String> ())));
+                      }
+                      else {
+                          Execution::Throw (Execution::StringException (L"missing target argument"));
+                      }
+                  }},
+              Route{
+                  RegularExpression (L"operations/traceroute", RegularExpression::eECMAScript),
+                  [=](Message* m) {
+                      Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
+                      optional<bool>                              reverseDNSResult;
+                      if (auto rdr = args.Lookup (L"reverse-dns-result")) {
+                          reverseDNSResult = rdr->As<bool> ();
+                      }
+                      if (auto address = args.Lookup (L"target")) {
+                          ExpectedMethod (m->GetRequestReference (), kOperations_);
+                          WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_TraceRoute (address->As<String> (), reverseDNSResult)));
                       }
                       else {
                           Execution::Throw (Execution::StringException (L"missing target argument"));
@@ -274,9 +290,14 @@ const WebServiceMethodDescription WebServer::Rep_::kOperations_{
     Set<String>{String_Constant{IO::Network::HTTP::Methods::kGet}},
     DataExchange::PredefinedInternetMediaType::kJSON,
     {},
-    Sequence<String>{L"curl http://localhost:8080/operations/ping?target=address"},
+    Sequence<String>{
+        L"curl http://localhost:8080/operations/ping?target=www.google.com",
+        L"curl http://localhost:8080/operations/traceroute?target=www.sophists.com",
+    },
     Sequence<String>{
         L"perform a wide variety of operations - mostly for debugging for now but may stay around.",
+        L"/operations/ping?target=address; (address can be ipv4, ipv6 address, or dnsname)",
+        L"/operations/traceroute?target=address[&reverse-dns-result=bool]+; (address can be ipv4, ipv6 address, or dnsname)",
     },
 };
 const String_Constant WebServer::Rep_::kServerString_{L"Why-The-Fuck-Is-My-Network-So-Slow/1.0"};

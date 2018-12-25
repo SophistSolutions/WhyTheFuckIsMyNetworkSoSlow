@@ -283,6 +283,53 @@ double WSImpl::Operation_Ping (const String& address) const
     return 1;
 }
 
+Operations::TraceRouteResults WSImpl::Operation_TraceRoute (const String& address, optional<bool> reverseDNSResults) const
+{
+    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_TraceRoute (%s)", Characters::ToString (address).c_str ())};
+
+    using namespace Stroika::Foundation::IO::Network;
+    using namespace Stroika::Foundation::IO::Network::InternetProtocol;
+    using namespace Stroika::Foundation::Time;
+    using namespace Stroika::Frameworks;
+    using namespace Stroika::Frameworks::NetworkMonitor;
+
+    bool revDNS = reverseDNSResults.value_or (true);
+
+    size_t                packetSize  = Ping::Options::kDefaultPayloadSize + sizeof (ICMP::V4::PacketHeader); // historically, the app ping has measured this including ICMP packet header, but not ip packet header size
+    unsigned int          maxHops     = Ping::Options::kDefaultMaxHops;
+    unsigned int          sampleCount = 3;
+    static const Duration kInterSampleTime_{"PT.1S"};
+
+    Traceroute::Options options{};
+    options.fPacketPayloadSize = Ping::Options::kAllowedICMPPayloadSizeRange.Pin (packetSize - sizeof (ICMP::V4::PacketHeader));
+    options.fMaxHops           = maxHops;
+
+    options.fTimeout = Duration{5.0};
+    //   options.fSampleInfo                   = Ping::Options::SampleInfo{kInterSampleTime_, sampleCount};
+
+    // write GetHostAddress () funciton in DNS that throws if not at least one
+
+    Model::Operations::TraceRouteResults results;
+
+    Sequence<Traceroute::Hop> hops = Traceroute::Run (DNS::Default ().GetHostAddress (address), options);
+    unsigned int              hopIdx{1};
+    for (Traceroute::Hop h : hops) {
+        String hopName = [=]() {
+            String addrStr = h.fAddress.As<String> ();
+            if (revDNS) {
+                if (auto rdnsName = DNS::Default ().QuietReverseLookup (h.fAddress)) {
+                    return *rdnsName;
+                }
+            }
+            return addrStr;
+        }();
+        results.fHops += Operations::TraceRouteResults::Hop{h.fTime, hopName};
+        // cout << hopIdx++ << "\t" << h.fTime.PrettyPrint ().AsNarrowSDKString () << "\t" << hopName.AsNarrowSDKString () << endl;
+    }
+
+    return results;
+}
+
 /*
  ********************************************************************************
  **************** WebServices::TmpHackAssureStartedMonitoring *******************

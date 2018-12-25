@@ -61,6 +61,13 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
          *      return time to ping, or throw on failure
          */
         virtual double Operation_Ping (const String& address) const = 0;
+
+    public:
+        /**
+         *  curl  http://localhost:8080/operations/ping
+         *      return time to ping, or throw on failure
+         */
+        virtual Operations::TraceRouteResults Operation_TraceRoute (const String& address, optional<bool> reverseDNSResults = {}) const = 0;
     };
 
 }

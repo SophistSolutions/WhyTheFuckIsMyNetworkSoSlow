@@ -266,3 +266,30 @@ String Device::ToString () const
 {
     return DataExchange::Variant::JSON::Writer ().WriteAsString (Device::kMapper.FromObject (*this));
 }
+
+/*
+ ********************************************************************************
+ ********************************** Model::Operations ***************************
+ ********************************************************************************
+ */
+
+DISABLE_COMPILER_MSC_WARNING_START (4573);
+DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
+const ObjectVariantMapper Operations::kMapper = []() {
+    ObjectVariantMapper mapper;
+
+    mapper.AddCommonType<Sequence<double>> ();
+    mapper.AddCommonType<Time::Duration> ();
+    mapper.AddClass<Operations::TraceRouteResults::Hop> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+        {L"Time-To-Hop", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Operations::TraceRouteResults::Hop, fTime)},
+        {L"Address", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Operations::TraceRouteResults::Hop, fAddress)},
+    });
+    mapper.AddCommonType<Sequence<Operations::TraceRouteResults::Hop>> ();
+    mapper.AddClass<Operations::TraceRouteResults> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+        {L"Hops", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Operations::TraceRouteResults, fHops)},
+    });
+
+    return mapper;
+}();
+DISABLE_COMPILER_GCC_WARNING_END ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
+DISABLE_COMPILER_MSC_WARNING_END (4573);

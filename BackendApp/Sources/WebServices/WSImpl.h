@@ -25,16 +25,17 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
      */
     class WSImpl : public IWSAPI {
     public:
-        virtual Collection<String>           GetDevices () const override;
-        virtual Collection<Device>           GetDevices_Recurse () const override;
-        virtual Device                       GetDevice (const String& id) const override;
-        virtual Sequence<String>             GetNetworks () const override;
-        virtual Sequence<Network>            GetNetworks_Recurse () const override;
-        virtual Network                      GetNetwork (const String& id) const override;
-        virtual Collection<String>           GetNetworkInterfaces (bool filterRunningOnly) const override;
-        virtual Collection<NetworkInterface> GetNetworkInterfaces_Recurse (bool filterRunningOnly) const override;
-        virtual NetworkInterface             GetNetworkInterface (const String& id) const override;
-        virtual double                       Operation_Ping (const String& address) const override;
+        virtual Collection<String>            GetDevices () const override;
+        virtual Collection<Device>            GetDevices_Recurse () const override;
+        virtual Device                        GetDevice (const String& id) const override;
+        virtual Sequence<String>              GetNetworks () const override;
+        virtual Sequence<Network>             GetNetworks_Recurse () const override;
+        virtual Network                       GetNetwork (const String& id) const override;
+        virtual Collection<String>            GetNetworkInterfaces (bool filterRunningOnly) const override;
+        virtual Collection<NetworkInterface>  GetNetworkInterfaces_Recurse (bool filterRunningOnly) const override;
+        virtual NetworkInterface              GetNetworkInterface (const String& id) const override;
+        virtual double                        Operation_Ping (const String& address) const override;
+        virtual Operations::TraceRouteResults Operation_TraceRoute (const String& address, optional<bool> reverseDNSResults) const override;
     };
 
     void TmpHackAssureStartedMonitoring ();
