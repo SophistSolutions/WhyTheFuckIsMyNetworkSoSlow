@@ -9,8 +9,12 @@
 #include "Stroika/Foundation/Cryptography/Digest/Algorithm/MD5.h"
 #include "Stroika/Foundation/Cryptography/Format.h"
 #include "Stroika/Foundation/Execution/Synchronized.h"
+#include "Stroika/Foundation/IO/Network/DNS.h"
 #include "Stroika/Foundation/IO/Network/Interface.h"
 #include "Stroika/Foundation/IO/Network/LinkMonitor.h"
+
+#include "Stroika/Frameworks/NetworkMonitor/Ping.h"
+#include "Stroika/Frameworks/NetworkMonitor/Traceroute.h"
 
 #include "../Discovery/Devices.h"
 #include "../Discovery/NetworkInterfaces.h"
@@ -243,6 +247,40 @@ NetworkInterface WSImpl::GetNetworkInterface (const String& id) const
         }
     }
     Execution::Throw (Execution::StringException (L"no such id"));
+}
+
+double WSImpl::Operation_Ping (const String& address) const
+{
+    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_Ping (%s)", Characters::ToString (address).c_str ())};
+
+    using namespace Stroika::Foundation::IO::Network;
+    using namespace Stroika::Foundation::IO::Network::InternetProtocol;
+    using namespace Stroika::Foundation::Time;
+    using namespace Stroika::Frameworks;
+    using namespace Stroika::Frameworks::NetworkMonitor;
+
+    size_t                packetSize  = Ping::Options::kDefaultPayloadSize + sizeof (ICMP::V4::PacketHeader); // historically, the app ping has measured this including ICMP packet header, but not ip packet header size
+    unsigned int          maxHops     = Ping::Options::kDefaultMaxHops;
+    unsigned int          sampleCount = 3;
+    static const Duration kInterSampleTime_{"PT.1S"};
+
+    Ping::Options options{};
+    options.fPacketPayloadSize = Ping::Options::kAllowedICMPPayloadSizeRange.Pin (packetSize - sizeof (ICMP::V4::PacketHeader));
+    options.fMaxHops           = maxHops;
+    //   options.fSampleInfo                   = Ping::Options::SampleInfo{kInterSampleTime_, sampleCount};
+
+    // write GetHostAddress () funciton in DNS that throws if not at least one
+    auto addrs = DNS::Default ().GetHostAddresses (address);
+    if (addrs.size () < 1) {
+        Execution::Throw (Execution::StringException (L"no addr"));
+    }
+
+    NetworkMonitor::Ping::SampleResults t = NetworkMonitor::Ping::Sample (addrs[0], Ping::SampleOptions{kInterSampleTime_, sampleCount}, options);
+    if (t.fMedianPingTime) {
+        return t.fMedianPingTime->As<double> ();
+    }
+
+    return 1;
 }
 
 /*

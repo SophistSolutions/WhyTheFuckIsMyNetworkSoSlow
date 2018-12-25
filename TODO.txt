@@ -1,8 +1,14 @@
 
-==== 
-BOB wants lowercase - dash - urls
-===
 THEN - next todo I think - is /operations/ping?target tracenroute?target?? think out.
+	/operations/ping?target=address
+	/operations/traceroute?target=address
+	/operations/dns/calculate-score
+		do afirmative dns lookup (maybe useless?)
+		do guaranteed-to-fail dns lookup - uncacheable - and take time
+		MAX of 5 seconds - and scale to zero-to-1 (score of one is fast so 1- for score); score of 0..1.0
+	/operations/dns/calculate-negative-lookup-time
+	/operations/dns/lookup?name=xxx (print results AND more importantly, the time)
+
 -----
 
 http://localhost:8080/Network/97979b96-9967-6696-95cb-6495706c66c9
