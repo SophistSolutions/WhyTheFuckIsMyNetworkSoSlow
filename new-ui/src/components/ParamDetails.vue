@@ -1,6 +1,6 @@
 <template>
 
- <p>The paremeter value that was passed to me is: {{ $route.params.id }}</p>
+ <p>Params passed so far:  {{ $route.params.values }}</p>
 
 </template>
 
