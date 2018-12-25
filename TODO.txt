@@ -1,7 +1,5 @@
 
 THEN - next todo I think - is /operations/ping?target tracenroute?target?? think out.
-	/operations/ping?target=address
-	/operations/traceroute?target=address
 	/operations/dns/calculate-score
 		do afirmative dns lookup (maybe useless?)
 		do guaranteed-to-fail dns lookup - uncacheable - and take time
