@@ -234,7 +234,12 @@ public:
                   RegularExpression (L"operations/dns/calculate-negative-lookup-time", RegularExpression::eECMAScript),
                   [=](Message* m) {
                       ExpectedMethod (m->GetRequestReference (), kOperations_);
-                      WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_DNS_CalculateNegativeLookupTime ()));
+                      optional<unsigned int>                      samples;
+                      Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
+                      if (auto rdr = args.Lookup (L"samples")) {
+                          samples = rdr->As<unsigned int> ();
+                      }
+                      WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_DNS_CalculateNegativeLookupTime (samples)));
                   }},
 
           }}
@@ -305,7 +310,7 @@ const WebServiceMethodDescription WebServer::Rep_::kOperations_{
         L"perform a wide variety of operations - mostly for debugging for now but may stay around.",
         L"/operations/ping?target=address; (address can be ipv4, ipv6 address, or dnsname)",
         L"/operations/traceroute?target=address[&reverse-dns-result=bool]+; (address can be ipv4, ipv6 address, or dnsname)",
-        L"/operations/dns/calculate-negative-lookup-time",
+        L"/operations/dns/calculate-negative-lookup-time[&samples=uint]?",
     },
 };
 const String_Constant WebServer::Rep_::kServerString_{L"Why-The-Fuck-Is-My-Network-So-Slow/1.0"};

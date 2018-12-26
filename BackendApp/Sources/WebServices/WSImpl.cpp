@@ -330,15 +330,25 @@ Operations::TraceRouteResults WSImpl::Operation_TraceRoute (const String& addres
     return results;
 }
 
-Time::Duration WSImpl::Operation_DNS_CalculateNegativeLookupTime () const
+Time::Duration WSImpl::Operation_DNS_CalculateNegativeLookupTime (optional<unsigned int> samples) const
 {
-    Debug::TraceContextBumper                      ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_DNS_CalculateNegativeLookupTime")};
+    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_DNS_CalculateNegativeLookupTime")};
+    constexpr unsigned int    kDefault_Samples = 7;
+    unsigned int              useSamples       = samples.value_or (kDefault_Samples);
+    if (useSamples == 0) {
+        Execution::Throw (Execution::StringException (L"samples must be > 0"));
+    }
     uniform_int_distribution<mt19937::result_type> allUInt16Distribution{0, numeric_limits<uint32_t>::max ()};
     static mt19937                                 sRng_{std::random_device () ()};
-    String                                         randomAddress = Characters::Format (L"www.xxxabc%d.com", allUInt16Distribution (sRng_));
-    Time::DurationSecondsType                      startAt       = Time::GetTickCount ();
-    IgnoreExceptionsForCall (IO::Network::DNS::Default ().GetHostAddress (randomAddress));
-    return Time::Duration{Time::GetTickCount () - startAt};
+    Sequence<Time::DurationSecondsType>            measurements;
+    for (unsigned int i = 0; i < useSamples; ++i) {
+        String                    randomAddress = Characters::Format (L"www.xxxabc%d.com", allUInt16Distribution (sRng_));
+        Time::DurationSecondsType startAt       = Time::GetTickCount ();
+        IgnoreExceptionsForCall (IO::Network::DNS::Default ().GetHostAddress (randomAddress));
+        measurements += Time::GetTickCount () - startAt;
+    }
+    Assert (measurements.Median ().has_value ());
+    return Time::Duration{*measurements.Median ()};
 }
 
 /*

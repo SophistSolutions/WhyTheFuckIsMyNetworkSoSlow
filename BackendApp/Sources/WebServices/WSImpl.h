@@ -36,7 +36,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
         virtual NetworkInterface              GetNetworkInterface (const String& id) const override;
         virtual double                        Operation_Ping (const String& address) const override;
         virtual Operations::TraceRouteResults Operation_TraceRoute (const String& address, optional<bool> reverseDNSResults) const override;
-        virtual Time::Duration                Operation_DNS_CalculateNegativeLookupTime () const override;
+        virtual Time::Duration                Operation_DNS_CalculateNegativeLookupTime (optional<unsigned int> samples) const override;
     };
 
     void TmpHackAssureStartedMonitoring ();
