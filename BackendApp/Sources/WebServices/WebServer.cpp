@@ -309,7 +309,7 @@ const WebServiceMethodDescription WebServer::Rep_::kOperations_{
     Sequence<String>{
         L"perform a wide variety of operations - mostly for debugging for now but may stay around.",
         L"/operations/ping?target=address; (address can be ipv4, ipv6 address, or dnsname)",
-        L"/operations/traceroute?target=address[&reverse-dns-result=bool]+; (address can be ipv4, ipv6 address, or dnsname)",
+        L"/operations/traceroute?target=address[&reverse-dns-result=bool]?; (address can be ipv4, ipv6 address, or dnsname)",
         L"/operations/dns/calculate-negative-lookup-time[&samples=uint]?",
     },
 };
