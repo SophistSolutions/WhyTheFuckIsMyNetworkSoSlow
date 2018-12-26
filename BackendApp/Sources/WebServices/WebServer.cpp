@@ -23,6 +23,8 @@
 #include "Stroika/Frameworks/WebService/Server/Basic.h"
 #include "Stroika/Frameworks/WebService/Server/VariantValue.h"
 
+#include "AppVersion.h"
+
 #include "WebServer.h"
 
 using namespace std;
@@ -70,7 +72,7 @@ public:
 private:
     static constexpr unsigned int kMaxConcurrentConnections_{5};
     static constexpr unsigned int kMaxGUIWebServerConcurrentConnections_{5};
-    static const String_Constant  kServerString_;
+    static const String kServerString_;
 
 private:
     shared_ptr<IWSAPI> fWSAPI_;
@@ -313,7 +315,7 @@ const WebServiceMethodDescription WebServer::Rep_::kOperations_{
         L"/operations/dns/calculate-negative-lookup-time[&samples=uint]?",
     },
 };
-const String_Constant WebServer::Rep_::kServerString_{L"Why-The-Fuck-Is-My-Network-So-Slow/1.0"};
+const String WebServer::Rep_::kServerString_ = String {L"Why-The-Fuck-Is-My-Network-So-Slow/"} + AppVersion::kVersion.AsMajorMinorString ();
 
 WebServer::WebServer (const shared_ptr<IWSAPI>& wsImpl)
     : fRep_ (make_shared<Rep_> (wsImpl))
