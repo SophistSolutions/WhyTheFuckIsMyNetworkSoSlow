@@ -278,6 +278,7 @@ DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof
 const ObjectVariantMapper Operations::kMapper = []() {
     ObjectVariantMapper mapper;
 
+    mapper.AddCommonType<optional<String>> ();
     mapper.AddCommonType<Sequence<double>> ();
     mapper.AddCommonType<Time::Duration> ();
     mapper.AddClass<Operations::TraceRouteResults::Hop> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
@@ -287,6 +288,10 @@ const ObjectVariantMapper Operations::kMapper = []() {
     mapper.AddCommonType<Sequence<Operations::TraceRouteResults::Hop>> ();
     mapper.AddClass<Operations::TraceRouteResults> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
         {L"hops", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Operations::TraceRouteResults, fHops)},
+    });
+    mapper.AddClass<Operations::DNSLookupResults> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+        {L"result", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Operations::DNSLookupResults, fResult)},
+        {L"lookup-time", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Operations::DNSLookupResults, fLookupTime)},
     });
 
     return mapper;

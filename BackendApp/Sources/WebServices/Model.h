@@ -160,6 +160,11 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
             Sequence<Hop> fHops;
         };
 
+        struct DNSLookupResults {
+            optional<String> fResult;     // just print first result - maybe missing if error occured on lookup
+            Time::Duration   fLookupTime; // often misleadingly quick due to caching
+        };
+
         extern const DataExchange::ObjectVariantMapper kMapper;
     }
 

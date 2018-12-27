@@ -74,6 +74,12 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
          *  curl  http://localhost:8080/operations/dns/calculate-negative-lookup-time
          */
         virtual Time::Duration Operation_DNS_CalculateNegativeLookupTime (optional<unsigned int> samples = {}) const = 0;
+
+    public:
+        /**
+         *  curl  http://localhost:8080/operations/dns/lookup
+         */
+        virtual Operations::DNSLookupResults Operation_DNS_Lookup (const String& name) const = 0;
     };
 
 }

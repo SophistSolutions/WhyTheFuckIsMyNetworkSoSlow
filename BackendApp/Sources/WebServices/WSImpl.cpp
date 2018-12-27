@@ -351,6 +351,16 @@ Time::Duration WSImpl::Operation_DNS_CalculateNegativeLookupTime (optional<unsig
     return Time::Duration{*measurements.Median ()};
 }
 
+Operations::DNSLookupResults WSImpl::Operation_DNS_Lookup (const String& name) const
+{
+    Debug::TraceContextBumper    ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_DNS_Lookup", L"name=%s", name.c_str ())};
+    Operations::DNSLookupResults result;
+    Time::DurationSecondsType    startAt = Time::GetTickCount ();
+    IgnoreExceptionsForCall (result.fResult = Characters::ToString (IO::Network::DNS::Default ().GetHostAddress (name)));
+    result.fLookupTime = Time::Duration{Time::GetTickCount () - startAt};
+    return result;
+}
+
 /*
  ********************************************************************************
  **************** WebServices::TmpHackAssureStartedMonitoring *******************
