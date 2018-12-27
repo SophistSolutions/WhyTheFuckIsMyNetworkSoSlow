@@ -1,21 +1,18 @@
 <template>
   <div class="network">
+    <h1>Networks</h1>
   <div v-for="network in networks" :key="network.id">
-    <img alt="Vue logo" src="../assets/logo.png">
-    <h1>Network ID : {{ network.id }}</h1>
+    <h3>ID: {{ network.id }}</h3>
+    <h3>CIDR: {{ network.networkAddresses }}</h3>
   </div>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import { INetwork } from '@/models/network.ts';
+import { INetwork } from '@/models/INetwork.ts';
 
 import { fetchNetworks } from '@/proxy/api.ts';
-//import HelloWorld from '@/components/HelloWorld.vue'; // @ is an alias to /src
-
-let test : INetwork = {id : "192.168.244.0/24"}
-
 
 
 @Component({
@@ -25,9 +22,9 @@ export default class Network extends Vue {
     networks: INetwork[] = [];
 
     async created() {
-      debugger
+      //debugger
       // TODO break out network from promise
-      
+
       this.networks = await fetchNetworks();
 
     }
