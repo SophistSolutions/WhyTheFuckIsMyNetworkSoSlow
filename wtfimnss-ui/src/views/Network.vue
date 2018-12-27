@@ -10,9 +10,9 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import { INetwork } from '@/models/INetwork.ts';
+import { INetwork } from '@/models/Network/INetwork';
 
-import { fetchNetworks } from '@/proxy/api.ts';
+import { fetchNetworks } from '@/proxy/API';
 
 
 @Component({
@@ -22,11 +22,7 @@ export default class Network extends Vue {
     networks: INetwork[] = [];
 
     async created() {
-      //debugger
-      // TODO break out network from promise
-
       this.networks = await fetchNetworks();
-
     }
 
     // created(){
