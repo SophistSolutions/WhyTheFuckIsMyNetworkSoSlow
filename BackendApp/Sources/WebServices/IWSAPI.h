@@ -80,6 +80,12 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
          *  curl  http://localhost:8080/operations/dns/lookup
          */
         virtual Operations::DNSLookupResults Operation_DNS_Lookup (const String& name) const = 0;
+
+    public:
+        /**
+         *  curl  http://localhost:8080/operations/dns/calculate-score
+         */
+        virtual double Operation_DNS_CalculateScore () const = 0;
     };
 
 }

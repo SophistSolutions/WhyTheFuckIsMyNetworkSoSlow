@@ -1,13 +1,4 @@
 
-THEN - next todo I think - is /operations/ping?target tracenroute?target?? think out.
-	/operations/dns/calculate-score
-		do afirmative dns lookup (maybe useless?)
-		do guaranteed-to-fail dns lookup - uncacheable - and take time
-		MAX of 5 seconds - and scale to zero-to-1 (score of one is fast so 1- for score); score of 0..1.0
-	/operations/dns/lookup?name=xxx (print results AND more importantly, the time)
-
-
-	---
 
 	DEFAULT PORT = config file and command-line args override and config-file-location override???
 

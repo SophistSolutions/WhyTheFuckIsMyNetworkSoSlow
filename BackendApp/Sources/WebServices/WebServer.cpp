@@ -257,6 +257,12 @@ public:
                       }
                       WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_DNS_Lookup (name)));
                   }},
+              Route{
+                  RegularExpression (L"operations/dns/calculate-score", RegularExpression::eECMAScript),
+                  [=](Message* m) {
+                      ExpectedMethod (m->GetRequestReference (), kOperations_);
+                      WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_DNS_CalculateScore ()));
+                  }},
 
           }}
         , fWSConnectionMgr_{SocketAddresses (InternetAddresses_Any (), 8080), fWSRouter_, ConnectionManager::Options{kMaxConcurrentConnections_, Socket::BindFlags{true}, kServerString_}} // listen and dispatch while this object exists
@@ -322,6 +328,7 @@ const WebServiceMethodDescription WebServer::Rep_::kOperations_{
         L"curl http://localhost:8080/operations/traceroute?target=www.sophists.com",
         L"curl http://localhost:8080/operations/dns/calculate-negative-lookup-time",
         L"curl http://localhost:8080/operations/dns/lookup?name=www.youtube.com",
+        L"curl http://localhost:8080/operations/dns/calculate-score",
     },
     Sequence<String>{
         L"perform a wide variety of operations - mostly for debugging for now but may stay around.",
@@ -329,6 +336,7 @@ const WebServiceMethodDescription WebServer::Rep_::kOperations_{
         L"/operations/traceroute?target=address[&reverse-dns-result=bool]?; (address can be ipv4, ipv6 address, or dnsname)",
         L"/operations/dns/calculate-negative-lookup-time[&samples=uint]?",
         L"/operations/dns/lookup[&name=string]",
+        L"/operations/dns/calculate-score; returns number 0 (worst) to 1.0 (best)",
     },
 };
 const String WebServer::Rep_::kServerString_ = String{L"Why-The-Fuck-Is-My-Network-So-Slow/"} + AppVersion::kVersion.AsMajorMinorString ();

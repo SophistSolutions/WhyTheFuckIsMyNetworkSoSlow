@@ -361,6 +361,28 @@ Operations::DNSLookupResults WSImpl::Operation_DNS_Lookup (const String& name) c
     return result;
 }
 
+double WSImpl::Operation_DNS_CalculateScore () const
+{
+    // decent estimate of score is (weighted) sum of these numbers - capped at some maximum, and then 1-log of that number (log to skew so mostly sensative to small differences around small numbers and big is big, and 1- to get 1 better score than zero)
+    double           totalWeightedTime{};
+    constexpr double kNegLookupWeight = 2.5;
+    totalWeightedTime += kNegLookupWeight * Operation_DNS_CalculateNegativeLookupTime ({}).As<double> ();
+    constexpr double kPosLookupWeight = 25; // much higher than kNegLookupWeight because this is the time for cached entries lookup which will naturally be much smaller
+    totalWeightedTime += kPosLookupWeight * (0 + Operation_DNS_Lookup (L"www.google.com").fLookupTime.As<double> () + Operation_DNS_Lookup (L"www.amazon.com").fLookupTime.As<double> () + Operation_DNS_Lookup (L"www.youtube.com").fLookupTime.As<double> ());
+    Assert (totalWeightedTime >= 0);
+    constexpr double kScoreCutOff_               = 5.0;
+    constexpr double kShiftAndScaleVerticallyBy_ = 10;
+    double           score{(kShiftAndScaleVerticallyBy_ - log (totalWeightedTime / (kScoreCutOff_ / 10))) / kShiftAndScaleVerticallyBy_};
+
+    //DbgTrace (L"totalWeightedTime=%f", totalWeightedTime);
+    //DbgTrace (L"log=%f", log (totalWeightedTime / (kScoreCutOff_ / 10)));
+    //DbgTrace (L"score=%f", score);
+
+    score = Math::PinInRange<double> (score, 0, 1);
+    Ensure (0 <= score and score <= 1.0);
+    return score;
+}
+
 /*
  ********************************************************************************
  **************** WebServices::TmpHackAssureStartedMonitoring *******************
