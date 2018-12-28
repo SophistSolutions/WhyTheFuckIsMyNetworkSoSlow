@@ -12,6 +12,7 @@ import { Component, Vue } from 'vue-property-decorator';
 import { INetwork } from '@/models/Network/INetwork';
 
 import { fetchNetworks } from '@/proxy/API';
+import * as Store from '../store';
 
 import Network from '@/views/Network.vue';
 
@@ -25,6 +26,7 @@ import Network from '@/views/Network.vue';
 export default class Networks extends Vue {
     private networks: INetwork[] = [];
 
+    // Trying to replace this with calls to the store instead of directly calling API
     private async created() {
       this.networks = await fetchNetworks();
     }
