@@ -9,6 +9,8 @@ import { fetchNetworks } from '@/proxy/API';
 
 Vue.use(Vuex);
 
+const debug = process.env.NODE_ENV !== 'production';
+
 // TODO make this the root store - have other stores be props of state. Seperate by logical groups
 export default new Vuex.Store({
   state: {
@@ -20,11 +22,9 @@ export default new Vuex.Store({
     setAvailableNetworks(state, networks: INetwork[]) {
       Vue.set(state, mutations.ROOT_SET_AVAILABLE_NETWORKS, networks);
       // state[mutations.ROOT_SET_AVAILABLE_NETWORK] = networks;
-      // state.availableNetworks = networks;
     },
     setSelectedNetwork(state, network: INetwork) {
       Vue.set(state, mutations.ROOT_SET_SELECTED_NETWORK, network);
-      // state.selectedNetwork = network;
     },
   },
   actions: {
@@ -38,4 +38,5 @@ export default new Vuex.Store({
       return state.availableNetworks;
     },
   },
+  strict: debug,
 });

@@ -12,31 +12,22 @@ import { Component, Vue } from 'vue-property-decorator';
 import { INetwork } from '@/models/Network/INetwork';
 
 import { fetchNetworks } from '@/proxy/API';
-import * as Store from '../store';
-
-import Network from '@/views/Network.vue';
-
 
 @Component({
     name : 'Networks',
     components : {
-      Network,
+      Network: () => import('@/views/Network.vue'),
     },
 })
 export default class Networks extends Vue {
-    private networks: INetwork[] = [];
-
+  // TODO fix so networks doesnt call fetch everytime restarted
     // Trying to replace this with calls to the store instead of directly calling API
-    private async created() {
-      this.networks = await fetchNetworks();
+    private created() {
+      this.$store.dispatch('fetchAvailableNetworks');
     }
 
-    // created(){
-
-    //   fetchNetworks()
-    //     .then((networks: INetwork[]) => {
-    //       this.networks = networks;
-    //     })
-    // }
+    private get networks(): INetwork[] {
+      return this.$store.getters.getAvailableNetworks;
+    }
 }
 </script>
