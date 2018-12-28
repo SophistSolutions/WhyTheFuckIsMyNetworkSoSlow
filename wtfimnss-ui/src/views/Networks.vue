@@ -13,19 +13,19 @@ import { INetwork } from '@/models/Network/INetwork';
 
 import { fetchNetworks } from '@/proxy/API';
 
-import Network from '@/views/Network.vue'
+import Network from '@/views/Network.vue';
 
 
 @Component({
-    name : "Networks",
+    name : 'Networks',
     components : {
-      'Network' : Network
-    }
+      Network,
+    },
 })
 export default class Networks extends Vue {
-    networks: INetwork[] = [];
+    private networks: INetwork[] = [];
 
-    async created() {
+    private async created() {
       this.networks = await fetchNetworks();
     }
 

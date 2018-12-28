@@ -10,10 +10,10 @@ import { Component, Vue } from 'vue-property-decorator';
 import { INetwork } from '@/models/Network/INetwork';
 
 @Component({
-    name : "Network",
+    name : 'Network',
     props : {
       network: Object as () => INetwork,
-    }
+    },
 })
 export default class Network extends Vue {
 
