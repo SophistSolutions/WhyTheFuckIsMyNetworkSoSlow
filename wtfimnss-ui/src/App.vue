@@ -1,10 +1,15 @@
 <template>
   <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-      <router-link to="/networks">Networks</router-link>
-    </div>
+    <v-toolbar>
+      <v-toolbar-title>WhyTheFuckIsMyNetworkSoSlow</v-toolbar-title>
+      <v-spacer></v-spacer>
+      <v-toolbar-items class="hidden-sm-and-down">
+        <v-btn flat to="/">Home</v-btn>
+        <v-btn flat to="/networks">Networks</v-btn>
+        <v-btn flat to="/about">About</v-btn>
+      </v-toolbar-items>
+    </v-toolbar>
+    
     <router-view/>
   </div>
 </template>

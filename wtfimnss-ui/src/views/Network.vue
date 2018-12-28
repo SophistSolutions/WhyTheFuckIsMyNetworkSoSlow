@@ -1,7 +1,14 @@
 <template>
   <div class="network">
-    <p>ID: {{ network.id }}</p>
-    <p>CIDR: {{ network.networkAddresses }}</p>
+    <v-card dark>
+      <v-card-title>
+        {{ network.id }}
+      </v-card-title>
+
+      <v-card-text>
+        <p>CIDR: {{ network.networkAddresses }}</p>
+      </v-card-text>
+    </v-card>
   </div>
 </template>
 
