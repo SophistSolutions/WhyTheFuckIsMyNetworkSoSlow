@@ -1,7 +1,9 @@
 import { INetwork } from '@/models/Network/INetwork';
 
+import { API_ROOT, API_NETWORKS_PATH } from '@/config';
+
 export async function fetchNetworks(): Promise<INetwork[]> {
-    return fetch('http://192.168.244.187:8080/networks?recurse=true')
+    return fetch(API_ROOT + API_NETWORKS_PATH)
     .then((response) => response.json())
     .then((data) => {
         return data;
