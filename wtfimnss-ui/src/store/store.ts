@@ -3,7 +3,7 @@ import Vuex from 'vuex';
 
 import { INetwork } from '@/models/Network/INetwork';
 
-import * as mutations from './store/mutations';
+import * as mutations from './mutations';
 
 import { fetchNetworks } from '@/proxy/API';
 
@@ -15,7 +15,6 @@ const debug = process.env.NODE_ENV !== 'production';
 export default new Vuex.Store({
   state: {
     availableNetworks: [] as INetwork[],
-    // TODO make this an ID - better to denormalize data instead of maintaining 2 seperate copies of same data
     selectedNetworkId: {} as string,
   },
   mutations: {
@@ -34,7 +33,6 @@ export default new Vuex.Store({
     setSelectedNetwork({commit}, networkId: string) {
       commit('setSelectedNetwork', networkId);
     },
-// make direct api call from inside actions
   },
   getters: {
     getAvailableNetworks: (state) => {

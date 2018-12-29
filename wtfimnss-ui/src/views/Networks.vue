@@ -1,6 +1,5 @@
 <template>
   <div class="networks">
-    <h1>Networks</h1>
   <div v-for="network in networks" :key="network.id">
     <Network name=Network  :network=network></Network>
   </div>

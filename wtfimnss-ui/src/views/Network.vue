@@ -14,7 +14,7 @@
         <p>PublicIP: {{ network.externalAddresses }}</p>
         <p>Provider: {{ network.internetServiceProvider }}</p>
         <div @click="setSelectedNetwork(network.id)">
-          <v-btn small color="primary">Select</v-btn>
+          <v-btn small color="primary">Select As Primary Network</v-btn>
         </div>
       </v-card-text>
     </v-card>
@@ -42,3 +42,9 @@ export default class Network extends Vue {
     }
 }
 </script>
+
+<style scoped lang="scss">
+.network {
+  padding-bottom: 10px;
+}
+</style>
