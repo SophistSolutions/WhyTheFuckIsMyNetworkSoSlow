@@ -16,26 +16,35 @@ export default new Vuex.Store({
   state: {
     availableNetworks: [] as INetwork[],
     // TODO make this an ID - better to denormalize data instead of maintaining 2 seperate copies of same data
-    selectedNetwork: {} as INetwork,
+    selectedNetworkId: {} as string,
   },
   mutations: {
     setAvailableNetworks(state, networks: INetwork[]) {
       Vue.set(state, mutations.ROOT_SET_AVAILABLE_NETWORKS, networks);
       // state[mutations.ROOT_SET_AVAILABLE_NETWORK] = networks;
     },
-    setSelectedNetwork(state, network: INetwork) {
-      Vue.set(state, mutations.ROOT_SET_SELECTED_NETWORK, network);
+    setSelectedNetwork(state, networkId: string) {
+      Vue.set(state, mutations.ROOT_SET_SELECTED_NETWORK_ID, networkId);
     },
   },
   actions: {
     async fetchAvailableNetworks({commit}) {
       commit('setAvailableNetworks', await fetchNetworks());
     },
+    setSelectedNetwork({commit}, networkId: string) {
+      commit('setSelectedNetwork', networkId);
+    },
 // make direct api call from inside actions
   },
   getters: {
     getAvailableNetworks: (state) => {
       return state.availableNetworks;
+    },
+    getSelectedNetworkId: (state) => {
+      return state.selectedNetworkId;
+    },
+    getSelectedNetworkObject: (state) => {
+      return state.availableNetworks.find((network) => network.id === state.selectedNetworkId);
     },
   },
   strict: debug,
