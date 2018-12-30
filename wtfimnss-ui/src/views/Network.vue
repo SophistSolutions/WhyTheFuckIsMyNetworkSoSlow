@@ -23,7 +23,7 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import { INetwork } from '@/models/Network/INetwork';
+import { INetwork } from '@/models/network/INetwork';
 
 @Component({
     name : 'Network',

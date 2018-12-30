@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
 
-import { INetwork } from '@/models/Network/INetwork';
+import { INetwork } from '@/models/network/INetwork';
 
 import * as mutations from './mutations';
 

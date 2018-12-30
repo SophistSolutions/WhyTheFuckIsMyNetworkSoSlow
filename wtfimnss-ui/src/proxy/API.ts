@@ -1,4 +1,4 @@
-import { INetwork } from '@/models/Network/INetwork';
+import { INetwork } from '@/models/network/INetwork';
 
 import { API_ROOT, API_NETWORKS_PATH } from '@/config';
 

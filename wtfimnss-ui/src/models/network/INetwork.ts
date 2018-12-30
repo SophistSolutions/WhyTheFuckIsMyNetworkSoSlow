@@ -1,5 +1,5 @@
-import { IGeographicLocation } from '@/models/Network/IGeographicLocation';
-import { IInternetServiceProvider } from '@/models/Network/IInternetServiceProvider';
+import { IGeographicLocation } from '@/models/network/IGeographicLocation';
+import { IInternetServiceProvider } from '@/models/network/IInternetServiceProvider';
 
 export interface INetwork {
     id: string;
