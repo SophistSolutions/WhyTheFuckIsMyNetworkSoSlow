@@ -13,7 +13,7 @@ include $(StroikaRoot)/Library/Projects/Unix/SharedBuildRules-Default.mk
 include $(StroikaRoot)/Library/Projects/Unix/SharedMakeVariables-Default.mk
 
 
-Includes				+=	-I.
+INCLUDES_PATH_COMPILER_DIRECTIVES				+=	-I$(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow/
 
 vpath %cpp $(SrcDir)
 

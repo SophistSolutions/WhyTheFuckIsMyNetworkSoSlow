@@ -283,6 +283,106 @@ double WSImpl::Operation_Ping (const String& address) const
     return 1;
 }
 
+Operations::TraceRouteResults WSImpl::Operation_TraceRoute (const String& address, optional<bool> reverseDNSResults) const
+{
+    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_TraceRoute (%s)", Characters::ToString (address).c_str ())};
+
+    using namespace Stroika::Foundation::IO::Network;
+    using namespace Stroika::Foundation::IO::Network::InternetProtocol;
+    using namespace Stroika::Foundation::Time;
+    using namespace Stroika::Frameworks;
+    using namespace Stroika::Frameworks::NetworkMonitor;
+
+    bool revDNS = reverseDNSResults.value_or (true);
+
+    size_t                packetSize  = Ping::Options::kDefaultPayloadSize + sizeof (ICMP::V4::PacketHeader); // historically, the app ping has measured this including ICMP packet header, but not ip packet header size
+    unsigned int          maxHops     = Ping::Options::kDefaultMaxHops;
+    unsigned int          sampleCount = 3;
+    static const Duration kInterSampleTime_{"PT.1S"};
+
+    Traceroute::Options options{};
+    options.fPacketPayloadSize = Ping::Options::kAllowedICMPPayloadSizeRange.Pin (packetSize - sizeof (ICMP::V4::PacketHeader));
+    options.fMaxHops           = maxHops;
+
+    options.fTimeout = Duration{5.0};
+    //   options.fSampleInfo                   = Ping::Options::SampleInfo{kInterSampleTime_, sampleCount};
+
+    // write GetHostAddress () funciton in DNS that throws if not at least one
+
+    Model::Operations::TraceRouteResults results;
+
+    Sequence<Traceroute::Hop> hops = Traceroute::Run (DNS::Default ().GetHostAddress (address), options);
+    unsigned int              hopIdx{1};
+    for (Traceroute::Hop h : hops) {
+        String hopName = [=]() {
+            String addrStr = h.fAddress.As<String> ();
+            if (revDNS) {
+                if (auto rdnsName = DNS::Default ().QuietReverseLookup (h.fAddress)) {
+                    return *rdnsName;
+                }
+            }
+            return addrStr;
+        }();
+        results.fHops += Operations::TraceRouteResults::Hop{h.fTime, hopName};
+        // cout << hopIdx++ << "\t" << h.fTime.PrettyPrint ().AsNarrowSDKString () << "\t" << hopName.AsNarrowSDKString () << endl;
+    }
+
+    return results;
+}
+
+Time::Duration WSImpl::Operation_DNS_CalculateNegativeLookupTime (optional<unsigned int> samples) const
+{
+    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_DNS_CalculateNegativeLookupTime")};
+    constexpr unsigned int    kDefault_Samples = 7;
+    unsigned int              useSamples       = samples.value_or (kDefault_Samples);
+    if (useSamples == 0) {
+        Execution::Throw (Execution::StringException (L"samples must be > 0"));
+    }
+    uniform_int_distribution<mt19937::result_type> allUInt16Distribution{0, numeric_limits<uint32_t>::max ()};
+    static mt19937                                 sRng_{std::random_device () ()};
+    Sequence<Time::DurationSecondsType>            measurements;
+    for (unsigned int i = 0; i < useSamples; ++i) {
+        String                    randomAddress = Characters::Format (L"www.xxxabc%d.com", allUInt16Distribution (sRng_));
+        Time::DurationSecondsType startAt       = Time::GetTickCount ();
+        IgnoreExceptionsForCall (IO::Network::DNS::Default ().GetHostAddress (randomAddress));
+        measurements += Time::GetTickCount () - startAt;
+    }
+    Assert (measurements.Median ().has_value ());
+    return Time::Duration{*measurements.Median ()};
+}
+
+Operations::DNSLookupResults WSImpl::Operation_DNS_Lookup (const String& name) const
+{
+    Debug::TraceContextBumper    ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_DNS_Lookup", L"name=%s", name.c_str ())};
+    Operations::DNSLookupResults result;
+    Time::DurationSecondsType    startAt = Time::GetTickCount ();
+    IgnoreExceptionsForCall (result.fResult = Characters::ToString (IO::Network::DNS::Default ().GetHostAddress (name)));
+    result.fLookupTime = Time::Duration{Time::GetTickCount () - startAt};
+    return result;
+}
+
+double WSImpl::Operation_DNS_CalculateScore () const
+{
+    // decent estimate of score is (weighted) sum of these numbers - capped at some maximum, and then 1-log of that number (log to skew so mostly sensative to small differences around small numbers and big is big, and 1- to get 1 better score than zero)
+    double           totalWeightedTime{};
+    constexpr double kNegLookupWeight = 2.5;
+    totalWeightedTime += kNegLookupWeight * Operation_DNS_CalculateNegativeLookupTime ({}).As<double> ();
+    constexpr double kPosLookupWeight = 25; // much higher than kNegLookupWeight because this is the time for cached entries lookup which will naturally be much smaller
+    totalWeightedTime += kPosLookupWeight * (0 + Operation_DNS_Lookup (L"www.google.com").fLookupTime.As<double> () + Operation_DNS_Lookup (L"www.amazon.com").fLookupTime.As<double> () + Operation_DNS_Lookup (L"www.youtube.com").fLookupTime.As<double> ());
+    Assert (totalWeightedTime >= 0);
+    constexpr double kScoreCutOff_               = 5.0;
+    constexpr double kShiftAndScaleVerticallyBy_ = 10;
+    double           score{(kShiftAndScaleVerticallyBy_ - log (totalWeightedTime / (kScoreCutOff_ / 10))) / kShiftAndScaleVerticallyBy_};
+
+    //DbgTrace (L"totalWeightedTime=%f", totalWeightedTime);
+    //DbgTrace (L"log=%f", log (totalWeightedTime / (kScoreCutOff_ / 10)));
+    //DbgTrace (L"score=%f", score);
+
+    score = Math::PinInRange<double> (score, 0, 1);
+    Ensure (0 <= score and score <= 1.0);
+    return score;
+}
+
 /*
  ********************************************************************************
  **************** WebServices::TmpHackAssureStartedMonitoring *******************

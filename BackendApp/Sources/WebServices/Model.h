@@ -12,6 +12,7 @@
 #include "Stroika/Foundation/IO/Network/CIDR.h"
 #include "Stroika/Foundation/IO/Network/Interface.h"
 #include "Stroika/Foundation/IO/Network/InternetAddress.h"
+#include "Stroika/Foundation/Time/Duration.h"
 
 #include "../Common/GeoLocation.h"
 #include "../Common/InternetServiceProvider.h"
@@ -148,6 +149,25 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
         static const DataExchange::ObjectVariantMapper kMapper;
     };
+
+    namespace Operations {
+
+        struct TraceRouteResults {
+            struct Hop {
+                Time::Duration fTime;    // time to that hop
+                String         fAddress; // address of hop - can be InternetAddress or DNS address depending
+            };
+            Sequence<Hop> fHops;
+        };
+
+        struct DNSLookupResults {
+            optional<String> fResult;     // just print first result - maybe missing if error occured on lookup
+            Time::Duration   fLookupTime; // often misleadingly quick due to caching
+        };
+
+        extern const DataExchange::ObjectVariantMapper kMapper;
+    }
+
 }
 
 /*

@@ -23,6 +23,8 @@
 #include "Stroika/Frameworks/WebService/Server/Basic.h"
 #include "Stroika/Frameworks/WebService/Server/VariantValue.h"
 
+#include "AppVersion.h"
+
 #include "WebServer.h"
 
 using namespace std;
@@ -70,7 +72,7 @@ public:
 private:
     static constexpr unsigned int kMaxConcurrentConnections_{5};
     static constexpr unsigned int kMaxGUIWebServerConcurrentConnections_{5};
-    static const String_Constant  kServerString_;
+    static const String           kServerString_;
 
 private:
     shared_ptr<IWSAPI> fWSAPI_;
@@ -208,11 +210,58 @@ public:
                       Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
                       if (auto address = args.Lookup (L"target")) {
                           ExpectedMethod (m->GetRequestReference (), kOperations_);
-                          WriteResponse (m->PeekResponse (), kOperations_, Network::kMapper.FromObject (fWSAPI_->Operation_Ping (address->As<String> ())));
+                          WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_Ping (address->As<String> ())));
                       }
                       else {
                           Execution::Throw (Execution::StringException (L"missing target argument"));
                       }
+                  }},
+              Route{
+                  RegularExpression (L"operations/traceroute", RegularExpression::eECMAScript),
+                  [=](Message* m) {
+                      Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
+                      optional<bool>                              reverseDNSResult;
+                      if (auto rdr = args.Lookup (L"reverse-dns-result")) {
+                          reverseDNSResult = rdr->As<bool> ();
+                      }
+                      if (auto address = args.Lookup (L"target")) {
+                          ExpectedMethod (m->GetRequestReference (), kOperations_);
+                          WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_TraceRoute (address->As<String> (), reverseDNSResult)));
+                      }
+                      else {
+                          Execution::Throw (Execution::StringException (L"missing target argument"));
+                      }
+                  }},
+              Route{
+                  RegularExpression (L"operations/dns/calculate-negative-lookup-time", RegularExpression::eECMAScript),
+                  [=](Message* m) {
+                      ExpectedMethod (m->GetRequestReference (), kOperations_);
+                      optional<unsigned int>                      samples;
+                      Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
+                      if (auto rdr = args.Lookup (L"samples")) {
+                          samples = rdr->As<unsigned int> ();
+                      }
+                      WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_DNS_CalculateNegativeLookupTime (samples)));
+                  }},
+              Route{
+                  RegularExpression (L"operations/dns/lookup", RegularExpression::eECMAScript),
+                  [=](Message* m) {
+                      ExpectedMethod (m->GetRequestReference (), kOperations_);
+                      String                                      name;
+                      Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
+                      if (auto rdr = args.Lookup (L"name")) {
+                          name = rdr->As<String> ();
+                      }
+                      else {
+                          Execution::Throw (Execution::StringException (L"missing name argument"));
+                      }
+                      WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_DNS_Lookup (name)));
+                  }},
+              Route{
+                  RegularExpression (L"operations/dns/calculate-score", RegularExpression::eECMAScript),
+                  [=](Message* m) {
+                      ExpectedMethod (m->GetRequestReference (), kOperations_);
+                      WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_DNS_CalculateScore ()));
                   }},
 
           }}
@@ -274,12 +323,23 @@ const WebServiceMethodDescription WebServer::Rep_::kOperations_{
     Set<String>{String_Constant{IO::Network::HTTP::Methods::kGet}},
     DataExchange::PredefinedInternetMediaType::kJSON,
     {},
-    Sequence<String>{L"curl http://localhost:8080/operations/ping?target=address"},
+    Sequence<String>{
+        L"curl http://localhost:8080/operations/ping?target=www.google.com",
+        L"curl http://localhost:8080/operations/traceroute?target=www.sophists.com",
+        L"curl http://localhost:8080/operations/dns/calculate-negative-lookup-time",
+        L"curl http://localhost:8080/operations/dns/lookup?name=www.youtube.com",
+        L"curl http://localhost:8080/operations/dns/calculate-score",
+    },
     Sequence<String>{
         L"perform a wide variety of operations - mostly for debugging for now but may stay around.",
+        L"/operations/ping?target=address; (address can be ipv4, ipv6 address, or dnsname)",
+        L"/operations/traceroute?target=address[&reverse-dns-result=bool]?; (address can be ipv4, ipv6 address, or dnsname)",
+        L"/operations/dns/calculate-negative-lookup-time[&samples=uint]?",
+        L"/operations/dns/lookup[&name=string]",
+        L"/operations/dns/calculate-score; returns number 0 (worst) to 1.0 (best)",
     },
 };
-const String_Constant WebServer::Rep_::kServerString_{L"Why-The-Fuck-Is-My-Network-So-Slow/1.0"};
+const String WebServer::Rep_::kServerString_ = String{L"Why-The-Fuck-Is-My-Network-So-Slow/"} + AppVersion::kVersion.AsMajorMinorString ();
 
 WebServer::WebServer (const shared_ptr<IWSAPI>& wsImpl)
     : fRep_ (make_shared<Rep_> (wsImpl))

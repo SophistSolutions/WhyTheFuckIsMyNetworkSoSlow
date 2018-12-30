@@ -90,8 +90,8 @@ const ObjectVariantMapper Network::kMapper = []() {
             float lon;
         };
         mapper.AddClass<laglon_> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-            {L"Latitude", Stroika_Foundation_DataExchange_StructFieldMetaInfo (laglon_, lat)},
-            {L"Longitude", Stroika_Foundation_DataExchange_StructFieldMetaInfo (laglon_, lon)},
+            {L"latitude", Stroika_Foundation_DataExchange_StructFieldMetaInfo (laglon_, lat)},
+            {L"longitude", Stroika_Foundation_DataExchange_StructFieldMetaInfo (laglon_, lon)},
         });
         mapper.Add<tuple<float, float>> (
             [](const ObjectVariantMapper& mapper, const tuple<float, float>* obj) -> VariantValue { return mapper.FromObject (laglon_{get<0> (*obj), get<1> (*obj)}); },
@@ -104,29 +104,29 @@ const ObjectVariantMapper Network::kMapper = []() {
     mapper.AddCommonType<optional<tuple<float, float>>> ();
 
     mapper.AddClass<Common::InternetServiceProvider> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-        {L"Name", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Common::InternetServiceProvider, name), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"name", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Common::InternetServiceProvider, name), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
     mapper.AddCommonType<optional<Common::InternetServiceProvider>> ();
 
     mapper.AddClass<Common::GEOLocationInformation> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-        {L"Country-Code", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Common::GEOLocationInformation, fCountryCode), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"City", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Common::GEOLocationInformation, fCity), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"Region-Code", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Common::GEOLocationInformation, fRegionCode), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"Postal-Code", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Common::GEOLocationInformation, fPostalCode), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"Coordinates", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Common::GEOLocationInformation, fLatitudeAndLongitude), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"countryCode", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Common::GEOLocationInformation, fCountryCode), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"city", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Common::GEOLocationInformation, fCity), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"regionCode", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Common::GEOLocationInformation, fRegionCode), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"postalCode", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Common::GEOLocationInformation, fPostalCode), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"coordinates", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Common::GEOLocationInformation, fLatitudeAndLongitude), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
     mapper.AddCommonType<optional<Common::GEOLocationInformation>> ();
 
     mapper.AddClass<Network> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-        {L"Friendly-Name", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fFriendlyName), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"Network-Addresses", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fNetworkAddresses)},
-        {L"Attached-Interfaces", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fAttachedInterfaces)},
-        {L"Gateways", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fGateways)},
-        {L"DNS-Servers", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fDNSServers)},
-        {L"External-Addresses", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fExternalAddresses), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"Geographic-Location", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fGEOLocInformation), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"Internet-Service-Provider", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fInternetServiceProvider), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"ID", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fGUID)},
+        {L"friendlyName", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fFriendlyName), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"networkAddresses", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fNetworkAddresses)},
+        {L"attachedInterfaces", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fAttachedInterfaces)},
+        {L"gateways", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fGateways)},
+        {L"DNSServers", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fDNSServers)},
+        {L"externalAddresses", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fExternalAddresses), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"geographicLocation", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fGEOLocInformation), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"internetServiceProvider", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fInternetServiceProvider), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"id", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fGUID)},
     });
     mapper.AddCommonType<Sequence<Network>> ();
 
@@ -180,17 +180,17 @@ const ObjectVariantMapper NetworkInterface::kMapper = []() {
 
     mapper.AddClass<NetworkInterface::WirelessInfo> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
         {L"SSID", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface::WirelessInfo, fSSID)},
-        {L"State", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface::WirelessInfo, fState), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"Connection-Mode", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface::WirelessInfo, fConnectionMode), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"Profile-Name", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface::WirelessInfo, fProfileName), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"BSS-Type", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface::WirelessInfo, fBSSType), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"MAC-Address", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface::WirelessInfo, fMACAddress), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"Physical-Connection-Type", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface::WirelessInfo, fPhysicalConnectionType), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"Signal-Quality", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface::WirelessInfo, fSignalQuality), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"Security-Enabled", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface::WirelessInfo, fSecurityEnabled), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"802.1X-Enabled", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface::WirelessInfo, f8021XEnabled), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"Auth-Algorithm", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface::WirelessInfo, fAuthAlgorithm), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"Cipher", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface::WirelessInfo, fCipher), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"state", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface::WirelessInfo, fState), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"connectionMode", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface::WirelessInfo, fConnectionMode), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"profileName", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface::WirelessInfo, fProfileName), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"BSSType", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface::WirelessInfo, fBSSType), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"MACAddress", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface::WirelessInfo, fMACAddress), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"physicalConnectionType", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface::WirelessInfo, fPhysicalConnectionType), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"signalQuality", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface::WirelessInfo, fSignalQuality), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"securityEnabled", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface::WirelessInfo, fSecurityEnabled), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"802.1XEnabled", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface::WirelessInfo, f8021XEnabled), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"authAlgorithm", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface::WirelessInfo, fAuthAlgorithm), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"cipher", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface::WirelessInfo, fCipher), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
     mapper.AddCommonType<optional<NetworkInterface::WirelessInfo>> ();
     mapper.AddClass<NetworkInterface::Binding> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
@@ -202,20 +202,20 @@ const ObjectVariantMapper NetworkInterface::kMapper = []() {
     mapper.AddCommonType<Set<NetworkInterface::Status>> ();
     mapper.AddCommonType<optional<Set<NetworkInterface::Status>>> ();
     mapper.AddClass<NetworkInterface> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-        {L"Internal-Interface-ID", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fInternalInterfaceID)},
-        {L"ID", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fGUID)},
-        {L"Friendly-Name", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fFriendlyName)},
-        {L"Description", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fDescription), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"internalInterfaceID", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fInternalInterfaceID)},
+        {L"id", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fGUID)},
+        {L"friendlyName", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fFriendlyName)},
+        {L"description", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fDescription), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         // fNetworkGUID INTENTIONALLY OMITTED because doesn't correspond to our network ID, misleading, and unhelpful
-        {L"Type", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fType)},
-        {L"Hardware-Address", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fHardwareAddress)},
-        {L"Transmit-Speed-Baud", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fTransmitSpeedBaud), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"Receive-Link-Speed-Baud", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fReceiveLinkSpeedBaud), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"Bindings", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fBindings)},
-        {L"Gateways", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fGateways), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"DNS-Servers", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fDNSServers), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"Wireless-Information", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fWirelessInfo), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"Status", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fStatus)},
+        {L"type", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fType)},
+        {L"hardwareAddress", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fHardwareAddress)},
+        {L"transmitSpeedBaud", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fTransmitSpeedBaud), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"receiveLinkSpeedBaud", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fReceiveLinkSpeedBaud), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"bindings", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fBindings)},
+        {L"gateways", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fGateways), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"DNSServers", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fDNSServers), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"wirelessInformation", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fWirelessInfo), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"status", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fStatus)},
     });
     mapper.AddCommonType<Collection<NetworkInterface>> ();
 
@@ -248,13 +248,13 @@ const ObjectVariantMapper Device::kMapper = []() {
     mapper.AddCommonType<Sequence<String>> ();
 
     mapper.AddClass<Device> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-        {L"ID", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, fGUID)},
-        {L"Name", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, name)},
-        {L"Internet-Addresses", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, ipAddresses)},
-        {L"Type", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, type), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"Attached-Networks", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, fAttachedNetworks)},
-        {L"Attached-Network-Interfaces", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, fAttachedNetworkInterfaces), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"important", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, important)},
+        {L"id", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, fGUID)},
+        {L"name", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, name)},
+        {L"internetAddresses", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, ipAddresses)},
+        {L"type", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, type), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"attachedNetworks", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, fAttachedNetworks)},
+        {L"attachedNetworkInterfaces", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, fAttachedNetworkInterfaces), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        //        {L"important", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, important)},
     });
     mapper.AddCommonType<Collection<Device>> ();
     return mapper;
@@ -266,3 +266,35 @@ String Device::ToString () const
 {
     return DataExchange::Variant::JSON::Writer ().WriteAsString (Device::kMapper.FromObject (*this));
 }
+
+/*
+ ********************************************************************************
+ ********************************** Model::Operations ***************************
+ ********************************************************************************
+ */
+
+DISABLE_COMPILER_MSC_WARNING_START (4573);
+DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
+const ObjectVariantMapper Operations::kMapper = []() {
+    ObjectVariantMapper mapper;
+
+    mapper.AddCommonType<optional<String>> ();
+    mapper.AddCommonType<Sequence<double>> ();
+    mapper.AddCommonType<Time::Duration> ();
+    mapper.AddClass<Operations::TraceRouteResults::Hop> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+        {L"timeToHop", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Operations::TraceRouteResults::Hop, fTime)},
+        {L"address", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Operations::TraceRouteResults::Hop, fAddress)},
+    });
+    mapper.AddCommonType<Sequence<Operations::TraceRouteResults::Hop>> ();
+    mapper.AddClass<Operations::TraceRouteResults> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+        {L"hops", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Operations::TraceRouteResults, fHops)},
+    });
+    mapper.AddClass<Operations::DNSLookupResults> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+        {L"result", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Operations::DNSLookupResults, fResult)},
+        {L"lookup-time", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Operations::DNSLookupResults, fLookupTime)},
+    });
+
+    return mapper;
+}();
+DISABLE_COMPILER_GCC_WARNING_END ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
+DISABLE_COMPILER_MSC_WARNING_END (4573);
