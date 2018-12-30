@@ -9,10 +9,13 @@
       </v-card-title>
 
       <v-card-text>
-        <p>CIDR: {{ network.networkAddresses }}</p>
-        <p>Gateways: {{ network.gateways }}</p>
-        <p>PublicIP: {{ network.externalAddresses }}</p>
-        <p>Provider: {{ network.internetServiceProvider }}</p>
+        <p>CIDR: {{ network.networkAddresses[0] }}</p>
+        <p>DNS Servers: {{ network.DNSServers }}</p>
+        <div id="gateway-network" v-if="isGatewayNetwork(network)">
+          <p>Gateways: {{ network.gateways[0] }}</p>
+          <p>Public IP: {{ network.externalAddresses[0] }}</p>
+          <p>Provider: {{ network.internetServiceProvider.name }}</p>
+        </div>
         <div @click="setSelectedNetwork(network.id)">
           <v-btn small color="primary">Select As Primary Network</v-btn>
         </div>
@@ -37,8 +40,13 @@ import { INetwork } from '@/models/network/INetwork';
     },
 })
 export default class Network extends Vue {
+
     private get selectedNetworkId(): string {
       return this.$store.getters.getSelectedNetworkId;
+    }
+
+    private isGatewayNetwork(network: INetwork): boolean {
+      return (network.gateways === undefined || network.gateways.length === 0) ? false : true;
     }
 }
 </script>
