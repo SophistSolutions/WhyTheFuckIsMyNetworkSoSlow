@@ -5,7 +5,8 @@ import { INetwork } from '@/models/network/INetwork';
 
 import * as mutations from './mutations';
 
-import { fetchNetworks } from '@/proxy/API';
+import { fetchNetworks, fetchDevices } from '@/proxy/API';
+import { IDevice } from '@/models/device/IDevice';
 
 Vue.use(Vuex);
 
@@ -16,11 +17,15 @@ export default new Vuex.Store({
   state: {
     availableNetworks: [] as INetwork[],
     selectedNetworkId: {} as string,
+    devices: [] as IDevice[],
   },
   mutations: {
     setAvailableNetworks(state, networks: INetwork[]) {
       Vue.set(state, mutations.ROOT_SET_AVAILABLE_NETWORKS, networks);
       // state[mutations.ROOT_SET_AVAILABLE_NETWORK] = networks;
+    },
+    setDevices(state, devices: IDevice[]) {
+      Vue.set(state, mutations.ROOT_SET_DEVICES, devices);
     },
     setSelectedNetwork(state, networkId: string) {
       Vue.set(state, mutations.ROOT_SET_SELECTED_NETWORK_ID, networkId);
@@ -30,6 +35,9 @@ export default new Vuex.Store({
     async fetchAvailableNetworks({commit}) {
       commit('setAvailableNetworks', await fetchNetworks());
     },
+    async fetchDevices({commit}) {
+      commit('setDevices', await fetchDevices());
+    },
     setSelectedNetwork({commit}, networkId: string) {
       commit('setSelectedNetwork', networkId);
     },
@@ -37,6 +45,9 @@ export default new Vuex.Store({
   getters: {
     getAvailableNetworks: (state) => {
       return state.availableNetworks;
+    },
+    getDevices: (state) => {
+      return state.devices;
     },
     getSelectedNetworkId: (state) => {
       return state.selectedNetworkId;
