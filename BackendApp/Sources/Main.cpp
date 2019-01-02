@@ -116,7 +116,7 @@ int main (int argc, const char* argv[])
      */
     SignalHandlerRegistry::Get ().SetStandardCrashHandlerSignals (SignalHandler{_FatalSignalHandler, SignalHandler::Type::eDirect});
 
-/*
+	/*
      *  Ignore SIGPIPE is common practice/helpful in POSIX, but not required by the service manager.
      */
 #if qPlatform_POSIX
@@ -130,9 +130,9 @@ int main (int argc, const char* argv[])
         Logger::ShutdownSingleton (); // make sure Logger threads shutdown before the end of main (), and flush buffered messages
     });
 #if qHas_Syslog
-    Logger::Get ().SetAppender (make_shared<Logger::SysLogAppender> (L"Stroika-Sample-SimpleService"));
+    Logger::Get ().SetAppender (make_shared<Logger::SysLogAppender> (L"WhyTheFuckIsMyNetworkSoSlow"));
 #elif qPlatform_Windows
-    Logger::Get ().SetAppender (make_shared<Logger::WindowsEventLogAppender> (L"Stroika-Sample-SimpleService"));
+    Logger::Get ().SetAppender (make_shared<Logger::WindowsEventLogAppender> (L"WhyTheFuckIsMyNetworkSoSlow"));
 #endif
     /*
      *  Optional - use buffering feature
