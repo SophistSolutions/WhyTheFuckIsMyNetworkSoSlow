@@ -14,7 +14,10 @@
 	-0----
 
 		> do installer with daemon autostart - at least for linux but probably both Maybe postpone windows cuz must do wix which is more work to reserach
-		
+==+CREATED INSTALLERS BUT YET TO TEST/FIXUP	
+
+		>>> On windows - installs and tries to autostart but fails on startup - must debug (maybe run as admin???)
+
 		
 		-----
 

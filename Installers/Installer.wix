@@ -18,7 +18,7 @@
    Once you've chosen it don't change it.
    -->
 
-  <?define UpgradeCode="{24F76C7A-A83F-46FF-9AFB-9D36BFAB0861}" ?>  <!--YOUR-GUID-HERE-->
+  <?define UpgradeCode="{3C2E54E5-3545-490F-9945-ECDD5E4C564A}" ?>  <!--YOUR-GUID-HERE-->
 
   <!-- The URL for add/remove programs -->
   <?define InfoURL="https://www.sophists.com/" ?>
@@ -31,7 +31,8 @@
   <?define Win64 = "no" ?>
   <?define PlatformProgramFilesFolder = "ProgramFilesFolder" ?>
   <?endif ?>
-  <?define serviceEXESourcePath = "..\..\..\IntermediateFiles\$(var.CONFIGURATION)\Samples-Service\WIX_TMP\Stroika-SampleService-Service.exe" ?>
+  <?define serviceEXESourcePath = "..\IntermediateFiles\$(var.CONFIGURATION)\WhyTheFuckIsMyNetworkSoSlow\WIX_TMP\WhyTheFuckIsMyNetworkSoSlow-Backend.exe" ?>
+  <?define serviceName = "WhyTheFuckIsMyNetworkSoSlow" ?>
 
   <!--
       ====================================================================================
@@ -156,7 +157,7 @@
             <!-- to do. Don't be afraid, Windows Installer can efficiently handle thousands of components or more, if needed. -->
 
             <!-- Installation directory as a component so it can be emptied during uninstall (by default files added by someone other than Windows Installer are not removed) -->
-            <Component Id="INSTALLDIR_comp" Guid="{B432FB78-D545-48BA-92FA-A6023F4638D8}"> <!--YOUR-GUID-HERE-->
+            <Component Id="INSTALLDIR_comp" Guid="{2A4C6FAF-12BE-4D2E-B809-E20F09B741A4}"> <!--YOUR-GUID-HERE-->
               <CreateFolder />
               <RemoveFile Id="RemoveFilesFromAppDirectory" Name="*.*" On="uninstall" />
             </Component>
@@ -167,9 +168,9 @@
               <File Source="$(var.serviceEXESourcePath)" Id="StroikaSampleServiceExe" KeyPath="yes" />
 
               <ServiceInstall Id="ServiceInstaller" Account="LocalSystem" Description="!(loc.ServiceDescription)" DisplayName="!(loc.ServiceDisplayName)" ErrorControl="normal"
-                              LoadOrderGroup="NetworkProvider" Name="Stroika-Sample-Service" Start="auto" Type="ownProcess" Vital="yes" Arguments="--run-as-service" />
+                              LoadOrderGroup="NetworkProvider" Name="$(var.serviceName)" Start="auto" Type="ownProcess" Vital="yes" Arguments="--run-as-service" />
 
-              <ServiceControl Id="ServiceControl" Name="Stroika-Sample-Service" Start="install" Stop="both" Remove="uninstall" />
+              <ServiceControl Id="ServiceControl" Name="$(var.serviceName)" Start="install" Stop="both" Remove="uninstall" />
 
             </Component>
 

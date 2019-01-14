@@ -6,7 +6,7 @@ ifneq ($(CONFIGURATION),)
 endif
 
 
-SrcDir				=	$(TOP_ROOT)BackendApp/Sources/
+SrcDir				=	$(TOP_ROOT)Backend/Sources/
 ObjDir				=	$(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow-Backend/
 
 
@@ -52,14 +52,14 @@ $(VERSION_FILE_OUT):	$(VERSION_FILE_IN)
 $(ObjDir)Main.o $(ObjDir)Service.o:		$(VERSION_FILE_OUT)
 
 all:
-	@$(StroikaRoot)/ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "Building WhyTheFuckIsMyNetworkSoSlow/BackendApp:"
+	@$(StroikaRoot)/ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "Building WhyTheFuckIsMyNetworkSoSlow/Backend:"
 ifeq (Unix,$(ProjectPlatformSubdir))
 	@mkdir -p $(TARGETEXEDir)
 	@$(MAKE) --silent $(TARGETEXE) MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1)) ECHO_BUILD_LINES=$(ECHO_BUILD_LINES)
 else
 	@$(MAKE) --silent $(VERSION_FILE_OUT)
 	@if [[ "$(CONFIGURATION)" == "Debug-U-32" || "$(CONFIGURATION)" == "Release-U-32" || "$(CONFIGURATION)" == "Debug-U-64" || "$(CONFIGURATION)" == "Release-U-64" ]] ; then\
-		perl $(StroikaRoot)ScriptsLib/RunArgumentsWithCommonBuildVars $(CONFIGURATION) "MSBuild.exe /nologo /v:quiet /clp:NoSummary ../Projects/$(ProjectPlatformSubdir)/WhyTheFuckIsMyNetworkSoSlow-BackendApp.vcxproj /p:`$(StroikaRoot)ScriptsLib/GetVisualStudioConfigLine $(CONFIGURATION)` /target:Build";\
+		perl $(StroikaRoot)ScriptsLib/RunArgumentsWithCommonBuildVars $(CONFIGURATION) "MSBuild.exe /nologo /v:quiet /clp:NoSummary ../Projects/$(ProjectPlatformSubdir)/WhyTheFuckIsMyNetworkSoSlow-Backend.vcxproj /p:`$(StroikaRoot)ScriptsLib/GetVisualStudioConfigLine $(CONFIGURATION)` /target:Build";\
 	else\
 		$(StroikaRoot)/ScriptsLib/PrintProgressLine $$(($(MAKE_INDENT_LEVEL)+1)) "SKIPPED for unsupported configuration";\
 	fi

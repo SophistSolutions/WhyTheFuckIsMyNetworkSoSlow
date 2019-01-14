@@ -25,7 +25,7 @@ else
 	@$(MAKE) --directory=ThirdPartyComponents --no-print-directory all MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
 	@$(StroikaRoot)/ScriptsLib/CheckValidConfiguration $(CONFIGURATION)
 	@-$(MAKE) --directory=html --no-print-directory  MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1)) all
-	@$(MAKE) --directory=BackendApp --no-print-directory all MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
+	@$(MAKE) --directory=Backend --no-print-directory all MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
 	@rm -rf Builds/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow/html && mkdir -p Builds/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow && cp -r html/dist/ Builds/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow/html
 	@$(MAKE) --silent installers MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
 endif
@@ -72,8 +72,8 @@ ifeq ($(CONFIGURATION_TAGS),)
 		rm -rf IntermediateFiles/*;\
 	fi
 	@$(MAKE) --silent --directory html $@ MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1));
-	@# with no config specified, BackendApp NYI make clean/clobber (and not needed)
-	@#$(MAKE) --silent --directory BackendApp $@ MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1));
+	@# with no config specified, Backend NYI make clean/clobber (and not needed)
+	@#$(MAKE) --silent --directory Backend $@ MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1));
 	@$(MAKE) --silent --directory ThirdPartyComponents $@ MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1));
 else
 	@for i in $(APPLY_CONFIGS) ; do\
@@ -83,13 +83,13 @@ endif
 else
 	@$(StroikaRoot)ScriptsLib/CheckValidConfiguration $(CONFIGURATION)
 	@$(StroikaRoot)ScriptsLib/PrintProgressLine $(MAKE_INDENT_LEVEL) "WhyTheFuckIsMyNetworkSoSlow $(call FUNCTION_CAPITALIZE_WORD,$@) {$(CONFIGURATION)}:"
-	@$(MAKE) --directory BackendApp --no-print-directory $@ MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
+	@$(MAKE) --directory Backend --no-print-directory $@ MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
 	@$(MAKE) --directory html --no-print-directory $@ MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
 	@$(MAKE) --directory ThirdPartyComponents --no-print-directory $@ MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
 endif
 
 
-
+.PHONY: installers installer-deb installer-rpm installer-wix
 installers installer-deb installer-rpm installer-wix:   $(TARGETEXE)
 	@$(StroikaRoot)/ScriptsLib/PrintProgressLine $(MAKE_INDENT_LEVEL) "Building Installers:"
 	@$(MAKE) --no-print-directory --directory Installers MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1)) $@
@@ -107,4 +107,4 @@ endif
 
 
 format-code:
-	@$(MAKE) --directory=BackendApp --no-print-directory format-code
+	@$(MAKE) --directory=Backend --no-print-directory format-code
