@@ -1,5 +1,5 @@
 export TOP_ROOT?=$(shell realpath ../)/
-export StroikaRoot?=$(realpath ThirdPartyComponents/Stroika/StroikaRoot)/
+export StroikaRoot?=$(realpath $(TOP_ROOT)ThirdPartyComponents/Stroika/StroikaRoot)/
 
 ifneq ($(CONFIGURATION),)
 	include $(StroikaRoot)IntermediateFiles/$(CONFIGURATION)/Configuration.mk
