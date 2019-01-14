@@ -17,6 +17,7 @@
 ==+CREATED INSTALLERS BUT YET TO TEST/FIXUP	
 
 		>>> On windows - installs and tries to autostart but fails on startup - must debug (maybe run as admin???)
+		>>> DEB installer doesn't work at all
 
 		
 		-----
