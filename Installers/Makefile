@@ -10,6 +10,7 @@ include $(StroikaRoot)ScriptsLib/Makefile-Common.mk
 BASIC_NAME_LC=whythefuckismynetworksoslow
 BASIC_NAME=WhyTheFuckIsMyNetworkSoSlow
 OUTDIR_NAME=WhyTheFuckIsMyNetworkSoSlow
+BASIC_BACKEND_NAME=$(BASIC_NAME)-Backend
 
 
 ObjDir				=	$(StroikaRoot)IntermediateFiles/$(CONFIGURATION)/$(OUTDIR_NAME)/
@@ -121,22 +122,22 @@ endif
 	@echo "Version: $(DEB_VERSION)" >> $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/DEBIAN/control
 	@cat $(BASIC_NAME_LC).control >> $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/DEBIAN/control
 
-	@echo "systemctl enable $(BASIC_NAME_LC)" >> $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/DEBIAN/postinst
-	@echo "systemctl start $(BASIC_NAME_LC)" >> $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/DEBIAN/postinst
+	@echo "command -v systemd > /dev/null 2>&1; if [ \$$? -eq 0 ] ; then systemctl enable $(BASIC_NAME_LC) ; else echo \"Skipping systemd because not supported on target system\"; fi" >> $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/DEBIAN/postinst
+	@echo "command -v systemd > /dev/null 2>&1; if [ \$$? -eq 0 ] ; then systemctl start $(BASIC_NAME_LC) ; fi" >> $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/DEBIAN/postinst
 	@chmod 755 $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/DEBIAN/postinst
 
-	@echo "(systemctl stop $(BASIC_NAME_LC)) || true" >> $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/DEBIAN/prerm
-	@echo "(systemctl disable $(BASIC_NAME_LC)) || true" >> $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/DEBIAN/prerm
+	@echo "command -v systemd > /dev/null 2>&1; if [ \$$? -eq 0 ] ; then ((systemctl stop $(BASIC_NAME_LC)) || true); fi" >> $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/DEBIAN/prerm
+	@echo "command -v systemd > /dev/null 2>&1; if [ \$$? -eq 0 ] ; then ((systemctl disable $(BASIC_NAME_LC)) || true); fi" >> $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/DEBIAN/prerm
 	@chmod 755 $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/DEBIAN/prerm
 
 	@#List files to actually install and where
-	@install -m 755 --strip --strip-program=$(STRIP) $(BUILT_SERVICE_EXE) $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/opt/$(BASIC_NAME)/$(BASIC_NAME)
+	@install -m 755 --strip --strip-program=$(STRIP) $(BUILT_SERVICE_EXE) $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/opt/$(BASIC_NAME)/$(BASIC_BACKEND_NAME)
 	@install -m 644 $(BASIC_NAME_LC).service $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/usr/lib/systemd/system/$(BASIC_NAME_LC).service
 
 	@dpkg --build $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION) 2>&1 > $(DEB_BUILD_OUT)
 	@cp $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION).deb $(TARGET_OUT_INSTALLER_DEB)
 	
-	@rm -rf $(DEB_WORKDIR)
+	@#rm -rf $(DEB_WORKDIR)
 	@$(StroikaRoot)/ScriptsLib/PrintProgressLine $$(($(MAKE_INDENT_LEVEL)+1)) "Built: "`$(StroikaRoot)ScriptsLib/SubstituteBackVariables "$(TARGET_OUT_INSTALLER_DEB)"`
 
 
@@ -156,7 +157,7 @@ endif
 	@mkdir -p $(RPM_WORKDIR)$(BASIC_NAME_LC)-$(MAJOR_DOT_MINOR_VERSION)/usr/lib/systemd/system
 	@mkdir -p $(RPM_WORKDIR)$(BASIC_NAME_LC)-$(MAJOR_DOT_MINOR_VERSION)/var/opt/$(BASIC_NAME)/
 
-	@install -m 755 --strip --strip-program=$(STRIP) $(BUILT_SERVICE_EXE) $(RPM_WORKDIR)/$(BASIC_NAME_LC)-$(MAJOR_DOT_MINOR_VERSION)/opt/$(BASIC_NAME)/$(BASIC_NAME)
+	@install -m 755 --strip --strip-program=$(STRIP) $(BUILT_SERVICE_EXE) $(RPM_WORKDIR)/$(BASIC_NAME_LC)-$(MAJOR_DOT_MINOR_VERSION)/opt/$(BASIC_NAME)/$(BASIC_BACKEND_NAME)
 	@install -m 644 $(BASIC_NAME_LC).service $(RPM_WORKDIR)$(BASIC_NAME_LC)-$(MAJOR_DOT_MINOR_VERSION)/usr/lib/systemd/system/$(BASIC_NAME_LC).service
 	
 	@cd $(RPM_WORKDIR) && tar -zcf $(BASIC_NAME_LC)-$(MAJOR_DOT_MINOR_VERSION).tar.gz $(BASIC_NAME_LC)-$(MAJOR_DOT_MINOR_VERSION)/
