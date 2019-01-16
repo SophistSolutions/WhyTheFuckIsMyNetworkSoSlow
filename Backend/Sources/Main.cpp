@@ -116,7 +116,7 @@ int main (int argc, const char* argv[])
      */
     SignalHandlerRegistry::Get ().SetStandardCrashHandlerSignals (SignalHandler{_FatalSignalHandler, SignalHandler::Type::eDirect});
 
-	/*
+    /*
      *  Ignore SIGPIPE is common practice/helpful in POSIX, but not required by the service manager.
      */
 #if qPlatform_POSIX
