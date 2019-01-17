@@ -11,7 +11,7 @@
 			Print out the default values for each configurable value, which can be used to update config file
 
 
-	-0----
+	----
 
 		> do installer with daemon autostart - at least for linux but probably both Maybe postpone windows cuz must do wix which is more work to reserach
 ==+CREATED INSTALLERS BUT YET TO TEST/FIXUP	
@@ -20,7 +20,7 @@
 		>>> DEB installer doesn't work at all
 
 		
-		-----
+	-----
 
 http://localhost:8080/Network/97979b96-9967-6696-95cb-6495706c66c9
 	ONLY prints ONE Network_Address - should print BOTH the IPv4 and IPv6 networks there.

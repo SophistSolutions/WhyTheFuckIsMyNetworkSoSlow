@@ -26,7 +26,7 @@ BUILT_SERVICE_EXE				=	$(TARGET_OUT_DIR)WhyTheFuckIsMyNetworkSoSlow-Backend.exe
 else
 BUILT_SERVICE_EXE				=	$(TARGET_OUT_DIR)WhyTheFuckIsMyNetworkSoSlow-Backend
 endif
-
+BUILT_HTML_DIR					=	$(TARGET_OUT_DIR)html/
 
 VERSION_FILE_IN=$(TOP_ROOT)VERSION
 
@@ -133,6 +133,7 @@ endif
 	@#List files to actually install and where
 	@install -m 755 --strip --strip-program=$(STRIP) $(BUILT_SERVICE_EXE) $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/opt/$(BASIC_NAME)/$(BASIC_BACKEND_NAME)
 	@install -m 644 $(BASIC_NAME_LC).service $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/usr/lib/systemd/system/$(BASIC_NAME_LC).service
+	@cp -r  $(BUILT_HTML_DIR) $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/opt/$(BASIC_NAME)/html
 
 	@dpkg --build $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION) 2>&1 > $(DEB_BUILD_OUT)
 	@cp $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION).deb $(TARGET_OUT_INSTALLER_DEB)
