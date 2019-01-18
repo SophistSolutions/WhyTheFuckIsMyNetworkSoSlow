@@ -11,6 +11,7 @@
 #include "Stroika/Foundation/Execution/CommandLine.h"
 #include "Stroika/Foundation/Execution/SignalHandlers.h"
 #include "Stroika/Foundation/Execution/Thread.h"
+#include "Stroika/Foundation/Execution/Users.h"
 #include "Stroika/Foundation/Execution/WaitableEvent.h"
 #if qPlatform_Windows
 #include "Stroika/Foundation/Execution/Platform/Windows/Exception.h"
@@ -92,6 +93,7 @@ namespace {
 int main (int argc, const char* argv[])
 {
     Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"main", L"argv=%s", Characters::ToString (vector<const char*> (argv, argv + argc)).c_str ())};
+    DbgTrace (L"Running as user %s", Characters::ToString (GetCurrentUserName ()).c_str ());
 
 #if qStroika_Foundation_Exection_Thread_SupportThreadStatistics
     auto&& cleanupReport = Execution::Finally ([]() {
