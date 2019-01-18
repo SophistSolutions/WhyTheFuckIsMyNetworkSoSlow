@@ -1,7 +1,7 @@
 # INSTALL THIS FILE TO /usr/lib/systemd/system/whythefuckismynetworksoslow.service
 
 [Unit]
-Description=Why the Tuck is My Network So Slow
+Description=Why the Fuck is My Network So Slow
 After=syslog.target
 
 [Service]
