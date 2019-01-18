@@ -10,14 +10,11 @@
 		.../Configuration-Defaults
 			Print out the default values for each configurable value, which can be used to update config file
 
-
 	----
 
-		> do installer with daemon autostart - at least for linux but probably both Maybe postpone windows cuz must do wix which is more work to reserach
-==+CREATED INSTALLERS BUT YET TO TEST/FIXUP	
+		> do installer with daemon autostart -
 
-		>>> On windows - installs and tries to autostart but fails on startup - must debug (maybe run as admin???)
-		>>> DEB installer doesn't work at all
+			>>> On windows - installs and tries to autostart but fails on startup - must debug (maybe run as admin???)
 
 		
 	-----
