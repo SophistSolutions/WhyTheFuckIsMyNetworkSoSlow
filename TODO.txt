@@ -10,14 +10,12 @@
 		.../Configuration-Defaults
 			Print out the default values for each configurable value, which can be used to update config file
 
-			----
+----
 
 		>	change Main.cpp, and make CONFIGURATION=Debug all
 			rebuilds EXE but not hte (UNIX) installer
 
-
-
-	----
+----
 
 		> do installer with daemon autostart -
 
