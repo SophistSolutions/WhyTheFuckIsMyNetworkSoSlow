@@ -105,7 +105,7 @@ DEB_WORKDIR:=$(shell mktemp -d)/
 endif
 DEB_VERSION=$(MAJOR_DOT_MINOR_VERSION)$(INSTALLER_RELEASE_TAG)
 DEB_BUILD_OUT=$(ObjDir)DEB-Installer-Build.Out
-$(TARGET_OUT_INSTALLER_DEB):
+$(TARGET_OUT_INSTALLER_DEB): $(BUILT_SERVICE_EXE)
 	@$(StroikaRoot)/ScriptsLib/PrintProgressLine $(MAKE_INDENT_LEVEL) "Building DEB installer: "
 	@$(StroikaRoot)/ScriptsLib/PrintProgressLine $$(($(MAKE_INDENT_LEVEL)+1)) `$(StroikaRoot)ScriptsLib/SubstituteBackVariables "temp files: $(DEB_WORKDIR); log: $(DEB_BUILD_OUT)"`
 ifeq ($(CONFIGURATION),)
@@ -145,7 +145,7 @@ endif
 RPM_WORKDIR=$(ObjDir)RPM_TMP/
 RPM_VERSION=$(MAJOR_DOT_MINOR_VERSION)$(INSTALLER_RELEASE_TAG)
 RPM_BUILD_OUT=$(ObjDir)RPM-Installer-Build.Out
-$(TARGET_OUT_INSTALLER_RPM):
+$(TARGET_OUT_INSTALLER_RPM): $(BUILT_SERVICE_EXE)
 	@$(StroikaRoot)/ScriptsLib/PrintProgressLine $(MAKE_INDENT_LEVEL) "Building RPM installer: "
 	@$(StroikaRoot)/ScriptsLib/PrintProgressLine $$(($(MAKE_INDENT_LEVEL)+1)) `$(StroikaRoot)ScriptsLib/SubstituteBackVariables "temp files: $(RPM_WORKDIR); log: $(RPM_BUILD_OUT)"`"..."
 ifeq ($(CONFIGURATION),)
@@ -190,7 +190,7 @@ ifeq ($(ARCH),x86_64)
 CANDLE_ARCH=x64
 endif
 TARGET_OUT_INSTALLER_WIX_WINDOWSPATH=$(shell cygpath -w $(TARGET_OUT_INSTALLER_WIX))
-$(TARGET_OUT_INSTALLER_WIX):
+$(TARGET_OUT_INSTALLER_WIX): $(BUILT_SERVICE_EXE)
 	@$(StroikaRoot)/ScriptsLib/PrintProgressLine $(MAKE_INDENT_LEVEL) "Building WIX installer: "
 	@$(StroikaRoot)/ScriptsLib/PrintProgressLine $$(($(MAKE_INDENT_LEVEL)+1)) `$(StroikaRoot)ScriptsLib/SubstituteBackVariables "temp files: $(WIX_WORKDIR); log: $(WIX_BUILD_OUT)"`"..."
 ifeq ($(CONFIGURATION),)
@@ -201,8 +201,8 @@ endif
 	mkdir -p $(WIX_WORKDIR)
 	cp $(BUILT_SERVICE_EXE) $(WIX_WORKDIR)$(BASIC_NAME)-Backend.exe 2>&1 >> $(WIX_BUILD_OUT)
 	echo WIX_PATH_PREFIX = $(WIX_PATH_PREFIX) >> $(WIX_BUILD_OUT)
-	echo candle.exe -v -arch $(CANDLE_ARCH)   -dARCH=$(ARCH) -dCONFIGURATION=$(CONFIGURATION) -dDISPLAY_FULL_VERSION=$(WIX_VERSION) -dWIX_4DOT_VERSION=$(WIX_4DOT_VERSION) Installer.wix -out "$(WIX_OUT_OBJ_WIN)" >> $(WIX_BUILD_OUT)
-	$(WIX_PATH_PREFIX) candle.exe -v -arch $(CANDLE_ARCH)   -dARCH=$(ARCH) -dCONFIGURATION=$(CONFIGURATION) -dDISPLAY_FULL_VERSION=$(WIX_VERSION) -dWIX_4DOT_VERSION=$(WIX_4DOT_VERSION) Installer.wix -out "$(WIX_OUT_OBJ_WIN)" 2>&1 >> $(WIX_BUILD_OUT)
+	echo candle.exe -v -arch $(CANDLE_ARCH) -dARCH=$(ARCH) -dCONFIGURATION=$(CONFIGURATION) -dDISPLAY_FULL_VERSION=$(WIX_VERSION) -dWIX_4DOT_VERSION=$(WIX_4DOT_VERSION) Installer.wix -out "$(WIX_OUT_OBJ_WIN)" >> $(WIX_BUILD_OUT)
+	$(WIX_PATH_PREFIX) candle.exe -v -arch $(CANDLE_ARCH) -dARCH=$(ARCH) -dCONFIGURATION=$(CONFIGURATION) -dDISPLAY_FULL_VERSION=$(WIX_VERSION) -dWIX_4DOT_VERSION=$(WIX_4DOT_VERSION) Installer.wix -out "$(WIX_OUT_OBJ_WIN)" 2>&1 >> $(WIX_BUILD_OUT)
 	echo light.exe "$(WIX_OUT_OBJ_WIN)" -ext WixUIExtension -cultures:en-us -loc Installer_en-us.wxl -out '$(TARGET_OUT_INSTALLER_WIX_WINDOWSPATH)'  >> $(WIX_BUILD_OUT)
 	$(WIX_PATH_PREFIX) light.exe "$(WIX_OUT_OBJ_WIN)" -ext WixUIExtension -cultures:en-us -loc Installer_en-us.wxl -out '$(TARGET_OUT_INSTALLER_WIX_WINDOWSPATH)' 2>&1 >> $(WIX_BUILD_OUT)
 	$(StroikaRoot)/ScriptsLib/PrintProgressLine $$(($(MAKE_INDENT_LEVEL)+1)) "Built: "`$(StroikaRoot)ScriptsLib/SubstituteBackVariables "$(TARGET_OUT_INSTALLER_WIX)"`
