@@ -26,11 +26,6 @@ SubDirs=\
 	Discovery \
 	WebServices \
 
-.PHONY: $(SubDirs)
-
-
-$(SubDirs): $(ObjDir)
-	@$(MAKE) --directory $@ -s
 
 
 SUBDIR_OBJS := $(foreach dir, $(SubDirs), $(shell $(MAKE) --directory $(dir) -s list-objs))
@@ -41,7 +36,6 @@ Objs	=	\
 	$(ObjDir)Service.o\
 
 
-
 VERSION_FILE_IN=$(TOP_ROOT)VERSION
 VERSION_FILE_OUT=$(StroikaRoot)IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow/AppVersion.h
 $(VERSION_FILE_OUT):	$(VERSION_FILE_IN)
@@ -49,7 +43,12 @@ $(VERSION_FILE_OUT):	$(VERSION_FILE_IN)
 	@$(StroikaRoot)ScriptsLib/MakeVersionFile $(VERSION_FILE_IN) $(VERSION_FILE_OUT) AppCPlusPlusVersion kAppVersion __WhyTheFuckIsMyNetworkSoSlow_AppVersion_H__
 
 
+$(SUBDIR_OBJS): $(ObjDir)
+	@$(MAKE) --directory $@ -s
+
+
 $(ObjDir)Main.o $(ObjDir)Service.o:		$(VERSION_FILE_OUT)
+
 
 all:
 	@$(StroikaRoot)/ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "Building WhyTheFuckIsMyNetworkSoSlow/Backend:"
@@ -66,17 +65,12 @@ else
 endif
 
 
-
-
-$(TARGETEXE):	$(ObjDir) $(SubDirs) $(Objs)
+$(TARGETEXE):	$(Objs) $(SUBDIR_OBJS)
 	@$(StroikaRoot)/ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "Linking $(subst $(StroikaRoot),\$$StroikaRoot/, $(TARGETEXE))..."
 	@if [ $(ECHO_BUILD_LINES) -eq 1 ]; then\
 	    $(StroikaRoot)/ScriptsLib/PrintLevelLeader $$(($(MAKE_INDENT_LEVEL)+1)) && $(ECHO) "$(Linker) $(StroikaLinkerPrefixArgs) -o $(TARGETEXE) $(Objs) $(SUBDIR_OBJS) $(StroikaLinkerSuffixArgs)";\
 	fi
 	@$(Linker) $(StroikaLinkerPrefixArgs) -o $(TARGETEXE) $(Objs) $(SUBDIR_OBJS) $(StroikaLinkerSuffixArgs)
-
-
-
 
 
 clean::
