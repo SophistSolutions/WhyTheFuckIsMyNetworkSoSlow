@@ -174,6 +174,9 @@
 
             </Component>
 
+            <Directory Id="HTML_DIR_REF" Name="html">
+            </Directory>
+
           </Directory>
         </Directory>
       </Directory>
@@ -192,7 +195,7 @@
       <Feature Id="MainProgram" Title="!(loc.FeatureMainProgramTitle)" Description="!(loc.FeatureMainProgramDescription)" Level="1">
         <ComponentRef Id="INSTALLDIR_comp" />
         <ComponentRef Id="StroikaSampleService.exe_comp" />
-
+        <ComponentGroupRef  Id="StroikaSampleService_html_comp" />
       </Feature>
 
     </Feature>

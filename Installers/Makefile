@@ -160,7 +160,8 @@ endif
 
 	@install -m 755 --strip --strip-program=$(STRIP) $(BUILT_SERVICE_EXE) $(RPM_WORKDIR)/$(BASIC_NAME_LC)-$(MAJOR_DOT_MINOR_VERSION)/opt/$(BASIC_NAME)/$(BASIC_BACKEND_NAME)
 	@install -m 644 $(BASIC_NAME_LC).service $(RPM_WORKDIR)$(BASIC_NAME_LC)-$(MAJOR_DOT_MINOR_VERSION)/usr/lib/systemd/system/$(BASIC_NAME_LC).service
-	
+	@cp -r  $(BUILT_HTML_DIR) $(RPM_WORKDIR)$(BASIC_NAME_LC)-$(MAJOR_DOT_MINOR_VERSION)/opt/$(BASIC_NAME)/html
+
 	@cd $(RPM_WORKDIR) && tar -zcf $(BASIC_NAME_LC)-$(MAJOR_DOT_MINOR_VERSION).tar.gz $(BASIC_NAME_LC)-$(MAJOR_DOT_MINOR_VERSION)/
 	@cd $(RPM_WORKDIR) && cp $(BASIC_NAME_LC)-$(MAJOR_DOT_MINOR_VERSION).tar.gz SOURCES/
 	@echo "%define _topdir "$(RPM_WORKDIR) > $(RPM_WORKDIR)/SPECS/$(BASIC_NAME_LC).spec
@@ -174,8 +175,8 @@ endif
 
 
 WIX_WORKDIR=$(ObjDir)WIX_TMP/
-WIX_OUT_OBJ=$(WIX_WORKDIR)Installer.wixobj
-WIX_OUT_OBJ_WIN=$(shell cygpath --windows $(WIX_OUT_OBJ))
+WIX_OUT_OBJ_DIR=$(WIX_WORKDIR)
+WIX_OUT_OBJ_DIR_WIN=$(shell cygpath --mixed $(WIX_OUT_OBJ_DIR))
 WIX_BUILD_OUT=$(ObjDir)WIX-Installer-Build.Out
 WIX_VERSION=$(MAJOR_DOT_MINOR_VERSION)$(INSTALLER_RELEASE_TAG)
 WIX_4DOT_VERSION=$(shell $(StroikaRoot)/ScriptsLib/ExtractVersionInformation $(VERSION_FILE_IN) Win32FourDot)
@@ -190,6 +191,8 @@ ifeq ($(ARCH),x86_64)
 CANDLE_ARCH=x64
 endif
 TARGET_OUT_INSTALLER_WIX_WINDOWSPATH=$(shell cygpath -w $(TARGET_OUT_INSTALLER_WIX))
+HTMLDIR_WINDOWSPATH=$(shell cygpath --mixed $(WIX_WORKDIR)html)
+WIXHTMLFRAGFILE_WINDOWPATH=$(shell cygpath --mixed $(WIX_WORKDIR)html.wxs)
 $(TARGET_OUT_INSTALLER_WIX): $(BUILT_SERVICE_EXE)
 	@$(StroikaRoot)/ScriptsLib/PrintProgressLine $(MAKE_INDENT_LEVEL) "Building WIX installer: "
 	@$(StroikaRoot)/ScriptsLib/PrintProgressLine $$(($(MAKE_INDENT_LEVEL)+1)) `$(StroikaRoot)ScriptsLib/SubstituteBackVariables "temp files: $(WIX_WORKDIR); log: $(WIX_BUILD_OUT)"`"..."
@@ -200,9 +203,14 @@ endif
 	#Make directories to be created by the installer
 	mkdir -p $(WIX_WORKDIR)
 	cp $(BUILT_SERVICE_EXE) $(WIX_WORKDIR)$(BASIC_NAME)-Backend.exe 2>&1 >> $(WIX_BUILD_OUT)
+	@cp -r  $(BUILT_HTML_DIR) $(WIX_WORKDIR)html
+	#heat rejects empty folder and we eventually will have files anyhow
+	@touch $(WIX_WORKDIR)html/index.html
+	echo heat dir $(HTMLDIR_WINDOWSPATH) -o $(WIXHTMLFRAGFILE_WINDOWPATH) -scom -frag -srd -sreg -gg -cg StroikaSampleService_html_comp -dr HTML_DIR_REF >> $(WIX_BUILD_OUT)
+	$(WIX_PATH_PREFIX) heat dir $(HTMLDIR_WINDOWSPATH) -o $(WIXHTMLFRAGFILE_WINDOWPATH) -scom -frag -srd -sreg -gg -cg StroikaSampleService_html_comp -dr HTML_DIR_REF
 	echo WIX_PATH_PREFIX = $(WIX_PATH_PREFIX) >> $(WIX_BUILD_OUT)
-	echo candle.exe -v -arch $(CANDLE_ARCH) -dARCH=$(ARCH) -dCONFIGURATION=$(CONFIGURATION) -dDISPLAY_FULL_VERSION=$(WIX_VERSION) -dWIX_4DOT_VERSION=$(WIX_4DOT_VERSION) Installer.wix -out "$(WIX_OUT_OBJ_WIN)" >> $(WIX_BUILD_OUT)
-	$(WIX_PATH_PREFIX) candle.exe -v -arch $(CANDLE_ARCH) -dARCH=$(ARCH) -dCONFIGURATION=$(CONFIGURATION) -dDISPLAY_FULL_VERSION=$(WIX_VERSION) -dWIX_4DOT_VERSION=$(WIX_4DOT_VERSION) Installer.wix -out "$(WIX_OUT_OBJ_WIN)" 2>&1 >> $(WIX_BUILD_OUT)
-	echo light.exe "$(WIX_OUT_OBJ_WIN)" -ext WixUIExtension -cultures:en-us -loc Installer_en-us.wxl -out '$(TARGET_OUT_INSTALLER_WIX_WINDOWSPATH)'  >> $(WIX_BUILD_OUT)
-	$(WIX_PATH_PREFIX) light.exe "$(WIX_OUT_OBJ_WIN)" -ext WixUIExtension -cultures:en-us -loc Installer_en-us.wxl -out '$(TARGET_OUT_INSTALLER_WIX_WINDOWSPATH)' 2>&1 >> $(WIX_BUILD_OUT)
+	echo candle.exe -v -arch $(CANDLE_ARCH) -dARCH=$(ARCH) -dCONFIGURATION=$(CONFIGURATION) -dDISPLAY_FULL_VERSION=$(WIX_VERSION) -dWIX_4DOT_VERSION=$(WIX_4DOT_VERSION) Installer.wix $(WIXHTMLFRAGFILE_WINDOWPATH) -out $(WIX_OUT_OBJ_DIR_WIN) >> $(WIX_BUILD_OUT)
+	$(WIX_PATH_PREFIX) candle.exe -v -arch $(CANDLE_ARCH) -dARCH=$(ARCH) -dCONFIGURATION=$(CONFIGURATION) -dDISPLAY_FULL_VERSION=$(WIX_VERSION) -dWIX_4DOT_VERSION=$(WIX_4DOT_VERSION) Installer.wix $(WIXHTMLFRAGFILE_WINDOWPATH) -out $(WIX_OUT_OBJ_DIR_WIN) 2>&1 >> $(WIX_BUILD_OUT)
+	echo light.exe $(shell cygpath --mixed $(WIX_OUT_OBJ_DIR)Installer.wixobj) $(shell cygpath --mixed $(WIX_OUT_OBJ_DIR)html.wixobj)  -b $(HTMLDIR_WINDOWSPATH) -ext WixUIExtension -cultures:en-us -loc Installer_en-us.wxl -out '$(TARGET_OUT_INSTALLER_WIX_WINDOWSPATH)'  >> $(WIX_BUILD_OUT)
+	$(WIX_PATH_PREFIX) light.exe $(shell cygpath --mixed $(WIX_OUT_OBJ_DIR)Installer.wixobj) $(shell cygpath --mixed $(WIX_OUT_OBJ_DIR)html.wixobj) -b $(HTMLDIR_WINDOWSPATH) -ext WixUIExtension -cultures:en-us -loc Installer_en-us.wxl -out '$(TARGET_OUT_INSTALLER_WIX_WINDOWSPATH)' 2>&1 >> $(WIX_BUILD_OUT)
 	$(StroikaRoot)/ScriptsLib/PrintProgressLine $$(($(MAKE_INDENT_LEVEL)+1)) "Built: "`$(StroikaRoot)ScriptsLib/SubstituteBackVariables "$(TARGET_OUT_INSTALLER_WIX)"`
