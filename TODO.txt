@@ -12,17 +12,9 @@
 
 ----
 
-		>	change Main.cpp, and make CONFIGURATION=Debug all
-			rebuilds EXE but not hte (UNIX) installer
+	>	fix proj files orgnaization broken in vs2k17??? (folder hieratchy)
 
-----
-
-		> do installer with daemon autostart -
-
-			>>> On windows - installs and tries to autostart but fails on startup - must debug (maybe run as admin???)
-
-		
-	-----
+-----
 
 http://localhost:8080/Network/97979b96-9967-6696-95cb-6495706c66c9
 	ONLY prints ONE Network_Address - should print BOTH the IPv4 and IPv6 networks there.
