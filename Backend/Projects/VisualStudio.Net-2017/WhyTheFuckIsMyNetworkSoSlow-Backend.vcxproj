@@ -215,6 +215,7 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>urlmon.lib;rpcrt4.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -240,6 +241,7 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>urlmon.lib;rpcrt4.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -264,6 +266,7 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>urlmon.lib;rpcrt4.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -289,6 +292,7 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>urlmon.lib;rpcrt4.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -312,6 +316,7 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>urlmon.lib;rpcrt4.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -335,6 +340,7 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>urlmon.lib;rpcrt4.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -357,6 +363,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>urlmon.lib;rpcrt4.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -382,6 +389,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>urlmon.lib;rpcrt4.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -407,6 +415,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>urlmon.lib;rpcrt4.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -432,6 +441,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>urlmon.lib;rpcrt4.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -456,6 +466,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>urlmon.lib;rpcrt4.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -480,6 +491,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>urlmon.lib;rpcrt4.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -493,66 +505,6 @@
       <AdditionalLibraryDirectories>$(ProjectDir)../../../Builds/$(Configuration)/ThirdPartyComponents/lib</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\Sources\Common\GeoLocAndISPLookup.cpp" />
-    <ClCompile Include="..\..\Sources\Common\GeoLocation.cpp" />
-    <ClCompile Include="..\..\Sources\Common\InternetServiceProvider.cpp" />
-    <ClCompile Include="..\..\Sources\Discovery\Devices.cpp" />
-    <ClCompile Include="..\..\Sources\Discovery\NetworkInterfaces.cpp" />
-    <ClCompile Include="..\..\Sources\Discovery\Networks.cpp" />
-    <ClCompile Include="..\..\Sources\Main.cpp">
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug-U-64|Win32'">..\Library\Sources;..\..\Library\Sources;..\..\..\Library\Sources;..\..\..\..\Library\Sources;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug-U-32|Win32'">..\Library\Sources;..\..\Library\Sources;..\..\..\Library\Sources;..\..\..\..\Library\Sources;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug-A-32|Win32'">..\Library\Sources;..\..\Library\Sources;..\..\..\Library\Sources;..\..\..\..\Library\Sources;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release-A-32|Win32'">..\Library\Sources;..\..\Library\Sources;..\..\..\Library\Sources;..\..\..\..\Library\Sources;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release-U-64|Win32'">..\Library\Sources;..\..\Library\Sources;..\..\..\Library\Sources;..\..\..\..\Library\Sources;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release-U-32|Win32'">..\Library\Sources;..\..\Library\Sources;..\..\..\Library\Sources;..\..\..\..\Library\Sources;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug-U-64|x64'">..\Library\Sources;..\..\Library\Sources;..\..\..\Library\Sources;..\..\..\..\Library\Sources;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug-U-32|x64'">..\Library\Sources;..\..\Library\Sources;..\..\..\Library\Sources;..\..\..\..\Library\Sources;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug-A-32|x64'">..\Library\Sources;..\..\Library\Sources;..\..\..\Library\Sources;..\..\..\..\Library\Sources;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release-A-32|x64'">..\Library\Sources;..\..\Library\Sources;..\..\..\Library\Sources;..\..\..\..\Library\Sources;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release-U-64|x64'">..\Library\Sources;..\..\Library\Sources;..\..\..\Library\Sources;..\..\..\..\Library\Sources;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release-U-32|x64'">..\Library\Sources;..\..\Library\Sources;..\..\..\Library\Sources;..\..\..\..\Library\Sources;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\Service.cpp" />
-    <ClCompile Include="..\..\Sources\WebServices\IWSAPI.cpp" />
-    <ClCompile Include="..\..\Sources\WebServices\Model.cpp">
-      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release-U-64|Win32'">/bigobj %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release-U-32|Win32'">/bigobj %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug-U-64|Win32'">/bigobj %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release-A-32|Win32'">/bigobj %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug-U-32|Win32'">/bigobj %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug-A-32|Win32'">/bigobj %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release-U-64|x64'">/bigobj %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release-U-32|x64'">/bigobj %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug-U-64|x64'">/bigobj %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release-A-32|x64'">/bigobj %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug-U-32|x64'">/bigobj %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug-A-32|x64'">/bigobj %(AdditionalOptions)</AdditionalOptions>
-    </ClCompile>
-    <ClCompile Include="..\..\Sources\WebServices\WebServer.cpp" />
-    <ClCompile Include="..\..\Sources\WebServices\WSImpl.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\Makefile" />
-    <None Include="..\..\ReadMe.md" />
-    <None Include="..\..\Sources\Common\GeoLocAndISPLookup.inl" />
-    <None Include="..\..\Sources\Common\GeoLocation.inl" />
-    <None Include="..\..\Sources\Common\InternetServiceProvider.inl" />
-    <None Include="..\..\Sources\Common\Makefile" />
-    <None Include="..\..\Sources\Discovery\Devices.inl" />
-    <None Include="..\..\Sources\Discovery\Makefile" />
-    <None Include="..\..\Sources\Discovery\NetworkInterfaces.inl" />
-    <None Include="..\..\Sources\Discovery\Networks.inl" />
-    <None Include="..\..\Sources\Makefile" />
-    <None Include="..\..\Sources\Service.inl" />
-    <None Include="..\..\Sources\WebServices\IWSAPI.inl" />
-    <None Include="..\..\Sources\WebServices\Makefile" />
-    <None Include="..\..\Sources\WebServices\Model.inl" />
-    <None Include="..\..\Sources\WebServices\WebServer.inl" />
-    <None Include="..\..\Sources\WebServices\WSImpl.inl" />
-    <None Include="..\..\Todo.md" />
-  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\ThirdPartyComponents\Stroika\StroikaRoot\Library\Projects\VisualStudio.Net-2017\Stroika-Foundation.vcxproj">
       <Project>{5afc8e54-efa6-45a6-9e8f-7bb89c84ae5b}</Project>
@@ -575,6 +527,40 @@
     <ProjectReference Include="..\..\..\ThirdPartyComponents\Stroika\StroikaRoot\Library\Projects\VisualStudio.Net-2017\Stroika-Frameworks-WebService.vcxproj">
       <Project>{9454f6d7-68b9-4c91-92d1-99958ec9ea42}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Makefile" />
+    <None Include="..\..\ReadMe.md" />
+    <None Include="..\..\Sources\Common\GeoLocAndISPLookup.inl" />
+    <None Include="..\..\Sources\Common\GeoLocation.inl" />
+    <None Include="..\..\Sources\Common\InternetServiceProvider.inl" />
+    <None Include="..\..\Sources\Common\Makefile" />
+    <None Include="..\..\Sources\Discovery\Devices.inl" />
+    <None Include="..\..\Sources\Discovery\Makefile" />
+    <None Include="..\..\Sources\Discovery\NetworkInterfaces.inl" />
+    <None Include="..\..\Sources\Discovery\Networks.inl" />
+    <None Include="..\..\Sources\Makefile" />
+    <None Include="..\..\Sources\Service.inl" />
+    <None Include="..\..\Sources\WebServices\IWSAPI.inl" />
+    <None Include="..\..\Sources\WebServices\Makefile" />
+    <None Include="..\..\Sources\WebServices\Model.inl" />
+    <None Include="..\..\Sources\WebServices\WebServer.inl" />
+    <None Include="..\..\Sources\WebServices\WSImpl.inl" />
+    <None Include="..\..\Todo.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Sources\Common\GeoLocAndISPLookup.cpp" />
+    <ClCompile Include="..\..\Sources\Common\GeoLocation.cpp" />
+    <ClCompile Include="..\..\Sources\Common\InternetServiceProvider.cpp" />
+    <ClCompile Include="..\..\Sources\Discovery\Devices.cpp" />
+    <ClCompile Include="..\..\Sources\Discovery\NetworkInterfaces.cpp" />
+    <ClCompile Include="..\..\Sources\Discovery\Networks.cpp" />
+    <ClCompile Include="..\..\Sources\Main.cpp" />
+    <ClCompile Include="..\..\Sources\Service.cpp" />
+    <ClCompile Include="..\..\Sources\WebServices\IWSAPI.cpp" />
+    <ClCompile Include="..\..\Sources\WebServices\Model.cpp" />
+    <ClCompile Include="..\..\Sources\WebServices\WebServer.cpp" />
+    <ClCompile Include="..\..\Sources\WebServices\WSImpl.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Common\GeoLocAndISPLookup.h" />
