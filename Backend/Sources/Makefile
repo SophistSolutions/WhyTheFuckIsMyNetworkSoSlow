@@ -18,7 +18,7 @@ CXXFLAGS				+=	-I$(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNet
 
 
 TARGETEXEDir			=	$(StroikaRoot)Builds/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow/
-TARGETEXE				=	$(TARGETEXEDir)WhyTheFuckIsMyNetworkSoSlow-Backend
+TARGETEXE				=	$(TARGETEXEDir)WhyTheFuckIsMyNetworkSoSlow-Backend${EXE_SUFFIX}
 
 
 SubDirs=\
@@ -32,8 +32,8 @@ SUBDIR_OBJS := $(foreach dir, $(SubDirs), $(shell $(MAKE) --directory $(dir) -s 
 
 
 Objs	=	\
-	$(ObjDir)Main.o\
-	$(ObjDir)Service.o\
+	$(ObjDir)Main${OBJ_SUFFIX}\
+	$(ObjDir)Service${OBJ_SUFFIX}\
 
 
 VERSION_FILE_IN=$(TOP_ROOT)VERSION
@@ -43,9 +43,15 @@ $(VERSION_FILE_OUT):	$(VERSION_FILE_IN)
 	@$(StroikaRoot)ScriptsLib/MakeVersionFile $(VERSION_FILE_IN) $(VERSION_FILE_OUT) AppCPlusPlusVersion kAppVersion __WhyTheFuckIsMyNetworkSoSlow_AppVersion_H__
 
 
-$(SUBDIR_OBJS): $(ObjDir)
-	@$(MAKE) --directory $@ -s
 
+$(shell $(MAKE) --directory Common -s list-objs):
+	@$(MAKE) --directory Common -s $@
+
+$(shell $(MAKE) --directory Discovery -s list-objs):
+	@$(MAKE) --directory Discovery -s $@
+
+$(shell $(MAKE) --directory WebServices -s list-objs):
+	@$(MAKE) --directory WebServices -s $@
 
 $(ObjDir)Main.o $(ObjDir)Service.o:		$(VERSION_FILE_OUT)
 

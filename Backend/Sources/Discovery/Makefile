@@ -18,9 +18,9 @@ CXXFLAGS				+=	-I$(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNet
 vpath %cpp $(SrcDir)
 
 Objs	=	\
-	$(ObjDir)Devices.o\
-	$(ObjDir)NetworkInterfaces.o\
-	$(ObjDir)Networks.o\
+	$(ObjDir)Devices${OBJ_SUFFIX}\
+	$(ObjDir)NetworkInterfaces${OBJ_SUFFIX}\
+	$(ObjDir)Networks${OBJ_SUFFIX}\
 
 all:$(ObjDir) $(Objs)
 

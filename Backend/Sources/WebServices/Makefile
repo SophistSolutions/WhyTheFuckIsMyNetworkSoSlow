@@ -18,9 +18,9 @@ CXXFLAGS				+=	-I$(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNet
 vpath %cpp $(SrcDir)
 
 Objs	=	\
-	$(ObjDir)IWSAPI.o\
-	$(ObjDir)Model.o\
-	$(ObjDir)WSImpl.o\
-	$(ObjDir)WebServer.o\
+	$(ObjDir)IWSAPI${OBJ_SUFFIX}\
+	$(ObjDir)Model${OBJ_SUFFIX}\
+	$(ObjDir)WSImpl${OBJ_SUFFIX}\
+	$(ObjDir)WebServer${OBJ_SUFFIX}\
 
 all:$(ObjDir) $(Objs)

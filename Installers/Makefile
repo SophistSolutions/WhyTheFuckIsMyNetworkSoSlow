@@ -21,11 +21,7 @@ include $(StroikaRoot)/Library/Projects/Unix/SharedMakeVariables-Default.mk
 
 TARGET_OUT_DIR=			$(StroikaRoot)Builds/$(CONFIGURATION)/$(OUTDIR_NAME)/
 
-ifeq (VisualStudio,$(findstring VisualStudio,$(ProjectPlatformSubdir)))
-BUILT_SERVICE_EXE				=	$(TARGET_OUT_DIR)WhyTheFuckIsMyNetworkSoSlow-Backend.exe
-else
-BUILT_SERVICE_EXE				=	$(TARGET_OUT_DIR)WhyTheFuckIsMyNetworkSoSlow-Backend
-endif
+BUILT_SERVICE_EXE				=	$(TARGET_OUT_DIR)WhyTheFuckIsMyNetworkSoSlow-Backend${EXE_SUFFIX}
 BUILT_HTML_DIR					=	$(TARGET_OUT_DIR)html/
 
 VERSION_FILE_IN=$(TOP_ROOT)VERSION
@@ -202,7 +198,7 @@ endif
 	rm -rf $(WIX_WORKDIR) $(WIX_BUILD_OUT)
 	#Make directories to be created by the installer
 	mkdir -p $(WIX_WORKDIR)
-	cp $(BUILT_SERVICE_EXE) $(WIX_WORKDIR)$(BASIC_NAME)-Backend.exe 2>&1 >> $(WIX_BUILD_OUT)
+	cp $(BUILT_SERVICE_EXE) $(WIX_WORKDIR)$(BASIC_NAME)-Backend${EXE_SUFFIX} 2>&1 >> $(WIX_BUILD_OUT)
 	@cp -r  $(BUILT_HTML_DIR) $(WIX_WORKDIR)html
 	#heat rejects empty folder and we eventually will have files anyhow
 	@touch $(WIX_WORKDIR)html/index.html

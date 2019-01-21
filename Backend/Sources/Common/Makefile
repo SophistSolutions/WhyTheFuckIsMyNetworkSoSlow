@@ -18,9 +18,9 @@ Includes				+=	-I.
 vpath %cpp $(SrcDir)
 
 Objs	=	\
-	$(ObjDir)GeoLocAndISPLookup.o\
-	$(ObjDir)GeoLocation.o\
-	$(ObjDir)InternetServiceProvider.o\
+	$(ObjDir)GeoLocAndISPLookup${OBJ_SUFFIX}\
+	$(ObjDir)GeoLocation${OBJ_SUFFIX}\
+	$(ObjDir)InternetServiceProvider${OBJ_SUFFIX}\
 
 all:$(ObjDir) $(Objs)
 
