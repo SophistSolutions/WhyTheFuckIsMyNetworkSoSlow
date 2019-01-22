@@ -2,7 +2,7 @@
 export StroikaRoot?=$(TOP_ROOT)ThirdPartyComponents/Stroika/StroikaRoot/
 
 ifneq ($(CONFIGURATION),)
-include $(StroikaRoot)IntermediateFiles/$(CONFIGURATION)/Library/Configuration.mk
+include $(StroikaRoot)IntermediateFiles/$(CONFIGURATION)/Configuration.mk
 endif
 
 include $(StroikaRoot)/ScriptsLib/Makefile-Common.mk
@@ -16,16 +16,16 @@ SHELL=/bin/bash
 
 
 all:
-	@$(StroikaRoot)/ScriptsLib/CheckValidConfiguration.sh $(CONFIGURATION)
+	@$(StroikaRoot)/ScriptsLib/CheckValidConfiguration $(CONFIGURATION)
 	@### NO IDEA WHY MAKEFLAGS= is needed - @todo - DEBUG - but get link error otherwise
 	@$(MAKE) --directory=Sources --no-print-directory all
 
 
 clean clobber::
-	@$(StroikaRoot)/ScriptsLib/PrintLevelLeader.sh $(MAKE_INDENT_LEVEL) && $(ECHO) "WhyTheFuckIsMyNetworkSoSlow/Backend $(call FUNCTION_CAPITALIZE_WORD,$@) {$(CONFIGURATION)}:"
-	@$(StroikaRoot)/ScriptsLib/CheckValidConfiguration.sh $(CONFIGURATION)
+	@$(StroikaRoot)/ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "WhyTheFuckIsMyNetworkSoSlow/Backend $(call FUNCTION_CAPITALIZE_WORD,$@) {$(CONFIGURATION)}:"
+	@$(StroikaRoot)/ScriptsLib/CheckValidConfiguration $(CONFIGURATION)
 	@$(MAKE) --directory=Sources --silent $@
 
 
 format-code:
-	@$(StroikaRoot)ScriptsLib/FormatCode.sh Sources *.h *.inl *.cpp
+	@$(StroikaRoot)ScriptsLib/FormatCode Sources *.h *.inl *.cpp

@@ -2,7 +2,7 @@ export TOP_ROOT?=$(shell realpath ../../../)/
 export StroikaRoot?=$(TOP_ROOT)ThirdPartyComponents/Stroika/StroikaRoot/
 
 ifneq ($(CONFIGURATION),)
-	include $(StroikaRoot)IntermediateFiles/$(CONFIGURATION)/Library/Configuration.mk
+	include $(StroikaRoot)IntermediateFiles/$(CONFIGURATION)/Configuration.mk
 endif
 
 SrcDir				=	$(TOP_ROOT)BackendApp/Sources/Common/
@@ -18,9 +18,9 @@ Includes				+=	-I.
 vpath %cpp $(SrcDir)
 
 Objs	=	\
-	$(ObjDir)GeoLocAndISPLookup.o\
-	$(ObjDir)GeoLocation.o\
-	$(ObjDir)InternetServiceProvider.o\
+	$(ObjDir)GeoLocAndISPLookup${OBJ_SUFFIX}\
+	$(ObjDir)GeoLocation${OBJ_SUFFIX}\
+	$(ObjDir)InternetServiceProvider${OBJ_SUFFIX}\
 
 all:$(ObjDir) $(Objs)
 

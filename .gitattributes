@@ -8,6 +8,7 @@
 *.xsd text eol=crlf diff
 *.wsdl text eol=crlf diff
 README text diff
+Makefile text eol=lf diff
 *Makefile* text eol=lf diff
 *.mk text eol=lf diff
 *.pl text eol=lf diff

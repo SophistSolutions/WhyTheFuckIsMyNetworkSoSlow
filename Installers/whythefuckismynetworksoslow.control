@@ -1,0 +1,8 @@
+Package: whythefuckismynetworksoslow
+Priority: optional
+Section: admin
+Maintainer: Lewis G. Pringle, Jr <lewis@sophists.com>; Robert Lemos Pringle <robert@sophists.com>
+Architecture: amd64
+Depends: 
+Description: Why the Fuck is My Network So Slow
+

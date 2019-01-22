@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26403.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WhyTheFuckIsMyNetworkSoSlow-BackendApp", "..\..\BackendApp\Projects\VisualStudio.Net-2017\WhyTheFuckIsMyNetworkSoSlow-BackendApp.vcxproj", "{2E2192CA-3B55-45AD-A66A-3E43FAB9B42C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WhyTheFuckIsMyNetworkSoSlow-Backend", "..\..\Backend\Projects\VisualStudio.Net-2017\WhyTheFuckIsMyNetworkSoSlow-Backend.vcxproj", "{2E2192CA-3B55-45AD-A66A-3E43FAB9B42C}"
 	ProjectSection(ProjectDependencies) = postProject
 		{76C03E61-1308-4973-ABDA-2E83210A5B52} = {76C03E61-1308-4973-ABDA-2E83210A5B52}
 		{A6C00B9D-8B7F-4C43-A043-1127387E712D} = {A6C00B9D-8B7F-4C43-A043-1127387E712D}
@@ -44,6 +44,16 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Stroika-Frameworks-WebService", "..\..\ThirdPartyComponents\Stroika\StroikaRoot\Library\Projects\VisualStudio.Net-2017\Stroika-Frameworks-WebService.vcxproj", "{9454F6D7-68B9-4C91-92D1-99958EC9EA42}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Stroika-Frameworks-NetworkMonitor", "..\..\ThirdPartyComponents\Stroika\StroikaRoot\Library\Projects\VisualStudio.Net-2017\Stroika-Frameworks-NetworkMonitor.vcxproj", "{808123CA-811B-455B-A0B8-B93D289CB7B1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Installers", "Installers", "{2BAB6D3D-C91B-41E0-B5D1-583600211F3C}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\Installers\Installer.wix = ..\..\Installers\Installer.wix
+		..\..\Installers\Installer_en-us.wxl = ..\..\Installers\Installer_en-us.wxl
+		..\..\Installers\Makefile = ..\..\Installers\Makefile
+		..\..\Installers\whythefuckismynetworksoslow.control = ..\..\Installers\whythefuckismynetworksoslow.control
+		..\..\Installers\whythefuckismynetworksoslow.rpm.spec = ..\..\Installers\whythefuckismynetworksoslow.rpm.spec
+		..\..\Installers\whythefuckismynetworksoslow.service = ..\..\Installers\whythefuckismynetworksoslow.service
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -362,6 +372,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{679BC6AD-01AF-4A16-9EF4-16BE283E2F97} = {8184CE9F-C478-4792-9649-C652C914C316}
 		{53CC012B-669C-4426-8E2A-776A0F3F35D0} = {679BC6AD-01AF-4A16-9EF4-16BE283E2F97}
+		{2BAB6D3D-C91B-41E0-B5D1-583600211F3C} = {8184CE9F-C478-4792-9649-C652C914C316}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {09E9F4A9-EC1B-4FA6-BC9C-7ECC8DEE6D7F}

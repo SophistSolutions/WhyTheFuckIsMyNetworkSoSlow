@@ -56,6 +56,8 @@ void WTFAppServiceRep::MainLoop (const std::function<void()>& startedCB)
     WebServer webServer{make_shared<WSImpl> ()};
     startedCB (); // Notify service control mgr that the service has started
     Logger::Get ().Log (Logger::Priority::eInfo, L"%s (version %s) service started successfully", kServiceDescription_.fPrettyName.c_str (), Characters::ToString (AppVersion::kVersion).c_str ());
+
+    // Wait here until a 'service stop' command sends a thread-abort, and that will cause this wait to be abandoned and this stackframe to unwind
     Execution::WaitableEvent (Execution::WaitableEvent::eAutoReset).Wait (); // wait til service shutdown ThreadAbortException
 }
 

@@ -1,0 +1,15 @@
+# INSTALL THIS FILE TO /usr/lib/systemd/system/whythefuckismynetworksoslow.service
+
+[Unit]
+Description=Why the Fuck is My Network So Slow
+After=syslog.target
+
+[Service]
+Type=forking
+PIDFile=/var/run/WhyTheFuckIsMyNetworkSoSlow-Service.pid
+ExecStart=/opt/WhyTheFuckIsMyNetworkSoSlow/WhyTheFuckIsMyNetworkSoSlow-Backend --start
+ExecReload=/opt/WhyTheFuckIsMyNetworkSoSlow/WhyTheFuckIsMyNetworkSoSlow-Backend --restart
+ExecStop=/opt/WhyTheFuckIsMyNetworkSoSlow/WhyTheFuckIsMyNetworkSoSlow-Backend --stop
+
+[Install]
+WantedBy=multi-user.target
