@@ -1,21 +1,39 @@
 {
-    "files": [
-        "src/main.ts",
-        "src/app/app.component.ts",
-        "src/app/app.module.ts",
-        "src/app/data.service.ts",
-        "src/app/device-sidebar.component.ts",
-        "src/app/device.ts",
-        "src/app/sort.pipe.ts"
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "strict": true,
+    "jsx": "preserve",
+    "importHelpers": true,
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "types": [
+      "webpack-env"
     ],
-    "compilerOptions": {
-        "noImplicitAny": true,
-        "target": "es5",
-        "sourceMap": true,
-        "emitDecoratorMetadata": true,
-        "experimentalDecorators": true,
-        "lib": [ "es2015", "dom" ],
-        "noImplicitAny": true,
-        "suppressImplicitAnyIndexErrors": true        
-    }
+    "paths": {
+      "@/*": [
+        "src/*"
+      ]
+    },
+    "lib": [
+      "esnext",
+      "dom",
+      "dom.iterable",
+      "scripthost"
+    ]
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue",
+    "tests/**/*.ts",
+    "tests/**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

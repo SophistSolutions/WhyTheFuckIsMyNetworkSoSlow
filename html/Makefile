@@ -5,29 +5,26 @@ include $(StroikaRoot)/ScriptsLib/Makefile-Common.mk
 include $(StroikaRoot)/Library/Projects/Unix/SharedMakeVariables-Default.mk
 
 
-
 all:
-	#tmphack - workaround fact that gulp stuff broken for now
-	mkdir -p dist
-	-gulp
+	@$(MAKE) update-components
+	@${MAKE} build-dist
 
 
 clean:
 	@$(StroikaRoot)/ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "Clean HTML:"
-	@rm -f src/*.js	
+	@rm -f src/*.js
 
-clobber: 
+clobber:
 	@$(StroikaRoot)/ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "Clobber HTML:"
-	@rm -f src/*.js	
+	@rm -f src/*.js
 	@rm -rf dist
-
 
 update-components:
 	# automate/autodetect - @todo
 	npm install
-	#figure out why this is needed and remove
-	npm install gulp-cli -g
 
+build-dist:
+	npm run build
 
 check-prerequisites:
 	@$(StroikaRoot)/ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "Checking html prerequisites:"

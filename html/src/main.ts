@@ -1,5 +1,17 @@
-import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
+import Vue from 'vue';
+import App from './App.vue';
+import router from './router';
+import store from '@/store/store';
 
-import { AppModule }              from './app/app.module';
+import Vuetify from 'vuetify';
+import 'vuetify/dist/vuetify.min.css';
 
-platformBrowserDynamic().bootstrapModule(AppModule);
+Vue.use(Vuetify);
+
+Vue.config.productionTip = false;
+
+new Vue({
+  router,
+  store,
+  render: (h) => h(App),
+}).$mount('#app');
