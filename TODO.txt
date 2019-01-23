@@ -9,10 +9,26 @@
 
 		.../Configuration-Defaults
 			Print out the default values for each configurable value, which can be used to update config file
+----
+
+	Add docker image(s) to top level of WTF
+
+Maybe add to dockerfile (above)
+	OS=Ubuntu
+	From $OS
+
+	???
+===
+
+Add CONFIGURURE lines for cross-compile raspberrypi
 
 ----
 
-	>	fix proj files orgnaization broken in vs2k17??? (folder hieratchy)
+	Test built installer on raspberrypi
+
+----
+
+	> Do VSCode Solution (like for stroika) - especially helpful here cuz of Bob's GUI development
 
 -----
 
