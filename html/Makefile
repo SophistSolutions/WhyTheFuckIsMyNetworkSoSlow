@@ -6,9 +6,12 @@ include $(StroikaRoot)/Library/Projects/Unix/SharedMakeVariables-Default.mk
 
 
 all:
+ifeq ($(CONFIGURATION),)
+	@echo "Cannot complete build without a configuraiton" && exit 1;
+endif
 	@$(MAKE) update-components
 	@${MAKE} build-dist
-
+	@rm -rf ${TOP_ROOT}/Builds/${CONFIGURATION}/WhyTheFuckIsMyNetworkSoSlow/html && mkdir -p ${TOP_ROOT}/Builds/${CONFIGURATION}/WhyTheFuckIsMyNetworkSoSlow/html && cp -r dist/* ${TOP_ROOT}/Builds/${CONFIGURATION}/WhyTheFuckIsMyNetworkSoSlow/html/
 
 clean:
 	@$(StroikaRoot)/ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "Clean HTML:"
