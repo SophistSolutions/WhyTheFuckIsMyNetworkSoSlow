@@ -20,15 +20,24 @@ Maybe add to dockerfile (above)
 	???
 ===
 
+	>> add check in top level makefile that Thirdparty..///StroikaRoot exists (else abort early with warning)
+
+-----
+
+	- Add /Versions WSAPI to print out versions of various components
+
+-----
+
 Add CONFIGURURE lines for cross-compile raspberrypi
 
 ----
 
 	Test built installer on raspberrypi
 
-----
+FIX 
+Architecture: amd64
+ in .control file for building installer so we get right name (and other fields) for installer deb file)
 
-	> Do VSCode Solution (like for stroika) - especially helpful here cuz of Bob's GUI development
 
 -----
 
