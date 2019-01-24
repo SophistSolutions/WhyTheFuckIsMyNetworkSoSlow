@@ -116,7 +116,8 @@ endif
 	@chmod 755 -R $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)
 	
 	@echo "Version: $(DEB_VERSION)" >> $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/DEBIAN/control
-	@cat $(BASIC_NAME_LC).control >> $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/DEBIAN/control
+	@cat $(BASIC_NAME_LC).control.static >> $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/DEBIAN/control
+	@echo "Architecture: `$(StroikaRoot)ScriptsLib/MapArch2DebFileArchitecture ${ARCH}`" >> $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/DEBIAN/control
 
 	@echo "command -v systemd > /dev/null 2>&1; if [ \$$? -eq 0 ] ; then systemctl enable $(BASIC_NAME_LC) ; else echo \"Skipping systemd because not supported on target system\"; fi" >> $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/DEBIAN/postinst
 	@echo "command -v systemd > /dev/null 2>&1; if [ \$$? -eq 0 ] ; then systemctl start $(BASIC_NAME_LC) ; fi" >> $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/DEBIAN/postinst
