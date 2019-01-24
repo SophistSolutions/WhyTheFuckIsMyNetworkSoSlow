@@ -7,7 +7,7 @@ endif
 
 include $(StroikaRoot)/ScriptsLib/Makefile-Common.mk
 include $(StroikaRoot)Library/Projects/Unix/SharedBuildRules-Default.mk
-include $(StroikaRoot)/ibrary/Projects/Unix/SharedMakeVariables-Default.mk
+include $(StroikaRoot)Library/Projects/Unix/SharedMakeVariables-Default.mk
 
 SrcDir				=	$(TOP_ROOT)BackendApp/
 
