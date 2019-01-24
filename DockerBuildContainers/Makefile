@@ -4,9 +4,10 @@ DEFAULT_GOAL := help
 help:
 	@echo "make docker-images to create the docker images on your computer"
 	@echo "to run the image, use \"docker run -it sophistsolutionsinc/whythefuckismynetworksosmall-debian-crosscompile-raspberrypi\""
-	@echo "  \"docker run -it sophistsolutionsinc/whythefuckismynetworksosmall-debian-small\"   OR"
-	@echo "  \"docker run -it sophistsolutionsinc/whythefuckismynetworksosmall-debian-crosscompile-raspberrypi\""
+	@echo "    docker run -it sophistsolutionsinc/whythefuckismynetworksosmall-debian-small   OR"
+	@echo "    docker run -it sophistsolutionsinc/whythefuckismynetworksosmall-debian-crosscompile-raspberrypi"
 	@echo "n.b. use --security-opt seccomp=unconfined to run debugger?"
+	@echo "and first thing when you run docker image, cat ReadMe.md"
 
 docker-images:
 	docker build -f Debian-Small/Dockerfile -t sophistsolutionsinc/whythefuckismynetworksosmall-debian-small .
