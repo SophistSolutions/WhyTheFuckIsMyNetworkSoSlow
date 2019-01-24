@@ -2,7 +2,8 @@
   <div class="network">
     <v-card dark>
       <v-card-title>
-        {{ network.id }}
+        <!-- TODO move to a settings store -->
+        <p v-if="DEBUG_MODE">{{ network.id }}</p>
         <v-btn flat icon color="yellow" v-if="selectedNetworkId === network.id">
           <v-icon>star</v-icon>
         </v-btn>
@@ -14,7 +15,7 @@
         <div id="gateway-network" v-if="isGatewayNetwork(network)">
           <p>Gateways: {{ network.gateways[0] }}</p>
           <p>Public IP: {{ network.externalAddresses[0] }}</p>
-          <p>Provider: {{ network.internetServiceProvider.name }}</p>
+          <p>Internet Service Provider: {{ network.internetServiceProvider.name }}</p>
         </div>
         <div @click="setSelectedNetwork(network.id)">
           <v-btn small color="primary">Select As Primary Network</v-btn>
@@ -27,6 +28,7 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import { INetwork } from '@/models/network/INetwork';
+import { DEBUG_MODE } from '@/config';
 
 @Component({
     name : 'Network',

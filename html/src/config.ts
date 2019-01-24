@@ -7,3 +7,5 @@ export const API_ROOT = process.env.VUE_APP_ROOT_API ? process.env.VUE_APP_ROOT_
 export const API_NETWORKS_PATH = process.env.VUE_APP_API_NETWORKS_PATH;
 
 export const API_DEVICES_PATH = process.env.VUE_APP_API_DEVICES_PATH;
+
+export const DEBUG_MODE = process.env.VUE_APP_DEBUG_MODE;
