@@ -102,7 +102,7 @@ DEB_WORKDIR:=$(shell mktemp -d)/
 endif
 DEB_VERSION=$(MAJOR_DOT_MINOR_VERSION)$(INSTALLER_RELEASE_TAG)
 DEB_BUILD_OUT=$(ObjDir)DEB-Installer-Build.Out
-$(TARGET_OUT_INSTALLER_DEB): $(BUILT_SERVICE_EXE)
+$(TARGET_OUT_INSTALLER_DEB): $(BUILT_SERVICE_EXE) Makefile ${BUILT_HTML_DIR}
 	@$(StroikaRoot)/ScriptsLib/PrintProgressLine $(MAKE_INDENT_LEVEL) "Building DEB installer: "
 	@$(StroikaRoot)/ScriptsLib/PrintProgressLine $$(($(MAKE_INDENT_LEVEL)+1)) `$(StroikaRoot)ScriptsLib/SubstituteBackVariables "temp files: $(DEB_WORKDIR); log: $(DEB_BUILD_OUT)"`
 ifeq ($(CONFIGURATION),)
@@ -143,7 +143,7 @@ endif
 RPM_WORKDIR=$(ObjDir)RPM_TMP/
 RPM_VERSION=$(MAJOR_DOT_MINOR_VERSION)$(INSTALLER_RELEASE_TAG)
 RPM_BUILD_OUT=$(ObjDir)RPM-Installer-Build.Out
-$(TARGET_OUT_INSTALLER_RPM): $(BUILT_SERVICE_EXE)
+$(TARGET_OUT_INSTALLER_RPM): $(BUILT_SERVICE_EXE) Makefile ${BUILT_HTML_DIR}
 	@$(StroikaRoot)/ScriptsLib/PrintProgressLine $(MAKE_INDENT_LEVEL) "Building RPM installer: "
 	@$(StroikaRoot)/ScriptsLib/PrintProgressLine $$(($(MAKE_INDENT_LEVEL)+1)) `$(StroikaRoot)ScriptsLib/SubstituteBackVariables "temp files: $(RPM_WORKDIR); log: $(RPM_BUILD_OUT)"`"..."
 ifeq ($(CONFIGURATION),)
@@ -191,7 +191,7 @@ endif
 TARGET_OUT_INSTALLER_WIX_WINDOWSPATH=$(shell cygpath -w $(TARGET_OUT_INSTALLER_WIX))
 HTMLDIR_WINDOWSPATH=$(shell cygpath --mixed $(WIX_WORKDIR)html)
 WIXHTMLFRAGFILE_WINDOWPATH=$(shell cygpath --mixed $(WIX_WORKDIR)html.wxs)
-$(TARGET_OUT_INSTALLER_WIX): $(BUILT_SERVICE_EXE)
+$(TARGET_OUT_INSTALLER_WIX): $(BUILT_SERVICE_EXE) Makefile ${BUILT_HTML_DIR}
 	@$(StroikaRoot)/ScriptsLib/PrintProgressLine $(MAKE_INDENT_LEVEL) "Building WIX installer: "
 	@$(StroikaRoot)/ScriptsLib/PrintProgressLine $$(($(MAKE_INDENT_LEVEL)+1)) `$(StroikaRoot)ScriptsLib/SubstituteBackVariables "temp files: $(WIX_WORKDIR); log: $(WIX_BUILD_OUT)"`"..."
 ifeq ($(CONFIGURATION),)
