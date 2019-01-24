@@ -1,5 +1,37 @@
 
 
+
+----
+
+debug why wrong path
+
+            Built: Builds/Debugwhythefuckismynetworksoslow-1.0d4x.Linux.x86_64.deb
+
+
+
+----
+
+ - test raspberrypi building
+
+ ====
+
+ - debug why configure warnings about rasppi config on 'small' docker image
+
+
+ =---
+
+ > Move sample webservice docs code/testing to stroika sample
+
+
+
+
+----
+
+
+
+
+
+
 	DEFAULT PORT = config file and command-line args override and config-file-location override???
 		/var/opt/WhyTheFuckIsMyNetworkSoSlow/Configuration/xxx
 			StaticContentWebServerAddress : default is 0.0.0.0
@@ -9,15 +41,7 @@
 
 		.../Configuration-Defaults
 			Print out the default values for each configurable value, which can be used to update config file
-----
 
-	Add docker image(s) to top level of WTF
-
-Maybe add to dockerfile (above)
-	OS=Ubuntu
-	From $OS
-
-	???
 ===
 
 	>> add check in top level makefile that Thirdparty..///StroikaRoot exists (else abort early with warning)
@@ -25,18 +49,6 @@ Maybe add to dockerfile (above)
 -----
 
 	- Add /Versions WSAPI to print out versions of various components
-
------
-
-Add CONFIGURURE lines for cross-compile raspberrypi
-
-----
-
-	Test built installer on raspberrypi
-
-FIX 
-Architecture: amd64
- in .control file for building installer so we get right name (and other fields) for installer deb file)
 
 
 -----

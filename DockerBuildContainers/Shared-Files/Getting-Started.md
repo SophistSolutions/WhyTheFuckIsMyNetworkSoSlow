@@ -1,5 +1,6 @@
 # Quick start building WhyTheFuckIsMyNetworkSoSlow
 
+- mkdir Sandbox && cd Sandbox
 - git clone https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow.git
 - cd WhyTheFuckIsMyNetworkSoSlow
 - git submodule update --init --recursive
