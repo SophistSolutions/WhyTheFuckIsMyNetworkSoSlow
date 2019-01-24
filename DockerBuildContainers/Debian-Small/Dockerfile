@@ -43,6 +43,6 @@ RUN apt-get install -y locales && locale-gen en_US en_US.UTF-8
 # For html code
 RUN apt-get install -y nodejs npm
 
-COPY ../Shared-Files/Getting-Started.md ./
+COPY Shared-Files/Getting-Started.md ./
 
 CMD /bin/bash

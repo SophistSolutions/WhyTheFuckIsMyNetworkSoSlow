@@ -52,6 +52,6 @@ RUN apt-get update && apt-get install -y g++-8-arm-linux-gnueabihf iputils-ping
 # For html code
 RUN apt-get install -y nodejs npm
 
-COPY ../Shared-Files/Getting-Started.md ./
+COPY Shared-Files/Getting-Started.md ./
 
 CMD /bin/bash
