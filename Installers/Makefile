@@ -30,7 +30,8 @@ VERSION_FILE_IN=$(TOP_ROOT)VERSION
 
 MAJOR_DOT_MINOR_VERSION=$(shell $(StroikaRoot)/ScriptsLib/ExtractVersionInformation $(VERSION_FILE_IN) Major.Minor)
 INSTALLER_RELEASE_TAG=$(shell $(StroikaRoot)/ScriptsLib/ExtractVersionInformation $(VERSION_FILE_IN) DecoratedStageInfo)
-INSTALLER_PLATFORM_TAG?=$(shell uname -m)
+#INSTALLER_PLATFORM_TAG?=$(shell uname -m)
+INSTALLER_PLATFORM_TAG?=$(ARCH)
 INSTALLER_OS_TAG?=$(shell uname -s)
 
 TARGET_OUT_INSTALLER_DEB=$(TARGET_OUT_DIR)$(BASIC_NAME_LC)-$(DEB_VERSION).$(INSTALLER_OS_TAG).$(INSTALLER_PLATFORM_TAG).deb
@@ -101,7 +102,7 @@ DEB_WORKDIR:=$(shell mktemp -d)/
 endif
 DEB_VERSION=$(MAJOR_DOT_MINOR_VERSION)$(INSTALLER_RELEASE_TAG)
 DEB_BUILD_OUT=$(ObjDir)DEB-Installer-Build.Out
-$(TARGET_OUT_INSTALLER_DEB): $(BUILT_SERVICE_EXE)
+$(TARGET_OUT_INSTALLER_DEB): $(BUILT_SERVICE_EXE) Makefile ${BUILT_HTML_DIR}
 	@$(StroikaRoot)/ScriptsLib/PrintProgressLine $(MAKE_INDENT_LEVEL) "Building DEB installer: "
 	@$(StroikaRoot)/ScriptsLib/PrintProgressLine $$(($(MAKE_INDENT_LEVEL)+1)) `$(StroikaRoot)ScriptsLib/SubstituteBackVariables "temp files: $(DEB_WORKDIR); log: $(DEB_BUILD_OUT)"`
 ifeq ($(CONFIGURATION),)
@@ -116,7 +117,8 @@ endif
 	@chmod 755 -R $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)
 	
 	@echo "Version: $(DEB_VERSION)" >> $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/DEBIAN/control
-	@cat $(BASIC_NAME_LC).control >> $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/DEBIAN/control
+	@cat $(BASIC_NAME_LC).control.static >> $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/DEBIAN/control
+	@echo "Architecture: `$(StroikaRoot)ScriptsLib/MapArch2DebFileArchitecture ${ARCH}`" >> $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/DEBIAN/control
 
 	@echo "command -v systemd > /dev/null 2>&1; if [ \$$? -eq 0 ] ; then systemctl enable $(BASIC_NAME_LC) ; else echo \"Skipping systemd because not supported on target system\"; fi" >> $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/DEBIAN/postinst
 	@echo "command -v systemd > /dev/null 2>&1; if [ \$$? -eq 0 ] ; then systemctl start $(BASIC_NAME_LC) ; fi" >> $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/DEBIAN/postinst
@@ -141,7 +143,7 @@ endif
 RPM_WORKDIR=$(ObjDir)RPM_TMP/
 RPM_VERSION=$(MAJOR_DOT_MINOR_VERSION)$(INSTALLER_RELEASE_TAG)
 RPM_BUILD_OUT=$(ObjDir)RPM-Installer-Build.Out
-$(TARGET_OUT_INSTALLER_RPM): $(BUILT_SERVICE_EXE)
+$(TARGET_OUT_INSTALLER_RPM): $(BUILT_SERVICE_EXE) Makefile ${BUILT_HTML_DIR}
 	@$(StroikaRoot)/ScriptsLib/PrintProgressLine $(MAKE_INDENT_LEVEL) "Building RPM installer: "
 	@$(StroikaRoot)/ScriptsLib/PrintProgressLine $$(($(MAKE_INDENT_LEVEL)+1)) `$(StroikaRoot)ScriptsLib/SubstituteBackVariables "temp files: $(RPM_WORKDIR); log: $(RPM_BUILD_OUT)"`"..."
 ifeq ($(CONFIGURATION),)
@@ -189,7 +191,7 @@ endif
 TARGET_OUT_INSTALLER_WIX_WINDOWSPATH=$(shell cygpath -w $(TARGET_OUT_INSTALLER_WIX))
 HTMLDIR_WINDOWSPATH=$(shell cygpath --mixed $(WIX_WORKDIR)html)
 WIXHTMLFRAGFILE_WINDOWPATH=$(shell cygpath --mixed $(WIX_WORKDIR)html.wxs)
-$(TARGET_OUT_INSTALLER_WIX): $(BUILT_SERVICE_EXE)
+$(TARGET_OUT_INSTALLER_WIX): $(BUILT_SERVICE_EXE) Makefile ${BUILT_HTML_DIR}
 	@$(StroikaRoot)/ScriptsLib/PrintProgressLine $(MAKE_INDENT_LEVEL) "Building WIX installer: "
 	@$(StroikaRoot)/ScriptsLib/PrintProgressLine $$(($(MAKE_INDENT_LEVEL)+1)) `$(StroikaRoot)ScriptsLib/SubstituteBackVariables "temp files: $(WIX_WORKDIR); log: $(WIX_BUILD_OUT)"`"..."
 ifeq ($(CONFIGURATION),)
