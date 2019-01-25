@@ -40,14 +40,11 @@ RUN apt-get install -y libasan5 libubsan1
 #locale support not strictly required, but some regression tests depend on it
 RUN apt-get install -y locales && locale-gen en_US en_US.UTF-8
 
-#install the latest (C++17 compat) g++ compilers
-RUN apt-get install -y  g++-8
-
 #Only needed to run with valgrind regtests
 RUN apt-get install -y valgrind
 
-# Cross-compile tests for ARM (iputils-ping is how we detect if machine exists to run regtests on)
-RUN apt-get update && apt-get install -y g++-8-arm-linux-gnueabihf iputils-ping
+# Cross-compile tests for ARM
+RUN apt-get install -y g++-8-arm-linux-gnueabihf
 
 # For html code
 RUN apt-get install -y nodejs npm

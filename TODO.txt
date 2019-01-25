@@ -1,5 +1,4 @@
 
-
 CLEANU OUTPUT
 
   Compiling Backend/Sources/Service.cpp ...
@@ -29,14 +28,9 @@ CLEANU OUTPUT
 		.../Configuration-Defaults
 			Print out the default values for each configurable value, which can be used to update config file
 
-===
-
-	>> add check in top level makefile that Thirdparty..///StroikaRoot exists (else abort early with warning)
-
 -----
 
 	- Add /Versions WSAPI to print out versions of various components
-
 
 -----
 
