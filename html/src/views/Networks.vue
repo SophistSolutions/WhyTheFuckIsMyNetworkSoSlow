@@ -1,6 +1,6 @@
 <template>
   <div class="networks">
-  <div v-for="network in networks" :key="network.id">
+  <div class="networkList" v-for="network in networks" :key="network.id">
     <Network name=Network  :network=network></Network>
   </div>
   </div>
@@ -30,3 +30,15 @@ export default class Networks extends Vue {
     }
 }
 </script>
+
+<style lang="scss">
+.networks {
+  position: relative;
+  max-width: 70%;
+  margin: auto;
+  margin-top: 20px;
+}
+.networkList {
+  margin-top: 10px;
+}
+</style>

@@ -1,12 +1,12 @@
 <template>
   <div class="network">
-    <v-card dark>
+    <v-card dark class="network-pill">
       <v-card-title>
+
+        <v-icon id="selected-star" color="yellow" v-show="selectedNetworkId === network.id">star</v-icon>
+
         <!-- TODO move to a settings store -->
         <p v-if="DEBUG_MODE">{{ network.id }}</p>
-        <v-btn flat icon color="yellow" v-if="selectedNetworkId === network.id">
-          <v-icon>star</v-icon>
-        </v-btn>
       </v-card-title>
 
       <v-card-text>
@@ -54,7 +54,17 @@ export default class Network extends Vue {
 </script>
 
 <style scoped lang="scss">
-.network {
+#selected-star {
+  position: absolute;
+  top: 30px;
+  left: 40px;
+}
+.network-pill {
   padding-bottom: 10px;
+  border-radius:25px;
+}
+v-card-title {
+  position: relative;
+  height: 40px;
 }
 </style>

@@ -1,6 +1,6 @@
 <template>
   <div class="devices">
-  <div v-for="device in devices" :key="device.id">
+  <div class="deviceList" v-for="device in devices" :key="device.id">
     <Device name=Device  :device=device></Device>
   </div>
   </div>
@@ -30,3 +30,15 @@ export default class Devices extends Vue {
     }
 }
 </script>
+
+<style lang="scss">
+.devices {
+  position: relative;
+  max-width: 70%;
+  margin: auto;
+  margin-top: 20px;
+}
+.deviceList {
+  margin-top: 10px;
+}
+</style>

@@ -1,6 +1,6 @@
 <template>
   <div class="device">
-    <v-card dark>
+    <v-card class="device-pill" dark>
       <v-card-title>
         {{ device.name }}
       </v-card-title>
@@ -31,7 +31,12 @@ export default class Device extends Vue {
 </script>
 
 <style scoped lang="scss">
-.device {
+.device-pill {
   padding-bottom: 10px;
+  border-radius:25px;
+}
+v-card-title {
+  position: relative;
+  height: 40px;
 }
 </style>
