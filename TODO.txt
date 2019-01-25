@@ -1,31 +1,11 @@
 
 
-
----
-
-dockerbuildcontainers / ReadMe.md needed
-
-
-
- ====
-
- - debug why configure warnings about rasppi config on 'small' docker image
-  (warnings from perl configure scruot)
-
  =---
 
  > Move sample webservice docs code/testing to stroika sample
 
 
 ----
-
-test if gdb runnign needs unconfied crap or what still needs that and document
-
-----
-
-
-
-
 
 
 	DEFAULT PORT = config file and command-line args override and config-file-location override???

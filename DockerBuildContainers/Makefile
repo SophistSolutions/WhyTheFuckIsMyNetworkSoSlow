@@ -3,10 +3,10 @@ DEFAULT_GOAL := help
 
 help:
 	@echo "make docker-images to create the docker images on your computer"
-	@echo "to run the image, use \"docker run -it sophistsolutionsinc/whythefuckismynetworksosmall-debian-crosscompile-raspberrypi\""
+	@echo "to run the image, use:"
 	@echo "    docker run -it sophistsolutionsinc/whythefuckismynetworksosmall-debian-small   OR"
 	@echo "    docker run -it sophistsolutionsinc/whythefuckismynetworksosmall-debian-crosscompile-raspberrypi"
-	@echo "n.b. use --security-opt seccomp=unconfined to run debugger?"
+	@echo "n.b. use --security-opt seccomp=unconfined to run debugger (ptrace/address randomization disable)"
 	@echo "and first thing when you run docker image, cat ReadMe.md"
 
 docker-images:
@@ -17,7 +17,3 @@ push-images:
 	#if you get errors doing this (permission denied) make sure you ran docker login
 	docker push sophistsolutionsinc/whythefuckismynetworksosmall-debian-small
 	docker push sophistsolutionsinc/whythefuckismynetworksosmall-debian-crosscompile-raspberrypi
-
-#run-image:
-#	IMAGE=${1:-sophistsolutionsinc/stroika-buildvm-ubuntu1804-small}; \
-#	docker run --security-opt seccomp=unconfined -d $$IMAGE

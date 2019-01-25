@@ -97,8 +97,13 @@ installers installer-deb installer-rpm installer-wix:   $(TARGETEXE)
 	@$(MAKE) --no-print-directory --directory Installers MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1)) $@
 
 
+$(StroikaRoot):
+	echo "submodules missing ... so run make update-submodules"  && exit 1
+
+
 update-submodules:
 	git submodule update --init --recursive
+
 
 latest-submodules:
 ifeq ($(BRANCH),)
