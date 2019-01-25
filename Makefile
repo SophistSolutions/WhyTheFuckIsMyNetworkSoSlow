@@ -2,7 +2,7 @@ export TOP_ROOT=$(abspath ./)/
 StroikaRoot=$(TOP_ROOT)ThirdPartyComponents/Stroika/StroikaRoot/
 
 ifeq (,$(wildcard $(StroikaRoot)Makefile))
-$(error  "submodules missing ... so run make update-submodules")
+$(error  "submodules missing: perhaps you should run `git submodule update --init --recursive`")
 endif
 
 
