@@ -1,29 +1,25 @@
 
 
 
-----
+---
 
-debug why wrong path
-
-            Built: Builds/Debugwhythefuckismynetworksoslow-1.0d4x.Linux.x86_64.deb
+dockerbuildcontainers / ReadMe.md needed
 
 
-
-----
-
- - test raspberrypi building
 
  ====
 
  - debug why configure warnings about rasppi config on 'small' docker image
-
+  (warnings from perl configure scruot)
 
  =---
 
  > Move sample webservice docs code/testing to stroika sample
 
 
+----
 
+test if gdb runnign needs unconfied crap or what still needs that and document
 
 ----
 
