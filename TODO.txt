@@ -1,9 +1,20 @@
 
 
+CLEANU OUTPUT
+
+  Compiling Backend/Sources/Service.cpp ...
+         Compiling Backend/Sources/WebServices/WebServer.cpp ...
+         Linking  $StroikaRoot/Builds/Release/WhyTheFuckIsMyNetworkSoSlow/WhyTheFuckIsMyNetworkSoSlow-Backend...
+
+(new stroikaroot .... stuff)
+
  =---
 
  > Move sample webservice docs code/testing to stroika sample
 
+-----
+
+	Cleanup blaterh from html make (redirect to outfile)
 
 ----
 

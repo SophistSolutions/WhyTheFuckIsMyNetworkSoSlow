@@ -1,6 +1,12 @@
 export TOP_ROOT=$(abspath ./)/
 StroikaRoot=$(TOP_ROOT)ThirdPartyComponents/Stroika/StroikaRoot/
 
+ifneq (,$(wildcard $(StroikaRoot))
+$(error  "submodules missing ... so run make update-submodules")
+endif
+
+
+
 include $(StroikaRoot)ScriptsLib/Makefile-Common.mk
 include $(StroikaRoot)Library/Projects/Unix/SharedMakeVariables-Default.mk
 
@@ -95,10 +101,6 @@ endif
 installers installer-deb installer-rpm installer-wix:   $(TARGETEXE)
 	@$(StroikaRoot)/ScriptsLib/PrintProgressLine $(MAKE_INDENT_LEVEL) "Building Installers:"
 	@$(MAKE) --no-print-directory --directory Installers MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1)) $@
-
-
-$(StroikaRoot):
-	echo "submodules missing ... so run make update-submodules"  && exit 1
 
 
 update-submodules:
