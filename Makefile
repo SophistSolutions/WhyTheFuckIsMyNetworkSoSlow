@@ -1,7 +1,7 @@
 export TOP_ROOT=$(abspath ./)/
 StroikaRoot=$(TOP_ROOT)ThirdPartyComponents/Stroika/StroikaRoot/
 
-ifneq (,$(wildcard $(StroikaRoot))
+ifeq (,$(wildcard $(StroikaRoot)))
 $(error  "submodules missing ... so run make update-submodules")
 endif
 
