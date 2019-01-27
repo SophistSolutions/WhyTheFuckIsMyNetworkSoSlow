@@ -105,14 +105,6 @@ public:
                   mkRequestHandler (kDevices_, Device::kMapper, function<Collection<Device> (void)>{[=]() { return fWSAPI_->GetDevices_Recurse (); }})},
 #endif
 
-              // This doesn't belong here - move to new WebService sample
-              Route{
-                  RegularExpression (L"plus", RegularExpression::eECMAScript),
-                  mkRequestHandler (WebServiceMethodDescription{{}, {}, DataExchange::PredefinedInternetMediaType::JSON_CT ()}, Device::kMapper, Traversal::Iterable<String>{L"arg1", L"arg2"}, function<double(double, double)>{[=](double arg1, double arg2) { return arg1 + arg2; }})},
-              Route{
-                  RegularExpression (L"test-void-return", RegularExpression::eECMAScript),
-                  mkRequestHandler (WebServiceMethodDescription{}, Device::kMapper, Traversal::Iterable<String>{L"err-if-more-than-10"}, function<void(double)>{[=](double check) { if (check > 10) {Execution::Throw (Execution::StringException (L"more than 10"));} }})},
-
               Route{
                   RegularExpression (L"devices", RegularExpression::eECMAScript),
                   [=](Message* m) {
@@ -271,12 +263,6 @@ public:
           }}
         , fGUIWebConnectionMgr_{SocketAddresses (InternetAddresses_Any (), 80), fGUIWebRouter_, ConnectionManager::Options{kMaxGUIWebServerConcurrentConnections_, Socket::BindFlags{true}, kServerString_}}
     {
-        // @todo - move this to some framework-specific regtests...
-        using VariantValue         = DataExchange::VariantValue;
-        Sequence<VariantValue> tmp = OrderParamValues (Iterable<String>{L"page", L"xxx"}, PickoutParamValuesFromURL (URL (L"http://www.sophist.com?page=5", URL::eFlexiblyAsUI)));
-        Assert (tmp.size () == 2);
-        Assert (tmp[0] == 5);
-        Assert (tmp[1] == nullptr);
     }
     static void DefaultPage_ (Request* request, Response* response)
     {
