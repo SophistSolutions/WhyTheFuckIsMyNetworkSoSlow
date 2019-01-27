@@ -17,7 +17,6 @@ CLEANU OUTPUT
 
 ----
 
-
 	DEFAULT PORT = config file and command-line args override and config-file-location override???
 		/var/opt/WhyTheFuckIsMyNetworkSoSlow/Configuration/xxx
 			StaticContentWebServerAddress : default is 0.0.0.0

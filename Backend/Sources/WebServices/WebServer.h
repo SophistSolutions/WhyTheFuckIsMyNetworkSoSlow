@@ -21,8 +21,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
     using Containers::Collection;
 
     /**
-             *  WebServer handles basic HTTP web server technology, and translates to ISAPI interface web-service implementation methods.
-             */
+     *  WebServer handles basic HTTP web server technology, and translates to ISAPI interface web-service implementation methods.
+     */
     class WebServer {
     public:
         WebServer (const shared_ptr<IWSAPI>& wsImpl);
