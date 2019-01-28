@@ -28,9 +28,9 @@
 using namespace std;
 
 using namespace Stroika::Foundation;
+using namespace Stroika::Foundation::Characters;
 using namespace Stroika::Frameworks::Service;
 
-using Characters::String_Constant;
 using Execution::Thread;
 
 using namespace WhyTheFuckIsMyNetworkSoSlow;
@@ -41,8 +41,8 @@ using Execution::Logger;
 
 namespace {
     const Main::ServiceDescription kServiceDescription_{
-        String_Constant (L"WhyTheFuckIsMyNetworkSoSlow-Service"),
-        String_Constant (L"WhyTheFuckIsMyNetworkSoSlow Service")};
+        L"WhyTheFuckIsMyNetworkSoSlow-Service"_k,
+        L"WhyTheFuckIsMyNetworkSoSlow Service"_k};
 }
 
 void WTFAppServiceRep::MainLoop (const std::function<void()>& startedCB)

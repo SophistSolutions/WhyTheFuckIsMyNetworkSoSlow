@@ -68,8 +68,8 @@ namespace {
              *  o   http://myexternalip.com/raw
              */
             static const URL kSources_[]{
-                URL{L"http://api.ipify.org/", URL::ParseOptions::eAsFullURL},
-                URL{L"http://myexternalip.com/raw", URL::ParseOptions::eAsFullURL},
+                URL{L"http://api.ipify.org/"_k, URL::ParseOptions::eAsFullURL},
+                URL{L"http://myexternalip.com/raw"_k, URL::ParseOptions::eAsFullURL},
             };
             // @todo - when one fails, we should try the other first next time
             for (auto&& url : kSources_) {

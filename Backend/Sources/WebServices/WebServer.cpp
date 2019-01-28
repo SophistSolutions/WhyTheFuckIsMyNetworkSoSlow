@@ -96,7 +96,7 @@ public:
                   RegularExpression::kAny,
                   [](Message* m) {}},
               Route{
-                  RegularExpression (L"", RegularExpression::eECMAScript),
+                  L""_RegEx,
                   DefaultPage_},
 
 #if 0
@@ -106,7 +106,7 @@ public:
 #endif
 
               Route{
-                  RegularExpression (L"devices", RegularExpression::eECMAScript),
+                  L"devices"_RegEx,
                   [=](Message* m) {
                       constexpr bool kDefault_FilterRunningOnly_{true};
                       ExpectedMethod (m->GetRequestReference (), kNetworkInterfaces_);
@@ -120,7 +120,7 @@ public:
                       }
                   }},
               Route{
-                  RegularExpression (L"devices/.*", RegularExpression::eECMAScript),
+                  L"devices/.*"_RegEx,
                   [=](Message* m) {
                       // @todo parse out of REGULAR EXPRESSION - id
                       //tmphack way to grab id arg (til stroika router supports this)
@@ -132,17 +132,17 @@ public:
                           WriteResponse (m->PeekResponse (), kDevices_, Device::kMapper.FromObject (fWSAPI_->GetDevice (id)));
                       }
                       else {
-                          Execution::Throw (Execution::StringException (L"missing ID argument"));
+                          Execution::Throw (Execution::StringException (L"missing ID argument"_k));
                       }
                   }},
 
               Route{
-                  RegularExpression (L"network-interfaces", RegularExpression::eECMAScript),
+                  L"network-interfaces"_RegEx,
                   [=](Message* m) {
                       constexpr bool kDefault_FilterRunningOnly_{true};
                       ExpectedMethod (m->GetRequestReference (), kNetworkInterfaces_);
                       Mapping<String, DataExchange::VariantValue> args              = PickoutParamValues (m->PeekRequest ());
-                      bool                                        filterRunningOnly = args.LookupValue (L"filter-only-running", DataExchange::VariantValue{kDefault_FilterRunningOnly_}).As<bool> ();
+                      bool                                        filterRunningOnly = args.LookupValue (L"filter-only-running"_k, DataExchange::VariantValue{kDefault_FilterRunningOnly_}).As<bool> ();
                       if (args.LookupValue (L"recurse", false).As<bool> ()) {
                           WriteResponse (m->PeekResponse (), kNetworkInterfaces_, NetworkInterface::kMapper.FromObject (fWSAPI_->GetNetworkInterfaces_Recurse (filterRunningOnly)));
                       }
@@ -151,7 +151,7 @@ public:
                       }
                   }},
               Route{
-                  RegularExpression (L"network-interfaces/.*", RegularExpression::eECMAScript),
+                  L"network-interfaces/.*"_RegEx,
                   [=](Message* m) {
                       // @todo parse out of REGULAR EXPRESSION - id
                       //tmphack way to grab id arg (til stroika router supports this)
@@ -163,16 +163,16 @@ public:
                           WriteResponse (m->PeekResponse (), kNetworkInterfaces_, NetworkInterface::kMapper.FromObject (fWSAPI_->GetNetworkInterface (id)));
                       }
                       else {
-                          Execution::Throw (Execution::StringException (L"missing ID argument"));
+                          Execution::Throw (Execution::StringException (L"missing ID argument"_k));
                       }
                   }},
 
               Route{
-                  RegularExpression (L"networks", RegularExpression::eECMAScript),
+                  L"networks"_RegEx,
                   [=](Message* m) {
                       ExpectedMethod (m->GetRequestReference (), kNetworks_);
                       Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
-                      if (args.LookupValue (L"recurse", false).As<bool> ()) {
+                      if (args.LookupValue (L"recurse"_k, false).As<bool> ()) {
                           WriteResponse (m->PeekResponse (), kNetworkInterfaces_, Network::kMapper.FromObject (fWSAPI_->GetNetworks_Recurse ()));
                       }
                       else {
@@ -180,7 +180,7 @@ public:
                       }
                   }},
               Route{
-                  RegularExpression (L"networks/.*", RegularExpression::eECMAScript),
+                  L"networks/.*"_RegEx,
                   [=](Message* m) {
                       // @todo parse out of REGULAR EXPRESSION - id
                       //tmphack way to grab id arg (til stroika router supports this)
@@ -192,40 +192,40 @@ public:
                           WriteResponse (m->PeekResponse (), kNetworks_, Network::kMapper.FromObject (fWSAPI_->GetNetwork (id)));
                       }
                       else {
-                          Execution::Throw (Execution::StringException (L"missing ID argument"));
+                          Execution::Throw (Execution::StringException (L"missing ID argument"_k));
                       }
                   }},
 
               Route{
-                  RegularExpression (L"operations/ping", RegularExpression::eECMAScript),
+                  L"operations/ping"_RegEx,
                   [=](Message* m) {
                       Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
-                      if (auto address = args.Lookup (L"target")) {
+                      if (auto address = args.Lookup (L"target"_k)) {
                           ExpectedMethod (m->GetRequestReference (), kOperations_);
                           WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_Ping (address->As<String> ())));
                       }
                       else {
-                          Execution::Throw (Execution::StringException (L"missing target argument"));
+                          Execution::Throw (Execution::StringException (L"missing target argument"_k));
                       }
                   }},
               Route{
-                  RegularExpression (L"operations/traceroute", RegularExpression::eECMAScript),
+                  L"operations/traceroute"_RegEx,
                   [=](Message* m) {
                       Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
                       optional<bool>                              reverseDNSResult;
-                      if (auto rdr = args.Lookup (L"reverse-dns-result")) {
+                      if (auto rdr = args.Lookup (L"reverse-dns-result"_k)) {
                           reverseDNSResult = rdr->As<bool> ();
                       }
-                      if (auto address = args.Lookup (L"target")) {
+                      if (auto address = args.Lookup (L"target"_k)) {
                           ExpectedMethod (m->GetRequestReference (), kOperations_);
                           WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_TraceRoute (address->As<String> (), reverseDNSResult)));
                       }
                       else {
-                          Execution::Throw (Execution::StringException (L"missing target argument"));
+                          Execution::Throw (Execution::StringException (L"missing target argument"_k));
                       }
                   }},
               Route{
-                  RegularExpression (L"operations/dns/calculate-negative-lookup-time", RegularExpression::eECMAScript),
+                  L"operations/dns/calculate-negative-lookup-time"_RegEx,
                   [=](Message* m) {
                       ExpectedMethod (m->GetRequestReference (), kOperations_);
                       optional<unsigned int>                      samples;
@@ -236,7 +236,7 @@ public:
                       WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_DNS_CalculateNegativeLookupTime (samples)));
                   }},
               Route{
-                  RegularExpression (L"operations/dns/lookup", RegularExpression::eECMAScript),
+                  L"operations/dns/lookup"_RegEx,
                   [=](Message* m) {
                       ExpectedMethod (m->GetRequestReference (), kOperations_);
                       String                                      name;
@@ -245,12 +245,12 @@ public:
                           name = rdr->As<String> ();
                       }
                       else {
-                          Execution::Throw (Execution::StringException (L"missing name argument"));
+                          Execution::Throw (Execution::StringException (L"missing name argument"_k));
                       }
                       WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_DNS_Lookup (name)));
                   }},
               Route{
-                  RegularExpression (L"operations/dns/calculate-score", RegularExpression::eECMAScript),
+                  L"operations/dns/calculate-score"_RegEx,
                   [=](Message* m) {
                       ExpectedMethod (m->GetRequestReference (), kOperations_);
                       WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_DNS_CalculateScore ()));
@@ -274,58 +274,58 @@ public:
                 kNetworks_,
                 kOperations_,
             },
-            DocsOptions{String_Constant{L"Web Methods"}});
+            DocsOptions{L"Web Methods"_k});
     }
 };
 const WebServiceMethodDescription WebServer::Rep_::kDevices_{
-    String_Constant{L"devices"},
+    L"devices"_k,
     Set<String>{String_Constant{IO::Network::HTTP::Methods::kGet}},
     DataExchange::PredefinedInternetMediaType::kJSON,
     {},
-    Sequence<String>{L"curl http://localhost:8080/devices", L"curl http://localhost:8080/devices?recurse=true", L"curl http://localhost:8080/devices/{ID}"},
-    Sequence<String>{L"Fetch the list of known devices for the currently connected network.",
-                     L"@todo - in the future - add support for parameters to this fetch - which can be used to filter/subset etc"},
+    Sequence<String>{L"curl http://localhost:8080/devices"_k, L"curl http://localhost:8080/devices?recurse=true"_k, L"curl http://localhost:8080/devices/{ID}"_k},
+    Sequence<String>{L"Fetch the list of known devices for the currently connected network."_k,
+                     L"@todo - in the future - add support for parameters to this fetch - which can be used to filter/subset etc"_k},
 };
 const WebServiceMethodDescription WebServer::Rep_::kNetworks_{
-    String_Constant{L"networks"},
+    L"networks"_k,
     Set<String>{String_Constant{IO::Network::HTTP::Methods::kGet}},
     DataExchange::PredefinedInternetMediaType::kJSON,
     {},
-    Sequence<String>{L"curl http://localhost:8080/networks", L"curl http://localhost:8080/networks?recurse=true", L"curl http://localhost:8080/networks/{ID}"},
-    Sequence<String>{L"Fetch the list of known Networks.",
-                     L"@todo - in the future - add support for parameters to this fetch - which can be used to filter/subset etc"},
+    Sequence<String>{L"curl http://localhost:8080/networks"_k, L"curl http://localhost:8080/networks?recurse=true"_k, L"curl http://localhost:8080/networks/{ID}"_k},
+    Sequence<String>{L"Fetch the list of known Networks."_k,
+                     L"@todo - in the future - add support for parameters to this fetch - which can be used to filter/subset etc"_k},
 };
 const WebServiceMethodDescription WebServer::Rep_::kNetworkInterfaces_{
-    String_Constant{L"network-interfaces"},
+    L"network-interfaces"_k,
     Set<String>{String_Constant{IO::Network::HTTP::Methods::kGet}},
     DataExchange::PredefinedInternetMediaType::kJSON,
     {},
-    Sequence<String>{L"curl http://localhost:8080/network-interfaces", L"curl http://localhost:8080/network-interfaces?recurse=true", L"curl http://localhost:8080/network-interfaces?filter-only-running=true"},
-    Sequence<String>{L"Fetch the list of known Network Interfaces.",
-                     L"[filter-only-running=true|false]?, recurse=true|false]?"},
+    Sequence<String>{L"curl http://localhost:8080/network-interfaces", L"curl http://localhost:8080/network-interfaces?recurse=true"_k, L"curl http://localhost:8080/network-interfaces?filter-only-running=true"_k},
+    Sequence<String>{L"Fetch the list of known Network Interfaces."_k,
+                     L"[filter-only-running=true|false]?, recurse=true|false]?"_k},
 };
 const WebServiceMethodDescription WebServer::Rep_::kOperations_{
-    String_Constant{L"operations"},
+    L"operations"_k,
     Set<String>{String_Constant{IO::Network::HTTP::Methods::kGet}},
     DataExchange::PredefinedInternetMediaType::kJSON,
     {},
     Sequence<String>{
-        L"curl http://localhost:8080/operations/ping?target=www.google.com",
-        L"curl http://localhost:8080/operations/traceroute?target=www.sophists.com",
-        L"curl http://localhost:8080/operations/dns/calculate-negative-lookup-time",
-        L"curl http://localhost:8080/operations/dns/lookup?name=www.youtube.com",
-        L"curl http://localhost:8080/operations/dns/calculate-score",
+        L"curl http://localhost:8080/operations/ping?target=www.google.com"_k,
+        L"curl http://localhost:8080/operations/traceroute?target=www.sophists.com"_k,
+        L"curl http://localhost:8080/operations/dns/calculate-negative-lookup-time"_k,
+        L"curl http://localhost:8080/operations/dns/lookup?name=www.youtube.com"_k,
+        L"curl http://localhost:8080/operations/dns/calculate-score"_k,
     },
     Sequence<String>{
-        L"perform a wide variety of operations - mostly for debugging for now but may stay around.",
-        L"/operations/ping?target=address; (address can be ipv4, ipv6 address, or dnsname)",
-        L"/operations/traceroute?target=address[&reverse-dns-result=bool]?; (address can be ipv4, ipv6 address, or dnsname)",
-        L"/operations/dns/calculate-negative-lookup-time[&samples=uint]?",
-        L"/operations/dns/lookup[&name=string]",
-        L"/operations/dns/calculate-score; returns number 0 (worst) to 1.0 (best)",
+        L"perform a wide variety of operations - mostly for debugging for now but may stay around."_k,
+        L"/operations/ping?target=address; (address can be ipv4, ipv6 address, or dnsname)"_k,
+        L"/operations/traceroute?target=address[&reverse-dns-result=bool]?; (address can be ipv4, ipv6 address, or dnsname)"_k,
+        L"/operations/dns/calculate-negative-lookup-time[&samples=uint]?"_k,
+        L"/operations/dns/lookup[&name=string]"_k,
+        L"/operations/dns/calculate-score; returns number 0 (worst) to 1.0 (best)"_k,
     },
 };
-const String WebServer::Rep_::kServerString_ = String{L"Why-The-Fuck-Is-My-Network-So-Slow/"} + AppVersion::kVersion.AsMajorMinorString ();
+const String WebServer::Rep_::kServerString_ = L"Why-The-Fuck-Is-My-Network-So-Slow/"_k + AppVersion::kVersion.AsMajorMinorString ();
 
 WebServer::WebServer (const shared_ptr<IWSAPI>& wsImpl)
     : fRep_ (make_shared<Rep_> (wsImpl))

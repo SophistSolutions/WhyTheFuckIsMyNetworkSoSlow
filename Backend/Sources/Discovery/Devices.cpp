@@ -91,9 +91,9 @@ public:
     Collection<Discovery::Device> GetActiveDevices () const
     {
         static const Mapping<String, String> kNamePrettyPrintMapper_{
-            KeyValuePair<String, String>{L"ASUSTeK UPnP/1.1 MiniUPnPd/1.9", L"ASUS Router"},
-            KeyValuePair<String, String>{L"Microsoft-Windows/10.0 UPnP/1.0 UPnP-Device-Host/1.0", L"Antiphon"},
-            KeyValuePair<String, String>{L"POSIX, UPnP/1.0, Intel MicroStack/1.0.1347", L"HP PhotoSmart"},
+            KeyValuePair<String, String>{L"ASUSTeK UPnP/1.1 MiniUPnPd/1.9"_k, L"ASUS Router"_k},
+            KeyValuePair<String, String>{L"Microsoft-Windows/10.0 UPnP/1.0 UPnP-Device-Host/1.0"_k, L"Antiphon"_k},
+            KeyValuePair<String, String>{L"POSIX, UPnP/1.0, Intel MicroStack/1.0.1347"_k, L"HP PhotoSmart"_k},
         };
         Collection<Discovery::Device> results;
         for (DiscoveryInfo_ di : GetSoFarDiscoveredDevices_ ()) {
