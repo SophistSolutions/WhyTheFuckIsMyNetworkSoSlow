@@ -1,4 +1,13 @@
+GET /versions
+  { 
+    whythefuckismynetworksoslow: 1.0d4
+  }
 
+	- Add /Versions WSAPI to print out versions of various components
+
+
+
+----
 CLEANU OUTPUT
 
   Compiling Backend/Sources/Service.cpp ...
@@ -23,11 +32,7 @@ CLEANU OUTPUT
 		.../Configuration-Defaults
 			Print out the default values for each configurable value, which can be used to update config file
 
------
-
-	- Add /Versions WSAPI to print out versions of various components
-
------
+------
 
 http://localhost:8080/Network/97979b96-9967-6696-95cb-6495706c66c9
 	ONLY prints ONE Network_Address - should print BOTH the IPv4 and IPv6 networks there.
