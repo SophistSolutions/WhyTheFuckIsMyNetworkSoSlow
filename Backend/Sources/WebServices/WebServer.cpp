@@ -68,6 +68,7 @@ public:
     static const WebServiceMethodDescription kNetworks_;
     static const WebServiceMethodDescription kNetworkInterfaces_;
     static const WebServiceMethodDescription kOperations_;
+    static const WebServiceMethodDescription kVersions_;
 
 private:
     static constexpr unsigned int kMaxConcurrentConnections_{5};
@@ -256,6 +257,10 @@ public:
                       WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_DNS_CalculateScore ()));
                   }},
 
+              Route{
+                  L"versions"_RegEx,
+                  mkRequestHandler (kVersions_, VersionInfo::kMapper, function<VersionInfo (void)>{[=]() { return fWSAPI_->GetVersionInfo (); }})},
+
           }}
         , fWSConnectionMgr_{SocketAddresses (InternetAddresses_Any (), 8080), fWSRouter_, ConnectionManager::Options{kMaxConcurrentConnections_, Socket::BindFlags{true}, kServerString_}} // listen and dispatch while this object exists
         , fGUIWebRouter_{Sequence<Route>{
@@ -273,6 +278,8 @@ public:
                 kNetworkInterfaces_,
                 kNetworks_,
                 kOperations_,
+                kVersions_,
+
             },
             DocsOptions{L"Web Methods"_k});
     }
@@ -324,6 +331,16 @@ const WebServiceMethodDescription WebServer::Rep_::kOperations_{
         L"/operations/dns/lookup[&name=string]"_k,
         L"/operations/dns/calculate-score; returns number 0 (worst) to 1.0 (best)"_k,
     },
+};
+const WebServiceMethodDescription WebServer::Rep_::kVersions_{
+    L"versions"_k,
+    Set<String>{String_Constant{IO::Network::HTTP::Methods::kGet}},
+    DataExchange::PredefinedInternetMediaType::kJSON,
+    {},
+    Sequence<String>{
+        L"curl http://localhost:8080/versions"_k,
+    },
+    Sequence<String>{L"Fetch the component versions."_k},
 };
 const String WebServer::Rep_::kServerString_ = L"Why-The-Fuck-Is-My-Network-So-Slow/"_k + AppVersion::kVersion.AsMajorMinorString ();
 

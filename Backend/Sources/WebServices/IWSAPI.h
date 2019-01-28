@@ -86,6 +86,12 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
          *  curl  http://localhost:8080/operations/dns/calculate-score
          */
         virtual double Operation_DNS_CalculateScore () const = 0;
+
+    public:
+        /**
+         *  curl  http://localhost:8080/versions
+         */
+        virtual VersionInfo GetVersionInfo () const = 0;
     };
 
 }

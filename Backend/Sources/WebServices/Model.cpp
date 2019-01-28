@@ -298,3 +298,35 @@ const ObjectVariantMapper Operations::kMapper = []() {
 }();
 DISABLE_COMPILER_GCC_WARNING_END ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
 DISABLE_COMPILER_MSC_WARNING_END (4573);
+
+/*
+ ********************************************************************************
+ ********************************* Model::VersionInfo ***************************
+ ********************************************************************************
+ */
+String VersionInfo::ToString () const
+{
+    Characters::StringBuilder sb;
+    sb += L"{";
+    sb += L"Overall-Application-Version: " + Characters::ToString (fOverallApplicationVersion) + L", ";
+    sb += L"}";
+    return sb.str ();
+}
+
+DISABLE_COMPILER_MSC_WARNING_START (4573);
+DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
+const ObjectVariantMapper VersionInfo::kMapper = []() {
+    ObjectVariantMapper mapper;
+
+    mapper.Add<Configuration::Version> (
+        [](const ObjectVariantMapper& mapper, const Configuration::Version* obj) -> VariantValue { return obj->AsPrettyVersionString (); },
+        [](const ObjectVariantMapper& mapper, const VariantValue& d, Configuration::Version* intoObj) -> void { *intoObj = Configuration::Version::FromPrettyVersionString (d.As<String> ()); });
+
+    mapper.AddClass<VersionInfo> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+        {L"applicationVersion", Stroika_Foundation_DataExchange_StructFieldMetaInfo (VersionInfo, fOverallApplicationVersion)},
+    });
+
+    return mapper;
+}();
+DISABLE_COMPILER_GCC_WARNING_END ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
+DISABLE_COMPILER_MSC_WARNING_END (4573);

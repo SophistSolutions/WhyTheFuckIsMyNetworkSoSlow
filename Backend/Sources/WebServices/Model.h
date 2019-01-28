@@ -7,6 +7,7 @@
 #include "Stroika/Frameworks/StroikaPreComp.h"
 
 #include "Stroika/Foundation/Characters/String.h"
+#include "Stroika/Foundation/Configuration/Version.h"
 #include "Stroika/Foundation/Containers/Sequence.h"
 #include "Stroika/Foundation/DataExchange/ObjectVariantMapper.h"
 #include "Stroika/Foundation/IO/Network/CIDR.h"
@@ -167,6 +168,14 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
         extern const DataExchange::ObjectVariantMapper kMapper;
     }
+
+    struct VersionInfo {
+        Configuration::Version fOverallApplicationVersion;
+
+        nonvirtual String ToString () const;
+
+        static const DataExchange::ObjectVariantMapper kMapper;
+    };
 
 }
 

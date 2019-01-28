@@ -20,6 +20,8 @@
 #include "../Discovery/NetworkInterfaces.h"
 #include "../Discovery/Networks.h"
 
+#include "AppVersion.h"
+
 #include "WSImpl.h"
 
 // Comment this in to turn on aggressive noisy DbgTrace in this module
@@ -381,6 +383,11 @@ double WSImpl::Operation_DNS_CalculateScore () const
     score = Math::PinInRange<double> (score, 0, 1);
     Ensure (0 <= score and score <= 1.0);
     return score;
+}
+
+VersionInfo WSImpl::GetVersionInfo () const
+{
+    return VersionInfo{AppVersion::kVersion};
 }
 
 /*
