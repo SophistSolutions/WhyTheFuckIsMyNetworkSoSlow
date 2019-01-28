@@ -1,14 +1,5 @@
-GET /versions
-  { 
-    whythefuckismynetworksoslow: 1.0d4
-  }
 
-	- Add /Versions WSAPI to print out versions of various components
-
-
-
-----
-CLEANU OUTPUT
+CLEANUP OUTPUT
 
   Compiling Backend/Sources/Service.cpp ...
          Compiling Backend/Sources/WebServices/WebServer.cpp ...
