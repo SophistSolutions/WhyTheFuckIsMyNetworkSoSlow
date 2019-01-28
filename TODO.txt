@@ -7,10 +7,6 @@ CLEANU OUTPUT
 
 (new stroikaroot .... stuff)
 
- =---
-
- > Move sample webservice docs code/testing to stroika sample
-
 -----
 
 	Cleanup blaterh from html make (redirect to outfile)

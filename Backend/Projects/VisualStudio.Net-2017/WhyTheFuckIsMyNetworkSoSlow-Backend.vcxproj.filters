@@ -16,8 +16,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Makefile" />
-    <None Include="..\..\ReadMe.md" />
-    <None Include="..\..\Todo.md" />
     <None Include="..\..\Sources\Makefile">
       <Filter>Sources</Filter>
     </None>

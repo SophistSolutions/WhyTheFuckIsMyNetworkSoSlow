@@ -530,7 +530,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Makefile" />
-    <None Include="..\..\ReadMe.md" />
     <None Include="..\..\Sources\Common\GeoLocAndISPLookup.inl" />
     <None Include="..\..\Sources\Common\GeoLocation.inl" />
     <None Include="..\..\Sources\Common\InternetServiceProvider.inl" />
@@ -546,7 +545,6 @@
     <None Include="..\..\Sources\WebServices\Model.inl" />
     <None Include="..\..\Sources\WebServices\WebServer.inl" />
     <None Include="..\..\Sources\WebServices\WSImpl.inl" />
-    <None Include="..\..\Todo.md" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Common\GeoLocAndISPLookup.cpp" />
