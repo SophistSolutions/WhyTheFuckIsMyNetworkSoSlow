@@ -1,4 +1,30 @@
+Top priority bug:
+	>	DEVICES DUPLICATED 
 
+	>	NEXT - SEE IF SOMETHING SIMPLE TODO TO GET BETTER GUESSES AT DEVICE deviceType
+		(maybe replace TYPE with ICON, and have a list of icons
+		and with persistence UI can associate icons with devices?
+		)
+
+	>	At least someting so sonos speakers show up special? Maybe have CLASES (can be in more than one claass
+		and if you support a given INTERFACE you get that class)
+
+		Classes = "Windows device" | "Unix Device"  (and windows might be in both with WSL)
+		if it shows - windows means has 'netbios and ???'
+		'MacOS device'?
+
+			Windows Media Server
+
+			speakers
+
+			Router (or better - Network Infrastrucutre for routers, WAPs etc)
+			Maybe ROUTER AND NetworkInfrastrucutre
+
+			(then GUI can devide how to 'show' if in multiple classes)
+
+
+
+-----
 CLEANUP OUTPUT
 
   Compiling Backend/Sources/Service.cpp ...
