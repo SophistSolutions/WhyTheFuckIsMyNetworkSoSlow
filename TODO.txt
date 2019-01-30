@@ -1,6 +1,8 @@
 Top priority bug:
 	>	DEVICES DUPLICATED 
 
+	> Add suport for ARP -a for discovery
+
 	>	NEXT - SEE IF SOMETHING SIMPLE TODO TO GET BETTER GUESSES AT DEVICE deviceType
 		(maybe replace TYPE with ICON, and have a list of icons
 		and with persistence UI can associate icons with devices?
