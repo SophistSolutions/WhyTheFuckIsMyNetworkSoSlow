@@ -1,4 +1,28 @@
 Top priority bug:
+
+
+	> backgorund thread NETWORK discovery
+		Network disc module
+		   Return ALL Current (even if disconencted)
+		   Do logic so 'refrsh tick' wakeup called on Webservice calls?
+		   Then time based scanning for new networks.
+		   Say up to 60 minutes if no wakeups.
+		   But otherwise typically around once ever 30 seconds (if actively getting WS calls).
+	
+
+	  > SIMILAR background thread doing Device discovery 
+	     > checks all current networks
+		 > similar slowdown if inactive
+		 > periodcally call arp -a to get a list of candidates
+		 > peridocally check candidates randomly from active networks
+		 > PING them for now - but eventually also try other ways like connecting to port 22, etc.
+		 > Store MUCH more data on discovered devices
+		 > Load/save this to/from Database
+		 > have ALL CURRENT (for network) and maybe (ALL EVER) for network APIs to do fetches
+
+	
+
+
 	>	DEVICES DUPLICATED 
 
 	> Add suport for ARP -a for discovery
