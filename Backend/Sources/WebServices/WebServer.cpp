@@ -12,6 +12,7 @@
 #include "Stroika/Foundation/DataExchange/Variant/JSON/Writer.h"
 #include "Stroika/Foundation/Execution/Module.h"
 #include "Stroika/Foundation/Execution/Synchronized.h"
+#include "Stroika/Foundation/IO/Network/HTTP/ClientErrorException.h"
 #include "Stroika/Foundation/IO/Network/HTTP/Exception.h"
 #include "Stroika/Foundation/IO/Network/HTTP/Headers.h"
 #include "Stroika/Foundation/IO/Network/HTTP/Methods.h"
@@ -34,6 +35,8 @@ using namespace Stroika::Foundation::Characters;
 using namespace Stroika::Foundation::Containers;
 using namespace Stroika::Foundation::Execution;
 using namespace Stroika::Foundation::IO::Network;
+
+using Stroika::Foundation::IO::Network::HTTP::ClientErrorException;
 
 using namespace Stroika::Frameworks::WebServer;
 using namespace Stroika::Frameworks::WebService;
@@ -133,7 +136,7 @@ public:
                           WriteResponse (m->PeekResponse (), kDevices_, Device::kMapper.FromObject (fWSAPI_->GetDevice (id)));
                       }
                       else {
-                          Execution::Throw (Execution::StringException (L"missing ID argument"_k));
+                          Execution::Throw (ClientErrorException (L"missing ID argument"_k));
                       }
                   }},
 
@@ -164,7 +167,7 @@ public:
                           WriteResponse (m->PeekResponse (), kNetworkInterfaces_, NetworkInterface::kMapper.FromObject (fWSAPI_->GetNetworkInterface (id)));
                       }
                       else {
-                          Execution::Throw (Execution::StringException (L"missing ID argument"_k));
+                          Execution::Throw (ClientErrorException (L"missing ID argument"_k));
                       }
                   }},
 
@@ -193,7 +196,7 @@ public:
                           WriteResponse (m->PeekResponse (), kNetworks_, Network::kMapper.FromObject (fWSAPI_->GetNetwork (id)));
                       }
                       else {
-                          Execution::Throw (Execution::StringException (L"missing ID argument"_k));
+                          Execution::Throw (ClientErrorException (L"missing ID argument"_k));
                       }
                   }},
 
@@ -206,7 +209,7 @@ public:
                           WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_Ping (address->As<String> ())));
                       }
                       else {
-                          Execution::Throw (Execution::StringException (L"missing target argument"_k));
+                          Execution::Throw (ClientErrorException (L"missing target argument"_k));
                       }
                   }},
               Route{
@@ -222,7 +225,7 @@ public:
                           WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_TraceRoute (address->As<String> (), reverseDNSResult)));
                       }
                       else {
-                          Execution::Throw (Execution::StringException (L"missing target argument"_k));
+                          Execution::Throw (ClientErrorException (L"missing target argument"_k));
                       }
                   }},
               Route{
@@ -246,7 +249,7 @@ public:
                           name = rdr->As<String> ();
                       }
                       else {
-                          Execution::Throw (Execution::StringException (L"missing name argument"_k));
+                          Execution::Throw (ClientErrorException (L"missing name argument"_k));
                       }
                       WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_DNS_Lookup (name)));
                   }},

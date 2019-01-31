@@ -10,6 +10,7 @@
 #include "Stroika/Foundation/Cryptography/Format.h"
 #include "Stroika/Foundation/Execution/Synchronized.h"
 #include "Stroika/Foundation/IO/Network/DNS.h"
+#include "Stroika/Foundation/IO/Network/HTTP/ClientErrorException.h"
 #include "Stroika/Foundation/IO/Network/Interface.h"
 #include "Stroika/Foundation/IO/Network/LinkMonitor.h"
 
@@ -35,6 +36,7 @@ using namespace Stroika::Foundation::Containers;
 using namespace Stroika::Foundation::Execution;
 
 using Stroika::Foundation::Common::GUID;
+using Stroika::Foundation::IO::Network::HTTP::ClientErrorException;
 
 using namespace WhyTheFuckIsMyNetworkSoSlow;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp;
@@ -143,13 +145,15 @@ Collection<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse () const
 
 Device WSImpl::GetDevice (const String& id) const
 {
+    GUID compareWithID;
+    ClientErrorException::TreatExceptionsAsClientError ([&]() { compareWithID = GUID{id}; });
     // @todo quick hack impl
     for (auto i : GetDevices_Recurse ()) {
-        if (i.fGUID == GUID{id}) {
+        if (i.fGUID == compareWithID) {
             return i;
         }
     }
-    Execution::Throw (Execution::StringException (L"no such id"_k));
+    Execution::Throw (ClientErrorException (L"no such id"_k));
 }
 
 Sequence<String> WSImpl::GetNetworks () const
@@ -189,13 +193,15 @@ Sequence<BackendApp::WebServices::Network> WSImpl::GetNetworks_Recurse () const
 
 Network WSImpl::GetNetwork (const String& id) const
 {
+    GUID compareWithID;
+    ClientErrorException::TreatExceptionsAsClientError ([&]() { compareWithID = GUID{id}; });
     // @todo quick hack impl
     for (auto i : GetNetworks_Recurse ()) {
-        if (i.fGUID == GUID{id}) {
+        if (i.fGUID == compareWithID) {
             return i;
         }
     }
-    Execution::Throw (Execution::StringException (L"no such id"_k));
+    Execution::Throw (ClientErrorException (L"no such id"_k));
 }
 
 Collection<String> WSImpl::GetNetworkInterfaces (bool filterRunningOnly) const
@@ -242,13 +248,16 @@ Collection<BackendApp::WebServices::NetworkInterface> WSImpl::GetNetworkInterfac
 
 NetworkInterface WSImpl::GetNetworkInterface (const String& id) const
 {
+    GUID compareWith;
+    ClientErrorException::TreatExceptionsAsClientError ([&]() { compareWith = GUID{id}; });
+
     // @todo quick hack impl
     for (auto i : GetNetworkInterfaces_Recurse (false)) {
-        if (i.fGUID == GUID{id}) {
+        if (i.fGUID == compareWith) {
             return i;
         }
     }
-    Execution::Throw (Execution::StringException (L"no such id"_k));
+    Execution::Throw (ClientErrorException (L"no such id"_k));
 }
 
 double WSImpl::Operation_Ping (const String& address) const
@@ -271,7 +280,7 @@ double WSImpl::Operation_Ping (const String& address) const
     options.fMaxHops           = maxHops;
     //   options.fSampleInfo                   = Ping::Options::SampleInfo{kInterSampleTime_, sampleCount};
 
-    // write GetHostAddress () funciton in DNS that throws if not at least one
+    // write GetHostAddress () function in DNS that throws if not at least one
     auto addrs = DNS::Default ().GetHostAddresses (address);
     if (addrs.size () < 1) {
         Execution::Throw (Execution::StringException (L"no addr"));
@@ -338,7 +347,7 @@ Time::Duration WSImpl::Operation_DNS_CalculateNegativeLookupTime (optional<unsig
     constexpr unsigned int    kDefault_Samples = 7;
     unsigned int              useSamples       = samples.value_or (kDefault_Samples);
     if (useSamples == 0) {
-        Execution::Throw (Execution::StringException (L"samples must be > 0"_k));
+        Execution::Throw (ClientErrorException (L"samples must be > 0"_k));
     }
     uniform_int_distribution<mt19937::result_type> allUInt16Distribution{0, numeric_limits<uint32_t>::max ()};
     static mt19937                                 sRng_{std::random_device () ()};
