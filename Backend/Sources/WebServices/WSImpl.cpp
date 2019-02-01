@@ -145,8 +145,7 @@ Collection<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse () const
 
 Device WSImpl::GetDevice (const String& id) const
 {
-    GUID compareWithID;
-    ClientErrorException::TreatExceptionsAsClientError ([&]() { compareWithID = GUID{id}; });
+    GUID compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&]() { return GUID{id}; });
     // @todo quick hack impl
     for (auto i : GetDevices_Recurse ()) {
         if (i.fGUID == compareWithID) {
@@ -193,8 +192,7 @@ Sequence<BackendApp::WebServices::Network> WSImpl::GetNetworks_Recurse () const
 
 Network WSImpl::GetNetwork (const String& id) const
 {
-    GUID compareWithID;
-    ClientErrorException::TreatExceptionsAsClientError ([&]() { compareWithID = GUID{id}; });
+    GUID compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&]() { return GUID{id}; });
     // @todo quick hack impl
     for (auto i : GetNetworks_Recurse ()) {
         if (i.fGUID == compareWithID) {
@@ -248,12 +246,11 @@ Collection<BackendApp::WebServices::NetworkInterface> WSImpl::GetNetworkInterfac
 
 NetworkInterface WSImpl::GetNetworkInterface (const String& id) const
 {
-    GUID compareWith;
-    ClientErrorException::TreatExceptionsAsClientError ([&]() { compareWith = GUID{id}; });
+    GUID compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&]() { return GUID{id}; });
 
     // @todo quick hack impl
     for (auto i : GetNetworkInterfaces_Recurse (false)) {
-        if (i.fGUID == compareWith) {
+        if (i.fGUID == compareWithID) {
             return i;
         }
     }
