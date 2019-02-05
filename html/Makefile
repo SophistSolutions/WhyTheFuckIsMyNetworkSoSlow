@@ -20,7 +20,7 @@ clean:
 clobber:
 	@$(StroikaRoot)/ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "Clobber HTML:"
 	@rm -f src/*.js
-	@rm -rf dist
+	@rm -rf dist node_modules
 
 update-components:
 	# automate/autodetect - @todo
