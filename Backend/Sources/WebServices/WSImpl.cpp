@@ -54,7 +54,7 @@ namespace {
         Sequence<Discovery::Network> tmp = Discovery::CollectActiveNetworks ();
 
         if (tmp.empty ()) {
-            Execution::Throw (Execution::StringException (L"no active network"_k));
+            Execution::Throw (Execution::Exception (L"no active network"sv));
         }
         Discovery::Network net = tmp[0];
 
@@ -152,7 +152,7 @@ Device WSImpl::GetDevice (const String& id) const
             return i;
         }
     }
-    Execution::Throw (ClientErrorException (L"no such id"_k));
+    Execution::Throw (ClientErrorException (L"no such id"sv));
 }
 
 Sequence<String> WSImpl::GetNetworks () const
@@ -199,7 +199,7 @@ Network WSImpl::GetNetwork (const String& id) const
             return i;
         }
     }
-    Execution::Throw (ClientErrorException (L"no such id"_k));
+    Execution::Throw (ClientErrorException (L"no such id"sv));
 }
 
 Collection<String> WSImpl::GetNetworkInterfaces (bool filterRunningOnly) const
@@ -254,7 +254,7 @@ NetworkInterface WSImpl::GetNetworkInterface (const String& id) const
             return i;
         }
     }
-    Execution::Throw (ClientErrorException (L"no such id"_k));
+    Execution::Throw (ClientErrorException (L"no such id"sv));
 }
 
 double WSImpl::Operation_Ping (const String& address) const
@@ -280,7 +280,7 @@ double WSImpl::Operation_Ping (const String& address) const
     // write GetHostAddress () function in DNS that throws if not at least one
     auto addrs = DNS::Default ().GetHostAddresses (address);
     if (addrs.size () < 1) {
-        Execution::Throw (Execution::StringException (L"no addr"));
+        Execution::Throw (Execution::Exception (L"no addr"sv));
     }
 
     NetworkMonitor::Ping::SampleResults t = NetworkMonitor::Ping::Sample (addrs[0], Ping::SampleOptions{kInterSampleTime_, sampleCount}, options);
@@ -344,7 +344,7 @@ Time::Duration WSImpl::Operation_DNS_CalculateNegativeLookupTime (optional<unsig
     constexpr unsigned int    kDefault_Samples = 7;
     unsigned int              useSamples       = samples.value_or (kDefault_Samples);
     if (useSamples == 0) {
-        Execution::Throw (ClientErrorException (L"samples must be > 0"_k));
+        Execution::Throw (ClientErrorException (L"samples must be > 0"sv));
     }
     uniform_int_distribution<mt19937::result_type> allUInt16Distribution{0, numeric_limits<uint32_t>::max ()};
     static mt19937                                 sRng_{std::random_device () ()};
@@ -376,7 +376,7 @@ double WSImpl::Operation_DNS_CalculateScore () const
     constexpr double kNegLookupWeight = 2.5;
     totalWeightedTime += kNegLookupWeight * Operation_DNS_CalculateNegativeLookupTime ({}).As<double> ();
     constexpr double kPosLookupWeight = 25; // much higher than kNegLookupWeight because this is the time for cached entries lookup which will naturally be much smaller
-    totalWeightedTime += kPosLookupWeight * (0 + Operation_DNS_Lookup (L"www.google.com"_k).fLookupTime.As<double> () + Operation_DNS_Lookup (L"www.amazon.com"_k).fLookupTime.As<double> () + Operation_DNS_Lookup (L"www.youtube.com"_k).fLookupTime.As<double> ());
+    totalWeightedTime += kPosLookupWeight * (0 + Operation_DNS_Lookup (L"www.google.com"sv).fLookupTime.As<double> () + Operation_DNS_Lookup (L"www.amazon.com"sv).fLookupTime.As<double> () + Operation_DNS_Lookup (L"www.youtube.com"sv).fLookupTime.As<double> ());
     Assert (totalWeightedTime >= 0);
     constexpr double kScoreCutOff_               = 5.0;
     constexpr double kShiftAndScaleVerticallyBy_ = 10;

@@ -136,7 +136,7 @@ public:
                           WriteResponse (m->PeekResponse (), kDevices_, Device::kMapper.FromObject (fWSAPI_->GetDevice (id)));
                       }
                       else {
-                          Execution::Throw (ClientErrorException (L"missing ID argument"_k));
+                          Execution::Throw (ClientErrorException (L"missing ID argument"sv));
                       }
                   }},
 
@@ -146,7 +146,7 @@ public:
                       constexpr bool kDefault_FilterRunningOnly_{true};
                       ExpectedMethod (m->GetRequestReference (), kNetworkInterfaces_);
                       Mapping<String, DataExchange::VariantValue> args              = PickoutParamValues (m->PeekRequest ());
-                      bool                                        filterRunningOnly = args.LookupValue (L"filter-only-running"_k, DataExchange::VariantValue{kDefault_FilterRunningOnly_}).As<bool> ();
+                      bool                                        filterRunningOnly = args.LookupValue (L"filter-only-running"sv, DataExchange::VariantValue{kDefault_FilterRunningOnly_}).As<bool> ();
                       if (args.LookupValue (L"recurse", false).As<bool> ()) {
                           WriteResponse (m->PeekResponse (), kNetworkInterfaces_, NetworkInterface::kMapper.FromObject (fWSAPI_->GetNetworkInterfaces_Recurse (filterRunningOnly)));
                       }
@@ -167,7 +167,7 @@ public:
                           WriteResponse (m->PeekResponse (), kNetworkInterfaces_, NetworkInterface::kMapper.FromObject (fWSAPI_->GetNetworkInterface (id)));
                       }
                       else {
-                          Execution::Throw (ClientErrorException (L"missing ID argument"_k));
+                          Execution::Throw (ClientErrorException (L"missing ID argument"sv));
                       }
                   }},
 
@@ -176,7 +176,7 @@ public:
                   [=](Message* m) {
                       ExpectedMethod (m->GetRequestReference (), kNetworks_);
                       Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
-                      if (args.LookupValue (L"recurse"_k, false).As<bool> ()) {
+                      if (args.LookupValue (L"recurse"sv, false).As<bool> ()) {
                           WriteResponse (m->PeekResponse (), kNetworkInterfaces_, Network::kMapper.FromObject (fWSAPI_->GetNetworks_Recurse ()));
                       }
                       else {
@@ -196,7 +196,7 @@ public:
                           WriteResponse (m->PeekResponse (), kNetworks_, Network::kMapper.FromObject (fWSAPI_->GetNetwork (id)));
                       }
                       else {
-                          Execution::Throw (ClientErrorException (L"missing ID argument"_k));
+                          Execution::Throw (ClientErrorException (L"missing ID argument"sv));
                       }
                   }},
 
@@ -204,12 +204,12 @@ public:
                   L"operations/ping"_RegEx,
                   [=](Message* m) {
                       Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
-                      if (auto address = args.Lookup (L"target"_k)) {
+                      if (auto address = args.Lookup (L"target"sv)) {
                           ExpectedMethod (m->GetRequestReference (), kOperations_);
                           WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_Ping (address->As<String> ())));
                       }
                       else {
-                          Execution::Throw (ClientErrorException (L"missing target argument"_k));
+                          Execution::Throw (ClientErrorException (L"missing target argument"sv));
                       }
                   }},
               Route{
@@ -217,15 +217,15 @@ public:
                   [=](Message* m) {
                       Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
                       optional<bool>                              reverseDNSResult;
-                      if (auto rdr = args.Lookup (L"reverse-dns-result"_k)) {
+                      if (auto rdr = args.Lookup (L"reverse-dns-result"sv)) {
                           reverseDNSResult = rdr->As<bool> ();
                       }
-                      if (auto address = args.Lookup (L"target"_k)) {
+                      if (auto address = args.Lookup (L"target"sv)) {
                           ExpectedMethod (m->GetRequestReference (), kOperations_);
                           WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_TraceRoute (address->As<String> (), reverseDNSResult)));
                       }
                       else {
-                          Execution::Throw (ClientErrorException (L"missing target argument"_k));
+                          Execution::Throw (ClientErrorException (L"missing target argument"sv));
                       }
                   }},
               Route{
@@ -249,7 +249,7 @@ public:
                           name = rdr->As<String> ();
                       }
                       else {
-                          Execution::Throw (ClientErrorException (L"missing name argument"_k));
+                          Execution::Throw (ClientErrorException (L"missing name argument"sv));
                       }
                       WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_DNS_Lookup (name)));
                   }},
@@ -284,68 +284,68 @@ public:
                 kVersions_,
 
             },
-            DocsOptions{L"Web Methods"_k});
+            DocsOptions{L"Web Methods"sv});
     }
 };
 const WebServiceMethodDescription WebServer::Rep_::kDevices_{
-    L"devices"_k,
+    L"devices"sv,
     Set<String>{String_Constant{IO::Network::HTTP::Methods::kGet}},
     DataExchange::PredefinedInternetMediaType::kJSON,
     {},
-    Sequence<String>{L"curl http://localhost:8080/devices"_k, L"curl http://localhost:8080/devices?recurse=true"_k, L"curl http://localhost:8080/devices/{ID}"_k},
-    Sequence<String>{L"Fetch the list of known devices for the currently connected network."_k,
-                     L"@todo - in the future - add support for parameters to this fetch - which can be used to filter/subset etc"_k},
+    Sequence<String>{L"curl http://localhost:8080/devices"sv, L"curl http://localhost:8080/devices?recurse=true"sv, L"curl http://localhost:8080/devices/{ID}"sv},
+    Sequence<String>{L"Fetch the list of known devices for the currently connected network."sv,
+                     L"@todo - in the future - add support for parameters to this fetch - which can be used to filter/subset etc"sv},
 };
 const WebServiceMethodDescription WebServer::Rep_::kNetworks_{
-    L"networks"_k,
+    L"networks"sv,
     Set<String>{String_Constant{IO::Network::HTTP::Methods::kGet}},
     DataExchange::PredefinedInternetMediaType::kJSON,
     {},
-    Sequence<String>{L"curl http://localhost:8080/networks"_k, L"curl http://localhost:8080/networks?recurse=true"_k, L"curl http://localhost:8080/networks/{ID}"_k},
-    Sequence<String>{L"Fetch the list of known Networks."_k,
-                     L"@todo - in the future - add support for parameters to this fetch - which can be used to filter/subset etc"_k},
+    Sequence<String>{L"curl http://localhost:8080/networks"sv, L"curl http://localhost:8080/networks?recurse=true"sv, L"curl http://localhost:8080/networks/{ID}"sv},
+    Sequence<String>{L"Fetch the list of known Networks."sv,
+                     L"@todo - in the future - add support for parameters to this fetch - which can be used to filter/subset etc"sv},
 };
 const WebServiceMethodDescription WebServer::Rep_::kNetworkInterfaces_{
-    L"network-interfaces"_k,
+    L"network-interfaces"sv,
     Set<String>{String_Constant{IO::Network::HTTP::Methods::kGet}},
     DataExchange::PredefinedInternetMediaType::kJSON,
     {},
-    Sequence<String>{L"curl http://localhost:8080/network-interfaces", L"curl http://localhost:8080/network-interfaces?recurse=true"_k, L"curl http://localhost:8080/network-interfaces?filter-only-running=true"_k},
-    Sequence<String>{L"Fetch the list of known Network Interfaces."_k,
-                     L"[filter-only-running=true|false]?, recurse=true|false]?"_k},
+    Sequence<String>{L"curl http://localhost:8080/network-interfaces", L"curl http://localhost:8080/network-interfaces?recurse=true"sv, L"curl http://localhost:8080/network-interfaces?filter-only-running=true"sv},
+    Sequence<String>{L"Fetch the list of known Network Interfaces."sv,
+                     L"[filter-only-running=true|false]?, recurse=true|false]?"sv},
 };
 const WebServiceMethodDescription WebServer::Rep_::kOperations_{
-    L"operations"_k,
+    L"operations"sv,
     Set<String>{String_Constant{IO::Network::HTTP::Methods::kGet}},
     DataExchange::PredefinedInternetMediaType::kJSON,
     {},
     Sequence<String>{
-        L"curl http://localhost:8080/operations/ping?target=www.google.com"_k,
-        L"curl http://localhost:8080/operations/traceroute?target=www.sophists.com"_k,
-        L"curl http://localhost:8080/operations/dns/calculate-negative-lookup-time"_k,
-        L"curl http://localhost:8080/operations/dns/lookup?name=www.youtube.com"_k,
-        L"curl http://localhost:8080/operations/dns/calculate-score"_k,
+        L"curl http://localhost:8080/operations/ping?target=www.google.com"sv,
+        L"curl http://localhost:8080/operations/traceroute?target=www.sophists.com"sv,
+        L"curl http://localhost:8080/operations/dns/calculate-negative-lookup-time"sv,
+        L"curl http://localhost:8080/operations/dns/lookup?name=www.youtube.com"sv,
+        L"curl http://localhost:8080/operations/dns/calculate-score"sv,
     },
     Sequence<String>{
-        L"perform a wide variety of operations - mostly for debugging for now but may stay around."_k,
-        L"/operations/ping?target=address; (address can be ipv4, ipv6 address, or dnsname)"_k,
-        L"/operations/traceroute?target=address[&reverse-dns-result=bool]?; (address can be ipv4, ipv6 address, or dnsname)"_k,
-        L"/operations/dns/calculate-negative-lookup-time[&samples=uint]?"_k,
-        L"/operations/dns/lookup[&name=string]"_k,
-        L"/operations/dns/calculate-score; returns number 0 (worst) to 1.0 (best)"_k,
+        L"perform a wide variety of operations - mostly for debugging for now but may stay around."sv,
+        L"/operations/ping?target=address; (address can be ipv4, ipv6 address, or dnsname)"sv,
+        L"/operations/traceroute?target=address[&reverse-dns-result=bool]?; (address can be ipv4, ipv6 address, or dnsname)"sv,
+        L"/operations/dns/calculate-negative-lookup-time[&samples=uint]?"sv,
+        L"/operations/dns/lookup[&name=string]"sv,
+        L"/operations/dns/calculate-score; returns number 0 (worst) to 1.0 (best)"sv,
     },
 };
 const WebServiceMethodDescription WebServer::Rep_::kVersions_{
-    L"versions"_k,
+    L"versions"sv,
     Set<String>{String_Constant{IO::Network::HTTP::Methods::kGet}},
     DataExchange::PredefinedInternetMediaType::kJSON,
     {},
     Sequence<String>{
-        L"curl http://localhost:8080/versions"_k,
+        L"curl http://localhost:8080/versions"sv,
     },
-    Sequence<String>{L"Fetch the component versions."_k},
+    Sequence<String>{L"Fetch the component versions."sv},
 };
-const String WebServer::Rep_::kServerString_ = L"Why-The-Fuck-Is-My-Network-So-Slow/"_k + AppVersion::kVersion.AsMajorMinorString ();
+const String WebServer::Rep_::kServerString_ = L"Why-The-Fuck-Is-My-Network-So-Slow/"sv + AppVersion::kVersion.AsMajorMinorString ();
 
 WebServer::WebServer (const shared_ptr<IWSAPI>& wsImpl)
     : fRep_ (make_shared<Rep_> (wsImpl))

@@ -90,8 +90,8 @@ const ObjectVariantMapper Network::kMapper = []() {
             float lon;
         };
         mapper.AddClass<laglon_> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-            {L"latitude"_k, Stroika_Foundation_DataExchange_StructFieldMetaInfo (laglon_, lat)},
-            {L"longitude"_k, Stroika_Foundation_DataExchange_StructFieldMetaInfo (laglon_, lon)},
+            {L"latitude"sv, Stroika_Foundation_DataExchange_StructFieldMetaInfo (laglon_, lat)},
+            {L"longitude"sv, Stroika_Foundation_DataExchange_StructFieldMetaInfo (laglon_, lon)},
         });
         mapper.Add<tuple<float, float>> (
             [](const ObjectVariantMapper& mapper, const tuple<float, float>* obj) -> VariantValue { return mapper.FromObject (laglon_{get<0> (*obj), get<1> (*obj)}); },
@@ -109,24 +109,24 @@ const ObjectVariantMapper Network::kMapper = []() {
     mapper.AddCommonType<optional<Common::InternetServiceProvider>> ();
 
     mapper.AddClass<Common::GEOLocationInformation> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-        {L"countryCode"_k, Stroika_Foundation_DataExchange_StructFieldMetaInfo (Common::GEOLocationInformation, fCountryCode), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"city"_k, Stroika_Foundation_DataExchange_StructFieldMetaInfo (Common::GEOLocationInformation, fCity), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"regionCode"_k, Stroika_Foundation_DataExchange_StructFieldMetaInfo (Common::GEOLocationInformation, fRegionCode), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"postalCode"_k, Stroika_Foundation_DataExchange_StructFieldMetaInfo (Common::GEOLocationInformation, fPostalCode), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"coordinates"_k, Stroika_Foundation_DataExchange_StructFieldMetaInfo (Common::GEOLocationInformation, fLatitudeAndLongitude), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"countryCode"sv, Stroika_Foundation_DataExchange_StructFieldMetaInfo (Common::GEOLocationInformation, fCountryCode), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"city"sv, Stroika_Foundation_DataExchange_StructFieldMetaInfo (Common::GEOLocationInformation, fCity), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"regionCode"sv, Stroika_Foundation_DataExchange_StructFieldMetaInfo (Common::GEOLocationInformation, fRegionCode), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"postalCode"sv, Stroika_Foundation_DataExchange_StructFieldMetaInfo (Common::GEOLocationInformation, fPostalCode), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"coordinates"sv, Stroika_Foundation_DataExchange_StructFieldMetaInfo (Common::GEOLocationInformation, fLatitudeAndLongitude), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
     mapper.AddCommonType<optional<Common::GEOLocationInformation>> ();
 
     mapper.AddClass<Network> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-        {L"friendlyName"_k, Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fFriendlyName), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"networkAddresses"_k, Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fNetworkAddresses)},
-        {L"attachedInterfaces"_k, Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fAttachedInterfaces)},
-        {L"gateways"_k, Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fGateways)},
-        {L"DNSServers"_k, Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fDNSServers)},
-        {L"externalAddresses"_k, Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fExternalAddresses), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"geographicLocation"_k, Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fGEOLocInformation), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"internetServiceProvider"_k, Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fInternetServiceProvider), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"id"_k, Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fGUID)},
+        {L"friendlyName"sv, Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fFriendlyName), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"networkAddresses"sv, Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fNetworkAddresses)},
+        {L"attachedInterfaces"sv, Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fAttachedInterfaces)},
+        {L"gateways"sv, Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fGateways)},
+        {L"DNSServers"sv, Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fDNSServers)},
+        {L"externalAddresses"sv, Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fExternalAddresses), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"geographicLocation"sv, Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fGEOLocInformation), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"internetServiceProvider"sv, Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fInternetServiceProvider), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"id"sv, Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fGUID)},
     });
     mapper.AddCommonType<Sequence<Network>> ();
 
