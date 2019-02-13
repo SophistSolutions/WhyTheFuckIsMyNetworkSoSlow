@@ -68,8 +68,8 @@ namespace {
              *  o   http://myexternalip.com/raw
              */
             static const URL kSources_[]{
-                URL{L"http://api.ipify.org/"_k, URL::ParseOptions::eAsFullURL},
-                URL{L"http://myexternalip.com/raw"_k, URL::ParseOptions::eAsFullURL},
+                URL{L"http://api.ipify.org/"sv, URL::ParseOptions::eAsFullURL},
+                URL{L"http://myexternalip.com/raw"sv, URL::ParseOptions::eAsFullURL},
             };
             // @todo - when one fails, we should try the other first next time
             for (auto&& url : kSources_) {
@@ -109,14 +109,43 @@ String Discovery::Network::ToString () const
 
 /*
  ********************************************************************************
- ******************** Discovery::CollectActiveNetworks **************************
+ **************************** Discovery::NetworksMgr::Activator ****************************
  ********************************************************************************
  */
-Sequence<Network> Discovery::CollectActiveNetworks ()
+namespace {
+    bool sActive_{false};
+}
+Discovery::NetworksMgr::Activator::Activator ()
+{
+    DbgTrace (L"Discovery::NetworksMgr::Activator::Activator: activating network discovery");
+    Require (not sActive_);
+    sActive_ = true;
+}
+Discovery::NetworksMgr::Activator::~Activator ()
+{
+    DbgTrace (L"Discovery::NetworksMgr::Activator::~Activator: deactivating network discovery");
+    Require (sActive_);
+    sActive_ = false;
+    // @todo must shutdown any background threads
+}
+
+/*
+ ********************************************************************************
+ **************************** Discovery::NetworksMgr ****************************
+ ********************************************************************************
+ */
+
+NetworksMgr NetworksMgr::sThe;
+Discovery::NetworksMgr::NetworksMgr ()
+{
+}
+
+Sequence<Network> Discovery::NetworksMgr::CollectActiveNetworks () const
 {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
     Debug::TraceContextBumper ctx{L"Discovery::CollectActiveNetworks"};
 #endif
+    Require (sActive_);
     Mapping<CIDR, Network> accumResults;
     MultiSet<CIDR>         cidrScores; // primitive attempt to find best interface to display
     for (NetworkInterface i : CollectActiveNetworkInterfaces ()) {

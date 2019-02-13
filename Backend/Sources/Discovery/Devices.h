@@ -61,24 +61,29 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
     };
 
     /**
-     *  DeviceDiscoverer is internally syncronized - so its methods can be called from any thread.
+     *  Public APIs fully <a href='ThirdPartyComponents/Stroika/StroikaRoot/Documentation/Thread-Safety.md#Internally-Synchronized-Thread-Safety'>Internally-Synchronized-Thread-Safety</a>
      *
-     *  @todo this CURRENTLY only discovers for a single network, but we should discover devices on all networks (and merge them somehow when they are the smae device on multiple networks)
+     *  Only legal to call DevicesMgr while its active (checked with assertions). Callers responsability to assure, but checked with assertions.
      */
-    class DeviceDiscoverer {
+    class DevicesMgr {
     public:
-        DeviceDiscoverer ()                        = delete;
-        DeviceDiscoverer (const DeviceDiscoverer&) = delete;
-        DeviceDiscoverer (const Network& forNetwork);
-        DeviceDiscoverer& operator= (const DeviceDiscoverer&) = delete;
-        ~DeviceDiscoverer ();
+        DevicesMgr ()                  = default;
+        DevicesMgr (const DevicesMgr&) = delete;
+
+    public:
+        /**
+         *  At most one such object may exist. When it does, the NetworksMgr is active and usable. Its illegal to call otherwise.
+         */
+        struct Activator {
+            Activator ();
+            ~Activator ();
+        };
 
     public:
         nonvirtual Collection<Device> GetActiveDevices () const;
 
-    private:
-        class Rep_;
-        unique_ptr<Rep_> fRep_;
+    public:
+        static DevicesMgr sThe;
     };
 
 }

@@ -43,32 +43,6 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices;
 
 namespace {
-    shared_ptr<Discovery::DeviceDiscoverer> GetDiscoverer_ ()
-    {
-        using Discovery::DeviceDiscoverer;
-        using Discovery::Network;
-        static Synchronized<Mapping<Network, shared_ptr<DeviceDiscoverer>>> sDiscovery_{
-            Stroika::Foundation::Common::DeclareEqualsComparer ([](Network l, Network r) { return l.fGUID == r.fGUID; }),
-        };
-
-        Sequence<Discovery::Network> tmp = Discovery::CollectActiveNetworks ();
-
-        if (tmp.empty ()) {
-            Execution::Throw (Execution::Exception (L"no active network"sv));
-        }
-        Discovery::Network net = tmp[0];
-
-        auto l = sDiscovery_.rwget ();
-        if (auto i = l->Lookup (net)) {
-            return *i;
-        }
-        auto r = make_shared<Discovery::DeviceDiscoverer> (net);
-        l->Add (net, r);
-        return r;
-    }
-}
-
-namespace {
     // @todo LIKE WITH NETWORK IDS - probably maintain a persistence cache mapping info - mostly HARDWARE ADDRESS - to a uniuque nummber (guidgen maybe).
     // THEN we will always identify a device as the sam thing even if it appears with diferent IP address on different network
     //
@@ -107,7 +81,7 @@ Collection<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse () const
 {
     using namespace IO::Network;
 
-    Collection<BackendApp::WebServices::Device> devices = GetDiscoverer_ ()->GetActiveDevices ().Select<BackendApp::WebServices::Device> ([](const Discovery::Device& d) {
+    Collection<BackendApp::WebServices::Device> devices = Discovery::DevicesMgr::sThe.GetActiveDevices ().Select<BackendApp::WebServices::Device> ([](const Discovery::Device& d) {
         BackendApp::WebServices::Device newDev;
         d.ipAddresses.Apply ([&](const InternetAddress& a) {
             // prefer having IPv4 addr at head of list
@@ -158,7 +132,7 @@ Device WSImpl::GetDevice (const String& id) const
 Sequence<String> WSImpl::GetNetworks () const
 {
     Sequence<String> result;
-    for (Discovery::Network n : Discovery::CollectActiveNetworks ()) {
+    for (Discovery::Network n : Discovery::NetworksMgr::sThe.CollectActiveNetworks ()) {
         result += Characters::ToString (n.fGUID);
     }
     return result;
@@ -169,7 +143,7 @@ Sequence<BackendApp::WebServices::Network> WSImpl::GetNetworks_Recurse () const
     Sequence<BackendApp::WebServices::Network> result;
 
     // @todo parameterize if we return all or just active networks
-    for (Discovery::Network n : Discovery::CollectActiveNetworks ()) {
+    for (Discovery::Network n : Discovery::NetworksMgr::sThe.CollectActiveNetworks ()) {
         BackendApp::WebServices::Network nw{n.fNetworkAddresses};
 
         nw.fGUID                    = n.fGUID;
@@ -394,14 +368,4 @@ double WSImpl::Operation_DNS_CalculateScore () const
 VersionInfo WSImpl::GetVersionInfo () const
 {
     return VersionInfo{AppVersion::kVersion};
-}
-
-/*
- ********************************************************************************
- **************** WebServices::TmpHackAssureStartedMonitoring *******************
- ********************************************************************************
- */
-void WebServices::TmpHackAssureStartedMonitoring ()
-{
-    GetDiscoverer_ ();
 }

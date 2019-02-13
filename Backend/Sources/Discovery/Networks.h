@@ -56,7 +56,32 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
         nonvirtual String ToString () const;
     };
 
-    Sequence<Network> CollectActiveNetworks ();
+    /**
+     *  Public APIs fully <a href='ThirdPartyComponents/Stroika/StroikaRoot/Documentation/Thread-Safety.md#Internally-Synchronized-Thread-Safety'>Internally-Synchronized-Thread-Safety</a>
+     *
+     *  Only legal to call NetworksMgr while its active (checked with assertions). Callers responsability to assure, but checked with assertions.
+     */
+    class NetworksMgr {
+    public:
+        NetworksMgr ();
+        NetworksMgr (const NetworksMgr&) = delete;
+
+    public:
+        /**
+         *  At most one such object may exist. When it does, the NetworksMgr is active and usable. Its illegal to call otherwise.
+         */
+        struct Activator {
+            Activator ();
+            ~Activator ();
+        };
+
+    public:
+        nonvirtual Sequence<Network> CollectActiveNetworks () const;
+
+    public:
+        static NetworksMgr sThe;
+    };
+
 }
 
 /*

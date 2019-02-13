@@ -4,14 +4,11 @@
 #include "Stroika/Frameworks/StroikaPreComp.h"
 
 #include <cstdlib>
-#include <iostream>
 
-#include "Stroika/Foundation/Characters/String_Constant.h"
 #include "Stroika/Foundation/Characters/ToString.h"
 #include "Stroika/Foundation/Debug/Trace.h"
 #include "Stroika/Foundation/Execution/Finally.h"
 #include "Stroika/Foundation/Execution/Logger.h"
-#include "Stroika/Foundation/Execution/Sleep.h"
 #include "Stroika/Foundation/Execution/Thread.h"
 #include "Stroika/Foundation/Execution/WaitableEvent.h"
 #include "Stroika/Frameworks/Service/Main.h"
@@ -41,21 +38,26 @@ using Execution::Logger;
 
 namespace {
     const Main::ServiceDescription kServiceDescription_{
-        L"WhyTheFuckIsMyNetworkSoSlow-Service"_k,
-        L"WhyTheFuckIsMyNetworkSoSlow Service"_k};
+        L"WhyTheFuckIsMyNetworkSoSlow-Service"sv,
+        L"WhyTheFuckIsMyNetworkSoSlow Service"sv};
 }
 
 void WTFAppServiceRep::MainLoop (const std::function<void()>& startedCB)
 {
     Debug::TraceContextBumper ctx{"WTFAppServiceRep::MainLoop"};
-    auto&&                    cleanup = Execution::Finally ([&]() {
+    // Activator objects cause the discovery modules to start/stop so RAAI controls startup/shutdown even with exceptions
+    // deviceMgr calls NetworkMgr so order here is important. And webserver can call either. Allowing destruction to shutdown guarantees proper ordering
+    // of dependencies on shutdown
+    Discovery::NetworksMgr::Activator networkMgrActivator;
+    Discovery::DevicesMgr::Activator  devicesMgrActivator;
+    WebServer                         webServer{make_shared<WSImpl> ()};
+    startedCB (); // Notify service control mgr that the service has started
+    Logger::Get ().Log (Logger::Priority::eInfo, L"%s (version %s) service started successfully", kServiceDescription_.fPrettyName.c_str (), Characters::ToString (AppVersion::kVersion).c_str ());
+
+    auto&& cleanup = Execution::Finally ([&]() {
         Thread::SuppressInterruptionInContext suppressSoWeActuallyShutDownOtherTaskWhenWereBeingShutDown;
         Logger::Get ().Log (Logger::Priority::eInfo, L"Beginning service shutdown");
     });
-    IgnoreExceptionsForCall (WebServices::TmpHackAssureStartedMonitoring ());
-    WebServer webServer{make_shared<WSImpl> ()};
-    startedCB (); // Notify service control mgr that the service has started
-    Logger::Get ().Log (Logger::Priority::eInfo, L"%s (version %s) service started successfully", kServiceDescription_.fPrettyName.c_str (), Characters::ToString (AppVersion::kVersion).c_str ());
 
     // Wait here until a 'service stop' command sends a thread-abort, and that will cause this wait to be abandoned and this stackframe to unwind
     Execution::WaitableEvent (Execution::WaitableEvent::eAutoReset).Wait (); // wait til service shutdown ThreadAbortException

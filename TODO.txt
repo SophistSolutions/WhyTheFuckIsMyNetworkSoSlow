@@ -1,6 +1,12 @@
 Top priority bug:
 
 
+
+- current device discovery (rewriting threading)
+  - assining wrong network. For SSDP, assign network based on scalling known networks and their ip address range.
+  - redo ssdp scanning logic so its not network dependent
+
+
 	> backgorund thread NETWORK discovery
 		Network disc module
 		   Return ALL Current (even if disconencted)
