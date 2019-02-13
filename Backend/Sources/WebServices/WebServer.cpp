@@ -282,7 +282,6 @@ public:
                 kNetworks_,
                 kOperations_,
                 kVersions_,
-
             },
             DocsOptions{L"Web Methods"sv});
     }
