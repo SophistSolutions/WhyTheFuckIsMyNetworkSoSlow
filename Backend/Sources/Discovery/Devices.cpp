@@ -3,6 +3,7 @@
 */
 #include "Stroika/Frameworks/StroikaPreComp.h"
 
+#include "Stroika/Foundation/Cache/SynchronizedCallerStalenessCache.h"
 #include "Stroika/Foundation/Characters/StringBuilder.h"
 #include "Stroika/Foundation/Characters/ToString.h"
 #include "Stroika/Foundation/Configuration/SystemConfiguration.h"
@@ -228,6 +229,8 @@ namespace {
  ********************************************************************************
  */
 namespace {
+    constexpr Time::DurationSecondsType kDefaultItemCacheLifetime_{15};
+
     bool sActive_{false};
 }
 
@@ -281,7 +284,20 @@ namespace {
     }
 }
 
-Collection<Discovery::Device> Discovery::DevicesMgr::GetActiveDevices () const
+Collection<Discovery::Device> Discovery::DevicesMgr::GetActiveDevices (optional<Time::DurationSecondsType> allowedStaleness) const
 {
-    return GetDiscoverer_ ()->GetActiveDevices ();
+#if USE_NOISY_TRACE_IN_THIS_MODULE_
+    Debug::TraceContextBumper ctx{L"Discovery::GetActiveDevices"};
+#endif
+    Require (sActive_);
+    Collection<Discovery::Device> results;
+    using Cache::SynchronizedCallerStalenessCache;
+    static SynchronizedCallerStalenessCache<void, Collection<Discovery::Device>> sCache_;
+    results = sCache_.LookupValue (sCache_.Ago (allowedStaleness.value_or (kDefaultItemCacheLifetime_)), []() {
+        return GetDiscoverer_ ()->GetActiveDevices ();
+    });
+#if USE_NOISY_TRACE_IN_THIS_MODULE_
+    DbgTrace (L"returns: %s", Characters::ToString (results).c_str ());
+#endif
+    return results;
 }

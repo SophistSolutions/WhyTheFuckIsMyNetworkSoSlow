@@ -80,7 +80,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
         };
 
     public:
-        nonvirtual Collection<Device> GetActiveDevices () const;
+        nonvirtual Collection<Device> GetActiveDevices (optional<Time::DurationSecondsType> allowedStaleness = {}) const;
 
     public:
         static DevicesMgr sThe;

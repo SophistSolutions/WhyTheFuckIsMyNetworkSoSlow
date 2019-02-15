@@ -76,7 +76,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
         };
 
     public:
-        nonvirtual Sequence<Network> CollectActiveNetworks () const;
+        /**
+         */
+        nonvirtual Sequence<Network> CollectActiveNetworks (optional<Time::DurationSecondsType> allowedStaleness = {}) const;
 
     public:
         static NetworksMgr sThe;

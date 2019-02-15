@@ -113,14 +113,17 @@ String Discovery::Network::ToString () const
  ********************************************************************************
  */
 namespace {
-    bool sActive_{false};
+    constexpr Time::DurationSecondsType kDefaultItemCacheLifetime_{20};
+    bool                                sActive_{false};
 }
+
 Discovery::NetworksMgr::Activator::Activator ()
 {
     DbgTrace (L"Discovery::NetworksMgr::Activator::Activator: activating network discovery");
     Require (not sActive_);
     sActive_ = true;
 }
+
 Discovery::NetworksMgr::Activator::~Activator ()
 {
     DbgTrace (L"Discovery::NetworksMgr::Activator::~Activator: deactivating network discovery");
@@ -134,102 +137,121 @@ Discovery::NetworksMgr::Activator::~Activator ()
  **************************** Discovery::NetworksMgr ****************************
  ********************************************************************************
  */
+namespace {
+    Sequence<Network> CollectActiveNetworks_ ()
+    {
+#if USE_NOISY_TRACE_IN_THIS_MODULE_
+        Debug::TraceContextBumper ctx{L"Discovery::CollectActiveNetworks"};
+#endif
+        Require (sActive_);
+        Mapping<CIDR, Network> accumResults;
+        MultiSet<CIDR>         cidrScores; // primitive attempt to find best interface to display
+        for (NetworkInterface i : Discovery::NetworkInterfacesMgr::sThe.CollectActiveNetworkInterfaces ()) {
+            if (not i.fBindings.empty ()) {
+                Interface::Binding useBinding = i.fBindings.Nth (0);
+                i.fBindings.Apply ([&](Interface::Binding i) {
+                    if (useBinding.fInternetAddress.GetAddressFamily () != InternetAddress::AddressFamily::V4 or useBinding.fInternetAddress.IsMulticastAddress ()) {
+                        if (i.fInternetAddress.GetAddressFamily () == InternetAddress::AddressFamily::V4 and not i.fInternetAddress.IsMulticastAddress ()) {
+                            useBinding = i;
+                        }
+                    }
+                });
+                if (useBinding.fInternetAddress.GetAddressSize ()) {
+                    // Guess CIDR prefix is max (so one address - bad guess) - if we cannot read from adapter
+                    CIDR    cidr{useBinding.fInternetAddress, useBinding.fOnLinkPrefixLength.value_or (*useBinding.fInternetAddress.GetAddressSize () * 8)};
+                    Network nw = accumResults.LookupValue (cidr, Network{{cidr}});
 
+                    unsigned int score{};
+                    if (i.fGateways) {
+                        for (auto gw : *i.fGateways) {
+                            if (not nw.fGateways.Contains (gw)) {
+                                score += 20;
+                                nw.fGateways.Append (gw);
+                            }
+                        }
+                    }
+                    if (i.fDNSServers) {
+                        for (auto dnss : *i.fDNSServers) {
+                            if (not nw.fDNSServers.Contains (dnss)) {
+                                score += 5;
+                                nw.fDNSServers.Append (dnss);
+                            }
+                        }
+                    }
+                    nw.fAttachedNetworkInterfaces += i.fGUID;
+
+                    if (not nw.fGateways.empty ()) {
+                        ///tmphack - eventually support doing lookup through gateway from this network (all gateways on this network)
+                        Memory::AccumulateIf (&nw.fExternalAddresses, LookupExternalInternetAddress_ ());
+                    }
+
+                    if (nw.fExternalAddresses and not nw.fExternalAddresses->empty ()) {
+                        nw.fGEOLocInfo = LookupGEOLocation ((*nw.fExternalAddresses)[0]);
+                        nw.fISP        = LookupInternetServiceProvider ((*nw.fExternalAddresses)[0]);
+                    }
+
+                    // Stroika IO::Network::Interface::fNetworkGUID field appears useless - since only defined on windows and not really documented what it means
+                    // and doesn't appear to vary interestingly (maybe didnt test enough) - like my virtual adapters and localhost adapter alll have same network as
+                    // the real ethernet adapter).
+                    // -- LGP 2018-12-16
+                    nw.fGUID = ComputeGUIDForNetwork_ (nw);
+
+                    accumResults.Add (cidr, nw);
+
+                    // put most important interfaces at top of list
+                    if ((i.fType == Interface::Type::eWiredEthernet or i.fType == Interface::Type::eWIFI) and i.fDescription and not i.fDescription->Contains (L"virtual", CompareOptions::eCaseInsensitive)) {
+                        score += 1;
+                    }
+                    cidrScores.Add (cidr, score);
+                }
+                else {
+                    DbgTrace (L"Skipping interface %s - cuz bindings bad address", Characters::ToString (i).c_str ());
+                }
+            }
+        }
+
+        // now patch missing GUID if not already known
+        for (auto i = accumResults.begin (); i != accumResults.end (); ++i) {
+            if (i->fValue.fGUID == GUID::Zero ()) {
+                StringBuilder sb;
+                using namespace Stroika::Foundation::Cryptography;
+                sb += Characters::ToString (i->fValue.fGateways);         // NO WHERE NEAR GOOD ENUF - take into account public IP ADDR and hardware address of router - but still ALLOW for any of these to float
+                sb += Characters::ToString (i->fValue.fNetworkAddresses); // ""
+                using DIGESTER_ = Digest::Digester<Digest::Algorithm::MD5>;
+                string tmp      = sb.str ().AsUTF8 ();
+                auto   v        = i->fValue;
+                v.fGUID         = Cryptography::Format<GUID> (DIGESTER_::ComputeDigest ((const std::byte*)tmp.c_str (), (const std::byte*)tmp.c_str () + tmp.length ()));
+                accumResults.Add (i->fKey, v);
+            }
+        }
+
+        Sequence<Network> results;
+        for (auto i : cidrScores.OrderBy ([](const CountedValue<CIDR>&lhs, const CountedValue<CIDR>&rhs) -> bool { return lhs.fCount > rhs.fCount; })) {
+            results += *accumResults.Lookup (i.fValue);
+        }
+        Assert (results.size () == cidrScores.size ());
+        Assert (results.size () == accumResults.size ());
+#if USE_NOISY_TRACE_IN_THIS_MODULE_
+        DbgTrace (L"returns: %s", Characters::ToString (results).c_str ());
+#endif
+        return results;
+    }
+
+}
 NetworksMgr NetworksMgr::sThe;
 
-Sequence<Network> Discovery::NetworksMgr::CollectActiveNetworks () const
+Sequence<Network> Discovery::NetworksMgr::CollectActiveNetworks (optional<Time::DurationSecondsType> allowedStaleness) const
 {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
-    Debug::TraceContextBumper ctx{L"Discovery::CollectActiveNetworks"};
+    Debug::TraceContextBumper ctx{L"Discovery::CollectAllNetworkInterfaces"};
 #endif
     Require (sActive_);
-    Mapping<CIDR, Network> accumResults;
-    MultiSet<CIDR>         cidrScores; // primitive attempt to find best interface to display
-    for (NetworkInterface i : Discovery::NetworkInterfacesMgr::sThe.CollectActiveNetworkInterfaces ()) {
-        if (not i.fBindings.empty ()) {
-            Interface::Binding useBinding = i.fBindings.Nth (0);
-            i.fBindings.Apply ([&](Interface::Binding i) {
-                if (useBinding.fInternetAddress.GetAddressFamily () != InternetAddress::AddressFamily::V4 or useBinding.fInternetAddress.IsMulticastAddress ()) {
-                    if (i.fInternetAddress.GetAddressFamily () == InternetAddress::AddressFamily::V4 and not i.fInternetAddress.IsMulticastAddress ()) {
-                        useBinding = i;
-                    }
-                }
-            });
-            if (useBinding.fInternetAddress.GetAddressSize ()) {
-                // Guess CIDR prefix is max (so one address - bad guess) - if we cannot read from adapter
-                CIDR    cidr{useBinding.fInternetAddress, useBinding.fOnLinkPrefixLength.value_or (*useBinding.fInternetAddress.GetAddressSize () * 8)};
-                Network nw = accumResults.LookupValue (cidr, Network{{cidr}});
-
-                unsigned int score{};
-                if (i.fGateways) {
-                    for (auto gw : *i.fGateways) {
-                        if (not nw.fGateways.Contains (gw)) {
-                            score += 20;
-                            nw.fGateways.Append (gw);
-                        }
-                    }
-                }
-                if (i.fDNSServers) {
-                    for (auto dnss : *i.fDNSServers) {
-                        if (not nw.fDNSServers.Contains (dnss)) {
-                            score += 5;
-                            nw.fDNSServers.Append (dnss);
-                        }
-                    }
-                }
-                nw.fAttachedNetworkInterfaces += i.fGUID;
-
-                if (not nw.fGateways.empty ()) {
-                    ///tmphack - eventually support doing lookup through gateway from this network (all gateways on this network)
-                    Memory::AccumulateIf (&nw.fExternalAddresses, LookupExternalInternetAddress_ ());
-                }
-
-                if (nw.fExternalAddresses and not nw.fExternalAddresses->empty ()) {
-                    nw.fGEOLocInfo = LookupGEOLocation ((*nw.fExternalAddresses)[0]);
-                    nw.fISP        = LookupInternetServiceProvider ((*nw.fExternalAddresses)[0]);
-                }
-
-                // Stroika IO::Network::Interface::fNetworkGUID field appears useless - since only defined on windows and not really documented what it means
-                // and doesn't appear to vary interestingly (maybe didnt test enough) - like my virtual adapters and localhost adapter alll have same network as
-                // the real ethernet adapter).
-                // -- LGP 2018-12-16
-                nw.fGUID = ComputeGUIDForNetwork_ (nw);
-
-                accumResults.Add (cidr, nw);
-
-                // put most important interfaces at top of list
-                if ((i.fType == Interface::Type::eWiredEthernet or i.fType == Interface::Type::eWIFI) and i.fDescription and not i.fDescription->Contains (L"virtual", CompareOptions::eCaseInsensitive)) {
-                    score += 1;
-                }
-                cidrScores.Add (cidr, score);
-            }
-            else {
-                DbgTrace (L"Skipping interface %s - cuz bindings bad address", Characters::ToString (i).c_str ());
-            }
-        }
-    }
-
-    // now patch missing GUID if not already known
-    for (auto i = accumResults.begin (); i != accumResults.end (); ++i) {
-        if (i->fValue.fGUID == GUID::Zero ()) {
-            StringBuilder sb;
-            using namespace Stroika::Foundation::Cryptography;
-            sb += Characters::ToString (i->fValue.fGateways);         // NO WHERE NEAR GOOD ENUF - take into account public IP ADDR and hardware address of router - but still ALLOW for any of these to float
-            sb += Characters::ToString (i->fValue.fNetworkAddresses); // ""
-            using DIGESTER_ = Digest::Digester<Digest::Algorithm::MD5>;
-            string tmp      = sb.str ().AsUTF8 ();
-            auto   v        = i->fValue;
-            v.fGUID         = Cryptography::Format<GUID> (DIGESTER_::ComputeDigest ((const std::byte*)tmp.c_str (), (const std::byte*)tmp.c_str () + tmp.length ()));
-            accumResults.Add (i->fKey, v);
-        }
-    }
-
     Sequence<Network> results;
-    for (auto i : cidrScores.OrderBy ([](const CountedValue<CIDR>&lhs, const CountedValue<CIDR>&rhs) -> bool { return lhs.fCount > rhs.fCount; })) {
-        results += *accumResults.Lookup (i.fValue);
-    }
-    Assert (results.size () == cidrScores.size ());
-    Assert (results.size () == accumResults.size ());
+    using Cache::SynchronizedCallerStalenessCache;
+    static SynchronizedCallerStalenessCache<void, Sequence<Network>> sCache_;
+    results = sCache_.LookupValue (sCache_.Ago (allowedStaleness.value_or (kDefaultItemCacheLifetime_)), []() {
+        return CollectActiveNetworks_ ();
+    });
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
     DbgTrace (L"returns: %s", Characters::ToString (results).c_str ());
 #endif
