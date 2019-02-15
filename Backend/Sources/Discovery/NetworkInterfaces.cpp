@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "Stroika/Foundation/Cache/SynchronizedCallerStalenessCache.h"
 #include "Stroika/Foundation/Characters/StringBuilder.h"
 #include "Stroika/Foundation/Characters/ToString.h"
 #include "Stroika/Foundation/Cryptography/Digest/Algorithm/MD5.h"
@@ -45,7 +46,8 @@ NetworkInterface::NetworkInterface (const IO::Network::Interface& src)
  ********************************************************************************
  */
 namespace {
-    bool sActive_{false};
+    constexpr Time::DurationSecondsType kDefaultItemCacheLifetime_{15};
+    bool                                sActive_{false};
 }
 Discovery::NetworkInterfacesMgr::Activator::Activator ()
 {
@@ -61,53 +63,72 @@ Discovery::NetworkInterfacesMgr::Activator::~Activator ()
     // @todo must shutdown any background threads
 }
 
+namespace {
+    Collection<NetworkInterface> CollectAllNetworkInterfaces_ ()
+    {
+#if USE_NOISY_TRACE_IN_THIS_MODULE_
+        Debug::TraceContextBumper ctx{L"CollectAllNetworkInterfaces_"};
+#endif
+        Require (sActive_);
+        vector<NetworkInterface> results;
+        for (Interface i : IO::Network::GetInterfaces ()) {
+            NetworkInterface ni{i};
+
+            // If the network interface ID is already in the form of a GUID (windows) then re-use that, but otherwise, use digest to form
+            // a GUID out of it.
+            try {
+                ni.fGUID = Common::GUID (i.fInternalInterfaceID); // may need to redo this based on whats stored in database
+            }
+            catch (...) {
+                using namespace Stroika::Foundation::Cryptography;
+                using DIGESTER_ = Digest::Digester<Digest::Algorithm::MD5>;
+                string tmp      = i.fInternalInterfaceID.AsUTF8 ();
+                ni.fGUID        = Cryptography::Format<Common::GUID> (DIGESTER_::ComputeDigest ((const std::byte*)tmp.c_str (), (const std::byte*)tmp.c_str () + tmp.length ()));
+            }
+            // if we have guid for internal interfaceid, use that, and else compute hash of interface name, and use that.
+            // @todo redo fGUID
+            results.push_back (ni);
+        }
+#if USE_NOISY_TRACE_IN_THIS_MODULE_
+        DbgTrace (L"returns: %s", Characters::ToString (results).c_str ());
+#endif
+        return results;
+    }
+}
+
 /*
  ********************************************************************************
  *********************** Discovery::NetworkInterfacesMgr ************************
  ********************************************************************************
  */
-
 NetworkInterfacesMgr NetworkInterfacesMgr::sThe;
 
-Collection<NetworkInterface> Discovery::NetworkInterfacesMgr::CollectAllNetworkInterfaces () const
+Collection<NetworkInterface> Discovery::NetworkInterfacesMgr::CollectAllNetworkInterfaces (optional<Time::DurationSecondsType> allowedStaleness) const
 {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
     Debug::TraceContextBumper ctx{L"Discovery::CollectAllNetworkInterfaces"};
 #endif
     Require (sActive_);
-    vector<NetworkInterface> results;
-    for (Interface i : IO::Network::GetInterfaces ()) {
-        NetworkInterface ni{i};
-
-        // If the network interface ID is already in the form of a GUID (windows) then re-use that, but otherwise, use digest to form
-        // a GUID out of it.
-        try {
-            ni.fGUID = Common::GUID (i.fInternalInterfaceID); // may need to redo this based on whats stored in database
-        }
-        catch (...) {
-            using namespace Stroika::Foundation::Cryptography;
-            using DIGESTER_ = Digest::Digester<Digest::Algorithm::MD5>;
-            string tmp      = i.fInternalInterfaceID.AsUTF8 ();
-            ni.fGUID        = Cryptography::Format<Common::GUID> (DIGESTER_::ComputeDigest ((const std::byte*)tmp.c_str (), (const std::byte*)tmp.c_str () + tmp.length ()));
-        }
-        // if we have guid for internal interfaceid, use that, and else compute hash of interface name, and use that.
-        // @todo redo fGUID
-        results.push_back (ni);
-    }
+    Collection<NetworkInterface> results;
+    using Cache::SynchronizedCallerStalenessCache;
+    static SynchronizedCallerStalenessCache<void, Collection<NetworkInterface>> sCache_;
+    results = sCache_.LookupValue (sCache_.Ago (allowedStaleness.value_or (kDefaultItemCacheLifetime_)), []() -> Collection<NetworkInterface> {
+        return CollectAllNetworkInterfaces_ ();
+    });
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
     DbgTrace (L"returns: %s", Characters::ToString (results).c_str ());
 #endif
     return results;
 }
 
-Collection<NetworkInterface> Discovery::NetworkInterfacesMgr::CollectActiveNetworkInterfaces () const
+Collection<NetworkInterface> Discovery::NetworkInterfacesMgr::CollectActiveNetworkInterfaces (optional<Time::DurationSecondsType> allowedStaleness) const
 {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
     Debug::TraceContextBumper ctx{L"Discovery::CollectActiveNetworkInterfaces"};
 #endif
     Require (sActive_);
     Collection<NetworkInterface> results;
-    for (NetworkInterface i : CollectAllNetworkInterfaces ()) {
+    for (NetworkInterface i : CollectAllNetworkInterfaces (allowedStaleness)) {
         if (i.fType != Interface::Type::eLoopback and i.fStatus and i.fStatus->Contains (Interface::Status::eRunning)) {
             results += i;
         }
