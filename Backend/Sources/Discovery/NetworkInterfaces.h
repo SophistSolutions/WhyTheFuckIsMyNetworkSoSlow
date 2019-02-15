@@ -58,7 +58,13 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
         };
 
     public:
+        /**
+         */
         nonvirtual Collection<NetworkInterface> CollectAllNetworkInterfaces (optional<Time::DurationSecondsType> allowedStaleness = {}) const;
+
+    public:
+        /**
+         */
         nonvirtual Collection<NetworkInterface> CollectActiveNetworkInterfaces (optional<Time::DurationSecondsType> allowedStaleness = {}) const;
 
     public:
