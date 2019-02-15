@@ -45,20 +45,20 @@ NetworkInterface::NetworkInterface (const IO::Network::Interface& src)
  ********************************************************************************
  */
 namespace {
-	bool sActive_{ false };
+    bool sActive_{false};
 }
 Discovery::NetworkInterfacesMgr::Activator::Activator ()
 {
-	DbgTrace (L"Discovery::NetworkInterfacesMgr::Activator::Activator: activating network discovery");
-	Require (not sActive_);
-	sActive_ = true;
+    DbgTrace (L"Discovery::NetworkInterfacesMgr::Activator::Activator: activating network discovery");
+    Require (not sActive_);
+    sActive_ = true;
 }
 Discovery::NetworkInterfacesMgr::Activator::~Activator ()
 {
-	DbgTrace (L"Discovery::NetworkInterfacesMgr::Activator::~Activator: deactivating network discovery");
-	Require (sActive_);
-	sActive_ = false;
-	// @todo must shutdown any background threads
+    DbgTrace (L"Discovery::NetworkInterfacesMgr::Activator::~Activator: deactivating network discovery");
+    Require (sActive_);
+    sActive_ = false;
+    // @todo must shutdown any background threads
 }
 
 /*
@@ -69,17 +69,13 @@ Discovery::NetworkInterfacesMgr::Activator::~Activator ()
 
 NetworkInterfacesMgr NetworkInterfacesMgr::sThe;
 
-Discovery::NetworkInterfacesMgr::NetworkInterfacesMgr ()
-{
-}
-
 Collection<NetworkInterface> Discovery::NetworkInterfacesMgr::CollectAllNetworkInterfaces () const
 {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
     Debug::TraceContextBumper ctx{L"Discovery::CollectAllNetworkInterfaces"};
 #endif
-	Require (sActive_);
-	vector<NetworkInterface> results;
+    Require (sActive_);
+    vector<NetworkInterface> results;
     for (Interface i : IO::Network::GetInterfaces ()) {
         NetworkInterface ni{i};
 
@@ -109,8 +105,8 @@ Collection<NetworkInterface> Discovery::NetworkInterfacesMgr::CollectActiveNetwo
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
     Debug::TraceContextBumper ctx{L"Discovery::CollectActiveNetworkInterfaces"};
 #endif
-	Require (sActive_);
-	Collection<NetworkInterface> results;
+    Require (sActive_);
+    Collection<NetworkInterface> results;
     for (NetworkInterface i : CollectAllNetworkInterfaces ()) {
         if (i.fType != Interface::Type::eLoopback and i.fStatus and i.fStatus->Contains (Interface::Status::eRunning)) {
             results += i;

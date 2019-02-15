@@ -50,10 +50,10 @@ void WTFAppServiceRep::MainLoop (const std::function<void()>& startedCB)
     // deviceMgr calls NetworkMgr so order here is important. And webserver can call either. Allowing destruction to shutdown guarantees proper ordering
     // of dependencies on shutdown
 
-	Discovery::NetworkInterfacesMgr::Activator networkInterfacesMgrActivator;
-	Discovery::NetworksMgr::Activator networkMgrActivator;
-	Discovery::DevicesMgr::Activator  devicesMgrActivator;
-    WebServer                         webServer{make_shared<WSImpl> ()};
+    Discovery::NetworkInterfacesMgr::Activator networkInterfacesMgrActivator;
+    Discovery::NetworksMgr::Activator          networkMgrActivator;
+    Discovery::DevicesMgr::Activator           devicesMgrActivator;
+    WebServer                                  webServer{make_shared<WSImpl> ()};
     startedCB (); // Notify service control mgr that the service has started
     Logger::Get ().Log (Logger::Priority::eInfo, L"%s (version %s) service started successfully", kServiceDescription_.fPrettyName.c_str (), Characters::ToString (AppVersion::kVersion).c_str ());
 

@@ -71,10 +71,10 @@ String Discovery::Device::ToString () const
  */
 namespace {
     /*
-	 *  DeviceDiscoverer is internally syncronized - so its methods can be called from any thread.
-	 *
-	 *  @todo this CURRENTLY only discovers for a single network, but we should discover devices on all networks (and merge them somehow when they are the smae device on multiple networks)
-	 */
+     *  DeviceDiscoverer is internally syncronized - so its methods can be called from any thread.
+     *
+     *  @todo this CURRENTLY only discovers for a single network, but we should discover devices on all networks (and merge them somehow when they are the smae device on multiple networks)
+     */
     class DeviceDiscoverer_ {
     public:
         DeviceDiscoverer_ ()                         = delete;
@@ -163,7 +163,7 @@ namespace {
                 }
             }
             auto aaa                   = Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ().Select<GUID> ([](auto iFace) { return iFace.fGUID; });
-            newDev.fAttachedInterfaces = Set<GUID>{ Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ().Select<GUID> ([](auto iFace) { return iFace.fGUID; })};
+            newDev.fAttachedInterfaces = Set<GUID>{Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ().Select<GUID> ([](auto iFace) { return iFace.fGUID; })};
             return newDev;
         }
         void RecieveSSDPAdvertisement_ (const SSDP::Advertisement& d)

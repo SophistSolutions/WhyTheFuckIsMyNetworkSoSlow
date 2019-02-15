@@ -38,32 +38,32 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
         NetworkInterface (const IO::Network::Interface& src);
     };
 
-	/**
-	 *  Public APIs fully <a href='ThirdPartyComponents/Stroika/StroikaRoot/Documentation/Thread-Safety.md#Internally-Synchronized-Thread-Safety'>Internally-Synchronized-Thread-Safety</a>
-	 *
-	 *  Only legal to call NetworkInterfacesMgr while its active (checked with assertions). Callers responsability to assure, but checked with assertions.
-	 */
-	class NetworkInterfacesMgr {
-	public:
-		NetworkInterfacesMgr ();
-		NetworkInterfacesMgr (const NetworkInterfacesMgr&) = delete;
+    /**
+     *  Public APIs fully <a href='ThirdPartyComponents/Stroika/StroikaRoot/Documentation/Thread-Safety.md#Internally-Synchronized-Thread-Safety'>Internally-Synchronized-Thread-Safety</a>
+     *
+     *  Only legal to call NetworkInterfacesMgr while its active (checked with assertions). Callers responsability to assure, but checked with assertions.
+     */
+    class NetworkInterfacesMgr {
+    public:
+        NetworkInterfacesMgr ()                            = default;
+        NetworkInterfacesMgr (const NetworkInterfacesMgr&) = delete;
 
-	public:
-		/**
-		 *  At most one such object may exist. When it does, the NetworkInterfacesMgr is active and usable. Its illegal to call otherwise.
-		 */
-		struct Activator {
-			Activator ();
-			~Activator ();
-		};
+    public:
+        /**
+         *  At most one such object may exist. When it does, the NetworkInterfacesMgr is active and usable. Its illegal to call otherwise.
+         */
+        struct Activator {
+            Activator ();
+            ~Activator ();
+        };
 
-	public:
-		nonvirtual	Collection<NetworkInterface> CollectAllNetworkInterfaces () const;
-		nonvirtual	Collection<NetworkInterface> CollectActiveNetworkInterfaces () const;
+    public:
+        nonvirtual Collection<NetworkInterface> CollectAllNetworkInterfaces () const;
+        nonvirtual Collection<NetworkInterface> CollectActiveNetworkInterfaces () const;
 
-	public:
-		static NetworkInterfacesMgr sThe;
-	};
+    public:
+        static NetworkInterfacesMgr sThe;
+    };
 
 }
 

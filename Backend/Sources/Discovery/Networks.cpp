@@ -136,9 +136,6 @@ Discovery::NetworksMgr::Activator::~Activator ()
  */
 
 NetworksMgr NetworksMgr::sThe;
-Discovery::NetworksMgr::NetworksMgr ()
-{
-}
 
 Sequence<Network> Discovery::NetworksMgr::CollectActiveNetworks () const
 {

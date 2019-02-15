@@ -63,7 +63,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
      */
     class NetworksMgr {
     public:
-        NetworksMgr ();
+        NetworksMgr ()                   = default;
         NetworksMgr (const NetworksMgr&) = delete;
 
     public:
