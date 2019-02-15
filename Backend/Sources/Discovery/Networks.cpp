@@ -109,7 +109,7 @@ String Discovery::Network::ToString () const
 
 /*
  ********************************************************************************
- **************************** Discovery::NetworksMgr::Activator ****************************
+ ********************** Discovery::NetworksMgr::Activator ***********************
  ********************************************************************************
  */
 namespace {
@@ -148,7 +148,7 @@ Sequence<Network> Discovery::NetworksMgr::CollectActiveNetworks () const
     Require (sActive_);
     Mapping<CIDR, Network> accumResults;
     MultiSet<CIDR>         cidrScores; // primitive attempt to find best interface to display
-    for (NetworkInterface i : CollectActiveNetworkInterfaces ()) {
+    for (NetworkInterface i : Discovery::NetworkInterfacesMgr::sThe.CollectActiveNetworkInterfaces ()) {
         if (not i.fBindings.empty ()) {
             Interface::Binding useBinding = i.fBindings.Nth (0);
             i.fBindings.Apply ([&](Interface::Binding i) {

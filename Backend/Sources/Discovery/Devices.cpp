@@ -66,15 +66,15 @@ String Discovery::Device::ToString () const
 
 /*
  ********************************************************************************
- ************************** DeviceDiscoverer_ *************************
+ ****************************** DeviceDiscoverer_ *******************************
  ********************************************************************************
  */
 namespace {
-    /**
-  *  DeviceDiscoverer is internally syncronized - so its methods can be called from any thread.
-  *
-  *  @todo this CURRENTLY only discovers for a single network, but we should discover devices on all networks (and merge them somehow when they are the smae device on multiple networks)
-  */
+    /*
+	 *  DeviceDiscoverer is internally syncronized - so its methods can be called from any thread.
+	 *
+	 *  @todo this CURRENTLY only discovers for a single network, but we should discover devices on all networks (and merge them somehow when they are the smae device on multiple networks)
+	 */
     class DeviceDiscoverer_ {
     public:
         DeviceDiscoverer_ ()                         = delete;
@@ -112,9 +112,9 @@ namespace {
         Collection<Discovery::Device> GetActiveDevices () const
         {
             static const Mapping<String, String> kNamePrettyPrintMapper_{
-                KeyValuePair<String, String>{L"ASUSTeK UPnP/1.1 MiniUPnPd/1.9"_k, L"ASUS Router"_k},
-                KeyValuePair<String, String>{L"Microsoft-Windows/10.0 UPnP/1.0 UPnP-Device-Host/1.0"_k, L"Antiphon"_k},
-                KeyValuePair<String, String>{L"POSIX, UPnP/1.0, Intel MicroStack/1.0.1347"_k, L"HP PhotoSmart"_k},
+                KeyValuePair<String, String>{L"ASUSTeK UPnP/1.1 MiniUPnPd/1.9"sv, L"ASUS Router"sv},
+                KeyValuePair<String, String>{L"Microsoft-Windows/10.0 UPnP/1.0 UPnP-Device-Host/1.0"sv, L"Antiphon"sv},
+                KeyValuePair<String, String>{L"POSIX, UPnP/1.0, Intel MicroStack/1.0.1347"sv, L"HP PhotoSmart"sv},
             };
             Collection<Discovery::Device> results;
             for (DiscoveryInfo_ di : GetSoFarDiscoveredDevices_ ()) {
@@ -162,8 +162,8 @@ namespace {
                     });
                 }
             }
-            auto aaa                   = Discovery::CollectAllNetworkInterfaces ().Select<GUID> ([](auto iFace) { return iFace.fGUID; });
-            newDev.fAttachedInterfaces = Set<GUID>{Discovery::CollectAllNetworkInterfaces ().Select<GUID> ([](auto iFace) { return iFace.fGUID; })};
+            auto aaa                   = Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ().Select<GUID> ([](auto iFace) { return iFace.fGUID; });
+            newDev.fAttachedInterfaces = Set<GUID>{ Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ().Select<GUID> ([](auto iFace) { return iFace.fGUID; })};
             return newDev;
         }
         void RecieveSSDPAdvertisement_ (const SSDP::Advertisement& d)
@@ -221,22 +221,24 @@ namespace {
         return fRep_->GetActiveDevices ();
     }
 }
+
 /*
  ********************************************************************************
- ****************** Discovery::DevicesMgr::Activator ****************************
+ ********************* Discovery::DevicesMgr::Activator *************************
  ********************************************************************************
  */
 namespace {
     bool sActive_{false};
 }
+
 Discovery::DevicesMgr::Activator::Activator ()
 {
     DbgTrace (L"Discovery::DevicesMgr::Activator::Activator: activating device discovery");
     Require (not sActive_);
     sActive_ = true;
-
     IgnoreExceptionsForCall (sThe.GetActiveDevices ());
 }
+
 Discovery::DevicesMgr::Activator::~Activator ()
 {
     DbgTrace (L"Discovery::DevicesMgr::Activator::~Activator: deactivating device discovery");
@@ -248,14 +250,13 @@ Discovery::DevicesMgr::Activator::~Activator ()
 
 /*
  ********************************************************************************
- **************************** Discovery::DevicesMgr ****************************
+ **************************** Discovery::DevicesMgr *****************************
  ********************************************************************************
  */
 
 DevicesMgr DevicesMgr::sThe;
 
 namespace {
-
     shared_ptr<DeviceDiscoverer_> GetDiscoverer_ ()
     {
         using Discovery::Network;

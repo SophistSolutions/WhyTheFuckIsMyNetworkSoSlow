@@ -2,6 +2,17 @@ Top priority bug:
 
 
 
+---
+[0x00005bb4][0115.326]		<Router::Rep_::HandleMessage ((...method=GET,url=http:favicon.ico))> {
+[0x00005bb4][0115.335]			Throwing exception: HTTP exception: status 405 (Method Not allowed) from 
+Exception thrown at 0x00007FF959CD5549 in WhyTheFuckIsMyNetworkSoSlow-Backend.exe: Microsoft C++ exception: Stroika::Foundation::IO::Network::HTTP::ClientErrorException at memory location 0x000000000326C9E0.
+
+
+WSAPI above - if we fetch soemting that we dont have issue 404 and only 405 if it was ebcause of the method!!!
+
+
+-----
+
 - current device discovery (rewriting threading)
   - assining wrong network. For SSDP, assign network based on scalling known networks and their ip address range.
   - redo ssdp scanning logic so its not network dependent

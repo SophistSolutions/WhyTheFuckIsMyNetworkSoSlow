@@ -180,7 +180,7 @@ Collection<String> WSImpl::GetNetworkInterfaces (bool filterRunningOnly) const
 {
     Collection<String> result;
 
-    for (Discovery::NetworkInterface n : Discovery::CollectAllNetworkInterfaces ()) {
+    for (Discovery::NetworkInterface n : Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ()) {
         bool passedFilter{true};
         if (filterRunningOnly) {
             if (n.fStatus.has_value () and not n.fStatus->Contains (IO::Network::Interface::Status::eConnected)) {
@@ -198,7 +198,7 @@ Collection<BackendApp::WebServices::NetworkInterface> WSImpl::GetNetworkInterfac
 {
     Collection<BackendApp::WebServices::NetworkInterface> result;
 
-    for (Discovery::NetworkInterface n : Discovery::CollectAllNetworkInterfaces ()) {
+    for (Discovery::NetworkInterface n : Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ()) {
         bool passedFilter{true};
         if (filterRunningOnly) {
             if (n.fStatus.has_value () and not n.fStatus->Contains (IO::Network::Interface::Status::eConnected)) {
