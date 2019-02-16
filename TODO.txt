@@ -1,5 +1,22 @@
 Top priority bug:
 
+next step is to rewrite
+
+DevicesMgr::GetActiveDevices()
+	-	Create function to find all matching networks for a given IP Address()
+	-   Then maintain global ssdpsearcher object created by active and destroyed by deactivate
+	-   And maintain static module global data strucutre with results of ssdp
+	
+
+	-  Then GetActiveDevices () walks that structure to build list of devides.
+
+	(then add a thread that periodically calls arp -a)
+	(then eventually add another thread that walks all available active networks and randoming pings in that range to discover)
+
+
+
+
+
 
 
 ---
