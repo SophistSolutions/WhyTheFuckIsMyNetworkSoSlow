@@ -106,10 +106,10 @@ Collection<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse () const
             }
         });
 
-        newDev.fGUID = LookupPersistentDeviceID_ (d);
-        newDev.name  = d.name;
-        newDev.type  = d.type;
-        newDev.fAttachedNetworks += d.fNetwork;
+        newDev.fGUID                      = LookupPersistentDeviceID_ (d);
+        newDev.name                       = d.name;
+        newDev.type                       = d.type;
+        newDev.fAttachedNetworks          = d.fNetworks;
         newDev.fAttachedNetworkInterfaces = d.fAttachedInterfaces; // @todo must merge += (but only when merging across differnt discoverers/networks)
         newDev.important                  = newDev.type == Device::DeviceType::eRouter or d.fThisDevice;
         return newDev;

@@ -34,6 +34,7 @@ using namespace Stroika::Frameworks;
 using namespace Stroika::Frameworks::UPnP;
 
 using Execution::Synchronized;
+using IO::Network::InternetAddress;
 using Stroika::Foundation::Common::GUID;
 using Stroika::Foundation::Common::KeyValuePair;
 
@@ -61,6 +62,8 @@ String Discovery::Device::ToString () const
     if (fThisDevice) {
         sb += L"This-Device: " + Characters::ToString (fThisDevice) + L", ";
     }
+    sb += L"fNetworks: " + Characters::ToString (fNetworks) + L", ";
+    sb += L"fAttachedInterfaces: " + Characters::ToString (fAttachedInterfaces) + L", ";
     sb += L"}";
     return sb.str ();
 }
@@ -71,6 +74,107 @@ String Discovery::Device::ToString () const
  ********************************************************************************
  */
 namespace {
+
+    class NetAndNetInterfaceMapper_ {
+    public:
+        NetAndNetInterfaceMapper_ () = default; // load networks and network interafces..
+
+    public:
+        Discovery::Network LookupNetwork (InternetAddress ia) const
+        {
+            Sequence<Discovery::Network> tmp = Discovery::NetworksMgr::sThe.CollectActiveNetworks ();
+            if (tmp.empty ()) {
+                Execution::Throw (Execution::Exception (L"no active network"sv));
+            }
+            Discovery::Network net = tmp[0];
+            return net;
+        }
+        Discovery::Network LookupNetwork (Set<InternetAddress> ia) const
+        {
+            Sequence<Discovery::Network> tmp = Discovery::NetworksMgr::sThe.CollectActiveNetworks ();
+            if (tmp.empty ()) {
+                Execution::Throw (Execution::Exception (L"no active network"sv));
+            }
+            Discovery::Network net = tmp[0];
+            return net;
+        }
+        Set<GUID> LookupNetworkGUIDs (Set<InternetAddress> ia) const
+        {
+            Sequence<Discovery::Network> tmp = Discovery::NetworksMgr::sThe.CollectActiveNetworks ();
+            if (tmp.empty ()) {
+                Execution::Throw (Execution::Exception (L"no active network"sv));
+            }
+            Discovery::Network net = tmp[0];
+            Set<GUID>          tmp1;
+            tmp1 += net.fGUID;
+            return tmp1;
+        }
+        NetworkInterface LookupNetworkInterface (InternetAddress ia);
+
+    public:
+        static NetAndNetInterfaceMapper_ sThe;
+    };
+    NetAndNetInterfaceMapper_ NetAndNetInterfaceMapper_::sThe;
+
+    struct DiscoveryInfo_ {
+        Set<IO::Network::InternetAddress> fInternetAddresses;
+        bool                              alive{};
+        String                            server;
+    };
+    Synchronized<Mapping<String, DiscoveryInfo_>> sDiscoveredDevices_;
+
+    optional<Discovery::Device> GetMyDevice_ ()
+    {
+#if USE_NOISY_TRACE_IN_THIS_MODULE_
+        Debug::TraceContextBumper ctx{L"{}::GetMyDevice_"};
+#endif
+        DbgTrace (L"interfaces=%s", Characters::ToString (IO::Network::GetInterfaces ()).c_str ());
+        Discovery::Device newDev;
+        newDev.name        = Configuration::GetSystemConfiguration_ComputerNames ().fHostname;
+        newDev.type        = DeviceType::eLaptop; //tmphack @todo fix
+        newDev.fThisDevice = true;
+        for (Interface i : IO::Network::GetInterfaces ()) {
+            if (i.fType != Interface::Type::eLoopback and i.fStatus and i.fStatus->Contains (Interface::Status::eRunning)) {
+                i.fBindings.Apply ([&](const Interface::Binding& ia) {
+                    if (not ia.fInternetAddress.IsMulticastAddress ()) {
+                        newDev.ipAddresses += ia.fInternetAddress;
+                    }
+                });
+            }
+        }
+        newDev.fNetworks           = NetAndNetInterfaceMapper_::sThe.LookupNetworkGUIDs (newDev.ipAddresses);
+        newDev.fAttachedInterfaces = Set<GUID>{Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ().Select<GUID> ([](auto iFace) { return iFace.fGUID; })};
+        return newDev;
+    }
+
+    Collection<Discovery::Device> GetActiveDevices_ ()
+    {
+        static const Mapping<String, String> kNamePrettyPrintMapper_{
+            KeyValuePair<String, String>{L"ASUSTeK UPnP/1.1 MiniUPnPd/1.9"sv, L"ASUS Router"sv},
+            KeyValuePair<String, String>{L"Microsoft-Windows/10.0 UPnP/1.0 UPnP-Device-Host/1.0"sv, L"Antiphon"sv},
+            KeyValuePair<String, String>{L"POSIX, UPnP/1.0, Intel MicroStack/1.0.1347"sv, L"HP PhotoSmart"sv},
+        };
+        Collection<Discovery::Device> results;
+        for (DiscoveryInfo_ di : sDiscoveredDevices_.cget ()->MappedValues ()) {
+            Discovery::Device newDev;
+
+            newDev.name = di.server;
+            newDev.name = kNamePrettyPrintMapper_.LookupValue (newDev.name, newDev.name);
+            newDev.ipAddresses += di.fInternetAddresses;
+            newDev.type      = nullopt;
+            newDev.fNetworks = NetAndNetInterfaceMapper_::sThe.LookupNetworkGUIDs (newDev.ipAddresses);
+            if (newDev.ipAddresses.Any ([](const InternetAddress& ia) { return ia.As<String> ().EndsWith (L".1"); })) {
+                newDev.type = Discovery::DeviceType::eRouter;
+            }
+
+            results.Add (newDev);
+        }
+        if (auto i = GetMyDevice_ ()) {
+            results.Add (*i);
+        }
+        return results;
+    }
+
     /*
      *  DeviceDiscoverer is internally syncronized - so its methods can be called from any thread.
      *
@@ -84,24 +188,15 @@ namespace {
         DeviceDiscoverer_& operator= (const DeviceDiscoverer_&) = delete;
         ~DeviceDiscoverer_ ();
 
-    public:
-        nonvirtual Collection<Discovery::Device> GetActiveDevices () const;
-
     private:
         class Rep_;
         unique_ptr<Rep_> fRep_;
     };
     class DeviceDiscoverer_::Rep_ {
-        struct DiscoveryInfo_ {
-            Set<IO::Network::InternetAddress> fInternetAddresses;
-            bool                              alive{};
-            String                            server;
-        };
 
-        mutable Synchronized<Mapping<String, DiscoveryInfo_>> fDiscoveredDevices_;
-        Discovery::Network                                    fNetwork_;
-        SSDP::Client::Listener                                fListener_;
-        SSDP::Client::Search                                  fSearcher_;
+        Discovery::Network     fNetwork_;
+        SSDP::Client::Listener fListener_;
+        SSDP::Client::Search   fSearcher_;
 
     public:
         Rep_ (const Discovery::Network& forNetwork)
@@ -110,62 +205,8 @@ namespace {
             , fSearcher_{[this](const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); }, SSDP::Client::Search::kRootDevice}
         {
         }
-        Collection<Discovery::Device> GetActiveDevices () const
-        {
-            static const Mapping<String, String> kNamePrettyPrintMapper_{
-                KeyValuePair<String, String>{L"ASUSTeK UPnP/1.1 MiniUPnPd/1.9"sv, L"ASUS Router"sv},
-                KeyValuePair<String, String>{L"Microsoft-Windows/10.0 UPnP/1.0 UPnP-Device-Host/1.0"sv, L"Antiphon"sv},
-                KeyValuePair<String, String>{L"POSIX, UPnP/1.0, Intel MicroStack/1.0.1347"sv, L"HP PhotoSmart"sv},
-            };
-            Collection<Discovery::Device> results;
-            for (DiscoveryInfo_ di : GetSoFarDiscoveredDevices_ ()) {
-                Discovery::Device newDev;
-
-                newDev.name = di.server;
-                newDev.name = kNamePrettyPrintMapper_.LookupValue (newDev.name, newDev.name);
-                newDev.ipAddresses += di.fInternetAddresses;
-                newDev.type     = nullopt;
-                newDev.fNetwork = fNetwork_.fGUID;
-                if (newDev.ipAddresses.Any ([](const InternetAddress& ia) { return ia.As<String> ().EndsWith (L".1"); })) {
-                    newDev.type = Discovery::DeviceType::eRouter;
-                }
-
-                results.Add (newDev);
-            }
-            if (auto i = GetMyDevice_ ()) {
-                results.Add (*i);
-            }
-            return results;
-        }
 
     private:
-        Collection<DiscoveryInfo_> GetSoFarDiscoveredDevices_ () const
-        {
-            return fDiscoveredDevices_.cget ()->MappedValues ();
-        }
-        optional<Discovery::Device> GetMyDevice_ () const
-        {
-#if USE_NOISY_TRACE_IN_THIS_MODULE_
-            Debug::TraceContextBumper ctx{L"{}::GetMyDevice_"};
-#endif
-            DbgTrace (L"interfaces=%s", Characters::ToString (IO::Network::GetInterfaces ()).c_str ());
-            Discovery::Device newDev;
-            newDev.name        = Configuration::GetSystemConfiguration_ComputerNames ().fHostname;
-            newDev.type        = DeviceType::eLaptop; //tmphack @todo fix
-            newDev.fThisDevice = true;
-            newDev.fNetwork    = fNetwork_.fGUID;
-            for (Interface i : IO::Network::GetInterfaces ()) {
-                if (i.fType != Interface::Type::eLoopback and i.fStatus and i.fStatus->Contains (Interface::Status::eRunning)) {
-                    i.fBindings.Apply ([&](const Interface::Binding& ia) {
-                        if (not ia.fInternetAddress.IsMulticastAddress ()) {
-                            newDev.ipAddresses += ia.fInternetAddress;
-                        }
-                    });
-                }
-            }
-            newDev.fAttachedInterfaces = Set<GUID>{Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ().Select<GUID> ([](auto iFace) { return iFace.fGUID; })};
-            return newDev;
-        }
         void RecieveSSDPAdvertisement_ (const SSDP::Advertisement& d)
         {
             DbgTrace (L"Recieved SSDP advertisement: %s", Characters::ToString (d).c_str ());
@@ -201,7 +242,7 @@ namespace {
                 DbgTrace (L"oops - bad - probably should log - bad device resposne - find addr some other way");
             }
             else {
-                fDiscoveredDevices_.rwget ()->Add (location, DiscoveryInfo_{locAddrs, alive.value_or (true), friendlyName});
+                sDiscoveredDevices_.rwget ()->Add (location, DiscoveryInfo_{locAddrs, alive.value_or (true), friendlyName});
             }
         }
     };
@@ -216,10 +257,6 @@ namespace {
         // Need to define DTOR here to have unique_ptr and Rep_ declared in CPP file
     }
 
-    Collection<Discovery::Device> DeviceDiscoverer_::GetActiveDevices () const
-    {
-        return fRep_->GetActiveDevices ();
-    }
 }
 
 /*
@@ -293,7 +330,7 @@ Collection<Discovery::Device> Discovery::DevicesMgr::GetActiveDevices (optional<
     using Cache::SynchronizedCallerStalenessCache;
     static SynchronizedCallerStalenessCache<void, Collection<Discovery::Device>> sCache_;
     results = sCache_.LookupValue (sCache_.Ago (allowedStaleness.value_or (kDefaultItemCacheLifetime_)), []() {
-        return GetDiscoverer_ ()->GetActiveDevices ();
+        return GetActiveDevices_ ();
     });
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
     DbgTrace (L"returns: %s", Characters::ToString (results).c_str ());
