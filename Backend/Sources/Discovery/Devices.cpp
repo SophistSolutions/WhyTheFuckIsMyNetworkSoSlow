@@ -109,7 +109,6 @@ namespace {
             tmp1 += net.fGUID;
             return tmp1;
         }
-        NetworkInterface LookupNetworkInterface (InternetAddress ia);
 
     public:
         static NetAndNetInterfaceMapper_ sThe;
@@ -180,28 +179,15 @@ namespace {
      *
      *  @todo this CURRENTLY only discovers for a single network, but we should discover devices on all networks (and merge them somehow when they are the smae device on multiple networks)
      */
+
     class DeviceDiscoverer_ {
-    public:
-        DeviceDiscoverer_ ()                         = delete;
-        DeviceDiscoverer_ (const DeviceDiscoverer_&) = delete;
-        DeviceDiscoverer_ (const Discovery::Network& forNetwork);
-        DeviceDiscoverer_& operator= (const DeviceDiscoverer_&) = delete;
-        ~DeviceDiscoverer_ ();
 
-    private:
-        class Rep_;
-        unique_ptr<Rep_> fRep_;
-    };
-    class DeviceDiscoverer_::Rep_ {
-
-        Discovery::Network     fNetwork_;
         SSDP::Client::Listener fListener_;
         SSDP::Client::Search   fSearcher_;
 
     public:
-        Rep_ (const Discovery::Network& forNetwork)
-            : fNetwork_ (forNetwork)
-            , fListener_{[this](const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); }, SSDP::Client::Listener::eAutoStart}
+        DeviceDiscoverer_ ()
+            : fListener_{[this](const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); }, SSDP::Client::Listener::eAutoStart}
             , fSearcher_{[this](const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); }, SSDP::Client::Search::kRootDevice}
         {
         }
@@ -247,16 +233,6 @@ namespace {
         }
     };
 
-    DeviceDiscoverer_::DeviceDiscoverer_ (const Discovery::Network& forNetwork)
-        : fRep_ (make_unique<Rep_> (forNetwork))
-    {
-    }
-
-    DeviceDiscoverer_::~DeviceDiscoverer_ ()
-    {
-        // Need to define DTOR here to have unique_ptr and Rep_ declared in CPP file
-    }
-
 }
 
 /*
@@ -265,7 +241,9 @@ namespace {
  ********************************************************************************
  */
 namespace {
-    constexpr Time::DurationSecondsType kDefaultItemCacheLifetime_{15};
+    constexpr Time::DurationSecondsType kDefaultItemCacheLifetime_{2}; // this costs very little since just reading already cached data so default to quick check
+
+    unique_ptr<DeviceDiscoverer_> sSSDPDeviceDiscoverer_;
 
     bool sActive_{false};
 }
@@ -274,7 +252,8 @@ Discovery::DevicesMgr::Activator::Activator ()
 {
     DbgTrace (L"Discovery::DevicesMgr::Activator::Activator: activating device discovery");
     Require (not sActive_);
-    sActive_ = true;
+    sSSDPDeviceDiscoverer_ = make_unique<DeviceDiscoverer_> ();
+    sActive_               = true;
     IgnoreExceptionsForCall (sThe.GetActiveDevices ());
 }
 
@@ -282,6 +261,7 @@ Discovery::DevicesMgr::Activator::~Activator ()
 {
     DbgTrace (L"Discovery::DevicesMgr::Activator::~Activator: deactivating device discovery");
     Require (sActive_);
+    sSSDPDeviceDiscoverer_.release ();
     sActive_ = false;
 
     // @todo - must shutdown any active threads
@@ -294,31 +274,6 @@ Discovery::DevicesMgr::Activator::~Activator ()
  */
 
 DevicesMgr DevicesMgr::sThe;
-
-namespace {
-    shared_ptr<DeviceDiscoverer_> GetDiscoverer_ ()
-    {
-        using Discovery::Network;
-        static Synchronized<Mapping<Network, shared_ptr<DeviceDiscoverer_>>> sDiscovery_{
-            Stroika::Foundation::Common::DeclareEqualsComparer ([](Network l, Network r) { return l.fGUID == r.fGUID; }),
-        };
-
-        Sequence<Discovery::Network> tmp = Discovery::NetworksMgr::sThe.CollectActiveNetworks ();
-
-        if (tmp.empty ()) {
-            Execution::Throw (Execution::Exception (L"no active network"sv));
-        }
-        Discovery::Network net = tmp[0];
-
-        auto l = sDiscovery_.rwget ();
-        if (auto i = l->Lookup (net)) {
-            return *i;
-        }
-        auto r = make_shared<DeviceDiscoverer_> (net);
-        l->Add (net, r);
-        return r;
-    }
-}
 
 Collection<Discovery::Device> Discovery::DevicesMgr::GetActiveDevices (optional<Time::DurationSecondsType> allowedStaleness) const
 {
