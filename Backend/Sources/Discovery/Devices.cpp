@@ -80,34 +80,21 @@ namespace {
         NetAndNetInterfaceMapper_ () = default; // load networks and network interafces..
 
     public:
-        Discovery::Network LookupNetwork (InternetAddress ia) const
+        Set<GUID> LookupNetworksGUIDs (const Set<InternetAddress>& ia) const
         {
-            Sequence<Discovery::Network> tmp = Discovery::NetworksMgr::sThe.CollectActiveNetworks ();
-            if (tmp.empty ()) {
-                Execution::Throw (Execution::Exception (L"no active network"sv));
+            Set<GUID> results;
+            for (Discovery::Network&& nw : Discovery::NetworksMgr::sThe.CollectActiveNetworks ()) {
+                for (const CIDR& nwi : nw.fNetworkAddresses) {
+                    for (const InternetAddress& i : ia) {
+                        if (nwi.GetRange ().Contains (i)) {
+                            results += nw.fGUID;
+                            goto out;
+                        }
+                    }
+                }
+            out:;
             }
-            Discovery::Network net = tmp[0];
-            return net;
-        }
-        Discovery::Network LookupNetwork (Set<InternetAddress> ia) const
-        {
-            Sequence<Discovery::Network> tmp = Discovery::NetworksMgr::sThe.CollectActiveNetworks ();
-            if (tmp.empty ()) {
-                Execution::Throw (Execution::Exception (L"no active network"sv));
-            }
-            Discovery::Network net = tmp[0];
-            return net;
-        }
-        Set<GUID> LookupNetworkGUIDs (Set<InternetAddress> ia) const
-        {
-            Sequence<Discovery::Network> tmp = Discovery::NetworksMgr::sThe.CollectActiveNetworks ();
-            if (tmp.empty ()) {
-                Execution::Throw (Execution::Exception (L"no active network"sv));
-            }
-            Discovery::Network net = tmp[0];
-            Set<GUID>          tmp1;
-            tmp1 += net.fGUID;
-            return tmp1;
+            return results;
         }
 
     public:
@@ -141,7 +128,7 @@ namespace {
                 });
             }
         }
-        newDev.fNetworks           = NetAndNetInterfaceMapper_::sThe.LookupNetworkGUIDs (newDev.ipAddresses);
+        newDev.fNetworks           = NetAndNetInterfaceMapper_::sThe.LookupNetworksGUIDs (newDev.ipAddresses);
         newDev.fAttachedInterfaces = Set<GUID>{Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ().Select<GUID> ([](auto iFace) { return iFace.fGUID; })};
         return newDev;
     }
@@ -161,7 +148,7 @@ namespace {
             newDev.name = kNamePrettyPrintMapper_.LookupValue (newDev.name, newDev.name);
             newDev.ipAddresses += di.fInternetAddresses;
             newDev.type      = nullopt;
-            newDev.fNetworks = NetAndNetInterfaceMapper_::sThe.LookupNetworkGUIDs (newDev.ipAddresses);
+            newDev.fNetworks = NetAndNetInterfaceMapper_::sThe.LookupNetworksGUIDs (newDev.ipAddresses);
             if (newDev.ipAddresses.Any ([](const InternetAddress& ia) { return ia.As<String> ().EndsWith (L".1"); })) {
                 newDev.type = Discovery::DeviceType::eRouter;
             }
@@ -179,18 +166,17 @@ namespace {
      *
      *  @todo this CURRENTLY only discovers for a single network, but we should discover devices on all networks (and merge them somehow when they are the smae device on multiple networks)
      */
-
     class DeviceDiscoverer_ {
-
-        SSDP::Client::Listener fListener_;
-        SSDP::Client::Search   fSearcher_;
-
     public:
         DeviceDiscoverer_ ()
             : fListener_{[this](const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); }, SSDP::Client::Listener::eAutoStart}
             , fSearcher_{[this](const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); }, SSDP::Client::Search::kRootDevice}
         {
         }
+
+    private:
+        SSDP::Client::Listener fListener_;
+        SSDP::Client::Search   fSearcher_;
 
     private:
         void RecieveSSDPAdvertisement_ (const SSDP::Advertisement& d)
