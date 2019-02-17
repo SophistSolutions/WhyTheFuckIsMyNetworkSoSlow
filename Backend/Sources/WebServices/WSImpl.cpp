@@ -352,7 +352,7 @@ double WSImpl::Operation_DNS_CalculateScore () const
     constexpr double kPosLookupWeight = 25; // much higher than kNegLookupWeight because this is the time for cached entries lookup which will naturally be much smaller
     totalWeightedTime += kPosLookupWeight * (0 + Operation_DNS_Lookup (L"www.google.com"sv).fLookupTime.As<double> () + Operation_DNS_Lookup (L"www.amazon.com"sv).fLookupTime.As<double> () + Operation_DNS_Lookup (L"www.youtube.com"sv).fLookupTime.As<double> ());
     Assert (totalWeightedTime >= 0);
-    constexpr double kScoreCutOff_               = 5.0;
+    constexpr double kScoreCutOff_               = 10.0;
     constexpr double kShiftAndScaleVerticallyBy_ = 10;
     double           score{(kShiftAndScaleVerticallyBy_ - log (totalWeightedTime / (kScoreCutOff_ / 10))) / kShiftAndScaleVerticallyBy_};
 

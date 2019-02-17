@@ -199,8 +199,8 @@ namespace {
                     accumResults.Add (cidr, nw);
 
                     // put most important interfaces at top of list
-                    if ((i.fType == Interface::Type::eWiredEthernet or i.fType == Interface::Type::eWIFI) and i.fDescription and not i.fDescription->Contains (L"virtual", CompareOptions::eCaseInsensitive)) {
-                        score += 1;
+                    if ((i.fType == Interface::Type::eWiredEthernet or i.fType == Interface::Type::eWIFI)) {
+                        score += 3;
                     }
                     cidrScores.Add (cidr, score);
                 }

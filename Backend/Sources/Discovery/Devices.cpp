@@ -82,8 +82,12 @@ namespace {
     public:
         Set<GUID> LookupNetworksGUIDs (const Set<InternetAddress>& ia) const
         {
+#if USE_NOISY_TRACE_IN_THIS_MODULE_
+            Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"{}::NetAndNetInterfaceMapper_::LookupNetworksGUIDs (%s)", Characters::ToString (ia).c_str ())};
+#endif
             Set<GUID> results;
             for (Discovery::Network&& nw : Discovery::NetworksMgr::sThe.CollectActiveNetworks ()) {
+                DbgTrace (L"nw.fNetworkAddresses=%s", Characters::ToString (nw.fNetworkAddresses).c_str ());
                 for (const CIDR& nwi : nw.fNetworkAddresses) {
                     for (const InternetAddress& i : ia) {
                         if (nwi.GetRange ().Contains (i)) {
@@ -94,6 +98,9 @@ namespace {
                 }
             out:;
             }
+#if USE_NOISY_TRACE_IN_THIS_MODULE_
+            DbgTrace (L"returning %s", Characters::ToString (results).c_str ());
+#endif
             return results;
         }
 
@@ -102,10 +109,9 @@ namespace {
     };
     NetAndNetInterfaceMapper_ NetAndNetInterfaceMapper_::sThe;
 
-    struct DiscoveryInfo_ {
-        Set<IO::Network::InternetAddress> fInternetAddresses;
-        bool                              alive{};
-        String                            server;
+    struct DiscoveryInfo_ : Discovery::Device {
+        bool   alive{}; // currently unused
+        String server;
     };
     Synchronized<Mapping<String, DiscoveryInfo_>> sDiscoveredDevices_;
 
@@ -146,7 +152,7 @@ namespace {
 
             newDev.name = di.server;
             newDev.name = kNamePrettyPrintMapper_.LookupValue (newDev.name, newDev.name);
-            newDev.ipAddresses += di.fInternetAddresses;
+            newDev.ipAddresses += di.ipAddresses;
             newDev.type      = nullopt;
             newDev.fNetworks = NetAndNetInterfaceMapper_::sThe.LookupNetworksGUIDs (newDev.ipAddresses);
             if (newDev.ipAddresses.Any ([](const InternetAddress& ia) { return ia.As<String> ().EndsWith (L".1"); })) {
@@ -162,13 +168,11 @@ namespace {
     }
 
     /*
-     *  DeviceDiscoverer is internally syncronized - so its methods can be called from any thread.
-     *
-     *  @todo this CURRENTLY only discovers for a single network, but we should discover devices on all networks (and merge them somehow when they are the smae device on multiple networks)
+     *  When constructed, push data as discovered into sDiscoveredDevices_
      */
-    class DeviceDiscoverer_ {
+    class SSDPDeviceDiscoverer_ {
     public:
-        DeviceDiscoverer_ ()
+        SSDPDeviceDiscoverer_ ()
             : fListener_{[this](const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); }, SSDP::Client::Listener::eAutoStart}
             , fSearcher_{[this](const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); }, SSDP::Client::Search::kRootDevice}
         {
@@ -184,7 +188,6 @@ namespace {
             DbgTrace (L"Recieved SSDP advertisement: %s", Characters::ToString (d).c_str ());
             using IO::Network::InternetAddress;
             String               location = d.fLocation.GetFullURL ();
-            optional<bool>       alive    = d.fAlive;
             URL                  locURL   = URL{location, URL::ParseOptions::eAsFullURL};
             String               locHost  = locURL.GetHost ();
             Set<InternetAddress> locAddrs = Set<InternetAddress>{IO::Network::DNS::Default ().GetHostAddresses (locHost)};
@@ -214,7 +217,13 @@ namespace {
                 DbgTrace (L"oops - bad - probably should log - bad device resposne - find addr some other way");
             }
             else {
-                sDiscoveredDevices_.rwget ()->Add (location, DiscoveryInfo_{locAddrs, alive.value_or (true), friendlyName});
+                // merge in data
+                auto           l  = sDiscoveredDevices_.rwget ();
+                DiscoveryInfo_ di = l->LookupValue (location);
+                di.alive          = d.fAlive.value_or (true);
+                di.name           = friendlyName;
+                di.ipAddresses += locAddrs;
+                l->Add (location, di);
             }
         }
     };
@@ -229,25 +238,23 @@ namespace {
 namespace {
     constexpr Time::DurationSecondsType kDefaultItemCacheLifetime_{2}; // this costs very little since just reading already cached data so default to quick check
 
-    unique_ptr<DeviceDiscoverer_> sSSDPDeviceDiscoverer_;
+    unique_ptr<SSDPDeviceDiscoverer_> sSSDPDeviceDiscoverer_;
 
-    bool sActive_{false};
+    bool IsActive_ () { return sSSDPDeviceDiscoverer_ != nullptr; }
 }
 
 Discovery::DevicesMgr::Activator::Activator ()
 {
     DbgTrace (L"Discovery::DevicesMgr::Activator::Activator: activating device discovery");
-    Require (not sActive_);
-    sSSDPDeviceDiscoverer_ = make_unique<DeviceDiscoverer_> ();
-    sActive_               = true;
+    Require (not IsActive_ ());
+    sSSDPDeviceDiscoverer_ = make_unique<SSDPDeviceDiscoverer_> ();
 }
 
 Discovery::DevicesMgr::Activator::~Activator ()
 {
     DbgTrace (L"Discovery::DevicesMgr::Activator::~Activator: deactivating device discovery");
-    Require (sActive_);
+    Require (IsActive_ ());
     sSSDPDeviceDiscoverer_.release ();
-    sActive_ = false;
 
     // @todo - must shutdown any active threads
 }
@@ -265,7 +272,7 @@ Collection<Discovery::Device> Discovery::DevicesMgr::GetActiveDevices (optional<
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
     Debug::TraceContextBumper ctx{L"Discovery::GetActiveDevices"};
 #endif
-    Require (sActive_);
+    Require (IsActive_ ());
     Collection<Discovery::Device> results;
     using Cache::SynchronizedCallerStalenessCache;
     static SynchronizedCallerStalenessCache<void, Collection<Discovery::Device>> sCache_;

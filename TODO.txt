@@ -3,10 +3,12 @@ Top priority bug:
 next step is to rewrite
 
 DevicesMgr::GetActiveDevices()
-	-	Create function to find all matching networks for a given IP Address()
-	-   Then maintain global ssdpsearcher object created by active and destroyed by deactivate
-	-   And maintain static module global data strucutre with results of ssdp
+    Synchronized<Mapping<String, DiscoveryInfo_>> sDiscoveredDevices_;
 	
+redo so plain COLLECTION (not mapping) and walk list and see if item alreayd
+there and update it or add new if needed
+
+
 
 	-  Then GetActiveDevices () walks that structure to build list of devides.
 
