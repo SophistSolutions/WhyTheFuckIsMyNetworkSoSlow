@@ -240,7 +240,6 @@ Discovery::DevicesMgr::Activator::Activator ()
     Require (not sActive_);
     sSSDPDeviceDiscoverer_ = make_unique<DeviceDiscoverer_> ();
     sActive_               = true;
-    IgnoreExceptionsForCall (sThe.GetActiveDevices ());
 }
 
 Discovery::DevicesMgr::Activator::~Activator ()
