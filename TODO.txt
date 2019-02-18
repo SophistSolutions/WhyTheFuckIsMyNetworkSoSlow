@@ -1,6 +1,28 @@
 Top priority bug:
 
+
+NEED DEVICE ID in DEVICE DISCOVER (now in DEVICE MODEL)
+
+
 next step is to rewrite
+
+	// @todo ASAP - loe this function  - 
+    Collection<Discovery::Device> GetActiveDevices_ ()
+
+
+Need notificyuatopm/event when netowrk changes
+	WHEN - must re-run over list of devices andu
+	update thier list of networks.
+
+	And maybe more
+
+-- and separate issue as performance tweek see if I can register in stroikaroota
+on network change event so I can avoid polling but poling OK to start.
+
+
+
+GetMyDEvice needs its own thread (waiting on notification thatnetwork changed). Condition variable notify all.
+
 
 DevicesMgr::GetActiveDevices()
     Synchronized<Mapping<String, DiscoveryInfo_>> sDiscoveredDevices_;

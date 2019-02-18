@@ -109,9 +109,18 @@ namespace {
     };
     NetAndNetInterfaceMapper_ NetAndNetInterfaceMapper_::sThe;
 
+    String GetPrettiedUpDeviceName_ (const String& origName)
+    {
+        static const Mapping<String, String> kNamePrettyPrintMapper_{
+            KeyValuePair<String, String>{L"ASUSTeK UPnP/1.1 MiniUPnPd/1.9"sv, L"ASUS Router"sv},
+            KeyValuePair<String, String>{L"Microsoft-Windows/10.0 UPnP/1.0 UPnP-Device-Host/1.0"sv, L"Antiphon"sv},
+            KeyValuePair<String, String>{L"POSIX, UPnP/1.0, Intel MicroStack/1.0.1347"sv, L"HP PhotoSmart"sv},
+        };
+        return kNamePrettyPrintMapper_.LookupValue (origName, origName);
+    }
+
     struct DiscoveryInfo_ : Discovery::Device {
-        bool   alive{}; // currently unused
-        String server;
+        bool alive{}; // currently unused
     };
     Synchronized<Mapping<String, DiscoveryInfo_>> sDiscoveredDevices_;
 
@@ -139,27 +148,12 @@ namespace {
         return newDev;
     }
 
+    // @todo ASAP - loe this function  -
     Collection<Discovery::Device> GetActiveDevices_ ()
     {
-        static const Mapping<String, String> kNamePrettyPrintMapper_{
-            KeyValuePair<String, String>{L"ASUSTeK UPnP/1.1 MiniUPnPd/1.9"sv, L"ASUS Router"sv},
-            KeyValuePair<String, String>{L"Microsoft-Windows/10.0 UPnP/1.0 UPnP-Device-Host/1.0"sv, L"Antiphon"sv},
-            KeyValuePair<String, String>{L"POSIX, UPnP/1.0, Intel MicroStack/1.0.1347"sv, L"HP PhotoSmart"sv},
-        };
         Collection<Discovery::Device> results;
         for (DiscoveryInfo_ di : sDiscoveredDevices_.cget ()->MappedValues ()) {
-            Discovery::Device newDev;
-
-            newDev.name = di.server;
-            newDev.name = kNamePrettyPrintMapper_.LookupValue (newDev.name, newDev.name);
-            newDev.ipAddresses += di.ipAddresses;
-            newDev.type      = nullopt;
-            newDev.fNetworks = NetAndNetInterfaceMapper_::sThe.LookupNetworksGUIDs (newDev.ipAddresses);
-            if (newDev.ipAddresses.Any ([](const InternetAddress& ia) { return ia.As<String> ().EndsWith (L".1"); })) {
-                newDev.type = Discovery::DeviceType::eRouter;
-            }
-
-            results.Add (newDev);
+            results.Add (di);
         }
         if (auto i = GetMyDevice_ ()) {
             results.Add (*i);
@@ -221,8 +215,15 @@ namespace {
                 auto           l  = sDiscoveredDevices_.rwget ();
                 DiscoveryInfo_ di = l->LookupValue (location);
                 di.alive          = d.fAlive.value_or (true);
-                di.name           = friendlyName;
+                di.name           = GetPrettiedUpDeviceName_ (friendlyName);
                 di.ipAddresses += locAddrs;
+
+                di.fNetworks = NetAndNetInterfaceMapper_::sThe.LookupNetworksGUIDs (di.ipAddresses);
+
+                if (di.ipAddresses.Any ([](const InternetAddress& ia) { return ia.As<String> ().EndsWith (L".1"); })) {
+                    di.type = Discovery::DeviceType::eRouter;
+                }
+
                 l->Add (location, di);
             }
         }
