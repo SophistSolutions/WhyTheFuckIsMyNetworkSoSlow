@@ -128,8 +128,8 @@ namespace {
     {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
         Debug::TraceContextBumper ctx{L"{}::GetMyDevice_"};
+		DbgTrace (L"interfaces=%s", Characters::ToString (IO::Network::GetInterfaces ()).c_str ());
 #endif
-        DbgTrace (L"interfaces=%s", Characters::ToString (IO::Network::GetInterfaces ()).c_str ());
         Discovery::Device newDev;
         newDev.name        = Configuration::GetSystemConfiguration_ComputerNames ().fHostname;
         newDev.type        = DeviceType::eLaptop; //tmphack @todo fix
