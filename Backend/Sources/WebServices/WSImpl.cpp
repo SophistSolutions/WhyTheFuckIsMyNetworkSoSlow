@@ -80,8 +80,7 @@ Collection<String> WSImpl::GetDevices () const
 Collection<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse () const
 {
     using namespace IO::Network;
-
-    Collection<BackendApp::WebServices::Device> devices = Discovery::DevicesMgr::sThe.GetActiveDevices ().Select<BackendApp::WebServices::Device> ([](const Discovery::Device& d) {
+    Sequence<BackendApp::WebServices::Device> devices = Sequence<BackendApp::WebServices::Device>{Discovery::DevicesMgr::sThe.GetActiveDevices ().Select<BackendApp::WebServices::Device> ([](const Discovery::Device& d) {
         BackendApp::WebServices::Device newDev;
         d.ipAddresses.Apply ([&](const InternetAddress& a) {
             // prefer having IPv4 addr at head of list
@@ -113,7 +112,25 @@ Collection<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse () const
         newDev.fAttachedNetworkInterfaces = d.fAttachedInterfaces; // @todo must merge += (but only when merging across differnt discoverers/networks)
         newDev.important                  = newDev.type == Device::DeviceType::eRouter or d.fThisDevice;
         return newDev;
+    })};
+
+    //tmphack - convert to vector<> cuz Stroika sequence doesnt supprot randomaccessiterators and so cannot easily sort
+    // This won't work (as is) anymore when we return the RIGHT VALUE for the type - just counting on ahck where my computer gets assgined type Laptop --LGP 2019-02-18
+    vector<BackendApp::WebServices::Device> dv = devices.As<vector<BackendApp::WebServices::Device>> ();
+    sort (dv.begin (), dv.end (), [](const BackendApp::WebServices::Device& lhs, const BackendApp::WebServices::Device& rhs) -> bool {
+        int lPri = 0;
+        int rPri = 0;
+        // super primitive sort strategy...
+        if (lhs.type == Device::DeviceType::eLaptop) {
+            lPri = 1;
+        }
+        if (rhs.type == Device::DeviceType::eLaptop) {
+            rPri = 1;
+        }
+        return lPri < rPri;
     });
+    return Collection<BackendApp::WebServices::Device>{dv};
+
     return devices;
 }
 

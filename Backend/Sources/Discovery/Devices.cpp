@@ -70,12 +70,12 @@ String Discovery::Device::ToString () const
     return sb.str ();
 }
 
-/*
- ********************************************************************************
- ****************************** DeviceDiscoverer_ *******************************
- ********************************************************************************
- */
 namespace {
+    /*
+     ********************************************************************************
+     ********************** NetAndNetInterfaceMapper_ *******************************
+     ********************************************************************************
+     */
     class NetAndNetInterfaceMapper_ {
     public:
         NetAndNetInterfaceMapper_ () = default; // load networks and network interafces..
@@ -112,6 +112,11 @@ namespace {
 }
 
 namespace {
+    /*
+     ********************************************************************************
+     *********************** GetPrettiedUpDeviceName_ *******************************
+     ********************************************************************************
+     */
     String GetPrettiedUpDeviceName_ (const String& origName)
     {
         static const Mapping<String, String> kNamePrettyPrintMapper_{
@@ -123,6 +128,11 @@ namespace {
     }
 }
 
+/*
+ ********************************************************************************
+ *************************** sDiscoveredDevices_ ********************************
+ ********************************************************************************
+ */
 namespace {
     struct DiscoveryInfo_ : Discovery::Device {
         bool alive{}; // currently unused
@@ -131,6 +141,11 @@ namespace {
 }
 
 namespace {
+    /*
+     ********************************************************************************
+     *************************** MyDeviceDiscoverer_ ********************************
+     ********************************************************************************
+     */
     // @todo redo this with IDs, and have the thread keep running to update network info
     struct MyDeviceDiscoverer_ {
         MyDeviceDiscoverer_ ()
@@ -182,6 +197,11 @@ namespace {
 }
 
 namespace {
+    /*
+     ********************************************************************************
+     *************************** SSDPDeviceDiscoverer_ ******************************
+     ********************************************************************************
+     */
     /*
      *  When constructed, push data as discovered into sDiscoveredDevices_
      */

@@ -1,13 +1,10 @@
 Top priority bug:
 
 
+
+
+
 NEED DEVICE ID in DEVICE DISCOVER (now in DEVICE MODEL)
-
-
-next step is to rewrite
-
-	// @todo ASAP - loe this function  - 
-    Collection<Discovery::Device> GetActiveDevices_ ()
 
 
 Need notificyuatopm/event when netowrk changes
@@ -30,9 +27,6 @@ DevicesMgr::GetActiveDevices()
 redo so plain COLLECTION (not mapping) and walk list and see if item alreayd
 there and update it or add new if needed
 
-
-
-	-  Then GetActiveDevices () walks that structure to build list of devides.
 
 	(then add a thread that periodically calls arp -a)
 	(then eventually add another thread that walks all available active networks and randoming pings in that range to discover)
@@ -78,7 +72,13 @@ WSAPI above - if we fetch soemting that we dont have issue 404 and only 405 if i
 		 > Load/save this to/from Database
 		 > have ALL CURRENT (for network) and maybe (ALL EVER) for network APIs to do fetches
 
-	
+	DONT
+
+	-- See https://www.w3.org/2009/dap/track/issues/151
+	  DONT USE USN (docuemnt in stroika what it is and used for)
+		For device, use UDN 
+		"true device identifier that is the same for all services and embedded devices (and their respective services) under the same root UPnP device can be found in the <UDN> element of the root device description document."
+
 
 
 	>	DEVICES DUPLICATED 

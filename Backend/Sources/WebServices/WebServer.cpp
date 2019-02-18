@@ -292,7 +292,7 @@ const WebServiceMethodDescription WebServer::Rep_::kDevices_{
     DataExchange::PredefinedInternetMediaType::kJSON,
     {},
     Sequence<String>{L"curl http://localhost:8080/devices"sv, L"curl http://localhost:8080/devices?recurse=true"sv, L"curl http://localhost:8080/devices/{ID}"sv},
-    Sequence<String>{L"Fetch the list of known devices for the currently connected network."sv,
+    Sequence<String>{L"Fetch the list of known devices for the currently connected network. By default, this list is sorted so the most interesting devices come first (like this machine is first)"sv,
                      L"@todo - in the future - add support for parameters to this fetch - which can be used to filter/subset etc"sv},
 };
 const WebServiceMethodDescription WebServer::Rep_::kNetworks_{
