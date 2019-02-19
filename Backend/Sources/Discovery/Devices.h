@@ -7,6 +7,7 @@
 #include "Stroika/Frameworks/StroikaPreComp.h"
 
 #include "Stroika/Foundation/Characters/String.h"
+#include "Stroika/Foundation/Common/GUID.h"
 #include "Stroika/Foundation/Containers/Collection.h"
 #include "Stroika/Foundation/IO/Network/InternetAddress.h"
 #include "Stroika/Foundation/Memory/Optional.h"
@@ -50,6 +51,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
      *  captured by the discovery services.
      */
     struct Device {
+        GUID                 fGUID;
         String               name;
         Set<InternetAddress> ipAddresses;
         optional<DeviceType> type;

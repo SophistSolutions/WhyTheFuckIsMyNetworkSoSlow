@@ -8,6 +8,8 @@
 #include "Stroika/Foundation/Characters/ToString.h"
 #include "Stroika/Foundation/Configuration/SystemConfiguration.h"
 #include "Stroika/Foundation/Containers/Set.h"
+#include "Stroika/Foundation/Cryptography/Digest/Algorithm/MD5.h"
+#include "Stroika/Foundation/Cryptography/Format.h"
 #include "Stroika/Foundation/Execution/Synchronized.h"
 #include "Stroika/Foundation/Execution/Thread.h"
 #include "Stroika/Foundation/IO/Network/DNS.h"
@@ -34,7 +36,7 @@ using namespace Stroika::Foundation::IO::Network;
 using namespace Stroika::Frameworks;
 using namespace Stroika::Frameworks::UPnP;
 
-using Execution::Synchronized;
+using Execution::RWSynchronized;
 using Execution::Thread;
 using IO::Network::InternetAddress;
 using Stroika::Foundation::Common::GUID;
@@ -47,6 +49,27 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery;
 // Comment this in to turn on aggressive noisy DbgTrace in this module
 //#define USE_NOISY_TRACE_IN_THIS_MODULE_ 1
 
+namespace {
+    // @todo LIKE WITH NETWORK IDS - probably maintain a persistence cache mapping info - mostly HARDWARE ADDRESS - to a uniuque nummber (guidgen maybe).
+    // THEN we will always identify a device as the sam thing even if it appears with diferent IP address on different network
+    //
+    // must be careful about virtual devices (like VMs) which use fake hardware addresses, so need some way to tell differnt devices (and then one from another?)
+    //
+    //tmphack
+    GUID LookupPersistentDeviceID_ (const Discovery::Device& d)
+    {
+        using IO::Network::InternetAddress;
+        SortedSet<InternetAddress> x{d.ipAddresses};
+        StringBuilder              sb;
+        if (not x.empty ()) {
+            sb += x.Nth (0).As<String> ();
+        }
+        sb += d.name;
+        using namespace Cryptography::Digest;
+        return Cryptography::Format<GUID> (Digester<Algorithm::MD5>::ComputeDigest (Memory::BLOB::Raw (sb.str ().AsUTF8 ())));
+    }
+}
+
 /*
  ********************************************************************************
  ******************************* Discovery::Device ******************************
@@ -56,6 +79,7 @@ String Discovery::Device::ToString () const
 {
     StringBuilder sb;
     sb += L"{";
+    sb += L"fGUID: " + Characters::ToString (fGUID) + L", ";
     sb += L"name: " + Characters::ToString (name) + L", ";
     sb += L"ipAddress: " + Characters::ToString (ipAddresses) + L", ";
     if (type) {
@@ -134,10 +158,29 @@ namespace {
  ********************************************************************************
  */
 namespace {
+    /*
+     *  Keep extra internal details about the discovered devices which we don't advertise outside this module.
+     */
     struct DiscoveryInfo_ : Discovery::Device {
         bool alive{}; // currently unused
+
+        String ToString () const
+        {
+            StringBuilder sb = Discovery::Device::ToString ().SubString (0, -1);
+            sb += L"alive: " + Characters::ToString (alive) + L", ";
+            sb += L"}";
+            return sb.str ();
+        }
     };
-    Synchronized<Mapping<String, DiscoveryInfo_>> sDiscoveredDevices_;
+    // NB: RWSynchronized because most accesses will be to read/lookup in this list
+    RWSynchronized<Mapping<String, DiscoveryInfo_>> sDiscoveredDevices_;
+
+    // Look through all the existing devices, and if one appears to match, return it.
+    optional<DiscoveryInfo_> FindMatchingDevice_ (const DiscoveryInfo_& d)
+    {
+        // NYI
+        return {};
+    }
 }
 
 namespace {
@@ -189,6 +232,7 @@ namespace {
             }
             newDev.fNetworks           = NetAndNetInterfaceMapper_::sThe.LookupNetworksGUIDs (newDev.ipAddresses);
             newDev.fAttachedInterfaces = Set<GUID>{Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ().Select<GUID> ([](auto iFace) { return iFace.fGUID; })};
+            newDev.fGUID               = LookupPersistentDeviceID_ (newDev);
             return newDev;
         }
     };
@@ -263,7 +307,9 @@ namespace {
                 if (di.ipAddresses.Any ([](const InternetAddress& ia) { return ia.As<String> ().EndsWith (L".1"); })) {
                     di.type = Discovery::DeviceType::eRouter;
                 }
-
+                if (di.fGUID == GUID{}) {
+                    di.fGUID = LookupPersistentDeviceID_ (di);
+                }
                 l->Add (location, di);
             }
         }

@@ -6,6 +6,12 @@ Top priority bug:
 
 NEED DEVICE ID in DEVICE DISCOVER (now in DEVICE MODEL)
 
+MOVE
+LookupPersistentDeviceID_ () from WEBSERVICE to discovert any fill in ID there, and then publish ID as aprt of
+discovery::DEvice::fGUID
+
+
+
 
 Need notificyuatopm/event when netowrk changes
 	WHEN - must re-run over list of devices andu

@@ -6,8 +6,6 @@
 #include "Stroika/Foundation/Characters/StringBuilder.h"
 #include "Stroika/Foundation/Characters/ToString.h"
 #include "Stroika/Foundation/Containers/Set.h"
-#include "Stroika/Foundation/Cryptography/Digest/Algorithm/MD5.h"
-#include "Stroika/Foundation/Cryptography/Format.h"
 #include "Stroika/Foundation/Execution/Synchronized.h"
 #include "Stroika/Foundation/IO/Network/DNS.h"
 #include "Stroika/Foundation/IO/Network/HTTP/ClientErrorException.h"
@@ -41,27 +39,6 @@ using Stroika::Foundation::IO::Network::HTTP::ClientErrorException;
 using namespace WhyTheFuckIsMyNetworkSoSlow;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices;
-
-namespace {
-    // @todo LIKE WITH NETWORK IDS - probably maintain a persistence cache mapping info - mostly HARDWARE ADDRESS - to a uniuque nummber (guidgen maybe).
-    // THEN we will always identify a device as the sam thing even if it appears with diferent IP address on different network
-    //
-    // must be careful about virtual devices (like VMs) which use fake hardware addresses, so need some way to tell differnt devices (and then one from another?)
-    //
-    //tmphack
-    GUID LookupPersistentDeviceID_ (const Discovery::Device& d)
-    {
-        using IO::Network::InternetAddress;
-        SortedSet<InternetAddress> x{d.ipAddresses};
-        StringBuilder              sb;
-        if (not x.empty ()) {
-            sb += x.Nth (0).As<String> ();
-        }
-        sb += d.name;
-        using namespace Cryptography::Digest;
-        return Cryptography::Format<GUID> (Digester<Algorithm::MD5>::ComputeDigest (Memory::BLOB::Raw (sb.str ().AsUTF8 ())));
-    }
-}
 
 /*
  ********************************************************************************
@@ -105,7 +82,7 @@ Collection<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse () const
             }
         });
 
-        newDev.fGUID                      = LookupPersistentDeviceID_ (d);
+        newDev.fGUID                      = d.fGUID;
         newDev.name                       = d.name;
         newDev.type                       = d.type;
         newDev.fAttachedNetworks          = d.fNetworks;
