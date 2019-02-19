@@ -112,7 +112,6 @@ namespace {
 #endif
             Set<GUID> results;
             for (Discovery::Network&& nw : Discovery::NetworksMgr::sThe.CollectActiveNetworks ()) {
-                DbgTrace (L"nw.fNetworkAddresses=%s", Characters::ToString (nw.fNetworkAddresses).c_str ());
                 for (const CIDR& nwi : nw.fNetworkAddresses) {
                     for (const InternetAddress& i : ia) {
                         if (nwi.GetRange ().Contains (i)) {

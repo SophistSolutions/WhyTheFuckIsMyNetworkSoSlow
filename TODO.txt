@@ -10,6 +10,9 @@ And use that to dynamically pick the best 'display name' as we get messages.
 And keep a list of assicated 'types' we can infer from ssdp messages so we can do a decent job guessing device type (like audio device speaker, media server etc)
 (smart speaker)?
 
+Add tracking info about time we've seen alive (and maybe if we ping it - time we know dead) ; so times KNOWN alive and times KNOWN
+dead? Unsure how to handle hte in-betweens. Need some good guessing strategy or only report known info?
+
 
 Need notificyuatopm/event when netowrk changes
 	WHEN - must re-run over list of devices andu
