@@ -55,7 +55,7 @@ namespace {
     //
     // must be careful about virtual devices (like VMs) which use fake hardware addresses, so need some way to tell differnt devices (and then one from another?)
     //
-    //tmphack
+    //tmphack -- MAYBE USE GUID-GEN UNTIL I HAVE DISK PERSISTENCE FOR THIS STUFF?
     GUID LookupPersistentDeviceID_ (const Discovery::Device& d)
     {
         using IO::Network::InternetAddress;
@@ -167,18 +167,22 @@ namespace {
         String ToString () const
         {
             StringBuilder sb = Discovery::Device::ToString ().SubString (0, -1);
-            sb += L"alive: " + Characters::ToString (alive) + L", ";
-            sb += L"}";
+			sb += L"alive: " + Characters::ToString (alive) + L", ";
+			sb += L"}";
             return sb.str ();
         }
     };
-    // NB: RWSynchronized because most accesses will be to read/lookup in this list
-    RWSynchronized<Mapping<String, DiscoveryInfo_>> sDiscoveredDevices_;
+    // NB: RWSynchronized because most accesses will be to read/lookup in this list; use Mapping<> because KeyedCollection NYI
+    RWSynchronized<Mapping<GUID, DiscoveryInfo_>> sDiscoveredDevices_;
 
     // Look through all the existing devices, and if one appears to match, return it.
-    optional<DiscoveryInfo_> FindMatchingDevice_ (const DiscoveryInfo_& d)
+    optional<DiscoveryInfo_> FindMatchingDevice_ (decltype (sDiscoveredDevices_)::ReadableReference& rr, const DiscoveryInfo_& d)
     {
-        // NYI
+        for (const auto& di : rr->MappedValues ()) {
+            if (not(d.ipAddresses ^ di.ipAddresses).empty ()) {
+                return di;
+            }
+        }
         return {};
     }
 }
@@ -201,12 +205,22 @@ namespace {
         static void DiscoveryChecker_ ()
         {
             // @todo need loop
-            const static String kFakeLocation_ = L"xxx"sv;
             if (auto o = GetMyDevice_ ()) {
-                auto           l                       = sDiscoveredDevices_.rwget ();
-                DiscoveryInfo_ di                      = l->LookupValue (kFakeLocation_);
+                auto           l  = sDiscoveredDevices_.rwget ();
+                DiscoveryInfo_ di = [&]() {
+                    DiscoveryInfo_ tmp{};
+                    tmp.ipAddresses += o->ipAddresses;
+                    if (optional<DiscoveryInfo_> o = FindMatchingDevice_ (l, tmp)) {
+                        return *o;
+                    }
+                    else {
+                        // Generate GUID - based on ipaddrs
+                        tmp.fGUID = LookupPersistentDeviceID_ (tmp);
+                        return tmp;
+                    }
+                }();
                 *static_cast<Discovery::Device*> (&di) = *o;
-                l->Add (kFakeLocation_, di);
+                l->Add (di.fGUID, di);
             }
         }
         Thread::CleanupPtr fMyDeviceDiscovererThread_;
@@ -297,9 +311,21 @@ namespace {
             else {
                 // merge in data
                 auto           l  = sDiscoveredDevices_.rwget ();
-                DiscoveryInfo_ di = l->LookupValue (location);
-                di.alive          = d.fAlive.value_or (true);
-                di.name           = GetPrettiedUpDeviceName_ (friendlyName);
+                DiscoveryInfo_ di = [&]() {
+                    DiscoveryInfo_ tmp{};
+                    tmp.ipAddresses += locAddrs;
+                    if (optional<DiscoveryInfo_> o = FindMatchingDevice_ (l, tmp)) {
+                        return *o;
+                    }
+                    else {
+                        // Generate GUID - based on ipaddrs
+                        tmp.fGUID = LookupPersistentDeviceID_ (tmp);
+                        return tmp;
+                    }
+                }();
+
+                di.alive = d.fAlive.value_or (true);
+                di.name  = GetPrettiedUpDeviceName_ (friendlyName);
                 di.ipAddresses += locAddrs;
 
                 di.fNetworks = NetAndNetInterfaceMapper_::sThe.LookupNetworksGUIDs (di.ipAddresses);
@@ -307,10 +333,7 @@ namespace {
                 if (di.ipAddresses.Any ([](const InternetAddress& ia) { return ia.As<String> ().EndsWith (L".1"); })) {
                     di.type = Discovery::DeviceType::eRouter;
                 }
-                if (di.fGUID == GUID{}) {
-                    di.fGUID = LookupPersistentDeviceID_ (di);
-                }
-                l->Add (location, di);
+                l->Add (di.fGUID, di);
             }
         }
     };
@@ -322,7 +345,7 @@ namespace {
  ********************************************************************************
  */
 namespace {
-    constexpr Time::DurationSecondsType kDefaultItemCacheLifetime_{2}; // this costs very little since just reading already cached data so default to quick check
+    constexpr Time::DurationSecondsType kDefaultItemCacheLifetime_{1}; // this costs very little since just reading already cached data so default to quick check
 
     unique_ptr<SSDPDeviceDiscoverer_> sSSDPDeviceDiscoverer_;
 
@@ -347,8 +370,6 @@ Discovery::DevicesMgr::Activator::~Activator ()
     Require (IsActive_ ());
     sSSDPDeviceDiscoverer_.release ();
     sMyDeviceDiscoverer_.release ();
-
-    // @todo - must shutdown any active threads
 }
 
 /*

@@ -3,14 +3,12 @@ Top priority bug:
 
 
 
+>>> When we recive SSDP events we get many for a given device (rooot and subdevies).
+Some (for sonos speakers at least) have better names than others. STORE MUCH MORE INFO in DEVICEINFO - copy not exposed.
+And use that to dynamically pick the best 'display name' as we get messages.
 
-NEED DEVICE ID in DEVICE DISCOVER (now in DEVICE MODEL)
-
-MOVE
-LookupPersistentDeviceID_ () from WEBSERVICE to discovert any fill in ID there, and then publish ID as aprt of
-discovery::DEvice::fGUID
-
-
+And keep a list of assicated 'types' we can infer from ssdp messages so we can do a decent job guessing device type (like audio device speaker, media server etc)
+(smart speaker)?
 
 
 Need notificyuatopm/event when netowrk changes
