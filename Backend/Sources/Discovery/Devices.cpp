@@ -371,13 +371,14 @@ namespace {
                 fListener_ = make_unique<SSDP::Client::Listener> ([this](const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); }, SSDP::Client::Listener::eAutoStart);
             }
             catch (...) {
-                Logger::Get ().Log (Logger::Priority::eError, L"Error starting SSDP Listener - so that source of discovery will be unavailable: %s", Characters::ToString (current_exception ()).c_str ());
+                Logger::Get ().Log (Logger::Priority::eError, L"Problem starting SSDP Listener - so that source of discovery will be unavailable: %s", Characters::ToString (current_exception ()).c_str ());
             }
             try {
                 fSearcher_ = make_unique<SSDP::Client::Search> ([this](const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); }, SSDP::Client::Search::kRootDevice);
             }
             catch (...) {
-                Logger::Get ().Log (Logger::Priority::eError, L"Error starting SSDP Searcher - so that source of discovery will be unavailable: %s", Characters::ToString (current_exception ()).c_str ());
+                // only warning because searcher much less important - just helpful at very start of discovery
+                Logger::Get ().Log (Logger::Priority::eWarning, L"Problem starting SSDP Searcher - so that source of discovery will be unavailable: %s", Characters::ToString (current_exception ()).c_str ());
             }
         }
 
