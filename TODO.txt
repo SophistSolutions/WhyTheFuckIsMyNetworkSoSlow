@@ -2,6 +2,33 @@ Top priority bug:
 
 
 
+> Need ChangeCount mechanism - where you wait to get notified on changes 
+
+  - use condition variable
+	- when a change happens in network data (or device data) - we up a change ChangeCount and notify
+	- define associated callbacks that get called on change
+	- have thread driving callbacks
+	- thread smart enuf to to re-call callbacks if change happens AGAIN while handling reaction
+
+
+struct ChangeMonitor {
+	ChangeMonitor ();	// starts monitoring
+	~ChangeMonitor (); aborts and waits for callbacks if needed
+
+	void AddCallback (Function<> cb);
+	void RemoveCallback (Function<> cb);
+	void NoteChanged ();
+
+	uint64_t GetChangeCount () const;
+
+private:
+Thread::CleanupPtr fChangeMonitorThread;
+Set<Function<>> fCallbacks;
+ConditionVariable<> fWaitOn;
+atomicuint64_t fChangeCount;
+}
+
+
 
 >>> When we recive SSDP events we get many for a given device (rooot and subdevies).
 Some (for sonos speakers at least) have better names than others. STORE MUCH MORE INFO in DEVICEINFO - copy not exposed.

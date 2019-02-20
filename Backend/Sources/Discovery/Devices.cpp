@@ -4,12 +4,14 @@
 #include "Stroika/Frameworks/StroikaPreComp.h"
 
 #include "Stroika/Foundation/Cache/SynchronizedCallerStalenessCache.h"
+#include "Stroika/Foundation/Characters/RegularExpression.h"
 #include "Stroika/Foundation/Characters/StringBuilder.h"
 #include "Stroika/Foundation/Characters/ToString.h"
 #include "Stroika/Foundation/Configuration/SystemConfiguration.h"
 #include "Stroika/Foundation/Containers/Set.h"
 #include "Stroika/Foundation/Cryptography/Digest/Algorithm/MD5.h"
 #include "Stroika/Foundation/Cryptography/Format.h"
+#include "Stroika/Foundation/Execution/Sleep.h"
 #include "Stroika/Foundation/Execution/Synchronized.h"
 #include "Stroika/Foundation/Execution/Thread.h"
 #include "Stroika/Foundation/IO/Network/DNS.h"
@@ -70,6 +72,12 @@ namespace {
     }
 }
 
+namespace {
+    // derived based on experimentation on my network - need standards/referecnes! -- LGP 2019-02-20
+    const String kDeviceType_SpeakerGroup_{L"urn:smartspeaker-audio:device:SpeakerGroup:1"sv};
+    const String kDeviceType_ZonePlayer_{L"urn:schemas-upnp-org:device:ZonePlayer:1"sv};
+}
+
 /*
  ********************************************************************************
  ******************************* Discovery::Device ******************************
@@ -79,7 +87,7 @@ String Discovery::Device::ToString () const
 {
     StringBuilder sb;
     sb += L"{";
-    sb += L"fGUID: " + Characters::ToString (fGUID) + L", ";
+    sb += L"GUID: " + Characters::ToString (fGUID) + L", ";
     sb += L"name: " + Characters::ToString (name) + L", ";
     sb += L"ipAddress: " + Characters::ToString (ipAddresses) + L", ";
     if (type) {
@@ -161,13 +169,97 @@ namespace {
      *  Keep extra internal details about the discovered devices which we don't advertise outside this module.
      */
     struct DiscoveryInfo_ : Discovery::Device {
-        bool alive{}; // currently unused
+
+        optional<String> fForcedName;
+
+        struct SSDPInfo {
+            optional<bool>          fAlive; // else Bye notification, or empty if neither -- probably replace with TIMINGS of last ALIVE, or Bye
+            Set<String>             fUSNs;
+            Set<URL>                fLocations;
+            optional<String>        fServer;
+            optional<String>        fManufacturer;
+            Mapping<String, String> fDeviceType2FriendlyNameMap; //  http://upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v1.1.pdf - <deviceType> - Page 44
+
+            String ToString () const
+            {
+                StringBuilder sb;
+                sb += L"{";
+                sb += L"fUSNs: " + Characters::ToString (fUSNs) + L", ";
+                sb += L"fAlive: " + Characters::ToString (fAlive) + L", ";
+                sb += L"fLocations: " + Characters::ToString (fLocations) + L", ";
+                sb += L"fManufacturer: " + Characters::ToString (fManufacturer) + L", ";
+                sb += L"fServer: " + Characters::ToString (fServer) + L", ";
+                sb += L"Device-Type-2-Friendly-Name-Map: " + Characters::ToString (fDeviceType2FriendlyNameMap) + L", ";
+                sb += L"}";
+                return sb.str ();
+            }
+        };
+        optional<SSDPInfo> fSSDPInfo;
+
+        void PatchDerivedFields ()
+        {
+            fNetworks = NetAndNetInterfaceMapper_::sThe.LookupNetworksGUIDs (ipAddresses);
+
+            /*
+             *  Name Calculation
+             */
+            name.clear ();
+            if (fForcedName) {
+                name = *fForcedName;
+            }
+            else if (fSSDPInfo.has_value ()) {
+                // Special hack for sonos speakers
+                if (fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_SpeakerGroup_) and
+                    fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_ZonePlayer_)) {
+                    static const RegularExpression kSonosRE_{L"([0-9.:]*)( - .*)"_RegEx};
+                    String                         newName = fSSDPInfo->fDeviceType2FriendlyNameMap[kDeviceType_ZonePlayer_];
+                    optional<String>               m1, m2;
+                    if (newName.Match (kSonosRE_, &m1, &m2)) {
+                        Assert (m1.has_value () and m2.has_value ());
+                        name = fSSDPInfo->fDeviceType2FriendlyNameMap[kDeviceType_SpeakerGroup_] + *m2;
+                    }
+                }
+
+                // pick any one of the friendly names, or the server name if we must
+                if (name.empty ()) {
+                    if (not fSSDPInfo->fDeviceType2FriendlyNameMap.empty ()) {
+                        name = fSSDPInfo->fDeviceType2FriendlyNameMap.Nth (0).fValue;
+                    }
+                    else if (fSSDPInfo->fServer) {
+                        name = GetPrettiedUpDeviceName_ (*fSSDPInfo->fServer);
+                    }
+                }
+            }
+            if (name.empty ()) {
+                name = L"Unknown"sv;
+            }
+
+            if (fSSDPInfo.has_value () and
+                (fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_SpeakerGroup_) or
+                 fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_ZonePlayer_))) {
+                type = Discovery::DeviceType::eSpeaker;
+            }
+
+            //tmphack
+            if (not fThisDevice) {
+                if (ipAddresses.Any ([](const InternetAddress& ia) { return ia.As<String> ().EndsWith (L".1"); })) {
+                    type = Discovery::DeviceType::eRouter;
+                }
+            }
+
+#if USE_NOISY_TRACE_IN_THIS_MODULE_
+			DbgTrace (L"At end of PatchDerivedFields: %s", ToString ().c_str ());
+#endif
+        }
 
         String ToString () const
         {
             StringBuilder sb = Discovery::Device::ToString ().SubString (0, -1);
-			sb += L"alive: " + Characters::ToString (alive) + L", ";
-			sb += L"}";
+            if (fForcedName) {
+                sb += L"fForcedName: " + Characters::ToString (fForcedName) + L", ";
+            }
+            sb += L"fSSDPInfo: " + Characters::ToString (fSSDPInfo) + L", ";
+            sb += L"}";
             return sb.str ();
         }
     };
@@ -203,35 +295,41 @@ namespace {
     private:
         static void DiscoveryChecker_ ()
         {
-            // @todo need loop
-            if (auto o = GetMyDevice_ ()) {
-                auto           l  = sDiscoveredDevices_.rwget ();
-                DiscoveryInfo_ di = [&]() {
-                    DiscoveryInfo_ tmp{};
-                    tmp.ipAddresses += o->ipAddresses;
-                    if (optional<DiscoveryInfo_> o = FindMatchingDevice_ (l, tmp)) {
-                        return *o;
-                    }
-                    else {
-                        // Generate GUID - based on ipaddrs
-                        tmp.fGUID = LookupPersistentDeviceID_ (tmp);
-                        return tmp;
-                    }
-                }();
-                *static_cast<Discovery::Device*> (&di) = *o;
-                l->Add (di.fGUID, di);
+            while (true) {
+                if (auto o = GetMyDevice_ ()) {
+                    auto           l  = sDiscoveredDevices_.rwget ();
+                    DiscoveryInfo_ di = [&]() {
+                        DiscoveryInfo_ tmp{};
+                        tmp.ipAddresses += o->ipAddresses;
+                        if (optional<DiscoveryInfo_> o = FindMatchingDevice_ (l, tmp)) {
+                            return *o;
+                        }
+                        else {
+                            // Generate GUID - based on ipaddrs
+                            tmp.fGUID = LookupPersistentDeviceID_ (tmp);
+                            return tmp;
+                        }
+                    }();
+                    // copy most/all fields -- @todo cleanup - do more automatically - all but GUID??? Need merge??
+                    di.type        = o->type;
+                    di.fForcedName = o->fForcedName;
+                    di.fThisDevice = o->fThisDevice;
+                    di.PatchDerivedFields ();
+                    l->Add (di.fGUID, di);
+                }
+                Execution::Sleep (30); // @todo tmphack - really wait til change in network
             }
         }
         Thread::CleanupPtr fMyDeviceDiscovererThread_;
 
-        static optional<Discovery::Device> GetMyDevice_ ()
+        static optional<DiscoveryInfo_> GetMyDevice_ ()
         {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
             Debug::TraceContextBumper ctx{L"{}::GetMyDevice_"};
             DbgTrace (L"interfaces=%s", Characters::ToString (IO::Network::GetInterfaces ()).c_str ());
 #endif
-            Discovery::Device newDev;
-            newDev.name        = Configuration::GetSystemConfiguration_ComputerNames ().fHostname;
+            DiscoveryInfo_ newDev;
+            newDev.fForcedName = Configuration::GetSystemConfiguration_ComputerNames ().fHostname;
             newDev.type        = DeviceType::eLaptop; //tmphack @todo fix
             newDev.fThisDevice = true;
             for (Interface i : IO::Network::GetInterfaces ()) {
@@ -243,7 +341,6 @@ namespace {
                     });
                 }
             }
-            newDev.fNetworks           = NetAndNetInterfaceMapper_::sThe.LookupNetworksGUIDs (newDev.ipAddresses);
             newDev.fAttachedInterfaces = Set<GUID>{Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ().Select<GUID> ([](auto iFace) { return iFace.fGUID; })};
             newDev.fGUID               = LookupPersistentDeviceID_ (newDev);
             return newDev;
@@ -283,12 +380,13 @@ namespace {
             String               locHost  = locURL.GetHost ();
             Set<InternetAddress> locAddrs = Set<InternetAddress>{IO::Network::DNS::Default ().GetHostAddresses (locHost)};
 
-            String friendlyName = d.fServer; // if all else fails..
-
             // @todo - Maintain cache with age apx 60 minutes - mapping URL to UPnP::DeviceDescription objects
 
             /// @todo - Add Search support (once at startup, and then every 10 minutes? - config) - because it maybe some devices dont properly
             /// broadcast, and only respond to search, plus gives better immediate feedback when we first start up (at least helpful for debugging)
+            optional<String> deviceFriendlyName;
+            optional<String> deviceType;
+            optional<String> manufactureName;
 
             try {
                 IO::Network::Transfer::Connection c = IO::Network::Transfer::CreateConnection ();
@@ -296,7 +394,9 @@ namespace {
                 IO::Network::Transfer::Response r = c.GET ();
                 if (r.GetSucceeded ()) {
                     Frameworks::UPnP::DeviceDescription deviceInfo = DeSerialize (r.GetData ());
-                    friendlyName                                   = deviceInfo.fFriendlyName;
+                    deviceFriendlyName                             = deviceInfo.fFriendlyName;
+                    deviceType                                     = deviceInfo.fDeviceType;
+                    manufactureName                                = deviceInfo.fManufactureName;
                     DbgTrace (L"found device description = %s", Characters::ToString (deviceInfo).c_str ());
                 }
             }
@@ -305,7 +405,7 @@ namespace {
             }
 
             if (locHost.empty ()) {
-                DbgTrace (L"oops - bad - probably should log - bad device resposne - find addr some other way");
+                DbgTrace (L"oops - bad - probably should log - bad device response - find addr some other way");
             }
             else {
                 // merge in data
@@ -323,15 +423,23 @@ namespace {
                     }
                 }();
 
-                di.alive = d.fAlive.value_or (true);
-                di.name  = GetPrettiedUpDeviceName_ (friendlyName);
-                di.ipAddresses += locAddrs;
-
-                di.fNetworks = NetAndNetInterfaceMapper_::sThe.LookupNetworksGUIDs (di.ipAddresses);
-
-                if (di.ipAddresses.Any ([](const InternetAddress& ia) { return ia.As<String> ().EndsWith (L".1"); })) {
-                    di.type = Discovery::DeviceType::eRouter;
+                if (not di.fSSDPInfo) {
+                    di.fSSDPInfo = DiscoveryInfo_::SSDPInfo{};
                 }
+                di.fSSDPInfo->fAlive = d.fAlive;
+
+                if (di.fSSDPInfo->fServer.has_value () and di.fSSDPInfo->fServer != d.fServer) {
+                    DbgTrace (L"Warning: different server IDs for same object");
+                }
+                di.fSSDPInfo->fServer = d.fServer;
+
+                di.ipAddresses += locAddrs;
+                if (deviceType and deviceFriendlyName) {
+                    di.fSSDPInfo->fDeviceType2FriendlyNameMap.Add (*deviceType, *deviceFriendlyName);
+                }
+                Memory::CopyToIf (manufactureName, &di.fSSDPInfo->fManufacturer);
+
+                di.PatchDerivedFields ();
                 l->Add (di.fGUID, di);
             }
         }
@@ -389,7 +497,10 @@ Collection<Discovery::Device> Discovery::DevicesMgr::GetActiveDevices (optional<
     using Cache::SynchronizedCallerStalenessCache;
     static SynchronizedCallerStalenessCache<void, Collection<Discovery::Device>> sCache_;
     results = sCache_.LookupValue (sCache_.Ago (allowedStaleness.value_or (kDefaultItemCacheLifetime_)), []() {
-        return sDiscoveredDevices_.cget ()->MappedValues ();
+#if USE_NOISY_TRACE_IN_THIS_MODULE_
+		DbgTrace (L"sDiscoveredDevices_: %s", Characters::ToString (sDiscoveredDevices_.cget ()->MappedValues ()).c_str ());
+#endif
+        return sDiscoveredDevices_.cget ()->MappedValues (); // intentionally object-spice
     });
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
     DbgTrace (L"returns: %s", Characters::ToString (results).c_str ());

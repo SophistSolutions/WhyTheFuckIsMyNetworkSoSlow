@@ -24,6 +24,7 @@ namespace Stroika::Foundation::Configuration {
                     {WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::Device::DeviceType::eTablet, L"Tablet"},
                     {WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::Device::DeviceType::ePhone, L"Phone"},
                     {WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::Device::DeviceType::eRouter, L"Router"},
+                    {WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::Device::DeviceType::eSpeaker, L"Speaker"},
                     {WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::Device::DeviceType::ePrinter, L"Printer"},
                     {WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::Device::DeviceType::eInfrastructureDevice, L"InfrastructureDevice"},
                 }}};

@@ -123,6 +123,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
             eTablet,
             ePhone,
             eRouter,
+            eSpeaker,
             ePrinter,
             eInfrastructureDevice,
 
