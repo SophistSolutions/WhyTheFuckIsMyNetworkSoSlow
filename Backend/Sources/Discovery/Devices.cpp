@@ -11,6 +11,7 @@
 #include "Stroika/Foundation/Containers/Set.h"
 #include "Stroika/Foundation/Cryptography/Digest/Algorithm/MD5.h"
 #include "Stroika/Foundation/Cryptography/Format.h"
+#include "Stroika/Foundation/Execution/Logger.h"
 #include "Stroika/Foundation/Execution/Sleep.h"
 #include "Stroika/Foundation/Execution/Synchronized.h"
 #include "Stroika/Foundation/Execution/Thread.h"
@@ -33,6 +34,7 @@ using namespace std;
 using namespace Stroika::Foundation;
 using namespace Stroika::Foundation::Characters;
 using namespace Stroika::Foundation::Containers;
+using namespace Stroika::Foundation::Execution;
 using namespace Stroika::Foundation::IO;
 using namespace Stroika::Foundation::IO::Network;
 using namespace Stroika::Frameworks;
@@ -362,14 +364,26 @@ namespace {
     class SSDPDeviceDiscoverer_ {
     public:
         SSDPDeviceDiscoverer_ ()
-            : fListener_{[this](const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); }, SSDP::Client::Listener::eAutoStart}
-            , fSearcher_{[this](const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); }, SSDP::Client::Search::kRootDevice}
         {
+            // SSDP can fail due to lack of permissions to bind to the appropriate sockets, or for example under WSL where we get protocol unsupported.
+            // WARN to syslog, but no need to stop app
+            try {
+                fListener_ = make_unique<SSDP::Client::Listener> ([this](const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); }, SSDP::Client::Listener::eAutoStart);
+            }
+            catch (...) {
+                Logger::Get ().Log (Logger::Priority::eError, L"Error starting SSDP Listener - so that source of discovery will be unavailable: %s", Characters::ToString (current_exception ()).c_str ());
+            }
+            try {
+                fSearcher_ = make_unique<SSDP::Client::Search> ([this](const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); }, SSDP::Client::Search::kRootDevice);
+            }
+            catch (...) {
+                Logger::Get ().Log (Logger::Priority::eError, L"Error starting SSDP Searcher - so that source of discovery will be unavailable: %s", Characters::ToString (current_exception ()).c_str ());
+            }
         }
 
     private:
-        SSDP::Client::Listener fListener_;
-        SSDP::Client::Search   fSearcher_;
+        unique_ptr<SSDP::Client::Listener> fListener_;
+        unique_ptr<SSDP::Client::Search>   fSearcher_;
 
     private:
         void RecieveSSDPAdvertisement_ (const SSDP::Advertisement& d)
