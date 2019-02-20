@@ -248,7 +248,7 @@ namespace {
             }
 
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
-			DbgTrace (L"At end of PatchDerivedFields: %s", ToString ().c_str ());
+            DbgTrace (L"At end of PatchDerivedFields: %s", ToString ().c_str ());
 #endif
         }
 
@@ -498,7 +498,7 @@ Collection<Discovery::Device> Discovery::DevicesMgr::GetActiveDevices (optional<
     static SynchronizedCallerStalenessCache<void, Collection<Discovery::Device>> sCache_;
     results = sCache_.LookupValue (sCache_.Ago (allowedStaleness.value_or (kDefaultItemCacheLifetime_)), []() {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
-		DbgTrace (L"sDiscoveredDevices_: %s", Characters::ToString (sDiscoveredDevices_.cget ()->MappedValues ()).c_str ());
+        DbgTrace (L"sDiscoveredDevices_: %s", Characters::ToString (sDiscoveredDevices_.cget ()->MappedValues ()).c_str ());
 #endif
         return sDiscoveredDevices_.cget ()->MappedValues (); // intentionally object-spice
     });

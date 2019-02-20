@@ -1,6 +1,14 @@
 Top priority bug:
 
 
+>>> Why sonos devices in family room (play5s) not showing up their roomname (works about 1/2 the time - works for other speakers)
+
+
+>>> Add "PresentationURL" to data model and push all the way to WS API, and then tell bob about it, so he allows CLICK.
+
+>>> Add "Device ICON UrL" support and push all the way to GUI, so Bob can fetch that image and display
+
+
 
 > Need ChangeCount mechanism - where you wait to get notified on changes 
 
