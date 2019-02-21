@@ -1,5 +1,15 @@
 Top priority bug:
 
+
+lewis@Plato:~/Sandbox/WhyTheFuckIsMyNetworkSoSlowDev$ ./Builds/Release/WhyTheFuckIsMyNetworkSoSlow/WhyTheFuckIsMyNetworkSoSlow-Backend --run-directly
+FAILED: Protocol not available {errno: 92}
+
+	>> use DeclareActivity to test this now gives better message
+
+
+
+
+
 >>> see if reproducible - could be timing issue... failure to start WS (esp for such an ovis ou reason) should fail more gracelfully.
 
 	[Alewis@Plato:~/Sandbox/WhyTheFuckIsMyNetworkSoSlowDev$ ./Builds/Debug/WhyTheFuckIsMyNetworkSoSlow/WhyTheFuckIsMyNetworkSoSlow-Backend --run-directly
