@@ -24,6 +24,9 @@ clobber:
 
 update-components:
 	# automate/autodetect - @todo
+	# remove of node_modules undesirable, but without it, when we go back and forth between windows and unix builds they stomp each other.
+	# real fix is to this crap to IntermediateFiles, but I dont know npm well enuf yet...
+	rm -rf node_modules
 	npm install
 
 build-dist:
