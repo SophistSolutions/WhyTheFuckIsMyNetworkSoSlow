@@ -1,6 +1,12 @@
 Top priority bug:
 
 
+
+>> On unix the router device shows up in discovery but not priotitized in ordering. MAKE SURE appears second after laptop;
+
+
+
+
 lewis@Plato:~/Sandbox/WhyTheFuckIsMyNetworkSoSlowDev$ ./Builds/Release/WhyTheFuckIsMyNetworkSoSlow/WhyTheFuckIsMyNetworkSoSlow-Backend --run-directly
 FAILED: Protocol not available {errno: 92}
 
