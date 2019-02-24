@@ -10,6 +10,7 @@
 #include "Stroika/Foundation/Cryptography/Digest/Algorithm/MD5.h"
 #include "Stroika/Foundation/Cryptography/Format.h"
 #include "Stroika/Foundation/DataExchange/Variant/JSON/Writer.h"
+#include "Stroika/Foundation/Execution/Activity.h"
 #include "Stroika/Foundation/Execution/Module.h"
 #include "Stroika/Foundation/Execution/Synchronized.h"
 #include "Stroika/Foundation/IO/Network/HTTP/ClientErrorException.h"
@@ -65,6 +66,11 @@ namespace {
     DISABLE_COMPILER_MSC_WARNING_END (4573);
 }
 
+namespace {
+    static const Activity<> kContructing_GUI_WebServer_{L"constructing static content webserver"};
+    static const Activity<> kContructing_WSAPI_WebServer_{L"constructing WSAPI webserver"};
+}
+
 class WebServer::Rep_ {
 public:
     static const WebServiceMethodDescription kDevices_;
@@ -76,14 +82,16 @@ public:
 private:
     static constexpr unsigned int kMaxConcurrentConnections_{5};
     static constexpr unsigned int kMaxGUIWebServerConcurrentConnections_{5};
-    static const String           kServerString_;
+    static const inline String    kServerString_ = L"Why-The-Fuck-Is-My-Network-So-Slow/"sv + AppVersion::kVersion.AsMajorMinorString ();
 
 private:
-    shared_ptr<IWSAPI> fWSAPI_;
-    const Router       fWSRouter_;
-    ConnectionManager  fWSConnectionMgr_;
-    const Router       fGUIWebRouter_;
-    ConnectionManager  fGUIWebConnectionMgr_;
+    shared_ptr<IWSAPI>                    fWSAPI_;
+    const Router                          fWSRouter_;
+    optional<DeclareActivity<Activity<>>> fCurrentActivity1_{&kContructing_WSAPI_WebServer_};
+    ConnectionManager                     fWSConnectionMgr_;
+    const Router                          fGUIWebRouter_;
+    optional<DeclareActivity<Activity<>>> fCurrentActivity2_{(fCurrentActivity1_.reset (), &kContructing_GUI_WebServer_)};
+    ConnectionManager                     fGUIWebConnectionMgr_;
 
 public:
     Rep_ (const shared_ptr<IWSAPI>& wsImpl)
@@ -271,6 +279,7 @@ public:
           }}
         , fGUIWebConnectionMgr_{SocketAddresses (InternetAddresses_Any (), 80), fGUIWebRouter_, ConnectionManager::Options{kMaxGUIWebServerConcurrentConnections_, Socket::BindFlags{true}, kServerString_}}
     {
+        fCurrentActivity2_.reset ();
     }
     static void DefaultPage_ (Request* request, Response* response)
     {
@@ -344,7 +353,6 @@ const WebServiceMethodDescription WebServer::Rep_::kVersions_{
     },
     Sequence<String>{L"Fetch the component versions."sv},
 };
-const String WebServer::Rep_::kServerString_ = L"Why-The-Fuck-Is-My-Network-So-Slow/"sv + AppVersion::kVersion.AsMajorMinorString ();
 
 WebServer::WebServer (const shared_ptr<IWSAPI>& wsImpl)
     : fRep_ (make_shared<Rep_> (wsImpl))
