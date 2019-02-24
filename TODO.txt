@@ -1,9 +1,11 @@
 Top priority bug:
 
 
+- do constrexpr ACTIVITY objects (replace virtual dtor with )
+  
 
->> On unix the router device shows up in discovery but not priotitized in ordering. MAKE SURE appears second after laptop;
-
+> add Linguistics/CurrentLocaleMessageUtiltiies.handle 
+    pair<String,optional<String>> RemoveTrailingSentencePunctuation (String msg);
 
 
 
