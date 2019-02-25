@@ -6,6 +6,7 @@
 #include "Stroika/Foundation/Characters/StringBuilder.h"
 #include "Stroika/Foundation/Characters/String_Constant.h"
 #include "Stroika/Foundation/Characters/ToString.h"
+#include "Stroika/Foundation/Common/EmptyObjectForConstructorSideEffect.h"
 #include "Stroika/Foundation/Containers/Set.h"
 #include "Stroika/Foundation/Cryptography/Digest/Algorithm/MD5.h"
 #include "Stroika/Foundation/Cryptography/Format.h"
@@ -37,6 +38,7 @@ using namespace Stroika::Foundation::Containers;
 using namespace Stroika::Foundation::Execution;
 using namespace Stroika::Foundation::IO::Network;
 
+using Stroika::Foundation::Common::EmptyObjectForConstructorSideEffect;
 using Stroika::Foundation::IO::Network::HTTP::ClientErrorException;
 
 using namespace Stroika::Frameworks::WebServer;
@@ -67,8 +69,8 @@ namespace {
 }
 
 namespace {
-    static const Activity<> kContructing_GUI_WebServer_{L"constructing static content webserver"};
-    static const Activity<> kContructing_WSAPI_WebServer_{L"constructing WSAPI webserver"};
+    constexpr Activity kContructing_GUI_WebServer_{L"constructing static content webserver"sv};
+    constexpr Activity kContructing_WSAPI_WebServer_{L"constructing WSAPI webserver"sv};
 }
 
 class WebServer::Rep_ {
@@ -85,13 +87,15 @@ private:
     static const inline String    kServerString_ = L"Why-The-Fuck-Is-My-Network-So-Slow/"sv + AppVersion::kVersion.AsMajorMinorString ();
 
 private:
-    shared_ptr<IWSAPI>                    fWSAPI_;
-    const Router                          fWSRouter_;
-    optional<DeclareActivity<Activity<>>> fCurrentActivity1_{&kContructing_WSAPI_WebServer_};
-    ConnectionManager                     fWSConnectionMgr_;
-    const Router                          fGUIWebRouter_;
-    optional<DeclareActivity<Activity<>>> fCurrentActivity2_{(fCurrentActivity1_.reset (), &kContructing_GUI_WebServer_)};
-    ConnectionManager                     fGUIWebConnectionMgr_;
+    shared_ptr<IWSAPI>                                             fWSAPI_;
+    const Router                                                   fWSRouter_;
+    optional<DeclareActivity<Activity<wstring_view>>>              fEstablishActivity1_{&kContructing_WSAPI_WebServer_};
+    ConnectionManager                                              fWSConnectionMgr_;
+    [[NO_UNIQUE_ADDRESS_ATTR]] EmptyObjectForConstructorSideEffect fIgnore1_{[this]() { fEstablishActivity1_.reset (); }};
+    const Router                                                   fGUIWebRouter_;
+    optional<DeclareActivity<Activity<wstring_view>>>              fEstablishActivity2_{&kContructing_GUI_WebServer_};
+    ConnectionManager                                              fGUIWebConnectionMgr_;
+    [[NO_UNIQUE_ADDRESS_ATTR]] EmptyObjectForConstructorSideEffect fIgnore2_{[this]() { fEstablishActivity2_.reset (); }};
 
 public:
     Rep_ (const shared_ptr<IWSAPI>& wsImpl)
@@ -279,7 +283,6 @@ public:
           }}
         , fGUIWebConnectionMgr_{SocketAddresses (InternetAddresses_Any (), 80), fGUIWebRouter_, ConnectionManager::Options{kMaxGUIWebServerConcurrentConnections_, Socket::BindFlags{true}, kServerString_}}
     {
-        fCurrentActivity2_.reset ();
     }
     static void DefaultPage_ (Request* request, Response* response)
     {

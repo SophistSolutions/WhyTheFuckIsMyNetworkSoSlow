@@ -1,14 +1,6 @@
 Top priority bug:
 
 
-- do constrexpr ACTIVITY objects (replace virtual dtor with )
-  
-
-> add Linguistics/CurrentLocaleMessageUtiltiies.handle 
-    pair<String,optional<String>> RemoveTrailingSentencePunctuation (String msg);
-
-
-
 lewis@Plato:~/Sandbox/WhyTheFuckIsMyNetworkSoSlowDev$ ./Builds/Release/WhyTheFuckIsMyNetworkSoSlow/WhyTheFuckIsMyNetworkSoSlow-Backend --run-directly
 FAILED: Protocol not available {errno: 92}
 
