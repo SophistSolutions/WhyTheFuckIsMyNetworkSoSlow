@@ -1,22 +1,14 @@
 Top priority bug:
 
 
-lewis@Plato:~/Sandbox/WhyTheFuckIsMyNetworkSoSlowDev$ ./Builds/Release/WhyTheFuckIsMyNetworkSoSlow/WhyTheFuckIsMyNetworkSoSlow-Backend --run-directly
-FAILED: Protocol not available {errno: 92}
-
-	>> use DeclareActivity to test this now gives better message
 
 
+- rename internalInterfaceID to Native-Device-ID - I THINK - reivew what it looks lik e on windows
+
+- On unix - see why 'wifi0' is displayed as "Wired Ethernet" type? SB wireless!
 
 
 
->>> see if reproducible - could be timing issue... failure to start WS (esp for such an ovis ou reason) should fail more gracelfully.
-
-	[Alewis@Plato:~/Sandbox/WhyTheFuckIsMyNetworkSoSlowDev$ ./Builds/Debug/WhyTheFuckIsMyNetworkSoSlow/WhyTheFuckIsMyNetworkSoSlow-Backend --run-directly
-	FAILED: Cannot Bind to INADDR_ANY:80: Permission denied {errno: 13}
-	Require (sRunningThreads_.empty ()) failed in '{anonymous}::AllThreadsDeadDetector_::~AllThreadsDeadDetector_()'; Thread.cpp:117
-	ABORTING...
-	Aborted (core dumped)
 
 - ADD "OS" to properties assocaited with a device 
   Typically "Windows" or "Linux" (?useful?)
