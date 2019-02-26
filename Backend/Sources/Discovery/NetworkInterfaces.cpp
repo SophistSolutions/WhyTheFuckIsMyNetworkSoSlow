@@ -73,20 +73,21 @@ namespace {
         vector<NetworkInterface> results;
         for (Interface i : IO::Network::GetInterfaces ()) {
             NetworkInterface ni{i};
-
-            // If the network interface ID is already in the form of a GUID (windows) then re-use that, but otherwise, use digest to form
-            // a GUID out of it.
-            try {
-                ni.fGUID = Common::GUID (i.fInternalInterfaceID); // may need to redo this based on whats stored in database
-            }
-            catch (...) {
+            /*
+             *  For now, always hash the InternalInterfaceID into a new ID. But later will want to somehow match
+             *  against data in a database to assure we are always appropriately re-using interface ids (by making them
+             *  relative to some host id perhaps).
+             *
+             *  We used to just re-use the GUID if it happened to be already in the form of a GUID (generally true on windows)
+             *  but appears no guarantee even there, and if we want to track connection to that low level id, we should capture it
+             *  as a separate datum.
+             */
+            {
                 using namespace Stroika::Foundation::Cryptography;
                 using DIGESTER_ = Digest::Digester<Digest::Algorithm::MD5>;
                 string tmp      = i.fInternalInterfaceID.AsUTF8 ();
                 ni.fGUID        = Cryptography::Format<Common::GUID> (DIGESTER_::ComputeDigest ((const std::byte*)tmp.c_str (), (const std::byte*)tmp.c_str () + tmp.length ()));
             }
-            // if we have guid for internal interfaceid, use that, and else compute hash of interface name, and use that.
-            // @todo redo fGUID
             results.push_back (ni);
         }
 #if USE_NOISY_TRACE_IN_THIS_MODULE_

@@ -389,7 +389,11 @@ namespace {
     private:
         void RecieveSSDPAdvertisement_ (const SSDP::Advertisement& d)
         {
-            DbgTrace (L"Recieved SSDP advertisement: %s", Characters::ToString (d).c_str ());
+            constexpr Activity        kInterprettingSSDPMessageRecieved_{L"interpretting SSDP advertisement"sv};
+            Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"RecieveSSDPAdvertisement_", L"d=%s", Characters::ToString (d).c_str ())};
+
+            DeclareActivity activity{&kInterprettingSSDPMessageRecieved_};
+
             String               location = d.fLocation.GetFullURL ();
             URL                  locURL   = URL{location, URL::ParseOptions::eAsFullURL};
             String               locHost  = locURL.GetHost ();
@@ -412,11 +416,11 @@ namespace {
                     deviceFriendlyName                             = deviceInfo.fFriendlyName;
                     deviceType                                     = deviceInfo.fDeviceType;
                     manufactureName                                = deviceInfo.fManufactureName;
-                    DbgTrace (L"found device description = %s", Characters::ToString (deviceInfo).c_str ());
+                    DbgTrace (L"Found device description = %s", Characters::ToString (deviceInfo).c_str ());
                 }
             }
             catch (...) {
-                DbgTrace (L"failed to fetch description: %s", Characters::ToString (current_exception ()).c_str ());
+                DbgTrace (L"Failed to fetch description: %s", Characters::ToString (current_exception ()).c_str ());
             }
 
             if (locHost.empty ()) {
