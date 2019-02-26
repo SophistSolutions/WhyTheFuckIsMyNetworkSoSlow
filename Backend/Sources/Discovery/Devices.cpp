@@ -490,8 +490,8 @@ Discovery::DevicesMgr::Activator::~Activator ()
 {
     DbgTrace (L"Discovery::DevicesMgr::Activator::~Activator: deactivating device discovery");
     Require (IsActive_ ());
-    sSSDPDeviceDiscoverer_.release ();
-    sMyDeviceDiscoverer_.release ();
+    sSSDPDeviceDiscoverer_.reset ();
+    sMyDeviceDiscoverer_.reset ();
 }
 
 /*
