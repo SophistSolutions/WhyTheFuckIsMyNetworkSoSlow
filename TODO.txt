@@ -1,5 +1,6 @@
 Top priority bug:
 
+- ADD VERSION INFO TO WSAPI and maybe if I can to vue app as well (print in about box)
 
 
 
