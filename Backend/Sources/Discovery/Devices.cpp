@@ -11,6 +11,7 @@
 #include "Stroika/Foundation/Containers/Set.h"
 #include "Stroika/Foundation/Cryptography/Digest/Algorithm/MD5.h"
 #include "Stroika/Foundation/Cryptography/Format.h"
+#include "Stroika/Foundation/Execution/Activity.h"
 #include "Stroika/Foundation/Execution/Logger.h"
 #include "Stroika/Foundation/Execution/Sleep.h"
 #include "Stroika/Foundation/Execution/Synchronized.h"
@@ -297,27 +298,37 @@ namespace {
     private:
         static void DiscoveryChecker_ ()
         {
+            static constexpr Activity kDiscovering_This_Device_{L"discovering this device"sv};
             while (true) {
-                if (auto o = GetMyDevice_ ()) {
-                    auto           l  = sDiscoveredDevices_.rwget ();
-                    DiscoveryInfo_ di = [&]() {
-                        DiscoveryInfo_ tmp{};
-                        tmp.ipAddresses += o->ipAddresses;
-                        if (optional<DiscoveryInfo_> o = FindMatchingDevice_ (l, tmp)) {
-                            return *o;
-                        }
-                        else {
-                            // Generate GUID - based on ipaddrs
-                            tmp.fGUID = LookupPersistentDeviceID_ (tmp);
-                            return tmp;
-                        }
-                    }();
-                    // copy most/all fields -- @todo cleanup - do more automatically - all but GUID??? Need merge??
-                    di.type        = o->type;
-                    di.fForcedName = o->fForcedName;
-                    di.fThisDevice = o->fThisDevice;
-                    di.PatchDerivedFields ();
-                    l->Add (di.fGUID, di);
+                try {
+                    DeclareActivity da{&kDiscovering_This_Device_};
+                    if (auto o = GetMyDevice_ ()) {
+                        auto           l  = sDiscoveredDevices_.rwget ();
+                        DiscoveryInfo_ di = [&]() {
+                            DiscoveryInfo_ tmp{};
+                            tmp.ipAddresses += o->ipAddresses;
+                            if (optional<DiscoveryInfo_> o = FindMatchingDevice_ (l, tmp)) {
+                                return *o;
+                            }
+                            else {
+                                // Generate GUID - based on ipaddrs
+                                tmp.fGUID = LookupPersistentDeviceID_ (tmp);
+                                return tmp;
+                            }
+                        }();
+                        // copy most/all fields -- @todo cleanup - do more automatically - all but GUID??? Need merge??
+                        di.type        = o->type;
+                        di.fForcedName = o->fForcedName;
+                        di.fThisDevice = o->fThisDevice;
+                        di.PatchDerivedFields ();
+                        l->Add (di.fGUID, di);
+                    }
+                }
+                catch (const Thread::InterruptException&) {
+                    Execution::ReThrow ();
+                }
+                catch (...) {
+                    Execution::Logger::Get ().LogIfNew (Execution::Logger::Priority::eError, 300, L"%s", Characters::ToString (current_exception ()).c_str ());
                 }
                 Execution::Sleep (30); // @todo tmphack - really wait til change in network
             }
