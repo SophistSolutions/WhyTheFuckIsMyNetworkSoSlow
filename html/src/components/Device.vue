@@ -6,7 +6,7 @@
       </v-card-title>
 
       <v-card-text>
-        <p>Type: {{ device.type }}</p>
+        <p v-if="device.type">Type: {{ device.type }}</p>
         <p>Internet Addresses: {{ device.internetAddresses }}</p>
       </v-card-text>
     </v-card>
