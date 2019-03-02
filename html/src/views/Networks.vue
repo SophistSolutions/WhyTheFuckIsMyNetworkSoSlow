@@ -15,7 +15,7 @@ import { fetchNetworks } from '@/proxy/API';
 @Component({
     name : 'Networks',
     components : {
-      Network: () => import('@/views/Network.vue'),
+      Network: () => import('@/components/Network.vue'),
     },
 })
 export default class Networks extends Vue {
