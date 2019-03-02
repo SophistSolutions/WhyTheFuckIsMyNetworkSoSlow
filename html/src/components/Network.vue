@@ -6,7 +6,7 @@
         <v-icon id="selected-star" color="yellow" v-show="selectedNetworkId === network.id">star</v-icon>
 
         <!-- TODO move to a settings store -->
-        <p v-if="DEBUG_MODE">{{ network.id }}</p>
+        <p v-if="debugMode">{{ network.id }}</p>
       </v-card-title>
 
       <v-card-text>
@@ -40,6 +40,11 @@ import { DEBUG_MODE } from '@/config';
         this.$store.dispatch('setSelectedNetwork', networkId);
       },
     },
+    computed: {
+      debugMode(): boolean {
+        return DEBUG_MODE;
+      }
+    }
 })
 export default class Network extends Vue {
 
