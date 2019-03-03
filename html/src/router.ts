@@ -16,7 +16,7 @@ export default new Router({
       // route level code-splitting
       // this generates a separate chunk (about.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
-      component: () => import(/* webpackChunkName: "about" */ './views/Networks.vue'),
+      component: () => import(/* webpackChunkName: "about" */ './views/NetworkView.vue'),
     },
     {
       path: '/devices',
@@ -24,7 +24,7 @@ export default new Router({
       // route level code-splitting
       // this generates a separate chunk (about.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
-      component: () => import(/* webpackChunkName: "about" */ './views/Devices.vue'),
+      component: () => import(/* webpackChunkName: "about" */ './views/DeviceView.vue'),
     },
   ],
 });
