@@ -139,7 +139,7 @@ int main (int argc, const char* argv[])
     Logger::Get ().SetAppender (make_shared<Logger::WindowsEventLogAppender> (L"WhyTheFuckIsMyNetworkSoSlow"));
 #endif
     Logger::Get ().SetBufferingEnabled (true);
-    Logger::Get ().SetSuppressDuplicates (15);
+    Logger::Get ().SetSuppressDuplicates (1min);
 
     /*
      *  Parse command line arguments, and start looking at options.

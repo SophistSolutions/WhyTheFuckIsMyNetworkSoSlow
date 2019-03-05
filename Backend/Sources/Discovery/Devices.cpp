@@ -328,7 +328,7 @@ namespace {
                     Execution::ReThrow ();
                 }
                 catch (...) {
-                    Execution::Logger::Get ().LogIfNew (Execution::Logger::Priority::eError, 300, L"%s", Characters::ToString (current_exception ()).c_str ());
+                    Execution::Logger::Get ().LogIfNew (Execution::Logger::Priority::eError, 5min, L"%s", Characters::ToString (current_exception ()).c_str ());
                 }
                 Execution::Sleep (30); // @todo tmphack - really wait til change in network
             }
