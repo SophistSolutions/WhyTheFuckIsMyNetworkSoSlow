@@ -15,6 +15,8 @@
 #include "Stroika/Frameworks/NetworkMonitor/Ping.h"
 #include "Stroika/Frameworks/NetworkMonitor/Traceroute.h"
 
+#include "Stroika-Current-Version.h"
+
 #include "../Discovery/Devices.h"
 #include "../Discovery/NetworkInterfaces.h"
 #include "../Discovery/Networks.h"
@@ -47,7 +49,10 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices;
  */
 About WSImpl::GetAbout () const
 {
-    return About{AppVersion::kVersion};
+    static const About kAbout_{
+        AppVersion::kVersion,
+        Mapping<String, Configuration::Version>{{KeyValuePair<String, Configuration::Version>{L"Stroika"sv, Configuration::Version{kStroika_Version_FullVersion}}}}};
+    return kAbout_;
 }
 
 Collection<String> WSImpl::GetDevices () const

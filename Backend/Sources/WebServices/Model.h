@@ -8,6 +8,7 @@
 
 #include "Stroika/Foundation/Characters/String.h"
 #include "Stroika/Foundation/Configuration/Version.h"
+#include "Stroika/Foundation/Containers/Mapping.h"
 #include "Stroika/Foundation/Containers/Sequence.h"
 #include "Stroika/Foundation/DataExchange/ObjectVariantMapper.h"
 #include "Stroika/Foundation/IO/Network/CIDR.h"
@@ -25,6 +26,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
     using namespace Stroika::Foundation;
     using Characters::String;
+    using Containers::Mapping;
     using Containers::Sequence;
     using Containers::Set;
     using IO::Network::CIDR;
@@ -171,7 +173,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
     }
 
     struct About {
-        Configuration::Version fOverallApplicationVersion;
+        Configuration::Version                  fOverallApplicationVersion;
+        Mapping<String, Configuration::Version> fComponents;
 
         nonvirtual String ToString () const;
 
