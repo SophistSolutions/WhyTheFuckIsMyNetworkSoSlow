@@ -75,11 +75,11 @@ namespace {
 
 class WebServer::Rep_ {
 public:
+    static const WebServiceMethodDescription kAbout_;
     static const WebServiceMethodDescription kDevices_;
     static const WebServiceMethodDescription kNetworks_;
     static const WebServiceMethodDescription kNetworkInterfaces_;
     static const WebServiceMethodDescription kOperations_;
-    static const WebServiceMethodDescription kVersions_;
 
 private:
     static constexpr unsigned int kMaxConcurrentConnections_{5};
@@ -273,8 +273,8 @@ public:
                   }},
 
               Route{
-                  L"versions"_RegEx,
-                  mkRequestHandler (kVersions_, VersionInfo::kMapper, function<VersionInfo (void)>{[=]() { return fWSAPI_->GetVersionInfo (); }})},
+                  L"about"_RegEx,
+                  mkRequestHandler (kAbout_, About::kMapper, function<About (void)>{[=]() { return fWSAPI_->GetAbout (); }})},
 
           }}
         , fWSConnectionMgr_{SocketAddresses (InternetAddresses_Any (), 8080), fWSRouter_, ConnectionManager::Options{kMaxConcurrentConnections_, Socket::BindFlags{true}, kServerString_}} // listen and dispatch while this object exists
@@ -289,11 +289,11 @@ public:
         WriteDocsPage (
             response,
             Sequence<WebServiceMethodDescription>{
+                kAbout_,
                 kDevices_,
                 kNetworkInterfaces_,
                 kNetworks_,
                 kOperations_,
-                kVersions_,
             },
             DocsOptions{L"Web Methods"sv});
     }
@@ -346,15 +346,15 @@ const WebServiceMethodDescription WebServer::Rep_::kOperations_{
         L"/operations/dns/calculate-score; returns number 0 (worst) to 1.0 (best)"sv,
     },
 };
-const WebServiceMethodDescription WebServer::Rep_::kVersions_{
-    L"versions"sv,
+const WebServiceMethodDescription WebServer::Rep_::kAbout_{
+    L"about"sv,
     Set<String>{String_Constant{IO::Network::HTTP::Methods::kGet}},
     DataExchange::PredefinedInternetMediaType::kJSON,
     {},
     Sequence<String>{
-        L"curl http://localhost:8080/versions"sv,
+        L"curl http://localhost:8080/about"sv,
     },
-    Sequence<String>{L"Fetch the component versions."sv},
+    Sequence<String>{L"Fetch the component versions, etc."sv},
 };
 
 WebServer::WebServer (const shared_ptr<IWSAPI>& wsImpl)

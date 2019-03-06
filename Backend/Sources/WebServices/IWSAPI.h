@@ -89,9 +89,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
 
     public:
         /**
-         *  curl  http://localhost:8080/versions
+         *  curl  http://localhost:8080/about
          */
-        virtual VersionInfo GetVersionInfo () const = 0;
+        virtual About GetAbout () const = 0;
     };
 
 }

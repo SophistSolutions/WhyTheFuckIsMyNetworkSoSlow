@@ -45,6 +45,11 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices;
  ************************************* WSImpl ***********************************
  ********************************************************************************
  */
+About WSImpl::GetAbout () const
+{
+    return About{AppVersion::kVersion};
+}
+
 Collection<String> WSImpl::GetDevices () const
 {
     Collection<String> result;
@@ -363,9 +368,4 @@ double WSImpl::Operation_DNS_CalculateScore () const
     score = Math::PinInRange<double> (score, 0, 1);
     Ensure (0 <= score and score <= 1.0);
     return score;
-}
-
-VersionInfo WSImpl::GetVersionInfo () const
-{
-    return VersionInfo{AppVersion::kVersion};
 }

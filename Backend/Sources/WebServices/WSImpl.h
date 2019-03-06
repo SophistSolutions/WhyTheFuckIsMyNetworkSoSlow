@@ -39,7 +39,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
         virtual Time::Duration                Operation_DNS_CalculateNegativeLookupTime (optional<unsigned int> samples) const override;
         virtual Operations::DNSLookupResults  Operation_DNS_Lookup (const String& name) const override;
         virtual double                        Operation_DNS_CalculateScore () const override;
-        virtual VersionInfo                   GetVersionInfo () const override;
+        virtual About                         GetAbout () const override;
     };
 
     void TmpHackAssureStartedMonitoring ();

@@ -170,7 +170,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         extern const DataExchange::ObjectVariantMapper kMapper;
     }
 
-    struct VersionInfo {
+    struct About {
         Configuration::Version fOverallApplicationVersion;
 
         nonvirtual String ToString () const;
