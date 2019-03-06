@@ -174,7 +174,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
     struct About {
         Configuration::Version                  fOverallApplicationVersion;
-        Mapping<String, Configuration::Version> fComponents;
+        Mapping<String, Configuration::Version> fComponentVersions;
 
         nonvirtual String ToString () const;
 

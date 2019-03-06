@@ -309,7 +309,7 @@ String About::ToString () const
     Characters::StringBuilder sb;
     sb += L"{";
     sb += L"Overall-Application-Version: " + Characters::ToString (fOverallApplicationVersion) + L", ";
-    sb += L"Components: " + Characters::ToString (fComponents) + L", ";
+    sb += L"Component-Versions: " + Characters::ToString (fComponentVersions) + L", ";
     sb += L"}";
     return sb.str ();
 }
@@ -325,7 +325,7 @@ const ObjectVariantMapper About::kMapper = []() {
     mapper.AddCommonType<Mapping<String, Configuration::Version>> ();
     mapper.AddClass<About> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
         {L"applicationVersion", Stroika_Foundation_DataExchange_StructFieldMetaInfo (About, fOverallApplicationVersion)},
-        {L"components", Stroika_Foundation_DataExchange_StructFieldMetaInfo (About, fComponents)},
+        {L"componentVersions", Stroika_Foundation_DataExchange_StructFieldMetaInfo (About, fComponentVersions)},
     });
 
     return mapper;
