@@ -6,6 +6,7 @@
       <v-toolbar-items class="hidden-sm-and-down">
         <v-btn flat to="/networks">Networks</v-btn>
         <v-btn flat to="/devices">Devices</v-btn>
+        <v-btn flat to="/about">About</v-btn>
       </v-toolbar-items>
     </v-toolbar>
     

@@ -11,6 +11,11 @@ export default new Router({
       redirect: 'networks',
     },
     {
+      path: '/about',
+      name: 'about',
+      component: () => import(/* webpackChunkName: "about" */ './views/About.vue'),
+    },
+    {
       path: '/networks',
       name: 'Networks',
       // route level code-splitting

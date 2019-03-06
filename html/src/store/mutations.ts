@@ -1,3 +1,5 @@
+export const ROOT_SET_ABOUT_INFO = 'about';
+
 export const ROOT_SET_AVAILABLE_NETWORKS = 'availableNetworks';
 
 export const ROOT_SET_DEVICES = 'devices';

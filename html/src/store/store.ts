@@ -5,8 +5,9 @@ import { INetwork } from '@/models/network/INetwork';
 
 import * as mutations from './mutations';
 
-import { fetchNetworks, fetchDevices } from '@/proxy/API';
+import { fetchNetworks, fetchDevices, fetchAboutInfo } from '@/proxy/API';
 import { IDevice } from '@/models/device/IDevice';
+import { IAbout } from '@/models/IAbout';
 
 Vue.use(Vuex);
 
@@ -15,6 +16,7 @@ const debug = process.env.NODE_ENV !== 'production';
 // TODO make this the root store - have other stores be props of state. Seperate by logical groups
 export default new Vuex.Store({
   state: {
+    about: {} as IAbout,
     availableNetworks: [] as INetwork[],
     selectedNetworkId: {} as string,
     devices: [] as IDevice[],
@@ -30,10 +32,16 @@ export default new Vuex.Store({
     setSelectedNetwork(state, networkId: string) {
       Vue.set(state, mutations.ROOT_SET_SELECTED_NETWORK_ID, networkId);
     },
+    setAboutInfo(state, aboutInfo: IAbout) {
+      Vue.set(state, mutations.ROOT_SET_ABOUT_INFO, aboutInfo);
+    },
   },
   actions: {
     async fetchAvailableNetworks({commit}) {
       commit('setAvailableNetworks', await fetchNetworks());
+    },
+    async fetchAboutInfo({commit}) {
+      commit('setAboutInfo', await fetchAboutInfo());
     },
     async fetchDevices({commit}) {
       commit('setDevices', await fetchDevices());
@@ -51,6 +59,9 @@ export default new Vuex.Store({
     },
     getSelectedNetworkId: (state) => {
       return state.selectedNetworkId;
+    },
+    getAboutInfo: (state) => {
+      return state.about;
     },
     getSelectedNetworkObject: (state) => {
       return state.availableNetworks.find((network) => network.id === state.selectedNetworkId);
