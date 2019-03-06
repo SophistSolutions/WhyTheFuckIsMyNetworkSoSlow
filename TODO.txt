@@ -2,6 +2,7 @@ Top priority bug:
 
 - ADD VERSION INFO TO WSAPI and maybe if I can to vue app as well (print in about box)
 
+- ask bob how to turn on/off debug mode - nice if user settable option (dialog) or at worst ?debugmode=true on url
 
 
 - rename internalInterfaceID to Native-Device-ID - I THINK - reivew what it looks lik e on windows
@@ -12,8 +13,13 @@ Top priority bug:
 
 
 - ADD "OS" to properties assocaited with a device 
-  Typically "Windows" or "Linux" (?useful?)
+  Typically "Windows" or "Linux" (?useful?). Make it structure, with extra info
+	Windows {build : n, edition : x}
+	Linux { "distribution ubuntu 1404"}
+	Unix { some otehr posix based unix}
+	MacOS { version }
 
+- suggest to bob fix scroller so doesn't scroll heading - just the bottom alreayd
 
 - Syslog emit doesnt appear to work for WTF on WSL
 
