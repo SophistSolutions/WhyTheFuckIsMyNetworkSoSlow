@@ -58,6 +58,9 @@ atomicuint64_t fChangeCount;
 }
 
 
+- Add "RunningOn" info to 'about' data structure (WSAPI) and About GUI
+
+
 - Use Cache object on URL looks (GET) for SSDP data. That's probably one of the more expensive items to
   lookup, and esp if we cache the (negative cache) resulkt of failed fetch (bad url) - we can save item.
 	Just write utility function to lookup (URL u) -> SSDP::DEscription  - and have it maintain the cache object.
