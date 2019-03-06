@@ -17,12 +17,8 @@ import { IAbout } from '@/models/IAbout'
 })
 export default class About extends Vue {
 
-   appVersion: string = "fetching"
-
   constructor() {
     super();
-    //this.appVersion = this.about ().appVersion;
-   // debugger;
   }
     private created() {
       this.$store.dispatch('fetchAboutInfo')
