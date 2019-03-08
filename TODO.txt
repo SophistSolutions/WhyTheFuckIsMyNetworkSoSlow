@@ -4,15 +4,24 @@ Top priority bug:
   rest should be plumbed - just the stroika ssdp parse code is questionable/incomplete)
 
 
-
-- ask bob how to turn on/off debug mode - nice if user settable option (dialog) or at worst ?debugmode=true on url
-
-
 - rename internalInterfaceID to Native-Device-ID - I THINK - reivew what it looks lik e on windows
 
 - On unix - see why 'wifi0' is displayed as "Wired Ethernet" type? SB wireless!
 
 
+
+## THINGS TO ASK BOB TODO:
+- ask bob how to turn on/off debug mode - nice if user settable option (dialog) 
+  or at worst ?debugmode=true on url; in general - how do we handle configuraiton
+- suggest to bob fix scroller so doesn't scroll heading - just the bottom alreayd
+- some sort of grouping of devices
+- auto-refresh list of devices in the background (really cool if could animate additions/removeals/changes)
+- in about box just aggregate release notes in build - and link to from about box
+- THEN - with those basics out of the way - time to talk about next-gen GUI
+
+
+
+- maybe setup WTF website (or section of sophists site)
 
 
 - ADD "OS" to properties assocaited with a device 
@@ -27,8 +36,9 @@ Top priority bug:
 			this data provider?
 
 	
+-- for release - add Release-Notes.md file like I do with stroika (but more abbreviated - apx one paragraph)
 
-- suggest to bob fix scroller so doesn't scroll heading - just the bottom alreayd
+
 
 - Syslog emit doesnt appear to work for WTF on WSL
 

@@ -1,20 +1,20 @@
-Why The Fuck Is My Network So Slow - Release Notes
+﻿About
 =====
-These release notes are incomplete. They are merely a summary of
-major user (developer)-impactful changes - especially those they need
-to be aware of when upgrading.
+High level summary of changes in WhyTheFuckIsMyNetworkSoSlow.
 
 History
 =======
 
-## 1.0d4 {2019-01-28}
+## 1.0d5x {2019-03-08}
 
-- https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/compare/1.0d3...1.0d4
+- https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/compare/1.0d4...1.0d5
+- Use Stroika v2.1d20
+- Improved error handling/reporting
+- refactor network and device discovery (big change - incomplete)
+  - restructured so more modular: each module pursues discovery in dependently and accumulates in common store
+  - internal caching in discovery and lookup code
+  - improved naming/detection of network and device information/details (names, types, etc); more SSDP info displayed
+  - fixed bug where duplicate devices appeared
+- lose bogus home page, and improved about page, and presentation url displayed for devices
 
-- New data model (devices, interfaces, networks, operations), and REST API to access these(lists and indvidual items by GUID)
-
-- installers work on Windows, ubuntu (x86_64), and raspberrypi (Linux-armhf).
-
-- new (draft) UI based on vue
-
-- docker based builds setup - to build .debs
+----
