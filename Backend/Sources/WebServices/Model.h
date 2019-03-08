@@ -128,7 +128,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
             eRouter,
             eSpeaker,
             ePrinter,
-            eInfrastructureDevice,
+            eNetworkInfrastructure,
             eMediaPlayer,
             eTV,
 

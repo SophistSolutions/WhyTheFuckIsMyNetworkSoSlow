@@ -264,7 +264,7 @@ namespace {
                     type = Discovery::DeviceType::eRouter;
                 }
                 else {
-                    type = Discovery::DeviceType::eInfrastructureDevice;
+                    type = Discovery::DeviceType::eNetworkInfrastructure;
                 }
             }
 
