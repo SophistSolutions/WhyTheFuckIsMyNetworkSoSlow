@@ -1,6 +1,11 @@
 Top priority bug:
 
-- ADD VERSION INFO TO WSAPI and maybe if I can to vue app as well (print in about box)
+>>> Add "PresentationURL" to data model and push all the way to WS API, and then tell bob about it, so he allows CLICK.
+
+> Fix parsing of SSDP presentationURL, and see that it shows up properly in the web GUI for devices (all the
+  rest should be plumbed - just the stroika ssdp parse code is questionable/incomplete)
+
+
 
 - ask bob how to turn on/off debug mode - nice if user settable option (dialog) or at worst ?debugmode=true on url
 
@@ -31,7 +36,6 @@ flag so you can tell which device is the one querying
 >>> Why sonos devices in family room (play5s) not showing up their roomname (works about 1/2 the time - works for other speakers)
 
 
->>> Add "PresentationURL" to data model and push all the way to WS API, and then tell bob about it, so he allows CLICK.
 
 >>> Add "Device ICON UrL" support and push all the way to GUI, so Bob can fetch that image and display
 

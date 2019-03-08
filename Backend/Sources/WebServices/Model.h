@@ -14,6 +14,7 @@
 #include "Stroika/Foundation/IO/Network/CIDR.h"
 #include "Stroika/Foundation/IO/Network/Interface.h"
 #include "Stroika/Foundation/IO/Network/InternetAddress.h"
+#include "Stroika/Foundation/IO/Network/URL.h"
 #include "Stroika/Foundation/Time/Duration.h"
 
 #include "../Common/GeoLocation.h"
@@ -31,6 +32,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
     using Containers::Set;
     using IO::Network::CIDR;
     using IO::Network::InternetAddress;
+    using IO::Network::URL;
     using Stroika::Foundation::Common::GUID;
 
     /**
@@ -140,6 +142,12 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         /*
          */
         Set<GUID> fAttachedNetworks;
+
+        /**
+         *  This comes from the SSDP presentation url. Its a URL which can be used by a UI and web-browser to
+         * 'open' the device and view/control it.
+         */
+        optional<URL> fPresentationURL;
 
         /**
          *  This generally applies to 'this computer', but when we merge data across devices, we can see multiple devices with multiple interfaces.

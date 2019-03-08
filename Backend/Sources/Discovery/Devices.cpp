@@ -101,6 +101,7 @@ String Discovery::Device::ToString () const
     }
     sb += L"fNetworks: " + Characters::ToString (fNetworks) + L", ";
     sb += L"fAttachedInterfaces: " + Characters::ToString (fAttachedInterfaces) + L", ";
+    sb += L"fPresentationURL: " + Characters::ToString (fPresentationURL) + L", ";
     sb += L"}";
     return sb.str ();
 }
@@ -182,6 +183,7 @@ namespace {
             optional<String>        fServer;
             optional<String>        fManufacturer;
             Mapping<String, String> fDeviceType2FriendlyNameMap; //  http://upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v1.1.pdf - <deviceType> - Page 44
+            optional<URL>           fPresentationURL;
 
             String ToString () const
             {
@@ -193,6 +195,7 @@ namespace {
                 sb += L"fManufacturer: " + Characters::ToString (fManufacturer) + L", ";
                 sb += L"fServer: " + Characters::ToString (fServer) + L", ";
                 sb += L"Device-Type-2-Friendly-Name-Map: " + Characters::ToString (fDeviceType2FriendlyNameMap) + L", ";
+                sb += L"fPresentationURL: " + Characters::ToString (fPresentationURL) + L", ";
                 sb += L"}";
                 return sb.str ();
             }
@@ -232,6 +235,8 @@ namespace {
                         name = GetPrettiedUpDeviceName_ (*fSSDPInfo->fServer);
                     }
                 }
+
+                fPresentationURL = fSSDPInfo->fPresentationURL;
             }
             if (name.empty ()) {
                 name = L"Unknown"sv;
@@ -417,6 +422,7 @@ namespace {
             optional<String> deviceFriendlyName;
             optional<String> deviceType;
             optional<String> manufactureName;
+            optional<URL>    presentationURL;
 
             try {
                 IO::Network::Transfer::Connection c = IO::Network::Transfer::CreateConnection ();
@@ -427,6 +433,7 @@ namespace {
                     deviceFriendlyName                             = deviceInfo.fFriendlyName;
                     deviceType                                     = deviceInfo.fDeviceType;
                     manufactureName                                = deviceInfo.fManufactureName;
+                    presentationURL                                = deviceInfo.fPresentationURL;
                     DbgTrace (L"Found device description = %s", Characters::ToString (deviceInfo).c_str ());
                 }
             }
@@ -457,6 +464,11 @@ namespace {
                     di.fSSDPInfo = DiscoveryInfo_::SSDPInfo{};
                 }
                 di.fSSDPInfo->fAlive = d.fAlive;
+
+                if (presentationURL) {
+                    // consider if value already there - warn if changes - should we collect multiple
+                    di.fSSDPInfo->fPresentationURL = presentationURL;
+                }
 
                 if (di.fSSDPInfo->fServer.has_value () and di.fSSDPInfo->fServer != d.fServer) {
                     DbgTrace (L"Warning: different server IDs for same object");

@@ -6,4 +6,5 @@ export interface IDevice {
     name: string
     internetAddresses: string[]
     type?: DeviceTypeEnum
+    presentationURL?: string
 }

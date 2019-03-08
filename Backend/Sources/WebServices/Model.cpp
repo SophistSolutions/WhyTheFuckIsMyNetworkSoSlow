@@ -246,6 +246,8 @@ const ObjectVariantMapper Device::kMapper = []() {
     mapper.AddCommonType<optional<float>> ();
     mapper.AddCommonType<Collection<String>> ();
     mapper.AddCommonType<Sequence<String>> ();
+    mapper.AddCommonType<URL> ();
+    mapper.AddCommonType<optional<URL>> ();
 
     mapper.AddClass<Device> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
         {L"id", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, fGUID)},
@@ -254,6 +256,8 @@ const ObjectVariantMapper Device::kMapper = []() {
         {L"type", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, type), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"attachedNetworks", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, fAttachedNetworks)},
         {L"attachedNetworkInterfaces", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, fAttachedNetworkInterfaces), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"presentationURL", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, fPresentationURL), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+
         //        {L"important", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, important)},
     });
     mapper.AddCommonType<Collection<Device>> ();
