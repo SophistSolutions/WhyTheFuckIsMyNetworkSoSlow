@@ -1,7 +1,6 @@
 // See Backend/WebServices/Model/DeviceType
 export enum DeviceTypeEnum {
-    LAPTOP = 'Laptop',
-    Desktop = 'Desktop',
+    PC = 'PC',
     Tablet = 'Tablet',
     Phone = 'Phone',
     ROUTER = 'Router',

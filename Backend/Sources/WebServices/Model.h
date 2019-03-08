@@ -122,8 +122,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         /**
          */
         enum class DeviceType {
-            eLaptop,
-            eDesktop,
+            ePC,
             eTablet,
             ePhone,
             eRouter,
@@ -133,7 +132,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
             eMediaPlayer,
             eTV,
 
-            Stroika_Define_Enum_Bounds (eLaptop, eTV)
+            Stroika_Define_Enum_Bounds (ePC, eTV)
         };
 
         /**

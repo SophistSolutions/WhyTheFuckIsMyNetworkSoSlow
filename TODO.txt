@@ -22,6 +22,12 @@ Top priority bug:
 	Unix { some otehr posix based unix}
 	MacOS { version }
 
+	*** DEFINE GENERIC OS-INFO object. Use in each device and in AboutInfo object - for what we are running on.
+	    See how 'about' object fits with the /data-providers idea? Maybe there is where to declare at least
+			this data provider?
+
+	
+
 - suggest to bob fix scroller so doesn't scroll heading - just the bottom alreayd
 
 - Syslog emit doesnt appear to work for WTF on WSL

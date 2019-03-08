@@ -109,13 +109,13 @@ Collection<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse () const
         int lPri = 0;
         int rPri = 0;
         // super primitive sort strategy...
-        if (lhs.type == Device::DeviceType::eLaptop) {
+        if (lhs.type == Device::DeviceType::ePC) {
             lPri = 10;
         }
         if (lhs.type == Device::DeviceType::eRouter) {
             lPri = 5;
         }
-        if (rhs.type == Device::DeviceType::eLaptop) {
+        if (rhs.type == Device::DeviceType::ePC) {
             rPri = 10;
         }
         if (rhs.type == Device::DeviceType::eRouter) {

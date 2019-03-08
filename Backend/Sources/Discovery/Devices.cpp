@@ -259,7 +259,13 @@ namespace {
                 (fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_WFADevice_) or
                  fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_WANConnectionDevice_) or
                  fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_WANDevice_))) {
-                type = Discovery::DeviceType::eRouter; // could be network infrastructure device??? - just unsure
+                // @todo this logic could use improvement
+                if (ipAddresses.Any ([](const InternetAddress& ia) { return ia.As<String> ().EndsWith (L".1"); })) {
+                    type = Discovery::DeviceType::eRouter;
+                }
+                else {
+                    type = Discovery::DeviceType::eInfrastructureDevice;
+                }
             }
 
             if (fSSDPInfo.has_value () and
@@ -269,7 +275,7 @@ namespace {
             }
 
             //tmphack
-            if (not fThisDevice) {
+            if (not type.has_value () and not fThisDevice) {
                 if (ipAddresses.Any ([](const InternetAddress& ia) { return ia.As<String> ().EndsWith (L".1"); })) {
                     type = Discovery::DeviceType::eRouter;
                 }
@@ -368,7 +374,7 @@ namespace {
 #endif
             DiscoveryInfo_ newDev;
             newDev.fForcedName = Configuration::GetSystemConfiguration_ComputerNames ().fHostname;
-            newDev.type        = DeviceType::eLaptop; //tmphack @todo fix
+            newDev.type        = DeviceType::ePC; //tmphack @todo fix
             newDev.fThisDevice = true;
             for (Interface i : IO::Network::GetInterfaces ()) {
                 if (i.fType != Interface::Type::eLoopback and i.fStatus and i.fStatus->Contains (Interface::Status::eRunning)) {
