@@ -5,6 +5,6 @@ export interface IDevice {
     attachedNetworks: string[]
     name: string
     internetAddresses: string[]
-    type?: DeviceTypeEnum
+    type?: DeviceTypeEnum | string
     presentationURL?: string
 }
