@@ -1,7 +1,5 @@
 Top priority bug:
 
->>> Add "PresentationURL" to data model and push all the way to WS API, and then tell bob about it, so he allows CLICK.
-
 > Fix parsing of SSDP presentationURL, and see that it shows up properly in the web GUI for devices (all the
   rest should be plumbed - just the stroika ssdp parse code is questionable/incomplete)
 
@@ -31,6 +29,16 @@ Top priority bug:
 
 >> ADD TO WS DATA MODEL - 'THIS DEVICE' 
 flag so you can tell which device is the one querying
+  (flag saying "WTFDataProvider: URL) - our 8000 url)
+	(and field saying data-collected-by, but not sure where since belongs as higher level elt)
+	(and returning an array here); COULD aggregatate array or could have separate API or use HTTP-header
+	(ah -if we say 'data provider url and its teh same were fetching from we know same source. maybe have data provider url and GUID)
+	{wtf-data-provider: {guid: xxx; url: xxx}}
+
+maybe GET /data-providers
+
+and data-provider guid (or set) arg allowed in fetch of devices
+
 
 
 >>> Why sonos devices in family room (play5s) not showing up their roomname (works about 1/2 the time - works for other speakers)

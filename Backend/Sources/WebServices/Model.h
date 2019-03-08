@@ -130,8 +130,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
             eSpeaker,
             ePrinter,
             eInfrastructureDevice,
+            eMediaPlayer,
+            eTV,
 
-            Stroika_Define_Enum_Bounds (eLaptop, eInfrastructureDevice)
+            Stroika_Define_Enum_Bounds (eLaptop, eTV)
         };
 
         /**

@@ -7,5 +7,7 @@ export enum DeviceTypeEnum {
     ROUTER = 'Router',
     SPEAKER = 'Speaker',
     Printer = 'Printer',
-    InfrastructureDevice = 'InfrastructureDevice',
+    InfrastructureDevice = 'Infrastructure-Device',
+    MediaPlayer = 'Media-Player',
+    TV = 'TV',
 }

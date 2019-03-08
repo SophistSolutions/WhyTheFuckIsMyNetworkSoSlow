@@ -79,6 +79,13 @@ namespace {
     // derived based on experimentation on my network - need standards/referecnes! -- LGP 2019-02-20
     const String kDeviceType_SpeakerGroup_{L"urn:smartspeaker-audio:device:SpeakerGroup:1"sv};
     const String kDeviceType_ZonePlayer_{L"urn:schemas-upnp-org:device:ZonePlayer:1"sv};
+    const String kDeviceType_WFADevice_{L"urn:schemas-wifialliance-org:device:WFADevice:1"sv};
+    const String kDeviceType_WANConnectionDevice_{L"urn:schemas-upnp-org:device:WANConnectionDevice:1"sv};
+    const String kDeviceType_WANDevice_{L"urn:schemas-upnp-org:device:WANDevice:1"sv};
+
+    // probably shouldn't be this specifc
+    const String kDeviceType_Roku_{L"urn:roku-com:device:player:1-0"sv};
+
 }
 
 /*
@@ -246,6 +253,19 @@ namespace {
                 (fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_SpeakerGroup_) or
                  fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_ZonePlayer_))) {
                 type = Discovery::DeviceType::eSpeaker;
+            }
+
+            if (fSSDPInfo.has_value () and
+                (fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_WFADevice_) or
+                 fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_WANConnectionDevice_) or
+                 fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_WANDevice_))) {
+                type = Discovery::DeviceType::eRouter; // could be network infrastructure device??? - just unsure
+            }
+
+            if (fSSDPInfo.has_value () and
+                // @todo - need a better way to detect - look at services not device type?
+                (fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_Roku_))) {
+                type = Discovery::DeviceType::eMediaPlayer;
             }
 
             //tmphack
