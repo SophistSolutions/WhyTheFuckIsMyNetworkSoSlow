@@ -35,8 +35,6 @@ Top priority bug:
 	    See how 'about' object fits with the /data-providers idea? Maybe there is where to declare at least
 			this data provider?
 
-	
--- for release - add Release-Notes.md file like I do with stroika (but more abbreviated - apx one paragraph)
 
 
 
@@ -106,12 +104,6 @@ atomicuint64_t fChangeCount;
 
 
 >>> When we recive SSDP events we get many for a given device (rooot and subdevies).
-Some (for sonos speakers at least) have better names than others. STORE MUCH MORE INFO in DEVICEINFO - copy not exposed.
-And use that to dynamically pick the best 'display name' as we get messages.
-
-And keep a list of assicated 'types' we can infer from ssdp messages so we can do a decent job guessing device type (like audio device speaker, media server etc)
-(smart speaker)?
-
 Add tracking info about time we've seen alive (and maybe if we ping it - time we know dead) ; so times KNOWN alive and times KNOWN
 dead? Unsure how to handle hte in-betweens. Need some good guessing strategy or only report known info?
 
@@ -158,9 +150,6 @@ WSAPI above - if we fetch soemting that we dont have issue 404 and only 405 if i
 -----
 
 - current device discovery (rewriting threading)
-  - assining wrong network. For SSDP, assign network based on scalling known networks and their ip address range.
-  - redo ssdp scanning logic so its not network dependent
-
 
 	> backgorund thread NETWORK discovery
 		Network disc module
@@ -188,9 +177,6 @@ WSAPI above - if we fetch soemting that we dont have issue 404 and only 405 if i
 		For device, use UDN 
 		"true device identifier that is the same for all services and embedded devices (and their respective services) under the same root UPnP device can be found in the <UDN> element of the root device description document."
 
-
-
-	>	DEVICES DUPLICATED 
 
 	> Add suport for ARP -a for discovery
 
@@ -226,9 +212,6 @@ CLEANUP OUTPUT
 
 (new stroikaroot .... stuff)
 
------
-
-	Cleanup blaterh from html make (redirect to outfile)
 
 ----
 
