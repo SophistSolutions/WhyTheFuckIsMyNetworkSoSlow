@@ -4,6 +4,9 @@ Top priority bug:
   rest should be plumbed - just the stroika ssdp parse code is questionable/incomplete)
 
 
+        //        {L"important", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, important)},
+
+
 - On unix - see why 'wifi0' is displayed as "Wired Ethernet" type? SB wireless!
 
 - Add new stroika module 'IO::Network::Neighbors'

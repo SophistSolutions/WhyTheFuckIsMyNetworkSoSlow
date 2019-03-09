@@ -55,7 +55,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
         GUID                 fGUID;
         String               name;
         Set<InternetAddress> ipAddresses;
-        optional<DeviceType> type;
+        Set<DeviceType>      fTypes;
         bool                 fThisDevice{};
         Set<GUID>            fNetworks;
         optional<Set<GUID>>  fAttachedInterfaces;

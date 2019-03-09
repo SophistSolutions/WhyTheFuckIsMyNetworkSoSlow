@@ -241,7 +241,8 @@ const ObjectVariantMapper Device::kMapper = []() {
     mapper.AddCommonType<Set<GUID>> ();
     mapper.AddCommonType<optional<Set<GUID>>> ();
     mapper.AddCommonType<Device::DeviceType> ();
-    mapper.AddCommonType<optional<Device::DeviceType>> ();
+    mapper.AddCommonType<Set<Device::DeviceType>> ();
+    mapper.AddCommonType<optional<Set<Device::DeviceType>>> ();
     mapper.AddCommonType<optional<String>> ();
     mapper.AddCommonType<optional<float>> ();
     mapper.AddCommonType<Collection<String>> ();
@@ -253,12 +254,10 @@ const ObjectVariantMapper Device::kMapper = []() {
         {L"id", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, fGUID)},
         {L"name", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, name)},
         {L"internetAddresses", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, ipAddresses)},
-        {L"type", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, type), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"type", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, fTypes), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"attachedNetworks", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, fAttachedNetworks)},
         {L"attachedNetworkInterfaces", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, fAttachedNetworkInterfaces), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"presentationURL", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, fPresentationURL), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-
-        //        {L"important", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, important)},
     });
     mapper.AddCommonType<Collection<Device>> ();
     return mapper;

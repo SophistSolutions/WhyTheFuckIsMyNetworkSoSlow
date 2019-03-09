@@ -100,9 +100,7 @@ String Discovery::Device::ToString () const
     sb += L"GUID: " + Characters::ToString (fGUID) + L", ";
     sb += L"name: " + Characters::ToString (name) + L", ";
     sb += L"ipAddress: " + Characters::ToString (ipAddresses) + L", ";
-    if (type) {
-        sb += L"type: " + Characters::ToString (type) + L", ";
-    }
+    sb += L"types: " + Characters::ToString (fTypes) + L", ";
     if (fThisDevice) {
         sb += L"This-Device: " + Characters::ToString (fThisDevice) + L", ";
     }
@@ -252,7 +250,7 @@ namespace {
             if (fSSDPInfo.has_value () and
                 (fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_SpeakerGroup_) or
                  fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_ZonePlayer_))) {
-                type = Discovery::DeviceType::eSpeaker;
+                fTypes.Add (Discovery::DeviceType::eSpeaker);
             }
 
             if (fSSDPInfo.has_value () and
@@ -261,31 +259,28 @@ namespace {
                  fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_WANDevice_))) {
                 // @todo this logic could use improvement
                 if (ipAddresses.Any ([](const InternetAddress& ia) { return ia.As<String> ().EndsWith (L".1"); })) {
-                    type = Discovery::DeviceType::eRouter;
+                    fTypes.Add (Discovery::DeviceType::eRouter);
                 }
-                else {
-                    type = Discovery::DeviceType::eNetworkInfrastructure;
-                }
+                fTypes.Add (Discovery::DeviceType::eNetworkInfrastructure);
             }
 
             // probably insufficient
-            if (not type.has_value () and
-                fSSDPInfo.has_value () and
+            if (fSSDPInfo.has_value () and
                 // @todo - need a better way to detect - look at services not device type?
                 (fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_MediaRenderer_))) {
-                type = Discovery::DeviceType::eTV;
+                fTypes.Add (Discovery::DeviceType::eTV);
             }
 
             if (fSSDPInfo.has_value () and
                 // @todo - need a better way to detect - look at services not device type?
                 (fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_Roku_))) {
-                type = Discovery::DeviceType::eMediaPlayer;
+                fTypes.Add (Discovery::DeviceType::eMediaPlayer);
             }
 
             //tmphack
-            if (not type.has_value () and not fThisDevice) {
+            if (not fThisDevice) {
                 if (ipAddresses.Any ([](const InternetAddress& ia) { return ia.As<String> ().EndsWith (L".1"); })) {
-                    type = Discovery::DeviceType::eRouter;
+                    fTypes.Add (Discovery::DeviceType::eRouter);
                 }
             }
 
@@ -356,7 +351,7 @@ namespace {
                             }
                         }();
                         // copy most/all fields -- @todo cleanup - do more automatically - all but GUID??? Need merge??
-                        di.type        = o->type;
+                        di.fTypes      = o->fTypes;
                         di.fForcedName = o->fForcedName;
                         di.fThisDevice = o->fThisDevice;
                         di.PatchDerivedFields ();
@@ -382,7 +377,7 @@ namespace {
 #endif
             DiscoveryInfo_ newDev;
             newDev.fForcedName = Configuration::GetSystemConfiguration_ComputerNames ().fHostname;
-            newDev.type        = DeviceType::ePC; //tmphack @todo fix
+            newDev.fTypes.Add (DeviceType::ePC); //tmphack @todo fix
             newDev.fThisDevice = true;
             for (Interface i : IO::Network::GetInterfaces ()) {
                 if (i.fType != Interface::Type::eLoopback and i.fStatus and i.fStatus->Contains (Interface::Status::eRunning)) {

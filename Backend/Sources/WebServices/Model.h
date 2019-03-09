@@ -138,7 +138,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         /**
          *  missing is unknown type of device
          */
-        optional<DeviceType> type;
+        optional<Set<DeviceType>> fTypes;
 
         /*
          */
@@ -155,8 +155,6 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
          *  You can use this to lookup details about wireless connections etc, associated with each network interface.
          */
         optional<Set<GUID>> fAttachedNetworkInterfaces;
-
-        bool important{}; // CONSIDER DEPRECATING/LOSING - or generalizing to a float (0..1)???
 
         nonvirtual String ToString () const;
 

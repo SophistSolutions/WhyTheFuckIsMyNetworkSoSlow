@@ -94,10 +94,9 @@ Collection<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse () const
 
         newDev.fGUID                      = d.fGUID;
         newDev.name                       = d.name;
-        newDev.type                       = d.type;
+        newDev.fTypes                     = d.fTypes;
         newDev.fAttachedNetworks          = d.fNetworks;
         newDev.fAttachedNetworkInterfaces = d.fAttachedInterfaces; // @todo must merge += (but only when merging across differnt discoverers/networks)
-        newDev.important                  = newDev.type == Device::DeviceType::eRouter or d.fThisDevice;
         newDev.fPresentationURL           = d.fPresentationURL;
         return newDev;
     })};
@@ -109,16 +108,16 @@ Collection<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse () const
         int lPri = 0;
         int rPri = 0;
         // super primitive sort strategy...
-        if (lhs.type == Device::DeviceType::ePC) {
+        if (lhs.fTypes and lhs.fTypes->Contains (Device::DeviceType::ePC)) {
             lPri = 10;
         }
-        if (lhs.type == Device::DeviceType::eRouter) {
+        if (lhs.fTypes and lhs.fTypes->Contains (Device::DeviceType::eRouter)) {
             lPri = 5;
         }
-        if (rhs.type == Device::DeviceType::ePC) {
+        if (rhs.fTypes and rhs.fTypes->Contains (Device::DeviceType::ePC)) {
             rPri = 10;
         }
-        if (rhs.type == Device::DeviceType::eRouter) {
+        if (rhs.fTypes and rhs.fTypes->Contains (Device::DeviceType::eRouter)) {
             rPri = 5;
         }
         return lPri < rPri;
