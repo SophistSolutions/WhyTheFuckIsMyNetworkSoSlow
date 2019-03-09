@@ -53,8 +53,7 @@ About WSImpl::GetAbout () const
     static const About kAbout_{
         AppVersion::kVersion,
         Mapping<String, Configuration::Version>{{KeyValuePair<String, Configuration::Version>{L"Stroika"sv, Configuration::Version{kStroika_Version_FullVersion}}}},
-		 OperatingSystem{Configuration::GetSystemConfiguration_OperatingSystem ().fPrettyNameWithMajorVersion}
-	};
+        OperatingSystem{Configuration::GetSystemConfiguration_OperatingSystem ().fPrettyNameWithMajorVersion}};
     return kAbout_;
 }
 
@@ -100,8 +99,8 @@ Collection<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse () const
         newDev.fTypes                     = d.fTypes;
         newDev.fAttachedNetworks          = d.fNetworks;
         newDev.fAttachedNetworkInterfaces = d.fAttachedInterfaces; // @todo must merge += (but only when merging across differnt discoverers/networks)
-		newDev.fPresentationURL = d.fPresentationURL;
-		newDev.fOperatingSystem = d.fOperatingSystem;
+        newDev.fPresentationURL           = d.fPresentationURL;
+        newDev.fOperatingSystem           = d.fOperatingSystem;
         return newDev;
     })};
 
