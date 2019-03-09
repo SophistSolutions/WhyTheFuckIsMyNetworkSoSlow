@@ -83,10 +83,10 @@ struct ChangeMonitor {
 	uint64_t GetChangeCount () const;
 
 private:
-Thread::CleanupPtr fChangeMonitorThread;
-Set<Function<>> fCallbacks;
-ConditionVariable<> fWaitOn;
-atomicuint64_t fChangeCount;
+	Thread::CleanupPtr fChangeMonitorThread;
+	Set<Function<>> fCallbacks;
+	ConditionVariable<> fWaitOn;
+	atomicuint64_t fChangeCount;
 }
 
 
@@ -284,13 +284,6 @@ Under docker:
 
 		>	This is a very primitive first draft/try - but the starting point for collecting stats
 
-
-
-------------------------------
-
-> building on Linux (BLOW) doesn't work
-
-	(restest)
 
  ----
  

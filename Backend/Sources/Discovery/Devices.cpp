@@ -82,6 +82,7 @@ namespace {
     const String kDeviceType_WFADevice_{L"urn:schemas-wifialliance-org:device:WFADevice:1"sv};
     const String kDeviceType_WANConnectionDevice_{L"urn:schemas-upnp-org:device:WANConnectionDevice:1"sv};
     const String kDeviceType_WANDevice_{L"urn:schemas-upnp-org:device:WANDevice:1"sv};
+    const String kDeviceType_MediaRenderer_{L"urn:schemas-upnp-org:device:MediaRenderer:1"sv};
 
     // probably shouldn't be this specifc
     const String kDeviceType_Roku_{L"urn:roku-com:device:player:1-0"sv};
@@ -266,6 +267,14 @@ namespace {
                 else {
                     type = Discovery::DeviceType::eNetworkInfrastructure;
                 }
+            }
+
+            // probably insufficient
+            if (not type.has_value () and
+                fSSDPInfo.has_value () and
+                // @todo - need a better way to detect - look at services not device type?
+                (fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_MediaRenderer_))) {
+                type = Discovery::DeviceType::eTV;
             }
 
             if (fSSDPInfo.has_value () and
