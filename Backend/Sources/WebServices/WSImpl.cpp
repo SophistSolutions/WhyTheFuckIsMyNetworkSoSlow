@@ -94,9 +94,11 @@ Collection<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse () const
             }
         });
 
-        newDev.fGUID                      = d.fGUID;
-        newDev.name                       = d.name;
-        newDev.fTypes                     = d.fTypes;
+        newDev.fGUID = d.fGUID;
+        newDev.name  = d.name;
+        if (not d.fTypes.empty ()) {
+            newDev.fTypes = d.fTypes; // leave missing if no discovered types
+        }
         newDev.fAttachedNetworks          = d.fNetworks;
         newDev.fAttachedNetworkInterfaces = d.fAttachedInterfaces; // @todo must merge += (but only when merging across differnt discoverers/networks)
         newDev.fPresentationURL           = d.fPresentationURL;
