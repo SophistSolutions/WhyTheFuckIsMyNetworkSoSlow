@@ -599,12 +599,12 @@ namespace {
 
                         // ignore multicast addresses as they are not real devices(???always???)
                         if (i.ia.IsMulticastAddress ()) {
-                            DbgTrace (L"ignoring arped multicast address %s", Characters::ToString (i.ia).c_str ());
+                            //DbgTrace (L"ignoring arped multicast address %s", Characters::ToString (i.ia).c_str ());
                             continue;
                         }
 #if qPlatform_Windows
                         if (i.fHardwareAddress == L"ff-ff-ff-ff-ff-ff") {
-                            DbgTrace (L"ignoring arped fake(broadcast) address %s", Characters::ToString (i.ia).c_str ());
+                            //DbgTrace (L"ignoring arped fake(broadcast) address %s", Characters::ToString (i.ia).c_str ());
                             continue;
                         }
 #endif
@@ -634,7 +634,7 @@ namespace {
                 catch (...) {
                     Execution::Logger::Get ().LogIfNew (Execution::Logger::Priority::eError, 5min, L"%s", Characters::ToString (current_exception ()).c_str ());
                 }
-                Execution::Sleep (30s); // @todo tmphack - really wait til change in network
+                Execution::Sleep (1min);// unsure of right interval - maybe able to epoll or something so no actual polling needed
             }
         }
         Thread::CleanupPtr fMyThread_;
