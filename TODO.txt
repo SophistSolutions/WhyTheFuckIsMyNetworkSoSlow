@@ -19,8 +19,6 @@ Top priority bug:
 	- use that to fill in new devices / info for discovery
 
 
-### Type field should be SET - not fixed value
-
 
 ## THINGS TO ASK BOB TODO:
 - ask bob how to turn on/off debug mode - nice if user settable option (dialog) 
