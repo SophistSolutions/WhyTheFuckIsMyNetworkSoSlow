@@ -6,7 +6,7 @@ High level summary of changes in WhyTheFuckIsMyNetworkSoSlow.
 History
 =======
 
-### 1.0d5x {2019-03-08}
+### 1.0d5 {2019-03-08}
 
 - https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/compare/1.0d4...1.0d5
 - Use Stroika v2.1d20 [(Stroika Release Notes)](https://github.com/SophistSolutions/Stroika/blob/v2.1d20/Release-Notes.md)
