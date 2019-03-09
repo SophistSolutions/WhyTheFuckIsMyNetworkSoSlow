@@ -17,6 +17,7 @@ History
   - improved naming/detection of network and device information/details (names, types, etc); more SSDP info displayed
   - fixed bug where duplicate devices appeared
   - did very rough draft implementation of arp-based device discovery
+  - rough draft reverse DNS device name lookup
 - lose bogus home page, and improved about page, and presentation url displayed for devices
 
 ----

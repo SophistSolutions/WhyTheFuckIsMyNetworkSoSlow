@@ -9,6 +9,9 @@ Top priority bug:
 
 - On unix - see why 'wifi0' is displayed as "Wired Ethernet" type? SB wireless!
 
+- extra layer of caching on reverse dns name lookup - so doesn't waste time / block
+  (could use async dns?)
+
 - Add new stroika module 'IO::Network::Neighbors'
   - https://www.midnightfreddie.com/how-to-arp-a-in-ipv6.html
 	- http://man7.org/linux/man-pages/man8/ip-neighbour.8.html
