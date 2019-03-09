@@ -14,7 +14,6 @@
     "interface-name": false,
     "ordered-imports": false,
     "object-literal-sort-keys": false,
-    "no-consecutive-blank-lines": false,
-    "semicolon": [true, "never"]
+    "no-consecutive-blank-lines": false
   }
 }

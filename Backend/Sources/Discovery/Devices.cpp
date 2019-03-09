@@ -326,7 +326,7 @@ namespace {
     struct MyDeviceDiscoverer_ {
         MyDeviceDiscoverer_ ()
             : fMyDeviceDiscovererThread_ (
-                  Thread::CleanupPtr::eAbortBeforeWaiting, Thread::New (DiscoveryChecker_, Thread::eAutoStart, L"MyDeviceDisoverer"))
+                  Thread::CleanupPtr::eAbortBeforeWaiting, Thread::New (DiscoveryChecker_, Thread::eAutoStart, L"MyDeviceDiscoverer"))
         {
         }
 
@@ -519,6 +519,130 @@ namespace {
     };
 }
 
+///tmphack -most of this should go into new Stroika module and also fancier
+//-Add new stroika module 'IO::Network::Neighbors'
+//- https://www.midnightfreddie.com/how-to-arp-a-in-ipv6.html
+//-http ://man7.org/linux/man-pages/man8/ip-neighbour.8.html
+//  -arp - a
+//  - ip neigh show
+//  - ip - 6 neigh show
+//  - cat / proc / net / arp
+//  - use that to fill in new devices / info for discovery
+#include "Stroika/Foundation/Execution/ProcessRunner.h"
+#include "Stroika/Foundation/Streams/MemoryStream.h"
+#include "Stroika/Foundation/Streams/TextReader.h"
+namespace {
+    struct ArpRec_ {
+        InternetAddress ia;
+        String          fHardwareAddress;
+    };
+    Collection<ArpRec_> ArpDashA_ ()
+    {
+        //tmphack
+        Collection<ArpRec_> result;
+
+        using std::byte;
+        ProcessRunner                    pr (L"arp -a");
+        Streams::MemoryStream<byte>::Ptr useStdOut = Streams::MemoryStream<byte>::New ();
+        pr.SetStdOut (useStdOut);
+        pr.Run ();
+        String                   out;
+        Streams::TextReader::Ptr stdOut        = Streams::TextReader::New (useStdOut);
+        bool                     skippedHeader = false;
+        size_t                   headerLen     = 0;
+        for (String i = stdOut.ReadLine (); not i.empty (); i = stdOut.ReadLine ()) {
+#if qPlatform_Windows
+            if (i.StartsWith (L" ")) {
+                Sequence<String> s = i.Tokenize ();
+                if (s.length () >= 3 and (s[2] == L"static" or s[2] == L"dynamic")) {
+                    result += ArpRec_{InternetAddress{s[0]}, s[1]};
+                }
+            }
+#elif qPlatform_POSIX
+            Sequence<String> s = i.Tokenize ();
+            if (s.length () >= 4) {
+                // raspberrypi.34ChurchStreet.sophists.com (192.168.244.32) at b8:27:eb:cc:c7:80 [ether] on enp0s31f6
+                // ? (192.168.244.173) at b8:3e:59:88:71:06 [ether] on enp0s31f6
+                if (s[1].StartsWith (L"(") and s[1].EndsWith (L")")) {
+                    result += ArpRec_{InternetAddress{s[1].SubString (1, -1)}, s[3]};
+                }
+            }
+#endif
+        }
+        return result;
+    }
+}
+
+namespace {
+    /*
+     ********************************************************************************
+     *************************** MyNeighborDiscoverer_ ******************************
+     ********************************************************************************
+     */
+
+    struct MyNeighborDiscoverer_ {
+        MyNeighborDiscoverer_ ()
+            : fMyThread_ (
+                  Thread::CleanupPtr::eAbortBeforeWaiting, Thread::New (DiscoveryChecker_, Thread::eAutoStart, L"MyNeighborDiscoverer"))
+        {
+        }
+
+    private:
+        static void DiscoveryChecker_ ()
+        {
+            static constexpr Activity kDiscovering_NetNeighbors_{L"discovering this network neighbors"sv};
+            while (true) {
+                try {
+                    DeclareActivity da{&kDiscovering_NetNeighbors_};
+                    for (ArpRec_ i : ArpDashA_ ()) {
+                        // soon store/pay attention to macaddr as better indicator of unique device id than ip addr
+
+                        // ignore multicast addresses as they are not real devices(???always???)
+                        if (i.ia.IsMulticastAddress ()) {
+                            DbgTrace (L"ignoring arped multicast address %s", Characters::ToString (i.ia).c_str ());
+                            continue;
+                        }
+#if qPlatform_Windows
+                        if (i.fHardwareAddress == L"ff-ff-ff-ff-ff-ff") {
+                            DbgTrace (L"ignoring arped fake(broadcast) address %s", Characters::ToString (i.ia).c_str ());
+                            continue;
+                        }
+#endif
+
+                        // merge in data
+                        auto           l  = sDiscoveredDevices_.rwget ();
+                        DiscoveryInfo_ di = [&]() {
+                            DiscoveryInfo_ tmp{};
+                            tmp.ipAddresses += i.ia;
+                            if (optional<DiscoveryInfo_> o = FindMatchingDevice_ (l, tmp)) {
+                                return *o;
+                            }
+                            else {
+                                // Generate GUID - based on ipaddrs
+                                tmp.fGUID = LookupPersistentDeviceID_ (tmp);
+                                return tmp;
+                            }
+                        }();
+
+                        di.PatchDerivedFields ();
+                        l->Add (di.fGUID, di);
+                    }
+                }
+                catch (const Thread::InterruptException&) {
+                    Execution::ReThrow ();
+                }
+                catch (...) {
+                    Execution::Logger::Get ().LogIfNew (Execution::Logger::Priority::eError, 5min, L"%s", Characters::ToString (current_exception ()).c_str ());
+                }
+                Execution::Sleep (30s); // @todo tmphack - really wait til change in network
+            }
+        }
+        Thread::CleanupPtr fMyThread_;
+    };
+
+    unique_ptr<MyNeighborDiscoverer_> sNeighborDiscoverer_;
+}
+
 /*
  ********************************************************************************
  ********************* Discovery::DevicesMgr::Activator *************************
@@ -532,6 +656,7 @@ namespace {
     bool IsActive_ ()
     {
         Require (static_cast<bool> (sMyDeviceDiscoverer_) == static_cast<bool> (sSSDPDeviceDiscoverer_));
+        Require (static_cast<bool> (sNeighborDiscoverer_) == static_cast<bool> (sSSDPDeviceDiscoverer_));
         return sSSDPDeviceDiscoverer_ != nullptr;
     }
 }
@@ -542,6 +667,7 @@ Discovery::DevicesMgr::Activator::Activator ()
     Require (not IsActive_ ());
     sSSDPDeviceDiscoverer_ = make_unique<SSDPDeviceDiscoverer_> ();
     sMyDeviceDiscoverer_   = make_unique<MyDeviceDiscoverer_> ();
+    sNeighborDiscoverer_   = make_unique<MyNeighborDiscoverer_> ();
 }
 
 Discovery::DevicesMgr::Activator::~Activator ()
@@ -550,6 +676,7 @@ Discovery::DevicesMgr::Activator::~Activator ()
     Require (IsActive_ ());
     sSSDPDeviceDiscoverer_.reset ();
     sMyDeviceDiscoverer_.reset ();
+    sNeighborDiscoverer_.reset ();
 }
 
 /*
