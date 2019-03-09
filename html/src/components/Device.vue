@@ -7,7 +7,7 @@
 
       <v-card-text>
         <p v-if="device.type">Type: {{ device.type.join(", ") }}</p>
-        <p v-if="device.operatingSystem">OS: {{ device.operatingSystem }}</p>
+        <p v-if="device.operatingSystem">OS: {{ device.operatingSystem.fullVersionedName }}</p>
         <p v-if="device.presentationURL"><a href="{{ device.presentationURL }}" target="_blank">Open Device</a></p>
         <p>Internet Addresses: {{ device.internetAddresses.join(", ") }}</p>
       </v-card-text>
