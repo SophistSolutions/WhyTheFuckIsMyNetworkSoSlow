@@ -4,10 +4,19 @@ Top priority bug:
   rest should be plumbed - just the stroika ssdp parse code is questionable/incomplete)
 
 
-- rename internalInterfaceID to Native-Device-ID - I THINK - reivew what it looks lik e on windows
-
 - On unix - see why 'wifi0' is displayed as "Wired Ethernet" type? SB wireless!
 
+- Add new stroika module 'IO::Network::Neighbors'
+  - https://www.midnightfreddie.com/how-to-arp-a-in-ipv6.html
+	- http://man7.org/linux/man-pages/man8/ip-neighbour.8.html
+	- arp -a
+	- ip neigh show
+	- ip -6 neigh show
+	- cat  /proc/net/arp
+	- use that to fill in new devices / info for discovery
+
+
+### Type field should be SET - not fixed value
 
 
 ## THINGS TO ASK BOB TODO:
@@ -34,11 +43,6 @@ Top priority bug:
 	*** DEFINE GENERIC OS-INFO object. Use in each device and in AboutInfo object - for what we are running on.
 	    See how 'about' object fits with the /data-providers idea? Maybe there is where to declare at least
 			this data provider?
-
-
-
-
-- Syslog emit doesnt appear to work for WTF on WSL
 
 
 >> ADD TO WS DATA MODEL - 'THIS DEVICE' 
@@ -121,12 +125,6 @@ on network change event so I can avoid polling but poling OK to start.
 
 GetMyDEvice needs its own thread (waiting on notification thatnetwork changed). Condition variable notify all.
 
-
-DevicesMgr::GetActiveDevices()
-    Synchronized<Mapping<String, DiscoveryInfo_>> sDiscoveredDevices_;
-	
-redo so plain COLLECTION (not mapping) and walk list and see if item alreayd
-there and update it or add new if needed
 
 
 	(then add a thread that periodically calls arp -a)
