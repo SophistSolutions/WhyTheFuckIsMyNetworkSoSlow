@@ -245,6 +245,15 @@ namespace {
                 fPresentationURL = fSSDPInfo->fPresentationURL;
             }
             if (name.empty ()) {
+                // try reverse dns lookup
+                for (auto i : ipAddresses) {
+                    if (auto o = DNS::Default ().ReverseLookup (i)) {
+                        name = *o;
+                        break;
+                    }
+                }
+            }
+            if (name.empty ()) {
                 name = L"Unknown"sv;
             }
 
