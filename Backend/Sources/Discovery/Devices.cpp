@@ -634,7 +634,7 @@ namespace {
                 catch (...) {
                     Execution::Logger::Get ().LogIfNew (Execution::Logger::Priority::eError, 5min, L"%s", Characters::ToString (current_exception ()).c_str ());
                 }
-                Execution::Sleep (1min);// unsure of right interval - maybe able to epoll or something so no actual polling needed
+                Execution::Sleep (1min); // unsure of right interval - maybe able to epoll or something so no actual polling needed
             }
         }
         Thread::CleanupPtr fMyThread_;
