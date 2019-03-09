@@ -86,7 +86,6 @@ namespace {
 
     // probably shouldn't be this specifc
     const String kDeviceType_Roku_{L"urn:roku-com:device:player:1-0"sv};
-
 }
 
 /*
