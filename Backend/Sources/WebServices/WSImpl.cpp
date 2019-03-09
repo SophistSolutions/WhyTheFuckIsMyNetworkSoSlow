@@ -5,6 +5,7 @@
 
 #include "Stroika/Foundation/Characters/StringBuilder.h"
 #include "Stroika/Foundation/Characters/ToString.h"
+#include "Stroika/Foundation/Configuration/SystemConfiguration.h"
 #include "Stroika/Foundation/Containers/Set.h"
 #include "Stroika/Foundation/Execution/Synchronized.h"
 #include "Stroika/Foundation/IO/Network/DNS.h"
@@ -51,7 +52,9 @@ About WSImpl::GetAbout () const
 {
     static const About kAbout_{
         AppVersion::kVersion,
-        Mapping<String, Configuration::Version>{{KeyValuePair<String, Configuration::Version>{L"Stroika"sv, Configuration::Version{kStroika_Version_FullVersion}}}}};
+        Mapping<String, Configuration::Version>{{KeyValuePair<String, Configuration::Version>{L"Stroika"sv, Configuration::Version{kStroika_Version_FullVersion}}}},
+		 OperatingSystem{Configuration::GetSystemConfiguration_OperatingSystem ().fPrettyNameWithMajorVersion}
+	};
     return kAbout_;
 }
 
@@ -97,7 +100,8 @@ Collection<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse () const
         newDev.fTypes                     = d.fTypes;
         newDev.fAttachedNetworks          = d.fNetworks;
         newDev.fAttachedNetworkInterfaces = d.fAttachedInterfaces; // @todo must merge += (but only when merging across differnt discoverers/networks)
-        newDev.fPresentationURL           = d.fPresentationURL;
+		newDev.fPresentationURL = d.fPresentationURL;
+		newDev.fOperatingSystem = d.fOperatingSystem;
         return newDev;
     })};
 

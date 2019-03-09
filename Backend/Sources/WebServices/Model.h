@@ -36,6 +36,23 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
     using Stroika::Foundation::Common::GUID;
 
     /**
+     */
+    struct OperatingSystem {
+        /**
+         *  For Linux, try to show distribution.
+         *  e.g. "Ubuntu 18.04", "Red-Hat 9", "Windows 10 Version 1809 (OS Build 17763.349)", "Linux (unknown)"
+         */
+        optional<String> fFullVersionedOSName;
+
+        /**
+         *  @see Characters::ToString ();
+         */
+        nonvirtual String ToString () const;
+
+        static const DataExchange::ObjectVariantMapper kMapper;
+    };
+
+    /**
      *  This roughly mimics the Stroika class IO::Network::Interface, or what you would see 
      *  returned on windows ipconfig/all, or unix "ip link show"
      * 
@@ -156,6 +173,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
          */
         optional<Set<GUID>> fAttachedNetworkInterfaces;
 
+        optional<OperatingSystem> fOperatingSystem;
+
         nonvirtual String ToString () const;
 
         static const DataExchange::ObjectVariantMapper kMapper;
@@ -182,6 +201,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
     struct About {
         Configuration::Version                  fOverallApplicationVersion;
         Mapping<String, Configuration::Version> fComponentVersions;
+        OperatingSystem                         fOperatingSystem;
 
         nonvirtual String ToString () const;
 

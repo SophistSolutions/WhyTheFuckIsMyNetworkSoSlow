@@ -1,7 +1,8 @@
 <template>
   <div class="about">
-    <h1>About Why The Fuck is My Network So Slow</h1>
+    <h1>About 'Why The Fuck is My Network So Slow'</h1>
     <div>my version# {{ about.applicationVersion }}</div>
+    <div>my operating-system: {{ about.operatingSystem.fullVersionedName }}</div>
 
     <div>Written by
       <ul>

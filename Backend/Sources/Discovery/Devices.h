@@ -48,18 +48,23 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
     using DeviceType = WebServices::Model::Device::DeviceType;
 
     /**
+    */
+    using OperatingSystem = WebServices::Model::OperatingSystem;
+
+    /**
      *  Discovery::Device is the definition of a device in the discovery module. This is the level of detail
      *  captured by the discovery services.
      */
     struct Device {
-        GUID                 fGUID;
-        String               name;
-        Set<InternetAddress> ipAddresses;
-        Set<DeviceType>      fTypes;
-        bool                 fThisDevice{};
-        Set<GUID>            fNetworks;
-        optional<Set<GUID>>  fAttachedInterfaces;
-        optional<URL>        fPresentationURL;
+        GUID                      fGUID;
+        String                    name;
+        Set<InternetAddress>      ipAddresses;
+        Set<DeviceType>           fTypes;
+        bool                      fThisDevice{};
+        Set<GUID>                 fNetworks;
+        optional<Set<GUID>>       fAttachedInterfaces;
+        optional<URL>             fPresentationURL;
+        optional<OperatingSystem> fOperatingSystem;
 
         nonvirtual String ToString () const;
     };

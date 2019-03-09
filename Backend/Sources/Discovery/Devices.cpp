@@ -107,6 +107,7 @@ String Discovery::Device::ToString () const
     sb += L"fNetworks: " + Characters::ToString (fNetworks) + L", ";
     sb += L"fAttachedInterfaces: " + Characters::ToString (fAttachedInterfaces) + L", ";
     sb += L"fPresentationURL: " + Characters::ToString (fPresentationURL) + L", ";
+    sb += L"fOperatingSystem: " + Characters::ToString (fOperatingSystem) + L", ";
     sb += L"}";
     return sb.str ();
 }
@@ -351,9 +352,10 @@ namespace {
                             }
                         }();
                         // copy most/all fields -- @todo cleanup - do more automatically - all but GUID??? Need merge??
-                        di.fTypes      = o->fTypes;
-                        di.fForcedName = o->fForcedName;
-                        di.fThisDevice = o->fThisDevice;
+                        di.fTypes           = o->fTypes;
+                        di.fForcedName      = o->fForcedName;
+                        di.fThisDevice      = o->fThisDevice;
+                        di.fOperatingSystem = OperatingSystem{Configuration::GetSystemConfiguration_OperatingSystem ().fPrettyNameWithMajorVersion};
                         di.PatchDerivedFields ();
                         l->Add (di.fGUID, di);
                     }

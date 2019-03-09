@@ -47,6 +47,34 @@ namespace Stroika::Foundation::DataExchange {
 
 /*
  ********************************************************************************
+ ************************** Model::OperatingSystem ******************************
+ ********************************************************************************
+ */
+String OperatingSystem::ToString () const
+{
+    Characters::StringBuilder sb;
+    sb += L"{";
+    sb += L"fFullVersionedOSName: " + Characters::ToString (fFullVersionedOSName) + L", ";
+    sb += L"}";
+    return sb.str ();
+}
+
+DISABLE_COMPILER_MSC_WARNING_START (4573);
+DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
+const ObjectVariantMapper OperatingSystem::kMapper = []() {
+    ObjectVariantMapper mapper;
+
+    mapper.AddClass<OperatingSystem> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+        {L"fullVersionedName", Stroika_Foundation_DataExchange_StructFieldMetaInfo (OperatingSystem, fFullVersionedOSName), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+    });
+
+    return mapper;
+}();
+DISABLE_COMPILER_GCC_WARNING_END ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
+DISABLE_COMPILER_MSC_WARNING_END (4573);
+
+/*
+ ********************************************************************************
  ********************************** Model::Network ******************************
  ********************************************************************************
  */
@@ -235,6 +263,10 @@ DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof
 const ObjectVariantMapper Device::kMapper = []() {
     ObjectVariantMapper mapper;
 
+    //mapper += OperatingSystem::kMapper;
+    mapper.Add (OperatingSystem::kMapper);
+    mapper.AddCommonType<optional<OperatingSystem>> ();
+
     mapper.AddCommonType<InternetAddress> ();
     mapper.AddCommonType<optional<InternetAddress>> ();
     mapper.AddCommonType<Sequence<InternetAddress>> ();
@@ -258,7 +290,9 @@ const ObjectVariantMapper Device::kMapper = []() {
         {L"attachedNetworks", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, fAttachedNetworks)},
         {L"attachedNetworkInterfaces", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, fAttachedNetworkInterfaces), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"presentationURL", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, fPresentationURL), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"operatingSystem", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, fOperatingSystem), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
+
     mapper.AddCommonType<Collection<Device>> ();
     return mapper;
 }();
@@ -313,6 +347,7 @@ String About::ToString () const
     sb += L"{";
     sb += L"Overall-Application-Version: " + Characters::ToString (fOverallApplicationVersion) + L", ";
     sb += L"Component-Versions: " + Characters::ToString (fComponentVersions) + L", ";
+    sb += L"Operating-System: " + Characters::ToString (fOperatingSystem) + L", ";
     sb += L"}";
     return sb.str ();
 }
@@ -322,6 +357,9 @@ DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof
 const ObjectVariantMapper About::kMapper = []() {
     ObjectVariantMapper mapper;
 
+    //mapper += OperatingSystem::kMapper;
+    mapper.Add (OperatingSystem::kMapper);
+
     mapper.Add<Configuration::Version> (
         [](const ObjectVariantMapper& mapper, const Configuration::Version* obj) -> VariantValue { return obj->AsPrettyVersionString (); },
         [](const ObjectVariantMapper& mapper, const VariantValue& d, Configuration::Version* intoObj) -> void { *intoObj = Configuration::Version::FromPrettyVersionString (d.As<String> ()); });
@@ -329,6 +367,7 @@ const ObjectVariantMapper About::kMapper = []() {
     mapper.AddClass<About> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
         {L"applicationVersion", Stroika_Foundation_DataExchange_StructFieldMetaInfo (About, fOverallApplicationVersion)},
         {L"componentVersions", Stroika_Foundation_DataExchange_StructFieldMetaInfo (About, fComponentVersions)},
+        {L"operatingSystem", Stroika_Foundation_DataExchange_StructFieldMetaInfo (About, fOperatingSystem)},
     });
 
     return mapper;
