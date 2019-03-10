@@ -1,5 +1,10 @@
 Top priority bug:
 
+>	Script building release
+  and fix installer names so include -Debug/-Release (or maybe not for release)
+	and include version# on windows msi Builds
+
+
 > Fix parsing of SSDP presentationURL, and see that it shows up properly in the web GUI for devices (all the
   rest should be plumbed - just the stroika ssdp parse code is questionable/incomplete)
 
