@@ -9,8 +9,6 @@ Top priority bug:
   rest should be plumbed - just the stroika ssdp parse code is questionable/incomplete)
 
 
-        //        {L"important", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, important)},
-
 
 - On unix - see why 'wifi0' is displayed as "Wired Ethernet" type? SB wireless!
 
@@ -29,6 +27,12 @@ Top priority bug:
 
 - Add HardwareAddress to list of things captured in devices info (currenly done in discovert-deviceinfo but expose)
 
+- Implement Bojour for discovery (STROIKA TODO)
+  - not sure the best place to download/aggreegate the needed code.
+	  But much of what i need is here: https://github.com/jevinskie/mDNSResponder/tree/master/mDNSCore
+		Find some package with the library I can download by reference in 
+		an optional ThirdPartyComponent, and then wrap it appropriately in a Stroika
+		framework (probably mDNS)
 
 
 ## THINGS TO ASK BOB TODO:
@@ -39,6 +43,9 @@ Top priority bug:
 - auto-refresh list of devices in the background (really cool if could animate additions/removeals/changes)
 - in about box just aggregate release notes in build - and link to from about box
 - THEN - with those basics out of the way - time to talk about next-gen GUI
+- filter by 'search string'
+- filter by 'network'
+- filter by 'present now'
 
 
 
