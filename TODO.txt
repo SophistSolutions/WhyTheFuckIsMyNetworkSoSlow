@@ -27,13 +27,6 @@ Top priority bug:
 
 - Add HardwareAddress to list of things captured in devices info (currenly done in discovert-deviceinfo but expose)
 
-- Implement Bojour for discovery (STROIKA TODO)
-  - not sure the best place to download/aggreegate the needed code.
-	  But much of what i need is here: https://github.com/jevinskie/mDNSResponder/tree/master/mDNSCore
-		Find some package with the library I can download by reference in 
-		an optional ThirdPartyComponent, and then wrap it appropriately in a Stroika
-		framework (probably mDNS)
-
 
 ## THINGS TO ASK BOB TODO:
 - ask bob how to turn on/off debug mode - nice if user settable option (dialog) 
