@@ -364,7 +364,7 @@ namespace {
                         di.fTypes           = o->fTypes;
                         di.fForcedName      = o->fForcedName;
                         di.fThisDevice      = o->fThisDevice;
-                        di.fOperatingSystem = OperatingSystem{Configuration::GetSystemConfiguration_OperatingSystem ().fPrettyNameWithMajorVersion};
+                        di.fOperatingSystem = OperatingSystem{Configuration::GetSystemConfiguration_ActualOperatingSystem ().fPrettyNameWithVersionDetails };
                         di.PatchDerivedFields ();
                         l->Add (di.fGUID, di);
                     }

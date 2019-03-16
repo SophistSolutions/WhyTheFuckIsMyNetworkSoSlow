@@ -53,7 +53,7 @@ About WSImpl::GetAbout () const
     static const About kAbout_{
         AppVersion::kVersion,
         Mapping<String, Configuration::Version>{{KeyValuePair<String, Configuration::Version>{L"Stroika"sv, Configuration::Version{kStroika_Version_FullVersion}}}},
-        OperatingSystem{Configuration::GetSystemConfiguration_OperatingSystem ().fPrettyNameWithMajorVersion}};
+        OperatingSystem{Configuration::GetSystemConfiguration_ActualOperatingSystem ().fPrettyNameWithVersionDetails}};
     return kAbout_;
 }
 
