@@ -1,9 +1,5 @@
 Top priority bug:
 
->	Script building release
-  and fix installer names so include -Debug/-Release (or maybe not for release)
-	and include version# on windows msi Builds
-
 
 > Fix parsing of SSDP presentationURL, and see that it shows up properly in the web GUI for devices (all the
   rest should be plumbed - just the stroika ssdp parse code is questionable/incomplete)
@@ -40,6 +36,10 @@ Top priority bug:
 - filter by 'network'
 - filter by 'present now'
 
+- Look into using
+  https://github.com/nmap/nmap/blob/master/FPEngine.cc
+	(etc)
+	for device type discovery
 
 
 - maybe setup WTF website (or section of sophists site)
@@ -51,6 +51,7 @@ Top priority bug:
 	Linux { "distribution ubuntu 1404"}
 	Unix { some otehr posix based unix}
 	MacOS { version }
+	(partly done but need more details, and collect for remote devices)
 
 	*** DEFINE GENERIC OS-INFO object. Use in each device and in AboutInfo object - for what we are running on.
 	    See how 'about' object fits with the /data-providers idea? Maybe there is where to declare at least

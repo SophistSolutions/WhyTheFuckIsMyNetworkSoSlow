@@ -120,3 +120,23 @@ endif
 
 format-code:
 	@$(MAKE) --directory=Backend --no-print-directory format-code
+
+
+INSTALLER_TAG=$(shell $(StroikaRoot)/ScriptsLib/ExtractVersionInformation VERSION FullVersionString)
+define CopyFileIf_
+	if [ -e Builds/${1}/WhyTheFuckIsMyNetworkSoSlow/${2} ] ; then\
+    	cp Builds/${1}/WhyTheFuckIsMyNetworkSoSlow/${2} Release-$(INSTALLER_TAG)/${3};\
+		echo "Added Release-$(INSTALLER_TAG)/${3}";\
+	else\
+		echo "Skipped Release-$(INSTALLER_TAG)/${3}";\
+	fi
+endef
+release-directory:
+	@rm -rf Release-$(INSTALLER_TAG) && mkdir Release-$(INSTALLER_TAG)
+	@$(call CopyFileIf_,Debug,whythefuckismynetworksoslow-$(INSTALLER_TAG).Linux.x86_64.deb,whythefuckismynetworksoslow-$(INSTALLER_TAG)-Debug.Linux.x86_64.deb)
+	@$(call CopyFileIf_,Release,whythefuckismynetworksoslow-$(INSTALLER_TAG).Linux.x86_64.deb,whythefuckismynetworksoslow-$(INSTALLER_TAG).Linux.x86_64.deb)
+	@$(call CopyFileIf_,raspberrypi-debug,whythefuckismynetworksoslow-$(INSTALLER_TAG).Linux.armhf.deb,whythefuckismynetworksoslow-$(INSTALLER_TAG)-Debug.Linux.armhf.deb)
+	@$(call CopyFileIf_,raspberrypi-release,whythefuckismynetworksoslow-$(INSTALLER_TAG).Linux.armhf.deb,whythefuckismynetworksoslow-$(INSTALLER_TAG).Linux.armhf.deb)
+	@$(call CopyFileIf_,Debug-U-64,WhyTheFuckIsMyNetworkSoSlow-Windows-x86_64-Debug-U-64.msi,WhyTheFuckIsMyNetworkSoSlow-$(INSTALLER_TAG)-Debug.Windows.x86_64.msi)
+	@$(call CopyFileIf_,Release-U-32,WhyTheFuckIsMyNetworkSoSlow-Windows-x86-Release-U-32.msi,WhyTheFuckIsMyNetworkSoSlow-$(INSTALLER_TAG).Windows.x86.msi)
+	@$(call CopyFileIf_,Release-U-64,WhyTheFuckIsMyNetworkSoSlow-Windows-x86_64-Release-U-64.msi,WhyTheFuckIsMyNetworkSoSlow-$(INSTALLER_TAG).Windows.x86_64.msi)
