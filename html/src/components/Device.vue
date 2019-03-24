@@ -16,11 +16,11 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator';
-import { IDevice } from '@/models/device/IDevice';
+import { IDevice } from "@/models/device/IDevice";
+import { Component, Vue } from "vue-property-decorator";
 
 @Component({
-    name : 'Device',
+    name : "Device",
     props : {
       device: Object as () => IDevice,
     },

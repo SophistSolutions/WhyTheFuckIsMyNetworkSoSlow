@@ -1,8 +1,8 @@
 
-import { OperatingSystem } from '@/models/OperatingSystem'
+import { OperatingSystem } from "@/models/OperatingSystem";
 
 export interface IAbout {
-    applicationVersion: string
+    applicationVersion: string;
     components: any;
     operatingSystem: OperatingSystem;
 }

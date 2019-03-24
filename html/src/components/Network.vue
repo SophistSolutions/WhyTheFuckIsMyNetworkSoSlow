@@ -26,25 +26,25 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator';
-import { INetwork } from '@/models/network/INetwork';
-import { DEBUG_MODE } from '@/config';
+import { DEBUG_MODE } from "@/config";
+import { INetwork } from "@/models/network/INetwork";
+import { Component, Vue } from "vue-property-decorator";
 
 @Component({
-    name : 'Network',
+    name : "Network",
     props : {
       network: Object as () => INetwork,
     },
     methods : {
       setSelectedNetwork(networkId) {
-        this.$store.dispatch('setSelectedNetwork', networkId);
+        this.$store.dispatch("setSelectedNetwork", networkId);
       },
     },
     computed: {
       debugMode(): boolean {
         return DEBUG_MODE;
-      }
-    }
+      },
+    },
 })
 export default class Network extends Vue {
 

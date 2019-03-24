@@ -22,12 +22,12 @@
 
 
 <script lang="ts">
+import { IAbout } from "@/models/IAbout";
 import Vue from "vue";
 import Component from "vue-class-component";
-import { IAbout } from "@/models/IAbout";
 
 @Component({
-  props: {}
+  props: {},
 })
 export default class About extends Vue {
   constructor() {

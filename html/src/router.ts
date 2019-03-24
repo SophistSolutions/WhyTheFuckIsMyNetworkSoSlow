@@ -1,35 +1,35 @@
-import Vue from 'vue'
-import Router from 'vue-router'
+import Vue from "vue";
+import Router from "vue-router";
 
-Vue.use(Router)
+Vue.use(Router);
 
 export default new Router({
   routes: [
     {
-      path: '/',
-      name: 'home',
-      redirect: 'networks',
+      path: "/",
+      name: "home",
+      redirect: "networks",
     },
     {
-      path: '/about',
-      name: 'about',
-      component: () => import(/* webpackChunkName: "about" */ './views/About.vue'),
+      path: "/about",
+      name: "about",
+      component: () => import(/* webpackChunkName: "about" */ "./views/About.vue"),
     },
     {
-      path: '/networks',
-      name: 'Networks',
+      path: "/networks",
+      name: "Networks",
       // route level code-splitting
       // this generates a separate chunk (about.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
-      component: () => import(/* webpackChunkName: "about" */ './views/NetworkView.vue'),
+      component: () => import(/* webpackChunkName: "about" */ "./views/NetworkView.vue"),
     },
     {
-      path: '/devices',
-      name: 'Devices',
+      path: "/devices",
+      name: "Devices",
       // route level code-splitting
       // this generates a separate chunk (about.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
-      component: () => import(/* webpackChunkName: "about" */ './views/DeviceView.vue'),
+      component: () => import(/* webpackChunkName: "about" */ "./views/DeviceView.vue"),
     },
   ],
-})
+});

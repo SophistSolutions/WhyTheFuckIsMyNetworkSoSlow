@@ -1,3 +1,3 @@
 export interface OperatingSystem {
-    fullVersionedName: string
+    fullVersionedName: string;
 }

@@ -1,17 +1,17 @@
-import Vue from 'vue';
-import Vuex from 'vuex';
+import Vue from "vue";
+import Vuex from "vuex";
 
-import { INetwork } from '@/models/network/INetwork';
+import { INetwork } from "@/models/network/INetwork";
 
-import * as mutations from './mutations';
+import * as mutations from "./mutations";
 
-import { fetchNetworks, fetchDevices, fetchAboutInfo } from '@/proxy/API';
-import { IDevice } from '@/models/device/IDevice';
-import { IAbout } from '@/models/IAbout';
+import { IDevice } from "@/models/device/IDevice";
+import { IAbout } from "@/models/IAbout";
+import { fetchAboutInfo, fetchDevices, fetchNetworks } from "@/proxy/API";
 
 Vue.use(Vuex);
 
-const debug = process.env.NODE_ENV !== 'production';
+const debug = process.env.NODE_ENV !== "production";
 
 // TODO make this the root store - have other stores be props of state. Seperate by logical groups
 export default new Vuex.Store({
@@ -38,16 +38,16 @@ export default new Vuex.Store({
   },
   actions: {
     async fetchAvailableNetworks({commit}) {
-      commit('setAvailableNetworks', await fetchNetworks());
+      commit("setAvailableNetworks", await fetchNetworks());
     },
     async fetchAboutInfo({commit}) {
-      commit('setAboutInfo', await fetchAboutInfo());
+      commit("setAboutInfo", await fetchAboutInfo());
     },
     async fetchDevices({commit}) {
-      commit('setDevices', await fetchDevices());
+      commit("setDevices", await fetchDevices());
     },
     setSelectedNetwork({commit}, networkId: string) {
-      commit('setSelectedNetwork', networkId);
+      commit("setSelectedNetwork", networkId);
     },
   },
   getters: {

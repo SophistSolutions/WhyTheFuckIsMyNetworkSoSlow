@@ -7,22 +7,22 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator';
-import { IDevice } from '@/models/device/IDevice';
+import { IDevice } from "@/models/device/IDevice";
+import { Component, Vue } from "vue-property-decorator";
 
-import { fetchNetworks } from '@/proxy/API';
+import { fetchNetworks } from "@/proxy/API";
 
 @Component({
-    name : 'Devices',
+    name : "Devices",
     components : {
-      Device: () => import('@/components/Device.vue'),
+      Device: () => import("@/components/Device.vue"),
     },
 })
 export default class Devices extends Vue {
   // TODO fix so networks doesnt call fetch everytime restarted
     // Trying to replace this with calls to the store instead of directly calling API
     private created() {
-      this.$store.dispatch('fetchDevices');
+      this.$store.dispatch("fetchDevices");
     }
 
     private get devices(): IDevice[] {
