@@ -122,7 +122,7 @@ public:
 #endif
 
               Route{
-                  L"devices"_RegEx,
+                  L"devices(/?)"_RegEx,
                   [=] (Message* m) {
                       constexpr bool kDefault_FilterRunningOnly_{true};
                       ExpectedMethod (m->GetRequestReference (), kNetworkInterfaces_);
@@ -136,24 +136,15 @@ public:
                       }
                   }},
               Route{
-                  L"devices/.*"_RegEx,
-                  [=] (Message* m) {
-                      // @todo parse out of REGULAR EXPRESSION - id
-                      //tmphack way to grab id arg (til stroika router supports this)
-                      String tmp = m->PeekRequest ()->GetURL ().GetHostRelativePath ();
-                      if (auto i = tmp.RFind ('/')) {
-                          String id;
-                          id = tmp.SubString (*i + 1);
-                          ExpectedMethod (m->GetRequestReference (), kDevices_);
-                          WriteResponse (m->PeekResponse (), kDevices_, Device::kMapper.FromObject (fWSAPI_->GetDevice (id)));
-                      }
-                      else {
-                          Execution::Throw (ClientErrorException (L"missing ID argument"sv));
-                      }
+                  L"devices/(.+)"_RegEx,
+                  [=] (Message* m, const Containers::Sequence<Characters::String>& matches) {
+                      String id = matches[0];
+                      ExpectedMethod (m->GetRequestReference (), kDevices_);
+                      WriteResponse (m->PeekResponse (), kDevices_, Device::kMapper.FromObject (fWSAPI_->GetDevice (id)));
                   }},
 
               Route{
-                  L"network-interfaces"_RegEx,
+                  L"network-interfaces(/?)"_RegEx,
                   [=] (Message* m) {
                       constexpr bool kDefault_FilterRunningOnly_{true};
                       ExpectedMethod (m->GetRequestReference (), kNetworkInterfaces_);
@@ -167,24 +158,15 @@ public:
                       }
                   }},
               Route{
-                  L"network-interfaces/.*"_RegEx,
-                  [=] (Message* m) {
-                      // @todo parse out of REGULAR EXPRESSION - id
-                      //tmphack way to grab id arg (til stroika router supports this)
-                      String tmp = m->PeekRequest ()->GetURL ().GetHostRelativePath ();
-                      if (auto i = tmp.RFind ('/')) {
-                          String id;
-                          id = tmp.SubString (*i + 1);
-                          ExpectedMethod (m->GetRequestReference (), kNetworkInterfaces_);
-                          WriteResponse (m->PeekResponse (), kNetworkInterfaces_, NetworkInterface::kMapper.FromObject (fWSAPI_->GetNetworkInterface (id)));
-                      }
-                      else {
-                          Execution::Throw (ClientErrorException (L"missing ID argument"sv));
-                      }
+                  L"network-interfaces/(.+)"_RegEx,
+                  [=] (Message* m, const Containers::Sequence<Characters::String>& matches) {
+                      String id = matches[0];
+                      ExpectedMethod (m->GetRequestReference (), kNetworkInterfaces_);
+                      WriteResponse (m->PeekResponse (), kNetworkInterfaces_, NetworkInterface::kMapper.FromObject (fWSAPI_->GetNetworkInterface (id)));
                   }},
 
               Route{
-                  L"networks"_RegEx,
+                  L"networks(/?)"_RegEx,
                   [=] (Message* m) {
                       ExpectedMethod (m->GetRequestReference (), kNetworks_);
                       Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
@@ -196,20 +178,11 @@ public:
                       }
                   }},
               Route{
-                  L"networks/.*"_RegEx,
-                  [=] (Message* m) {
-                      // @todo parse out of REGULAR EXPRESSION - id
-                      //tmphack way to grab id arg (til stroika router supports this)
-                      String tmp = m->PeekRequest ()->GetURL ().GetHostRelativePath ();
-                      if (auto i = tmp.RFind ('/')) {
-                          String id;
-                          id = tmp.SubString (*i + 1);
-                          ExpectedMethod (m->GetRequestReference (), kNetworks_);
-                          WriteResponse (m->PeekResponse (), kNetworks_, Network::kMapper.FromObject (fWSAPI_->GetNetwork (id)));
-                      }
-                      else {
-                          Execution::Throw (ClientErrorException (L"missing ID argument"sv));
-                      }
+                  L"networks/(.+)"_RegEx,
+                  [=] (Message* m, const Containers::Sequence<Characters::String>& matches) {
+                      String id = matches[0];
+                      ExpectedMethod (m->GetRequestReference (), kNetworks_);
+                      WriteResponse (m->PeekResponse (), kNetworks_, Network::kMapper.FromObject (fWSAPI_->GetNetwork (id)));
                   }},
 
               Route{

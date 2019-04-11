@@ -10,7 +10,7 @@
 #include "Stroika/Foundation/Common/GUID.h"
 #include "Stroika/Foundation/Containers/Collection.h"
 #include "Stroika/Foundation/IO/Network/InternetAddress.h"
-#include "Stroika/Foundation/IO/Network/URL.h"
+#include "Stroika/Foundation/IO/Network/URI.h"
 
 #include "../WebServices/Model.h"
 
@@ -40,7 +40,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
     using Containers::Collection;
     using Containers::Set;
     using IO::Network::InternetAddress;
-    using IO::Network::URL;
+    using IO::Network::URI;
     using Stroika::Foundation::Common::GUID;
 
     /**
@@ -63,7 +63,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
         bool                      fThisDevice{};
         Set<GUID>                 fNetworks;
         optional<Set<GUID>>       fAttachedInterfaces;
-        optional<URL>             fPresentationURL;
+        optional<URI>             fPresentationURL;
         optional<OperatingSystem> fOperatingSystem;
 
         nonvirtual String ToString () const;

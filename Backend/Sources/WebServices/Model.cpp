@@ -279,8 +279,8 @@ const ObjectVariantMapper Device::kMapper = [] () {
     mapper.AddCommonType<optional<float>> ();
     mapper.AddCommonType<Collection<String>> ();
     mapper.AddCommonType<Sequence<String>> ();
-    mapper.AddCommonType<URL> ();
-    mapper.AddCommonType<optional<URL>> ();
+    mapper.AddCommonType<URI> ();
+    mapper.AddCommonType<optional<URI>> ();
 
     mapper.AddClass<Device> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
         {L"id", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, fGUID)},

@@ -3,7 +3,15 @@ Top priority bug:
 
 > Fix parsing of SSDP presentationURL, and see that it shows up properly in the web GUI for devices (all the
   rest should be plumbed - just the stroika ssdp parse code is questionable/incomplete)
+	- Improve UPnP::DeSerialize () - so it includes device icons (url to icon)
+	 (or icon by blob)
 
+
+
+
+> Redo identification of speaker based on services
+  Service-ID: 'urn:upnp-org:serviceId:AudioIn'
+		(lookup spec to be sure - seems a good guess)
 
 
 - On unix - see why 'wifi0' is displayed as "Wired Ethernet" type? SB wireless!
@@ -22,6 +30,14 @@ Top priority bug:
 
 
 - Add HardwareAddress to list of things captured in devices info (currenly done in discovert-deviceinfo but expose)
+
+- use http://standards.ieee.org/regauth/oui/oui.txt to generate mapping of MACADDR to manufacturer (cheap easy quick lookup technique, 
+   but data may not be public). Can get copy for testing from https://github.com/nmap/nmap/blob/master/nmap-mac-prefixes - but not sure
+	 where I can get a legal copy from to incorporate. Maybe http://standards.ieee.org/regauth/oui/oui.txt  I can buy list?
+	 maybe use https://macvendors.com/api for now?
+	
+- consider if its useful to incporperate https://github.com/the-tcpdump-group/libpcap/blob/master/doc/README.Win32.md to 
+  scan net traffic
 
 
 ## THINGS TO ASK BOB TODO:

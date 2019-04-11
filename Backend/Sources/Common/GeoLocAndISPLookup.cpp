@@ -20,7 +20,7 @@ using namespace Stroika::Foundation::Characters;
 using namespace Stroika::Foundation::Containers;
 
 using DataExchange::VariantValue;
-using IO::Network::URL;
+using IO::Network::URI;
 
 using namespace WhyTheFuckIsMyNetworkSoSlow;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp;
@@ -65,7 +65,7 @@ optional<tuple<GEOLocationInformation, InternetServiceProvider>> BackendApp::Com
         [] (InternetAddress ia) -> optional<tuple<GEOLocationInformation, InternetServiceProvider>> {
             Debug::TraceContextBumper ctx{L"GEOLocAndISPLookup::{}... real lookup - cachemiss"};
             auto&&                    connection = IO::Network::Transfer::CreateConnection ();
-            connection.SetURL (URL{L"http://ip-api.com/json/" + ia.ToString (), URL::ParseOptions::eAsFullURL});
+            connection.SetURL (URI{L"http://ip-api.com/json/" + ia.ToString ()});
             Mapping<String, VariantValue> m = DataExchange::Variant::JSON::Reader ().Read (connection.GET ().GetDataTextInputStream ()).As<Mapping<String, VariantValue>> ();
             GEOLocationInformation        geoloc{};
             auto                          cvt = [] (optional<VariantValue> v) -> optional<String> { return v ? optional<String>{v->As<String> ()} : optional<String>{}; };

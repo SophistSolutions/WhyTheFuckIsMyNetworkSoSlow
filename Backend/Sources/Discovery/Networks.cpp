@@ -31,7 +31,7 @@ using namespace Stroika::Foundation::Containers;
 using namespace Stroika::Foundation::IO::Network;
 
 using DataExchange::VariantValue;
-using IO::Network::URL;
+using IO::Network::URI;
 using Stroika::Foundation::Common::GUID;
 
 using namespace WhyTheFuckIsMyNetworkSoSlow;
@@ -67,9 +67,9 @@ namespace {
              *  o   http://api.ipify.org/
              *  o   http://myexternalip.com/raw
              */
-            static const URL kSources_[]{
-                URL{L"http://api.ipify.org/"sv, URL::ParseOptions::eAsFullURL},
-                URL{L"http://myexternalip.com/raw"sv, URL::ParseOptions::eAsFullURL},
+            static const URI kSources_[]{
+                URI{L"http://api.ipify.org/"sv},
+                URI{L"http://myexternalip.com/raw"sv},
             };
             // @todo - when one fails, we should try the other first next time
             for (auto&& url : kSources_) {

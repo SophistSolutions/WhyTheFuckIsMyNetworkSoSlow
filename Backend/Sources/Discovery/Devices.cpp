@@ -185,11 +185,11 @@ namespace {
         struct SSDPInfo {
             optional<bool>          fAlive; // else Bye notification, or empty if neither -- probably replace with TIMINGS of last ALIVE, or Bye
             Set<String>             fUSNs;
-            Set<URL>                fLocations;
+            Set<URI>                fLocations;
             optional<String>        fServer;
             optional<String>        fManufacturer;
             Mapping<String, String> fDeviceType2FriendlyNameMap; //  http://upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v1.1.pdf - <deviceType> - Page 44
-            optional<URL>           fPresentationURL;
+            optional<URI>           fPresentationURL;
 
             String ToString () const
             {
@@ -450,10 +450,16 @@ namespace {
 
             DeclareActivity activity{&kInterprettingSSDPMessageRecieved_};
 
-            String               location = d.fLocation.GetFullURL ();
-            URL                  locURL   = URL{location, URL::ParseOptions::eAsFullURL};
-            String               locHost  = locURL.GetHost ();
-            Set<InternetAddress> locAddrs = Set<InternetAddress>{IO::Network::DNS::Default ().GetHostAddresses (locHost)};
+            Set<InternetAddress> locAddrs;
+            if (d.fLocation.GetAuthority () and d.fLocation.GetAuthority ()->GetHost ()) {
+                URI::Host h = *d.fLocation.GetAuthority ()->GetHost ();
+                if (h.AsInternetAddress ()) {
+                    locAddrs += *h.AsInternetAddress ();
+                }
+                else {
+                    locAddrs = Set<InternetAddress>{IO::Network::DNS::Default ().GetHostAddresses (*h.AsRegisteredName ())};
+                }
+            }
 
             // @todo - Maintain cache with age apx 60 minutes - mapping URL to UPnP::DeviceDescription objects
 
@@ -462,11 +468,11 @@ namespace {
             optional<String> deviceFriendlyName;
             optional<String> deviceType;
             optional<String> manufactureName;
-            optional<URL>    presentationURL;
+            optional<URI>    presentationURL;
 
             try {
                 IO::Network::Transfer::Connection c = IO::Network::Transfer::CreateConnection ();
-                c.SetURL (locURL);
+                c.SetURL (d.fLocation);
                 IO::Network::Transfer::Response r = c.GET ();
                 if (r.GetSucceeded ()) {
                     Frameworks::UPnP::DeviceDescription deviceInfo = DeSerialize (r.GetData ());
@@ -481,7 +487,7 @@ namespace {
                 DbgTrace (L"Failed to fetch description: %s", Characters::ToString (current_exception ()).c_str ());
             }
 
-            if (locHost.empty ()) {
+            if (locAddrs.empty ()) {
                 DbgTrace (L"oops - bad - probably should log - bad device response - find addr some other way");
             }
             else {
