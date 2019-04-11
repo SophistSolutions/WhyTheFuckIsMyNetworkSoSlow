@@ -26,11 +26,11 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model;
 
 #if qCompilerAndStdLib_lambda_expand_in_namespace_Buggy
-const ObjectVariantMapper klambda_expand_in_namespace_Buggy_workaround_Mapper_ = []() {
+const ObjectVariantMapper klambda_expand_in_namespace_Buggy_workaround_Mapper_ = [] () {
     using IO::Network::CIDR;
     ObjectVariantMapper mapper;
-    mapper.Add<CIDR> ([](const ObjectVariantMapper& mapper, const CIDR* obj) -> VariantValue { return obj->ToString (); },
-                      [](const ObjectVariantMapper& mapper, const VariantValue& d, CIDR* intoObj) -> void { *intoObj = CIDR{d.As<String> ()}; });
+    mapper.Add<CIDR> ([] (const ObjectVariantMapper& mapper, const CIDR* obj) -> VariantValue { return obj->ToString (); },
+                      [] (const ObjectVariantMapper& mapper, const VariantValue& d, CIDR* intoObj) -> void { *intoObj = CIDR{d.As<String> ()}; });
     return mapper;
 }();
 #endif
@@ -61,7 +61,7 @@ String OperatingSystem::ToString () const
 
 DISABLE_COMPILER_MSC_WARNING_START (4573);
 DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
-const ObjectVariantMapper OperatingSystem::kMapper = []() {
+const ObjectVariantMapper OperatingSystem::kMapper = [] () {
     ObjectVariantMapper mapper;
 
     mapper.AddClass<OperatingSystem> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
@@ -94,15 +94,15 @@ String Network::ToString () const
 
 DISABLE_COMPILER_MSC_WARNING_START (4573);
 DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
-const ObjectVariantMapper Network::kMapper = []() {
+const ObjectVariantMapper Network::kMapper = [] () {
     ObjectVariantMapper mapper;
 
     using IO::Network::CIDR;
 #if qCompilerAndStdLib_lambda_expand_in_namespace_Buggy
     mapper.Add (klambda_expand_in_namespace_Buggy_workaround_Mapper_);
 #else
-    mapper.Add<CIDR> ([](const ObjectVariantMapper& mapper, const CIDR* obj) -> VariantValue { return obj->ToString (); },
-                      [](const ObjectVariantMapper& mapper, const VariantValue& d, CIDR* intoObj) -> void { *intoObj = CIDR{d.As<String> ()}; });
+    mapper.Add<CIDR> ([] (const ObjectVariantMapper& mapper, const CIDR* obj) -> VariantValue { return obj->ToString (); },
+                      [] (const ObjectVariantMapper& mapper, const VariantValue& d, CIDR* intoObj) -> void { *intoObj = CIDR{d.As<String> ()}; });
 #endif
     mapper.AddCommonType<Set<CIDR>> ();
     mapper.AddCommonType<InternetAddress> ();
@@ -122,8 +122,8 @@ const ObjectVariantMapper Network::kMapper = []() {
             {L"longitude"sv, Stroika_Foundation_DataExchange_StructFieldMetaInfo (laglon_, lon)},
         });
         mapper.Add<tuple<float, float>> (
-            [](const ObjectVariantMapper& mapper, const tuple<float, float>* obj) -> VariantValue { return mapper.FromObject (laglon_{get<0> (*obj), get<1> (*obj)}); },
-            [](const ObjectVariantMapper& mapper, const VariantValue& d, tuple<float, float>* intoObj) -> void { auto tmp{ mapper.ToObject<laglon_> (d) }; *intoObj = make_tuple (tmp.lat, tmp.lon); });
+            [] (const ObjectVariantMapper& mapper, const tuple<float, float>* obj) -> VariantValue { return mapper.FromObject (laglon_{get<0> (*obj), get<1> (*obj)}); },
+            [] (const ObjectVariantMapper& mapper, const VariantValue& d, tuple<float, float>* intoObj) -> void { auto tmp{ mapper.ToObject<laglon_> (d) }; *intoObj = make_tuple (tmp.lat, tmp.lon); });
     }
     else {
         mapper.AddCommonType<tuple<float, float>> (); // works but represents as an array
@@ -185,7 +185,7 @@ String NetworkInterface::ToString () const
 
 DISABLE_COMPILER_MSC_WARNING_START (4573);
 DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
-const ObjectVariantMapper NetworkInterface::kMapper = []() {
+const ObjectVariantMapper NetworkInterface::kMapper = [] () {
     ObjectVariantMapper mapper;
 
     mapper.AddCommonType<NetworkInterface::Type> ();
@@ -260,7 +260,7 @@ DISABLE_COMPILER_MSC_WARNING_END (4573);
 
 DISABLE_COMPILER_MSC_WARNING_START (4573);
 DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
-const ObjectVariantMapper Device::kMapper = []() {
+const ObjectVariantMapper Device::kMapper = [] () {
     ObjectVariantMapper mapper;
 
     //mapper += OperatingSystem::kMapper;
@@ -312,7 +312,7 @@ String Device::ToString () const
 
 DISABLE_COMPILER_MSC_WARNING_START (4573);
 DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
-const ObjectVariantMapper Operations::kMapper = []() {
+const ObjectVariantMapper Operations::kMapper = [] () {
     ObjectVariantMapper mapper;
 
     mapper.AddCommonType<optional<String>> ();
@@ -354,15 +354,15 @@ String About::ToString () const
 
 DISABLE_COMPILER_MSC_WARNING_START (4573);
 DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
-const ObjectVariantMapper About::kMapper = []() {
+const ObjectVariantMapper About::kMapper = [] () {
     ObjectVariantMapper mapper;
 
     //mapper += OperatingSystem::kMapper;
     mapper.Add (OperatingSystem::kMapper);
 
     mapper.Add<Configuration::Version> (
-        [](const ObjectVariantMapper& mapper, const Configuration::Version* obj) -> VariantValue { return obj->AsPrettyVersionString (); },
-        [](const ObjectVariantMapper& mapper, const VariantValue& d, Configuration::Version* intoObj) -> void { *intoObj = Configuration::Version::FromPrettyVersionString (d.As<String> ()); });
+        [] (const ObjectVariantMapper& mapper, const Configuration::Version* obj) -> VariantValue { return obj->AsPrettyVersionString (); },
+        [] (const ObjectVariantMapper& mapper, const VariantValue& d, Configuration::Version* intoObj) -> void { *intoObj = Configuration::Version::FromPrettyVersionString (d.As<String> ()); });
     mapper.AddCommonType<Mapping<String, Configuration::Version>> ();
     mapper.AddClass<About> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
         {L"applicationVersion", Stroika_Foundation_DataExchange_StructFieldMetaInfo (About, fOverallApplicationVersion)},

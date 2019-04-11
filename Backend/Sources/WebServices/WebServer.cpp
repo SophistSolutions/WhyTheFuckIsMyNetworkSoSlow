@@ -58,7 +58,7 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices;
 namespace {
     DISABLE_COMPILER_MSC_WARNING_START (4573);
     DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
-    const DataExchange::ObjectVariantMapper kBasicsMapper_ = []() {
+    const DataExchange::ObjectVariantMapper kBasicsMapper_ = [] () {
         DataExchange::ObjectVariantMapper mapper;
         mapper.AddCommonType<Collection<String>> ();
         mapper.AddCommonType<Sequence<String>> ();
@@ -91,11 +91,11 @@ private:
     const Router                                                   fWSRouter_;
     optional<DeclareActivity<Activity<wstring_view>>>              fEstablishActivity1_{&kContructing_WSAPI_WebServer_};
     ConnectionManager                                              fWSConnectionMgr_;
-    [[NO_UNIQUE_ADDRESS_ATTR]] EmptyObjectForConstructorSideEffect fIgnore1_{[this]() { fEstablishActivity1_.reset (); }};
+    [[NO_UNIQUE_ADDRESS_ATTR]] EmptyObjectForConstructorSideEffect fIgnore1_{[this] () { fEstablishActivity1_.reset (); }};
     const Router                                                   fGUIWebRouter_;
     optional<DeclareActivity<Activity<wstring_view>>>              fEstablishActivity2_{&kContructing_GUI_WebServer_};
     ConnectionManager                                              fGUIWebConnectionMgr_;
-    [[NO_UNIQUE_ADDRESS_ATTR]] EmptyObjectForConstructorSideEffect fIgnore2_{[this]() { fEstablishActivity2_.reset (); }};
+    [[NO_UNIQUE_ADDRESS_ATTR]] EmptyObjectForConstructorSideEffect fIgnore2_{[this] () { fEstablishActivity2_.reset (); }};
 
 public:
     Rep_ (const shared_ptr<IWSAPI>& wsImpl)
@@ -110,7 +110,7 @@ public:
               Route{
                   RegularExpression (IO::Network::HTTP::Methods::kOptions, RegularExpression::eECMAScript),
                   RegularExpression::kAny,
-                  [](Message* m) {}},
+                  [] (Message* m) {}},
               Route{
                   L""_RegEx,
                   DefaultPage_},
@@ -123,7 +123,7 @@ public:
 
               Route{
                   L"devices"_RegEx,
-                  [=](Message* m) {
+                  [=] (Message* m) {
                       constexpr bool kDefault_FilterRunningOnly_{true};
                       ExpectedMethod (m->GetRequestReference (), kNetworkInterfaces_);
                       Mapping<String, DataExchange::VariantValue> args              = PickoutParamValues (m->PeekRequest ());
@@ -137,7 +137,7 @@ public:
                   }},
               Route{
                   L"devices/.*"_RegEx,
-                  [=](Message* m) {
+                  [=] (Message* m) {
                       // @todo parse out of REGULAR EXPRESSION - id
                       //tmphack way to grab id arg (til stroika router supports this)
                       String tmp = m->PeekRequest ()->GetURL ().GetHostRelativePath ();
@@ -154,7 +154,7 @@ public:
 
               Route{
                   L"network-interfaces"_RegEx,
-                  [=](Message* m) {
+                  [=] (Message* m) {
                       constexpr bool kDefault_FilterRunningOnly_{true};
                       ExpectedMethod (m->GetRequestReference (), kNetworkInterfaces_);
                       Mapping<String, DataExchange::VariantValue> args              = PickoutParamValues (m->PeekRequest ());
@@ -168,7 +168,7 @@ public:
                   }},
               Route{
                   L"network-interfaces/.*"_RegEx,
-                  [=](Message* m) {
+                  [=] (Message* m) {
                       // @todo parse out of REGULAR EXPRESSION - id
                       //tmphack way to grab id arg (til stroika router supports this)
                       String tmp = m->PeekRequest ()->GetURL ().GetHostRelativePath ();
@@ -185,7 +185,7 @@ public:
 
               Route{
                   L"networks"_RegEx,
-                  [=](Message* m) {
+                  [=] (Message* m) {
                       ExpectedMethod (m->GetRequestReference (), kNetworks_);
                       Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
                       if (args.LookupValue (L"recurse"sv, false).As<bool> ()) {
@@ -197,7 +197,7 @@ public:
                   }},
               Route{
                   L"networks/.*"_RegEx,
-                  [=](Message* m) {
+                  [=] (Message* m) {
                       // @todo parse out of REGULAR EXPRESSION - id
                       //tmphack way to grab id arg (til stroika router supports this)
                       String tmp = m->PeekRequest ()->GetURL ().GetHostRelativePath ();
@@ -214,7 +214,7 @@ public:
 
               Route{
                   L"operations/ping"_RegEx,
-                  [=](Message* m) {
+                  [=] (Message* m) {
                       Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
                       if (auto address = args.Lookup (L"target"sv)) {
                           ExpectedMethod (m->GetRequestReference (), kOperations_);
@@ -226,7 +226,7 @@ public:
                   }},
               Route{
                   L"operations/traceroute"_RegEx,
-                  [=](Message* m) {
+                  [=] (Message* m) {
                       Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
                       optional<bool>                              reverseDNSResult;
                       if (auto rdr = args.Lookup (L"reverse-dns-result"sv)) {
@@ -242,7 +242,7 @@ public:
                   }},
               Route{
                   L"operations/dns/calculate-negative-lookup-time"_RegEx,
-                  [=](Message* m) {
+                  [=] (Message* m) {
                       ExpectedMethod (m->GetRequestReference (), kOperations_);
                       optional<unsigned int>                      samples;
                       Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
@@ -253,7 +253,7 @@ public:
                   }},
               Route{
                   L"operations/dns/lookup"_RegEx,
-                  [=](Message* m) {
+                  [=] (Message* m) {
                       ExpectedMethod (m->GetRequestReference (), kOperations_);
                       String                                      name;
                       Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
@@ -267,14 +267,14 @@ public:
                   }},
               Route{
                   L"operations/dns/calculate-score"_RegEx,
-                  [=](Message* m) {
+                  [=] (Message* m) {
                       ExpectedMethod (m->GetRequestReference (), kOperations_);
                       WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_DNS_CalculateScore ()));
                   }},
 
               Route{
                   L"about"_RegEx,
-                  mkRequestHandler (kAbout_, About::kMapper, function<About (void)>{[=]() { return fWSAPI_->GetAbout (); }})},
+                  mkRequestHandler (kAbout_, About::kMapper, function<About (void)>{[=] () { return fWSAPI_->GetAbout (); }})},
 
           }}
         , fWSConnectionMgr_{SocketAddresses (InternetAddresses_Any (), 8080), fWSRouter_, ConnectionManager::Options{kMaxConcurrentConnections_, Socket::BindFlags{true}, kServerString_}} // listen and dispatch while this object exists

@@ -62,13 +62,13 @@ optional<tuple<GEOLocationInformation, InternetServiceProvider>> BackendApp::Com
 #endif
     constexpr Time::DurationSecondsType                                                                                        kInfoTimeoutInSeconds_{10 * 60.0};
     static Memoizer<optional<tuple<GEOLocationInformation, InternetServiceProvider>>, SynchronizedTimedCache, InternetAddress> sMemoizeCache_ = {
-        [](InternetAddress ia) -> optional<tuple<GEOLocationInformation, InternetServiceProvider>> {
+        [] (InternetAddress ia) -> optional<tuple<GEOLocationInformation, InternetServiceProvider>> {
             Debug::TraceContextBumper ctx{L"GEOLocAndISPLookup::{}... real lookup - cachemiss"};
             auto&&                    connection = IO::Network::Transfer::CreateConnection ();
             connection.SetURL (URL{L"http://ip-api.com/json/" + ia.ToString (), URL::ParseOptions::eAsFullURL});
             Mapping<String, VariantValue> m = DataExchange::Variant::JSON::Reader ().Read (connection.GET ().GetDataTextInputStream ()).As<Mapping<String, VariantValue>> ();
             GEOLocationInformation        geoloc{};
-            auto                          cvt = [](optional<VariantValue> v) -> optional<String> { return v ? optional<String>{v->As<String> ()} : optional<String>{}; };
+            auto                          cvt = [] (optional<VariantValue> v) -> optional<String> { return v ? optional<String>{v->As<String> ()} : optional<String>{}; };
             geoloc.fRegionCode                = cvt (m.Lookup (L"region"));
             geoloc.fCountryCode               = cvt (m.Lookup (L"countryCode"));
             geoloc.fCity                      = cvt (m.Lookup (L"city"));

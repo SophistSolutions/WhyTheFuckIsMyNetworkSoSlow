@@ -96,7 +96,7 @@ int main (int argc, const char* argv[])
     DbgTrace (L"Running as user %s", Characters::ToString (GetCurrentUserName ()).c_str ());
 
 #if qStroika_Foundation_Exection_Thread_SupportThreadStatistics
-    auto&& cleanupReport = Execution::Finally ([]() {
+    auto&& cleanupReport = Execution::Finally ([] () {
         DbgTrace (L"Exiting main with thread %s running", Characters::ToString (Execution::Thread::GetStatistics ().fRunningThreads).c_str ());
     });
 #endif
@@ -130,7 +130,7 @@ int main (int argc, const char* argv[])
     /*
      *  Setup Logging to the OS logging facility.
      */
-    auto&& cleanup = Execution::Finally ([]() {
+    auto&& cleanup = Execution::Finally ([] () {
         Logger::ShutdownSingleton (); // make sure Logger threads shutdown before the end of main (), and flush buffered messages
     });
 #if qHas_Syslog

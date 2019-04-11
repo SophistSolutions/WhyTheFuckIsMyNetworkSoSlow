@@ -268,7 +268,7 @@ namespace {
                  fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_WANConnectionDevice_) or
                  fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_WANDevice_))) {
                 // @todo this logic could use improvement
-                if (ipAddresses.Any ([](const InternetAddress& ia) { return ia.As<String> ().EndsWith (L".1"); })) {
+                if (ipAddresses.Any ([] (const InternetAddress& ia) { return ia.As<String> ().EndsWith (L".1"); })) {
                     fTypes.Add (Discovery::DeviceType::eRouter);
                 }
                 fTypes.Add (Discovery::DeviceType::eNetworkInfrastructure);
@@ -289,7 +289,7 @@ namespace {
 
             //tmphack
             if (not fThisDevice) {
-                if (ipAddresses.Any ([](const InternetAddress& ia) { return ia.As<String> ().EndsWith (L".1"); })) {
+                if (ipAddresses.Any ([] (const InternetAddress& ia) { return ia.As<String> ().EndsWith (L".1"); })) {
                     fTypes.Add (Discovery::DeviceType::eRouter);
                 }
             }
@@ -348,7 +348,7 @@ namespace {
                     DeclareActivity da{&kDiscovering_This_Device_};
                     if (auto o = GetMyDevice_ ()) {
                         auto           l  = sDiscoveredDevices_.rwget ();
-                        DiscoveryInfo_ di = [&]() {
+                        DiscoveryInfo_ di = [&] () {
                             DiscoveryInfo_ tmp{};
                             tmp.ipAddresses += o->ipAddresses;
                             if (optional<DiscoveryInfo_> o = FindMatchingDevice_ (l, tmp)) {
@@ -364,7 +364,7 @@ namespace {
                         di.fTypes           = o->fTypes;
                         di.fForcedName      = o->fForcedName;
                         di.fThisDevice      = o->fThisDevice;
-                        di.fOperatingSystem = OperatingSystem{Configuration::GetSystemConfiguration_ActualOperatingSystem ().fPrettyNameWithVersionDetails };
+                        di.fOperatingSystem = OperatingSystem{Configuration::GetSystemConfiguration_ActualOperatingSystem ().fPrettyNameWithVersionDetails};
                         di.PatchDerivedFields ();
                         l->Add (di.fGUID, di);
                     }
@@ -392,14 +392,14 @@ namespace {
             newDev.fThisDevice = true;
             for (Interface i : IO::Network::GetInterfaces ()) {
                 if (i.fType != Interface::Type::eLoopback and i.fStatus and i.fStatus->Contains (Interface::Status::eRunning)) {
-                    i.fBindings.Apply ([&](const Interface::Binding& ia) {
+                    i.fBindings.Apply ([&] (const Interface::Binding& ia) {
                         if (not ia.fInternetAddress.IsMulticastAddress ()) {
                             newDev.ipAddresses += ia.fInternetAddress;
                         }
                     });
                 }
             }
-            newDev.fAttachedInterfaces = Set<GUID>{Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ().Select<GUID> ([](auto iFace) { return iFace.fGUID; })};
+            newDev.fAttachedInterfaces = Set<GUID>{Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ().Select<GUID> ([] (auto iFace) { return iFace.fGUID; })};
             newDev.fGUID               = LookupPersistentDeviceID_ (newDev);
             return newDev;
         }
@@ -424,13 +424,13 @@ namespace {
             // SSDP can fail due to lack of permissions to bind to the appropriate sockets, or for example under WSL where we get protocol unsupported.
             // WARN to syslog, but no need to stop app
             try {
-                fListener_ = make_unique<SSDP::Client::Listener> ([this](const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); }, SSDP::Client::Listener::eAutoStart);
+                fListener_ = make_unique<SSDP::Client::Listener> ([this] (const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); }, SSDP::Client::Listener::eAutoStart);
             }
             catch (...) {
                 Logger::Get ().Log (Logger::Priority::eError, L"Problem starting SSDP Listener - so that source of discovery will be unavailable: %s", Characters::ToString (current_exception ()).c_str ());
             }
             try {
-                fSearcher_ = make_unique<SSDP::Client::Search> ([this](const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); }, SSDP::Client::Search::kRootDevice);
+                fSearcher_ = make_unique<SSDP::Client::Search> ([this] (const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); }, SSDP::Client::Search::kRootDevice);
             }
             catch (...) {
                 // only warning because searcher much less important - just helpful at very start of discovery
@@ -487,7 +487,7 @@ namespace {
             else {
                 // merge in data
                 auto           l  = sDiscoveredDevices_.rwget ();
-                DiscoveryInfo_ di = [&]() {
+                DiscoveryInfo_ di = [&] () {
                     DiscoveryInfo_ tmp{};
                     tmp.ipAddresses += locAddrs;
                     if (optional<DiscoveryInfo_> o = FindMatchingDevice_ (l, tmp)) {
@@ -620,7 +620,7 @@ namespace {
 
                         // merge in data
                         auto           l  = sDiscoveredDevices_.rwget ();
-                        DiscoveryInfo_ di = [&]() {
+                        DiscoveryInfo_ di = [&] () {
                             DiscoveryInfo_ tmp{};
                             tmp.ipAddresses += i.ia;
                             if (optional<DiscoveryInfo_> o = FindMatchingDevice_ (l, tmp)) {
@@ -705,7 +705,7 @@ Collection<Discovery::Device> Discovery::DevicesMgr::GetActiveDevices (optional<
     Collection<Discovery::Device> results;
     using Cache::SynchronizedCallerStalenessCache;
     static SynchronizedCallerStalenessCache<void, Collection<Discovery::Device>> sCache_;
-    results = sCache_.LookupValue (sCache_.Ago (allowedStaleness.value_or (kDefaultItemCacheLifetime_)), []() {
+    results = sCache_.LookupValue (sCache_.Ago (allowedStaleness.value_or (kDefaultItemCacheLifetime_)), [] () {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
         DbgTrace (L"sDiscoveredDevices_: %s", Characters::ToString (sDiscoveredDevices_.cget ()->MappedValues ()).c_str ());
 #endif

@@ -69,9 +69,9 @@ Collection<String> WSImpl::GetDevices () const
 Collection<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse () const
 {
     using namespace IO::Network;
-    Sequence<BackendApp::WebServices::Device> devices = Sequence<BackendApp::WebServices::Device>{Discovery::DevicesMgr::sThe.GetActiveDevices ().Select<BackendApp::WebServices::Device> ([](const Discovery::Device& d) {
+    Sequence<BackendApp::WebServices::Device> devices = Sequence<BackendApp::WebServices::Device>{Discovery::DevicesMgr::sThe.GetActiveDevices ().Select<BackendApp::WebServices::Device> ([] (const Discovery::Device& d) {
         BackendApp::WebServices::Device newDev;
-        d.ipAddresses.Apply ([&](const InternetAddress& a) {
+        d.ipAddresses.Apply ([&] (const InternetAddress& a) {
             // prefer having IPv4 addr at head of list
             //
             //@todo - CRAP CODE - RETHINK!!!
@@ -109,7 +109,7 @@ Collection<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse () const
     //tmphack - convert to vector<> cuz Stroika sequence doesnt supprot randomaccessiterators and so cannot easily sort
     // This won't work (as is) anymore when we return the RIGHT VALUE for the type - just counting on ahck where my computer gets assgined type Laptop --LGP 2019-02-18
     vector<BackendApp::WebServices::Device> dv = devices.As<vector<BackendApp::WebServices::Device>> ();
-    sort (dv.begin (), dv.end (), [](const BackendApp::WebServices::Device& lhs, const BackendApp::WebServices::Device& rhs) -> bool {
+    sort (dv.begin (), dv.end (), [] (const BackendApp::WebServices::Device& lhs, const BackendApp::WebServices::Device& rhs) -> bool {
         int lPri = 0;
         int rPri = 0;
         // super primitive sort strategy...
@@ -134,7 +134,7 @@ Collection<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse () const
 
 Device WSImpl::GetDevice (const String& id) const
 {
-    GUID compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&]() { return GUID{id}; });
+    GUID compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
     // @todo quick hack impl
     for (auto i : GetDevices_Recurse ()) {
         if (i.fGUID == compareWithID) {
@@ -181,7 +181,7 @@ Sequence<BackendApp::WebServices::Network> WSImpl::GetNetworks_Recurse () const
 
 Network WSImpl::GetNetwork (const String& id) const
 {
-    GUID compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&]() { return GUID{id}; });
+    GUID compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
     // @todo quick hack impl
     for (auto i : GetNetworks_Recurse ()) {
         if (i.fGUID == compareWithID) {
@@ -235,7 +235,7 @@ Collection<BackendApp::WebServices::NetworkInterface> WSImpl::GetNetworkInterfac
 
 NetworkInterface WSImpl::GetNetworkInterface (const String& id) const
 {
-    GUID compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&]() { return GUID{id}; });
+    GUID compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
 
     // @todo quick hack impl
     for (auto i : GetNetworkInterfaces_Recurse (false)) {
@@ -311,7 +311,7 @@ Operations::TraceRouteResults WSImpl::Operation_TraceRoute (const String& addres
     Sequence<Traceroute::Hop> hops = Traceroute::Run (DNS::Default ().GetHostAddress (address), options);
     unsigned int              hopIdx{1};
     for (Traceroute::Hop h : hops) {
-        String hopName = [=]() {
+        String hopName = [=] () {
             String addrStr = h.fAddress.As<String> ();
             if (revDNS) {
                 if (auto rdnsName = DNS::Default ().QuietReverseLookup (h.fAddress)) {

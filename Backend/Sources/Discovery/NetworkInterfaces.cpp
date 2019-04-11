@@ -113,7 +113,7 @@ Collection<NetworkInterface> Discovery::NetworkInterfacesMgr::CollectAllNetworkI
     Collection<NetworkInterface> results;
     using Cache::SynchronizedCallerStalenessCache;
     static SynchronizedCallerStalenessCache<void, Collection<NetworkInterface>> sCache_;
-    results = sCache_.LookupValue (sCache_.Ago (allowedStaleness.value_or (kDefaultItemCacheLifetime_)), []() -> Collection<NetworkInterface> {
+    results = sCache_.LookupValue (sCache_.Ago (allowedStaleness.value_or (kDefaultItemCacheLifetime_)), [] () -> Collection<NetworkInterface> {
         return CollectAllNetworkInterfaces_ ();
     });
 #if USE_NOISY_TRACE_IN_THIS_MODULE_

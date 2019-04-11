@@ -43,7 +43,7 @@ namespace {
         L"WhyTheFuckIsMyNetworkSoSlow Service"sv};
 }
 
-void WTFAppServiceRep::MainLoop (const std::function<void()>& startedCB)
+void WTFAppServiceRep::MainLoop (const std::function<void ()>& startedCB)
 {
     Debug::TraceContextBumper ctx{"WTFAppServiceRep::MainLoop"};
     // Activator objects cause the discovery modules to start/stop so RAAI controls startup/shutdown even with exceptions
@@ -57,7 +57,7 @@ void WTFAppServiceRep::MainLoop (const std::function<void()>& startedCB)
     startedCB (); // Notify service control mgr that the service has started
     Logger::Get ().Log (Logger::Priority::eInfo, L"%s (version %s) service started successfully", kServiceDescription_.fPrettyName.c_str (), Characters::ToString (AppVersion::kVersion).c_str ());
 
-    auto&& cleanup = Execution::Finally ([&]() {
+    auto&& cleanup = Execution::Finally ([&] () {
         Thread::SuppressInterruptionInContext suppressSoWeActuallyShutDownOtherTaskWhenWereBeingShutDown;
         Logger::Get ().Log (Logger::Priority::eInfo, L"Beginning service shutdown");
     });

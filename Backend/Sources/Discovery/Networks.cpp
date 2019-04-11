@@ -60,7 +60,7 @@ namespace {
     {
         using Cache::SynchronizedCallerStalenessCache;
         static SynchronizedCallerStalenessCache<void, optional<InternetAddress>> sCache_;
-        return sCache_.LookupValue (sCache_.Ago (allowedStaleness.value_or (30)), []() -> optional<InternetAddress> {
+        return sCache_.LookupValue (sCache_.Ago (allowedStaleness.value_or (30)), [] () -> optional<InternetAddress> {
             /*
              * Alternative sources for this information:
              *
@@ -149,7 +149,7 @@ namespace {
         for (NetworkInterface i : Discovery::NetworkInterfacesMgr::sThe.CollectActiveNetworkInterfaces ()) {
             if (not i.fBindings.empty ()) {
                 Interface::Binding useBinding = i.fBindings.Nth (0);
-                i.fBindings.Apply ([&](Interface::Binding i) {
+                i.fBindings.Apply ([&] (Interface::Binding i) {
                     if (useBinding.fInternetAddress.GetAddressFamily () != InternetAddress::AddressFamily::V4 or useBinding.fInternetAddress.IsMulticastAddress ()) {
                         if (i.fInternetAddress.GetAddressFamily () == InternetAddress::AddressFamily::V4 and not i.fInternetAddress.IsMulticastAddress ()) {
                             useBinding = i;
@@ -226,7 +226,7 @@ namespace {
         }
 
         Sequence<Network> results;
-        for (auto i : cidrScores.OrderBy ([](const CountedValue<CIDR>&lhs, const CountedValue<CIDR>&rhs) -> bool { return lhs.fCount > rhs.fCount; })) {
+        for (auto i : cidrScores.OrderBy ([] (const CountedValue<CIDR>&lhs, const CountedValue<CIDR>&rhs) -> bool { return lhs.fCount > rhs.fCount; })) {
             results += *accumResults.Lookup (i.fValue);
         }
         Assert (results.size () == cidrScores.size ());
@@ -249,7 +249,7 @@ Sequence<Network> Discovery::NetworksMgr::CollectActiveNetworks (optional<Time::
     Sequence<Network> results;
     using Cache::SynchronizedCallerStalenessCache;
     static SynchronizedCallerStalenessCache<void, Sequence<Network>> sCache_;
-    results = sCache_.LookupValue (sCache_.Ago (allowedStaleness.value_or (kDefaultItemCacheLifetime_)), []() {
+    results = sCache_.LookupValue (sCache_.Ago (allowedStaleness.value_or (kDefaultItemCacheLifetime_)), [] () {
         return CollectActiveNetworks_ ();
     });
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
