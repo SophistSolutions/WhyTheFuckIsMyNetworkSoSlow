@@ -20,6 +20,8 @@ using namespace Stroika::Foundation::Containers;
 using namespace Stroika::Foundation::DataExchange;
 using namespace Stroika::Foundation::IO::Network;
 
+using Stroika::Foundation::Common::GUID;
+
 using namespace WhyTheFuckIsMyNetworkSoSlow;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices;
@@ -95,6 +97,8 @@ String Network::ToString () const
 DISABLE_COMPILER_MSC_WARNING_START (4573);
 DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
 const ObjectVariantMapper Network::kMapper = [] () {
+    using namespace BackendApp::Common;
+
     ObjectVariantMapper mapper;
 
     using IO::Network::CIDR;
@@ -131,19 +135,19 @@ const ObjectVariantMapper Network::kMapper = [] () {
 
     mapper.AddCommonType<optional<tuple<float, float>>> ();
 
-    mapper.AddClass<Common::InternetServiceProvider> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-        {L"name", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Common::InternetServiceProvider, name), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+    mapper.AddClass<InternetServiceProvider> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+        {L"name", Stroika_Foundation_DataExchange_StructFieldMetaInfo (InternetServiceProvider, name), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
-    mapper.AddCommonType<optional<Common::InternetServiceProvider>> ();
+    mapper.AddCommonType<optional<InternetServiceProvider>> ();
 
-    mapper.AddClass<Common::GEOLocationInformation> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-        {L"countryCode"sv, Stroika_Foundation_DataExchange_StructFieldMetaInfo (Common::GEOLocationInformation, fCountryCode), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"city"sv, Stroika_Foundation_DataExchange_StructFieldMetaInfo (Common::GEOLocationInformation, fCity), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"regionCode"sv, Stroika_Foundation_DataExchange_StructFieldMetaInfo (Common::GEOLocationInformation, fRegionCode), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"postalCode"sv, Stroika_Foundation_DataExchange_StructFieldMetaInfo (Common::GEOLocationInformation, fPostalCode), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"coordinates"sv, Stroika_Foundation_DataExchange_StructFieldMetaInfo (Common::GEOLocationInformation, fLatitudeAndLongitude), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+    mapper.AddClass<GEOLocationInformation> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+        {L"countryCode"sv, Stroika_Foundation_DataExchange_StructFieldMetaInfo (GEOLocationInformation, fCountryCode), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"city"sv, Stroika_Foundation_DataExchange_StructFieldMetaInfo (GEOLocationInformation, fCity), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"regionCode"sv, Stroika_Foundation_DataExchange_StructFieldMetaInfo (GEOLocationInformation, fRegionCode), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"postalCode"sv, Stroika_Foundation_DataExchange_StructFieldMetaInfo (GEOLocationInformation, fPostalCode), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"coordinates"sv, Stroika_Foundation_DataExchange_StructFieldMetaInfo (GEOLocationInformation, fLatitudeAndLongitude), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
-    mapper.AddCommonType<optional<Common::GEOLocationInformation>> ();
+    mapper.AddCommonType<optional<GEOLocationInformation>> ();
 
     mapper.AddClass<Network> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
         {L"friendlyName"sv, Stroika_Foundation_DataExchange_StructFieldMetaInfo (Network, fFriendlyName), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
