@@ -454,7 +454,7 @@ namespace {
             if (d.fLocation.GetAuthority () and d.fLocation.GetAuthority ()->GetHost ()) {
                 URI::Host h = *d.fLocation.GetAuthority ()->GetHost ();
                 if (h.AsInternetAddress ()) {
-                    locAddrs += *h.AsInternetAddress ();
+                    locAddrs = Set<InternetAddress>{*h.AsInternetAddress ()};
                 }
                 else {
                     locAddrs = Set<InternetAddress>{IO::Network::DNS::Default ().GetHostAddresses (*h.AsRegisteredName ())};
