@@ -19,10 +19,26 @@ import { fetchNetworks } from "@/proxy/API";
     },
 })
 export default class Devices extends Vue {
-  // TODO fix so networks doesnt call fetch everytime restarted
-    // Trying to replace this with calls to the store instead of directly calling API
+
+    private polling : undefined | number = undefined;
+
     private created() {
-      this.$store.dispatch("fetchDevices");
+      this.fetchDevices();
+      this.pollData();
+    }
+
+    private beforeDestroy() {
+      clearInterval(this.polling);
+    }
+
+    private fetchDevices() {
+      this.$store.dispatch('fetchDevices');
+    }
+
+    private pollData() {
+      this.polling = setInterval(() => {
+        this.fetchDevices();
+      }, 10000);
     }
 
     private get devices(): IDevice[] {
