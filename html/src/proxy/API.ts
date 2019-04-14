@@ -23,7 +23,7 @@ export async function fetchDevices(): Promise<IDevice[]> {
     .catch((error) => console.error(error));
 }
 
-export async function fetchAboutInfo(): Promise<IAbout[]> {
+export async function fetchAboutInfo(): Promise<IAbout> {
     return fetch(API_ROOT + "/about")
     .then((response) => response.json())
     .then((data) => {

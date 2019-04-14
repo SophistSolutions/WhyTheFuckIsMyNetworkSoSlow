@@ -1,17 +1,21 @@
 <template>
-  <div class="about">
+  <div v-if="about" class="about">
+    <br>
     <h1>About 'Why The Fuck is My Network So Slow'</h1>
-    <div>my version# {{ about.applicationVersion }}</div>
-    <div>my operating-system: {{ about.operatingSystem.fullVersionedName }}</div>
+    <br>
+    <div>My Version: {{ about.applicationVersion }}</div>
+    <div>My Operating System: {{ about.operatingSystem.fullVersionedName }}</div>
+
+    <br>
 
     <div>Written by
       <ul>
-        <li>Bob Pringle
-          <a href="https://github.com/robertpringle">github</a>
-        </li>
         <li>Lewis G. Pringle, Jr.
           <a href="https://www.linkedin.com/in/lewispringle/">LinkedIn</a> |
-          <a href="https://github.com/LewisPringle">github</a>
+          <a href="https://github.com/LewisPringle">GitHub</a>
+        </li>
+        <li>Robert Lemos Pringle
+          <a href="https://github.com/robertpringle">GitHub</a>
         </li>
       </ul>
     </div>
@@ -27,12 +31,9 @@ import Vue from "vue";
 import Component from "vue-class-component";
 
 @Component({
-  props: {},
+  props: {}
 })
 export default class About extends Vue {
-  constructor() {
-    super();
-  }
   private created() {
     this.$store.dispatch("fetchAboutInfo");
   }
@@ -42,3 +43,10 @@ export default class About extends Vue {
   }
 }
 </script>
+
+<style scoped>
+ul {
+  list-style-type: none;
+}
+</style>
+

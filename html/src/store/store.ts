@@ -16,7 +16,7 @@ const debug = process.env.NODE_ENV !== "production";
 // TODO make this the root store - have other stores be props of state. Seperate by logical groups
 export default new Vuex.Store({
   state: {
-    about: {} as IAbout,
+    about: undefined as IAbout | undefined,
     availableNetworks: [] as INetwork[],
     selectedNetworkId: {} as string,
     devices: [] as IDevice[],
