@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <v-toolbar>
+    <v-toolbar fixed>
       <v-toolbar-title>WhyTheFuckIsMyNetworkSoSlow</v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items class="hidden-sm-and-down">
@@ -23,6 +23,7 @@
   color: #2c3e50;
   max-width: 1280px !important;
   margin: auto;
+  margin-top: 90px;
 }
 #nav {
   padding: 30px;
