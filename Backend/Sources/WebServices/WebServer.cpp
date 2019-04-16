@@ -115,12 +115,6 @@ public:
                   L""_RegEx,
                   DefaultPage_},
 
-#if 0
-              Route{
-                  RegularExpression (L"Devices", RegularExpression::eECMAScript),
-                  mkRequestHandler (kDevices_, Device::kMapper, function<Collection<Device> (void)>{[=]() { return fWSAPI_->GetDevices_Recurse (); }})},
-#endif
-
               Route{
                   L"GET"_RegEx,
                   L"devices(/?)"_RegEx,
