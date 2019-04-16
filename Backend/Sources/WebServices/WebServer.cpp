@@ -122,10 +122,10 @@ public:
 #endif
 
               Route{
+                  L"GET"_RegEx,
                   L"devices(/?)"_RegEx,
                   [=] (Message* m) {
                       constexpr bool kDefault_FilterRunningOnly_{true};
-                      ExpectedMethod (m->GetRequestReference (), kNetworkInterfaces_);
                       Mapping<String, DataExchange::VariantValue> args              = PickoutParamValues (m->PeekRequest ());
                       bool                                        filterRunningOnly = args.LookupValue (L"filter-only-running", DataExchange::VariantValue{kDefault_FilterRunningOnly_}).As<bool> ();
                       if (args.LookupValue (L"recurse", false).As<bool> ()) {
@@ -136,18 +136,17 @@ public:
                       }
                   }},
               Route{
+                  L"GET"_RegEx,
                   L"devices/(.+)"_RegEx,
-                  [=] (Message* m, const Containers::Sequence<Characters::String>& matches) {
-                      String id = matches[0];
-                      ExpectedMethod (m->GetRequestReference (), kDevices_);
+                  [=](Message* m, const String& id) {
                       WriteResponse (m->PeekResponse (), kDevices_, Device::kMapper.FromObject (fWSAPI_->GetDevice (id)));
                   }},
 
               Route{
+                  L"GET"_RegEx,
                   L"network-interfaces(/?)"_RegEx,
                   [=] (Message* m) {
                       constexpr bool kDefault_FilterRunningOnly_{true};
-                      ExpectedMethod (m->GetRequestReference (), kNetworkInterfaces_);
                       Mapping<String, DataExchange::VariantValue> args              = PickoutParamValues (m->PeekRequest ());
                       bool                                        filterRunningOnly = args.LookupValue (L"filter-only-running"sv, DataExchange::VariantValue{kDefault_FilterRunningOnly_}).As<bool> ();
                       if (args.LookupValue (L"recurse", false).As<bool> ()) {
@@ -158,17 +157,16 @@ public:
                       }
                   }},
               Route{
+                  L"GET"_RegEx,
                   L"network-interfaces/(.+)"_RegEx,
-                  [=] (Message* m, const Containers::Sequence<Characters::String>& matches) {
-                      String id = matches[0];
-                      ExpectedMethod (m->GetRequestReference (), kNetworkInterfaces_);
+                  [=](Message* m, const String& id) {
                       WriteResponse (m->PeekResponse (), kNetworkInterfaces_, NetworkInterface::kMapper.FromObject (fWSAPI_->GetNetworkInterface (id)));
                   }},
 
               Route{
+                  L"GET"_RegEx,
                   L"networks(/?)"_RegEx,
                   [=] (Message* m) {
-                      ExpectedMethod (m->GetRequestReference (), kNetworks_);
                       Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
                       if (args.LookupValue (L"recurse"sv, false).As<bool> ()) {
                           WriteResponse (m->PeekResponse (), kNetworkInterfaces_, Network::kMapper.FromObject (fWSAPI_->GetNetworks_Recurse ()));
@@ -178,10 +176,9 @@ public:
                       }
                   }},
               Route{
+                  L"GET"_RegEx,
                   L"networks/(.+)"_RegEx,
-                  [=] (Message* m, const Containers::Sequence<Characters::String>& matches) {
-                      String id = matches[0];
-                      ExpectedMethod (m->GetRequestReference (), kNetworks_);
+                  [=](Message* m, const String& id) {
                       WriteResponse (m->PeekResponse (), kNetworks_, Network::kMapper.FromObject (fWSAPI_->GetNetwork (id)));
                   }},
 
