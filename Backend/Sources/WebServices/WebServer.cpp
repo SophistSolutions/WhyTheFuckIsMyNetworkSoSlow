@@ -37,9 +37,9 @@ using namespace Stroika::Foundation::Characters;
 using namespace Stroika::Foundation::Containers;
 using namespace Stroika::Foundation::Execution;
 using namespace Stroika::Foundation::IO::Network;
+using namespace Stroika::Foundation::IO::Network::HTTP;
 
 using Stroika::Foundation::Common::EmptyObjectForConstructorSideEffect;
-using Stroika::Foundation::IO::Network::HTTP::ClientErrorException;
 
 using namespace Stroika::Frameworks::WebServer;
 using namespace Stroika::Frameworks::WebService;
@@ -108,15 +108,16 @@ public:
                *      o   curl  http://localhost:8080/ -- to see a list of available web-methods
                */
               Route{
-                  RegularExpression (IO::Network::HTTP::Methods::kOptions, RegularExpression::eECMAScript),
+				  MethodsRegularExpressions::kOptions,
                   RegularExpression::kAny,
                   [] (Message* m) {}},
+
               Route{
                   L""_RegEx,
                   DefaultPage_},
 
               Route{
-                  L"GET"_RegEx,
+                  MethodsRegularExpressions::kGet,
                   L"devices(/?)"_RegEx,
                   [=] (Message* m) {
                       constexpr bool kDefault_FilterRunningOnly_{true};
@@ -130,14 +131,14 @@ public:
                       }
                   }},
               Route{
-                  L"GET"_RegEx,
+                  MethodsRegularExpressions::kGet,
                   L"devices/(.+)"_RegEx,
                   [=](Message* m, const String& id) {
                       WriteResponse (m->PeekResponse (), kDevices_, Device::kMapper.FromObject (fWSAPI_->GetDevice (id)));
                   }},
 
               Route{
-                  L"GET"_RegEx,
+                  MethodsRegularExpressions::kGet,
                   L"network-interfaces(/?)"_RegEx,
                   [=] (Message* m) {
                       constexpr bool kDefault_FilterRunningOnly_{true};
@@ -151,14 +152,14 @@ public:
                       }
                   }},
               Route{
-                  L"GET"_RegEx,
+                  MethodsRegularExpressions::kGet,
                   L"network-interfaces/(.+)"_RegEx,
                   [=](Message* m, const String& id) {
                       WriteResponse (m->PeekResponse (), kNetworkInterfaces_, NetworkInterface::kMapper.FromObject (fWSAPI_->GetNetworkInterface (id)));
                   }},
 
               Route{
-                  L"GET"_RegEx,
+                  MethodsRegularExpressions::kGet,
                   L"networks(/?)"_RegEx,
                   [=] (Message* m) {
                       Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
@@ -170,7 +171,7 @@ public:
                       }
                   }},
               Route{
-                  L"GET"_RegEx,
+                  MethodsRegularExpressions::kGet,
                   L"networks/(.+)"_RegEx,
                   [=](Message* m, const String& id) {
                       WriteResponse (m->PeekResponse (), kNetworks_, Network::kMapper.FromObject (fWSAPI_->GetNetwork (id)));
