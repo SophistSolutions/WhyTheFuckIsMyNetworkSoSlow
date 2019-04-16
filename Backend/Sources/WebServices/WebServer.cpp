@@ -108,7 +108,7 @@ public:
                *      o   curl  http://localhost:8080/ -- to see a list of available web-methods
                */
               Route{
-				  MethodsRegularExpressions::kOptions,
+                  MethodsRegularExpressions::kOptions,
                   RegularExpression::kAny,
                   [] (Message* m) {}},
 
@@ -120,7 +120,7 @@ public:
                   MethodsRegularExpressions::kGet,
                   L"devices(/?)"_RegEx,
                   [=] (Message* m) {
-                      constexpr bool kDefault_FilterRunningOnly_{true};
+                      constexpr bool                              kDefault_FilterRunningOnly_{true};
                       Mapping<String, DataExchange::VariantValue> args              = PickoutParamValues (m->PeekRequest ());
                       bool                                        filterRunningOnly = args.LookupValue (L"filter-only-running", DataExchange::VariantValue{kDefault_FilterRunningOnly_}).As<bool> ();
                       if (args.LookupValue (L"recurse", false).As<bool> ()) {
@@ -133,7 +133,7 @@ public:
               Route{
                   MethodsRegularExpressions::kGet,
                   L"devices/(.+)"_RegEx,
-                  [=](Message* m, const String& id) {
+                  [=] (Message* m, const String& id) {
                       WriteResponse (m->PeekResponse (), kDevices_, Device::kMapper.FromObject (fWSAPI_->GetDevice (id)));
                   }},
 
@@ -141,7 +141,7 @@ public:
                   MethodsRegularExpressions::kGet,
                   L"network-interfaces(/?)"_RegEx,
                   [=] (Message* m) {
-                      constexpr bool kDefault_FilterRunningOnly_{true};
+                      constexpr bool                              kDefault_FilterRunningOnly_{true};
                       Mapping<String, DataExchange::VariantValue> args              = PickoutParamValues (m->PeekRequest ());
                       bool                                        filterRunningOnly = args.LookupValue (L"filter-only-running"sv, DataExchange::VariantValue{kDefault_FilterRunningOnly_}).As<bool> ();
                       if (args.LookupValue (L"recurse", false).As<bool> ()) {
@@ -154,7 +154,7 @@ public:
               Route{
                   MethodsRegularExpressions::kGet,
                   L"network-interfaces/(.+)"_RegEx,
-                  [=](Message* m, const String& id) {
+                  [=] (Message* m, const String& id) {
                       WriteResponse (m->PeekResponse (), kNetworkInterfaces_, NetworkInterface::kMapper.FromObject (fWSAPI_->GetNetworkInterface (id)));
                   }},
 
@@ -173,7 +173,7 @@ public:
               Route{
                   MethodsRegularExpressions::kGet,
                   L"networks/(.+)"_RegEx,
-                  [=](Message* m, const String& id) {
+                  [=] (Message* m, const String& id) {
                       WriteResponse (m->PeekResponse (), kNetworks_, Network::kMapper.FromObject (fWSAPI_->GetNetwork (id)));
                   }},
 

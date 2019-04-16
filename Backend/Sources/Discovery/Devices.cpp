@@ -4,6 +4,7 @@
 #include "Stroika/Frameworks/StroikaPreComp.h"
 
 #include "Stroika/Foundation/Cache/SynchronizedCallerStalenessCache.h"
+#include "Stroika/Foundation/Cache/SynchronizedTimedCache.h"
 #include "Stroika/Foundation/Characters/RegularExpression.h"
 #include "Stroika/Foundation/Characters/StringBuilder.h"
 #include "Stroika/Foundation/Characters/ToString.h"
@@ -86,6 +87,27 @@ namespace {
 
     // probably shouldn't be this specifc
     const String kDeviceType_Roku_{L"urn:roku-com:device:player:1-0"sv};
+}
+
+namespace {
+    optional<String> ReverseDNSLookup_ (const InternetAddress& inetAddr)
+    {
+        static const Time::Duration                                             kCacheTTL_{5min}; // @todo fix when Stroika Duration bug supports constexpr this should
+        static Cache::SynchronizedTimedCache<InternetAddress, optional<String>> sCache_{kCacheTTL_};
+        return sCache_.LookupValue (inetAddr, [] (const InternetAddress& inetAddr) {
+            static const DNS kDNS_ = DNS::Default ();
+            return kDNS_.ReverseLookup (inetAddr);
+        });
+    }
+    Set<InternetAddress> DNSLookup_ (const String& hostOrIPAddress)
+    {
+        static const Time::Duration                                        kCacheTTL_{5min}; // @todo fix when Stroika Duration bug supports constexpr this should
+        static Cache::SynchronizedTimedCache<String, Set<InternetAddress>> sCache_{kCacheTTL_};
+        return sCache_.LookupValue (hostOrIPAddress, [] (const String& hostOrIPAddress) -> Set<InternetAddress> {
+            static const DNS kDNS_ = DNS::Default ();
+            return Set<InternetAddress>{kDNS_.GetHostAddresses (hostOrIPAddress)};
+        });
+    }
 }
 
 /*
@@ -247,7 +269,7 @@ namespace {
             if (name.empty ()) {
                 // try reverse dns lookup
                 for (auto i : ipAddresses) {
-                    if (auto o = DNS::Default ().ReverseLookup (i)) {
+                    if (auto o = ReverseDNSLookup_ (i)) {
                         name = *o;
                         break;
                     }
@@ -457,7 +479,7 @@ namespace {
                     locAddrs = Set<InternetAddress>{*h.AsInternetAddress ()};
                 }
                 else {
-                    locAddrs = Set<InternetAddress>{IO::Network::DNS::Default ().GetHostAddresses (*h.AsRegisteredName ())};
+                    locAddrs = DNSLookup_ (*h.AsRegisteredName ());
                 }
             }
 
