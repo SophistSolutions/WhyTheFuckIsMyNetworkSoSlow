@@ -1,5 +1,15 @@
 <template>
   <div class="devices">
+    <v-select
+      :items="fieldsToSortBy"
+      v-model="sortFieldComputed"
+      label="Sort By..."
+    ></v-select>
+    <v-select
+      :items="orderToSortBy"
+      v-model="sortOrderComputed"
+      label="Sort Order"
+    ></v-select>
     <div class="deviceList" v-for="device in sortedDevices" :key="device.id">
       <Device name="Device" :device="device"></Device>
     </div>
@@ -10,6 +20,8 @@
 import { IDevice } from "@/models/device/IDevice";
 import { Component, Vue } from "vue-property-decorator";
 
+import { DeviceSortByFieldEnum } from "@/models/device/query/DeviceSortByFieldEnum"
+import { SortOrderEnum } from "@/models/SortOrderEnum"
 import { compareValues } from "@/CustomSort";
 import { fetchNetworks } from "@/proxy/API";
 
@@ -22,12 +34,38 @@ import { fetchNetworks } from "@/proxy/API";
 export default class Devices extends Vue {
   private polling: undefined | number = undefined;
 
-  private sortField: string = "name";
-  private sortOrder: string = "asc";
+  private sortField: DeviceSortByFieldEnum = DeviceSortByFieldEnum.NAME;
+  private sortOrder: SortOrderEnum = SortOrderEnum.ASC;
 
   private get sortedDevices(): IDevice[] {
     let deviceArray: IDevice[] = this.devices;
     return deviceArray.sort(compareValues(this.sortField, this.sortOrder));
+  }
+
+  private get fieldsToSortBy(): DeviceSortByFieldEnum[] {
+    return Object.values(DeviceSortByFieldEnum);
+  }
+
+  private get orderToSortBy(): SortOrderEnum[] {
+    return Object.values(SortOrderEnum);
+  }
+
+  private get sortFieldComputed(): DeviceSortByFieldEnum {
+    return this.sortField;
+  }
+
+  private set sortFieldComputed(sortField: DeviceSortByFieldEnum) {
+    this.sortField = sortField;
+    this.$emit("updateDeviceSortField", sortField);
+  }
+
+  private get sortOrderComputed(): SortOrderEnum {
+    return this.sortOrder;
+  }
+
+  private set sortOrderComputed(sortOrder: SortOrderEnum) {
+    this.sortOrder = sortOrder;
+    this.$emit("updateDeviceSortOrder", sortOrder);
   }
 
   private created() {
