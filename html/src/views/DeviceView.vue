@@ -1,8 +1,8 @@
 <template>
   <div class="devices">
-  <div class="deviceList" v-for="device in devices" :key="device.id">
-    <Device name=Device  :device=device></Device>
-  </div>
+    <div class="deviceList" v-for="device in sortedDevices" :key="device.id">
+      <Device name="Device" :device="device"></Device>
+    </div>
   </div>
 </template>
 
@@ -10,40 +10,55 @@
 import { IDevice } from "@/models/device/IDevice";
 import { Component, Vue } from "vue-property-decorator";
 
+import { compareValues } from "@/CustomSort";
 import { fetchNetworks } from "@/proxy/API";
 
 @Component({
-    name : "Devices",
-    components : {
-      Device: () => import("@/components/Device.vue"),
-    },
+  name: "Devices",
+  components: {
+    Device: () => import("@/components/Device.vue")
+  }
 })
 export default class Devices extends Vue {
+  private polling: undefined | number = undefined;
 
-    private polling : undefined | number = undefined;
+  private sortField: string = "name";
+  private sortOrder: string = "asc";
 
-    private created() {
+  private get sortedDevices(): IDevice[] {
+    let deviceArray: IDevice[] = this.devices;
+    return deviceArray.sort(compareValues(this.sortField, this.sortOrder));
+  }
+
+  private created() {
+    this.fetchDevices();
+    this.pollData();
+  }
+
+  private beforeDestroy() {
+    clearInterval(this.polling);
+  }
+
+  private fetchDevices() {
+    this.$store.dispatch("fetchDevices");
+  }
+
+  private pollData() {
+    this.polling = setInterval(() => {
       this.fetchDevices();
-      this.pollData();
-    }
+    }, 10000);
+  }
 
-    private beforeDestroy() {
-      clearInterval(this.polling);
-    }
+  private get devices(): IDevice[] {
+    const devices: IDevice[] = this.$store.getters.getDevices;
+    // shallow clone
+    const ret = [...devices];
+    return ret.sort();
 
-    private fetchDevices() {
-      this.$store.dispatch('fetchDevices');
-    }
+    // TODO move sort to store
 
-    private pollData() {
-      this.polling = setInterval(() => {
-        this.fetchDevices();
-      }, 10000);
-    }
-
-    private get devices(): IDevice[] {
-      return this.$store.getters.getDevices;
-    }
+    //return (this.$store.getters.getDevices) ? JSON.parse(JSON.stringify(devices)) : [];
+  }
 }
 </script>
 

@@ -24,8 +24,6 @@ import { Component, Vue } from "vue-property-decorator";
     props : {
       device: Object as () => IDevice,
     },
-    methods : {
-    },
 })
 export default class Device extends Vue {
 
