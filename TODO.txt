@@ -7,6 +7,12 @@ Top priority bug:
 	 (or icon by blob)
 
 
+>	Start adding FILTER arguments to Get /Devices (and other APIs)
+	- sort-by=address,ascending (or --sort=[{by: address, direction: ascending}])
+	- filter-contained-in-network=xxxx
+  - filter-deviceType=FFF, or --filter-deviceType=[aa,bb]
+
+
 
 
 > Redo identification of speaker based on services
