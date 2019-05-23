@@ -6,6 +6,7 @@ Top priority bug:
 	- Improve UPnP::DeSerialize () - so it includes device icons (url to icon)
 	 (or icon by blob)
 
+> Fix top level makefile so checks for if npm is installed (check-prerequesites)
 
 >	Start adding FILTER arguments to Get /Devices (and other APIs)
 	- sort-by=address,ascending (or --sort=[{by: address, direction: ascending}])
