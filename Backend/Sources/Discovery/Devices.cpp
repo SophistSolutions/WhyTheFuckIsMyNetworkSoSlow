@@ -20,6 +20,7 @@
 #include "Stroika/Foundation/IO/Network/DNS.h"
 #include "Stroika/Foundation/IO/Network/Interface.h"
 #include "Stroika/Foundation/IO/Network/LinkMonitor.h"
+#include "Stroika/Foundation/IO/Network/Neighbors.h"
 #include "Stroika/Foundation/IO/Network/Transfer/Client.h"
 #include "Stroika/Foundation/IO/Network/Transfer/Connection.h"
 
@@ -556,59 +557,6 @@ namespace {
     };
 }
 
-///tmphack -most of this should go into new Stroika module and also fancier
-//-Add new stroika module 'IO::Network::Neighbors'
-//- https://www.midnightfreddie.com/how-to-arp-a-in-ipv6.html
-//-http ://man7.org/linux/man-pages/man8/ip-neighbour.8.html
-//  -arp - a
-//  - ip neigh show
-//  - ip - 6 neigh show
-//  - cat / proc / net / arp
-//  - use that to fill in new devices / info for discovery
-#include "Stroika/Foundation/Execution/ProcessRunner.h"
-#include "Stroika/Foundation/Streams/MemoryStream.h"
-#include "Stroika/Foundation/Streams/TextReader.h"
-namespace {
-    struct ArpRec_ {
-        InternetAddress ia;
-        String          fHardwareAddress;
-    };
-    Collection<ArpRec_> ArpDashA_ ()
-    {
-        //tmphack
-        Collection<ArpRec_> result;
-
-        using std::byte;
-        ProcessRunner                    pr (L"arp -a");
-        Streams::MemoryStream<byte>::Ptr useStdOut = Streams::MemoryStream<byte>::New ();
-        pr.SetStdOut (useStdOut);
-        pr.Run ();
-        String                   out;
-        Streams::TextReader::Ptr stdOut        = Streams::TextReader::New (useStdOut);
-        bool                     skippedHeader = false;
-        size_t                   headerLen     = 0;
-        for (String i = stdOut.ReadLine (); not i.empty (); i = stdOut.ReadLine ()) {
-#if qPlatform_Windows
-            if (i.StartsWith (L" ")) {
-                Sequence<String> s = i.Tokenize ();
-                if (s.length () >= 3 and (s[2] == L"static" or s[2] == L"dynamic")) {
-                    result += ArpRec_{InternetAddress{s[0]}, s[1]};
-                }
-            }
-#elif qPlatform_POSIX
-            Sequence<String> s = i.Tokenize ();
-            if (s.length () >= 4) {
-                // raspberrypi.34ChurchStreet.sophists.com (192.168.244.32) at b8:27:eb:cc:c7:80 [ether] on enp0s31f6
-                // ? (192.168.244.173) at b8:3e:59:88:71:06 [ether] on enp0s31f6
-                if (s[1].StartsWith (L"(") and s[1].EndsWith (L")")) {
-                    result += ArpRec_{InternetAddress{s[1].SubString (1, -1)}, s[3]};
-                }
-            }
-#endif
-        }
-        return result;
-    }
-}
 
 namespace {
     /*
@@ -616,7 +564,6 @@ namespace {
      *************************** MyNeighborDiscoverer_ ******************************
      ********************************************************************************
      */
-
     struct MyNeighborDiscoverer_ {
         MyNeighborDiscoverer_ ()
             : fMyThread_ (
@@ -628,14 +575,16 @@ namespace {
         static void DiscoveryChecker_ ()
         {
             static constexpr Activity kDiscovering_NetNeighbors_{L"discovering this network neighbors"sv};
+            using Neighbor = NeighborsMonitor::Neighbor;
+            NeighborsMonitor monitor{};
             while (true) {
                 try {
                     DeclareActivity da{&kDiscovering_NetNeighbors_};
-                    for (ArpRec_ i : ArpDashA_ ()) {
+                    for (Neighbor i : monitor.GetNeighbors ()) {
                         // soon store/pay attention to macaddr as better indicator of unique device id than ip addr
 
                         // ignore multicast addresses as they are not real devices(???always???)
-                        if (i.ia.IsMulticastAddress ()) {
+                        if (i.fInternetAddress.IsMulticastAddress ()) {
                             //DbgTrace (L"ignoring arped multicast address %s", Characters::ToString (i.ia).c_str ());
                             continue;
                         }
@@ -650,7 +599,7 @@ namespace {
                         auto           l  = sDiscoveredDevices_.rwget ();
                         DiscoveryInfo_ di = [&] () {
                             DiscoveryInfo_ tmp{};
-                            tmp.ipAddresses += i.ia;
+                            tmp.ipAddresses += i.fInternetAddress;
                             if (optional<DiscoveryInfo_> o = FindMatchingDevice_ (l, tmp)) {
                                 return *o;
                             }

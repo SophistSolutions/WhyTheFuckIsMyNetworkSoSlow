@@ -23,16 +23,6 @@ Top priority bug:
 
 - On unix - see why 'wifi0' is displayed as "Wired Ethernet" type? SB wireless!
 
-- Add new stroika module 'IO::Network::Neighbors'
-  - https://www.midnightfreddie.com/how-to-arp-a-in-ipv6.html
-	- http://man7.org/linux/man-pages/man8/ip-neighbour.8.html
-	- arp -a
-	- ip neigh show
-	- ip -6 neigh show
-	- cat  /proc/net/arp
-	- use that to fill in new devices / info for discovery
-
-
 - Add HardwareAddress to list of things captured in devices info (currenly done in discovert-deviceinfo but expose)
 
 - use http://standards.ieee.org/regauth/oui/oui.txt to generate mapping of MACADDR to manufacturer (cheap easy quick lookup technique, 
