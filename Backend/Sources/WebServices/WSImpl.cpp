@@ -106,10 +106,7 @@ Collection<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse () const
         return newDev;
     })};
 
-    //tmphack - convert to vector<> cuz Stroika sequence doesnt supprot randomaccessiterators and so cannot easily sort
-    // This won't work (as is) anymore when we return the RIGHT VALUE for the type - just counting on ahck where my computer gets assgined type Laptop --LGP 2019-02-18
-    vector<BackendApp::WebServices::Device> dv = devices.As<vector<BackendApp::WebServices::Device>> ();
-    sort (dv.begin (), dv.end (), [] (const BackendApp::WebServices::Device& lhs, const BackendApp::WebServices::Device& rhs) -> bool {
+    return devices.OrderBy ([] (const BackendApp::WebServices::Device& lhs, const BackendApp::WebServices::Device& rhs) -> bool {
         int lPri = 0;
         int rPri = 0;
         // super primitive sort strategy...
@@ -127,9 +124,6 @@ Collection<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse () const
         }
         return lPri < rPri;
     });
-    return Collection<BackendApp::WebServices::Device>{dv};
-
-    return devices;
 }
 
 Device WSImpl::GetDevice (const String& id) const
