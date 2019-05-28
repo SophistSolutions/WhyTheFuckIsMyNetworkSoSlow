@@ -1,6 +1,5 @@
 Top priority bug:
 
-
 > Fix parsing of SSDP presentationURL, and see that it shows up properly in the web GUI for devices (all the
   rest should be plumbed - just the stroika ssdp parse code is questionable/incomplete)
 	- Improve UPnP::DeSerialize () - so it includes device icons (url to icon)
@@ -10,11 +9,23 @@ Top priority bug:
 
 >	Start adding FILTER arguments to Get /Devices (and other APIs)
 	- sort-by=address,ascending (or --sort=[{by: address, direction: ascending}])
+	  - allowed values for by:
+		  address (then which address to compare if given set)
+			if network specified in query - filter-cotnained-in-network, use that? NO installed
+			if by:address, also pay attention to field 'sort-compare-network which is a network id or CIDR'
+			type (then which to compare if given set)
+			(categories in a hierarchy, use TOP hierartchy name, and if multiple siblings then take first alphabetically)
 	- filter-contained-in-network=xxxx
   - filter-deviceType=FFF, or --filter-deviceType=[aa,bb]
 
+- On Devices query, add option to NOT list IPv6 addresses that are direct translations of IPv4 address in list.
+  - --omit-ipv6-address-if-dup-of-ipv4
+	 (maybe - not sure good idea - maybe just do this in GUI)
 
-
+- Add HardwareAddress(es - list) to list of things captured in devices info (currenly done in discovert-deviceinfo but expose)
+  - maybe list MACADDR AND REGISTERED MANUFACTURER
+	  - eg. 
+		  HardwareAddresses=[{Address: xx-xx-xx-xx-xx-xx-xx, Manufacturer: "Cisco"}]
 
 > Redo identification of speaker based on services
   Service-ID: 'urn:upnp-org:serviceId:AudioIn'
@@ -23,7 +34,6 @@ Top priority bug:
 
 - On unix - see why 'wifi0' is displayed as "Wired Ethernet" type? SB wireless!
 
-- Add HardwareAddress to list of things captured in devices info (currenly done in discovert-deviceinfo but expose)
 
 - use http://standards.ieee.org/regauth/oui/oui.txt to generate mapping of MACADDR to manufacturer (cheap easy quick lookup technique, 
    but data may not be public). Can get copy for testing from https://github.com/nmap/nmap/blob/master/nmap-mac-prefixes - but not sure
@@ -33,6 +43,11 @@ Top priority bug:
 - consider if its useful to incporperate https://github.com/the-tcpdump-group/libpcap/blob/master/doc/README.Win32.md to 
   scan net traffic
 
+
+### Ports found open on what devices (DISCOVERY HINTS)
+- at Univ Wisconsin, found 631/tcp closed ipp, which is INternetPrining, so COULD MAYBE be
+  a printer???
+-  
 
 ## THINGS TO ASK BOB TODO:
 - ask bob how to turn on/off debug mode - nice if user settable option (dialog) 
@@ -115,9 +130,6 @@ private:
 	ConditionVariable<> fWaitOn;
 	atomicuint64_t fChangeCount;
 }
-
-
-- Add "RunningOn" info to 'about' data structure (WSAPI) and About GUI
 
 
 - Use Cache object on URL looks (GET) for SSDP data. That's probably one of the more expensive items to

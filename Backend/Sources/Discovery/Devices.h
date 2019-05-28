@@ -32,6 +32,7 @@
  *              o   TCP Window reverse-engineer
  *              o   open ports
  *              o   curl port 80 server header (and similar tricks for other protocols)
+ *              o   Look at what is done by nmap
  */
 
 namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
