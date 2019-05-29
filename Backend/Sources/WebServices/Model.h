@@ -131,10 +131,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
         /**
          * Bindings
-
-         redo this as Collection<InternetAddress>
          */
-        Sequence<String> ipAddresses;
+        Sequence<InternetAddress> ipAddresses;
 
         /**
          */

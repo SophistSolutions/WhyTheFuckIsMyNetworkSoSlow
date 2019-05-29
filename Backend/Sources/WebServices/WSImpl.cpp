@@ -75,20 +75,19 @@ Collection<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse () const
             // prefer having IPv4 addr at head of list
             //
             //@todo - CRAP CODE - RETHINK!!!
-            String addrStr = a.As<String> ();
-            if (not newDev.ipAddresses.Contains (addrStr)) {
+            if (not newDev.ipAddresses.Contains (a)) {
                 if (auto o = a.AsAddressFamily (InternetAddress::AddressFamily::V4)) {
-                    if (newDev.ipAddresses.Contains (o->As<String> ())) {
-                        newDev.ipAddresses.Remove (*newDev.ipAddresses.IndexOf (o->As<String> ()));
+                    if (newDev.ipAddresses.Contains (*o)) {
+                        newDev.ipAddresses.Remove (*newDev.ipAddresses.IndexOf (*o));
                     }
-                    newDev.ipAddresses.Prepend (o->As<String> ());
+                    newDev.ipAddresses.Prepend (*o);
                 }
-                if (not newDev.ipAddresses.Contains (addrStr)) {
-                    newDev.ipAddresses.Append (addrStr);
+                if (not newDev.ipAddresses.Contains (a)) {
+                    newDev.ipAddresses.Append (a);
                 }
                 if (auto o = a.AsAddressFamily (InternetAddress::AddressFamily::V6)) {
-                    if (not newDev.ipAddresses.Contains (o->As<String> ())) {
-                        newDev.ipAddresses.Append (o->As<String> ());
+                    if (not newDev.ipAddresses.Contains (*o)) {
+                        newDev.ipAddresses.Append (*o);
                     }
                 }
             }
