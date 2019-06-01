@@ -57,24 +57,55 @@ About WSImpl::GetAbout () const
     return kAbout_;
 }
 
-Collection<String> WSImpl::GetDevices () const
+Sequence<String> WSImpl::GetDevices (const optional<DeviceSortParamters>& sort) const
 {
-    Collection<String> result;
-    for (BackendApp::WebServices::Device n : GetDevices_Recurse ()) {
+    Sequence<String> result;
+    for (BackendApp::WebServices::Device n : GetDevices_Recurse (sort)) {
         result += Characters::ToString (n.fGUID);
     }
     return result;
 }
 
-Collection<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse () const
+Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const optional<DeviceSortParamters>& sort) const
 {
+    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::GetDevices_Recurse", L"sort=%s", Characters::ToString (sort).c_str ())};
+
     using namespace IO::Network;
+    DeviceSortParamters     sortParams = sort.value_or (DeviceSortParamters{});
+    DeviceSortParamters::By sortBy     = sortParams.fBy.value_or (DeviceSortParamters::By::ePriority);
+    bool                    sortAscending;
+    if (sortParams.fAscending) {
+        sortAscending = *sortParams.fAscending;
+    }
+    else {
+        switch (sortBy) {
+            case DeviceSortParamters::By::ePriority:
+                sortAscending = false;
+                break;
+            default:
+                sortAscending = true;
+                break;
+        }
+    }
+
+    optional<Set<CIDR>> sortCompareNetwork;
+    if (sortBy == DeviceSortParamters::By::eAddress and sort and sort->fCompareNetwork) {
+        // CIDR will contain a / and GUID won't so use that to distinguish
+        if (sort->fCompareNetwork->Contains (L"/")) {
+            sortCompareNetwork = Set<CIDR>{CIDR{*sort->fCompareNetwork}}; // OK to throw if invalid
+        }
+        else {
+            for (Discovery::Network n : Discovery::NetworksMgr::sThe.CollectActiveNetworks ()) {
+                if (n.fGUID == sort->fCompareNetwork) {
+                    sortCompareNetwork = n.fNetworkAddresses;
+                }
+            }
+        }
+    }
     Sequence<BackendApp::WebServices::Device> devices = Sequence<BackendApp::WebServices::Device>{Discovery::DevicesMgr::sThe.GetActiveDevices ().Select<BackendApp::WebServices::Device> ([] (const Discovery::Device& d) {
         BackendApp::WebServices::Device newDev;
         d.ipAddresses.Apply ([&] (const InternetAddress& a) {
             // prefer having IPv4 addr at head of list
-            //
-            //@todo - CRAP CODE - RETHINK!!!
             if (not newDev.ipAddresses.Contains (a)) {
                 if (auto o = a.AsAddressFamily (InternetAddress::AddressFamily::V4)) {
                     if (newDev.ipAddresses.Contains (*o)) {
@@ -92,7 +123,6 @@ Collection<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse () const
                 }
             }
         });
-
         newDev.fGUID = d.fGUID;
         newDev.name  = d.name;
         if (not d.fTypes.empty ()) {
@@ -105,31 +135,56 @@ Collection<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse () const
         return newDev;
     })};
 
-    return devices.OrderBy ([] (const BackendApp::WebServices::Device& lhs, const BackendApp::WebServices::Device& rhs) -> bool {
-        int lPri = 0;
-        int rPri = 0;
-        // super primitive sort strategy...
-        if (lhs.fTypes and lhs.fTypes->Contains (Device::DeviceType::ePC)) {
-            lPri = 10;
+    switch (sortBy) {
+        case DeviceSortParamters::By::ePriority: {
+            devices = devices.OrderBy ([sortAscending] (const BackendApp::WebServices::Device& lhs, const BackendApp::WebServices::Device& rhs) -> bool {
+                // super primitive sort strategy...
+                auto priFun = [] (const BackendApp::WebServices::Device& d) {
+                    int pri = 0;
+                    if (d.fTypes and d.fTypes->Contains (Device::DeviceType::ePC)) {
+                        pri = 10;
+                    }
+                    if (d.fTypes and d.fTypes->Contains (Device::DeviceType::eRouter)) {
+                        pri = 5;
+                    }
+                    return pri;
+                };
+                int lPri = priFun (lhs);
+                int rPri = priFun (rhs);
+                return sortAscending ? (lPri < rPri) : (lPri > rPri);
+            });
+            break;
+            case DeviceSortParamters::By::eAddress: {
+                devices = devices.OrderBy ([sortAscending, sortCompareNetwork] (const BackendApp::WebServices::Device& lhs, const BackendApp::WebServices::Device& rhs) -> bool {
+                    auto lookup = [=](const BackendApp::WebServices::Device& d) -> InternetAddress {
+                        if (sortCompareNetwork) {
+                            // if multiple, grab the first (somewhat arbitrary) - maybe should grab the least?
+                            for (InternetAddress ia : d.ipAddresses) {
+                                if (sortCompareNetwork->Any ([&] (const CIDR& cidr) { return cidr.GetRange ().Contains (ia); })) {
+                                    return ia;
+                                }
+                            }
+                            return InternetAddress{};
+                        }
+                        else {
+                            return d.ipAddresses.NthValue (0);
+                        }
+                    };
+                    InternetAddress l = lookup (lhs);
+                    InternetAddress r = lookup (rhs);
+                    return sortAscending ? (l < r) : (l > r);
+                });
+            } break;
         }
-        if (lhs.fTypes and lhs.fTypes->Contains (Device::DeviceType::eRouter)) {
-            lPri = 5;
-        }
-        if (rhs.fTypes and rhs.fTypes->Contains (Device::DeviceType::ePC)) {
-            rPri = 10;
-        }
-        if (rhs.fTypes and rhs.fTypes->Contains (Device::DeviceType::eRouter)) {
-            rPri = 5;
-        }
-        return lPri < rPri;
-    });
+    }
+    return devices;
 }
 
 Device WSImpl::GetDevice (const String& id) const
 {
     GUID compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
     // @todo quick hack impl
-    for (auto i : GetDevices_Recurse ()) {
+    for (auto i : GetDevices_Recurse ({})) {
         if (i.fGUID == compareWithID) {
             return i;
         }
@@ -241,7 +296,7 @@ NetworkInterface WSImpl::GetNetworkInterface (const String& id) const
 
 double WSImpl::Operation_Ping (const String& address) const
 {
-    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_Ping (%s)", Characters::ToString (address).c_str ())};
+    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_Ping", L"address=%s", Characters::ToString (address).c_str ())};
 
     using namespace Stroika::Foundation::IO::Network;
     using namespace Stroika::Foundation::IO::Network::InternetProtocol;
@@ -275,7 +330,7 @@ double WSImpl::Operation_Ping (const String& address) const
 
 Operations::TraceRouteResults WSImpl::Operation_TraceRoute (const String& address, optional<bool> reverseDNSResults) const
 {
-    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_TraceRoute (%s)", Characters::ToString (address).c_str ())};
+    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_TraceRoute", L"address=%s, reverseDNSResults=%s", Characters::ToString (address).c_str (), Characters::ToString (reverseDNSResults).c_str ())};
 
     using namespace Stroika::Foundation::IO::Network;
     using namespace Stroika::Foundation::IO::Network::InternetProtocol;

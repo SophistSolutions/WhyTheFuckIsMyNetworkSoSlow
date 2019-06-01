@@ -35,9 +35,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
         /**
          *  curl  http://localhost:8080/devices
          */
-        virtual Collection<String> GetDevices () const                = 0;
-        virtual Collection<Device> GetDevices_Recurse () const        = 0;
-        virtual Device             GetDevice (const String& id) const = 0;
+        virtual Sequence<String> GetDevices (const optional<DeviceSortParamters>& sort = {}) const         = 0;
+        virtual Sequence<Device> GetDevices_Recurse (const optional<DeviceSortParamters>& sort = {}) const = 0;
+        virtual Device           GetDevice (const String& id) const                                        = 0;
 
     public:
         /**

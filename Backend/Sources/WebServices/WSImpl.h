@@ -25,8 +25,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
      */
     class WSImpl : public IWSAPI {
     public:
-        virtual Collection<String>            GetDevices () const override;
-        virtual Collection<Device>            GetDevices_Recurse () const override;
+        virtual Sequence<String>              GetDevices (const optional<DeviceSortParamters>& sort) const override;
+        virtual Sequence<Device>              GetDevices_Recurse (const optional<DeviceSortParamters>& sort) const override;
         virtual Device                        GetDevice (const String& id) const override;
         virtual Sequence<String>              GetNetworks () const override;
         virtual Sequence<Network>             GetNetworks_Recurse () const override;

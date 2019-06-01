@@ -10,6 +10,7 @@
 #include "Stroika/Foundation/Containers/Set.h"
 #include "Stroika/Foundation/Cryptography/Digest/Algorithm/MD5.h"
 #include "Stroika/Foundation/Cryptography/Format.h"
+#include "Stroika/Foundation/DataExchange/Variant/JSON/Reader.h"
 #include "Stroika/Foundation/DataExchange/Variant/JSON/Writer.h"
 #include "Stroika/Foundation/Execution/Activity.h"
 #include "Stroika/Foundation/Execution/Module.h"
@@ -123,11 +124,17 @@ public:
                       constexpr bool                              kDefault_FilterRunningOnly_{true};
                       Mapping<String, DataExchange::VariantValue> args              = PickoutParamValues (m->PeekRequest ());
                       bool                                        filterRunningOnly = args.LookupValue (L"filter-only-running", DataExchange::VariantValue{kDefault_FilterRunningOnly_}).As<bool> ();
+                      optional<DeviceSortParamters>               sort;
+                      if (auto o = args.Lookup (L"sort")) {
+                          ClientErrorException::TreatExceptionsAsClientError ([&] () {
+                              sort = DeviceSortParamters::kMapper.ToObject<DeviceSortParamters> (DataExchange::Variant::JSON::Reader{}.Read (o->As<String> ()));
+                          });
+                      }
                       if (args.LookupValue (L"recurse", false).As<bool> ()) {
-                          WriteResponse (m->PeekResponse (), kDevices_, Device::kMapper.FromObject (fWSAPI_->GetDevices_Recurse ()));
+                          WriteResponse (m->PeekResponse (), kDevices_, Device::kMapper.FromObject (fWSAPI_->GetDevices_Recurse (sort)));
                       }
                       else {
-                          WriteResponse (m->PeekResponse (), kDevices_, kBasicsMapper_.FromObject (fWSAPI_->GetDevices ()));
+                          WriteResponse (m->PeekResponse (), kDevices_, kBasicsMapper_.FromObject (fWSAPI_->GetDevices (sort)));
                       }
                   }},
               Route{
@@ -268,9 +275,19 @@ const WebServiceMethodDescription WebServer::Rep_::kDevices_{
     Set<String>{String_Constant{IO::Network::HTTP::Methods::kGet}},
     DataExchange::PredefinedInternetMediaType::kJSON,
     {},
-    Sequence<String>{L"curl http://localhost:8080/devices"sv, L"curl http://localhost:8080/devices?recurse=true"sv, L"curl http://localhost:8080/devices/{ID}"sv},
-    Sequence<String>{L"Fetch the list of known devices for the currently connected network. By default, this list is sorted so the most interesting devices come first (like this machine is first)"sv,
-                     L"@todo - in the future - add support for parameters to this fetch - which can be used to filter/subset etc"sv},
+    Sequence<String>{
+        L"curl http://localhost:8080/devices"sv,
+        L"curl http://localhost:8080/devices?recurse=true"sv,
+        // @todo change this to array
+        L"curl 'http://localhost:8080/devices?recurse=true&sort=%7b\"by\":\"Address\",\"compareNetwork\":\"192.168.244.0/24\"%7d'"sv,
+        L"curl http://localhost:8080/devices?recurse=true&sortBy=address&sortCompareNetwork=192.168.244.0/24"sv,
+        L"curl http://localhost:8080/devices/{ID}"sv},
+    Sequence<String>{
+        L"Fetch the list of known devices for the currently connected network. By default, this list is sorted so the most interesting devices come first (like this machine is first)"sv,
+        L"@todo - in the future - add support for parameters to this fetch - which can be used to filter/subset etc"sv,
+        L"--sort={by?: Address|Priority, ascending: true|false, compareNetwork?: CIDR|network-id}"sv,
+        L"--sortBy=Address|Priority --sortAscending=true|false (aliases for --sort=...)"sv,
+    },
 };
 const WebServiceMethodDescription WebServer::Rep_::kNetworks_{
     L"networks"sv,

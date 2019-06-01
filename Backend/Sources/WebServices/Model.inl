@@ -34,6 +34,21 @@ namespace Stroika::Foundation::Configuration {
         {
         }
     };
+
+    template <>
+    struct DefaultNames<WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::DeviceSortParamters::By> : EnumNames<WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::DeviceSortParamters::By> {
+        static constexpr EnumNames<WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::DeviceSortParamters::By> k{
+            EnumNames<WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::DeviceSortParamters::By>::BasicArrayInitializer{
+                {
+                    {WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::DeviceSortParamters::By::eAddress, L"Address"},
+                    {WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::DeviceSortParamters::By::ePriority, L"Priority"},
+                }}};
+        DefaultNames ()
+            : EnumNames<WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::DeviceSortParamters::By> (k)
+        {
+        }
+    };
+
 }
 
 #endif /*_WhyTheFuckIsMyNetworkSoSlow_BackendApp_WebServices_Model_inl_*/

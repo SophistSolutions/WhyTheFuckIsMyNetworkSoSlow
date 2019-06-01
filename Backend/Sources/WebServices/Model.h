@@ -178,6 +178,21 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         static const DataExchange::ObjectVariantMapper kMapper;
     };
 
+    struct DeviceSortParamters {
+        enum class By {
+            eAddress,
+            ePriority,
+            Stroika_Define_Enum_Bounds (eAddress, ePriority)
+        };
+        optional<By>     fBy;
+        optional<bool>   fAscending;
+        optional<String> fCompareNetwork; // GUID or CIDR
+
+        nonvirtual String ToString () const;
+
+        static const DataExchange::ObjectVariantMapper kMapper;
+    };
+
     namespace Operations {
 
         struct TraceRouteResults {

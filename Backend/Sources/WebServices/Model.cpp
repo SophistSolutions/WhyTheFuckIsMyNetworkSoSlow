@@ -285,7 +285,6 @@ const ObjectVariantMapper Device::kMapper = [] () {
     mapper.AddCommonType<Sequence<String>> ();
     mapper.AddCommonType<URI> ();
     mapper.AddCommonType<optional<URI>> ();
-
     mapper.AddClass<Device> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
         {L"id", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, fGUID)},
         {L"name", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, name)},
@@ -296,8 +295,7 @@ const ObjectVariantMapper Device::kMapper = [] () {
         {L"presentationURL", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, fPresentationURL), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"operatingSystem", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, fOperatingSystem), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
-
-    mapper.AddCommonType<Collection<Device>> ();
+    mapper.AddCommonType<Sequence<Device>> ();
     return mapper;
 }();
 DISABLE_COMPILER_GCC_WARNING_END ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
@@ -307,6 +305,47 @@ String Device::ToString () const
 {
     return DataExchange::Variant::JSON::Writer ().WriteAsString (Device::kMapper.FromObject (*this));
 }
+
+/*
+ ********************************************************************************
+ ************************ DeviceSortParamters ***********************************
+ ********************************************************************************
+ */
+String DeviceSortParamters::ToString () const
+{
+    StringBuilder sb;
+    sb += L"{";
+    if (fBy) {
+        sb += L"by: " + Characters::ToString (fBy) + L", ";
+    }
+    if (fAscending) {
+        sb += L"ascending: " + Characters::ToString (fAscending) + L", ";
+    }
+    if (fCompareNetwork) {
+        sb += L"compareNetwork: " + Characters::ToString (fCompareNetwork) + L", ";
+    }
+    sb += L"}";
+    return sb.str ();
+}
+
+DISABLE_COMPILER_MSC_WARNING_START (4573);
+DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
+const ObjectVariantMapper DeviceSortParamters::kMapper = [] () {
+    ObjectVariantMapper mapper;
+
+    mapper.AddCommonType<DeviceSortParamters::By> ();
+    mapper.AddCommonType<optional<DeviceSortParamters::By>> ();
+    mapper.AddCommonType<optional<bool>> ();
+    mapper.AddCommonType<optional<String>> ();
+    mapper.AddClass<DeviceSortParamters> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+        {L"by", Stroika_Foundation_DataExchange_StructFieldMetaInfo (DeviceSortParamters, fBy), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"ascending", Stroika_Foundation_DataExchange_StructFieldMetaInfo (DeviceSortParamters, fAscending), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"compareNetwork", Stroika_Foundation_DataExchange_StructFieldMetaInfo (DeviceSortParamters, fCompareNetwork), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+    });
+    return mapper;
+}();
+DISABLE_COMPILER_GCC_WARNING_END ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
+DISABLE_COMPILER_MSC_WARNING_END (4573);
 
 /*
  ********************************************************************************

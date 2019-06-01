@@ -1,15 +1,10 @@
 Top priority bug:
 
-> Fix parsing of SSDP presentationURL, and see that it shows up properly in the web GUI for devices (all the
-  rest should be plumbed - just the stroika ssdp parse code is questionable/incomplete)
-	- Improve UPnP::DeSerialize () - so it includes device icons (url to icon)
-	 (or icon by blob)
 
-> Fix top level makefile so checks for if npm is installed (check-prerequesites)
 
 >	Start adding FILTER arguments to Get /Devices (and other APIs)
-	- sort-by=address,ascending (or --sort=[{by: address, direction: ascending}])
-	  - allowed values for by:
+	- sort-by=address,ascending (or --sort=[{by: address, direction: ascending, compare-network: CIDROrGUID}])
+	  - allowed values for 'by':
 		  address (then which address to compare if given set)
 			if network specified in query - filter-cotnained-in-network, use that? NO installed
 			if by:address, also pay attention to field 'sort-compare-network which is a network id or CIDR'
@@ -17,6 +12,29 @@ Top priority bug:
 			(categories in a hierarchy, use TOP hierartchy name, and if multiple siblings then take first alphabetically)
 	- filter-contained-in-network=xxxx
   - filter-deviceType=FFF, or --filter-deviceType=[aa,bb]
+	((((STARTED))))
+	  I THINK we need to add
+		--sort-by: address as alias for json encoded arg form cuz thats hard to use by handl
+		and aslo though documented array of sort by I just did optional and that was probably
+		wrong - do array only or short-form above
+
+
+>>> REDI QYERY SUPPORTING MULTIPLE SORTS (VIA ARRAY).
+LATER ALSO SUPPORT VIA Assocation/MultiMap in query/Mapping ( add todo)
+More abve todo but mostly working (except filter).
+Cleanup and support aliases and arrays and then filters and then close to ready to release
+
+---
+
+
+
+> Fix parsing of SSDP presentationURL, and see that it shows up properly in the web GUI for devices (all the
+  rest should be plumbed - just the stroika ssdp parse code is questionable/incomplete)
+	- Improve UPnP::DeSerialize () - so it includes device icons (url to icon)
+	 (or icon by blob)
+
+> Fix top level makefile so checks for if npm is installed (check-prerequesites)
+
 
 - On Devices query, add option to NOT list IPv6 addresses that are direct translations of IPv4 address in list.
   - --omit-ipv6-address-if-dup-of-ipv4
