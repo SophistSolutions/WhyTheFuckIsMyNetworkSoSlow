@@ -29,7 +29,7 @@ namespace Stroika::Foundation::Configuration {
                     {WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::Device::DeviceType::eMediaPlayer, L"Media-Player"},
                     {WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::Device::DeviceType::eTV, L"TV"},
                 }}};
-        DefaultNames ()
+        constexpr DefaultNames ()
             : EnumNames<WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::Device::DeviceType> (k)
         {
         }
@@ -43,7 +43,7 @@ namespace Stroika::Foundation::Configuration {
                     {WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::DeviceSortParamters::SearchTerm::By::eAddress, L"Address"},
                     {WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::DeviceSortParamters::SearchTerm::By::ePriority, L"Priority"},
                 }}};
-        DefaultNames ()
+        constexpr DefaultNames ()
             : EnumNames<WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::DeviceSortParamters::SearchTerm::By> (k)
         {
         }

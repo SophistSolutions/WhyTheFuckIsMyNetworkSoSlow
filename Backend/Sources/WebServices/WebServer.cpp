@@ -134,8 +134,8 @@ public:
                           ClientErrorException::TreatExceptionsAsClientError ([&] () {
                               sort = sort.value_or (DeviceSortParamters{});
                               sort->fSearchTerms += DeviceSortParamters::SearchTerm{
-                                  Configuration::DefaultNames<DeviceSortParamters::SearchTerm::By>::k.GetValue (o->As<String> ().c_str (), ClientErrorException{
-                                                                                                                                               L"Invalid argument to --sortBy"})};
+                                  Configuration::DefaultNames<DeviceSortParamters::SearchTerm::By>{}.GetValue (o->As<String> ().c_str (), ClientErrorException{
+                                                                                                                                              L"Invalid argument to query string sortBy"})};
                           });
                       }
                       if (args.LookupValue (L"recurse", false).As<bool> ()) {

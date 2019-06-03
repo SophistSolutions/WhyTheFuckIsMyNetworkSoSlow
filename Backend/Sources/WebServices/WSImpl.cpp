@@ -199,7 +199,7 @@ Device WSImpl::GetDevice (const String& id) const
 {
     GUID compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
     // @todo quick hack impl
-    for (auto i : GetDevices_Recurse ({})) {
+    for (auto i : GetDevices_Recurse (nullopt)) {
         if (i.fGUID == compareWithID) {
             return i;
         }
