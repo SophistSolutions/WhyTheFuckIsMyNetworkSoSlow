@@ -185,6 +185,9 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
                         return ascending ? (l < r) : (l > r);
                     });
                 } break;
+                default: {
+                    Execution::Throw (ClientErrorException (L"missing or invalid By in search specification"));
+                } break;
             }
         }
     }
