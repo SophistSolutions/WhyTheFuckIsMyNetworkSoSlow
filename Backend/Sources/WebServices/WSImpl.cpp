@@ -158,12 +158,15 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
                     int lPri = priFun (lhs);
                     int rPri = priFun (rhs);
                     Assert (st.fAscending);
-                    return *st.fAscending ? (lPri < rPri) : (lPri > rPri);
+                    bool ascending = *st.fAscending;
+                    return ascending ? (lPri < rPri) : (lPri > rPri);
                 });
                 break;
                 case DeviceSortParamters::SearchTerm::By::eAddress: {
                     devices = devices.OrderBy ([st, sortCompareNetwork] (const BackendApp::WebServices::Device& lhs, const BackendApp::WebServices::Device& rhs) -> bool {
-                        auto lookup = [=] (const BackendApp::WebServices::Device& d) -> InternetAddress {
+                        Assert (st.fAscending);
+                        bool ascending = *st.fAscending;
+                        auto lookup    = [=] (const BackendApp::WebServices::Device& d) -> InternetAddress {
                             if (sortCompareNetwork) {
                                 // if multiple, grab the first (somewhat arbitrary) - maybe should grab the least?
                                 for (InternetAddress ia : d.ipAddresses) {
@@ -171,16 +174,16 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
                                         return ia;
                                     }
                                 }
-                                return InternetAddress{};
+                                return ascending ? InternetAddress::max () : InternetAddress::min (); // not matching always show up at end of list
                             }
                             else {
+                                // @todo - consider which address to use? maybe least if ascending, and max if decesnding?
                                 return d.ipAddresses.NthValue (0);
                             }
                         };
                         InternetAddress l = lookup (lhs);
                         InternetAddress r = lookup (rhs);
-                        Assert (st.fAscending);
-                        return *st.fAscending ? (l < r) : (l > r);
+                        return ascending ? (l < r) : (l > r);
                     });
                 } break;
             }
