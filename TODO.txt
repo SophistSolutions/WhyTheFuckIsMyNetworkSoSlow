@@ -8,6 +8,10 @@ Top priority bug:
   - filter-deviceType=FFF, or --filter-deviceType=[aa,bb]
 
 (THEN INTEGRATE INTO GUI)
+
+
+THEN EXPOSE MORE FIELDS (AS BELOW) - before release - like ICONS! AND HARDWARE ADDRESS (and maybe GUESS ABOUT WHERE FROM)
+ EVEN AS TRICK ONE OR TWO CASES AND API IN PLACE SO GUI WORK CNA GO IN PARALLEL WIHT BACKEND WORK
 ---
 
 
