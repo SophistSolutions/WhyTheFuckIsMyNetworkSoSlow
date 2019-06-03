@@ -130,6 +130,14 @@ public:
                               sort = DeviceSortParamters::kMapper.ToObject<DeviceSortParamters> (DataExchange::Variant::JSON::Reader{}.Read (o->As<String> ()));
                           });
                       }
+                      if (auto o = args.Lookup (L"sortBy")) {
+                          ClientErrorException::TreatExceptionsAsClientError ([&] () {
+                              sort = sort.value_or (DeviceSortParamters{});
+                              sort->fSearchTerms += DeviceSortParamters::SearchTerm{
+                                  Configuration::DefaultNames<DeviceSortParamters::SearchTerm::By>::k.GetValue (o->As<String> ().c_str (), ClientErrorException{
+                                                                                                                                               L"Invalid argument to --sortBy"})};
+                          });
+                      }
                       if (args.LookupValue (L"recurse", false).As<bool> ()) {
                           WriteResponse (m->PeekResponse (), kDevices_, Device::kMapper.FromObject (fWSAPI_->GetDevices_Recurse (sort)));
                       }
@@ -278,14 +286,13 @@ const WebServiceMethodDescription WebServer::Rep_::kDevices_{
     Sequence<String>{
         L"curl http://localhost:8080/devices"sv,
         L"curl http://localhost:8080/devices?recurse=true"sv,
-        // @todo change this to array
-        L"curl 'http://localhost:8080/devices?recurse=true&sort=%7b\"by\":\"Address\",\"compareNetwork\":\"192.168.244.0/24\"%7d'"sv,
-        L"curl http://localhost:8080/devices?recurse=true&sortBy=address&sortCompareNetwork=192.168.244.0/24"sv,
+        L"curl 'http://localhost:8080/devices?recurse=true&sort=%7b\"searchTerms\":[%7b\"by\":\"Address\"%7d],\"compareNetwork\":\"192.168.244.0/24\"%7d'"sv,
+        L"curl http://localhost:8080/devices?recurse=true&sortBy=Address&sortCompareNetwork=192.168.244.0/24"sv,
         L"curl http://localhost:8080/devices/{ID}"sv},
     Sequence<String>{
         L"Fetch the list of known devices for the currently connected network. By default, this list is sorted so the most interesting devices come first (like this machine is first)"sv,
         L"@todo - in the future - add support for parameters to this fetch - which can be used to filter/subset etc"sv,
-        L"--sort={by?: Address|Priority, ascending: true|false, compareNetwork?: CIDR|network-id}"sv,
+        L"--sort={[by?: Address|Priority, ascending: true|false]+, compareNetwork?: CIDR|network-id}"sv,
         L"--sortBy=Address|Priority --sortAscending=true|false (aliases for --sort=...)"sv,
     },
 };

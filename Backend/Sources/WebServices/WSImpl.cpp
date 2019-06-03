@@ -70,26 +70,27 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
 {
     Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::GetDevices_Recurse", L"sort=%s", Characters::ToString (sort).c_str ())};
 
-    using namespace IO::Network;
-    DeviceSortParamters     sortParams = sort.value_or (DeviceSortParamters{});
-    DeviceSortParamters::By sortBy     = sortParams.fBy.value_or (DeviceSortParamters::By::ePriority);
-    bool                    sortAscending;
-    if (sortParams.fAscending) {
-        sortAscending = *sortParams.fAscending;
-    }
-    else {
-        switch (sortBy) {
-            case DeviceSortParamters::By::ePriority:
-                sortAscending = false;
-                break;
-            default:
-                sortAscending = true;
-                break;
+    // Compute effective sort Search Terms - filling in optional values
+    Sequence<DeviceSortParamters::SearchTerm> searchTerms;
+    {
+        if (sort) {
+            searchTerms = sort->fSearchTerms;
+        }
+        if (searchTerms.empty ()) {
+            searchTerms += DeviceSortParamters::SearchTerm{DeviceSortParamters::SearchTerm::By::ePriority, false};
+        }
+        for (auto i = searchTerms.begin (); i != searchTerms.end (); ++i) {
+            if (not i->fAscending.has_value ()) {
+                auto p       = *i;
+                p.fAscending = true;
+                searchTerms.Update (i, p);
+            }
         }
     }
 
+    // Compute effective sortCompareNetwork - as a set of CIDRs
     optional<Set<CIDR>> sortCompareNetwork;
-    if (sortBy == DeviceSortParamters::By::eAddress and sort and sort->fCompareNetwork) {
+    if (sort->fCompareNetwork) {
         // CIDR will contain a / and GUID won't so use that to distinguish
         if (sort->fCompareNetwork->Contains (L"/")) {
             sortCompareNetwork = Set<CIDR>{CIDR{*sort->fCompareNetwork}}; // OK to throw if invalid
@@ -102,6 +103,8 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
             }
         }
     }
+
+    // Fetch (UNSORTED) list of devices
     Sequence<BackendApp::WebServices::Device> devices = Sequence<BackendApp::WebServices::Device>{Discovery::DevicesMgr::sThe.GetActiveDevices ().Select<BackendApp::WebServices::Device> ([] (const Discovery::Device& d) {
         BackendApp::WebServices::Device newDev;
         d.ipAddresses.Apply ([&] (const InternetAddress& a) {
@@ -135,48 +138,55 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
         return newDev;
     })};
 
-    switch (sortBy) {
-        case DeviceSortParamters::By::ePriority: {
-            devices = devices.OrderBy ([sortAscending] (const BackendApp::WebServices::Device& lhs, const BackendApp::WebServices::Device& rhs) -> bool {
-                // super primitive sort strategy...
-                auto priFun = [] (const BackendApp::WebServices::Device& d) {
-                    int pri = 0;
-                    if (d.fTypes and d.fTypes->Contains (Device::DeviceType::ePC)) {
-                        pri = 10;
-                    }
-                    if (d.fTypes and d.fTypes->Contains (Device::DeviceType::eRouter)) {
-                        pri = 5;
-                    }
-                    return pri;
-                };
-                int lPri = priFun (lhs);
-                int rPri = priFun (rhs);
-                return sortAscending ? (lPri < rPri) : (lPri > rPri);
-            });
-            break;
-            case DeviceSortParamters::By::eAddress: {
-                devices = devices.OrderBy ([sortAscending, sortCompareNetwork] (const BackendApp::WebServices::Device& lhs, const BackendApp::WebServices::Device& rhs) -> bool {
-                    auto lookup = [=](const BackendApp::WebServices::Device& d) -> InternetAddress {
-                        if (sortCompareNetwork) {
-                            // if multiple, grab the first (somewhat arbitrary) - maybe should grab the least?
-                            for (InternetAddress ia : d.ipAddresses) {
-                                if (sortCompareNetwork->Any ([&] (const CIDR& cidr) { return cidr.GetRange ().Contains (ia); })) {
-                                    return ia;
-                                }
-                            }
-                            return InternetAddress{};
+    // Sort them
+    for (DeviceSortParamters::SearchTerm st : searchTerms) {
+        Assert (st.fBy); // cuz we enforced above
+        switch (*st.fBy) {
+            case DeviceSortParamters::SearchTerm::By::ePriority: {
+                devices = devices.OrderBy ([st] (const BackendApp::WebServices::Device& lhs, const BackendApp::WebServices::Device& rhs) -> bool {
+                    // super primitive sort strategy...
+                    auto priFun = [] (const BackendApp::WebServices::Device& d) {
+                        int pri = 0;
+                        if (d.fTypes and d.fTypes->Contains (Device::DeviceType::ePC)) {
+                            pri = 10;
                         }
-                        else {
-                            return d.ipAddresses.NthValue (0);
+                        if (d.fTypes and d.fTypes->Contains (Device::DeviceType::eRouter)) {
+                            pri = 5;
                         }
+                        return pri;
                     };
-                    InternetAddress l = lookup (lhs);
-                    InternetAddress r = lookup (rhs);
-                    return sortAscending ? (l < r) : (l > r);
+                    int lPri = priFun (lhs);
+                    int rPri = priFun (rhs);
+                    Assert (st.fAscending);
+                    return *st.fAscending ? (lPri < rPri) : (lPri > rPri);
                 });
-            } break;
+                break;
+                case DeviceSortParamters::SearchTerm::By::eAddress: {
+                    devices = devices.OrderBy ([st, sortCompareNetwork] (const BackendApp::WebServices::Device& lhs, const BackendApp::WebServices::Device& rhs) -> bool {
+                        auto lookup = [=] (const BackendApp::WebServices::Device& d) -> InternetAddress {
+                            if (sortCompareNetwork) {
+                                // if multiple, grab the first (somewhat arbitrary) - maybe should grab the least?
+                                for (InternetAddress ia : d.ipAddresses) {
+                                    if (sortCompareNetwork->Any ([&] (const CIDR& cidr) { return cidr.GetRange ().Contains (ia); })) {
+                                        return ia;
+                                    }
+                                }
+                                return InternetAddress{};
+                            }
+                            else {
+                                return d.ipAddresses.NthValue (0);
+                            }
+                        };
+                        InternetAddress l = lookup (lhs);
+                        InternetAddress r = lookup (rhs);
+                        Assert (st.fAscending);
+                        return *st.fAscending ? (l < r) : (l > r);
+                    });
+                } break;
+            }
         }
     }
+
     return devices;
 }
 

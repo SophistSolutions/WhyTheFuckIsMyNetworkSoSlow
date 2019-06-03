@@ -179,14 +179,28 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
     };
 
     struct DeviceSortParamters {
-        enum class By {
-            eAddress,
-            ePriority,
-            Stroika_Define_Enum_Bounds (eAddress, ePriority)
+
+        /**
+         */
+        struct SearchTerm {
+            /**
+             */
+            enum class By {
+                eAddress,
+                ePriority,
+                Stroika_Define_Enum_Bounds (eAddress, ePriority)
+            };
+            optional<By>   fBy;
+            optional<bool> fAscending;
+
+            nonvirtual String ToString () const;
+
+            static const DataExchange::ObjectVariantMapper kMapper;
         };
-        optional<By>     fBy;
-        optional<bool>   fAscending;
-        optional<String> fCompareNetwork; // GUID or CIDR
+        Sequence<SearchTerm> fSearchTerms;
+
+        // GUID or CIDR
+        optional<String> fCompareNetwork;
 
         nonvirtual String ToString () const;
 
@@ -220,7 +234,6 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
         static const DataExchange::ObjectVariantMapper kMapper;
     };
-
 }
 
 /*

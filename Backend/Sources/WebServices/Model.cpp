@@ -308,10 +308,10 @@ String Device::ToString () const
 
 /*
  ********************************************************************************
- ************************ DeviceSortParamters ***********************************
+ ******************* DeviceSortParamters::SearchTerm ****************************
  ********************************************************************************
  */
-String DeviceSortParamters::ToString () const
+String DeviceSortParamters::SearchTerm::ToString () const
 {
     StringBuilder sb;
     sb += L"{";
@@ -321,6 +321,20 @@ String DeviceSortParamters::ToString () const
     if (fAscending) {
         sb += L"ascending: " + Characters::ToString (fAscending) + L", ";
     }
+    sb += L"}";
+    return sb.str ();
+}
+
+/*
+ ********************************************************************************
+ *************************** DeviceSortParamters ********************************
+ ********************************************************************************
+ */
+String DeviceSortParamters::ToString () const
+{
+    StringBuilder sb;
+    sb += L"{";
+    sb += L"searchTerms: " + Characters::ToString (fSearchTerms) + L", ";
     if (fCompareNetwork) {
         sb += L"compareNetwork: " + Characters::ToString (fCompareNetwork) + L", ";
     }
@@ -333,13 +347,17 @@ DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof
 const ObjectVariantMapper DeviceSortParamters::kMapper = [] () {
     ObjectVariantMapper mapper;
 
-    mapper.AddCommonType<DeviceSortParamters::By> ();
-    mapper.AddCommonType<optional<DeviceSortParamters::By>> ();
+    mapper.AddCommonType<DeviceSortParamters::SearchTerm::By> ();
+    mapper.AddCommonType<optional<DeviceSortParamters::SearchTerm::By>> ();
     mapper.AddCommonType<optional<bool>> ();
     mapper.AddCommonType<optional<String>> ();
+    mapper.AddClass<DeviceSortParamters::SearchTerm> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+        {L"by", Stroika_Foundation_DataExchange_StructFieldMetaInfo (DeviceSortParamters::SearchTerm, fBy), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"ascending", Stroika_Foundation_DataExchange_StructFieldMetaInfo (DeviceSortParamters::SearchTerm, fAscending), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+    });
+    mapper.AddCommonType<Sequence<DeviceSortParamters::SearchTerm>> ();
     mapper.AddClass<DeviceSortParamters> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-        {L"by", Stroika_Foundation_DataExchange_StructFieldMetaInfo (DeviceSortParamters, fBy), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"ascending", Stroika_Foundation_DataExchange_StructFieldMetaInfo (DeviceSortParamters, fAscending), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"searchTerms", Stroika_Foundation_DataExchange_StructFieldMetaInfo (DeviceSortParamters, fSearchTerms)},
         {L"compareNetwork", Stroika_Foundation_DataExchange_StructFieldMetaInfo (DeviceSortParamters, fCompareNetwork), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
     return mapper;
