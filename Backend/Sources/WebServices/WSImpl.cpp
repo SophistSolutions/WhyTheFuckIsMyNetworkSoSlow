@@ -140,8 +140,7 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
 
     // Sort them
     for (DeviceSortParamters::SearchTerm st : searchTerms) {
-        Assert (st.fBy); // cuz we enforced above
-        switch (*st.fBy) {
+        switch (st.fBy) {
             case DeviceSortParamters::SearchTerm::By::ePriority: {
                 devices = devices.OrderBy ([st] (const BackendApp::WebServices::Device& lhs, const BackendApp::WebServices::Device& rhs) -> bool {
                     // super primitive sort strategy...

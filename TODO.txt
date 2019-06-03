@@ -1,11 +1,13 @@
 Top priority bug:
 
+
 >	Add sort-by type
 			type (then which to compare if given set)
 			(categories in a hierarchy, use TOP hierartchy name, and if multiple siblings then take first alphabetically)
 	- filter-contained-in-network=xxxx
   - filter-deviceType=FFF, or --filter-deviceType=[aa,bb]
 
+(THEN INTEGRATE INTO GUI)
 ---
 
 

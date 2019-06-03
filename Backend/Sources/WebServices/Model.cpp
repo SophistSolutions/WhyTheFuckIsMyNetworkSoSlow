@@ -315,9 +315,7 @@ String DeviceSortParamters::SearchTerm::ToString () const
 {
     StringBuilder sb;
     sb += L"{";
-    if (fBy) {
-        sb += L"by: " + Characters::ToString (fBy) + L", ";
-    }
+    sb += L"by: " + Characters::ToString (fBy) + L", ";
     if (fAscending) {
         sb += L"ascending: " + Characters::ToString (fAscending) + L", ";
     }
@@ -348,11 +346,10 @@ const ObjectVariantMapper DeviceSortParamters::kMapper = [] () {
     ObjectVariantMapper mapper;
 
     mapper.AddCommonType<DeviceSortParamters::SearchTerm::By> ();
-    mapper.AddCommonType<optional<DeviceSortParamters::SearchTerm::By>> ();
     mapper.AddCommonType<optional<bool>> ();
     mapper.AddCommonType<optional<String>> ();
     mapper.AddClass<DeviceSortParamters::SearchTerm> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-        {L"by", Stroika_Foundation_DataExchange_StructFieldMetaInfo (DeviceSortParamters::SearchTerm, fBy), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"by", Stroika_Foundation_DataExchange_StructFieldMetaInfo (DeviceSortParamters::SearchTerm, fBy)},
         {L"ascending", Stroika_Foundation_DataExchange_StructFieldMetaInfo (DeviceSortParamters::SearchTerm, fAscending), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
     mapper.AddCommonType<Sequence<DeviceSortParamters::SearchTerm>> ();
