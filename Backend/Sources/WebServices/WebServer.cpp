@@ -287,12 +287,14 @@ const WebServiceMethodDescription WebServer::Rep_::kDevices_{
         L"curl http://localhost:8080/devices"sv,
         L"curl http://localhost:8080/devices?recurse=true"sv,
         L"curl 'http://localhost:8080/devices?recurse=true&sort=%7b\"searchTerms\":[%7b\"by\":\"Address\"%7d],\"compareNetwork\":\"192.168.244.0/24\"%7d'"sv,
+        L"curl 'http://localhost:8080/devices?recurse=true&sort={\"searchTerms\":[{\"by\":\"Address\"},{\"by\":\"Priority\"}],\"compareNetwork\":\"192.168.244.0/24\"}'"sv,
         L"curl http://localhost:8080/devices?recurse=true&sortBy=Address&sortCompareNetwork=192.168.244.0/24"sv,
         L"curl http://localhost:8080/devices/60c59f9c-9a69-c89e-9d99-99c7976869c5"sv},
     Sequence<String>{
         L"Fetch the list of known devices for the currently connected network. By default, this list is sorted so the most interesting devices come first (like this machine is first)"sv,
         L"query-string: sort={[by: Address|Priority, ascending: true|false]+, compareNetwork?: CIDR|network-id}; sort=ARG is JSON encoded SearchTerm={by: string, ascending?: bool}, {searchTerms: SearchTerm[], compareNetwork: string}"sv,
         L"query-string: sortBy=Address|Priority sortAscending=true|false (requires sortBy); both are aliases for sort=...)"sv,
+        L"Note: sorts are stable, so they can be combined one after the other. To get a GroupBy, just do the grouping as the final 'sort'."sv,
     },
 };
 const WebServiceMethodDescription WebServer::Rep_::kNetworks_{

@@ -81,8 +81,15 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
         }
         for (auto i = searchTerms.begin (); i != searchTerms.end (); ++i) {
             if (not i->fAscending.has_value ()) {
-                auto p       = *i;
-                p.fAscending = true;
+                auto p = *i;
+                switch (p.fBy) {
+                    case DeviceSortParamters::SearchTerm::By::ePriority:
+                        p.fAscending = false;
+                        break;
+                    default:
+                        p.fAscending = true;
+                        break;
+                }
                 searchTerms.Update (i, p);
             }
         }
