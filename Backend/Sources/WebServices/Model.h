@@ -188,8 +188,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
             enum class By {
                 eAddress,
                 ePriority,
+                eName,
+                eType,
 
-                Stroika_Define_Enum_Bounds (eAddress, ePriority)
+                Stroika_Define_Enum_Bounds (eAddress, eType)
             };
             By             fBy{By::eEND};
             optional<bool> fAscending;

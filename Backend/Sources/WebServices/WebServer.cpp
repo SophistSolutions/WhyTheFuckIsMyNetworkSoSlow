@@ -292,8 +292,8 @@ const WebServiceMethodDescription WebServer::Rep_::kDevices_{
         L"curl http://localhost:8080/devices/60c59f9c-9a69-c89e-9d99-99c7976869c5"sv},
     Sequence<String>{
         L"Fetch the list of known devices for the currently connected network. By default, this list is sorted so the most interesting devices come first (like this machine is first)"sv,
-        L"query-string: sort={[by: Address|Priority, ascending: true|false]+, compareNetwork?: CIDR|network-id}; sort=ARG is JSON encoded SearchTerm={by: string, ascending?: bool}, {searchTerms: SearchTerm[], compareNetwork: string}"sv,
-        L"query-string: sortBy=Address|Priority sortAscending=true|false (requires sortBy); both are aliases for sort=...)"sv,
+        L"query-string: sort={[by: Address|Priority|Name|Type, ascending: true|false]+, compareNetwork?: CIDR|network-id}; sort=ARG is JSON encoded SearchTerm={by: string, ascending?: bool}, {searchTerms: SearchTerm[], compareNetwork: string}"sv,
+        L"query-string: sortBy=Address|Priority|Name|Type sortAscending=true|false (requires sortBy); both are aliases for sort=...)"sv,
         L"Note: sorts are stable, so they can be combined one after the other. To get a GroupBy, just do the grouping as the final 'sort'."sv,
     },
 };

@@ -37,6 +37,8 @@ namespace Stroika::Foundation::Configuration {
         EnumNames<WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::DeviceSortParamters::SearchTerm::By>::BasicArrayInitializer{{
             {WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::DeviceSortParamters::SearchTerm::By::eAddress, L"Address"},
             {WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::DeviceSortParamters::SearchTerm::By::ePriority, L"Priority"},
+            {WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::DeviceSortParamters::SearchTerm::By::eName, L"Name"},
+            {WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::DeviceSortParamters::SearchTerm::By::eType, L"Type"},
         }}};
 
 }

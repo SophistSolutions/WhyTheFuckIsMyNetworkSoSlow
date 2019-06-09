@@ -192,6 +192,53 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
                         return ascending ? (l < r) : (l > r);
                     });
                 } break;
+                case DeviceSortParamters::SearchTerm::By::eName: {
+                    devices = devices.OrderBy ([st, sortCompareNetwork] (const BackendApp::WebServices::Device& lhs, const BackendApp::WebServices::Device& rhs) -> bool {
+                        Assert (st.fAscending);
+                        bool ascending = *st.fAscending;
+                        return ascending ? (lhs.name < rhs.name) : (lhs.name > rhs.name);
+                    });
+                } break;
+                case DeviceSortParamters::SearchTerm::By::eType: {
+                    devices = devices.OrderBy ([st, sortCompareNetwork] (const BackendApp::WebServices::Device& lhs, const BackendApp::WebServices::Device& rhs) -> bool {
+                        Assert (st.fAscending);
+                        bool ascending = *st.fAscending;
+                        // tricky to compare types cuz we have a set of types. And types in those sets have subtypes
+                        // If TS is a subtype (more specific type) from T, then treat TS > T
+                        auto mapTypeToOrder = [] (Device::DeviceType dt) -> double {
+                            switch (dt) {
+                                case Device::DeviceType::ePC:
+                                    return 1;
+                                case Device::DeviceType::eNetworkInfrastructure:
+                                    return 2;
+                                case Device::DeviceType::eRouter:
+                                    return 2.1;
+                                case Device::DeviceType::eTablet:
+                                    return 3;
+                                case Device::DeviceType::ePhone:
+                                    return 4;
+                                case Device::DeviceType::eMediaPlayer:
+                                    return 5;
+                                case Device::DeviceType::eSpeaker:
+                                    return 5.1;
+                                case Device::DeviceType::eTV:
+                                    return 5.2;
+                                default:
+                                    return 99;
+                            }
+                        };
+                        auto mapTypeToOrder2 = [&](const optional<Set<Device::DeviceType>> dt) -> double {
+                            double f = 99;
+                            if (dt) {
+                                for (auto d : *dt) {
+                                    f = min (f, mapTypeToOrder (d));
+                                }
+                            }
+                            return f;
+                        };
+                        return ascending ? (mapTypeToOrder2 (lhs.fTypes) < mapTypeToOrder2 (rhs.fTypes)) : (mapTypeToOrder2 (lhs.fTypes) > mapTypeToOrder2 (rhs.fTypes));
+                    });
+                } break;
                 default: {
                     Execution::Throw (ClientErrorException (L"missing or invalid By in search specification"));
                 } break;
