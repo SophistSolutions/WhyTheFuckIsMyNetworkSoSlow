@@ -6,6 +6,4 @@ export const API_ROOT: string = process.env.VUE_APP_ROOT_API ? process.env.VUE_A
 
 export const API_NETWORKS_PATH: string = process.env.VUE_APP_API_NETWORKS_PATH;
 
-export const API_DEVICES_PATH: string = process.env.VUE_APP_API_DEVICES_PATH;
-
 export const DEBUG_MODE: boolean = process.env.VUE_APP_DEBUG_MODE;

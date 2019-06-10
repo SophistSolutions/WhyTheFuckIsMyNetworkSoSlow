@@ -3,7 +3,9 @@ Top priority bug:
 
 >	Add 
 	- filter-contained-in-network=xxxx
-  - filter-deviceType=FFF, or --filter-deviceType=[aa,bb]
+  - filter-deviceType=FFF, or --filter-deviceTypes=[aa,bb]
+	and filter-out-XXX SAME ABOVE deviceType or containedInNetwork
+	and use PLURAL for array so --filter-out-deviceTypes=[a,b]
 (THEN INTEGRATE INTO GUI)
 
 

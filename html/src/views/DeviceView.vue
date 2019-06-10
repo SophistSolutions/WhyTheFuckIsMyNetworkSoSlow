@@ -26,8 +26,11 @@ export default class Devices extends Vue {
   private sortOrder: string = "asc";
 
   private get sortedDevices(): IDevice[] {
+    // @todo not sure the right way to handle this? We want to 'store' the mapping of ID to device data, and
+    // we probably want a separate deviceid (sorted) list in the store, and have it depend on the sort order (and filter) objects.
     let deviceArray: IDevice[] = this.devices;
-    return deviceArray.sort(compareValues(this.sortField, this.sortOrder));
+    return deviceArray;
+    //return deviceArray.sort(compareValues(this.sortField, this.sortOrder));
   }
 
   private created() {

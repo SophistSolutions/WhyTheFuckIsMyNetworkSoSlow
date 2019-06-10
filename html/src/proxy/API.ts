@@ -15,7 +15,14 @@ export async function fetchNetworks(): Promise<INetwork[]> {
 }
 
 export async function fetchDevices(): Promise<IDevice[]> {
-    return fetch(API_ROOT + API_DEVICES_PATH)
+    var searchTerms : object[] = [];
+    // @todo make these search params depend on parameters, and especially make compareNetwork depend on current active network
+    // (and maybe sometimes omit)
+    searchTerms.push ({"by":"Address"});
+    searchTerms.push ({"by":"Type"});
+    searchTerms.push ({"by":"Priority"});
+    let searchSpec = {searchTerms: searchTerms, compareNetwork:"192.168.244.0/24"};
+    return fetch(API_ROOT + `/devices?recurse=true&sort=${encodeURI(JSON.stringify (searchSpec))}`)
     .then((response) => response.json())
     .then((data) => {
         return data;
