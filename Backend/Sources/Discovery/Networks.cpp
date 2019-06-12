@@ -60,7 +60,7 @@ namespace {
     {
         using Cache::SynchronizedCallerStalenessCache;
         static SynchronizedCallerStalenessCache<void, optional<InternetAddress>> sCache_;
-        return sCache_.LookupValue (sCache_.Ago (allowedStaleness.value_or (30)), [] () -> optional<InternetAddress> {
+        return sCache_.LookupValue (sCache_.Ago (allowedStaleness.value_or (30)), []() -> optional<InternetAddress> {
             /*
              * Alternative sources for this information:
              *
@@ -144,23 +144,41 @@ namespace {
         Debug::TraceContextBumper ctx{L"Discovery::CollectActiveNetworks"};
 #endif
         Require (sActive_);
-        Mapping<CIDR, Network> accumResults;
-        MultiSet<CIDR>         cidrScores; // primitive attempt to find best interface to display
+        Collection<Network> accumResults;
         for (NetworkInterface i : Discovery::NetworkInterfacesMgr::sThe.CollectActiveNetworkInterfaces ()) {
             if (not i.fBindings.empty ()) {
-                Interface::Binding useBinding = i.fBindings.Nth (0);
-                i.fBindings.Apply ([&] (Interface::Binding i) {
-                    if (useBinding.fInternetAddress.GetAddressFamily () != InternetAddress::AddressFamily::V4 or useBinding.fInternetAddress.IsMulticastAddress ()) {
-                        if (i.fInternetAddress.GetAddressFamily () == InternetAddress::AddressFamily::V4 and not i.fInternetAddress.IsMulticastAddress ()) {
-                            useBinding = i;
+                Network nw;
+
+                {
+                    Set<CIDR> cidrs;
+                    for (Interface::Binding nib : i.fBindings) {
+                        if (nib.fInternetAddress.IsMulticastAddress ()) {
+                            continue; // skip multicast addresses, because they don't really refer to a device
+                        }
+                        if (nib.fInternetAddress.IsLinkLocalAddress ()) {
+                            continue; // skip link-local addresses, they are only used for special purposes like discovery, and aren't part of the network
+                        }
+                        if (nib.fInternetAddress.GetAddressSize ().has_value ()) {
+                            // Guess CIDR prefix is max (so one address - bad guess) - if we cannot read from adapter
+                            cidrs += CIDR{nib.fInternetAddress, nib.fOnLinkPrefixLength.value_or (*nib.fInternetAddress.GetAddressSize () * 8)};
                         }
                     }
-                });
-                if (useBinding.fInternetAddress.GetAddressSize ()) {
-                    // Guess CIDR prefix is max (so one address - bad guess) - if we cannot read from adapter
-                    CIDR    cidr{useBinding.fInternetAddress, useBinding.fOnLinkPrefixLength.value_or (*useBinding.fInternetAddress.GetAddressSize () * 8)};
-                    Network nw = accumResults.LookupValue (cidr, Network{{cidr}});
 
+                    // See if the network has already been found. VERY TRICKY - cuz ambiguous concept a network. Mostly follow my
+                    // intuition - now - that a network CAN comprise multiple CIDRs - like a WIFI card and ETHERNET all with the same V4 and V6 scopes - they
+                    // are one network.
+
+                    // erase for now cuz added at the end
+                    for (Iterator<Network> ni = accumResults.begin (); ni != accumResults.end (); ++ni) {
+                        if (cidrs == ni->fNetworkAddresses) {
+                            nw = *ni;
+                            accumResults.erase (ni);
+                            break;
+                        }
+                    }
+                    nw.fNetworkAddresses = cidrs;
+                }
+                if (not nw.fNetworkAddresses.empty ()) {
                     unsigned int score{};
                     if (i.fGateways) {
                         for (auto gw : *i.fGateways) {
@@ -196,13 +214,7 @@ namespace {
                     // -- LGP 2018-12-16
                     nw.fGUID = ComputeGUIDForNetwork_ (nw);
 
-                    accumResults.Add (cidr, nw);
-
-                    // put most important interfaces at top of list
-                    if ((i.fType == Interface::Type::eWiredEthernet or i.fType == Interface::Type::eWIFI)) {
-                        score += 3;
-                    }
-                    cidrScores.Add (cidr, score);
+                    accumResults += nw;
                 }
                 else {
                     DbgTrace (L"Skipping interface %s - cuz bindings bad address", Characters::ToString (i).c_str ());
@@ -210,27 +222,51 @@ namespace {
             }
         }
 
-        // now patch missing GUID if not already known
+        // Assure all networks have an ID
         for (auto i = accumResults.begin (); i != accumResults.end (); ++i) {
-            if (i->fValue.fGUID == GUID::Zero ()) {
+            if (i->fGUID == GUID::Zero ()) {
                 StringBuilder sb;
                 using namespace Stroika::Foundation::Cryptography;
-                sb += Characters::ToString (i->fValue.fGateways);         // NO WHERE NEAR GOOD ENUF - take into account public IP ADDR and hardware address of router - but still ALLOW for any of these to float
-                sb += Characters::ToString (i->fValue.fNetworkAddresses); // ""
+                sb += Characters::ToString (i->fGateways);         // NO WHERE NEAR GOOD ENUF - take into account public IP ADDR and hardware address of router - but still ALLOW for any of these to float
+                sb += Characters::ToString (i->fNetworkAddresses); // ""
                 using DIGESTER_ = Digest::Digester<Digest::Algorithm::MD5>;
                 string tmp      = sb.str ().AsUTF8 ();
-                auto   v        = i->fValue;
+                auto   v        = *i;
                 v.fGUID         = Cryptography::Format<GUID> (DIGESTER_::ComputeDigest ((const std::byte*)tmp.c_str (), (const std::byte*)tmp.c_str () + tmp.length ()));
-                accumResults.Add (i->fKey, v);
+                accumResults.Update (i, v);
             }
         }
 
-        Sequence<Network> results;
-        for (auto i : cidrScores.OrderBy ([] (const CountedValue<CIDR>&lhs, const CountedValue<CIDR>&rhs) -> bool { return lhs.fCount > rhs.fCount; })) {
-            results += *accumResults.Lookup (i.fValue);
+        // Score guess best network
+        Mapping<GUID, float> netScores; // primitive attempt to find best interface to display
+        for (auto i = accumResults.begin (); i != accumResults.end (); ++i) {
+            unsigned int score{};
+            if (not i->fGateways.empty ()) {
+                score += 20;
+            }
+            if (not i->fDNSServers.empty ()) {
+                score += 5;
+            }
+
+            if (i->fExternalAddresses) {
+                score += 30;
+            }
+
+// put most important interfaces at top of list
+#if 0
+			// could figure from interfaceids, but probably not worth it
+            if ((i->fType == Interface::Type::eWiredEthernet or i->fType == Interface::Type::eWIFI)) {
+                score += 3;
+            }
+#endif
+            netScores.Add (i->fGUID, score);
         }
-        Assert (results.size () == cidrScores.size ());
+
+        Sequence<Network> results = Sequence<Network>{accumResults.OrderBy ([&](const Network& l, const Network& r) {
+            return netScores.Lookup (l.fGUID) > netScores.Lookup (r.fGUID);
+        })};
         Assert (results.size () == accumResults.size ());
+        Assert (results.size () == netScores.size ());
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
         DbgTrace (L"returns: %s", Characters::ToString (results).c_str ());
 #endif
@@ -249,7 +285,7 @@ Sequence<Network> Discovery::NetworksMgr::CollectActiveNetworks (optional<Time::
     Sequence<Network> results;
     using Cache::SynchronizedCallerStalenessCache;
     static SynchronizedCallerStalenessCache<void, Sequence<Network>> sCache_;
-    results = sCache_.LookupValue (sCache_.Ago (allowedStaleness.value_or (kDefaultItemCacheLifetime_)), [] () {
+    results = sCache_.LookupValue (sCache_.Ago (allowedStaleness.value_or (kDefaultItemCacheLifetime_)), []() {
         return CollectActiveNetworks_ ();
     });
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
