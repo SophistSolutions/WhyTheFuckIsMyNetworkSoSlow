@@ -1,12 +1,18 @@
 Top priority bug:
 
 
->	Add 
-	- filter-contained-in-network=xxxx
-  - filter-deviceType=FFF, or --filter-deviceTypes=[aa,bb]
-	and filter-out-XXX SAME ABOVE deviceType or containedInNetwork
-	and use PLURAL for array so --filter-out-deviceTypes=[a,b]
-(THEN INTEGRATE INTO GUI)
+
+>>> IN MIDDLE OF REDO OF NETWORK/CIDR THING. TEST RECENT CHANGES ON Unix
+>>> MAYBE MAKE IPV6 its own network? Confusing how ipv6 addrresses aappear in each
+>>> NETWORK...
+
+
+
+>>
+			git stash save WORK_ON_DEFVICE_NETWORKS_MAP_REFACTOR
+
+
+
 
 
 - Maybe refactor 'attachedinterfaces' into
