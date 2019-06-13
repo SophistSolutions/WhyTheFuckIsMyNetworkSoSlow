@@ -1,39 +1,60 @@
 <template>
   <div class="device">
     <v-card class="device-pill" dark>
-      <v-card-title>
-        {{ device.name }}
-      </v-card-title>
+      <v-card-title>{{ device.name }}</v-card-title>
 
       <v-card-text>
         <p v-if="device.type">Type: {{ device.type.join(", ") }}</p>
         <p v-if="device.operatingSystem">OS: {{ device.operatingSystem.fullVersionedName }}</p>
-        <p v-if="device.presentationURL"><a :href="device.presentationURL" target="_blank">Open Device</a></p>
-        <p>Internet Addresses: {{ device.internetAddresses.join(", ") }}</p>
+        <p v-if="device.presentationURL">
+          <a :href="device.presentationURL" target="_blank">Open Device</a>
+        </p>
+        <p>Internet Addresses: {{ getDeviceNetworkAddresses_ (device) }}</p>
+        <p>Hardware Addresses: {{ getDeviceHardwareAddresses_ (device) }}</p>
       </v-card-text>
     </v-card>
   </div>
 </template>
 
 <script lang="ts">
-import { IDevice } from "@/models/device/IDevice";
 import { Component, Vue } from "vue-property-decorator";
+import { IDevice, INetworkAttachmentInfo } from "../models/device/IDevice";
 
 @Component({
-    name : "Device",
-    props : {
-      device: Object as () => IDevice,
+  name: "Device",
+  props: {
+    device: Object as () => IDevice
+  },
+  methods: {
+    getDeviceNetworkAddresses_(d: IDevice) {
+      let result = "";
+      for (let value of Object.entries (d.attachedNetworks)) {
+        if (result != "") {
+          result += ", ";
+        }
+        result += value[1].networkAddresses.join(", ");
+      }
+      return result;
     },
+    getDeviceHardwareAddresses_(d: IDevice) {
+      let result = "";
+      for (let value of Object.entries (d.attachedNetworks)) {
+        if (result != "") {
+          result += ", ";
+        }
+        result += value[1].hardwareAddresses.join(", ");
+      }
+      return result;
+    }
+  }
 })
-export default class Device extends Vue {
-
-}
+export default class Device extends Vue {}
 </script>
 
 <style scoped lang="scss">
 .device-pill {
   padding-bottom: 10px;
-  border-radius:25px;
+  border-radius: 25px;
 }
 v-card-title {
   position: relative;

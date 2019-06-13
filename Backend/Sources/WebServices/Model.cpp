@@ -111,8 +111,10 @@ const ObjectVariantMapper Network::kMapper = [] () {
     mapper.AddCommonType<Set<CIDR>> ();
     mapper.AddCommonType<InternetAddress> ();
     mapper.AddCommonType<Sequence<InternetAddress>> ();
+    mapper.AddCommonType<Set<InternetAddress>> ();
     mapper.AddCommonType<optional<InternetAddress>> ();
     mapper.AddCommonType<optional<Sequence<InternetAddress>>> ();
+    mapper.AddCommonType<optional<Set<InternetAddress>>> ();
     mapper.AddCommonType<Set<GUID>> ();
 
     if (true) {
@@ -258,7 +260,22 @@ DISABLE_COMPILER_MSC_WARNING_END (4573);
 
 /*
  ********************************************************************************
- ************************************* Device ***********************************
+ *********************** Model::NetworkAttachmentInfo ***************************
+ ********************************************************************************
+ */
+String NetworkAttachmentInfo::ToString () const
+{
+    StringBuilder sb;
+    sb += L"{";
+    sb += L"hardwareAddresses: " + Characters::ToString (hardwareAddresses) + L", ";
+    sb += L"networkAddresses: " + Characters::ToString (networkAddresses) + L", ";
+    sb += L"}";
+    return sb.str ();
+}
+
+/*
+ ********************************************************************************
+ ********************************* Model::Device ********************************
  ********************************************************************************
  */
 
@@ -283,12 +300,17 @@ const ObjectVariantMapper Device::kMapper = [] () {
     mapper.AddCommonType<optional<float>> ();
     mapper.AddCommonType<Collection<String>> ();
     mapper.AddCommonType<Sequence<String>> ();
+    mapper.AddCommonType<Set<String>> ();
     mapper.AddCommonType<URI> ();
     mapper.AddCommonType<optional<URI>> ();
+    mapper.AddClass<NetworkAttachmentInfo> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+        {L"hardwareAddresses", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkAttachmentInfo, hardwareAddresses), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"networkAddresses", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkAttachmentInfo, networkAddresses)},
+    });
+    mapper.AddCommonType<Mapping<GUID, NetworkAttachmentInfo>> ();
     mapper.AddClass<Device> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
         {L"id", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, fGUID)},
         {L"name", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, name)},
-        {L"internetAddresses", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, ipAddresses)},
         {L"type", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, fTypes), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"attachedNetworks", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, fAttachedNetworks)},
         {L"attachedNetworkInterfaces", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, fAttachedNetworkInterfaces), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
@@ -300,6 +322,15 @@ const ObjectVariantMapper Device::kMapper = [] () {
 }();
 DISABLE_COMPILER_GCC_WARNING_END ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
 DISABLE_COMPILER_MSC_WARNING_END (4573);
+
+Set<InternetAddress> Device::GetInternetAddresses () const
+{
+    Set<InternetAddress> result;
+    for (auto iNet : fAttachedNetworks) {
+        result += iNet.fValue.networkAddresses;
+    }
+    return result;
+}
 
 String Device::ToString () const
 {

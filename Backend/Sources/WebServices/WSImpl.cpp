@@ -114,31 +114,26 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
     // Fetch (UNSORTED) list of devices
     Sequence<BackendApp::WebServices::Device> devices = Sequence<BackendApp::WebServices::Device>{Discovery::DevicesMgr::sThe.GetActiveDevices ().Select<BackendApp::WebServices::Device> ([] (const Discovery::Device& d) {
         BackendApp::WebServices::Device newDev;
-        d.ipAddresses.Apply ([&] (const InternetAddress& a) {
-            // prefer having IPv4 addr at head of list
-            if (not newDev.ipAddresses.Contains (a)) {
-                if (auto o = a.AsAddressFamily (InternetAddress::AddressFamily::V4)) {
-                    if (newDev.ipAddresses.Contains (*o)) {
-                        newDev.ipAddresses.Remove (*newDev.ipAddresses.IndexOf (*o));
-                    }
-                    newDev.ipAddresses.Prepend (*o);
-                }
-                if (not newDev.ipAddresses.Contains (a)) {
-                    newDev.ipAddresses.Append (a);
-                }
-                if (auto o = a.AsAddressFamily (InternetAddress::AddressFamily::V6)) {
-                    if (not newDev.ipAddresses.Contains (*o)) {
-                        newDev.ipAddresses.Append (*o);
-                    }
-                }
-            }
-        });
-        newDev.fGUID = d.fGUID;
+		newDev.fGUID = d.fGUID;
         newDev.name  = d.name;
         if (not d.fTypes.empty ()) {
             newDev.fTypes = d.fTypes; // leave missing if no discovered types
         }
-        newDev.fAttachedNetworks          = d.fNetworks;
+        for (auto i : d.fAttachedNetworks) {
+            constexpr bool            kIncludeLinkLocalAddresses_{Discovery::kIncludeLinkLocalAddressesInDiscovery};
+            constexpr bool            kIncludeMulticastAddreses_{Discovery::kIncludeMulticastAddressesInDiscovery};
+            Sequence<InternetAddress> addrs2Report;
+            for (auto i : i.fValue.networkAddresses) {
+                if (not kIncludeLinkLocalAddresses_ and i.IsLinkLocalAddress ()) {
+                    continue;
+                }
+                if (not kIncludeMulticastAddreses_ and i.IsMulticastAddress ()) {
+                    continue;
+                }
+                addrs2Report += i;
+            }
+            newDev.fAttachedNetworks.Add (i.fKey, NetworkAttachmentInfo{i.fValue.hardwareAddresses, addrs2Report});
+        }
         newDev.fAttachedNetworkInterfaces = d.fAttachedInterfaces; // @todo must merge += (but only when merging across differnt discoverers/networks)
         newDev.fPresentationURL           = d.fPresentationURL;
         newDev.fOperatingSystem           = d.fOperatingSystem;
@@ -175,7 +170,7 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
                         auto lookup    = [=] (const BackendApp::WebServices::Device& d) -> InternetAddress {
                             if (sortCompareNetwork) {
                                 // if multiple, grab the first (somewhat arbitrary) - maybe should grab the least?
-                                for (InternetAddress ia : d.ipAddresses) {
+                                for (InternetAddress ia : d.GetInternetAddresses ()) {
                                     if (sortCompareNetwork->Any ([&] (const CIDR& cidr) { return cidr.GetRange ().Contains (ia); })) {
                                         return ia;
                                     }
@@ -184,7 +179,7 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
                             }
                             else {
                                 // @todo - consider which address to use? maybe least if ascending, and max if decesnding?
-                                return d.ipAddresses.NthValue (0);
+                                return d.GetInternetAddresses ().NthValue (0);
                             }
                         };
                         InternetAddress l = lookup (lhs);
@@ -227,7 +222,7 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
                                     return 99;
                             }
                         };
-                        auto mapTypeToOrder2 = [&](const optional<Set<Device::DeviceType>> dt) -> double {
+                        auto mapTypeToOrder2 = [&] (const optional<Set<Device::DeviceType>> dt) -> double {
                             double f = 99;
                             if (dt) {
                                 for (auto d : *dt) {

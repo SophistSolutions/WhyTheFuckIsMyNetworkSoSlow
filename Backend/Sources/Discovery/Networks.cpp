@@ -60,7 +60,7 @@ namespace {
     {
         using Cache::SynchronizedCallerStalenessCache;
         static SynchronizedCallerStalenessCache<void, optional<InternetAddress>> sCache_;
-        return sCache_.LookupValue (sCache_.Ago (allowedStaleness.value_or (30)), []() -> optional<InternetAddress> {
+        return sCache_.LookupValue (sCache_.Ago (allowedStaleness.value_or (30)), [] () -> optional<InternetAddress> {
             /*
              * Alternative sources for this information:
              *
@@ -148,15 +148,18 @@ namespace {
         for (NetworkInterface i : Discovery::NetworkInterfacesMgr::sThe.CollectActiveNetworkInterfaces ()) {
             if (not i.fBindings.empty ()) {
                 Network nw;
-
                 {
                     Set<CIDR> cidrs;
                     for (Interface::Binding nib : i.fBindings) {
-                        if (nib.fInternetAddress.IsMulticastAddress ()) {
-                            continue; // skip multicast addresses, because they don't really refer to a device
+                        if (not kIncludeMulticastAddressesInDiscovery) {
+                            if (nib.fInternetAddress.IsMulticastAddress ()) {
+                                continue; // skip multicast addresses, because they don't really refer to a device
+                            }
                         }
-                        if (nib.fInternetAddress.IsLinkLocalAddress ()) {
-                            continue; // skip link-local addresses, they are only used for special purposes like discovery, and aren't part of the network
+                        if (not kIncludeLinkLocalAddressesInDiscovery) {
+                            if (nib.fInternetAddress.IsLinkLocalAddress ()) {
+                                continue; // skip link-local addresses, they are only used for special purposes like discovery, and aren't part of the network
+                            }
                         }
                         if (nib.fInternetAddress.GetAddressSize ().has_value ()) {
                             // Guess CIDR prefix is max (so one address - bad guess) - if we cannot read from adapter
@@ -204,8 +207,8 @@ namespace {
                     }
 
                     if (nw.fExternalAddresses and not nw.fExternalAddresses->empty ()) {
-                        nw.fGEOLocInfo = LookupGEOLocation ((*nw.fExternalAddresses)[0]);
-                        nw.fISP        = LookupInternetServiceProvider ((*nw.fExternalAddresses)[0]);
+                        nw.fGEOLocInfo = LookupGEOLocation ((*nw.fExternalAddresses).Nth (0));
+                        nw.fISP        = LookupInternetServiceProvider ((*nw.fExternalAddresses).Nth (0));
                     }
 
                     // Stroika IO::Network::Interface::fNetworkGUID field appears useless - since only defined on windows and not really documented what it means
@@ -240,7 +243,7 @@ namespace {
         // Score guess best network
         Mapping<GUID, float> netScores; // primitive attempt to find best interface to display
         for (auto i = accumResults.begin (); i != accumResults.end (); ++i) {
-            unsigned int score{};
+            float score{};
             if (not i->fGateways.empty ()) {
                 score += 20;
             }
@@ -254,7 +257,7 @@ namespace {
 
 // put most important interfaces at top of list
 #if 0
-			// could figure from interfaceids, but probably not worth it
+            // could figure from interfaceids, but probably not worth it
             if ((i->fType == Interface::Type::eWiredEthernet or i->fType == Interface::Type::eWIFI)) {
                 score += 3;
             }
@@ -262,7 +265,7 @@ namespace {
             netScores.Add (i->fGUID, score);
         }
 
-        Sequence<Network> results = Sequence<Network>{accumResults.OrderBy ([&](const Network& l, const Network& r) {
+        Sequence<Network> results = Sequence<Network>{accumResults.OrderBy ([&] (const Network& l, const Network& r) {
             return netScores.Lookup (l.fGUID) > netScores.Lookup (r.fGUID);
         })};
         Assert (results.size () == accumResults.size ());
@@ -285,11 +288,21 @@ Sequence<Network> Discovery::NetworksMgr::CollectActiveNetworks (optional<Time::
     Sequence<Network> results;
     using Cache::SynchronizedCallerStalenessCache;
     static SynchronizedCallerStalenessCache<void, Sequence<Network>> sCache_;
-    results = sCache_.LookupValue (sCache_.Ago (allowedStaleness.value_or (kDefaultItemCacheLifetime_)), []() {
+    results = sCache_.LookupValue (sCache_.Ago (allowedStaleness.value_or (kDefaultItemCacheLifetime_)), [] () {
         return CollectActiveNetworks_ ();
     });
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
     DbgTrace (L"returns: %s", Characters::ToString (results).c_str ());
 #endif
     return results;
+}
+
+Network Discovery::NetworksMgr::GetNetworkByID (const GUID& id, optional<Time::DurationSecondsType> allowedStaleness) const
+{
+    for (Network i : CollectActiveNetworks (allowedStaleness)) {
+        if (i.fGUID == id) {
+            return i;
+        }
+    }
+    Execution::Throw (Execution::Exception<> (L"No such network id"sv));
 }

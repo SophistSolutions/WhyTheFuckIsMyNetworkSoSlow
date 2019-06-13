@@ -35,8 +35,23 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
 
     using namespace BackendApp::Common;
 
+    /*
+     *  While testing - til we are sure - and for a bit of documentation.
+     *
+     *  These flags control both the Network objects discovered, and any IP addresses (bindings)
+     */
+    constexpr bool kIncludeMulticastAddressesInDiscovery{false};
+    constexpr bool kIncludeLinkLocalAddressesInDiscovery{false};
+
+    /**
+     *  This is an informal concept - much less firm than Device and/or NetworkInterface.
+     *
+     *  Its sort of a high level merging together of a bunch of network interfaces, to provide what most people
+     *  intuitively (fuzily) think of as a 'Network'
+     *
+     *  If you have an IPv4 and IPv6 network they maybe merged into a single logical network
+     */
     struct Network {
-        // @todo if you have an IPv4 and IPv6 network they maybe merged into a single logical network
         Set<CIDR>        fNetworkAddresses;
         GUID             fGUID;
         optional<String> fFriendlyName;
@@ -47,7 +62,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
         Sequence<InternetAddress> fDNSServers;
 
         // whatsmyip
-        optional<Sequence<InternetAddress>> fExternalAddresses;
+        optional<Set<InternetAddress>> fExternalAddresses;
 
         optional<GEOLocationInformation> fGEOLocInfo;
 
@@ -79,6 +94,12 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
         /**
          */
         nonvirtual Sequence<Network> CollectActiveNetworks (optional<Time::DurationSecondsType> allowedStaleness = {}) const;
+
+    public:
+        /**
+         *  Throw if no such network
+         */
+        nonvirtual Network GetNetworkByID (const GUID& id, optional<Time::DurationSecondsType> allowedStaleness = {}) const;
 
     public:
         static NetworksMgr sThe;

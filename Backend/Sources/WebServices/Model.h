@@ -98,7 +98,14 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
         Set<GUID> fAttachedInterfaces;
 
+        /**
+         *  Sequence<> instead of Set<> because order matters for gateways (?) - or maybe can not be more than one?
+         */
         Sequence<InternetAddress> fGateways;
+
+        /**
+         *  Sequence<> instead of Set<> because order matters for DNS servers.
+         */
         Sequence<InternetAddress> fDNSServers;
 
         // PROBABLY idnetify same network - by default - as hash of default gateway's macaddr - or at least look at that to compare...
@@ -108,7 +115,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         // @todo add SSIDs here - as a good hint in identenifying same network
 
         // whatsmyip
-        optional<Sequence<InternetAddress>> fExternalAddresses;
+        optional<Set<InternetAddress>> fExternalAddresses;
 
         optional<Common::GEOLocationInformation> fGEOLocInformation;
 
@@ -122,17 +129,19 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         static const DataExchange::ObjectVariantMapper kMapper;
     };
 
+    struct NetworkAttachmentInfo {
+        Set<String>               hardwareAddresses;
+        Sequence<InternetAddress> networkAddresses; // node not socket addresses
+
+        nonvirtual String ToString () const;
+    };
+
     /**
      */
     struct Device {
         GUID fGUID;
 
         String name;
-
-        /**
-         * Bindings
-         */
-        Sequence<InternetAddress> ipAddresses;
 
         /**
          */
@@ -155,9 +164,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
          */
         optional<Set<DeviceType>> fTypes;
 
-        /*
+        /**
          */
-        Set<GUID> fAttachedNetworks;
+        Mapping<GUID, NetworkAttachmentInfo> fAttachedNetworks;
 
         /**
          *  This comes from the SSDP presentation url. Its a URL which can be used by a UI and web-browser to
@@ -172,6 +181,11 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         optional<Set<GUID>> fAttachedNetworkInterfaces;
 
         optional<OperatingSystem> fOperatingSystem;
+
+        /**
+         *  Combine from all network interfaces.
+         */
+        nonvirtual Set<InternetAddress> GetInternetAddresses () const;
 
         nonvirtual String ToString () const;
 

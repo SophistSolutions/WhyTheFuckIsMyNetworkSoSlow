@@ -66,10 +66,18 @@ namespace {
     GUID LookupPersistentDeviceID_ (const Discovery::Device& d)
     {
         using IO::Network::InternetAddress;
-        SortedSet<InternetAddress> x{d.ipAddresses};
-        StringBuilder              sb;
-        if (not x.empty ()) {
-            sb += x.Nth (0).As<String> ();
+        StringBuilder sb;
+        {
+            // try using hardware addresses
+            for (auto i : SortedSet<String>{d.GetHardwareAddresses ()}) {
+                sb += i;
+            }
+        }
+        if (sb.empty ()) {
+            SortedSet<InternetAddress> x{d.GetInternetAddresses ()};
+            if (not x.empty ()) {
+                sb += x.Nth (0).As<String> ();
+            }
         }
         sb += d.name;
         using namespace Cryptography::Digest;
@@ -113,21 +121,53 @@ namespace {
 
 /*
  ********************************************************************************
+ ******************* Discovery::NetworkAttachmentInfo ***************************
+ ********************************************************************************
+ */
+String NetworkAttachmentInfo::ToString () const
+{
+    StringBuilder sb;
+    sb += L"{";
+    sb += L"hardwareAddress: " + Characters::ToString (hardwareAddresses) + L", ";
+    sb += L"networkAddresses: " + Characters::ToString (networkAddresses) + L", ";
+    sb += L"}";
+    return sb.str ();
+}
+
+/*
+ ********************************************************************************
  ******************************* Discovery::Device ******************************
  ********************************************************************************
  */
+Set<String> Discovery::Device::GetHardwareAddresses () const
+{
+    Set<String> result;
+    for (auto iNet : fAttachedNetworks) {
+        result += iNet.fValue.hardwareAddresses;
+    }
+    return result;
+}
+
+Set<InternetAddress> Discovery::Device::GetInternetAddresses () const
+{
+    Set<InternetAddress> result;
+    for (auto iNet : fAttachedNetworks) {
+        result += iNet.fValue.networkAddresses;
+    }
+    return result;
+}
+
 String Discovery::Device::ToString () const
 {
     StringBuilder sb;
     sb += L"{";
     sb += L"GUID: " + Characters::ToString (fGUID) + L", ";
     sb += L"name: " + Characters::ToString (name) + L", ";
-    sb += L"ipAddress: " + Characters::ToString (ipAddresses) + L", ";
     sb += L"types: " + Characters::ToString (fTypes) + L", ";
     if (fThisDevice) {
         sb += L"This-Device: " + Characters::ToString (fThisDevice) + L", ";
     }
-    sb += L"fNetworks: " + Characters::ToString (fNetworks) + L", ";
+    sb += L"fAttachedNetworks: " + Characters::ToString (fAttachedNetworks) + L", ";
     sb += L"fAttachedInterfaces: " + Characters::ToString (fAttachedInterfaces) + L", ";
     sb += L"fPresentationURL: " + Characters::ToString (fPresentationURL) + L", ";
     sb += L"fOperatingSystem: " + Characters::ToString (fOperatingSystem) + L", ";
@@ -146,7 +186,7 @@ namespace {
         NetAndNetInterfaceMapper_ () = default; // load networks and network interafces..
 
     public:
-        Set<GUID> LookupNetworksGUIDs (const Set<InternetAddress>& ia) const
+        Set<GUID> LookupNetworksGUIDs (const Iterable<InternetAddress>& ia) const
         {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
             Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"{}::NetAndNetInterfaceMapper_::LookupNetworksGUIDs (%s)", Characters::ToString (ia).c_str ())};
@@ -231,10 +271,26 @@ namespace {
         };
         optional<SSDPInfo> fSSDPInfo;
 
+        void AddIPAddresses_ (const InternetAddress& addr, const optional<String>& hwAddr = nullopt)
+        {
+            // merge the addrs into each matching network interface
+            AddIPAddresses_ (Iterable<InternetAddress>{addr}, hwAddr);
+        }
+        void AddIPAddresses_ (const Iterable<InternetAddress>& addrs, const optional<String>& hwAddr = nullopt)
+        {
+            // merge the addrs into each matching network interface
+            for (GUID nw : NetAndNetInterfaceMapper_::sThe.LookupNetworksGUIDs (addrs)) {
+                NetworkAttachmentInfo nwAttachmentInfo = fAttachedNetworks.LookupValue (nw);
+                nwAttachmentInfo.networkAddresses += addrs;
+                if (hwAddr) {
+                    nwAttachmentInfo.hardwareAddresses += *hwAddr;
+                }
+                fAttachedNetworks.Add (nw, nwAttachmentInfo);
+            }
+        }
+
         void PatchDerivedFields ()
         {
-            fNetworks = NetAndNetInterfaceMapper_::sThe.LookupNetworksGUIDs (ipAddresses);
-
             /*
              *  Name Calculation
              */
@@ -269,7 +325,7 @@ namespace {
             }
             if (name.empty ()) {
                 // try reverse dns lookup
-                for (auto i : ipAddresses) {
+                for (auto i : GetInternetAddresses ()) {
                     if (auto o = ReverseDNSLookup_ (i)) {
                         name = *o;
                         break;
@@ -290,10 +346,6 @@ namespace {
                 (fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_WFADevice_) or
                  fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_WANConnectionDevice_) or
                  fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_WANDevice_))) {
-                // @todo this logic could use improvement
-                if (ipAddresses.Any ([] (const InternetAddress& ia) { return ia.As<String> ().EndsWith (L".1"); })) {
-                    fTypes.Add (Discovery::DeviceType::eRouter);
-                }
                 fTypes.Add (Discovery::DeviceType::eNetworkInfrastructure);
             }
 
@@ -310,9 +362,13 @@ namespace {
                 fTypes.Add (Discovery::DeviceType::eMediaPlayer);
             }
 
-            //tmphack
-            if (not fThisDevice) {
-                if (ipAddresses.Any ([] (const InternetAddress& ia) { return ia.As<String> ().EndsWith (L".1"); })) {
+            {
+                // See if its addresses intersect with any network gateways - if so - its a router
+                Set<InternetAddress> gateways;
+                for (GUID netGUID : fAttachedNetworks.Keys ()) {
+                    gateways += NetworksMgr::sThe.GetNetworkByID (netGUID).fGateways;
+                }
+                if (not(gateways ^ GetInternetAddresses ()).empty ()) {
                     fTypes.Add (Discovery::DeviceType::eRouter);
                 }
             }
@@ -340,7 +396,7 @@ namespace {
     optional<DiscoveryInfo_> FindMatchingDevice_ (decltype (sDiscoveredDevices_)::ReadableReference& rr, const DiscoveryInfo_& d)
     {
         for (const auto& di : rr->MappedValues ()) {
-            if (not(d.ipAddresses ^ di.ipAddresses).empty ()) {
+            if (not(d.GetInternetAddresses () ^ di.GetInternetAddresses ()).empty ()) {
                 return di;
             }
         }
@@ -369,13 +425,13 @@ namespace {
             while (true) {
                 try {
                     DeclareActivity da{&kDiscovering_This_Device_};
-                    if (auto o = GetMyDevice_ ()) {
+                    if (optional<DiscoveryInfo_> o = GetMyDevice_ ()) {
                         auto           l  = sDiscoveredDevices_.rwget ();
                         DiscoveryInfo_ di = [&] () {
                             DiscoveryInfo_ tmp{};
-                            tmp.ipAddresses += o->ipAddresses;
-                            if (optional<DiscoveryInfo_> o = FindMatchingDevice_ (l, tmp)) {
-                                return *o;
+                            tmp.fAttachedNetworks = o->fAttachedNetworks;
+                            if (optional<DiscoveryInfo_> oo = FindMatchingDevice_ (l, tmp)) {
+                                return *oo;
                             }
                             else {
                                 // Generate GUID - based on ipaddrs
@@ -416,14 +472,18 @@ namespace {
             for (Interface i : IO::Network::GetInterfaces ()) {
                 if (i.fType != Interface::Type::eLoopback and i.fStatus and i.fStatus->Contains (Interface::Status::eRunning)) {
                     i.fBindings.Apply ([&] (const Interface::Binding& ia) {
-                        if (not ia.fInternetAddress.IsMulticastAddress ()) {
-                            newDev.ipAddresses += ia.fInternetAddress;
+                        if (not kIncludeMulticastAddressesInDiscovery and ia.fInternetAddress.IsMulticastAddress ()) {
+                            return;
                         }
+                        newDev.AddIPAddresses_ (ia.fInternetAddress, i.fHardwareAddress);
                     });
                 }
             }
             newDev.fAttachedInterfaces = Set<GUID>{Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ().Select<GUID> ([] (auto iFace) { return iFace.fGUID; })};
             newDev.fGUID               = LookupPersistentDeviceID_ (newDev);
+#if USE_NOISY_TRACE_IN_THIS_MODULE_
+            DbgTrace (L"returning: %s", Characters::ToString (newDev).c_str ());
+#endif
             return newDev;
         }
     };
@@ -518,7 +578,7 @@ namespace {
                 auto           l  = sDiscoveredDevices_.rwget ();
                 DiscoveryInfo_ di = [&] () {
                     DiscoveryInfo_ tmp{};
-                    tmp.ipAddresses += locAddrs;
+                    tmp.AddIPAddresses_ (locAddrs);
                     if (optional<DiscoveryInfo_> o = FindMatchingDevice_ (l, tmp)) {
                         return *o;
                     }
@@ -544,7 +604,7 @@ namespace {
                 }
                 di.fSSDPInfo->fServer = d.fServer;
 
-                di.ipAddresses += locAddrs;
+                di.AddIPAddresses_ (locAddrs);
                 if (deviceType and deviceFriendlyName) {
                     di.fSSDPInfo->fDeviceType2FriendlyNameMap.Add (*deviceType, *deviceFriendlyName);
                 }
@@ -555,6 +615,8 @@ namespace {
             }
         }
     };
+
+    unique_ptr<SSDPDeviceDiscoverer_> sSSDPDeviceDiscoverer_;
 }
 
 namespace {
@@ -598,7 +660,7 @@ namespace {
                         auto           l  = sDiscoveredDevices_.rwget ();
                         DiscoveryInfo_ di = [&] () {
                             DiscoveryInfo_ tmp{};
-                            tmp.ipAddresses += i.fInternetAddress;
+                            tmp.AddIPAddresses_ (i.fInternetAddress, i.fHardwareAddress);
                             if (optional<DiscoveryInfo_> o = FindMatchingDevice_ (l, tmp)) {
                                 return *o;
                             }
@@ -636,13 +698,31 @@ namespace {
 namespace {
     constexpr Time::DurationSecondsType kDefaultItemCacheLifetime_{1}; // this costs very little since just reading already cached data so default to quick check
 
-    unique_ptr<SSDPDeviceDiscoverer_> sSSDPDeviceDiscoverer_;
+    // Really always want all true, just add ability to turn some off to ease debugging
+    constexpr bool kInclude_SSDP_Discoverer_{true};
+    constexpr bool kInclude_MyDevice_Discoverer_{true};
+    constexpr bool kInclude_Neighbor_Discoverer_{true};
 
     bool IsActive_ ()
     {
-        Require (static_cast<bool> (sMyDeviceDiscoverer_) == static_cast<bool> (sSSDPDeviceDiscoverer_));
-        Require (static_cast<bool> (sNeighborDiscoverer_) == static_cast<bool> (sSSDPDeviceDiscoverer_));
-        return sSSDPDeviceDiscoverer_ != nullptr;
+        if constexpr (kInclude_MyDevice_Discoverer_ and kInclude_SSDP_Discoverer_) {
+            Require (static_cast<bool> (sMyDeviceDiscoverer_) == static_cast<bool> (sSSDPDeviceDiscoverer_));
+        }
+        if constexpr (kInclude_MyDevice_Discoverer_ and kInclude_Neighbor_Discoverer_) {
+            Require (static_cast<bool> (sMyDeviceDiscoverer_) == static_cast<bool> (sNeighborDiscoverer_));
+        }
+        if constexpr (kInclude_SSDP_Discoverer_ and kInclude_Neighbor_Discoverer_) {
+            Require (static_cast<bool> (sSSDPDeviceDiscoverer_) == static_cast<bool> (sNeighborDiscoverer_));
+        }
+        if constexpr (kInclude_SSDP_Discoverer_) {
+            return sSSDPDeviceDiscoverer_ != nullptr;
+        }
+        if constexpr (kInclude_MyDevice_Discoverer_) {
+            return sMyDeviceDiscoverer_ != nullptr;
+        }
+        if constexpr (kInclude_Neighbor_Discoverer_) {
+            return sNeighborDiscoverer_ != nullptr;
+        }
     }
 }
 
@@ -650,18 +730,30 @@ Discovery::DevicesMgr::Activator::Activator ()
 {
     DbgTrace (L"Discovery::DevicesMgr::Activator::Activator: activating device discovery");
     Require (not IsActive_ ());
-    sSSDPDeviceDiscoverer_ = make_unique<SSDPDeviceDiscoverer_> ();
-    sMyDeviceDiscoverer_   = make_unique<MyDeviceDiscoverer_> ();
-    sNeighborDiscoverer_   = make_unique<MyNeighborDiscoverer_> ();
+    if constexpr (kInclude_SSDP_Discoverer_) {
+        sSSDPDeviceDiscoverer_ = make_unique<SSDPDeviceDiscoverer_> ();
+    }
+    if constexpr (kInclude_MyDevice_Discoverer_) {
+        sMyDeviceDiscoverer_ = make_unique<MyDeviceDiscoverer_> ();
+    }
+    if constexpr (kInclude_Neighbor_Discoverer_) {
+        sNeighborDiscoverer_ = make_unique<MyNeighborDiscoverer_> ();
+    }
 }
 
 Discovery::DevicesMgr::Activator::~Activator ()
 {
     DbgTrace (L"Discovery::DevicesMgr::Activator::~Activator: deactivating device discovery");
     Require (IsActive_ ());
-    sSSDPDeviceDiscoverer_.reset ();
-    sMyDeviceDiscoverer_.reset ();
-    sNeighborDiscoverer_.reset ();
+    if constexpr (kInclude_SSDP_Discoverer_) {
+        sSSDPDeviceDiscoverer_.reset ();
+    }
+    if constexpr (kInclude_MyDevice_Discoverer_) {
+        sMyDeviceDiscoverer_.reset ();
+    }
+    if constexpr (kInclude_Neighbor_Discoverer_) {
+        sNeighborDiscoverer_.reset ();
+    }
 }
 
 /*

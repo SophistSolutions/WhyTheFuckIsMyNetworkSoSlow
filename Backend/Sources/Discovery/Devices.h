@@ -9,6 +9,7 @@
 #include "Stroika/Foundation/Characters/String.h"
 #include "Stroika/Foundation/Common/GUID.h"
 #include "Stroika/Foundation/Containers/Collection.h"
+#include "Stroika/Foundation/Containers/Mapping.h"
 #include "Stroika/Foundation/IO/Network/InternetAddress.h"
 #include "Stroika/Foundation/IO/Network/URI.h"
 
@@ -39,6 +40,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
 
     using Characters::String;
     using Containers::Collection;
+    using Containers::Mapping;
     using Containers::Set;
     using IO::Network::InternetAddress;
     using IO::Network::URI;
@@ -53,19 +55,37 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
     using OperatingSystem = WebServices::Model::OperatingSystem;
 
     /**
+     */
+    struct NetworkAttachmentInfo {
+        Set<String>          hardwareAddresses;
+        Set<InternetAddress> networkAddresses; // node not socket addresses
+
+        nonvirtual String ToString () const;
+    };
+
+    /**
      *  Discovery::Device is the definition of a device in the discovery module. This is the level of detail
      *  captured by the discovery services.
      */
     struct Device {
-        GUID                      fGUID;
-        String                    name;
-        Set<InternetAddress>      ipAddresses;
-        Set<DeviceType>           fTypes;
-        bool                      fThisDevice{};
-        Set<GUID>                 fNetworks;
-        optional<Set<GUID>>       fAttachedInterfaces;
-        optional<URI>             fPresentationURL;
-        optional<OperatingSystem> fOperatingSystem;
+        GUID                                 fGUID;
+        String                               name;
+        Set<DeviceType>                      fTypes;
+        bool                                 fThisDevice{};
+        Mapping<GUID, NetworkAttachmentInfo> fAttachedNetworks;
+        optional<Set<GUID>>                  fAttachedInterfaces;
+        optional<URI>                        fPresentationURL;
+        optional<OperatingSystem>            fOperatingSystem;
+
+        /**
+         *  Combine from all network interfaces.
+         */
+        nonvirtual Set<String> GetHardwareAddresses () const;
+
+        /**
+         *  Combine from all network interfaces.
+         */
+        nonvirtual Set<InternetAddress> GetInternetAddresses () const;
 
         nonvirtual String ToString () const;
     };

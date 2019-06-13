@@ -10,11 +10,11 @@
       </v-card-title>
 
       <v-card-text>
-        <p>CIDR: {{ network.networkAddresses[0] }}</p>
-        <p>DNS Servers: {{ network.DNSServers }}</p>
+        <p>CIDR: {{ network.networkAddresses.join (", ") }}</p>
+        <p>DNS Servers: {{ network.DNSServers.join (", ") }}</p>
         <div id="gateway-network" v-if="isGatewayNetwork(network)">
-          <p>Gateways: {{ network.gateways[0] }}</p>
-          <p>Public IP: {{ network.externalAddresses[0] }}</p>
+          <p>Gateways: {{ network.gateways.join (", ") }}</p>
+          <p>Public IP: {{ network.externalAddresses.join (", ") }}</p>
           <p>Internet Service Provider: {{ network.internetServiceProvider.name }}</p>
         </div>
         <div @click="setSelectedNetwork(network.id)">

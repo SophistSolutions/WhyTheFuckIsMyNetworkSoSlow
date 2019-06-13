@@ -1,36 +1,21 @@
 Top priority bug:
 
+* MAYBE automatically add the 6-4 CIDR for V6 networks, to show the mapped V4 range (so any bindings would show up for those devices)
 
 
->>> IN MIDDLE OF REDO OF NETWORK/CIDR THING. TEST RECENT CHANGES ON Unix
->>> MAYBE MAKE IPV6 its own network? Confusing how ipv6 addrresses aappear in each
->>> NETWORK...
-
-
-
->>
-			git stash save WORK_ON_DEFVICE_NETWORKS_MAP_REFACTOR
-
-
-
-
-
-- Maybe refactor 'attachedinterfaces' into
-mapping of InterfaceIDs to Interface info and 
-store 'ipaddresses' there - ip addresses
-are bound to interfaces.
-
-
-THEN EXPOSE MORE FIELDS (AS BELOW) - before release - like ICONS! AND HARDWARE ADDRESS (and maybe GUESS ABOUT WHERE FROM)
+* THEN EXPOSE MORE FIELDS (AS BELOW) - before release - like ICONS! 
+  AND HARDWARE ADDRESS  GUESS ABOUT WHERE FROM
  EVEN AS TRICK ONE OR TWO CASES AND API IN PLACE SO GUI WORK CNA GO IN PARALLEL WIHT BACKEND WORK
+
+
 ---
-
-
 
 > Fix parsing of SSDP presentationURL, and see that it shows up properly in the web GUI for devices (all the
   rest should be plumbed - just the stroika ssdp parse code is questionable/incomplete)
 	- Improve UPnP::DeSerialize () - so it includes device icons (url to icon)
 	 (or icon by blob)
+
+
 
 > Fix top level makefile so checks for if npm is installed (check-prerequesites)
 
