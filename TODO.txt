@@ -1,5 +1,16 @@
 Top priority bug:
 
+* Add to Device, Network, and NetworkInterface (in debug mode only) 
+  DebugProps - which is a MAPPING of arbitrary names, to values, and can stick and (even hierarchical VariantValue)
+  objects there. use that to debug, and experiement adding extra stuff there, like the SDDP info
+
+* THEN EXPOSE MORE FIELDS (AS BELOW) - before release - like ICONS! 
+  AND HARDWARE ADDRESS  GUESS ABOUT WHERE FROM
+ EVEN AS TRICK ONE OR TWO CASES AND API IN PLACE SO GUI WORK CNA GO IN PARALLEL WIHT BACKEND WORK
+
+* Fix delay on startup - some caching thing I did at end of last release ( forget what).
+  maybe dns reverse dns?
+
 * New feature - in app - keep track of how long since last question about devices etc.
   If getting pinged alot, automatically adjust 'frequency' setting and have that drive
   how aggressively we do discovery.
@@ -9,24 +20,17 @@ Top priority bug:
   variable/mdoule capturing this idea of how hard we discover, and let the drive some of our 
   timing values.
 
-
 * MAYBE automatically add the 6-4 CIDR for V6 networks, to show the mapped V4 range (so any bindings would show up for those devices)
 
 * Why my 'router' not showing up as 'network infrastructure' as well.
-  Maybe I did that on purpose?
-
-* THEN EXPOSE MORE FIELDS (AS BELOW) - before release - like ICONS! 
-  AND HARDWARE ADDRESS  GUESS ABOUT WHERE FROM
- EVEN AS TRICK ONE OR TWO CASES AND API IN PLACE SO GUI WORK CNA GO IN PARALLEL WIHT BACKEND WORK
-
-* Fix delay on startup - some caching thing I did at end of last release ( forget what).
-  maybe dns reverse dns?
+  Maybe I did that on purpose? Should automatically list (in enum) all implied types or 
+  provide API to get from a type list of all implied types so GUI can decide what to show? Or maybe
+  not needed?
 
 * On linux linux, device shows as Linux, but on windows with much more detail (version)
 
 * fix empty device record - no name, no addresses - nothing? Not sure where that comes from
   (windows only)
-
 
 * use network interfaces 'friendlyname' to suggest default freindlyname for networks.
   (can be done in GUI - for network - from attachedInterfcae, lookup list of 'friendlynames')
@@ -47,14 +51,29 @@ Top priority bug:
 	 (or icon by blob)
 
 
-
-> Fix top level makefile so checks for if npm is installed (check-prerequesites)
-
-
 - Add HardwareAddress(es - list) 
   - and list MACADDR AND REGISTERED MANUFACTURER
 	  - eg. 
 		  HardwareAddresses=[{Address: xx-xx-xx-xx-xx-xx-xx, Manufacturer: "Cisco"}]
+
+
+* Fix top level makefile so checks for if npm is installed (check-prerequesites)
+
+* Probably need TWO classes of IDs - CURRENT (dynamically generated with GUID-GEN), and PERSISTENT IDs
+  During a session, the dynamic ID wont change, but the persistent ID can change as we gain more information
+  and better match.
+
+  Generally the GUI will use the persistent IDs (though they can change during a session)
+
+  This applies to DEVICES and NETWORKS (as these must be smartly matched/guessed). It MAY or may not apply to
+  networkinterfaces. Probably a good idea there too if for no other reason than consistency
+
+  And note that for NETWORK IDS, we want to PRIMARILY drive the MATCHING logic based on the HARDWARE ADDRESS of
+  the gateway. I THINK that will in general be the best indicator.
+
+* Add a few more helpful network idientifiers under Network object
+     SSIDs
+	 NetworkNames (from the adapaters on the network, can be more than one, and can be misleading; maybe call it NetworkAdapterNames)
 
 > Redo identification of speaker based on services
   Service-ID: 'urn:upnp-org:serviceId:AudioIn'
