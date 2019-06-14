@@ -1,5 +1,15 @@
 Top priority bug:
 
+* New feature - in app - keep track of how long since last question about devices etc.
+  If getting pinged alot, automatically adjust 'frequency' setting and have that drive
+  how aggressively we do discovery.
+
+  OR - base it on how long since last change (since we found something new). Maybe disable
+  SEARCH if we havent found anything new in a while (or do less often). Anyhow - have a 
+  variable/mdoule capturing this idea of how hard we discover, and let the drive some of our 
+  timing values.
+
+
 * MAYBE automatically add the 6-4 CIDR for V6 networks, to show the mapped V4 range (so any bindings would show up for those devices)
 
 * Why my 'router' not showing up as 'network infrastructure' as well.
