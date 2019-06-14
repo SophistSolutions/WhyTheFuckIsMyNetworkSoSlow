@@ -2,10 +2,31 @@ Top priority bug:
 
 * MAYBE automatically add the 6-4 CIDR for V6 networks, to show the mapped V4 range (so any bindings would show up for those devices)
 
+* Why my 'router' not showing up as 'network infrastructure' as well.
+  Maybe I did that on purpose?
 
 * THEN EXPOSE MORE FIELDS (AS BELOW) - before release - like ICONS! 
   AND HARDWARE ADDRESS  GUESS ABOUT WHERE FROM
  EVEN AS TRICK ONE OR TWO CASES AND API IN PLACE SO GUI WORK CNA GO IN PARALLEL WIHT BACKEND WORK
+
+* Fix delay on startup - some caching thing I did at end of last release ( forget what).
+  maybe dns reverse dns?
+
+* On linux linux, device shows as Linux, but on windows with much more detail (version)
+
+* fix empty device record - no name, no addresses - nothing? Not sure where that comes from
+  (windows only)
+
+
+* use network interfaces 'friendlyname' to suggest default freindlyname for networks.
+  (can be done in GUI - for network - from attachedInterfcae, lookup list of 'friendlynames')
+
+
+*	UNIX not showing dns Servers
+   cat /etc/resolve.conf (look for nameservers)
+   if its got a comment about autmatically done by systemd
+	systemd-resolve --status
+	grep DNS Server: 
 
 
 ---
@@ -20,12 +41,8 @@ Top priority bug:
 > Fix top level makefile so checks for if npm is installed (check-prerequesites)
 
 
-- On Devices query, add option to NOT list IPv6 addresses that are direct translations of IPv4 address in list.
-  - --omit-ipv6-address-if-dup-of-ipv4
-	 (maybe - not sure good idea - maybe just do this in GUI)
-
-- Add HardwareAddress(es - list) to list of things captured in devices info (currenly done in discovert-deviceinfo but expose)
-  - maybe list MACADDR AND REGISTERED MANUFACTURER
+- Add HardwareAddress(es - list) 
+  - and list MACADDR AND REGISTERED MANUFACTURER
 	  - eg. 
 		  HardwareAddresses=[{Address: xx-xx-xx-xx-xx-xx-xx, Manufacturer: "Cisco"}]
 

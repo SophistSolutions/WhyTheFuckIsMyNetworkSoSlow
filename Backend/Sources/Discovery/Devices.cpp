@@ -507,13 +507,18 @@ namespace {
             // SSDP can fail due to lack of permissions to bind to the appropriate sockets, or for example under WSL where we get protocol unsupported.
             // WARN to syslog, but no need to stop app
             try {
-                fListener_ = make_unique<SSDP::Client::Listener> ([this] (const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); }, SSDP::Client::Listener::eAutoStart);
+                fListener_ = make_unique<SSDP::Client::Listener> (
+                    [this] (const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); },
+                    SSDP::Client::Listener::eAutoStart);
             }
             catch (...) {
                 Logger::Get ().Log (Logger::Priority::eError, L"Problem starting SSDP Listener - so that source of discovery will be unavailable: %s", Characters::ToString (current_exception ()).c_str ());
             }
             try {
-                fSearcher_ = make_unique<SSDP::Client::Search> ([this] (const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); }, SSDP::Client::Search::kRootDevice);
+                static const Time::Duration kReSearchInterval_{30min}; // not sure what interval makes sense
+                fSearcher_ = make_unique<SSDP::Client::Search> (
+                    [this] (const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); },
+                    SSDP::Client::Search::kRootDevice, kReSearchInterval_);
             }
             catch (...) {
                 // only warning because searcher much less important - just helpful at very start of discovery

@@ -114,7 +114,7 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
     // Fetch (UNSORTED) list of devices
     Sequence<BackendApp::WebServices::Device> devices = Sequence<BackendApp::WebServices::Device>{Discovery::DevicesMgr::sThe.GetActiveDevices ().Select<BackendApp::WebServices::Device> ([] (const Discovery::Device& d) {
         BackendApp::WebServices::Device newDev;
-		newDev.fGUID = d.fGUID;
+        newDev.fGUID = d.fGUID;
         newDev.name  = d.name;
         if (not d.fTypes.empty ()) {
             newDev.fTypes = d.fTypes; // leave missing if no discovered types
