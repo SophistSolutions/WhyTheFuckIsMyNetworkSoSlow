@@ -27,6 +27,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
 
     using Characters::String;
     using Containers::Collection;
+    using Containers::Mapping;
     using Containers::Sequence;
     using Containers::Set;
     using IO::Network::CIDR;
@@ -67,6 +68,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
         optional<GEOLocationInformation> fGEOLocInfo;
 
         optional<InternetServiceProvider> fISP;
+
+#if qDebug
+        Mapping<String, DataExchange::VariantValue> fDebugProps;
+#endif
 
         nonvirtual String ToString () const;
     };

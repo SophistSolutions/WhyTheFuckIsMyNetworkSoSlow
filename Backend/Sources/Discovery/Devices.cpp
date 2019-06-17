@@ -37,6 +37,7 @@ using namespace std;
 using namespace Stroika::Foundation;
 using namespace Stroika::Foundation::Characters;
 using namespace Stroika::Foundation::Containers;
+using namespace Stroika::Foundation::DataExchange;
 using namespace Stroika::Foundation::Execution;
 using namespace Stroika::Foundation::IO;
 using namespace Stroika::Foundation::IO::Network;
@@ -171,6 +172,9 @@ String Discovery::Device::ToString () const
     sb += L"fAttachedInterfaces: " + Characters::ToString (fAttachedInterfaces) + L", ";
     sb += L"fPresentationURL: " + Characters::ToString (fPresentationURL) + L", ";
     sb += L"fOperatingSystem: " + Characters::ToString (fOperatingSystem) + L", ";
+#if qDebug
+    sb += L"fDebugProps: " + Characters::ToString (fDebugProps) + L", ";
+#endif
     sb += L"}";
     return sb.str ();
 }
@@ -253,6 +257,7 @@ namespace {
             optional<String>        fManufacturer;
             Mapping<String, String> fDeviceType2FriendlyNameMap; //  http://upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v1.1.pdf - <deviceType> - Page 44
             optional<URI>           fPresentationURL;
+            Time::DateTime          fLastSSDPMessageRecievedAt{Time::DateTime::Now ()};
 
             String ToString () const
             {
@@ -265,6 +270,7 @@ namespace {
                 sb += L"fServer: " + Characters::ToString (fServer) + L", ";
                 sb += L"Device-Type-2-Friendly-Name-Map: " + Characters::ToString (fDeviceType2FriendlyNameMap) + L", ";
                 sb += L"fPresentationURL: " + Characters::ToString (fPresentationURL) + L", ";
+                sb += L"fLastSSDPMessageRecievedAt: " + Characters::ToString (fLastSSDPMessageRecievedAt) + L", ";
                 sb += L"}";
                 return sb.str ();
             }
@@ -372,6 +378,21 @@ namespace {
                     fTypes.Add (Discovery::DeviceType::eRouter);
                 }
             }
+
+#if qDebug
+            if (fSSDPInfo) {
+                fDebugProps.Add (L"SSDPInfo"sv,
+                                 VariantValue{
+                                     Mapping<String, VariantValue>{
+                                         pair<String, VariantValue>{L"DeviceType2FriendlyNameMap"sv, Characters::ToString (fSSDPInfo->fDeviceType2FriendlyNameMap)},
+                                         pair<String, VariantValue>{L"USNs"sv, Characters::ToString (fSSDPInfo->fUSNs)},
+                                         pair<String, VariantValue>{L"Server"sv, Characters::ToString (fSSDPInfo->fServer)},
+                                         pair<String, VariantValue>{L"Manufacturer"sv, Characters::ToString (fSSDPInfo->fManufacturer)},
+                                         pair<String, VariantValue>{L"LastSSDPMessageRecievedAt"sv, Characters::ToString (fSSDPInfo->fLastSSDPMessageRecievedAt)},
+                                         pair<String, VariantValue>{L"Locations"sv, Characters::ToString (fSSDPInfo->fLocations)}}});
+            }
+
+#endif
 
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
             DbgTrace (L"At end of PatchDerivedFields: %s", ToString ().c_str ());
@@ -598,6 +619,8 @@ namespace {
                     di.fSSDPInfo = DiscoveryInfo_::SSDPInfo{};
                 }
                 di.fSSDPInfo->fAlive = d.fAlive;
+                di.fSSDPInfo->fLocations.Add (d.fLocation);
+                di.fSSDPInfo->fUSNs.Add (d.fUSN);
 
                 if (presentationURL) {
                     // consider if value already there - warn if changes - should we collect multiple
@@ -615,6 +638,16 @@ namespace {
                 }
                 Memory::CopyToIf (manufactureName, &di.fSSDPInfo->fManufacturer);
 
+                di.fSSDPInfo->fLastSSDPMessageRecievedAt = Time::DateTime::Now (); // update each message, even if already created
+
+                if (not di.fOperatingSystem.has_value ()) {
+                    if (di.fSSDPInfo->fServer and di.fSSDPInfo->fServer->Contains (L"Linux")) {
+                        di.fOperatingSystem = Discovery::OperatingSystem{L"Linux"};
+                    }
+                    else if (di.fSSDPInfo->fServer and di.fSSDPInfo->fServer->Contains (L"POSIX")) {
+                        di.fOperatingSystem = Discovery::OperatingSystem{L"POSIX"};
+                    }
+                }
                 di.PatchDerivedFields ();
                 l->Add (di.fGUID, di);
             }

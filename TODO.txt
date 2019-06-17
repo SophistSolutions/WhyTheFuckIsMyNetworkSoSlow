@@ -1,15 +1,23 @@
 Top priority bug:
 
-* Add to Device, Network, and NetworkInterface (in debug mode only) 
-  DebugProps - which is a MAPPING of arbitrary names, to values, and can stick and (even hierarchical VariantValue)
-  objects there. use that to debug, and experiement adding extra stuff there, like the SDDP info
-
 * THEN EXPOSE MORE FIELDS (AS BELOW) - before release - like ICONS! 
   AND HARDWARE ADDRESS  GUESS ABOUT WHERE FROM
  EVEN AS TRICK ONE OR TWO CASES AND API IN PLACE SO GUI WORK CNA GO IN PARALLEL WIHT BACKEND WORK
 
+
+
+
+
 * Fix delay on startup - some caching thing I did at end of last release ( forget what).
   maybe dns reverse dns?
+
+
+--- test on all target platforms, esp raspberrypi
+
+------------------
+DO RELEASE HERE
+-----------------
+
 
 * New feature - in app - keep track of how long since last question about devices etc.
   If getting pinged alot, automatically adjust 'frequency' setting and have that drive

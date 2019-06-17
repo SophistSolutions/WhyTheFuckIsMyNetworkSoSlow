@@ -103,6 +103,9 @@ String Discovery::Network::ToString () const
     sb += L"Gateways: " + Characters::ToString (fGateways) + L", ";
     sb += L"DNS-Servers: " + Characters::ToString (fDNSServers) + L", ";
     sb += L"Attached-Network-Interfaces: " + Characters::ToString (fAttachedNetworkInterfaces) + L", ";
+#if qDebug
+    sb += L"fDebugProps: " + Characters::ToString (fDebugProps) + L", ";
+#endif
     sb += L"}";
     return sb.str ();
 }
@@ -216,6 +219,14 @@ namespace {
                     // the real ethernet adapter).
                     // -- LGP 2018-12-16
                     nw.fGUID = ComputeGUIDForNetwork_ (nw);
+
+#if qDebug
+                    // nothing useful to add yet
+                    nw.fDebugProps.Add (L"test"sv,
+                                        VariantValue{
+                                            Mapping<String, VariantValue>{
+                                                pair<String, VariantValue>{L"constructedAt"sv, Time::DateTime::Now ()}}});
+#endif
 
                     accumResults += nw;
                 }

@@ -137,6 +137,11 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
         newDev.fAttachedNetworkInterfaces = d.fAttachedInterfaces; // @todo must merge += (but only when merging across differnt discoverers/networks)
         newDev.fPresentationURL           = d.fPresentationURL;
         newDev.fOperatingSystem           = d.fOperatingSystem;
+#if qDebug
+        if (not d.fDebugProps.empty ()) {
+            newDev.fDebugProps = d.fDebugProps;
+        }
+#endif
         return newDev;
     })};
 
@@ -282,6 +287,11 @@ Sequence<BackendApp::WebServices::Network> WSImpl::GetNetworks_Recurse () const
         nw.fExternalAddresses       = n.fExternalAddresses;
         nw.fGEOLocInformation       = n.fGEOLocInfo;
         nw.fInternetServiceProvider = n.fISP;
+#if qDebug
+        if (not n.fDebugProps.empty ()) {
+            nw.fDebugProps = n.fDebugProps;
+        }
+#endif
 
         result += nw;
     }
@@ -338,6 +348,11 @@ Collection<BackendApp::WebServices::NetworkInterface> WSImpl::GetNetworkInterfac
             /**
              */
             nw.fGUID = n.fGUID;
+#if qDebug
+            if (not n.fDebugProps.empty ()) {
+                nw.fDebugProps = n.fDebugProps;
+            }
+#endif
 
             result += nw;
         }

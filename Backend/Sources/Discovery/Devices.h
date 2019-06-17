@@ -76,6 +76,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
         optional<Set<GUID>>                  fAttachedInterfaces;
         optional<URI>                        fPresentationURL;
         optional<OperatingSystem>            fOperatingSystem;
+#if qDebug
+        Mapping<String, DataExchange::VariantValue> fDebugProps;
+#endif
 
         /**
          *  Combine from all network interfaces.

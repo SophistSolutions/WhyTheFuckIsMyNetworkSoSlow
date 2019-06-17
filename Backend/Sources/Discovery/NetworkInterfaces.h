@@ -10,6 +10,7 @@
 #include "Stroika/Foundation/Containers/Collection.h"
 #include "Stroika/Foundation/Containers/Sequence.h"
 #include "Stroika/Foundation/Containers/Set.h"
+#include "Stroika/Foundation/DataExchange/VariantValue.h"
 #include "Stroika/Foundation/IO/Network/Interface.h"
 
 /**
@@ -23,6 +24,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
 
     using Characters::String;
     using Containers::Collection;
+    using Containers::Mapping;
     using Containers::Set;
     using Stroika::Foundation::Common::GUID;
 
@@ -33,6 +35,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
          // @todo rename fID, and actually auto-generate it uniquly somehow (or OK to use iwndows based one)
          */
         GUID fGUID;
+
+#if qDebug
+        Mapping<String, DataExchange::VariantValue> fDebugProps;
+#endif
 
         NetworkInterface (const NetworkInterface& src) = default;
         NetworkInterface (const IO::Network::Interface& src);

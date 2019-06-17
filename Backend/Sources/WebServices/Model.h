@@ -68,6 +68,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
          */
         GUID fGUID;
 
+#if qDebug
+        optional<Mapping<String, DataExchange::VariantValue>> fDebugProps;
+#endif
+
         /**
          *  @see Characters::ToString ();
          */
@@ -120,6 +124,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         optional<Common::GEOLocationInformation> fGEOLocInformation;
 
         optional<Common::InternetServiceProvider> fInternetServiceProvider;
+
+#if qDebug
+        optional<Mapping<String, DataExchange::VariantValue>> fDebugProps;
+#endif
 
         /**
          *  @see Characters::ToString ();
@@ -181,6 +189,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         optional<Set<GUID>> fAttachedNetworkInterfaces;
 
         optional<OperatingSystem> fOperatingSystem;
+
+#if qDebug
+        optional<Mapping<String, DataExchange::VariantValue>> fDebugProps;
+#endif
 
         /**
          *  Combine from all network interfaces.

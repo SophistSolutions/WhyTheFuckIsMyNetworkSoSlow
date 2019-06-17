@@ -21,6 +21,7 @@ using namespace std;
 using namespace Stroika::Foundation;
 using namespace Stroika::Foundation::Characters;
 using namespace Stroika::Foundation::Containers;
+using namespace Stroika::Foundation::DataExchange;
 using namespace Stroika::Foundation::IO::Network;
 
 using namespace WhyTheFuckIsMyNetworkSoSlow;
@@ -87,6 +88,13 @@ namespace {
                 using DIGESTER_ = Digest::Digester<Digest::Algorithm::MD5>;
                 string tmp      = i.fInternalInterfaceID.AsUTF8 ();
                 ni.fGUID        = Cryptography::Format<Common::GUID> (DIGESTER_::ComputeDigest ((const std::byte*)tmp.c_str (), (const std::byte*)tmp.c_str () + tmp.length ()));
+#if qDebug
+                // nothing useful to add yet
+                ni.fDebugProps.Add (L"test"sv,
+                                    VariantValue{
+                                        Mapping<String, VariantValue>{
+                                            pair<String, VariantValue>{L"constructedAt"sv, Time::DateTime::Now ()}}});
+#endif
             }
             results.push_back (ni);
         }
