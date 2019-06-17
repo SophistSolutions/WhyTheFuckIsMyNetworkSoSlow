@@ -631,8 +631,8 @@ namespace {
                     di.fSSDPInfo = DiscoveryInfo_::SSDPInfo{};
                 }
                 di.fSSDPInfo->fAlive = d.fAlive;
-				
-				Memory::CopyToIf (deviceIconURL, & di.fIcon);
+
+                Memory::CopyToIf (deviceIconURL, &di.fIcon);
 
                 di.fSSDPInfo->fLocations.Add (d.fLocation);
                 di.fSSDPInfo->fUSNs.Add (d.fUSN);

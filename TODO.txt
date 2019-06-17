@@ -4,6 +4,15 @@ Top priority bug:
    HARDWARE ADDRESS  GUESS ABOUT WHERE FROM
  EVEN AS TRICK ONE OR TWO CASES AND API IN PLACE SO GUI WORK CNA GO IN PARALLEL WIHT BACKEND WORK
 
+	Have Manufacturer field in Device {
+		struct Manufacturer {
+			optional<String> shortName;
+			optional<String> fullName;
+			optional<URI> webSiteURL;
+		}
+
+		IF we can get from SSDP - great. If not, lookup from hardware MAC address
+	}
 
 
 * Fix delay on startup - some caching thing I did at end of last release ( forget what).
