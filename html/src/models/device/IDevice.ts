@@ -10,6 +10,7 @@ export interface IDevice {
     id: string;
     attachedNetworks: { [key: string]: INetworkAttachmentInfo };
     name: string;
+    icon?: string;
     type: Array<DeviceTypeEnum | string>;
     presentationURL?: string;
     operatingSystem?: OperatingSystem;

@@ -74,6 +74,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
         bool                                 fThisDevice{};
         Mapping<GUID, NetworkAttachmentInfo> fAttachedNetworks;
         optional<Set<GUID>>                  fAttachedInterfaces;
+        optional<URI>                        fIcon;
         optional<URI>                        fPresentationURL;
         optional<OperatingSystem>            fOperatingSystem;
 #if qDebug

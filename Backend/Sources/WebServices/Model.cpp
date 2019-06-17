@@ -318,6 +318,7 @@ const ObjectVariantMapper Device::kMapper = [] () {
         {L"id", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, fGUID)},
             {L"name", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, name)},
             {L"type", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, fTypes), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+            {L"icon", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, fIcon), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"attachedNetworks", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, fAttachedNetworks)},
             {L"attachedNetworkInterfaces", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, fAttachedNetworkInterfaces), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"presentationURL", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, fPresentationURL), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},

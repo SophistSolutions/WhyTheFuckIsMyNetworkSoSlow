@@ -9,6 +9,9 @@
         <p v-if="device.presentationURL">
           <a :href="device.presentationURL" target="_blank">Open Device</a>
         </p>
+        <p v-if="device.icon">
+          <img :src="device.icon"/>
+        </p>
         <p>Internet Addresses: {{ getDeviceNetworkAddresses_ (device) }}</p>
         <p>Hardware Addresses: {{ getDeviceHardwareAddresses_ (device) }}</p>
       </v-card-text>

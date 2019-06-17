@@ -174,6 +174,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
         /**
          */
+        optional<URI> fIcon;
+
+        /**
+         */
         Mapping<GUID, NetworkAttachmentInfo> fAttachedNetworks;
 
         /**

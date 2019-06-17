@@ -164,6 +164,7 @@ String Discovery::Device::ToString () const
     sb += L"{";
     sb += L"GUID: " + Characters::ToString (fGUID) + L", ";
     sb += L"name: " + Characters::ToString (name) + L", ";
+    sb += L"icon: " + Characters::ToString (fIcon) + L", ";
     sb += L"types: " + Characters::ToString (fTypes) + L", ";
     if (fThisDevice) {
         sb += L"This-Device: " + Characters::ToString (fThisDevice) + L", ";
@@ -585,6 +586,7 @@ namespace {
             optional<String> deviceType;
             optional<String> manufactureName;
             optional<URI>    presentationURL;
+            optional<URI>    deviceIconURL;
 
             try {
                 IO::Network::Transfer::Connection c = IO::Network::Transfer::CreateConnection ();
@@ -596,6 +598,9 @@ namespace {
                     deviceType                                     = deviceInfo.fDeviceType;
                     manufactureName                                = deviceInfo.fManufactureName;
                     presentationURL                                = deviceInfo.fPresentationURL;
+                    if (deviceInfo.fIcons.has_value () and not deviceInfo.fIcons->empty ()) {
+                        deviceIconURL = d.fLocation.Combine (deviceInfo.fIcons->Nth (0).fURL);
+                    }
                     DbgTrace (L"Found device description = %s", Characters::ToString (deviceInfo).c_str ());
                 }
             }
@@ -626,6 +631,9 @@ namespace {
                     di.fSSDPInfo = DiscoveryInfo_::SSDPInfo{};
                 }
                 di.fSSDPInfo->fAlive = d.fAlive;
+				
+				Memory::CopyToIf (deviceIconURL, & di.fIcon);
+
                 di.fSSDPInfo->fLocations.Add (d.fLocation);
                 di.fSSDPInfo->fUSNs.Add (d.fUSN);
 
