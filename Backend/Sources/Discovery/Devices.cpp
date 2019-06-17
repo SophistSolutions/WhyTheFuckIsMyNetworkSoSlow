@@ -258,6 +258,9 @@ namespace {
             Mapping<String, String> fDeviceType2FriendlyNameMap; //  http://upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v1.1.pdf - <deviceType> - Page 44
             optional<URI>           fPresentationURL;
             Time::DateTime          fLastSSDPMessageRecievedAt{Time::DateTime::Now ()};
+#if qDebug
+            optional<SSDP::Advertisement> fLastAdvertisement;
+#endif
 
             String ToString () const
             {
@@ -271,6 +274,9 @@ namespace {
                 sb += L"Device-Type-2-Friendly-Name-Map: " + Characters::ToString (fDeviceType2FriendlyNameMap) + L", ";
                 sb += L"fPresentationURL: " + Characters::ToString (fPresentationURL) + L", ";
                 sb += L"fLastSSDPMessageRecievedAt: " + Characters::ToString (fLastSSDPMessageRecievedAt) + L", ";
+#if qDebug
+                sb += L"fLastAdvertisement: " + Characters::ToString (fLastAdvertisement) + L", ";
+#endif
                 sb += L"}";
                 return sb.str ();
             }
@@ -388,6 +394,7 @@ namespace {
                                          pair<String, VariantValue>{L"USNs"sv, Characters::ToString (fSSDPInfo->fUSNs)},
                                          pair<String, VariantValue>{L"Server"sv, Characters::ToString (fSSDPInfo->fServer)},
                                          pair<String, VariantValue>{L"Manufacturer"sv, Characters::ToString (fSSDPInfo->fManufacturer)},
+                                         pair<String, VariantValue>{L"LastAdvertisement"sv, Characters::ToString (fSSDPInfo->fLastAdvertisement)},
                                          pair<String, VariantValue>{L"LastSSDPMessageRecievedAt"sv, Characters::ToString (fSSDPInfo->fLastSSDPMessageRecievedAt)},
                                          pair<String, VariantValue>{L"Locations"sv, Characters::ToString (fSSDPInfo->fLocations)}}});
             }
@@ -639,6 +646,10 @@ namespace {
                 Memory::CopyToIf (manufactureName, &di.fSSDPInfo->fManufacturer);
 
                 di.fSSDPInfo->fLastSSDPMessageRecievedAt = Time::DateTime::Now (); // update each message, even if already created
+
+#if qDebug
+                di.fSSDPInfo->fLastAdvertisement = d;
+#endif
 
                 if (not di.fOperatingSystem.has_value ()) {
                     if (di.fSSDPInfo->fServer and di.fSSDPInfo->fServer->Contains (L"Linux")) {
