@@ -176,6 +176,8 @@
 
             <Directory Id="HTML_DIR_REF" Name="html">
             </Directory>
+            <Directory Id="DATA_DIR_REF" Name="data">
+            </Directory>
 
           </Directory>
         </Directory>
@@ -196,6 +198,7 @@
         <ComponentRef Id="INSTALLDIR_comp" />
         <ComponentRef Id="StroikaSampleService.exe_comp" />
         <ComponentGroupRef  Id="StroikaSampleService_html_comp" />
+        <ComponentGroupRef  Id="StroikaSampleService_data_comp" />
       </Feature>
 
     </Feature>

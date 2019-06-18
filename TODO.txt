@@ -1,9 +1,8 @@
 Top priority bug:
 
-* THEN EXPOSE MORE FIELDS (AS BELOW) - before release - like
-   HARDWARE ADDRESS  GUESS ABOUT WHERE FROM
- EVEN AS TRICK ONE OR TWO CASES AND API IN PLACE SO GUI WORK CNA GO IN PARALLEL WIHT BACKEND WORK
+> BE SURE OSI-MAC-PREFIXES.txt change works with all installers (looks iffy on windows)
 
+* EXPOSE MANUFACTURER:
 	Have Manufacturer field in Device {
 		struct Manufacturer {
 			optional<String> shortName;
@@ -11,8 +10,9 @@ Top priority bug:
 			optional<URI> webSiteURL;
 		}
 
-		IF we can get from SSDP - great. If not, lookup from hardware MAC address
+		IF we can get from SSDP - great. If not, use LookupEthernetMACAddressOUIFromPrefix()
 	}
+
 
 
 * Fix delay on startup - some caching thing I did at end of last release ( forget what).
@@ -66,11 +66,6 @@ DO RELEASE HERE
 	 (or icon by blob)
 
 
-- Add HardwareAddress(es - list) 
-  - and list MACADDR AND REGISTERED MANUFACTURER
-	  - eg. 
-		  HardwareAddresses=[{Address: xx-xx-xx-xx-xx-xx-xx, Manufacturer: "Cisco"}]
-
 
 * Fix top level makefile so checks for if npm is installed (check-prerequesites)
 
@@ -98,10 +93,6 @@ DO RELEASE HERE
 - On unix - see why 'wifi0' is displayed as "Wired Ethernet" type? SB wireless!
 
 
-- use http://standards.ieee.org/regauth/oui/oui.txt to generate mapping of MACADDR to manufacturer (cheap easy quick lookup technique, 
-   but data may not be public). Can get copy for testing from https://github.com/nmap/nmap/blob/master/nmap-mac-prefixes - but not sure
-	 where I can get a legal copy from to incorporate. Maybe http://standards.ieee.org/regauth/oui/oui.txt  I can buy list?
-	 maybe use https://macvendors.com/api for now?
 	
 - consider if its useful to incporperate https://github.com/the-tcpdump-group/libpcap/blob/master/doc/README.Win32.md to 
   scan net traffic

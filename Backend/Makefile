@@ -19,6 +19,8 @@ all:
 	@$(StroikaRoot)/ScriptsLib/CheckValidConfiguration $(CONFIGURATION)
 	@### NO IDEA WHY MAKEFLAGS= is needed - @todo - DEBUG - but get link error otherwise
 	@$(MAKE) --directory=Sources --no-print-directory all
+	@mkdir -p $(TOP_ROOT)/Builds/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow/data/
+	@cp $(TOP_ROOT)/Builds/$(CONFIGURATION)/ThirdPartyComponents/share/OSI-MAC-PREFIXES.txt $(TOP_ROOT)/Builds/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow/data/
 
 
 clean clobber::

@@ -18,6 +18,7 @@
 
 #include "Stroika-Current-Version.h"
 
+#include "../Common/EthernetMACAddressOUIPrefixes.h"
 #include "../Discovery/Devices.h"
 #include "../Discovery/NetworkInterfaces.h"
 #include "../Discovery/Networks.h"
@@ -141,6 +142,23 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
 #if qDebug
         if (not d.fDebugProps.empty ()) {
             newDev.fDebugProps = d.fDebugProps;
+        }
+        {
+            // List OUI names for each hardware address (and explicit missing for those we cannot lookup)
+            using VariantValue = DataExchange::VariantValue;
+            Mapping<String, VariantValue> t;
+            for (auto i : d.fAttachedNetworks) {
+                for (auto hwa : i.fValue.hardwareAddresses) {
+                    auto o = BackendApp::Common::LookupEthernetMACAddressOUIFromPrefix (hwa);
+                    t.Add (hwa, o ? VariantValue{*o} : VariantValue{});
+                }
+            }
+            if (not t.empty ()) {
+                if (not newDev.fDebugProps.has_value ()) {
+                    newDev.fDebugProps = Mapping<String, VariantValue>{};
+                }
+                newDev.fDebugProps->Add (L"MACAddr2OUINames", t);
+            }
         }
 #endif
         return newDev;

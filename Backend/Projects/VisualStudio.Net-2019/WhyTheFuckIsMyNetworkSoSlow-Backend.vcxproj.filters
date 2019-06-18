@@ -61,6 +61,9 @@
     <None Include="..\..\Sources\WebServices\WSImpl.inl">
       <Filter>Sources\WebServices</Filter>
     </None>
+    <None Include="..\..\Sources\Common\EthernetMACAddressOUIPrefixes.inl">
+      <Filter>Sources\Common</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Main.cpp">
@@ -99,6 +102,9 @@
     <ClCompile Include="..\..\Sources\WebServices\WSImpl.cpp">
       <Filter>Sources\WebServices</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Common\EthernetMACAddressOUIPrefixes.cpp">
+      <Filter>Sources\Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Service.h">
@@ -133,6 +139,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\WebServices\WSImpl.h">
       <Filter>Sources\WebServices</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Common\EthernetMACAddressOUIPrefixes.h">
+      <Filter>Sources\Common</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
