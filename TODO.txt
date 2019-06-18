@@ -1,6 +1,6 @@
 Top priority bug:
 
-> BE SURE OSI-MAC-PREFIXES.txt change works with all installers (looks iffy on windows)
+> BE SURE OSI-MAC-PREFIXES.txt change works with all installers (todo test unix)
 
 * EXPOSE MANUFACTURER:
 	Have Manufacturer field in Device {
@@ -11,6 +11,7 @@ Top priority bug:
 		}
 
 		IF we can get from SSDP - great. If not, use LookupEthernetMACAddressOUIFromPrefix()
+		And expose in GUI
 	}
 
 

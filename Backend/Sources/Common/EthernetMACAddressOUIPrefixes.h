@@ -23,6 +23,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
     /**
      *  For the purpose of this API, a hardware address is a series of HEX digits, most significant first. These digits may or may
      *  not be '-' or ':' separated. They can be any case. Only the first 6 hex digits are examined.
+     *
+     *  This function (typically) returns the (printable ui) name of the manufacturer of the device with this hardware address
+     *  (e.g. 'Dell', 'Apple', 'AsusTek', 'NetGear' etc).
      */
     optional<String> LookupEthernetMACAddressOUIFromPrefix (const String& hardware);
 

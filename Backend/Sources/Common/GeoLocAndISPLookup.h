@@ -25,6 +25,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
     using IO::Network::InternetAddress;
 
     /**
+     *  \brief Given the argument internet-address, find the GEOLOCATION (physical location in the world) typically
+     *         associated with that IP address
+     *
      *  \note currently ignoring 'isMobile', 'isTORuser', 'isProxyUser' - and maybe a few more. Not sure we can get these
      *        reliably, nor that we need them.
      */

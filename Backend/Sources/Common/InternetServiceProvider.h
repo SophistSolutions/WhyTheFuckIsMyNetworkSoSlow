@@ -29,6 +29,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         nonvirtual String ToString () const;
     };
 
+    /**
+     * A public IP address will typically be associated with a well known internet service provided. Return that ISP (or nullopt if not found).
+     */
     optional<InternetServiceProvider> LookupInternetServiceProvider (InternetAddress ia);
 
 }

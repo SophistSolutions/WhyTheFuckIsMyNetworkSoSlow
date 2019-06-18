@@ -3,9 +3,8 @@
 */
 #include "Stroika/Frameworks/StroikaPreComp.h"
 
-#include "Stroika/Foundation/Characters/StringBuilder.h"
-#include "Stroika/Foundation/Characters/ToString.h"
 #include "Stroika/Foundation/Characters/RegularExpression.h"
+#include "Stroika/Foundation/Characters/ToString.h"
 #include "Stroika/Foundation/Containers/Mapping.h"
 #include "Stroika/Foundation/Execution/Logger.h"
 #include "Stroika/Foundation/Execution/Module.h"
@@ -54,7 +53,6 @@ optional<String> BackendApp::Common::LookupEthernetMACAddressOUIFromPrefix (cons
         }
         return tmp;
     }();
-    //String token2Lookup = hardware.ReplaceAll (L"-", L"").ReplaceAll (L":", L"").SafeSubString (0, 6).ToLowerCase ();
-    String token2Lookup = hardware.ReplaceAll (L"[\-:]"_RegEx, L"").SafeSubString (0, 6).ToLowerCase ();
+    String token2Lookup = hardware.ReplaceAll (L"[\\-:]"_RegEx, L"").SafeSubString (0, 6).ToLowerCase ();
     return sMap_.Lookup (token2Lookup);
 }
