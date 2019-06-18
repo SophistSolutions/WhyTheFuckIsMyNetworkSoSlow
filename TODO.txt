@@ -1,7 +1,5 @@
 Top priority bug:
 
-> BE SURE OSI-MAC-PREFIXES.txt change works with all installers (todo test unix)
-
 * EXPOSE MANUFACTURER:
 	Have Manufacturer field in Device {
 		struct Manufacturer {
@@ -16,7 +14,7 @@ Top priority bug:
 
 
 
-* Fix delay on startup - some caching thing I did at end of last release ( forget what).
+* Fix delay on startup - some caching thing I did at end of last release ( forget what- I think reversedns name lookup).
   maybe dns reverse dns?
 
 
