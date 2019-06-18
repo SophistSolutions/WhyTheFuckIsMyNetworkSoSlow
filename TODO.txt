@@ -4,6 +4,9 @@ Top priority bug:
 * Fix delay on startup - some caching thing I did at end of last release ( forget what- I think reversedns name lookup).
   maybe dns reverse dns?
 
+* Maybe address delay caused by loading manufacturing data table (unless not an issue in release builds then less
+importnat)
+
 --- test on all target platforms, esp raspberrypi
 
 ------------------

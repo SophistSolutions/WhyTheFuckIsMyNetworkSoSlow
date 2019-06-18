@@ -339,12 +339,6 @@ namespace {
                     }
                 }
 
-                if (fSSDPInfo->fManufacturer) {
-                    Manufacturer m = fManufacturer.value_or (Manufacturer{});
-                    m.fFullName    = fSSDPInfo->fManufacturer;
-                    fManufacturer  = m;
-                }
-
                 fPresentationURL = fSSDPInfo->fPresentationURL;
             }
             if (name.empty ()) {
@@ -397,6 +391,17 @@ namespace {
                 }
             }
 
+            // Manufacturer info
+            if (fSSDPInfo and fSSDPInfo->fManufacturer) {
+                Manufacturer m = fManufacturer.value_or (Manufacturer{});
+                m.fFullName    = fSSDPInfo->fManufacturer;
+                fManufacturer  = m;
+            }
+            if (fSSDPInfo and fSSDPInfo->fManufacturerURI) {
+                Manufacturer m = fManufacturer.value_or (Manufacturer{});
+                m.fWebSiteURL  = fSSDPInfo->fManufacturerURI;
+                fManufacturer  = m;
+            }
             if (not fManufacturer or not fManufacturer->fFullName or not fManufacturer->fShortName) {
                 for (auto hwa : GetHardwareAddresses ()) {
                     if (auto o = BackendApp::Common::LookupEthernetMACAddressOUIFromPrefix (hwa)) {
@@ -423,13 +428,14 @@ namespace {
                 fDebugProps.Add (L"SSDPInfo"sv,
                                  VariantValue{
                                      Mapping<String, VariantValue>{
-                                         pair<String, VariantValue>{L"DeviceType2FriendlyNameMap"sv, Characters::ToString (fSSDPInfo->fDeviceType2FriendlyNameMap)},
+                                         pair<String, VariantValue>{L"deviceType2FriendlyNameMap"sv, Characters::ToString (fSSDPInfo->fDeviceType2FriendlyNameMap)},
                                          pair<String, VariantValue>{L"USNs"sv, Characters::ToString (fSSDPInfo->fUSNs)},
-                                         pair<String, VariantValue>{L"Server"sv, Characters::ToString (fSSDPInfo->fServer)},
-                                         pair<String, VariantValue>{L"Manufacturer"sv, Characters::ToString (fSSDPInfo->fManufacturer)},
-                                         pair<String, VariantValue>{L"LastAdvertisement"sv, Characters::ToString (fSSDPInfo->fLastAdvertisement)},
-                                         pair<String, VariantValue>{L"LastSSDPMessageRecievedAt"sv, Characters::ToString (fSSDPInfo->fLastSSDPMessageRecievedAt)},
-                                         pair<String, VariantValue>{L"Locations"sv, Characters::ToString (fSSDPInfo->fLocations)}}});
+                                         pair<String, VariantValue>{L"server"sv, Characters::ToString (fSSDPInfo->fServer)},
+                                         pair<String, VariantValue>{L"manufacturer"sv, Characters::ToString (fSSDPInfo->fManufacturer)},
+                                         pair<String, VariantValue>{L"manufacturer-URL"sv, Characters::ToString (fSSDPInfo->fManufacturerURI)},
+                                         pair<String, VariantValue>{L"lastAdvertisement"sv, Characters::ToString (fSSDPInfo->fLastAdvertisement)},
+                                         pair<String, VariantValue>{L"lastSSDPMessageRecievedAt"sv, Characters::ToString (fSSDPInfo->fLastSSDPMessageRecievedAt)},
+                                         pair<String, VariantValue>{L"locations"sv, Characters::ToString (fSSDPInfo->fLocations)}}});
             }
 
 #endif
@@ -634,6 +640,9 @@ namespace {
                     presentationURL                                = deviceInfo.fPresentationURL;
                     if (deviceInfo.fIcons.has_value () and not deviceInfo.fIcons->empty ()) {
                         deviceIconURL = d.fLocation.Combine (deviceInfo.fIcons->Nth (0).fURL);
+                    }
+                    if (manufacturerURL.has_value ()) {
+                        manufacturerURL = d.fLocation.Combine (*manufacturerURL);
                     }
                     DbgTrace (L"Found device description = %s", Characters::ToString (deviceInfo).c_str ());
                 }
