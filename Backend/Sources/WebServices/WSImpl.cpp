@@ -137,6 +137,7 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
         }
         newDev.fAttachedNetworkInterfaces = d.fAttachedInterfaces; // @todo must merge += (but only when merging across differnt discoverers/networks)
         newDev.fPresentationURL           = d.fPresentationURL;
+        newDev.fManufacturer              = d.fManufacturer;
         newDev.fIcon                      = d.fIcon;
         newDev.fOperatingSystem           = d.fOperatingSystem;
 #if qDebug

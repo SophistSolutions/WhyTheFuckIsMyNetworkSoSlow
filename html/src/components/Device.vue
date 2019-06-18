@@ -10,7 +10,20 @@
           <a :href="device.presentationURL" target="_blank">Open Device</a>
         </p>
         <p v-if="device.icon">
-          <img :src="device.icon"/>
+          <img :src="device.icon">
+        </p>
+        <p v-if="device.manufacturer">
+          Manufacturer:
+          <span
+            v-if="device.manufacturer.shortName || device.manufacturer.fullName"
+          >{{device.manufacturer.shortName || device.manufacturer.fullName}}</span>
+          <span v-if="device.manufacturer.webSiteURL">
+            Link:
+            <a
+              :href="device.manufacturer.webSiteURL"
+              target="_blank"
+            >{{device.manufacturer.webSiteURL}}</a>
+          </span>
         </p>
         <p>Internet Addresses: {{ getDeviceNetworkAddresses_ (device) }}</p>
         <p>Hardware Addresses: {{ getDeviceHardwareAddresses_ (device) }}</p>
@@ -31,7 +44,7 @@ import { IDevice, INetworkAttachmentInfo } from "../models/device/IDevice";
   methods: {
     getDeviceNetworkAddresses_(d: IDevice) {
       let result = "";
-      for (let value of Object.entries (d.attachedNetworks)) {
+      for (let value of Object.entries(d.attachedNetworks)) {
         if (result != "") {
           result += ", ";
         }
@@ -41,7 +54,7 @@ import { IDevice, INetworkAttachmentInfo } from "../models/device/IDevice";
     },
     getDeviceHardwareAddresses_(d: IDevice) {
       let result = "";
-      for (let value of Object.entries (d.attachedNetworks)) {
+      for (let value of Object.entries(d.attachedNetworks)) {
         if (result != "") {
           result += ", ";
         }

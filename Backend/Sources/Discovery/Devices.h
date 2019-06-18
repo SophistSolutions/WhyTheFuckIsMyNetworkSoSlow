@@ -51,8 +51,12 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
     using DeviceType = WebServices::Model::Device::DeviceType;
 
     /**
-    */
+     */
     using OperatingSystem = WebServices::Model::OperatingSystem;
+
+    /**
+     */
+    using Manufacturer = WebServices::Model::Manufacturer;
 
     /**
      */
@@ -75,6 +79,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
         Mapping<GUID, NetworkAttachmentInfo> fAttachedNetworks;
         optional<Set<GUID>>                  fAttachedInterfaces;
         optional<URI>                        fIcon;
+        optional<Manufacturer>               fManufacturer;
         optional<URI>                        fPresentationURL;
         optional<OperatingSystem>            fOperatingSystem;
 #if qDebug

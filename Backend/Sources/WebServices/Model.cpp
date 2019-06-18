@@ -77,6 +77,39 @@ DISABLE_COMPILER_MSC_WARNING_END (4573);
 
 /*
  ********************************************************************************
+ ***************************** Model::Manufacturer ******************************
+ ********************************************************************************
+ */
+String Model::Manufacturer::ToString () const
+{
+    Characters::StringBuilder sb;
+    sb += L"{";
+    sb += L"shortName: " + Characters::ToString (fShortName) + L", ";
+    sb += L"fullName: " + Characters::ToString (fFullName) + L", ";
+    sb += L"webSiteURL: " + Characters::ToString (fWebSiteURL) + L", ";
+    sb += L"}";
+    return sb.str ();
+}
+
+DISABLE_COMPILER_MSC_WARNING_START (4573);
+DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
+const ObjectVariantMapper Model::Manufacturer::kMapper = [] () {
+    ObjectVariantMapper mapper;
+    mapper.AddCommonType<optional<String>> ();
+    mapper.AddCommonType<URI> ();
+    mapper.AddCommonType<optional<URI>> ();
+    mapper.AddClass<Manufacturer> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+        {L"shortName", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Manufacturer, fShortName), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"fullName", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Manufacturer, fFullName), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"webSiteURL", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Manufacturer, fWebSiteURL), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+    });
+    return mapper;
+}();
+DISABLE_COMPILER_GCC_WARNING_END ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
+DISABLE_COMPILER_MSC_WARNING_END (4573);
+
+/*
+ ********************************************************************************
  ********************************** Model::Network ******************************
  ********************************************************************************
  */
@@ -290,10 +323,10 @@ DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof
 const ObjectVariantMapper Device::kMapper = [] () {
     ObjectVariantMapper mapper;
 
-    //mapper += OperatingSystem::kMapper;
     mapper.Add (OperatingSystem::kMapper);
     mapper.AddCommonType<optional<OperatingSystem>> ();
-
+    mapper.Add (Manufacturer::kMapper);
+    mapper.AddCommonType<optional<Manufacturer>> ();
     mapper.AddCommonType<InternetAddress> ();
     mapper.AddCommonType<optional<InternetAddress>> ();
     mapper.AddCommonType<Sequence<InternetAddress>> ();
@@ -319,6 +352,7 @@ const ObjectVariantMapper Device::kMapper = [] () {
             {L"name", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, name)},
             {L"type", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, fTypes), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"icon", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, fIcon), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+            {L"manufacturer", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, fManufacturer), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"attachedNetworks", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, fAttachedNetworks)},
             {L"attachedNetworkInterfaces", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, fAttachedNetworkInterfaces), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"presentationURL", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Device, fPresentationURL), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},

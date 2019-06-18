@@ -1,28 +1,17 @@
 Top priority bug:
 
-* EXPOSE MANUFACTURER:
-	Have Manufacturer field in Device {
-		struct Manufacturer {
-			optional<String> shortName;
-			optional<String> fullName;
-			optional<URI> webSiteURL;
-		}
-
-		IF we can get from SSDP - great. If not, use LookupEthernetMACAddressOUIFromPrefix()
-		And expose in GUI
-	}
-
-
 
 * Fix delay on startup - some caching thing I did at end of last release ( forget what- I think reversedns name lookup).
   maybe dns reverse dns?
-
 
 --- test on all target platforms, esp raspberrypi
 
 ------------------
 DO RELEASE HERE
 -----------------
+
+* Maybe throw in LastHeardFromAt DATETIME for each device?
+  (could be misleading cuz not trying to reach each device and may never hear from them)
 
 
 * New feature - in app - keep track of how long since last question about devices etc.

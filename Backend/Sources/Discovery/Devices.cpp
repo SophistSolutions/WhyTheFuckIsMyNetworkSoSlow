@@ -28,6 +28,8 @@
 #include "Stroika/Frameworks/UPnP/SSDP/Client/Listener.h"
 #include "Stroika/Frameworks/UPnP/SSDP/Client/Search.h"
 
+#include "../Common/EthernetMACAddressOUIPrefixes.h"
+
 #include "NetworkInterfaces.h"
 
 #include "Devices.h"
@@ -165,16 +167,17 @@ String Discovery::Device::ToString () const
     sb += L"GUID: " + Characters::ToString (fGUID) + L", ";
     sb += L"name: " + Characters::ToString (name) + L", ";
     sb += L"icon: " + Characters::ToString (fIcon) + L", ";
+    sb += L"manufacturer: " + Characters::ToString (fManufacturer) + L", ";
     sb += L"types: " + Characters::ToString (fTypes) + L", ";
     if (fThisDevice) {
         sb += L"This-Device: " + Characters::ToString (fThisDevice) + L", ";
     }
-    sb += L"fAttachedNetworks: " + Characters::ToString (fAttachedNetworks) + L", ";
-    sb += L"fAttachedInterfaces: " + Characters::ToString (fAttachedInterfaces) + L", ";
-    sb += L"fPresentationURL: " + Characters::ToString (fPresentationURL) + L", ";
-    sb += L"fOperatingSystem: " + Characters::ToString (fOperatingSystem) + L", ";
+    sb += L"attachedNetworks: " + Characters::ToString (fAttachedNetworks) + L", ";
+    sb += L"attachedInterfaces: " + Characters::ToString (fAttachedInterfaces) + L", ";
+    sb += L"presentationURL: " + Characters::ToString (fPresentationURL) + L", ";
+    sb += L"operatingSystem: " + Characters::ToString (fOperatingSystem) + L", ";
 #if qDebug
-    sb += L"fDebugProps: " + Characters::ToString (fDebugProps) + L", ";
+    sb += L"debugProps: " + Characters::ToString (fDebugProps) + L", ";
 #endif
     sb += L"}";
     return sb.str ();
@@ -256,6 +259,7 @@ namespace {
             Set<URI>                fLocations;
             optional<String>        fServer;
             optional<String>        fManufacturer;
+            optional<URI>           fManufacturerURI;
             Mapping<String, String> fDeviceType2FriendlyNameMap; //  http://upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v1.1.pdf - <deviceType> - Page 44
             optional<URI>           fPresentationURL;
             Time::DateTime          fLastSSDPMessageRecievedAt{Time::DateTime::Now ()};
@@ -271,6 +275,7 @@ namespace {
                 sb += L"fAlive: " + Characters::ToString (fAlive) + L", ";
                 sb += L"fLocations: " + Characters::ToString (fLocations) + L", ";
                 sb += L"fManufacturer: " + Characters::ToString (fManufacturer) + L", ";
+                sb += L"fManufacturerURI: " + Characters::ToString (fManufacturerURI) + L", ";
                 sb += L"fServer: " + Characters::ToString (fServer) + L", ";
                 sb += L"Device-Type-2-Friendly-Name-Map: " + Characters::ToString (fDeviceType2FriendlyNameMap) + L", ";
                 sb += L"fPresentationURL: " + Characters::ToString (fPresentationURL) + L", ";
@@ -334,6 +339,12 @@ namespace {
                     }
                 }
 
+                if (fSSDPInfo->fManufacturer) {
+                    Manufacturer m = fManufacturer.value_or (Manufacturer{});
+                    m.fFullName    = fSSDPInfo->fManufacturer;
+                    fManufacturer  = m;
+                }
+
                 fPresentationURL = fSSDPInfo->fPresentationURL;
             }
             if (name.empty ()) {
@@ -383,6 +394,27 @@ namespace {
                 }
                 if (not(gateways ^ GetInternetAddresses ()).empty ()) {
                     fTypes.Add (Discovery::DeviceType::eRouter);
+                }
+            }
+
+            if (not fManufacturer or not fManufacturer->fFullName or not fManufacturer->fShortName) {
+                for (auto hwa : GetHardwareAddresses ()) {
+                    if (auto o = BackendApp::Common::LookupEthernetMACAddressOUIFromPrefix (hwa)) {
+                        if (not fManufacturer) {
+                            fManufacturer = Manufacturer{};
+                        }
+                        bool longName = o->Contains (L" "); //  primitive guess
+                        if (longName) {
+                            if (not fManufacturer->fFullName) {
+                                fManufacturer->fFullName = *o;
+                            }
+                        }
+                        else {
+                            if (not fManufacturer->fShortName) {
+                                fManufacturer->fShortName = *o;
+                            }
+                        }
+                    }
                 }
             }
 
@@ -585,6 +617,7 @@ namespace {
             optional<String> deviceFriendlyName;
             optional<String> deviceType;
             optional<String> manufactureName;
+            optional<URI>    manufacturerURL;
             optional<URI>    presentationURL;
             optional<URI>    deviceIconURL;
 
@@ -597,6 +630,7 @@ namespace {
                     deviceFriendlyName                             = deviceInfo.fFriendlyName;
                     deviceType                                     = deviceInfo.fDeviceType;
                     manufactureName                                = deviceInfo.fManufactureName;
+                    manufacturerURL                                = deviceInfo.fManufacturingURL;
                     presentationURL                                = deviceInfo.fPresentationURL;
                     if (deviceInfo.fIcons.has_value () and not deviceInfo.fIcons->empty ()) {
                         deviceIconURL = d.fLocation.Combine (deviceInfo.fIcons->Nth (0).fURL);
@@ -633,6 +667,7 @@ namespace {
                 di.fSSDPInfo->fAlive = d.fAlive;
 
                 Memory::CopyToIf (deviceIconURL, &di.fIcon);
+                Memory::CopyToIf (manufacturerURL, &di.fSSDPInfo->fManufacturerURI);
 
                 di.fSSDPInfo->fLocations.Add (d.fLocation);
                 di.fSSDPInfo->fUSNs.Add (d.fUSN);
