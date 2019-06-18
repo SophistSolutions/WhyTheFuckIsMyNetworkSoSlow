@@ -16,6 +16,7 @@ include $(StroikaRoot)Library/Projects/Unix/SharedMakeVariables-Default.mk
 vpath %cpp $(SrcDir)
 
 Objs	=	\
+	$(ObjDir)EthernetMACAddressOUIPrefixes${OBJ_SUFFIX}\
 	$(ObjDir)GeoLocAndISPLookup${OBJ_SUFFIX}\
 	$(ObjDir)GeoLocation${OBJ_SUFFIX}\
 	$(ObjDir)InternetServiceProvider${OBJ_SUFFIX}\
