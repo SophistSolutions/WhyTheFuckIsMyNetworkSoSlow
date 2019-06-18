@@ -18,6 +18,7 @@
             v-if="device.manufacturer.shortName || device.manufacturer.fullName"
           >{{device.manufacturer.shortName || device.manufacturer.fullName}}</span>
           <span v-if="device.manufacturer.webSiteURL">
+            <span v-if="device.manufacturer.shortName || device.manufacturer.fullName">; </span>
             Link:
             <a
               :href="device.manufacturer.webSiteURL"
