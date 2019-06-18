@@ -223,6 +223,7 @@ namespace {
     NetAndNetInterfaceMapper_ NetAndNetInterfaceMapper_::sThe;
 }
 
+#if 0
 namespace {
     /*
      ********************************************************************************
@@ -239,6 +240,7 @@ namespace {
         return kNamePrettyPrintMapper_.LookupValue (origName, origName);
     }
 }
+#endif
 
 /*
  ********************************************************************************
@@ -334,9 +336,11 @@ namespace {
                     if (not fSSDPInfo->fDeviceType2FriendlyNameMap.empty ()) {
                         name = fSSDPInfo->fDeviceType2FriendlyNameMap.Nth (0).fValue;
                     }
+#if 0
                     else if (fSSDPInfo->fServer) {
                         name = GetPrettiedUpDeviceName_ (*fSSDPInfo->fServer);
                     }
+#endif
                 }
 
                 fPresentationURL = fSSDPInfo->fPresentationURL;
