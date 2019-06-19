@@ -1,5 +1,13 @@
 Top priority bug:
 
+* see why on unix - WTF uninstall very slow 
+  sudo apt-get remove whythefuckismynetworksoslow
+
+* IMPLEMENT FILTER API, so can easily
+  filte by active/selected network 
+  so on UNIX boxes we dont see the 172.x devices
+  (and maybe see why we dont discover more about them)
+
 
 * Good low haning fruit 'probe' to see what kind of machine:
    nc 192.168.244.32 22
