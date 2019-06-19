@@ -1,17 +1,23 @@
 Top priority bug:
 
 
-* Fix delay on startup - some caching thing I did at end of last release ( forget what- I think reversedns name lookup).
-  maybe dns reverse dns?
+* Good low haning fruit 'probe' to see what kind of machine:
+   nc 192.168.244.32 22
+	SSH-2.0-OpenSSH_7.4p1 Raspbian-10+deb9u6
+	^C
+	(ie TCP Connect to port 22, and do a quick read, and see what comes back)
 
-* Maybe address delay caused by loading manufacturing data table (unless not an issue in release builds then less
-importnat)
 
---- test on all target platforms, esp raspberrypi
+Similarly look for netbios:
+	netbios-ssn
+		Description: 	
+		TCP NetBIOS connections are made over this port, usually with Windows machines but also with any other system running Samba (SMB). These TCP connections form "NetBIOS sessions" to support connection oriented file sharing activities.
 
-------------------
-DO RELEASE HERE
------------------
+		Related Ports: 	
+		137, 138, 445
+			135/tcp  open  msrpc         Microsoft Windows RPC
+			139/tcp  open  netbios-ssn   Microsoft Windows netbios-ssn
+			445/tcp  open  microsoft-ds?
 
 * Maybe throw in LastHeardFromAt DATETIME for each device?
   (could be misleading cuz not trying to reach each device and may never hear from them)

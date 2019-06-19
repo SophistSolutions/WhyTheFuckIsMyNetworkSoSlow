@@ -223,25 +223,6 @@ namespace {
     NetAndNetInterfaceMapper_ NetAndNetInterfaceMapper_::sThe;
 }
 
-#if 0
-namespace {
-    /*
-     ********************************************************************************
-     *********************** GetPrettiedUpDeviceName_ *******************************
-     ********************************************************************************
-     */
-    String GetPrettiedUpDeviceName_ (const String& origName)
-    {
-        static const Mapping<String, String> kNamePrettyPrintMapper_{
-            KeyValuePair<String, String>{L"ASUSTeK UPnP/1.1 MiniUPnPd/1.9"sv, L"ASUS Router"sv},
-            KeyValuePair<String, String>{L"Microsoft-Windows/10.0 UPnP/1.0 UPnP-Device-Host/1.0"sv, L"Antiphon"sv},
-            KeyValuePair<String, String>{L"POSIX, UPnP/1.0, Intel MicroStack/1.0.1347"sv, L"HP PhotoSmart"sv},
-        };
-        return kNamePrettyPrintMapper_.LookupValue (origName, origName);
-    }
-}
-#endif
-
 /*
  ********************************************************************************
  *************************** sDiscoveredDevices_ ********************************
@@ -336,11 +317,6 @@ namespace {
                     if (not fSSDPInfo->fDeviceType2FriendlyNameMap.empty ()) {
                         name = fSSDPInfo->fDeviceType2FriendlyNameMap.Nth (0).fValue;
                     }
-#if 0
-                    else if (fSSDPInfo->fServer) {
-                        name = GetPrettiedUpDeviceName_ (*fSSDPInfo->fServer);
-                    }
-#endif
                 }
 
                 fPresentationURL = fSSDPInfo->fPresentationURL;
