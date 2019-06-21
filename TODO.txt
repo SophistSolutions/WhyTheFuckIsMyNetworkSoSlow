@@ -3,6 +3,10 @@ Top priority bug:
 * see why on unix - WTF uninstall very slow 
   sudo apt-get remove whythefuckismynetworksoslow
 
+* Dont expose ICON urls - but CACHE them.
+  This is important because the machine in question can go away (e.g. the samsung tv icon 
+  goes away when the TV is off)
+
 * IMPLEMENT FILTER API, so can easily
   filte by active/selected network 
   so on UNIX boxes we dont see the 172.x devices
