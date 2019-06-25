@@ -1,7 +1,5 @@
 Top priority bug:
 
-* see why on unix - WTF uninstall very slow 
-  sudo apt-get remove whythefuckismynetworksoslow
 
 * Dont expose ICON urls - but CACHE them.
   This is important because the machine in question can go away (e.g. the samsung tv icon 
@@ -13,7 +11,7 @@ Top priority bug:
   (and maybe see why we dont discover more about them)
 
 
-* Good low haning fruit 'probe' to see what kind of machine:
+* Good low hanging fruit 'probe' to see what kind of machine:
    nc 192.168.244.32 22
 	SSH-2.0-OpenSSH_7.4p1 Raspbian-10+deb9u6
 	^C

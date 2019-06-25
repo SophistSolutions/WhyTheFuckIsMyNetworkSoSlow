@@ -6,8 +6,10 @@
 
 #include "Stroika/Frameworks/StroikaPreComp.h"
 
+#include "Stroika/Foundation/Common/GUID.h"
 #include "Stroika/Foundation/Containers/Collection.h"
 #include "Stroika/Foundation/Containers/Sequence.h"
+#include "Stroika/Foundation/DataExchange/InternetMediaType.h"
 
 #include "Model.h"
 
@@ -20,6 +22,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
 
     using Containers::Collection;
     using Containers::Sequence;
+    using Stroika::Foundation::Common::GUID;
 
     /**
      */
@@ -30,6 +33,18 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
     public:
         IWSAPI (const IWSAPI&) = delete;
         virtual ~IWSAPI ()     = default;
+
+    public:
+        /**
+         *  curl  http://localhost:8080/about
+         */
+        virtual About GetAbout () const = 0;
+
+    public:
+        /**
+         *  curl  http://localhost:8080/blob/{guid}
+         */
+        virtual tuple<Memory::BLOB, DataExchange::InternetMediaType> GetBLOB (const GUID& guid) const = 0;
 
     public:
         /**
@@ -86,12 +101,6 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
          *  curl  http://localhost:8080/operations/dns/calculate-score
          */
         virtual double Operation_DNS_CalculateScore () const = 0;
-
-    public:
-        /**
-         *  curl  http://localhost:8080/about
-         */
-        virtual About GetAbout () const = 0;
     };
 
 }

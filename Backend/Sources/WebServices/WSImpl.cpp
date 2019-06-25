@@ -18,6 +18,7 @@
 
 #include "Stroika-Current-Version.h"
 
+#include "../Common/BLOBMgr.h"
 #include "../Common/EthernetMACAddressOUIPrefixes.h"
 #include "../Discovery/Devices.h"
 #include "../Discovery/NetworkInterfaces.h"
@@ -58,6 +59,11 @@ About WSImpl::GetAbout () const
     return kAbout_;
 }
 
+tuple<Memory::BLOB, DataExchange::InternetMediaType> WSImpl::GetBLOB (const GUID& guid) const
+{
+    return Common::BLOBMgr::sThe.GetBLOB (guid);
+}
+
 Sequence<String> WSImpl::GetDevices (const optional<DeviceSortParamters>& sort) const
 {
     Sequence<String> result;
@@ -65,6 +71,29 @@ Sequence<String> WSImpl::GetDevices (const optional<DeviceSortParamters>& sort) 
         result += Characters::ToString (n.fGUID);
     }
     return result;
+}
+
+namespace {
+    URI TransformURL2LocalStorage_ (const URI& url)
+    {
+        // if we are unable to cache the url (say because the url is bad or the device is currently down)
+        // just return the original
+        try {
+            GUID g = BackendApp::Common::BLOBMgr::sThe.AddBLOBFromURL (url);
+            // tricky to know right host to supply here - will need some sort of configuration for this (due to firewalls, NAT etc)
+            URI result{L"http://localhost:8080"};
+            result.SetPath (L"/blob/" + g.ToString ());
+            return result;
+        }
+        catch (...) {
+            DbgTrace (L"Failed to cache url (%s) - so returning original: %s", Characters::ToString (url).c_str (), Characters::ToString (current_exception ()).c_str ());
+            return url;
+        }
+    }
+    optional<URI> TransformURL2LocalStorage_ (const optional<URI>& url)
+    {
+        return url ? TransformURL2LocalStorage_ (*url) : optional<URI>{};
+    }
 }
 
 Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const optional<DeviceSortParamters>& sort) const
@@ -138,7 +167,7 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
         newDev.fAttachedNetworkInterfaces = d.fAttachedInterfaces; // @todo must merge += (but only when merging across differnt discoverers/networks)
         newDev.fPresentationURL           = d.fPresentationURL;
         newDev.fManufacturer              = d.fManufacturer;
-        newDev.fIcon                      = d.fIcon;
+        newDev.fIcon                      = TransformURL2LocalStorage_ (d.fIcon);
         newDev.fOperatingSystem           = d.fOperatingSystem;
 #if qDebug
         if (not d.fDebugProps.empty ()) {

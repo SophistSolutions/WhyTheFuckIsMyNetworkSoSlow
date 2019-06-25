@@ -37,6 +37,7 @@ using namespace Stroika::Foundation;
 using namespace Stroika::Foundation::Characters;
 using namespace Stroika::Foundation::Containers;
 using namespace Stroika::Foundation::Execution;
+using namespace Stroika::Foundation::Memory;
 using namespace Stroika::Foundation::IO::Network;
 using namespace Stroika::Foundation::IO::Network::HTTP;
 
@@ -77,6 +78,7 @@ namespace {
 class WebServer::Rep_ {
 public:
     static const WebServiceMethodDescription kAbout_;
+    static const WebServiceMethodDescription kBlob_;
     static const WebServiceMethodDescription kDevices_;
     static const WebServiceMethodDescription kNetworks_;
     static const WebServiceMethodDescription kNetworkInterfaces_;
@@ -116,6 +118,18 @@ public:
               Route{
                   L""_RegEx,
                   DefaultPage_},
+
+              Route{
+                  L"about"_RegEx,
+                  mkRequestHandler (kAbout_, About::kMapper, function<About (void)>{[=] () { return fWSAPI_->GetAbout (); }})},
+
+              Route{
+                  L"blob/(.+)"_RegEx,
+                  [=] (Message* m, const String& id) {
+                      tuple<Memory::BLOB, DataExchange::InternetMediaType> b = fWSAPI_->GetBLOB (id);
+                      m->PeekResponse ()->SetContentType (get<1> (b));
+                      m->PeekResponse ()->write (get<0> (b));
+                  }},
 
               Route{
                   MethodsRegularExpressions::kGet,
@@ -252,10 +266,6 @@ public:
                       WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_DNS_CalculateScore ()));
                   }},
 
-              Route{
-                  L"about"_RegEx,
-                  mkRequestHandler (kAbout_, About::kMapper, function<About (void)>{[=] () { return fWSAPI_->GetAbout (); }})},
-
           }}
         , fWSConnectionMgr_{SocketAddresses (InternetAddresses_Any (), 8080), fWSRouter_, ConnectionManager::Options{kMaxConcurrentConnections_, Socket::BindFlags{true}, kServerString_}} // listen and dispatch while this object exists
         , fGUIWebRouter_{Sequence<Route>{
@@ -270,6 +280,7 @@ public:
             response,
             Sequence<WebServiceMethodDescription>{
                 kAbout_,
+                kBlob_,
                 kDevices_,
                 kNetworkInterfaces_,
                 kNetworks_,
@@ -277,6 +288,26 @@ public:
             },
             DocsOptions{L"Web Methods"sv});
     }
+};
+const WebServiceMethodDescription WebServer::Rep_::kAbout_{
+    L"about"sv,
+    Set<String>{String_Constant{IO::Network::HTTP::Methods::kGet}},
+    DataExchange::PredefinedInternetMediaType::kJSON,
+    L"Data about the WTF application, version etc"sv,
+    Sequence<String>{
+        L"curl http://localhost:8080/about"sv,
+    },
+    Sequence<String>{L"Fetch the component versions, etc."sv},
+};
+const WebServiceMethodDescription WebServer::Rep_::kBlob_{
+    L"blob"sv,
+    Set<String>{String_Constant{IO::Network::HTTP::Methods::kGet}},
+    nullopt,
+    L"BLOBs (and their associated media type) generally sourced from other computers, but cached here so they will be available when those other computers are not (like icons from SSDP)"sv,
+    Sequence<String>{
+        L"curl http://localhost:8080/blob/{ID}"sv,
+    },
+    Sequence<String>{L"Fetch the blob by value (generally these links appear in GET /devices/{x} etc output)."sv},
 };
 const WebServiceMethodDescription WebServer::Rep_::kDevices_{
     L"devices"sv,
@@ -335,16 +366,6 @@ const WebServiceMethodDescription WebServer::Rep_::kOperations_{
         L"/operations/dns/lookup[&name=string]"sv,
         L"/operations/dns/calculate-score; returns number 0 (worst) to 1.0 (best)"sv,
     },
-};
-const WebServiceMethodDescription WebServer::Rep_::kAbout_{
-    L"about"sv,
-    Set<String>{String_Constant{IO::Network::HTTP::Methods::kGet}},
-    DataExchange::PredefinedInternetMediaType::kJSON,
-    {},
-    Sequence<String>{
-        L"curl http://localhost:8080/about"sv,
-    },
-    Sequence<String>{L"Fetch the component versions, etc."sv},
 };
 
 WebServer::WebServer (const shared_ptr<IWSAPI>& wsImpl)
