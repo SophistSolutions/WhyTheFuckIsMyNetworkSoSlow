@@ -64,7 +64,7 @@ GUID BLOBMgr::AddBLOBFromURL (const URI& url)
         }();
         Connection::Options options{};
         options.fCache      = sHttpCache_;
-        Connection conn     = CreateConnection ();
+        Connection conn     = CreateConnection (options);
         auto&&     response = conn.GET (url);
         return make_pair (response.GetData (), response.GetContentType ().value_or (InternetMediaType{}));
     };

@@ -13,6 +13,9 @@ Top priority bug:
   cache object. Eventually probably use external cache.
   But we also need for fetching xml from each device.
 
+  STUFF TO FETCH XML DEVICE INFO NOT USING CACHE
+  
+
 
 * Dont expose ICON urls - but CACHE them.
   This is important because the machine in question can go away (e.g. the samsung tv icon 
