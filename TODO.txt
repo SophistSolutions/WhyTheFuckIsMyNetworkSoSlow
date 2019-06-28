@@ -1,6 +1,19 @@
 Top priority bug:
 
 
+* Redo HTTP client layer to use cached
+  connection pool.
+  Have pool (of fixed size). And all compoents doing
+  fetches share this. WAIT on getting connection(?) or maybe 
+  have timeout so if cannot get in certain amount of time, it gets created anew.
+
+  this really goes in stroika.
+
+  But also restructure my code so it shares a common
+  cache object. Eventually probably use external cache.
+  But we also need for fetching xml from each device.
+
+
 * Dont expose ICON urls - but CACHE them.
   This is important because the machine in question can go away (e.g. the samsung tv icon 
   goes away when the TV is off)
