@@ -76,8 +76,7 @@ namespace {
                 try {
                     // this goes throug the gateway, not necesarily this network, if we had multiple networks with gateways!
                     auto&& connection = IO::Network::Transfer::CreateConnection ();
-                    connection.SetURL (url);
-                    return IO::Network::InternetAddress{connection.GET ().GetDataTextInputStream ().ReadAll ().Trim ()};
+                    return IO::Network::InternetAddress{connection.GET (url).GetDataTextInputStream ().ReadAll ().Trim ()};
                 }
                 catch (...) {
                     DbgTrace (L"ignore exception fetching public(external) IP address: %s", Characters::ToString (current_exception ()).c_str ());

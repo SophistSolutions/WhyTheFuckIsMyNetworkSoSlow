@@ -63,10 +63,11 @@ optional<tuple<GEOLocationInformation, InternetServiceProvider>> BackendApp::Com
     constexpr Time::DurationSecondsType                                                                                        kInfoTimeoutInSeconds_{10 * 60.0};
     static Memoizer<optional<tuple<GEOLocationInformation, InternetServiceProvider>>, SynchronizedTimedCache, InternetAddress> sMemoizeCache_ = {
         [] (InternetAddress ia) -> optional<tuple<GEOLocationInformation, InternetServiceProvider>> {
-            Debug::TraceContextBumper ctx{L"GEOLocAndISPLookup::{}... real lookup - cachemiss"};
-            auto&&                    connection = IO::Network::Transfer::CreateConnection ();
-            connection.SetURL (URI{L"http://ip-api.com/json/" + ia.ToString ()});
-            Mapping<String, VariantValue> m = DataExchange::Variant::JSON::Reader ().Read (connection.GET ().GetDataTextInputStream ()).As<Mapping<String, VariantValue>> ();
+            using namespace DataExchange;
+            using namespace IO::Network::Transfer;
+            Debug::TraceContextBumper     ctx{L"GEOLocAndISPLookup::{}... real lookup - cachemiss"};
+            auto&&                        connection = CreateConnection ();
+            Mapping<String, VariantValue> m          = Variant::JSON::Reader ().Read (connection.GET (URI{L"http://ip-api.com/json/" + ia.ToString ()}).GetDataTextInputStream ()).As<Mapping<String, VariantValue>> ();
             GEOLocationInformation        geoloc{};
             auto                          cvt = [] (optional<VariantValue> v) -> optional<String> { return v ? optional<String>{v->As<String> ()} : optional<String>{}; };
             geoloc.fRegionCode                = cvt (m.Lookup (L"region"));

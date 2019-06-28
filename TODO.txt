@@ -5,8 +5,22 @@ Top priority bug:
   This is important because the machine in question can go away (e.g. the samsung tv icon 
   goes away when the TV is off)
 
+MOSTLY DONE EXCEOT
+    URI TransformURL2LocalStorage_ (const URI& url)
+    {
+        // if we are unable to cache the url (say because the url is bad or the device is currently down)
+        // just return the original
+        try {
+            GUID g = BackendApp::Common::BLOBMgr::sThe.AddBLOBFromURL (url);
+            // tricky to know right host to supply here - will need some sort of configuration for this (due to firewalls, NAT etc)
+            URI result{L"http://localhost:8080"};
+// MUST DO BETTER JOB OF GETTING THIS BASE URL
+
+
+
+
 * IMPLEMENT FILTER API, so can easily
-  filte by active/selected network 
+  filter by active/selected network 
   so on UNIX boxes we dont see the 172.x devices
   (and maybe see why we dont discover more about them)
 

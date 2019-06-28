@@ -53,13 +53,23 @@ GUID BLOBMgr::AddBLOB (const BLOB& b, const InternetMediaType& ct)
 
 GUID BLOBMgr::AddBLOBFromURL (const URI& url)
 {
-    // @todo must add logic to Stroika IO::Network::Transfer::Connection to handle last-modified/ETAGs etc so this can be
-    // more efficient. Then Cache this 'connection' object (or cache/maintain common cache object)
-    // here so uses that and doesn't fetch for each
-    IO::Network::Transfer::Connection conn = IO::Network::Transfer::CreateConnection ();
-    conn.SetURL (url);
-    auto&& response = conn.GET ();
-    return AddBLOB (response.GetData (), response.GetContentType ().value_or (InternetMediaType{}));
+    using namespace IO::Network::Transfer;
+    auto fetchData = [] (const URI& url) {
+        // fetch the data from the given URI, maintaining a cache, so we don't needlessly ping remote servers for icons etc.
+        static Cache::Ptr sHttpCache_ = [] () {
+            Cache::DefaultOptions options;
+            options.fCacheSize          = 25;
+            options.fDefaultResourceTTL = 60min;
+            return Cache::CreateDefault (options);
+        }();
+        Connection::Options options{};
+        options.fCache      = sHttpCache_;
+        Connection conn     = CreateConnection ();
+        auto&&     response = conn.GET (url);
+        return make_pair (response.GetData (), response.GetContentType ().value_or (InternetMediaType{}));
+    };
+    auto data = fetchData (url);
+    return AddBLOB (data.first, data.second);
 }
 
 tuple<BLOB, InternetMediaType> BLOBMgr::GetBLOB (const GUID& id) const
