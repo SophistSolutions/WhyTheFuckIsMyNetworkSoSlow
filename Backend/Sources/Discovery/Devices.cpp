@@ -608,8 +608,9 @@ namespace {
             optional<URI>    deviceIconURL;
 
             try {
-                IO::Network::Transfer::Connection c = IO::Network::Transfer::CreateConnection ();
-                IO::Network::Transfer::Response   r = c.GET (d.fLocation);
+                using namespace IO::Network::Transfer;
+                Connection::Ptr c = Connection::New ();
+                Response        r = c.GET (d.fLocation);
                 if (r.GetSucceeded ()) {
                     Frameworks::UPnP::DeviceDescription deviceInfo = DeSerialize (r.GetData ());
                     deviceFriendlyName                             = deviceInfo.fFriendlyName;
