@@ -1,4 +1,5 @@
 import { IDevice } from "@/models/device/IDevice";
+import { SortFieldEnum, SearchSpecification } from "@/models/device/SearchSpecification";
 import { IAbout } from "@/models/IAbout";
 import { INetwork } from "@/models/network/INetwork";
 
@@ -14,15 +15,25 @@ export async function fetchNetworks(): Promise<INetwork[]> {
     .catch((error) => console.error(error));
 }
 
-export async function fetchDevices(): Promise<IDevice[]> {
-    var searchTerms : object[] = [];
+export async function fetchDevices(sortFields?: SortFieldEnum[]): Promise<IDevice[]> {
     // @todo make these search params depend on parameters, and especially make compareNetwork depend on current active network
     // (and maybe sometimes omit)
-    searchTerms.push ({"by":"Address"});
-    searchTerms.push ({"by":"Type"});
-    searchTerms.push ({"by":"Priority"});
-    let searchSpec = {searchTerms: searchTerms, compareNetwork:"192.168.244.0/24"};
-    return fetch(API_ROOT + `/devices?recurse=true&sort=${encodeURI(JSON.stringify (searchSpec))}`)
+
+    if (!sortFields) {
+        sortFields = [
+            SortFieldEnum.ADDRESS,
+            SortFieldEnum.TYPE,
+            SortFieldEnum.PRIORITY,
+        ];
+    }
+
+    // TODO correct hardcoded compareNetwork
+    const searchSpecs = new SearchSpecification(
+        sortFields,
+        "192.168.244.0/24",
+    );
+
+    return fetch(API_ROOT + `/devices?recurse=true&sort=${encodeURI(JSON.stringify (searchSpecs))}`)
     .then((response) => response.json())
     .then((data) => {
         return data;

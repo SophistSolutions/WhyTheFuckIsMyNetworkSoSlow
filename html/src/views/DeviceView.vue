@@ -1,9 +1,46 @@
 <template>
-  <div class="devices">
-    <div class="deviceList" v-for="device in sortedDevices" :key="device.id">
-      <Device name="Device" :device="device"></Device>
-    </div>
-  </div>
+  <v-container class="devices">
+    <v-layout row wrap>
+      <v-flex md12>
+        <div>
+          Sort by:
+        </div>
+        <div>
+          <v-btn
+            color="blue-grey"
+            class="white--text"
+            @click="selectSortField(SortFieldEnum.ADDRESS)"
+          > Address
+            <v-icon medium dark right>device_hub</v-icon>
+          </v-btn>
+          <v-btn
+            color="blue-grey"
+            class="white--text"
+            @click="selectSortField(SortFieldEnum.PRIORITY)"
+          > Relavence
+            <v-icon medium dark right>priority_high</v-icon>
+          </v-btn>
+          <v-btn
+            color="blue-grey"
+            class="white--text"
+            @click="selectSortField(SortFieldEnum.NAME)"
+          > Name
+            <v-icon medium dark right>perm_identity</v-icon>
+          </v-btn>
+          <v-btn
+            color="blue-grey"
+            class="white--text"
+            @click="selectSortField(SortFieldEnum.TYPE)"
+          > Type
+            <v-icon medium dark right>category</v-icon>
+          </v-btn>
+        </div>
+      </v-flex>
+      <v-flex md12 class="deviceList" v-for="device in sortedDevices" :key="device.id">
+        <Device name="Device" :device="device"></Device>
+      </v-flex>
+    </v-layout>
+  </v-container>
 </template>
 
 <script lang="ts">
@@ -12,18 +49,22 @@ import { Component, Vue } from "vue-property-decorator";
 
 import { compareValues } from "@/CustomSort";
 import { fetchNetworks } from "@/proxy/API";
+import { SortFieldEnum } from "@/models/device/SearchSpecification";
 
 @Component({
   name: "Devices",
   components: {
-    Device: () => import("@/components/Device.vue")
+    Device: () => import("@/components/Device.vue"),
   }
 })
 export default class Devices extends Vue {
   private polling: undefined | number = undefined;
 
-  private sortField: string = "name";
+  private sortField: undefined | SortFieldEnum = undefined;
   private sortOrder: string = "asc";
+
+  // TODO fix hack to expose enum in template
+  private SortFieldEnum: typeof SortFieldEnum = SortFieldEnum;
 
   private get sortedDevices(): IDevice[] {
     // @todo not sure the right way to handle this? We want to 'store' the mapping of ID to device data, and
@@ -43,7 +84,8 @@ export default class Devices extends Vue {
   }
 
   private fetchDevices() {
-    this.$store.dispatch("fetchDevices");
+    const sortFields: SortFieldEnum[] | undefined = (this.sortField) ? [this.sortField] : undefined;
+    this.$store.dispatch("fetchDevices", sortFields);
   }
 
   private pollData() {
@@ -61,6 +103,11 @@ export default class Devices extends Vue {
     // TODO move sort to store
 
     //return (this.$store.getters.getDevices) ? JSON.parse(JSON.stringify(devices)) : [];
+  }
+
+  private selectSortField(sortField: SortFieldEnum): void {
+    this.sortField = sortField;
+    this.$store.dispatch("fetchDevices", [sortField]);
   }
 }
 </script>
