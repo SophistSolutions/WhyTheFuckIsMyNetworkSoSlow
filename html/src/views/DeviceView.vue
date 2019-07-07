@@ -50,9 +50,15 @@
           </v-btn>
         </div>
       </v-flex>
-      <v-flex md12 class="deviceList" v-for="device in sortedDevices" :key="device.id">
-        <Device name="Device" :device="device"></Device>
+
+      <v-flex md12>
+        <transition-group name="flip-list" tag="ul">
+          <div class="deviceList" v-for="device in sortedDevices" :key="device.id">
+            <Device name="Device" :device="device"></Device>
+          </div>
+        </transition-group>
       </v-flex>
+
     </v-layout>
   </v-container>
 </template>
@@ -151,5 +157,9 @@ export default class Devices extends Vue {
 }
 .deviceList {
   margin-top: 10px;
+}
+
+.flip-list-move {
+  transition: transform 500ms;
 }
 </style>
