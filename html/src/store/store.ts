@@ -6,7 +6,7 @@ import { INetwork } from "@/models/network/INetwork";
 import * as mutations from "./mutations";
 
 import { IDevice } from "@/models/device/IDevice";
-import { SortFieldEnum } from "@/models/device/SearchSpecification";
+import { ISortBy } from "@/models/device/SearchSpecification";
 import { IAbout } from "@/models/IAbout";
 import { fetchAboutInfo, fetchDevices, fetchNetworks } from "@/proxy/API";
 
@@ -44,8 +44,8 @@ export default new Vuex.Store({
     async fetchAboutInfo({commit}) {
       commit("setAboutInfo", await fetchAboutInfo());
     },
-    async fetchDevices({commit}, sortFields: SortFieldEnum[]) {
-      commit("setDevices", await fetchDevices(sortFields));
+    async fetchDevices({commit}, searchSpecs: ISortBy) {
+      commit("setDevices", await fetchDevices(searchSpecs));
     },
     setSelectedNetwork({commit}, networkId: string) {
       commit("setSelectedNetwork", networkId);

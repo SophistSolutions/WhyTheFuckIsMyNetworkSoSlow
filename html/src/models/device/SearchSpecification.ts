@@ -1,5 +1,6 @@
 export interface ISortBy {
     by: SortFieldEnum;
+    ascending?: boolean;
 }
 
 export enum SortFieldEnum {
@@ -13,12 +14,8 @@ export class SearchSpecification {
     private searchTerms: ISortBy[];
     private compareNetwork?: string;
 
-    constructor(searchTerms: SortFieldEnum[], compareNetwork?: string) {
-
-        this.searchTerms = searchTerms.map((field: SortFieldEnum) => {
-            return {by: field};
-        });
-
+    constructor(searchCriteria: ISortBy[], compareNetwork?: string) {
+        this.searchTerms = searchCriteria;
         this.compareNetwork = compareNetwork;
     }
 }

@@ -34,6 +34,20 @@
           > Type
             <v-icon medium dark right>category</v-icon>
           </v-btn>
+          <v-btn
+            color="blue-grey"
+            class="white--text"
+            @click="selectSortAscending(true)"
+          >
+            <v-icon medium dark>arrow_upward</v-icon>
+          </v-btn>
+          <v-btn
+            color="blue-grey"
+            class="white--text"
+            @click="selectSortAscending(false)"
+          >
+            <v-icon medium dark>arrow_downward</v-icon>
+          </v-btn>
         </div>
       </v-flex>
       <v-flex md12 class="deviceList" v-for="device in sortedDevices" :key="device.id">
@@ -49,7 +63,7 @@ import { Component, Vue } from "vue-property-decorator";
 
 import { compareValues } from "@/CustomSort";
 import { fetchNetworks } from "@/proxy/API";
-import { SortFieldEnum } from "@/models/device/SearchSpecification";
+import { SortFieldEnum, ISortBy } from "@/models/device/SearchSpecification";
 
 @Component({
   name: "Devices",
@@ -61,7 +75,7 @@ export default class Devices extends Vue {
   private polling: undefined | number = undefined;
 
   private sortField: undefined | SortFieldEnum = undefined;
-  private sortOrder: string = "asc";
+  private sortOrder: undefined | boolean = true;
 
   // TODO fix hack to expose enum in template
   private SortFieldEnum: typeof SortFieldEnum = SortFieldEnum;
@@ -84,8 +98,7 @@ export default class Devices extends Vue {
   }
 
   private fetchDevices() {
-    const sortFields: SortFieldEnum[] | undefined = (this.sortField) ? [this.sortField] : undefined;
-    this.$store.dispatch("fetchDevices", sortFields);
+    this.$store.dispatch("fetchDevices", this.getSearchCriteria());
   }
 
   private pollData() {
@@ -107,7 +120,24 @@ export default class Devices extends Vue {
 
   private selectSortField(sortField: SortFieldEnum): void {
     this.sortField = sortField;
-    this.$store.dispatch("fetchDevices", [sortField]);
+    this.fetchDevices();
+  }
+  private selectSortAscending(sortOrder: boolean): void {
+    this.sortOrder = sortOrder;
+    this.fetchDevices();
+  }
+  private getSearchCriteria(): ISortBy | undefined {
+    if (!this.sortField) {
+      return undefined;
+    }
+
+    const searchQuery: ISortBy = { by: this.sortField };
+
+    if (this.sortOrder !== undefined) {
+      searchQuery.ascending = this.sortOrder;
+    }
+
+    return searchQuery;
   }
 }
 </script>

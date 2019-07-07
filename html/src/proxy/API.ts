@@ -1,5 +1,5 @@
 import { IDevice } from "@/models/device/IDevice";
-import { SortFieldEnum, SearchSpecification } from "@/models/device/SearchSpecification";
+import { SortFieldEnum, SearchSpecification, ISortBy } from "@/models/device/SearchSpecification";
 import { IAbout } from "@/models/IAbout";
 import { INetwork } from "@/models/network/INetwork";
 
@@ -15,21 +15,23 @@ export async function fetchNetworks(): Promise<INetwork[]> {
     .catch((error) => console.error(error));
 }
 
-export async function fetchDevices(sortFields?: SortFieldEnum[]): Promise<IDevice[]> {
+export async function fetchDevices(searchCriteria?: ISortBy): Promise<IDevice[]> {
     // @todo make these search params depend on parameters, and especially make compareNetwork depend on current active network
     // (and maybe sometimes omit)
 
-    if (!sortFields) {
-        sortFields = [
-            SortFieldEnum.ADDRESS,
-            SortFieldEnum.TYPE,
-            SortFieldEnum.PRIORITY,
-        ];
+    const searchSpecification: ISortBy[] = [];
+
+    if (!searchCriteria) {
+        searchSpecification.push({by: SortFieldEnum.ADDRESS, ascending: true});
+        searchSpecification.push({by: SortFieldEnum.TYPE, ascending: true});
+        searchSpecification.push({by: SortFieldEnum.PRIORITY, ascending: true});
+    } else {
+        searchSpecification.push(searchCriteria);
     }
 
     // TODO correct hardcoded compareNetwork
     const searchSpecs = new SearchSpecification(
-        sortFields,
+        searchSpecification,
         "192.168.244.0/24",
     );
 
