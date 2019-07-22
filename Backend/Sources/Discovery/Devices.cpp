@@ -254,17 +254,17 @@ namespace {
             {
                 StringBuilder sb;
                 sb += L"{";
-                sb += L"fUSNs: " + Characters::ToString (fUSNs) + L", ";
-                sb += L"fAlive: " + Characters::ToString (fAlive) + L", ";
-                sb += L"fLocations: " + Characters::ToString (fLocations) + L", ";
-                sb += L"fManufacturer: " + Characters::ToString (fManufacturer) + L", ";
-                sb += L"fManufacturerURI: " + Characters::ToString (fManufacturerURI) + L", ";
-                sb += L"fServer: " + Characters::ToString (fServer) + L", ";
+                sb += L"USNs: " + Characters::ToString (fUSNs) + L", ";
+                sb += L"Alive: " + Characters::ToString (fAlive) + L", ";
+                sb += L"Locations: " + Characters::ToString (fLocations) + L", ";
+                sb += L"Manufacturer: " + Characters::ToString (fManufacturer) + L", ";
+                sb += L"Manufacturer-URI: " + Characters::ToString (fManufacturerURI) + L", ";
+                sb += L"Server: " + Characters::ToString (fServer) + L", ";
                 sb += L"Device-Type-2-Friendly-Name-Map: " + Characters::ToString (fDeviceType2FriendlyNameMap) + L", ";
-                sb += L"fPresentationURL: " + Characters::ToString (fPresentationURL) + L", ";
-                sb += L"fLastSSDPMessageRecievedAt: " + Characters::ToString (fLastSSDPMessageRecievedAt) + L", ";
+                sb += L"Presentation-URL: " + Characters::ToString (fPresentationURL) + L", ";
+                sb += L"Last-SSDP-Message-Recieved-At: " + Characters::ToString (fLastSSDPMessageRecievedAt) + L", ";
 #if qDebug
-                sb += L"fLastAdvertisement: " + Characters::ToString (fLastAdvertisement) + L", ";
+                sb += L"Last-Advertisement: " + Characters::ToString (fLastAdvertisement) + L", ";
 #endif
                 sb += L"}";
                 return sb.str ();
