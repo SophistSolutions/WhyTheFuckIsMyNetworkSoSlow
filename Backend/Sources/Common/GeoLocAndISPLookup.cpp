@@ -66,7 +66,7 @@ optional<tuple<GEOLocationInformation, InternetServiceProvider>> BackendApp::Com
             using namespace DataExchange;
             using namespace IO::Network::Transfer;
             Debug::TraceContextBumper     ctx{L"GEOLocAndISPLookup::{}... real lookup - cachemiss"};
-            auto&&                        connection = CreateConnection ();
+            auto&&                        connection = Connection::New ();
             Mapping<String, VariantValue> m          = Variant::JSON::Reader ().Read (connection.GET (URI{L"http://ip-api.com/json/" + ia.ToString ()}).GetDataTextInputStream ()).As<Mapping<String, VariantValue>> ();
             GEOLocationInformation        geoloc{};
             auto                          cvt = [] (optional<VariantValue> v) -> optional<String> { return v ? optional<String>{v->As<String> ()} : optional<String>{}; };

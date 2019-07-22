@@ -292,7 +292,7 @@ public:
 const WebServiceMethodDescription WebServer::Rep_::kAbout_{
     L"about"sv,
     Set<String>{String_Constant{IO::Network::HTTP::Methods::kGet}},
-    DataExchange::PredefinedInternetMediaType::kJSON,
+    DataExchange::InternetMediaTypes::kJSON,
     L"Data about the WTF application, version etc"sv,
     Sequence<String>{
         L"curl http://localhost:8080/about"sv,
@@ -312,7 +312,7 @@ const WebServiceMethodDescription WebServer::Rep_::kBlob_{
 const WebServiceMethodDescription WebServer::Rep_::kDevices_{
     L"devices"sv,
     Set<String>{String_Constant{IO::Network::HTTP::Methods::kGet}},
-    DataExchange::PredefinedInternetMediaType::kJSON,
+    DataExchange::InternetMediaTypes::kJSON,
     {},
     Sequence<String>{
         L"curl http://localhost:8080/devices"sv,
@@ -331,7 +331,7 @@ const WebServiceMethodDescription WebServer::Rep_::kDevices_{
 const WebServiceMethodDescription WebServer::Rep_::kNetworks_{
     L"networks"sv,
     Set<String>{String_Constant{IO::Network::HTTP::Methods::kGet}},
-    DataExchange::PredefinedInternetMediaType::kJSON,
+    DataExchange::InternetMediaTypes::kJSON,
     {},
     Sequence<String>{L"curl http://localhost:8080/networks"sv, L"curl http://localhost:8080/networks?recurse=true"sv, L"curl http://localhost:8080/networks/{ID}"sv},
     Sequence<String>{L"Fetch the list of known Networks."sv,
@@ -340,7 +340,7 @@ const WebServiceMethodDescription WebServer::Rep_::kNetworks_{
 const WebServiceMethodDescription WebServer::Rep_::kNetworkInterfaces_{
     L"network-interfaces"sv,
     Set<String>{String_Constant{IO::Network::HTTP::Methods::kGet}},
-    DataExchange::PredefinedInternetMediaType::kJSON,
+    DataExchange::InternetMediaTypes::kJSON,
     {},
     Sequence<String>{L"curl http://localhost:8080/network-interfaces", L"curl http://localhost:8080/network-interfaces?recurse=true"sv, L"curl http://localhost:8080/network-interfaces?filter-only-running=true"sv},
     Sequence<String>{L"Fetch the list of known Network Interfaces."sv,
@@ -349,7 +349,7 @@ const WebServiceMethodDescription WebServer::Rep_::kNetworkInterfaces_{
 const WebServiceMethodDescription WebServer::Rep_::kOperations_{
     L"operations"sv,
     Set<String>{String_Constant{IO::Network::HTTP::Methods::kGet}},
-    DataExchange::PredefinedInternetMediaType::kJSON,
+    DataExchange::InternetMediaTypes::kJSON,
     {},
     Sequence<String>{
         L"curl http://localhost:8080/operations/ping?target=www.google.com"sv,

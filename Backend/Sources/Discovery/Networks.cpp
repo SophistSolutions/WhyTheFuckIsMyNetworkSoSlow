@@ -75,7 +75,7 @@ namespace {
             for (auto&& url : kSources_) {
                 try {
                     // this goes throug the gateway, not necesarily this network, if we had multiple networks with gateways!
-                    auto&& connection = IO::Network::Transfer::CreateConnection ();
+                    auto&& connection = IO::Network::Transfer::Connection::New ();
                     return IO::Network::InternetAddress{connection.GET (url).GetDataTextInputStream ().ReadAll ().Trim ()};
                 }
                 catch (...) {
