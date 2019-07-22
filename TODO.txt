@@ -1,6 +1,75 @@
 Top priority bug:
 
 
+Use
+ ConnectionPool
+
+
+* On GUI 
+  When address is not selected sort by, add sort by address
+  as secondary
+
+  And reverse the icons for up/down - I think backwards.
+
+  And ask Bob to make it sticky so you can see which selected
+  (unless I can see how to do that easily)
+
+
+* Sort by name must be case insensitive sort
+
+
+---
+
+Robert Pringle
+Sat, Jul 6, 9:56 AM (2 days ago)
+to Lewis
+
+curl http://localhost:8080/devices?recurse=true&sortBy=Address,Priority&sortCompareNetwork=192.168.244.0/24
+
+This curl is an example pulled from the docs page http://raspberrypi:8080/
+
+- Wasn't 100% obvious all of the provided curls were equivalent/did the same thing. Could be helpful to make it more clear that either json can be passed in as a querystring or that the other fields sortBy and sortCompareNetwork can be used instead. FYI - upon rereading the docs. I now see the 2 sections both labeled queryString. This is good but wasn't clear to me that they were 2 different ways of doing the same thing.
+- Would be nice to have the version of the api (as seen in the curl at the top of the page) take a comma separated list of sort fields going from Most important to least important
+
+----
+
+
+
+* see if I can repdorcuce where on windows get device with no info - I think it came from SSDP
+{
+        "attachedNetworks" : {
+        },
+        "id" : "94696dc9-9c68-719d-9dc9-966896646799",
+        "name" : "Unknown"
+    }
+issue is
+        void AddIPAddresses_ (const Iterable<InternetAddress>& addrs, const optional<String>& hwAddr = nullopt)
+        {
+            // merge the addrs into each matching network interface
+            for (GUID nw : NetAndNetInterfaceMapper_::sThe.LookupNetworksGUIDs (addrs)) {
+                NetworkAttachmentInfo nwAttachmentInfo = fAttachedNetworks.LookupValue (nw);
+                nwAttachmentInfo.networkAddresses += addrs;
+                if (hwAddr) {
+                    nwAttachmentInfo.hardwareAddresses += *hwAddr;
+                }
+                fAttachedNetworks.Add (nw, nwAttachmentInfo);
+            }
+        }
+
+assumes we already know the network
+
+
+
+But we can get some addresses for no known netwrok like 169.... addr
+https://packetlife.net/blog/2008/sep/24/169-254-0-0-addresses-explained/
+
+
+
+
+
+
+---
+
 * Redo HTTP client layer to use cached
   connection pool.
   Have pool (of fixed size). And all compoents doing

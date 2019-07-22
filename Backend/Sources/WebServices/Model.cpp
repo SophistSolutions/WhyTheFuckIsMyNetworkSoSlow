@@ -323,9 +323,9 @@ DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof
 const ObjectVariantMapper Device::kMapper = [] () {
     ObjectVariantMapper mapper;
 
-    mapper.Add (OperatingSystem::kMapper);
+    mapper += OperatingSystem::kMapper;
     mapper.AddCommonType<optional<OperatingSystem>> ();
-    mapper.Add (Manufacturer::kMapper);
+    mapper += Manufacturer::kMapper;
     mapper.AddCommonType<optional<Manufacturer>> ();
     mapper.AddCommonType<InternetAddress> ();
     mapper.AddCommonType<optional<InternetAddress>> ();
@@ -490,8 +490,7 @@ DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof
 const ObjectVariantMapper About::kMapper = [] () {
     ObjectVariantMapper mapper;
 
-    //mapper += OperatingSystem::kMapper;
-    mapper.Add (OperatingSystem::kMapper);
+    mapper += OperatingSystem::kMapper;
 
     mapper.Add<Configuration::Version> (
         [] (const ObjectVariantMapper& mapper, const Configuration::Version* obj) -> VariantValue { return obj->AsPrettyVersionString (); },
