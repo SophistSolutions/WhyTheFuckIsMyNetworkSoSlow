@@ -12,6 +12,7 @@
 #include "Stroika/Foundation/Containers/Set.h"
 #include "Stroika/Foundation/Cryptography/Digest/Algorithm/MD5.h"
 #include "Stroika/Foundation/Cryptography/Format.h"
+#include "Stroika/Foundation/Debug/TimingTrace.h"
 #include "Stroika/Foundation/Execution/Activity.h"
 #include "Stroika/Foundation/Execution/Logger.h"
 #include "Stroika/Foundation/Execution/Sleep.h"
@@ -519,20 +520,20 @@ namespace {
                                 // @todo reconsider - in this case we may not need to retry since we provide all info and dont collaborate with
                                 // other APIs for this object? But this is harmless...
 #if qLOCK_DEBUGGING_
-                                        DbgTrace (L"*** retry = true - MyDeviceDiscoverer_");
+                                        DbgTrace (L"!!! retry = true - MyDeviceDiscoverer_");
 #endif
                                     }
                                     else {
                                         writeLock.rwref ().Add (di.fGUID, di);
 #if qLOCK_DEBUGGING_
-                                        DbgTrace (L"*** succeeded  updating writelock ***MyDeviceDiscoverer_");
+                                        DbgTrace (L"!!! succeeded  updating writelock ***MyDeviceDiscoverer_");
 #endif
                                     }
                                 },
                                 1s) or
                             retry) {
 #if qLOCK_DEBUGGING_
-                            DbgTrace (L"*** failed to update so retrying ***MyDeviceDiscoverer_");
+                            DbgTrace (L"!!! failed to update so retrying ***MyDeviceDiscoverer_");
 #endif
                             Execution::Sleep (1s);
                             goto again;
@@ -749,20 +750,20 @@ namespace {
                             if (interveningWriteLock) {
                                 retry = true;
 #if qLOCK_DEBUGGING_
-                                DbgTrace (L"retry = true ***RecieveSSDPAdvertisement_");
+                                DbgTrace (L"!!! retry = true ***RecieveSSDPAdvertisement_");
 #endif
                             }
                             else {
                                 writeLock.rwref ().Add (di.fGUID, di);
 #if qLOCK_DEBUGGING_
-                                DbgTrace (L"*** succeeded  updating writelock ***RecieveSSDPAdvertisement_");
+                                DbgTrace (L"!!! succeeded  updating writelock ***RecieveSSDPAdvertisement_");
 #endif
                             }
                         },
                         1s) or
                     retry) {
 #if qLOCK_DEBUGGING_
-                    DbgTrace (L"*** failed to update so retrying ***RecieveSSDPAdvertisement_");
+                    DbgTrace (L"!!! failed to update so retrying ***RecieveSSDPAdvertisement_");
 #endif
                     goto again; // release the lock and try again
                 }
@@ -820,7 +821,6 @@ namespace {
 
                         // merge in data
                         auto l = sDiscoveredDevices_.cget ();
-                        DbgTrace (L"*** in discovery loop, acquired lock ***MyNeighborDiscoverer_");
                         DiscoveryInfo_ di = [&] () {
                             DiscoveryInfo_ tmp{};
                             tmp.AddIPAddresses_ (i.fInternetAddress, i.fHardwareAddress);
@@ -846,13 +846,13 @@ namespace {
                                     if (interveningWriteLock) {
                                         retry = true;
 #if qLOCK_DEBUGGING_
-                                        DbgTrace (L"*** retry = true - MyNeighborDiscoverer_");
+                                        DbgTrace (L"!!! retry = true - MyNeighborDiscoverer_");
 #endif
                                     }
                                     else {
                                         writeLock.rwref ().Add (di.fGUID, di);
 #if qLOCK_DEBUGGING_
-                                        DbgTrace (L"*** succeeded  updating with writelock ***MyNeighborDiscoverer_");
+                                        DbgTrace (L"!!! succeeded  updating with writelock ***MyNeighborDiscoverer_");
 #endif
                                     }
                                 },
@@ -860,7 +860,7 @@ namespace {
                             retry) {
                             // failed merge, so try the entire acquire/update
 #if qLOCK_DEBUGGING_
-                            DbgTrace (L"*** failed to update so retrying ***MyNeighborDiscoverer_");
+                            DbgTrace (L"!!! failed to update so retrying ***MyNeighborDiscoverer_");
 #endif
                             goto again;
                         }
@@ -960,6 +960,8 @@ Collection<Discovery::Device> Discovery::DevicesMgr::GetActiveDevices (optional<
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
     Debug::TraceContextBumper ctx{L"Discovery::GetActiveDevices"};
 #endif
+    Debug::TimingTrace ttrc{L"Discovery::DevicesMgr::GetActiveDevices", 1.0};
+
     Require (IsActive_ ());
     Collection<Discovery::Device> results;
     using Cache::SynchronizedCallerStalenessCache;
