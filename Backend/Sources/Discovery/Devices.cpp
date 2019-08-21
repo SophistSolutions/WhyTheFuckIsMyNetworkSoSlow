@@ -59,6 +59,9 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery;
 // Comment this in to turn on aggressive noisy DbgTrace in this module
 //#define USE_NOISY_TRACE_IN_THIS_MODULE_ 1
 
+// Turn on to debug issues with lock contention and upgradelocks
+//#define qLOCK_DEBUGGING_ 1
+
 namespace {
     // @todo LIKE WITH NETWORK IDS - probably maintain a persistence cache mapping info - mostly HARDWARE ADDRESS - to a uniuque nummber (guidgen maybe).
     // THEN we will always identify a device as the sam thing even if it appears with diferent IP address on different network
@@ -280,6 +283,7 @@ namespace {
         void AddIPAddresses_ (const Iterable<InternetAddress>& addrs, const optional<String>& hwAddr = nullopt)
         {
             // merge the addrs into each matching network interface
+            bool foundAtLeastOne = false;
             for (GUID nw : NetAndNetInterfaceMapper_::sThe.LookupNetworksGUIDs (addrs)) {
                 NetworkAttachmentInfo nwAttachmentInfo = fAttachedNetworks.LookupValue (nw);
                 nwAttachmentInfo.networkAddresses += addrs;
@@ -287,6 +291,10 @@ namespace {
                     nwAttachmentInfo.hardwareAddresses += *hwAddr;
                 }
                 fAttachedNetworks.Add (nw, nwAttachmentInfo);
+                foundAtLeastOne = true;
+            }
+            if (not foundAtLeastOne) {
+                DbgTrace (L"AddIPAddresses_(%s) called, but no matching interfaces found", Characters::ToString (addrs).c_str ());
             }
         }
 
@@ -439,6 +447,14 @@ namespace {
     // NB: RWSynchronized because most accesses will be to read/lookup in this list; use Mapping<> because KeyedCollection NYI
     RWSynchronized<Mapping<GUID, DiscoveryInfo_>> sDiscoveredDevices_;
 
+// turn on tracking of locks on sDiscoveredDevices_
+#if qDefaultTracingOn && qLOCK_DEBUGGING_
+    int ignored = [] () {
+        sDiscoveredDevices_.fDbgTraceLocksName = L"DiscoveredDevices_";
+        return 0;
+    }();
+#endif
+
     // Look through all the existing devices, and if one appears to match, return it.
     optional<DiscoveryInfo_> FindMatchingDevice_ (decltype (sDiscoveredDevices_)::ReadableReference& rr, const DiscoveryInfo_& d)
     {
@@ -473,12 +489,15 @@ namespace {
                 try {
                     DeclareActivity da{&kDiscovering_This_Device_};
                     if (optional<DiscoveryInfo_> o = GetMyDevice_ ()) {
-                        auto           l  = sDiscoveredDevices_.rwget ();
+                    again:
+                        auto           l  = sDiscoveredDevices_.cget ();
                         DiscoveryInfo_ di = [&] () {
                             DiscoveryInfo_ tmp{};
                             tmp.fAttachedNetworks = o->fAttachedNetworks;
                             if (optional<DiscoveryInfo_> oo = FindMatchingDevice_ (l, tmp)) {
-                                return *oo;
+                                tmp = *oo; // merge
+                                tmp.fAttachedNetworks += o->fAttachedNetworks;
+                                return tmp;
                             }
                             else {
                                 // Generate GUID - based on ipaddrs
@@ -492,7 +511,32 @@ namespace {
                         di.fThisDevice      = o->fThisDevice;
                         di.fOperatingSystem = OperatingSystem{Configuration::GetSystemConfiguration_ActualOperatingSystem ().fPrettyNameWithVersionDetails};
                         di.PatchDerivedFields ();
-                        l->Add (di.fGUID, di);
+                        bool retry = false;
+                        if (not sDiscoveredDevices_.UpgradeLockNonAtomicallyQuietly (
+                                &l, [&] (auto&& writeLock, bool interveningWriteLock) {
+                                    if (interveningWriteLock) {
+                                        retry = true;
+                                // @todo reconsider - in this case we may not need to retry since we provide all info and dont collaborate with
+                                // other APIs for this object? But this is harmless...
+#if qLOCK_DEBUGGING_
+                                        DbgTrace (L"*** retry = true - MyDeviceDiscoverer_");
+#endif
+                                    }
+                                    else {
+                                        writeLock.rwref ().Add (di.fGUID, di);
+#if qLOCK_DEBUGGING_
+                                        DbgTrace (L"*** succeeded  updating writelock ***MyDeviceDiscoverer_");
+#endif
+                                    }
+                                },
+                                1s) or
+                            retry) {
+#if qLOCK_DEBUGGING_
+                            DbgTrace (L"*** failed to update so retrying ***MyDeviceDiscoverer_");
+#endif
+                            Execution::Sleep (1s);
+                            goto again;
+                        }
                     }
                 }
                 catch (const Thread::InterruptException&) {
@@ -501,7 +545,7 @@ namespace {
                 catch (...) {
                     Execution::Logger::Get ().LogIfNew (Execution::Logger::Priority::eError, 5min, L"%s", Characters::ToString (current_exception ()).c_str ());
                 }
-                Execution::Sleep (30); // @todo tmphack - really wait til change in network
+                Execution::Sleep (30s); // @todo tmphack - really wait til change in network
             }
         }
         Thread::CleanupPtr fMyDeviceDiscovererThread_;
@@ -607,6 +651,8 @@ namespace {
             optional<URI>    presentationURL;
             optional<URI>    deviceIconURL;
 
+            bool triedOnce = false;
+
             try {
                 using namespace IO::Network::Transfer;
                 Connection::Ptr c = Connection::New ();
@@ -631,17 +677,22 @@ namespace {
                 DbgTrace (L"Failed to fetch description: %s", Characters::ToString (current_exception ()).c_str ());
             }
 
-            if (locAddrs.empty ()) {
-                DbgTrace (L"oops - bad - probably should log - bad device response - find addr some other way");
-            }
-            else {
-                // merge in data
-                auto           l  = sDiscoveredDevices_.rwget ();
+            WeakAssert (not locAddrs.empty ()); // CAN happen if dns name, and we cannot do dns lookup, but unsure we should include the device.
+            if (not locAddrs.empty ()) {
+            // merge in data
+            again:
+                if (triedOnce) {
+                    Execution::Sleep (1s); // sleep without the lock, but not first time processing message - just on retries
+                }
+                triedOnce         = true;
+                auto           l  = sDiscoveredDevices_.cget ();
                 DiscoveryInfo_ di = [&] () {
                     DiscoveryInfo_ tmp{};
                     tmp.AddIPAddresses_ (locAddrs);
                     if (optional<DiscoveryInfo_> o = FindMatchingDevice_ (l, tmp)) {
-                        return *o;
+                        tmp = *o; // then merge in possible additions
+                        tmp.AddIPAddresses_ (locAddrs);
+                        return tmp;
                     }
                     else {
                         // Generate GUID - based on ipaddrs
@@ -649,6 +700,7 @@ namespace {
                         return tmp;
                     }
                 }();
+                WeakAssert (not di.GetInternetAddresses ().empty ()); // can happen if we find address in tmp.AddIPAddress_() thats not bound to any adapter (but that shouldnt happen so investigate but is for now so ignore breifly)
 
                 if (not di.fSSDPInfo) {
                     di.fSSDPInfo = DiscoveryInfo_::SSDPInfo{};
@@ -661,17 +713,16 @@ namespace {
                 di.fSSDPInfo->fLocations.Add (d.fLocation);
                 di.fSSDPInfo->fUSNs.Add (d.fUSN);
 
-                if (presentationURL) {
-                    // consider if value already there - warn if changes - should we collect multiple
-                    di.fSSDPInfo->fPresentationURL = presentationURL;
-                }
+                Memory::CopyToIf (presentationURL, &di.fSSDPInfo->fPresentationURL); // consider if value already there - warn if changes - should we collect multiple
 
                 if (di.fSSDPInfo->fServer.has_value () and di.fSSDPInfo->fServer != d.fServer) {
                     DbgTrace (L"Warning: different server IDs for same object");
                 }
                 di.fSSDPInfo->fServer = d.fServer;
 
-                di.AddIPAddresses_ (locAddrs);
+                // @todo verify - but I think already done
+                //di.AddIPAddresses_ (locAddrs);
+
                 if (deviceType and deviceFriendlyName) {
                     di.fSSDPInfo->fDeviceType2FriendlyNameMap.Add (*deviceType, *deviceFriendlyName);
                 }
@@ -692,7 +743,29 @@ namespace {
                     }
                 }
                 di.PatchDerivedFields ();
-                l->Add (di.fGUID, di);
+                bool retry = false;
+                if (not sDiscoveredDevices_.UpgradeLockNonAtomicallyQuietly (
+                        &l, [&] (auto&& writeLock, bool interveningWriteLock) {
+                            if (interveningWriteLock) {
+                                retry = true;
+#if qLOCK_DEBUGGING_
+                                DbgTrace (L"retry = true ***RecieveSSDPAdvertisement_");
+#endif
+                            }
+                            else {
+                                writeLock.rwref ().Add (di.fGUID, di);
+#if qLOCK_DEBUGGING_
+                                DbgTrace (L"*** succeeded  updating writelock ***RecieveSSDPAdvertisement_");
+#endif
+                            }
+                        },
+                        1s) or
+                    retry) {
+#if qLOCK_DEBUGGING_
+                    DbgTrace (L"*** failed to update so retrying ***RecieveSSDPAdvertisement_");
+#endif
+                    goto again; // release the lock and try again
+                }
             }
         }
     };
@@ -737,23 +810,60 @@ namespace {
                         }
 #endif
 
+                        bool triedAtLeastOnce = false; // skip sleep first time
+
+                    again:
+                        if (triedAtLeastOnce) {
+                            Execution::Sleep (1s);
+                        }
+                        triedAtLeastOnce = true;
+
                         // merge in data
-                        auto           l  = sDiscoveredDevices_.rwget ();
+                        auto l = sDiscoveredDevices_.cget ();
+                        DbgTrace (L"*** in discovery loop, acquired lock ***MyNeighborDiscoverer_");
                         DiscoveryInfo_ di = [&] () {
                             DiscoveryInfo_ tmp{};
                             tmp.AddIPAddresses_ (i.fInternetAddress, i.fHardwareAddress);
                             if (optional<DiscoveryInfo_> o = FindMatchingDevice_ (l, tmp)) {
-                                return *o;
+                                tmp = *o;
+                                tmp.AddIPAddresses_ (i.fInternetAddress, i.fHardwareAddress); // merge in additions
+                                return tmp;
                             }
                             else {
                                 // Generate GUID - based on ipaddrs
                                 tmp.fGUID = LookupPersistentDeviceID_ (tmp);
+                                if (tmp.fGUID.ToString ().StartsWith (L"94696dc9")) {
+                                    int breakhere = 1; // somehow empty
+                                }
                                 return tmp;
                             }
                         }();
 
                         di.PatchDerivedFields ();
-                        l->Add (di.fGUID, di);
+                        bool retry = false;
+                        if (not sDiscoveredDevices_.UpgradeLockNonAtomicallyQuietly (
+                                &l, [&] (auto&& writeLock, bool interveningWriteLock) {
+                                    if (interveningWriteLock) {
+                                        retry = true;
+#if qLOCK_DEBUGGING_
+                                        DbgTrace (L"*** retry = true - MyNeighborDiscoverer_");
+#endif
+                                    }
+                                    else {
+                                        writeLock.rwref ().Add (di.fGUID, di);
+#if qLOCK_DEBUGGING_
+                                        DbgTrace (L"*** succeeded  updating with writelock ***MyNeighborDiscoverer_");
+#endif
+                                    }
+                                },
+                                1s) or
+                            retry) {
+                            // failed merge, so try the entire acquire/update
+#if qLOCK_DEBUGGING_
+                            DbgTrace (L"*** failed to update so retrying ***MyNeighborDiscoverer_");
+#endif
+                            goto again;
+                        }
                     }
                 }
                 catch (const Thread::InterruptException&) {
