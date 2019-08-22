@@ -205,15 +205,27 @@ namespace {
 #endif
             Set<GUID> results;
             for (Discovery::Network&& nw : Discovery::NetworksMgr::sThe.CollectActiveNetworks ()) {
-                for (const CIDR& nwi : nw.fNetworkAddresses) {
-                    for (const InternetAddress& i : ia) {
-                        if (nwi.GetRange ().Contains (i)) {
-                            results += nw.fGUID;
-                            goto out;
-                        }
+                for (const InternetAddress& i : ia) {
+                    if (nw.Contains (i)) {
+                        results += nw.fGUID;
                     }
                 }
-            out:;
+            }
+#if USE_NOISY_TRACE_IN_THIS_MODULE_
+            DbgTrace (L"returning %s", Characters::ToString (results).c_str ());
+#endif
+            return results;
+        }
+        Set<GUID> LookupNetworksGUIDs (const InternetAddress& ia) const
+        {
+#if USE_NOISY_TRACE_IN_THIS_MODULE_
+            Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"{}::NetAndNetInterfaceMapper_::LookupNetworksGUIDs (%s)", Characters::ToString (ia).c_str ())};
+#endif
+            Set<GUID> results;
+            for (Discovery::Network&& nw : Discovery::NetworksMgr::sThe.CollectActiveNetworks ()) {
+                if (nw.Contains (ia)) {
+                    results += nw.fGUID;
+                }
             }
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
             DbgTrace (L"returning %s", Characters::ToString (results).c_str ());
@@ -285,14 +297,16 @@ namespace {
         {
             // merge the addrs into each matching network interface
             bool foundAtLeastOne = false;
-            for (GUID nw : NetAndNetInterfaceMapper_::sThe.LookupNetworksGUIDs (addrs)) {
-                NetworkAttachmentInfo nwAttachmentInfo = fAttachedNetworks.LookupValue (nw);
-                nwAttachmentInfo.networkAddresses += addrs;
-                if (hwAddr) {
-                    nwAttachmentInfo.hardwareAddresses += *hwAddr;
+            for (InternetAddress ia : addrs) {
+                for (GUID nw : NetAndNetInterfaceMapper_::sThe.LookupNetworksGUIDs (ia)) {
+                    NetworkAttachmentInfo nwAttachmentInfo = fAttachedNetworks.LookupValue (nw);
+                    nwAttachmentInfo.networkAddresses += ia;
+                    if (hwAddr) {
+                        nwAttachmentInfo.hardwareAddresses += *hwAddr;
+                    }
+                    fAttachedNetworks.Add (nw, nwAttachmentInfo);
+                    foundAtLeastOne = true;
                 }
-                fAttachedNetworks.Add (nw, nwAttachmentInfo);
-                foundAtLeastOne = true;
             }
             if (not foundAtLeastOne) {
                 DbgTrace (L"AddIPAddresses_(%s) called, but no matching interfaces found", Characters::ToString (addrs).c_str ());

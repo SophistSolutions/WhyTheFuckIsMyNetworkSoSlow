@@ -92,6 +92,16 @@ namespace {
  ***************************** Discovery::Network *******************************
  ********************************************************************************
  */
+bool Discovery::Network::Contains (const InternetAddress& i) const
+{
+    for (auto&& nwa : fNetworkAddresses) {
+        if (nwa.GetRange ().Contains (i)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 String Discovery::Network::ToString () const
 {
     StringBuilder sb;

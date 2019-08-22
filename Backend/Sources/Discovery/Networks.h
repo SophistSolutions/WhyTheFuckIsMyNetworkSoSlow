@@ -73,6 +73,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
         Mapping<String, DataExchange::VariantValue> fDebugProps;
 #endif
 
+        nonvirtual bool Contains (const InternetAddress& i) const;
+
         nonvirtual String ToString () const;
     };
 
