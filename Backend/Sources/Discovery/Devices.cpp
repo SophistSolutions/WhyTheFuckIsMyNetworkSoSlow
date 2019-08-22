@@ -296,8 +296,21 @@ namespace {
         void AddIPAddresses_ (const Iterable<InternetAddress>& addrs, const optional<String>& hwAddr = nullopt)
         {
             // merge the addrs into each matching network interface
-            bool foundAtLeastOne = false;
+            unsigned int totalAddrs{};
+            unsigned int totalAddrsSuppressedQuietly{};
+            unsigned int totalAdds{};
             for (InternetAddress ia : addrs) {
+                totalAddrs++;
+                if (not kIncludeMulticastAddressesInDiscovery and ia.IsMulticastAddress ()) {
+                    totalAddrsSuppressedQuietly++;
+                    continue;
+                }
+                if (not kIncludeLinkLocalAddressesInDiscovery) {
+                    if (ia.IsLinkLocalAddress ()) {
+                        totalAddrsSuppressedQuietly++;
+                        continue; // skip link-local addresses, they are only used for special purposes like discovery, and aren't part of the network
+                    }
+                }
                 for (GUID nw : NetAndNetInterfaceMapper_::sThe.LookupNetworksGUIDs (ia)) {
                     NetworkAttachmentInfo nwAttachmentInfo = fAttachedNetworks.LookupValue (nw);
                     nwAttachmentInfo.networkAddresses += ia;
@@ -305,10 +318,10 @@ namespace {
                         nwAttachmentInfo.hardwareAddresses += *hwAddr;
                     }
                     fAttachedNetworks.Add (nw, nwAttachmentInfo);
-                    foundAtLeastOne = true;
+                    totalAdds++;
                 }
             }
-            if (not foundAtLeastOne) {
+            if (totalAdds == 0 and totalAddrsSuppressedQuietly < totalAddrs) {
                 DbgTrace (L"AddIPAddresses_(%s) called, but no matching interfaces found", Characters::ToString (addrs).c_str ());
             }
         }
@@ -578,9 +591,6 @@ namespace {
             for (Interface i : IO::Network::GetInterfaces ()) {
                 if (i.fType != Interface::Type::eLoopback and i.fStatus and i.fStatus->Contains (Interface::Status::eRunning)) {
                     i.fBindings.Apply ([&] (const Interface::Binding& ia) {
-                        if (not kIncludeMulticastAddressesInDiscovery and ia.fInternetAddress.IsMulticastAddress ()) {
-                            return;
-                        }
                         newDev.AddIPAddresses_ (ia.fInternetAddress, i.fHardwareAddress);
                     });
                 }
