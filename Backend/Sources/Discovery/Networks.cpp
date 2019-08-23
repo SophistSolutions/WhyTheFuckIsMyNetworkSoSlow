@@ -168,7 +168,7 @@ namespace {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
                                 DbgTrace (L"CollectActiveNetworks_: interface=%s; ia=%s binding ignored because IsMulticastAddress", Characters::ToString (i.fGUID).c_str (), Characters::ToString (nib.fInternetAddress).c_str ());
 #endif
-								continue; // skip multicast addresses, because they don't really refer to a device
+                                continue; // skip multicast addresses, because they don't really refer to a device
                             }
                         }
                         if (not kIncludeLinkLocalAddressesInDiscovery) {
