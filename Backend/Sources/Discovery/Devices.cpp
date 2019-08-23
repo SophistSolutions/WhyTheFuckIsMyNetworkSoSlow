@@ -465,9 +465,9 @@ namespace {
         {
             StringBuilder sb = Discovery::Device::ToString ().SubString (0, -1);
             if (fForcedName) {
-                sb += L"fForcedName: " + Characters::ToString (fForcedName) + L", ";
+                sb += L"Forced-Name: " + Characters::ToString (fForcedName) + L", ";
             }
-            sb += L"fSSDPInfo: " + Characters::ToString (fSSDPInfo) + L", ";
+            sb += L"SSDP-Info: " + Characters::ToString (fSSDPInfo) + L", ";
             sb += L"}";
             return sb.str ();
         }
@@ -487,7 +487,7 @@ namespace {
     optional<DiscoveryInfo_> FindMatchingDevice_ (decltype (sDiscoveredDevices_)::ReadableReference& rr, const DiscoveryInfo_& d)
     {
         for (const auto& di : rr->MappedValues ()) {
-            if (not(d.GetInternetAddresses () ^ di.GetInternetAddresses ()).empty ()) {
+            if (not (d.GetInternetAddresses () ^ di.GetInternetAddresses ()).empty ()) {
                 return di;
             }
         }
