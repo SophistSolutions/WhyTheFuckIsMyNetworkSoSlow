@@ -844,7 +844,7 @@ namespace {
                         triedAtLeastOnce = true;
 
                         // merge in data
-                        auto l = sDiscoveredDevices_.cget ();
+                        auto           l  = sDiscoveredDevices_.cget ();
                         DiscoveryInfo_ di = [&] () {
                             DiscoveryInfo_ tmp{};
                             tmp.AddIPAddresses_ (i.fInternetAddress, i.fHardwareAddress);
