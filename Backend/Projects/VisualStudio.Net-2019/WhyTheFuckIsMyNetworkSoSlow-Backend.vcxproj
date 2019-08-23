@@ -540,6 +540,7 @@
     <None Include="..\..\Sources\Discovery\Makefile" />
     <None Include="..\..\Sources\Discovery\NetworkInterfaces.inl" />
     <None Include="..\..\Sources\Discovery\Networks.inl" />
+    <None Include="..\..\Sources\Discovery\PortScanner.inl" />
     <None Include="..\..\Sources\Makefile" />
     <None Include="..\..\Sources\Service.inl" />
     <None Include="..\..\Sources\WebServices\IWSAPI.inl" />
@@ -557,6 +558,7 @@
     <ClCompile Include="..\..\Sources\Discovery\Devices.cpp" />
     <ClCompile Include="..\..\Sources\Discovery\NetworkInterfaces.cpp" />
     <ClCompile Include="..\..\Sources\Discovery\Networks.cpp" />
+    <ClCompile Include="..\..\Sources\Discovery\PortScanner.cpp" />
     <ClCompile Include="..\..\Sources\Main.cpp" />
     <ClCompile Include="..\..\Sources\Service.cpp" />
     <ClCompile Include="..\..\Sources\WebServices\IWSAPI.cpp" />
@@ -573,11 +575,16 @@
     <ClInclude Include="..\..\Sources\Discovery\Devices.h" />
     <ClInclude Include="..\..\Sources\Discovery\NetworkInterfaces.h" />
     <ClInclude Include="..\..\Sources\Discovery\Networks.h" />
+    <ClInclude Include="..\..\Sources\Discovery\PortScanner.h" />
     <ClInclude Include="..\..\Sources\Service.h" />
     <ClInclude Include="..\..\Sources\WebServices\IWSAPI.h" />
     <ClInclude Include="..\..\Sources\WebServices\Model.h" />
     <ClInclude Include="..\..\Sources\WebServices\WebServer.h" />
     <ClInclude Include="..\..\Sources\WebServices\WSImpl.h" />
+    <ClInclude Include="resource.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="WhyTheFuckIsMyNetworkSoSlow-Backend.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

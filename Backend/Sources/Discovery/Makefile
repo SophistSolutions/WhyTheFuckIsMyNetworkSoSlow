@@ -21,6 +21,7 @@ Objs	=	\
 	$(ObjDir)Devices${OBJ_SUFFIX}\
 	$(ObjDir)NetworkInterfaces${OBJ_SUFFIX}\
 	$(ObjDir)Networks${OBJ_SUFFIX}\
+	$(ObjDir)PortScanner${OBJ_SUFFIX}\
 
 all:$(ObjDir) $(Objs)
 

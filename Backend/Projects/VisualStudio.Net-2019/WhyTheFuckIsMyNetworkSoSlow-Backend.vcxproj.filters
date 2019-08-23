@@ -67,6 +67,9 @@
     <None Include="..\..\Sources\Common\BLOBMgr.inl">
       <Filter>Sources\Common</Filter>
     </None>
+    <None Include="..\..\Sources\Discovery\PortScanner.inl">
+      <Filter>Sources\Discovery</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Main.cpp">
@@ -111,6 +114,9 @@
     <ClCompile Include="..\..\Sources\Common\BLOBMgr.cpp">
       <Filter>Sources\Common</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Discovery\PortScanner.cpp">
+      <Filter>Sources\Discovery</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Service.h">
@@ -152,5 +158,12 @@
     <ClInclude Include="..\..\Sources\Common\BLOBMgr.h">
       <Filter>Sources\Common</Filter>
     </ClInclude>
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="..\..\Sources\Discovery\PortScanner.h">
+      <Filter>Sources\Discovery</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="WhyTheFuckIsMyNetworkSoSlow-Backend.rc" />
   </ItemGroup>
 </Project>
