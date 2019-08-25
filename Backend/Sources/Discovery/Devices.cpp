@@ -3,6 +3,8 @@
 */
 #include "Stroika/Frameworks/StroikaPreComp.h"
 
+#include <random>
+
 #include "Stroika/Foundation/Cache/SynchronizedCallerStalenessCache.h"
 #include "Stroika/Foundation/Cache/SynchronizedTimedCache.h"
 #include "Stroika/Foundation/Characters/RegularExpression.h"
@@ -32,6 +34,7 @@
 #include "../Common/EthernetMACAddressOUIPrefixes.h"
 
 #include "NetworkInterfaces.h"
+#include "PortScanner.h"
 
 #include "Devices.h"
 
@@ -905,6 +908,81 @@ namespace {
     unique_ptr<MyNeighborDiscoverer_> sNeighborDiscoverer_;
 }
 
+namespace {
+    /*
+     ********************************************************************************
+     ************************ RandomWalkThroughSubnetDiscoverer_ ********************
+     ********************************************************************************
+     */
+    struct RandomWalkThroughSubnetDiscoverer_ {
+        RandomWalkThroughSubnetDiscoverer_ ()
+            : fMyThread_ (
+                  Thread::CleanupPtr::eAbortBeforeWaiting, Thread::New (Checker_, Thread::eAutoStart, L"RandomWalkThroughSubnetDiscoverer"))
+        {
+        }
+
+    private:
+        static void Checker_ ()
+        {
+            static constexpr Activity kDiscovering_THIS_{L"discovering by random scans"sv};
+
+            while (true) {
+                try {
+                    DeclareActivity da{&kDiscovering_THIS_};
+
+                    //constexpr auto               kAllowedNetworkStaleness_ = 1min;
+                    constexpr Time::DurationSecondsType kAllowedNetworkStaleness_ = 60;
+                    Sequence<Discovery::Network>        activeNetworks            = Discovery::NetworksMgr::sThe.CollectActiveNetworks (kAllowedNetworkStaleness_);
+                    if (activeNetworks.empty ()) {
+                        Execution::Sleep (30s);
+                        continue;
+                    }
+                    Discovery::Network nw = activeNetworks[0];
+                    // Scanning really only works for IPv4 since too large a range otherwise
+                    optional<InternetAddressRange> ipv4AddrRange;
+                    for (CIDR cidr : nw.fNetworkAddresses) {
+                        if (cidr.GetInternetAddress ().GetAddressFamily () == InternetAddress::AddressFamily::V4) {
+                            ipv4AddrRange = cidr.GetRange ();
+                            break;
+                        }
+                    }
+
+                    if (not ipv4AddrRange) {
+                        // try again later
+                        Execution::Sleep (30s);
+                        continue;
+                    }
+
+                    DbgTrace (L"***ipv4AddrRange=%s", Characters::ToString (ipv4AddrRange).c_str ());
+
+                    static mt19937 sRng_{std::random_device () ()};
+
+                    DbgTrace (L"***ipv4AddrRange->GetNumberOfContainedPoints ()=%s", Characters::ToString (ipv4AddrRange->GetNumberOfContainedPoints ()).c_str ());
+
+                    // @todo - use a Bloom filter to filter choices already done
+                    // but for now, pick a random address in our range
+                    unsigned int    selected = uniform_int_distribution<unsigned int>{0, ipv4AddrRange->GetNumberOfContainedPoints () - 1}(sRng_);
+                    InternetAddress ia       = ipv4AddrRange->GetLowerBound ().Offset (selected);
+
+                    DbgTrace (L"Started port scanning %s", Characters::ToString (ia).c_str ());
+                    PortScanResults scanResults = ScanPorts (ia);
+                    DbgTrace (L"Port scanning %s returned these ports: %s", Characters::ToString (ia).c_str (), Characters::ToString (scanResults.fKnownOpenPorts).c_str ());
+                }
+                catch (const Thread::InterruptException&) {
+                    Execution::ReThrow ();
+                }
+                catch (...) {
+                    Execution::Logger::Get ().LogIfNew (Execution::Logger::Priority::eError, 5min, L"%s", Characters::ToString (current_exception ()).c_str ());
+                }
+                Execution::Sleep (1min); // unsure of right interval - maybe able to epoll or something so no actual polling needed
+            }
+        }
+        Thread::CleanupPtr fMyThread_;
+    };
+
+    unique_ptr<RandomWalkThroughSubnetDiscoverer_> sRandomWalkThroughSubnetDiscoverer_;
+}
+
 /*
  ********************************************************************************
  ********************* Discovery::DevicesMgr::Activator *************************
@@ -917,6 +995,7 @@ namespace {
     constexpr bool kInclude_SSDP_Discoverer_{true};
     constexpr bool kInclude_MyDevice_Discoverer_{true};
     constexpr bool kInclude_Neighbor_Discoverer_{true};
+    constexpr bool kInclude_PortScan_Discoverer_{true};
 
     bool IsActive_ ()
     {
@@ -929,6 +1008,9 @@ namespace {
         if constexpr (kInclude_SSDP_Discoverer_ and kInclude_Neighbor_Discoverer_) {
             Require (static_cast<bool> (sSSDPDeviceDiscoverer_) == static_cast<bool> (sNeighborDiscoverer_));
         }
+        if constexpr (kInclude_PortScan_Discoverer_ and kInclude_Neighbor_Discoverer_) {
+            Require (static_cast<bool> (sRandomWalkThroughSubnetDiscoverer_) == static_cast<bool> (sNeighborDiscoverer_));
+        }
         if constexpr (kInclude_SSDP_Discoverer_) {
             return sSSDPDeviceDiscoverer_ != nullptr;
         }
@@ -937,6 +1019,9 @@ namespace {
         }
         if constexpr (kInclude_Neighbor_Discoverer_) {
             return sNeighborDiscoverer_ != nullptr;
+        }
+        if constexpr (kInclude_PortScan_Discoverer_) {
+            return sRandomWalkThroughSubnetDiscoverer_ != nullptr;
         }
     }
 }
@@ -954,6 +1039,9 @@ Discovery::DevicesMgr::Activator::Activator ()
     if constexpr (kInclude_Neighbor_Discoverer_) {
         sNeighborDiscoverer_ = make_unique<MyNeighborDiscoverer_> ();
     }
+    if constexpr (kInclude_PortScan_Discoverer_) {
+        sRandomWalkThroughSubnetDiscoverer_ = make_unique<RandomWalkThroughSubnetDiscoverer_> ();
+    }
 }
 
 Discovery::DevicesMgr::Activator::~Activator ()
@@ -968,6 +1056,9 @@ Discovery::DevicesMgr::Activator::~Activator ()
     }
     if constexpr (kInclude_Neighbor_Discoverer_) {
         sNeighborDiscoverer_.reset ();
+    }
+    if constexpr (kInclude_PortScan_Discoverer_) {
+        sRandomWalkThroughSubnetDiscoverer_.reset ();
     }
 }
 
