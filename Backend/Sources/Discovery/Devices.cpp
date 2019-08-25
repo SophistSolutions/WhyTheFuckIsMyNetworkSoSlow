@@ -542,26 +542,14 @@ namespace {
                         di.fThisDevice      = o->fThisDevice;
                         di.fOperatingSystem = OperatingSystem{Configuration::GetSystemConfiguration_ActualOperatingSystem ().fPrettyNameWithVersionDetails};
                         di.PatchDerivedFields ();
-                        bool retry = false;
                         if (not sDiscoveredDevices_.UpgradeLockNonAtomicallyQuietly (
-                                &l, [&] (auto&& writeLock, bool interveningWriteLock) {
-                                    if (interveningWriteLock) {
-                                        retry = true;
-                                // @todo reconsider - in this case we may not need to retry since we provide all info and dont collaborate with
-                                // other APIs for this object? But this is harmless...
-#if qLOCK_DEBUGGING_
-                                        DbgTrace (L"!!! retry = true - MyDeviceDiscoverer_");
-#endif
-                                    }
-                                    else {
+                                &l, [&] (auto&& writeLock) {
                                         writeLock.rwref ().Add (di.fGUID, di);
 #if qLOCK_DEBUGGING_
                                         DbgTrace (L"!!! succeeded  updating writelock ***MyDeviceDiscoverer_");
 #endif
-                                    }
                                 },
-                                1s) or
-                            retry) {
+                                1s)) {
 #if qLOCK_DEBUGGING_
                             DbgTrace (L"!!! failed to update so retrying ***MyDeviceDiscoverer_");
 #endif
@@ -771,24 +759,14 @@ namespace {
                     }
                 }
                 di.PatchDerivedFields ();
-                bool retry = false;
                 if (not sDiscoveredDevices_.UpgradeLockNonAtomicallyQuietly (
-                        &l, [&] (auto&& writeLock, bool interveningWriteLock) {
-                            if (interveningWriteLock) {
-                                retry = true;
+                        &l, [&] (auto&& writeLock) {
+                            writeLock.rwref ().Add (di.fGUID, di);
 #if qLOCK_DEBUGGING_
-                                DbgTrace (L"!!! retry = true ***RecieveSSDPAdvertisement_");
+                            DbgTrace (L"!!! succeeded  updating writelock ***RecieveSSDPAdvertisement_");
 #endif
-                            }
-                            else {
-                                writeLock.rwref ().Add (di.fGUID, di);
-#if qLOCK_DEBUGGING_
-                                DbgTrace (L"!!! succeeded  updating writelock ***RecieveSSDPAdvertisement_");
-#endif
-                            }
                         },
-                        1s) or
-                    retry) {
+                        1s) ) {
 #if qLOCK_DEBUGGING_
                     DbgTrace (L"!!! failed to update so retrying ***RecieveSSDPAdvertisement_");
 #endif
@@ -867,11 +845,9 @@ namespace {
                         }();
 
                         di.PatchDerivedFields ();
-                        bool retry = false;
                         if (not sDiscoveredDevices_.UpgradeLockNonAtomicallyQuietly (
                                 &l, [&] (auto&& writeLock, bool interveningWriteLock) {
                                     if (interveningWriteLock) {
-                                        retry = true;
 #if qLOCK_DEBUGGING_
                                         DbgTrace (L"!!! retry = true - MyNeighborDiscoverer_");
 #endif
@@ -883,8 +859,7 @@ namespace {
 #endif
                                     }
                                 },
-                                1s) or
-                            retry) {
+                                1s)) {
                             // failed merge, so try the entire acquire/update
 #if qLOCK_DEBUGGING_
                             DbgTrace (L"!!! failed to update so retrying ***MyNeighborDiscoverer_");
@@ -926,12 +901,17 @@ namespace {
         {
             static constexpr Activity kDiscovering_THIS_{L"discovering by random scans"sv};
 
-            while (true) {
+			static constexpr auto kMinTimeBetweenScans_{5s};
+            
+			//constexpr auto               kAllowedNetworkStaleness_ = 1min;
+            constexpr Time::DurationSecondsType kAllowedNetworkStaleness_ = 60;
+
+			while (true) {
+                Execution::Sleep (kMinTimeBetweenScans_);
+
                 try {
                     DeclareActivity da{&kDiscovering_THIS_};
 
-                    //constexpr auto               kAllowedNetworkStaleness_ = 1min;
-                    constexpr Time::DurationSecondsType kAllowedNetworkStaleness_ = 60;
                     Sequence<Discovery::Network>        activeNetworks            = Discovery::NetworksMgr::sThe.CollectActiveNetworks (kAllowedNetworkStaleness_);
                     if (activeNetworks.empty ()) {
                         Execution::Sleep (30s);
@@ -974,7 +954,6 @@ namespace {
                 catch (...) {
                     Execution::Logger::Get ().LogIfNew (Execution::Logger::Priority::eError, 5min, L"%s", Characters::ToString (current_exception ()).c_str ());
                 }
-                Execution::Sleep (1min); // unsure of right interval - maybe able to epoll or something so no actual polling needed
             }
         }
         Thread::CleanupPtr fMyThread_;
