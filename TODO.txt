@@ -1,6 +1,50 @@
 Top priority bug:
 
+SEE IF I CAN CLEANUP
 
+                    again:
+                        // merge in data
+                        auto           l  = sDiscoveredDevices_.cget ();
+                        DiscoveryInfo_ di = [&] () {
+                            DiscoveryInfo_ tmp{};
+                            tmp.AddIPAddresses_ (i.fInternetAddress, i.fHardwareAddress);
+                            if (optional<DiscoveryInfo_> o = FindMatchingDevice_ (l, tmp)) {
+                                tmp = *o;
+                                tmp.AddIPAddresses_ (i.fInternetAddress, i.fHardwareAddress); // merge in additions
+                                return tmp;
+                            }
+                            else {
+                                // Generate GUID - based on ipaddrs
+                                tmp.fGUID = LookupPersistentDeviceID_ (tmp);
+                                if (tmp.fGUID.ToString ().StartsWith (L"94696dc9")) {
+                                    int breakhere = 1; // somehow empty
+                                }
+                                return tmp;
+                            }
+                        }();
+
+                        di.PatchDerivedFields ();
+                        if (not sDiscoveredDevices_.UpgradeLockNonAtomicallyQuietly (
+                                &l, [&] (auto&& writeLock) {
+                                        writeLock.rwref ().Add (di.fGUID, di);
+#if qLOCK_DEBUGGING_
+                                        DbgTrace (L"!!! succeeded  updating with writelock ***MyNeighborDiscoverer_");
+#endif
+                                },
+                                1s)) {
+                            // failed merge, so try the entire acquire/update
+#if qLOCK_DEBUGGING_
+                            DbgTrace (L"!!! failed to update so retrying ***MyNeighborDiscoverer_");
+#endif
+                            Execution::Sleep (1s); // sleep before retrying read-lock so readlock not held so long nobody can update
+                            goto again;
+                        }
+
+
+						with a do / while loop!
+
+						Issue is lock object (readlock)
+						is not in scope.
 
 * Check CIDR list in Networks for ones that
   subsume others. I get this is barharbor on

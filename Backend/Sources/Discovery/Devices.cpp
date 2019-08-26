@@ -544,16 +544,16 @@ namespace {
                         di.PatchDerivedFields ();
                         if (not sDiscoveredDevices_.UpgradeLockNonAtomicallyQuietly (
                                 &l, [&] (auto&& writeLock) {
-                                        writeLock.rwref ().Add (di.fGUID, di);
+                                    writeLock.rwref ().Add (di.fGUID, di);
 #if qLOCK_DEBUGGING_
-                                        DbgTrace (L"!!! succeeded  updating writelock ***MyDeviceDiscoverer_");
+                                    DbgTrace (L"!!! succeeded  updating writelock ***MyDeviceDiscoverer_");
 #endif
                                 },
                                 1s)) {
 #if qLOCK_DEBUGGING_
                             DbgTrace (L"!!! failed to update so retrying ***MyDeviceDiscoverer_");
 #endif
-                            Execution::Sleep (1s);
+                            Execution::Sleep (1s); // sleep before retrying read-lock so readlock not held so long nobody can update
                             goto again;
                         }
                     }
@@ -766,11 +766,12 @@ namespace {
                             DbgTrace (L"!!! succeeded  updating writelock ***RecieveSSDPAdvertisement_");
 #endif
                         },
-                        1s) ) {
+                        1s)) {
 #if qLOCK_DEBUGGING_
                     DbgTrace (L"!!! failed to update so retrying ***RecieveSSDPAdvertisement_");
 #endif
-                    goto again; // release the lock and try again
+                    Execution::Sleep (1s); // sleep before retrying read-lock so readlock not held so long nobody can update
+                    goto again;            // release the lock and try again
                 }
             }
         }
@@ -816,14 +817,7 @@ namespace {
                         }
 #endif
 
-                        bool triedAtLeastOnce = false; // skip sleep first time
-
                     again:
-                        if (triedAtLeastOnce) {
-                            Execution::Sleep (1s);
-                        }
-                        triedAtLeastOnce = true;
-
                         // merge in data
                         auto           l  = sDiscoveredDevices_.cget ();
                         DiscoveryInfo_ di = [&] () {
@@ -846,24 +840,18 @@ namespace {
 
                         di.PatchDerivedFields ();
                         if (not sDiscoveredDevices_.UpgradeLockNonAtomicallyQuietly (
-                                &l, [&] (auto&& writeLock, bool interveningWriteLock) {
-                                    if (interveningWriteLock) {
+                                &l, [&] (auto&& writeLock) {
+                                    writeLock.rwref ().Add (di.fGUID, di);
 #if qLOCK_DEBUGGING_
-                                        DbgTrace (L"!!! retry = true - MyNeighborDiscoverer_");
+                                    DbgTrace (L"!!! succeeded  updating with writelock ***MyNeighborDiscoverer_");
 #endif
-                                    }
-                                    else {
-                                        writeLock.rwref ().Add (di.fGUID, di);
-#if qLOCK_DEBUGGING_
-                                        DbgTrace (L"!!! succeeded  updating with writelock ***MyNeighborDiscoverer_");
-#endif
-                                    }
                                 },
                                 1s)) {
                             // failed merge, so try the entire acquire/update
 #if qLOCK_DEBUGGING_
                             DbgTrace (L"!!! failed to update so retrying ***MyNeighborDiscoverer_");
 #endif
+                            Execution::Sleep (1s); // sleep before retrying read-lock so readlock not held so long nobody can update
                             goto again;
                         }
                     }
@@ -901,18 +889,18 @@ namespace {
         {
             static constexpr Activity kDiscovering_THIS_{L"discovering by random scans"sv};
 
-			static constexpr auto kMinTimeBetweenScans_{5s};
-            
-			//constexpr auto               kAllowedNetworkStaleness_ = 1min;
+            static constexpr auto kMinTimeBetweenScans_{5s};
+
+            //constexpr auto               kAllowedNetworkStaleness_ = 1min;
             constexpr Time::DurationSecondsType kAllowedNetworkStaleness_ = 60;
 
-			while (true) {
+            while (true) {
                 Execution::Sleep (kMinTimeBetweenScans_);
 
                 try {
                     DeclareActivity da{&kDiscovering_THIS_};
 
-                    Sequence<Discovery::Network>        activeNetworks            = Discovery::NetworksMgr::sThe.CollectActiveNetworks (kAllowedNetworkStaleness_);
+                    Sequence<Discovery::Network> activeNetworks = Discovery::NetworksMgr::sThe.CollectActiveNetworks (kAllowedNetworkStaleness_);
                     if (activeNetworks.empty ()) {
                         Execution::Sleep (30s);
                         continue;
@@ -933,11 +921,9 @@ namespace {
                         continue;
                     }
 
-                    DbgTrace (L"***ipv4AddrRange=%s", Characters::ToString (ipv4AddrRange).c_str ());
-
                     static mt19937 sRng_{std::random_device () ()};
 
-                    DbgTrace (L"***ipv4AddrRange->GetNumberOfContainedPoints ()=%s", Characters::ToString (ipv4AddrRange->GetNumberOfContainedPoints ()).c_str ());
+                    DbgTrace (L"***ipv4AddrRange=%s, addrange.GetNumberOfContainedPoints ()=%s", Characters::ToString (ipv4AddrRange).c_str (), Characters::ToString (ipv4AddrRange->GetNumberOfContainedPoints ()).c_str ());
 
                     // @todo - use a Bloom filter to filter choices already done
                     // but for now, pick a random address in our range
@@ -947,6 +933,12 @@ namespace {
                     DbgTrace (L"Started port scanning %s", Characters::ToString (ia).c_str ());
                     PortScanResults scanResults = ScanPorts (ia);
                     DbgTrace (L"Port scanning %s returned these ports: %s", Characters::ToString (ia).c_str (), Characters::ToString (scanResults.fKnownOpenPorts).c_str ());
+
+                    if (not scanResults.fKnownOpenPorts.empty ()) {
+                        // also add check for ICMP PING
+
+                        // then flag found device and when via random pings/portscan, and record portscan result.
+                    }
                 }
                 catch (const Thread::InterruptException&) {
                     Execution::ReThrow ();
