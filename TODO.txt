@@ -46,6 +46,16 @@ SEE IF I CAN CLEANUP
 						Issue is lock object (readlock)
 						is not in scope.
 
+
+> use thius to add stroika bloom filter class and
+use to check what machines we tried/found missing
+
+https://llimllib.github.io/bloomfilter-tutorial/
+
+
+
+
+
 * Check CIDR list in Networks for ones that
   subsume others. I get this is barharbor on
   cellphone network:
