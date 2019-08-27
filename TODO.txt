@@ -65,6 +65,13 @@ CIDR: 2600:1000:b070:f916::/64, 2600:1000:b040:7092::/64, 2600:1000:b040:7092:68
 
 	
 
+* For all discovered (and currently live) devices run portscan
+  and use discoverd ports (like 515 printer) to decide device type
+
+* ADD ICMP PING to port scan (first thing) - to see if there
+
+
+
 
 >>> trying to use upgradelock but seems
 to work horribly - 

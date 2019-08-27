@@ -57,6 +57,8 @@ PortScanResults Discovery::ScanPorts (const InternetAddress& ia)
     DoTCPScan_<22> (ia, &results);   // SSH
     DoTCPScan_<80> (ia, &results);   // HTTP
     DoTCPScan_<443> (ia, &results);  // HTTPS
+    DoTCPScan_<515> (ia, &results);  // Line Printer Daemon (LPD)
+    DoTCPScan_<631> (ia, &results);  // IPP (internet printing protocol)
     DoTCPScan_<3389> (ia, &results); // RDP
 
     return results;
