@@ -24,7 +24,6 @@
 #include "Stroika/Foundation/IO/Network/Interface.h"
 #include "Stroika/Foundation/IO/Network/LinkMonitor.h"
 #include "Stroika/Foundation/IO/Network/Neighbors.h"
-#include "Stroika/Foundation/IO/Network/Transfer/Client.h"
 #include "Stroika/Foundation/IO/Network/Transfer/Connection.h"
 
 #include "Stroika/Frameworks/UPnP/DeviceDescription.h"

@@ -8,7 +8,7 @@
 #include "Stroika/Foundation/Characters/StringBuilder.h"
 #include "Stroika/Foundation/Characters/ToString.h"
 #include "Stroika/Foundation/DataExchange/Variant/JSON/Reader.h"
-#include "Stroika/Foundation/IO/Network/Transfer/Client.h"
+#include "Stroika/Foundation/IO/Network/Transfer/Connection.h"
 
 #include "GeoLocAndISPLookup.h"
 

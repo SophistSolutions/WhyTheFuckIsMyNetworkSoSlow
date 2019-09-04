@@ -7,7 +7,7 @@
 #include "Stroika/Foundation/Characters/ToString.h"
 #include "Stroika/Foundation/Containers/Bijection.h"
 #include "Stroika/Foundation/Execution/Synchronized.h"
-#include "Stroika/Foundation/IO/Network/Transfer/Client.h"
+#include "Stroika/Foundation/IO/Network/Transfer/Connection.h"
 
 #include "BLOBMgr.h"
 
