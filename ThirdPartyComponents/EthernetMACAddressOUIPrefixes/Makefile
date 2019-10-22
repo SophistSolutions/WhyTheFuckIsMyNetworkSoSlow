@@ -1,8 +1,8 @@
 ﻿export TOP_ROOT?=$(shell realpath ../../)/
 export StroikaRoot?=$(shell realpath ../Stroika/StroikaRoot)/
 
-include $(StroikaRoot)/ScriptsLib/Makefile-Common.mk
-include $(StroikaRoot)/Library/Projects/Unix/SharedMakeVariables-Default.mk
+include $(StroikaRoot)ScriptsLib/Makefile-Common.mk
+include $(StroikaRoot)ScriptsLib/SharedMakeVariables-Default.mk
 
 BUILDS_DIR=../../Builds/$(CONFIGURATION)/ThirdPartyComponents/share/
 OUT_FILE=$(BUILDS_DIR)OSI-MAC-PREFIXES.txt

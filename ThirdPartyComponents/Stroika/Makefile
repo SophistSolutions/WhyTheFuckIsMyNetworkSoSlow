@@ -4,9 +4,8 @@ export StroikaRoot?=$(shell realpath StroikaRoot)/
 ###IntermediateFiles=		../../IntermediateFiles/
 
 
-include $(StroikaRoot)/ScriptsLib/Makefile-Common.mk
-include $(StroikaRoot)/Library/Projects/Unix/SharedMakeVariables-Default.mk
-
+include $(StroikaRoot)ScriptsLib/Makefile-Common.mk
+include $(StroikaRoot)ScriptsLib/SharedMakeVariables-Default.mk
 
 all:
 	@$(StroikaRoot)ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "Stroika-Import Build {$(CONFIGURATION)}:"

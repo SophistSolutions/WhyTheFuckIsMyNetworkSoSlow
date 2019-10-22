@@ -8,7 +8,7 @@ endif
 
 
 include $(StroikaRoot)ScriptsLib/Makefile-Common.mk
-include $(StroikaRoot)Library/Projects/Unix/SharedMakeVariables-Default.mk
+include $(StroikaRoot)ScriptsLib/SharedMakeVariables-Default.mk
 
 
 

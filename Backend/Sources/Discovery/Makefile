@@ -9,11 +9,8 @@ SrcDir				=	$(TOP_ROOT)BackendApp/Sources/Discovery/
 ObjDir				=	$(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow-Backend/Discovery/
 
 include $(StroikaRoot)ScriptsLib/Makefile-Common.mk
-include $(StroikaRoot)Library/Projects/Unix/SharedBuildRules-Default.mk
-include $(StroikaRoot)Library/Projects/Unix/SharedMakeVariables-Default.mk
-
-
-CXXFLAGS				+=	-I$(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow/
+include $(StroikaRoot)ScriptsLib/SharedBuildRules-Default.mk
+include $(StroikaRoot)ScriptsLib/SharedMakeVariables-Default.mk
 
 vpath %cpp $(SrcDir)
 

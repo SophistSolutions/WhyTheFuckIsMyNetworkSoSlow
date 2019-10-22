@@ -9,13 +9,13 @@ SrcDir				=	$(TOP_ROOT)BackendApp/Sources/Common/
 ObjDir				=	$(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow-Backend/Common/
 
 include $(StroikaRoot)ScriptsLib/Makefile-Common.mk
-include $(StroikaRoot)Library/Projects/Unix/SharedBuildRules-Default.mk
-include $(StroikaRoot)Library/Projects/Unix/SharedMakeVariables-Default.mk
-
+include $(StroikaRoot)ScriptsLib/SharedBuildRules-Default.mk
+include $(StroikaRoot)ScriptsLib/SharedMakeVariables-Default.mk
 
 vpath %cpp $(SrcDir)
 
 Objs	=	\
+	$(ObjDir)BLOBMgr${OBJ_SUFFIX}\
 	$(ObjDir)EthernetMACAddressOUIPrefixes${OBJ_SUFFIX}\
 	$(ObjDir)GeoLocAndISPLookup${OBJ_SUFFIX}\
 	$(ObjDir)GeoLocation${OBJ_SUFFIX}\
