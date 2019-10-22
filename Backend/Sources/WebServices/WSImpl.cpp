@@ -443,7 +443,7 @@ double WSImpl::Operation_Ping (const String& address) const
     //   options.fSampleInfo                   = Ping::Options::SampleInfo{kInterSampleTime_, sampleCount};
 
     // write GetHostAddress () function in DNS that throws if not at least one
-    auto addrs = DNS::Default ().GetHostAddresses (address);
+    auto addrs = DNS::Default ().GetHostAddresses (address, InternetAddress::AddressFamily::V4);
     if (addrs.size () < 1) {
         Execution::Throw (Execution::Exception (L"no addr"sv));
     }
@@ -453,7 +453,7 @@ double WSImpl::Operation_Ping (const String& address) const
         return t.fMedianPingTime->As<double> ();
     }
 
-    return 1;
+    return numeric_limits<double>::infinity ();
 }
 
 Operations::TraceRouteResults WSImpl::Operation_TraceRoute (const String& address, optional<bool> reverseDNSResults) const
