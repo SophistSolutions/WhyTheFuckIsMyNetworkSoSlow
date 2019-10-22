@@ -69,13 +69,13 @@ import { Component, Vue } from "vue-property-decorator";
 
 import { compareValues } from "@/CustomSort";
 import { fetchNetworks } from "@/proxy/API";
-import { SortFieldEnum, ISortBy } from "@/models/device/SearchSpecification";
+import { ISortBy, SortFieldEnum } from "@/models/device/SearchSpecification";
 
 @Component({
   name: "Devices",
   components: {
     Device: () => import("@/components/Device.vue"),
-  }
+  },
 })
 export default class Devices extends Vue {
   private polling: undefined | number = undefined;
@@ -88,10 +88,11 @@ export default class Devices extends Vue {
 
   private get sortedDevices(): IDevice[] {
     // @todo not sure the right way to handle this? We want to 'store' the mapping of ID to device data, and
-    // we probably want a separate deviceid (sorted) list in the store, and have it depend on the sort order (and filter) objects.
-    let deviceArray: IDevice[] = this.devices;
+    // we probably want a separate deviceid (sorted) list in the store,
+    // and have it depend on the sort order (and filter) objects.
+    const deviceArray: IDevice[] = this.devices;
     return deviceArray;
-    //return deviceArray.sort(compareValues(this.sortField, this.sortOrder));
+    // return deviceArray.sort(compareValues(this.sortField, this.sortOrder));
   }
 
   private created() {
@@ -121,7 +122,7 @@ export default class Devices extends Vue {
 
     // TODO move sort to store
 
-    //return (this.$store.getters.getDevices) ? JSON.parse(JSON.stringify(devices)) : [];
+    // return (this.$store.getters.getDevices) ? JSON.parse(JSON.stringify(devices)) : [];
   }
 
   private selectSortField(sortField: SortFieldEnum): void {

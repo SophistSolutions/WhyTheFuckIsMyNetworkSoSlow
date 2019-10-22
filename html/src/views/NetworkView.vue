@@ -20,7 +20,7 @@ import { fetchNetworks } from "@/proxy/API";
 })
 export default class Networks extends Vue {
 
-    private polling : undefined | number = undefined;
+    private polling?: number;
 
     private created() {
       this.fetchAvailableNetworks();
@@ -32,7 +32,7 @@ export default class Networks extends Vue {
     }
 
     private fetchAvailableNetworks() {
-      this.$store.dispatch('fetchAvailableNetworks');
+      this.$store.dispatch("fetchAvailableNetworks");
     }
 
     private pollData() {

@@ -1,5 +1,5 @@
 import { IDevice } from "@/models/device/IDevice";
-import { SortFieldEnum, SearchSpecification, ISortBy } from "@/models/device/SearchSpecification";
+import { ISortBy, SearchSpecification, SortFieldEnum  } from "@/models/device/SearchSpecification";
 import { IAbout } from "@/models/IAbout";
 import { INetwork } from "@/models/network/INetwork";
 
@@ -16,7 +16,8 @@ export async function fetchNetworks(): Promise<INetwork[]> {
 }
 
 export async function fetchDevices(searchCriteria?: ISortBy): Promise<IDevice[]> {
-    // @todo make these search params depend on parameters, and especially make compareNetwork depend on current active network
+    // @todo make these search params depend on parameters,
+    // and especially make compareNetwork depend on current active network
     // (and maybe sometimes omit)
 
     const searchSpecification: ISortBy[] = [];

@@ -40,13 +40,13 @@ import { IDevice, INetworkAttachmentInfo } from "../models/device/IDevice";
 @Component({
   name: "Device",
   props: {
-    device: Object as () => IDevice
+    device: Object as () => IDevice,
   },
   methods: {
     getDeviceNetworkAddresses_(d: IDevice) {
       let result = "";
-      for (let value of Object.entries(d.attachedNetworks)) {
-        if (result != "") {
+      for (const value of Object.entries(d.attachedNetworks)) {
+        if (result !== "") {
           result += ", ";
         }
         result += value[1].networkAddresses.join(", ");
@@ -55,15 +55,15 @@ import { IDevice, INetworkAttachmentInfo } from "../models/device/IDevice";
     },
     getDeviceHardwareAddresses_(d: IDevice) {
       let result = "";
-      for (let value of Object.entries(d.attachedNetworks)) {
-        if (result != "") {
+      for (const value of Object.entries(d.attachedNetworks)) {
+        if (result !== "") {
           result += ", ";
         }
         result += value[1].hardwareAddresses.join(", ");
       }
       return result;
-    }
-  }
+    },
+  },
 })
 export default class Device extends Vue {}
 </script>
