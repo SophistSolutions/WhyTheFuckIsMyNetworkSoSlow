@@ -48,7 +48,7 @@ update-components_: $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_)
 build-dist_: $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_)
 	@$(StroikaRoot)ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) `$(StroikaRoot)ScriptsLib/SubstituteBackVariables "Building ( log2 ${PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_}/Build.txt ) ..."`
 	@cd $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_) && npm run build > ${PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_}/Build.txt 2>&1
-	@$(StroikaRoot)ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "Copying to ${PER_CONFIGURATION_BUILDS_DIR} ..."
+	@$(StroikaRoot)ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) `$(StroikaRoot)ScriptsLib/SubstituteBackVariables "Copying to ${PER_CONFIGURATION_BUILDS_DIR} ..."`
 	@rm -rf ${PER_CONFIGURATION_BUILDS_DIR} && mkdir -p ${PER_CONFIGURATION_BUILDS_DIR} && cp -r $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_)/dist/* ${PER_CONFIGURATION_BUILDS_DIR}
 
 
