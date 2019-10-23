@@ -206,8 +206,8 @@ endif
 	@#Make directories to be created by the installer
 	@mkdir -p $(WIX_WORKDIR)
 	@cp $(BUILT_SERVICE_EXE) $(WIX_WORKDIR)$(BASIC_NAME)-Backend${EXE_SUFFIX} 2>&1 >> $(WIX_BUILD_OUT)
-	@cp -r  $(BUILT_DATA_DIR) $(WIX_WORKDIR)data
-	@cp -r  $(BUILT_HTML_DIR) $(WIX_WORKDIR)html
+	@cp -r $(BUILT_DATA_DIR) $(WIX_WORKDIR)data
+	@cp -r $(BUILT_HTML_DIR) $(WIX_WORKDIR)html
 	@echo heat dir $(WIX_PATH_PREFIX) heat dir $(DATADIR_WINDOWSPATH) -nologo -o $(WIXDATAFRAGFILE_WINDOWPATH) -scom -frag -srd -sreg -gg -cg StroikaSampleService_data_comp -dr DATA_DIR_REF >> $(WIX_BUILD_OUT)
 	@echo heat dir $(WIX_PATH_PREFIX) heat dir $(HTMLDIR_WINDOWSPATH) -nologo -o $(WIXHTMLFRAGFILE_WINDOWPATH) -scom -frag -srd -sreg -gg -cg StroikaSampleService_html_comp -dr HTML_DIR_REF >> $(WIX_BUILD_OUT)
 	@$(WIX_PATH_PREFIX) heat dir $(DATADIR_WINDOWSPATH) -nologo -o $(WIXDATAFRAGFILE_WINDOWPATH) -scom -frag -srd -sreg -gg -cg StroikaSampleService_data_comp -dr DATA_DIR_REF
