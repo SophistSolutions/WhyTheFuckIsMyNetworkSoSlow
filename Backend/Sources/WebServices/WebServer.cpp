@@ -58,16 +58,16 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices;
  ********************************************************************************
  */
 namespace {
-    DISABLE_COMPILER_MSC_WARNING_START (4573);
-    DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
+    // DISABLE_COMPILER_MSC_WARNING_START (4573);
+    // DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
     const DataExchange::ObjectVariantMapper kBasicsMapper_ = [] () {
         DataExchange::ObjectVariantMapper mapper;
         mapper.AddCommonType<Collection<String>> ();
         mapper.AddCommonType<Sequence<String>> ();
         return mapper;
     }();
-    DISABLE_COMPILER_GCC_WARNING_END ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
-    DISABLE_COMPILER_MSC_WARNING_END (4573);
+    // DISABLE_COMPILER_GCC_WARNING_END ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
+    // DISABLE_COMPILER_MSC_WARNING_END (4573);
 }
 
 namespace {
@@ -113,7 +113,7 @@ public:
               Route{
                   MethodsRegularExpressions::kOptions,
                   RegularExpression::kAny,
-                  [] (Message* m) {}},
+                  [] ([[maybe_unused]] Message* m) {}},
 
               Route{
                   L""_RegEx,
@@ -274,7 +274,7 @@ public:
         , fGUIWebConnectionMgr_{SocketAddresses (InternetAddresses_Any (), 80), fGUIWebRouter_, ConnectionManager::Options{kMaxGUIWebServerConcurrentConnections_, Socket::BindFlags{true}, kServerString_}}
     {
     }
-    static void DefaultPage_ (Request* request, Response* response)
+    static void DefaultPage_ ([[maybe_unused]] Request* request, Response* response)
     {
         WriteDocsPage (
             response,

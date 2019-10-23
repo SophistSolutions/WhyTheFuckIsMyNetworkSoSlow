@@ -485,7 +485,7 @@ Operations::TraceRouteResults WSImpl::Operation_TraceRoute (const String& addres
     Model::Operations::TraceRouteResults results;
 
     Sequence<Traceroute::Hop> hops = Traceroute::Run (DNS::Default ().GetHostAddress (address), options);
-    unsigned int              hopIdx{1};
+    // unsigned int              hopIdx{1};
     for (Traceroute::Hop h : hops) {
         String hopName = [=] () {
             String addrStr = h.fAddress.As<String> ();

@@ -57,7 +57,7 @@ void WTFAppServiceRep::MainLoop (const std::function<void ()>& startedCB)
     startedCB (); // Notify service control mgr that the service has started
     Logger::Get ().Log (Logger::Priority::eInfo, L"%s (version %s) service started successfully", kServiceDescription_.fPrettyName.c_str (), Characters::ToString (AppVersion::kVersion).c_str ());
 
-    auto&& cleanup = Execution::Finally ([&] () {
+    [[maybe_unused]] auto&& cleanup = Execution::Finally ([&] () {
         Thread::SuppressInterruptionInContext suppressSoWeActuallyShutDownOtherTaskWhenWereBeingShutDown;
         Logger::Get ().Log (Logger::Priority::eInfo, L"Beginning service shutdown");
     });
