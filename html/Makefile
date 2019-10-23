@@ -4,33 +4,68 @@ StroikaRoot=$(TOP_ROOT)ThirdPartyComponents/Stroika/StroikaRoot/
 include $(StroikaRoot)ScriptsLib/Makefile-Common.mk
 include $(StroikaRoot)ScriptsLib/SharedMakeVariables-Default.mk
 
+PER_CONFIGURATION_BUILDS_DIR:=$(shell realpath --canonicalize-missing ../Builds/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow/html)/
+#lose trailing / on PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_ because on macos make THATDIR doesn't work with trailing slash (old WEIRD_MACOS_MAKEFILE_DIR_BUG -  MacOS XCode 10 - GNU Make 3.81)
+PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_:=$(shell realpath --canonicalize-missing ../IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow/html)
 
 all:
+	@$(StroikaRoot)/ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "Building html:"
 ifeq ($(CONFIGURATION),)
 	@echo "Cannot complete build without a configuraiton" && exit 1;
 endif
-	@$(MAKE) update-components
-	@${MAKE} build-dist
-	@rm -rf ${TOP_ROOT}/Builds/${CONFIGURATION}/WhyTheFuckIsMyNetworkSoSlow/html && mkdir -p ${TOP_ROOT}/Builds/${CONFIGURATION}/WhyTheFuckIsMyNetworkSoSlow/html && cp -r dist/* ${TOP_ROOT}/Builds/${CONFIGURATION}/WhyTheFuckIsMyNetworkSoSlow/html/
+	@$(MAKE) --no-print-directory MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1)) check-prerequisites
+	@$(MAKE) --silent MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1)) $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_)
+	@$(MAKE) --no-print-directory MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1)) update-components_
+	@${MAKE} --no-print-directory MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1)) build-dist_
 
 clean:
 	@$(StroikaRoot)/ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "Clean HTML:"
-	@rm -f src/*.js
+	@#rm -f src/*.js
+	@rm -rf $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_)
 
 clobber:
 	@$(StroikaRoot)/ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "Clobber HTML:"
-	@rm -f src/*.js
-	@rm -rf dist node_modules
-
-update-components:
-	# automate/autodetect - @todo
-	# @todo move build to IntermediateFiles, but I dont know npm well enuf yet... - that will get rid of need for ci
-	npm ci
-
-build-dist:
-	npm run build
+	@rm -rf $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_)
+	@rm -rf $(PER_CONFIGURATION_BUILDS_DIR)
 
 check-prerequisites:
-	@$(StroikaRoot)/ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "Checking html prerequisites:"
+	@$(StroikaRoot)/ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "Checking HTML prerequisites:"
+	@#todo - check if right version of node/npm installed?
 	@$(StroikaRoot)/ScriptsLib/PrintLevelLeader $$(($(MAKE_INDENT_LEVEL)+1)) && sh -c "(type node 2> /dev/null) || ($(StroikaRoot)/ScriptsLib/GetMessageForMissingTool node && exit 1)"
 	@$(StroikaRoot)ScriptsLib/PrintLevelLeader $$(($(MAKE_INDENT_LEVEL)+1)) && sh -c "(type npm 2> /dev/null) || ($(StroikaRoot)ScriptsLib/GetMessageForMissingTool npm && exit 1)"
+
+
+update-components_: $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_)
+	@$(StroikaRoot)/ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "npm install ( log2 ${PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_}/NPM-Install.txt ) ..."
+	@cd $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_) && npm i > ${PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_}/NPM-Install.txt 2>&1
+
+build-dist_: $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_)
+	@$(StroikaRoot)ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "Building ( log2 ${PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_}/Build.txt ) ..."
+	@cd $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_) && npm run build > ${PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_}/Build.txt 2>&1
+	@$(StroikaRoot)ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "Copying to ${PER_CONFIGURATION_BUILDS_DIR} ..."
+	@rm -rf ${PER_CONFIGURATION_BUILDS_DIR} && mkdir -p ${PER_CONFIGURATION_BUILDS_DIR} && cp -r $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_)/dist/* ${PER_CONFIGURATION_BUILDS_DIR}
+
+
+SRC_FILES2Link_=
+SRC_FILES2Link_ += $(wildcard .env*)
+SRC_FILES2Link_ += public
+SRC_FILES2Link_ += src
+SRC_FILES2Link_ += Makefile
+SRC_FILES2Link_ += $(wildcard *.js *.ts)
+SRC_FILES2Link_ += $(wildcard *.json)
+
+ifeq (Windows,$(findstring Windows,$(OS)))
+NPM_WORKS_WITH_SYMBOLIC_LINKS=0
+else
+NPM_WORKS_WITH_SYMBOLIC_LINKS=1
+endif
+
+$(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_):
+	@$(StroikaRoot)ScriptsLib/PrintProgressLine $(MAKE_INDENT_LEVEL) `$(StroikaRoot)ScriptsLib/SubstituteBackVariables "Preparing symbolic links for $@"` "... "
+	@rm -rf $@ && mkdir -p $@
+ifeq ($(NPM_WORKS_WITH_SYMBOLIC_LINKS),1)
+	@for i in ${SRC_FILES2Link_}; do ln -s `pwd`/$$i $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_)/$$i; done
+else
+	@for i in ${SRC_FILES2Link_}; do cp -r `pwd`/$$i $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_)/$$i; done
+endif
+
