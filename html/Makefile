@@ -1,3 +1,9 @@
+### MAKEFILE TODO
+###		@todo	dont rebuild if not needed (so add dependencies)
+###		@todo	use files to track various things so we can skip steps making this build faster - like if we did check
+###				for preqequisites, or more importantly already built html
+
+
 export TOP_ROOT=$(abspath ../)/
 StroikaRoot=$(TOP_ROOT)ThirdPartyComponents/Stroika/StroikaRoot/
 
@@ -36,11 +42,11 @@ check-prerequisites:
 
 
 update-components_: $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_)
-	@$(StroikaRoot)/ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "npm install ( log2 ${PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_}/NPM-Install.txt ) ..."
+	@$(StroikaRoot)/ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) `$(StroikaRoot)ScriptsLib/SubstituteBackVariables "npm install ( log2 ${PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_}/NPM-Install.txt ) ..."`
 	@cd $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_) && npm i > ${PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_}/NPM-Install.txt 2>&1
 
 build-dist_: $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_)
-	@$(StroikaRoot)ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "Building ( log2 ${PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_}/Build.txt ) ..."
+	@$(StroikaRoot)ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) `$(StroikaRoot)ScriptsLib/SubstituteBackVariables "Building ( log2 ${PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_}/Build.txt ) ..."`
 	@cd $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_) && npm run build > ${PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_}/Build.txt 2>&1
 	@$(StroikaRoot)ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "Copying to ${PER_CONFIGURATION_BUILDS_DIR} ..."
 	@rm -rf ${PER_CONFIGURATION_BUILDS_DIR} && mkdir -p ${PER_CONFIGURATION_BUILDS_DIR} && cp -r $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_)/dist/* ${PER_CONFIGURATION_BUILDS_DIR}
@@ -55,15 +61,15 @@ SRC_FILES2Link_ += $(wildcard *.js *.ts)
 SRC_FILES2Link_ += $(wildcard *.json)
 
 ifeq (Windows,$(findstring Windows,$(OS)))
-NPM_WORKS_WITH_SYMBOLIC_LINKS=0
+NPM_WORKS_WITH_SYMBOLIC_LINKS_=0
 else
-NPM_WORKS_WITH_SYMBOLIC_LINKS=1
+NPM_WORKS_WITH_SYMBOLIC_LINKS_=1
 endif
 
 $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_):
 	@$(StroikaRoot)ScriptsLib/PrintProgressLine $(MAKE_INDENT_LEVEL) `$(StroikaRoot)ScriptsLib/SubstituteBackVariables "Preparing symbolic links for $@"` "... "
 	@rm -rf $@ && mkdir -p $@
-ifeq ($(NPM_WORKS_WITH_SYMBOLIC_LINKS),1)
+ifeq ($(NPM_WORKS_WITH_SYMBOLIC_LINKS_),1)
 	@for i in ${SRC_FILES2Link_}; do ln -s `pwd`/$$i $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_)/$$i; done
 else
 	@for i in ${SRC_FILES2Link_}; do cp -r `pwd`/$$i $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_)/$$i; done
