@@ -31,8 +31,8 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model;
 const ObjectVariantMapper klambda_expand_in_namespace_Buggy_workaround_Mapper_ = [] () {
     using IO::Network::CIDR;
     ObjectVariantMapper mapper;
-    mapper.Add<CIDR> ([] (const ObjectVariantMapper& mapper, const CIDR* obj) -> VariantValue { return obj->ToString (); },
-                      [] (const ObjectVariantMapper& mapper, const VariantValue& d, CIDR* intoObj) -> void { *intoObj = CIDR{d.As<String> ()}; });
+    mapper.Add<CIDR> ([] ([[maybe_unused]] const ObjectVariantMapper& mapper, const CIDR* obj) -> VariantValue { return obj->ToString (); },
+                      [] ([[maybe_unused]] const ObjectVariantMapper& mapper, const VariantValue& d, CIDR* intoObj) -> void { *intoObj = CIDR{d.As<String> ()}; });
     return mapper;
 }();
 #endif
@@ -493,8 +493,8 @@ const ObjectVariantMapper About::kMapper = [] () {
     mapper += OperatingSystem::kMapper;
 
     mapper.Add<Configuration::Version> (
-        [] (const ObjectVariantMapper& mapper, const Configuration::Version* obj) -> VariantValue { return obj->AsPrettyVersionString (); },
-        [] (const ObjectVariantMapper& mapper, const VariantValue& d, Configuration::Version* intoObj) -> void { *intoObj = Configuration::Version::FromPrettyVersionString (d.As<String> ()); });
+        [] ([[maybe_unused]] const ObjectVariantMapper& mapper, const Configuration::Version* obj) -> VariantValue { return obj->AsPrettyVersionString (); },
+        [] ([[maybe_unused]] const ObjectVariantMapper& mapper, const VariantValue& d, Configuration::Version* intoObj) -> void { *intoObj = Configuration::Version::FromPrettyVersionString (d.As<String> ()); });
     mapper.AddCommonType<Mapping<String, Configuration::Version>> ();
     mapper.AddClass<About> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
         {L"applicationVersion", Stroika_Foundation_DataExchange_StructFieldMetaInfo (About, fOverallApplicationVersion)},
