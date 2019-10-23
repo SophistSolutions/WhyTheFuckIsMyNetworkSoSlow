@@ -1,13 +1,7 @@
-node_modules/
-dist/
-npm-debug.log
 .editorconfig
-CL*.tlog
 *.userprefs
 *.VC8db
 *.log
-*.pdb
-*.idb
 .vs/
 Builds/
 IntermediateFiles/
