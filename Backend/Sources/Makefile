@@ -73,4 +73,3 @@ $(TARGETEXE):	$(Objs) $(StroikaLibs)
 
 clean::
 	@rm -f $(SUBDIR_OBJS)
-
