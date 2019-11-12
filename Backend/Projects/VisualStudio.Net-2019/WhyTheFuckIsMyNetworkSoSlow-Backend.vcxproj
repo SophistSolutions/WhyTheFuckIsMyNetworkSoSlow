@@ -57,7 +57,7 @@
     <IntDir>$(ProjectDir)..\..\..\IntermediateFiles\$(Configuration)\WhyTheFuckIsMyNetworkSoSlow\</IntDir>
   </PropertyGroup>
   <PropertyGroup>
-    <NMakeIncludeSearchPath>$(ProjectDir)\..\..\;$(ProjectDir)\..\..\..\..\Library\Sources\</NMakeIncludeSearchPath>
+    <NMakeIncludeSearchPath>$(ProjectDir)\..\..\;$(ProjectDir)\..\..\..\IntermediateFiles\$(Configuration)\WhyTheFuckIsMyNetworkSoSlow\;$(ProjectDir)\..\..\..\ThirdPartyComponents\Stroika\StroikaRoot\Library\Sources\</NMakeIncludeSearchPath>
     <AdditionalOptions>/std:c++latest</AdditionalOptions>
   </PropertyGroup>
   <ItemGroup>
@@ -113,10 +113,6 @@
     <ClInclude Include="..\..\Sources\WebServices\Model.h" />
     <ClInclude Include="..\..\Sources\WebServices\WebServer.h" />
     <ClInclude Include="..\..\Sources\WebServices\WSImpl.h" />
-    <ClInclude Include="resource.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="WhyTheFuckIsMyNetworkSoSlow-Backend.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

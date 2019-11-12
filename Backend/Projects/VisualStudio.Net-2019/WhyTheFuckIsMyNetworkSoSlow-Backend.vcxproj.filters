@@ -158,12 +158,8 @@
     <ClInclude Include="..\..\Sources\Common\BLOBMgr.h">
       <Filter>Sources\Common</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h" />
     <ClInclude Include="..\..\Sources\Discovery\PortScanner.h">
       <Filter>Sources\Discovery</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="WhyTheFuckIsMyNetworkSoSlow-Backend.rc" />
   </ItemGroup>
 </Project>
