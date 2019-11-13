@@ -141,6 +141,7 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
         }
     }
 
+    DISABLE_COMPILER_MSC_WARNING_START (4456)
     // Fetch (UNSORTED) list of devices
     Sequence<BackendApp::WebServices::Device> devices = Sequence<BackendApp::WebServices::Device>{Discovery::DevicesMgr::sThe.GetActiveDevices ().Select<BackendApp::WebServices::Device> ([] (const Discovery::Device& d) {
         BackendApp::WebServices::Device newDev;
@@ -193,6 +194,7 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
 #endif
         return newDev;
     })};
+    DISABLE_COMPILER_MSC_WARNING_END (4456)
 
     // Sort them
     for (DeviceSortParamters::SearchTerm st : searchTerms) {
