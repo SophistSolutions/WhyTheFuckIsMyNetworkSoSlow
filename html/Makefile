@@ -19,7 +19,7 @@ all:
 ifeq ($(CONFIGURATION),)
 	@echo "Cannot complete build without a configuraiton" && exit 1;
 endif
-	@$(MAKE) --no-print-directory MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1)) check-prerequisites
+	@$(MAKE) --no-print-directory MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1)) $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_)/TOOLS_CHECKED
 	@$(MAKE) --silent MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1)) $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_)
 	@$(MAKE) --no-print-directory MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1)) update-components_
 	@${MAKE} --no-print-directory MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1)) build-dist_
@@ -65,6 +65,11 @@ NPM_WORKS_WITH_SYMBOLIC_LINKS_=0
 else
 NPM_WORKS_WITH_SYMBOLIC_LINKS_=1
 endif
+
+$(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_)/TOOLS_CHECKED:
+	@$(MAKE) check-prerequisites --no-print-directory
+	@touch $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_)/TOOLS_CHECKED
+
 
 $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_):
 	@$(StroikaRoot)ScriptsLib/PrintProgressLine $(MAKE_INDENT_LEVEL) `$(StroikaRoot)ScriptsLib/SubstituteBackVariables "Preparing symbolic links for $@"` "... "
