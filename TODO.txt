@@ -1,6 +1,6 @@
 Top priority bug:
 
-SEE IF I CAN CLEANUP
+SEE IF I CAN CLEANUPz (test with qlock_debugign on and verify locking behavior seems to be workiing well)
 
                     again:
                         // merge in data
@@ -45,6 +45,14 @@ SEE IF I CAN CLEANUP
 
 						Issue is lock object (readlock)
 						is not in scope.
+
+
+-----
+	>	Cleanup BUILD code - and maybe do docker file builds - so I can easily build installers for windows, ununtu x86m and ubuntu raspberrypi
+
+
+-----
+
 
 
 > use thius to add stroika bloom filter class and
