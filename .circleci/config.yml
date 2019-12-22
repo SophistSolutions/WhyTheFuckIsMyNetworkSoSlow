@@ -2,7 +2,7 @@ version: 2
 jobs:
   build-ubuntu1804:
     docker:
-      - image: sophistsolutionsinc/stroika-buildvm-ubuntu1804-regression-tests
+      - image: sophistsolutionsinc/whythefuckismynetworksosmall-debian-small
     
     working_directory: ~/build-4-linux
     
@@ -22,7 +22,7 @@ jobs:
           ./configure Release --config-tag Unix --apply-default-release-flags
     - run:
         name: build
-        command: make all -j3
+        command: make all -j2
     - store_artifacts:
        path: ~/build-4-linux/Builds/Debug
 
