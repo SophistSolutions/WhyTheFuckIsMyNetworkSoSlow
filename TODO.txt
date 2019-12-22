@@ -1,5 +1,11 @@
 Top priority bug:
 
+
++ change Devices.cpp, and make, and that file not rebuilt, so fixup dependencies at least enuf for this to work
+
+
+-----------
+
 SEE IF I CAN CLEANUPz (test with qlock_debugign on and verify locking behavior seems to be workiing well)
 
                     again:
