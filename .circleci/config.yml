@@ -59,6 +59,21 @@ jobs:
           configName: Release
           configureArgs: --config-tag Unix --apply-default-release-flags
 
+  build-windows:
+    executor: win/default
+    
+    steps:
+    - checkout
+    - run:
+        name: Update Submdoules
+        command: git submodule update --init --recursive
+    - run:
+        name: Configure
+        command: |
+          cd ThirdPartyComponents/Stroika/StroikaRoot
+          ./ScriptsLib/MakeBuildRoot ../../../
+          ./configure Release --config-tag Unix --apply-default-release-flags
+
 
 workflows:
   version: 2
@@ -68,3 +83,4 @@ workflows:
       - build-raspberrypi
       # Not supported on free build plan
       #- build-macos
+      - build-windows		# test if windows builds work
