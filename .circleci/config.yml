@@ -9,6 +9,9 @@ jobs:
     steps:
     - checkout
     - run:
+        name: update submdoules
+        command: git submodule update --init --recursive
+    - run:
         name: ls
         command: ls -lR ./ThirdPartyComponents/Stroika/StroikaRoot
     - run:
