@@ -10,7 +10,7 @@ commands:
     steps:
     - checkout
     - run:
-        name: update submdoules
+        name: Update Submdoules
         command: git submodule update --init --recursive
     - run:
         name: Configure
@@ -19,7 +19,7 @@ commands:
           ./ScriptsLib/MakeBuildRoot ../../../
           ./configure << parameters.configName >> << parameters.configureArgs >>
     - run:
-        name: build
+        name: Build
         command: make all -j2
     - store_artifacts:
        path: ~/build-4-linux/Builds/<< parameters.configName >>/WhyTheFuckIsMyNetworkSoSlow
@@ -48,6 +48,17 @@ jobs:
           configName: raspberrypi-release
           configureArgs: --config-tag Unix --config-tag raspberrypi --apply-default-release-flags --compiler-driver 'arm-linux-gnueabihf-g++-8' --cross-compiling true;
 
+  build-macos:
+    macos:
+      xcode: "11.3"
+    
+    working_directory: ~/build-4-linux
+    
+    steps:
+    - build-4-unix:
+          configName: Release
+          configureArgs: --config-tag Unix --apply-default-release-flags
+
 
 workflows:
   version: 2
@@ -55,3 +66,4 @@ workflows:
     jobs:
       - build-ubuntu1804
       - build-raspberrypi
+      - build-macos
