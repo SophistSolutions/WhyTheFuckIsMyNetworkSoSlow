@@ -2,16 +2,11 @@ version: 2.1
 commands:
   build-4-unix:
     parameters:
-      dockerImage:
-        type: string
       configName:
         type: string
       configureArgs:
         type: string
 
-    docker:
-      - image: << parameters.dockerImage >>
-    
     working_directory: ~/build-4-linux
     
     steps:
@@ -41,7 +36,6 @@ jobs:
     
     steps:
     - build-4-unix:
-          dockerImage: dockerImage
           configName: Release
           configureArgs: --config-tag Unix --apply-default-release-flags
 
@@ -53,7 +47,6 @@ jobs:
     
     steps:
     - build-4-unix:
-          dockerImage: dockerImage
           configName: raspberrypi-release
           configureArgs: --config-tag Unix --config-tag raspberrypi --apply-default-release-flags --only-if-has-compiler --compiler-driver 'arm-linux-gnueabihf-g++-7' --cross-compiling true;
 
