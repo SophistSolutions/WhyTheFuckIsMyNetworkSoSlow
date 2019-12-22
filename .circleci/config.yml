@@ -7,8 +7,6 @@ commands:
       configureArgs:
         type: string
 
-    working_directory: ~/build-4-linux
-    
     steps:
     - checkout
     - run:
