@@ -10,7 +10,7 @@ jobs:
     - checkout
     - run:
         name: Configure
-        command: ThirdPartyComponents/Stroika/StroikaRoot/configure Release --config-tag Unix --apply-default-release-flags
+        command: ./ThirdPartyComponents/Stroika/StroikaRoot/configure Release --config-tag Unix --apply-default-release-flags
     - run:
         name: build
         command: make all -j3
