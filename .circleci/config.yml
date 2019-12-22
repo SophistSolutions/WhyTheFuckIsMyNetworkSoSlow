@@ -1,5 +1,5 @@
 version: 2.1
-jobs:
+commands:
   build-4-unix:
     parameters:
       dockerImage:
@@ -32,6 +32,7 @@ jobs:
        path: ~/build-4-linux/Builds/<< parameters.configName >>/WhyTheFuckIsMyNetworkSoSlow
        destination: WhyTheFuckIsMyNetworkSoSlow
 
+jobs:
   build-ubuntu1804:
     docker:
       - image: sophistsolutionsinc/whythefuckismynetworksoslow-debian-small
