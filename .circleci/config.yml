@@ -9,6 +9,9 @@ jobs:
     steps:
     - checkout
     - run:
+        name: ls
+        command: ls -lR ./ThirdPartyComponents/Stroika/StroikaRoot
+    - run:
         name: Configure
         command: ./ThirdPartyComponents/Stroika/StroikaRoot/configure Release --config-tag Unix --apply-default-release-flags
     - run:
