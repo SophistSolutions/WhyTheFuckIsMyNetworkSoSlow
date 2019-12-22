@@ -83,4 +83,5 @@ workflows:
       - build-raspberrypi
       # Not supported on free build plan
       #- build-macos
-      - build-windows		# test if windows builds work
+      # For now this doesn't appear to work
+      #- build-windows
