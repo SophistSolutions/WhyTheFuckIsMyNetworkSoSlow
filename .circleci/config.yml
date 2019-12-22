@@ -12,9 +12,6 @@ jobs:
         name: update submdoules
         command: git submodule update --init --recursive
     - run:
-        name: ls
-        command: ls -lR ./ThirdPartyComponents/Stroika/StroikaRoot
-    - run:
         name: Configure
         command: |
           cd ThirdPartyComponents/Stroika/StroikaRoot
@@ -25,10 +22,36 @@ jobs:
         command: make all -j2
     - store_artifacts:
        path: ~/build-4-linux/Builds/Release/WhyTheFuckIsMyNetworkSoSlow
+       destination: WhyTheFuckIsMyNetworkSoSlow
+
+  build-raspberrypi:
+    docker:
+      - image: sophistsolutionsinc/whythefuckismynetworksoslow-debian-crosscompile-raspberrypi
+    
+    working_directory: ~/build-4-linux
+    
+    steps:
+    - checkout
+    - run:
+        name: update submdoules
+        command: git submodule update --init --recursive
+    - run:
+        name: Configure
+        command: |
+          cd ThirdPartyComponents/Stroika/StroikaRoot
+          ./ScriptsLib/MakeBuildRoot ../../../
+          ./configure raspberrypi-release --config-tag Unix --config-tag raspberrypi --apply-default-release-flags --only-if-has-compiler --compiler-driver 'arm-linux-gnueabihf-g++-7' --cross-compiling true);\
+    - run:
+        name: build
+        command: make all -j2
+    - store_artifacts:
+       path: ~/build-4-linux/Builds/raspberrypi-release/WhyTheFuckIsMyNetworkSoSlow
+       destination: WhyTheFuckIsMyNetworkSoSlow
 
 
 workflows:
   version: 2
-  build_and_test:
+  build:
     jobs:
       - build-ubuntu1804
+      - build-raspberrypi
