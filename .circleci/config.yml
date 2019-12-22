@@ -48,7 +48,6 @@ jobs:
           configName: raspberrypi-release
           configureArgs: --config-tag Unix --config-tag raspberrypi --apply-default-release-flags --compiler-driver 'arm-linux-gnueabihf-g++-8' --cross-compiling true;
 
-  # Not supported on free build plan
   build-macos:
     macos:
       xcode: "11.3"
@@ -67,3 +66,5 @@ workflows:
     jobs:
       - build-ubuntu1804
       - build-raspberrypi
+      # Not supported on free build plan
+      #- build-macos
