@@ -27,7 +27,7 @@ SubDirs=\
 
 
 
-SUBDIR_OBJS := $(foreach dir, $(SubDirs), $(shell $(MAKE) --directory $(dir) -s list-objs))
+SUBDIR_OBJS := $(foreach dir, $(SubDirs), $(shell $(MAKE) CONFIGURATION=$(CONFIGURATION) --directory $(dir) -s list-objs))
 
 
 Objs	=	\
@@ -41,24 +41,14 @@ $(VERSION_FILE_OUT):	$(VERSION_FILE_IN)
 	@mkdir -p $(StroikaRoot)IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow
 	@$(StroikaRoot)ScriptsLib/MakeVersionFile $(VERSION_FILE_IN) $(VERSION_FILE_OUT) AppCPlusPlusVersion kAppVersion __WhyTheFuckIsMyNetworkSoSlow_AppVersion_H__
 
-
-
-$(shell $(MAKE) --directory Common -s list-objs):
-	@$(MAKE) --directory Common -s $@
-
-$(shell $(MAKE) --directory Discovery -s list-objs):
-	@$(MAKE) --directory Discovery -s $@
-
-$(shell $(MAKE) --directory WebServices -s list-objs):
-	@$(MAKE) --directory WebServices -s $@
-
 $(ObjDir)Main${OBJ_SUFFIX} $(ObjDir)Service${OBJ_SUFFIX}:		$(VERSION_FILE_OUT)
 
 
 all:
 	@$(StroikaRoot)/ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "Building WhyTheFuckIsMyNetworkSoSlow/Backend:"
 	@mkdir -p $(TARGETEXEDir)
-	@$(MAKE) --silent $(TARGETEXE) MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1)) ECHO_BUILD_LINES=$(ECHO_BUILD_LINES)
+	@for s in ${SubDirs}; do $(MAKE) --directory $${s} -s MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1)) all; done
+	@$(MAKE) --silent $(TARGETEXE) CONFIGURATION=$(CONFIGURATION) MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1)) ECHO_BUILD_LINES=$(ECHO_BUILD_LINES)
 
 
 Objs += $(SUBDIR_OBJS)
