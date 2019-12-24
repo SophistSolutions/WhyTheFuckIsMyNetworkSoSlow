@@ -56,6 +56,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
             }
             return true;
         }
+        bool operator!= (const OperatingSystem& rhs) const
+        {
+            return not(*this == rhs);
+        }
 #else
         auto operator<=> (const OperatingSystem&) const = default;
 #endif
@@ -86,6 +90,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
                 return false;
             }
             return true;
+        }
+        bool operator!= (const Manufacturer& rhs) const
+        {
+            return not(*this == rhs);
         }
 #else
         auto operator<=> (const Manufacturer&) const    = default;

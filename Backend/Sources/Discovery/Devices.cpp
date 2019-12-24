@@ -305,6 +305,10 @@ namespace {
 #endif
                 return true;
             }
+            bool operator!= (const SSDPInfo& rhs) const
+            {
+                return not(*this == rhs);
+            }
 #else
             auto operator<=> (const SSDPInfo&) const = default;
 #endif
@@ -519,6 +523,10 @@ namespace {
                 return false;
             }
             return true;
+        }
+        bool operator!= (const DiscoveryInfo_& rhs) const
+        {
+            return not(*this == rhs);
         }
 #else
         auto operator<=> (const DiscoveryInfo_&) const = default;
