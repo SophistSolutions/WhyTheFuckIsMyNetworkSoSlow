@@ -110,6 +110,9 @@ namespace {
 namespace {
     optional<String> ReverseDNSLookup_ (const InternetAddress& inetAddr)
     {
+#if USE_NOISY_TRACE_IN_THIS_MODULE_
+        Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"{}::ReverseDNSLookup_", L"inetAddr=%s", Characters::ToString (inetAddr).c_str ())};
+#endif
         static const Time::Duration                                             kCacheTTL_{5min}; // @todo fix when Stroika Duration bug supports constexpr this should
         static Cache::SynchronizedTimedCache<InternetAddress, optional<String>> sCache_{kCacheTTL_};
         return sCache_.LookupValue (inetAddr, [] (const InternetAddress& inetAddr) {
@@ -119,6 +122,9 @@ namespace {
     }
     Set<InternetAddress> DNSLookup_ (const String& hostOrIPAddress)
     {
+#if USE_NOISY_TRACE_IN_THIS_MODULE_
+        Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"{}::DNSLookup_", L"hostOrIPAddress=%s", Characters::ToString (hostOrIPAddress).c_str ())};
+#endif
         static const Time::Duration                                        kCacheTTL_{5min}; // @todo fix when Stroika Duration bug supports constexpr this should
         static Cache::SynchronizedTimedCache<String, Set<InternetAddress>> sCache_{kCacheTTL_};
         return sCache_.LookupValue (hostOrIPAddress, [] (const String& hostOrIPAddress) -> Set<InternetAddress> {
@@ -375,6 +381,10 @@ namespace {
 
         void PatchDerivedFields ()
         {
+#if USE_NOISY_TRACE_IN_THIS_MODULE_
+            Debug::TraceContextBumper ctx{"{}::DiscoveryInfo_::PatchDerivedFields"};
+#endif
+
             /*
              *  Name Calculation
              */
@@ -544,7 +554,13 @@ namespace {
         }
     };
     // NB: RWSynchronized because most accesses will be to read/lookup in this list; use Mapping<> because KeyedCollection NYI
+    // Note, when we first start, there will be more contention, so we'll get conflicts (and we dbgtrace log them to be sure
+    // not too many).
+#if qLOCK_DEBUGGING_
+    Synchronized<Mapping<GUID, DiscoveryInfo_>, Tracing_Synchronized_Traits<shared_timed_mutex>> sDiscoveredDevices_;
+#else
     RWSynchronized<Mapping<GUID, DiscoveryInfo_>> sDiscoveredDevices_;
+#endif
 
 // turn on tracking of locks on sDiscoveredDevices_
 #if qDefaultTracingOn && qLOCK_DEBUGGING_
@@ -584,11 +600,15 @@ namespace {
         static void DiscoveryChecker_ ()
         {
             static constexpr Activity kDiscovering_This_Device_{L"discovering this device"sv};
+            unsigned int              retriedLockCount = 0;
             while (true) {
                 try {
                     DeclareActivity da{&kDiscovering_This_Device_};
                     if (optional<DiscoveryInfo_> o = GetMyDevice_ ()) {
                     again:
+                        if (retriedLockCount > 0) {
+                            Execution::Sleep (1s); // sleep before retrying read-lock so readlock not held so long nobody can update
+                        }
                         auto           l  = sDiscoveredDevices_.cget ();
                         DiscoveryInfo_ di = [&] () {
                             DiscoveryInfo_ tmp{};
@@ -610,6 +630,19 @@ namespace {
                         di.fThisDevice      = o->fThisDevice;
                         di.fOperatingSystem = OperatingSystem{Configuration::GetSystemConfiguration_ActualOperatingSystem ().fPrettyNameWithVersionDetails};
                         di.PatchDerivedFields ();
+
+                        // Skip upgrade look to reduce the number of write locks we do, for the common case when there is no
+                        // actual change
+                        if (l->Lookup (di.fGUID) == di) {
+#if qLOCK_DEBUGGING_
+                            DbgTrace (L"!!! no change in ***MyDeviceDiscoverer_***  so skipping ");
+#endif
+                            continue;
+                        }
+#if qLOCK_DEBUGGING_
+                        DbgTrace (L"!!! have change in ***MyDeviceDiscoverer_ so waiting to update");
+#endif
+
                         if (not sDiscoveredDevices_.UpgradeLockNonAtomicallyQuietly (
                                 &l, [&] (auto&& writeLock) {
                                     writeLock.rwref ().Add (di.fGUID, di);
@@ -618,10 +651,10 @@ namespace {
 #endif
                                 },
                                 1s)) {
-#if qLOCK_DEBUGGING_
-                            DbgTrace (L"!!! failed to update so retrying ***MyDeviceDiscoverer_");
-#endif
-                            Execution::Sleep (1s); // sleep before retrying read-lock so readlock not held so long nobody can update
+                            // Failed merge, so try the entire acquire/update; this should be fairly rare (except when alot of contention like when we first start),
+                            // and will cause a recomputation of the merge
+                            retriedLockCount++;
+                            DbgTrace (L"MyDeviceDiscoverer_: failed to update sDiscoveredDevices_ so retrying (cnt=%d)", retriedLockCount);
                             goto again;
                         }
                     }
@@ -735,8 +768,7 @@ namespace {
             optional<URI>    presentationURL;
             optional<URI>    deviceIconURL;
 
-            bool triedOnce = false;
-
+            unsigned int retriedLockCount = 0;
             try {
                 using namespace IO::Network::Transfer;
                 Connection::Ptr c = Connection::New ();
@@ -765,10 +797,9 @@ namespace {
             if (not locAddrs.empty ()) {
             // merge in data
             again:
-                if (triedOnce) {
+                if (retriedLockCount > 0) {
                     Execution::Sleep (1s); // sleep without the lock, but not first time processing message - just on retries
                 }
-                triedOnce         = true;
                 auto           l  = sDiscoveredDevices_.cget ();
                 DiscoveryInfo_ di = [&] () {
                     DiscoveryInfo_ tmp{};
@@ -835,11 +866,11 @@ namespace {
 #endif
                         },
                         1s)) {
-#if qLOCK_DEBUGGING_
-                    DbgTrace (L"!!! failed to update so retrying ***RecieveSSDPAdvertisement_");
-#endif
-                    Execution::Sleep (1s); // sleep before retrying read-lock so readlock not held so long nobody can update
-                    goto again;            // release the lock and try again
+                    // Failed merge, so try the entire acquire/update; this should be fairly rare (except when alot of contention like when we first start),
+                    // and will cause a recomputation of the merge
+                    retriedLockCount++;
+                    DbgTrace (L"RecieveSSDPAdvertisement_: failed to update RecieveSSDPAdvertisement_ so retrying (cnt=%d)", retriedLockCount);
+                    goto again; // release the lock and try again
                 }
             }
         }
@@ -885,7 +916,15 @@ namespace {
                         }
 #endif
 
+                        unsigned int retriedLockCount = 0;
                     again:
+                        if (retriedLockCount > 0) {
+                            Execution::Sleep (1s); // sleep without the lock, but not first time processing message - just on retries
+                        }
+#if qLOCK_DEBUGGING_
+                        Debug::TraceContextBumper ctxLock1{L"sDiscoveredDevices_ - discovering this network neighbors "};
+#endif
+
                         // merge in data
                         auto           l  = sDiscoveredDevices_.cget ();
                         DiscoveryInfo_ di = [&] () {
@@ -907,6 +946,19 @@ namespace {
                         }();
 
                         di.PatchDerivedFields ();
+
+                        // Skip upgrade look to reduce the number of write locks we do, for the common case when there is no
+                        // actual change
+                        if (l->Lookup (di.fGUID) == di) {
+#if qLOCK_DEBUGGING_
+                            DbgTrace (L"!!! no change in ***MyNeighborDiscoverer_***  so skipping ");
+#endif
+                            continue;
+                        }
+#if qLOCK_DEBUGGING_
+                        DbgTrace (L"have change in ***MyNeighborDiscoverer_*** so about to call UpgradeLockNonAtomicallyQuietly/1");
+#endif
+
                         if (not sDiscoveredDevices_.UpgradeLockNonAtomicallyQuietly (
                                 &l, [&] (auto&& writeLock) {
                                     writeLock.rwref ().Add (di.fGUID, di);
@@ -915,11 +967,10 @@ namespace {
 #endif
                                 },
                                 1s)) {
-                            // failed merge, so try the entire acquire/update
-#if qLOCK_DEBUGGING_
-                            DbgTrace (L"!!! failed to update so retrying ***MyNeighborDiscoverer_");
-#endif
-                            Execution::Sleep (1s); // sleep before retrying read-lock so readlock not held so long nobody can update
+                            // Failed merge, so try the entire acquire/update; this should be fairly rare (except when alot of contention like when we first start),
+                            // and will cause a recomputation of the merge
+                            retriedLockCount++;
+                            DbgTrace (L"MyNeighborDiscoverer_: failed to update sDiscoveredDevices_ so retrying (cnt=%d)", retriedLockCount);
                             goto again;
                         }
                     }
