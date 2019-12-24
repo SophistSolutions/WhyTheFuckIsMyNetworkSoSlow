@@ -38,6 +38,8 @@ optional<String> BackendApp::Common::LookupEthernetMACAddressOUIFromPrefix (cons
 {
     // case insensitive lookup, and cache mapping from config file
     static Mapping<String, String> sMap_ = [] () {
+        // \note - In Debug builds - this load of the OSI-MAC-PREFIXES takes 30 seconds, and blocks whatever
+        // calls it first. But it doesn't take long  in release builds (less than a second)
         Mapping<String, String> tmp;
         try {
             for (String line : TextReader::New (IO::FileSystem::FileInputStream::New (Execution::GetEXEDir () + L"data/OSI-MAC-PREFIXES.txt")).ReadLines ()) {
