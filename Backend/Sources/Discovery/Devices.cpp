@@ -268,6 +268,47 @@ namespace {
             optional<SSDP::Advertisement> fLastAdvertisement;
 #endif
 
+#if __cpp_impl_three_way_comparison < 201711
+            bool operator== (const SSDPInfo& rhs) const
+            {
+                if (fAlive != rhs.fAlive) {
+                    return false;
+                }
+                if (fUSNs != rhs.fUSNs) {
+                    return false;
+                }
+                if (fLocations != rhs.fLocations) {
+                    return false;
+                }
+                if (fServer != rhs.fServer) {
+                    return false;
+                }
+                if (fManufacturer != rhs.fManufacturer) {
+                    return false;
+                }
+                if (fManufacturerURI != rhs.fManufacturerURI) {
+                    return false;
+                }
+                if (fDeviceType2FriendlyNameMap != rhs.fDeviceType2FriendlyNameMap) {
+                    return false;
+                }
+                if (fPresentationURL != rhs.fPresentationURL) {
+                    return false;
+                }
+                if (fLastSSDPMessageRecievedAt != rhs.fLastSSDPMessageRecievedAt) {
+                    return false;
+                }
+#if qDebug
+                if (fLastAdvertisement != rhs.fLastAdvertisement) {
+                    return false;
+                }
+#endif
+                return true;
+            }
+#else
+            auto operator<=> (const SSDPInfo&) const = default;
+#endif
+
             String ToString () const
             {
                 StringBuilder sb;
@@ -445,7 +486,7 @@ namespace {
             if (fSSDPInfo) {
                 fDebugProps.Add (L"SSDPInfo"sv,
                                  VariantValue{
-                                     Mapping<String, VariantValue>{
+                                     Mapping<String, VariantValue> {
                                          pair<String, VariantValue>{L"deviceType2FriendlyNameMap"sv, Characters::ToString (fSSDPInfo->fDeviceType2FriendlyNameMap)},
                                          pair<String, VariantValue>{L"USNs"sv, Characters::ToString (fSSDPInfo->fUSNs)},
                                          pair<String, VariantValue>{L"server"sv, Characters::ToString (fSSDPInfo->fServer)},
@@ -453,7 +494,9 @@ namespace {
                                          pair<String, VariantValue>{L"manufacturer-URL"sv, Characters::ToString (fSSDPInfo->fManufacturerURI)},
                                          pair<String, VariantValue>{L"lastAdvertisement"sv, Characters::ToString (fSSDPInfo->fLastAdvertisement)},
                                          pair<String, VariantValue>{L"lastSSDPMessageRecievedAt"sv, Characters::ToString (fSSDPInfo->fLastSSDPMessageRecievedAt)},
-                                         pair<String, VariantValue>{L"locations"sv, Characters::ToString (fSSDPInfo->fLocations)}}});
+                                         pair<String, VariantValue> { L"locations"sv,
+                                                                      Characters::ToString (fSSDPInfo->fLocations) }
+                                     }});
             }
 
 #endif
@@ -462,6 +505,24 @@ namespace {
             DbgTrace (L"At end of PatchDerivedFields: %s", ToString ().c_str ());
 #endif
         }
+
+#if __cpp_impl_three_way_comparison < 201711
+        bool operator== (const DiscoveryInfo_& rhs) const
+        {
+            if (not Discovery::Device::operator== (rhs)) {
+                return false;
+            }
+            if (fForcedName != rhs.fForcedName) {
+                return false;
+            }
+            if (fSSDPInfo != rhs.fSSDPInfo) {
+                return false;
+            }
+            return true;
+        }
+#else
+        auto operator<=> (const DiscoveryInfo_&) const = default;
+#endif
 
         String ToString () const
         {

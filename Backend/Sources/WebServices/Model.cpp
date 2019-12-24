@@ -138,8 +138,8 @@ const ObjectVariantMapper Network::kMapper = [] () {
 #if qCompilerAndStdLib_lambda_expand_in_namespace_Buggy
     mapper.Add (klambda_expand_in_namespace_Buggy_workaround_Mapper_);
 #else
-    mapper.Add<CIDR> ([] ([[maybe_unused]]const ObjectVariantMapper& mapper, const CIDR* obj) -> VariantValue { return obj->ToString (); },
-                      [] ([[maybe_unused]]const ObjectVariantMapper& mapper, const VariantValue& d, CIDR* intoObj) -> void { *intoObj = CIDR{d.As<String> ()}; });
+    mapper.Add<CIDR> ([] ([[maybe_unused]] const ObjectVariantMapper& mapper, const CIDR* obj) -> VariantValue { return obj->ToString (); },
+                      [] ([[maybe_unused]] const ObjectVariantMapper& mapper, const VariantValue& d, CIDR* intoObj) -> void { *intoObj = CIDR{d.As<String> ()}; });
 #endif
     mapper.AddCommonType<Set<CIDR>> ();
     mapper.AddCommonType<InternetAddress> ();

@@ -6,6 +6,10 @@
 
 #include "Stroika/Frameworks/StroikaPreComp.h"
 
+#if defined(__cpp_impl_three_way_comparison)
+#include <compare>
+#endif
+
 #include "Stroika/Foundation/Characters/String.h"
 #include "Stroika/Foundation/Common/GUID.h"
 #include "Stroika/Foundation/Containers/Collection.h"
@@ -64,6 +68,21 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
         Set<String>          hardwareAddresses;
         Set<InternetAddress> networkAddresses; // node not socket addresses
 
+#if __cpp_impl_three_way_comparison < 201711
+        bool operator== (const NetworkAttachmentInfo& rhs) const
+        {
+            if (hardwareAddresses != rhs.hardwareAddresses) {
+                return false;
+            }
+            if (networkAddresses != rhs.networkAddresses) {
+                return false;
+            }
+            return true;
+        }
+#else
+        auto operator<=> (const NetworkAttachmentInfo&) const = default;
+#endif
+
         nonvirtual String ToString () const;
     };
 
@@ -97,6 +116,50 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
         nonvirtual Set<InternetAddress> GetInternetAddresses () const;
 
         nonvirtual String ToString () const;
+
+#if __cpp_impl_three_way_comparison < 201711
+        bool operator== (const Device& rhs) const
+        {
+            if (fGUID != rhs.fGUID) {
+                return false;
+            }
+            if (name != rhs.name) {
+                return false;
+            }
+            if (fTypes != rhs.fTypes) {
+                return false;
+            }
+            if (fThisDevice != rhs.fThisDevice) {
+                return false;
+            }
+            if (fAttachedNetworks != rhs.fAttachedNetworks) {
+                return false;
+            }
+            if (fAttachedInterfaces != rhs.fAttachedInterfaces) {
+                return false;
+            }
+            if (fIcon != rhs.fIcon) {
+                return false;
+            }
+            if (fManufacturer != rhs.fManufacturer) {
+                return false;
+            }
+            if (fPresentationURL != rhs.fPresentationURL) {
+                return false;
+            }
+            if (fOperatingSystem != rhs.fOperatingSystem) {
+                return false;
+            }
+#if qDebug
+            if (fDebugProps != rhs.fDebugProps) {
+                return false;
+            }
+#endif
+            return true;
+        }
+#else
+        auto operator<=> (const Device&) const                = default;
+#endif
     };
 
     /**

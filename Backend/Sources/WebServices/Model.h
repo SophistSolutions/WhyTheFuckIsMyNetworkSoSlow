@@ -6,6 +6,10 @@
 
 #include "Stroika/Frameworks/StroikaPreComp.h"
 
+#if defined(__cpp_impl_three_way_comparison)
+#include <compare>
+#endif
+
 #include "Stroika/Foundation/Characters/String.h"
 #include "Stroika/Foundation/Configuration/Version.h"
 #include "Stroika/Foundation/Containers/Mapping.h"
@@ -44,6 +48,18 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
          */
         optional<String> fFullVersionedOSName;
 
+#if __cpp_impl_three_way_comparison < 201711
+        bool operator== (const OperatingSystem& rhs) const
+        {
+            if (fFullVersionedOSName != rhs.fFullVersionedOSName) {
+                return false;
+            }
+            return true;
+        }
+#else
+        auto operator<=> (const OperatingSystem&) const = default;
+#endif
+
         /**
          *  @see Characters::ToString ();
          */
@@ -56,6 +72,24 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         optional<String> fShortName;
         optional<String> fFullName;
         optional<URI>    fWebSiteURL;
+
+#if __cpp_impl_three_way_comparison < 201711
+        bool operator== (const Manufacturer& rhs) const
+        {
+            if (fShortName != rhs.fShortName) {
+                return false;
+            }
+            if (fFullName != rhs.fFullName) {
+                return false;
+            }
+            if (fWebSiteURL != rhs.fWebSiteURL) {
+                return false;
+            }
+            return true;
+        }
+#else
+        auto operator<=> (const Manufacturer&) const    = default;
+#endif
 
         /**
          *  @see Characters::ToString ();
