@@ -650,7 +650,7 @@ namespace {
                                     DbgTrace (L"!!! succeeded  updating writelock ***MyDeviceDiscoverer_");
 #endif
                                 },
-                                1s)) {
+                                5s)) {
                             // Failed merge, so try the entire acquire/update; this should be fairly rare (except when alot of contention like when we first start),
                             // and will cause a recomputation of the merge
                             retriedLockCount++;
@@ -865,7 +865,7 @@ namespace {
                             DbgTrace (L"!!! succeeded  updating writelock ***RecieveSSDPAdvertisement_");
 #endif
                         },
-                        1s)) {
+                        5s)) {
                     // Failed merge, so try the entire acquire/update; this should be fairly rare (except when alot of contention like when we first start),
                     // and will cause a recomputation of the merge
                     retriedLockCount++;
@@ -966,7 +966,7 @@ namespace {
                                     DbgTrace (L"!!! succeeded  updating with writelock ***MyNeighborDiscoverer_");
 #endif
                                 },
-                                1s)) {
+                                5s)) {
                             // Failed merge, so try the entire acquire/update; this should be fairly rare (except when alot of contention like when we first start),
                             // and will cause a recomputation of the merge
                             retriedLockCount++;
