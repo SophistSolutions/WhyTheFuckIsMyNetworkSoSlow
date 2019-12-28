@@ -161,35 +161,39 @@ namespace {
             if (not i.fBindings.empty ()) {
                 Network nw;
                 {
-                    Set<CIDR> cidrs;
-                    for (Interface::Binding nib : i.fBindings) {
-                        if (not kIncludeMulticastAddressesInDiscovery) {
-                            if (nib.fInternetAddress.IsMulticastAddress ()) {
+                    auto genCIDRsFromBindings = [] (const Iterable<Interface::Binding>& bindings) {
+                        Set<CIDR> cidrs;
+                        for (Interface::Binding nib : bindings) {
+                            if (not kIncludeMulticastAddressesInDiscovery) {
+                                if (nib.fInternetAddress.IsMulticastAddress ()) {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
-                                DbgTrace (L"CollectActiveNetworks_: interface=%s; ia=%s binding ignored because IsMulticastAddress", Characters::ToString (i.fGUID).c_str (), Characters::ToString (nib.fInternetAddress).c_str ());
+                                    DbgTrace (L"CollectActiveNetworks_: interface=%s; ia=%s binding ignored because IsMulticastAddress", Characters::ToString (i.fGUID).c_str (), Characters::ToString (nib.fInternetAddress).c_str ());
 #endif
-                                continue; // skip multicast addresses, because they don't really refer to a device
+                                    continue; // skip multicast addresses, because they don't really refer to a device
+                                }
+                            }
+                            if (not kIncludeLinkLocalAddressesInDiscovery) {
+                                if (nib.fInternetAddress.IsLinkLocalAddress ()) {
+#if USE_NOISY_TRACE_IN_THIS_MODULE_
+                                    DbgTrace (L"CollectActiveNetworks_: interface=%s; ia=%s binding ignored because IsLinkLocalAddress", Characters::ToString (i.fGUID).c_str (), Characters::ToString (nib.fInternetAddress).c_str ());
+#endif
+                                    continue; // skip link-local addresses, they are only used for special purposes like discovery, and aren't part of the network
+                                }
+                            }
+                            if (nib.fInternetAddress.GetAddressSize ().has_value ()) {
+                                // Guess CIDR prefix is max (so one address - bad guess) - if we cannot read from adapter
+                                cidrs += CIDR{nib.fInternetAddress, nib.fOnLinkPrefixLength.value_or (*nib.fInternetAddress.GetAddressSize () * 8)};
                             }
                         }
-                        if (not kIncludeLinkLocalAddressesInDiscovery) {
-                            if (nib.fInternetAddress.IsLinkLocalAddress ()) {
-#if USE_NOISY_TRACE_IN_THIS_MODULE_
-                                DbgTrace (L"CollectActiveNetworks_: interface=%s; ia=%s binding ignored because IsLinkLocalAddress", Characters::ToString (i.fGUID).c_str (), Characters::ToString (nib.fInternetAddress).c_str ());
-#endif
-                                continue; // skip link-local addresses, they are only used for special purposes like discovery, and aren't part of the network
-                            }
-                        }
-                        if (nib.fInternetAddress.GetAddressSize ().has_value ()) {
-                            // Guess CIDR prefix is max (so one address - bad guess) - if we cannot read from adapter
-                            cidrs += CIDR{nib.fInternetAddress, nib.fOnLinkPrefixLength.value_or (*nib.fInternetAddress.GetAddressSize () * 8)};
-                        }
-                    }
+                        return cidrs;
+                    };
+                    Set<CIDR> cidrs = genCIDRsFromBindings (i.fBindings);
 
                     // See if the network has already been found. VERY TRICKY - cuz ambiguous concept a network. Mostly follow my
                     // intuition - now - that a network CAN comprise multiple CIDRs - like a WIFI card and ETHERNET all with the same V4 and V6 scopes - they
                     // are one network.
 
-                    // erase for now cuz added at the end
+                    // erase for now cuz added at the end (and copied all the data over so effectively merging)
                     for (Iterator<Network> ni = accumResults.begin (); ni != accumResults.end (); ++ni) {
                         if (cidrs == ni->fNetworkAddresses) {
                             nw = *ni;
