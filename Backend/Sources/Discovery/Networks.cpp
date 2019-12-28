@@ -185,6 +185,18 @@ namespace {
                                 cidrs += CIDR{nib.fInternetAddress, nib.fOnLinkPrefixLength.value_or (*nib.fInternetAddress.GetAddressSize () * 8)};
                             }
                         }
+                        // You CAN generate two CIDRs, one which subsumes the other. If so, lose any subsumed CIDRs from the list
+                        // Use simple quadradic algorithm, since we can never have very many CIDRs in a network
+                        for (Iterator<CIDR> ci = cidrs.begin (); ci != cidrs.end (); ++ci) {
+                            for (CIDR maybeSubsumerCIDR : cidrs) {
+                                if (maybeSubsumerCIDR.GetNumberOfSignificantBits () > ci->GetNumberOfSignificantBits ()) {
+                                    if (maybeSubsumerCIDR.GetRange ().Contains (ci->GetRange ())) {
+                                        DbgTrace ("Removing subsumed CIDR %s inside %s", Characters::ToString (*ci).c_str (), Characters::ToString (maybeSubsumerCIDR).c_str ());
+                                        cidrs.Remove (ci);
+                                    }
+                                }
+                            }
+                        }
                         return cidrs;
                     };
                     Set<CIDR> cidrs = genCIDRsFromBindings (i.fBindings);

@@ -11,15 +11,6 @@ https://llimllib.github.io/bloomfilter-tutorial/
 
 ---------
 
-* Check CIDR list in Networks for ones that
-  subsume others. I get this is barharbor on
-  cellphone network:
-
-CIDR: 2600:1000:b070:f916::/64, 2600:1000:b040:7092::/64, 2600:1000:b040:7092:6857:513f:fd28:27f8/128, 2600:1000:b05f:7779::/64, 2600:1000:b05f:7779:6857:513f:fd28:27f8/128, 2600:1000:b067:ea7d::/64, 2600:1000:b067:ea7d:6857:513f:fd28:27f8/128, 2600:1000:b069:4b4::/64, 2600:1000:b069:4b4:6857:513f:fd28:27f8/128, 2600:1000:b070:f916:6857:513f:fd28:27f8/128, 172.20.10.0/28
-	the /128 s should be subsumed
-
-	
-
 * For all discovered (and currently live) devices run portscan
   and use discoverd ports (like 515 printer) to decide device type
 
