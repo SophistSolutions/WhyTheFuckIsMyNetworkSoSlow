@@ -26,13 +26,6 @@ CIDR: 2600:1000:b070:f916::/64, 2600:1000:b040:7092::/64, 2600:1000:b040:7092:68
 * ADD ICMP PING to port scan (first thing) - to see if there
 
 
-
-
->>> trying to use upgradelock but seems
-to work horribly - 
-
-Debug
-
 ---
 THEN go back to stuff stached (2019-08-12)
 to start looking for whe we get bogus machine discovered
