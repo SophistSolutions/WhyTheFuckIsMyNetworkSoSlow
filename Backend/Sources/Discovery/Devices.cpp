@@ -723,7 +723,7 @@ namespace {
                 Logger::Get ().Log (Logger::Priority::eError, L"Problem starting SSDP Listener - so that source of discovery will be unavailable: %s", Characters::ToString (current_exception ()).c_str ());
             }
             try {
-                static const Time::Duration kReSearchInterval_{30min}; // not sure what interval makes sense
+                static const Time::Duration kReSearchInterval_{10min}; // not sure what interval makes sense
                 fSearcher_ = make_unique<SSDP::Client::Search> (
                     [this] (const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); },
                     SSDP::Client::Search::kRootDevice, kReSearchInterval_);

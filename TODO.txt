@@ -18,7 +18,6 @@ https://llimllib.github.io/bloomfilter-tutorial/
 
 
 ---
-THEN go back to stuff stached (2019-08-12)
 to start looking for whe we get bogus machine discovered
 
 
