@@ -3,17 +3,6 @@ Top priority bug:
 >>> RESPOND TO EMAIL ABOUT DOCKER STUFF
 
 
->>> finish getting new Firewall setup code working, and migrate to Stroika
-(probably framework)
-
->>>>>>> TEST THE config system firewall code.
-	(mostly done but test case of two matching names - must hceck each on register and/or have lookup return multiple)
-
-
-
-
-
-
 	>	Cleanup BUILD code - and maybe do docker file builds - so I can easily build installers for windows, ununtu x86m and ubuntu raspberrypi
 
 -----
