@@ -9,6 +9,7 @@
 #include "Stroika/Foundation/Debug/BackTrace.h"
 #include "Stroika/Foundation/Debug/Fatal.h"
 #include "Stroika/Foundation/Execution/CommandLine.h"
+#include "Stroika/Foundation/Execution/Module.h"
 #include "Stroika/Foundation/Execution/SignalHandlers.h"
 #include "Stroika/Foundation/Execution/Thread.h"
 #include "Stroika/Foundation/Execution/Users.h"
@@ -17,6 +18,7 @@
 #include "Stroika/Foundation/Execution/Platform/Windows/Exception.h"
 #include "Stroika/Foundation/Execution/Platform/Windows/StructuredException.h"
 #endif
+#include "Stroika/Foundation/IO/Network/SystemFirewall.h"
 
 #include "AppVersion.h"
 
@@ -151,6 +153,45 @@ int main (int argc, const char* argv[])
         serviceIntegrationRep = make_shared<Main::RunTilIdleService> ();
     }
     serviceIntegrationRep = make_shared<Main::LoggerServiceWrapper> (serviceIntegrationRep);
+
+#if qPlatform_Windows
+    try {
+        static constexpr Activity kSettingUpFirewall_{L"setting up firewall"sv};
+        DeclareActivity           da{&kSettingUpFirewall_};
+        IO::Network::SystemFirewall::Manager::sThe.Register (
+            IO::Network::SystemFirewall::Rule{
+                L"WhyTheFuckIsMyNetworkSoSlow Recieve SSDP Notify UDP Access Allowed"sv,
+                L"Allow UDP/multicast (NOTIFY) traffic for WhyTheFuckIsMyNetworkSoSlow so SSDP listen works (search works without this)"sv,
+                L"WhyTheFuckIsMyNetworkSoSlow"sv,
+                Execution::GetEXEPath (),
+                NET_FW_PROFILE2_ALL,
+                NET_FW_RULE_DIR_IN,
+                NET_FW_IP_PROTOCOL_UDP,
+                L"1900"sv,
+                L"*"sv,
+                NET_FW_ACTION_ALLOW,
+                true});
+    }
+    catch (...) {
+        String exceptMsg   = Characters::ToString (current_exception ());
+        bool   warningOnly = false;
+        if (auto errCode = GetAssociatedErrorCode (current_exception ())) {
+            if (errCode == errc::permission_denied) {
+                warningOnly = true;
+                exceptMsg += L" Some device discovery features (SSDP Listen) may not function properly. Run as administrator once, or re-run the installer to fix this.";
+            }
+        }
+        if (warningOnly) {
+            Logger::Get ().Log (Logger::Priority::eWarning, L"%s", exceptMsg.c_str ());
+            cerr << "WARNING: " << exceptMsg.AsNarrowSDKString () << endl;
+        }
+        else {
+            Logger::Get ().Log (Logger::Priority::eError, L"%s", exceptMsg.c_str ());
+            cerr << "FAILED: " << exceptMsg.AsNarrowSDKString () << endl;
+            return EXIT_FAILURE;
+        }
+    }
+#endif
 
     /*
      *  Create service handler instance.
