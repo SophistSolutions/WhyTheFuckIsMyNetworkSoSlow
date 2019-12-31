@@ -154,6 +154,12 @@ int main (int argc, const char* argv[])
     }
     serviceIntegrationRep = make_shared<Main::LoggerServiceWrapper> (serviceIntegrationRep);
 
+    /*
+     *  Without this firewall rule, on windows, SSDP 'listen' discovery doesn't work. The messages
+     *  don't make it to this service. 
+     *
+     * Maybe best to do this with installer, not direct code here (see https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/13)
+     */
 #if qPlatform_Windows
     try {
         static constexpr Activity kSettingUpFirewall_{L"setting up firewall"sv};

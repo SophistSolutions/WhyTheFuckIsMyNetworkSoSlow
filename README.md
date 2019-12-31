@@ -7,3 +7,6 @@ diagnose their own personal networks, to indicate network issues and to provide 
 - To test:
   - curl  http://localhost/ OR
   - curl  http://localhost:8080/ OR
+
+- TODO items
+  See <https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues>
