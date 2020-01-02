@@ -1,0 +1,116 @@
+#
+# The purpose of this file is to configure Travis CI build system integration.
+#   @see https://travis-ci.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow
+#
+# \note We use 'Release' configurations because they builds a bit faster than the 'Debug' configurations, and
+#       we are limited with travis ci to a build that takes 50 minutes. We run out of time otherwise, and maybe
+#       even to some degree with these settings. May need todo more to make this work.
+#       Similarly, use --openssl use-system for speed of build.
+#
+# See https://travis-ci.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow for builds/status
+#
+language: cpp
+
+os: linux
+
+## I tried this directly and it didn't help, but try again as instructions on 
+## https://docs.travis-ci.com/user/speeding-up-the-build/#parallelizing-your-build-on-one-virtual-machine
+## suggested it.
+env:
+  global:
+    - MAKEFLAGS="-j 4"
+    
+branches:
+  only:
+    - v1-Dev
+    - v1-Release
+
+jobs:
+  allow_failures:
+      - env:
+        - MATRIX_EVAL="CC=clang CXX=clang++ MacOS=true" # https://stroika.atlassian.net/browse/STK-705 - retry mid december
+      - env:
+        - MATRIX_EVAL="Windows=true"
+
+  include:
+    # Windows Configuration (still not working as of 2020-01-01)
+    - os: windows
+      before_install:
+        - choco install activeperl
+        #- choco install visualstudio2019buildtools --package-parameters "--includeRecommended --includeOptional"
+        #- choco install visualstudio2019-workload-vctools
+        #- choco install visualstudio2019buildtools --package-parameters "--allWorkloads --includeRecommended --includeOptional --passive --locale en-US"
+        - choco install visualstudio2019community --package-parameters "--includeRecommended --includeOptional"
+      install:
+        - set PATH=C:\Perl64\;%PATH%
+        - perl configure Release-32 --arch x86 --apply-default-release-flags
+        - cat ConfigurationFiles/Release.xml
+      script:
+        - make all
+      env:
+        - MATRIX_EVAL="Windows=true"
+
+    # MacOS Configuration (still not working as of 2020-01-01 - due to https://stroika.atlassian.net/browse/STK-705 but should be soon)
+    - os: osx
+      osx_image: xcode11.3
+      addons:
+        homebrew:
+          packages:
+          - gnu-sed
+          - p7zip
+      install:
+        # -mmacosx-version-min=10.15 needed for https://stackoverflow.com/questions/56924853/why-xcode-11-beta-cant-use-c17s-filesystem-header
+        - ./configure Release --apply-default-release-flags --append-extra-compiler-and-linker-args -mmacosx-version-min=10.15
+        - cat ConfigurationFiles/Release.xml
+      script:
+        - clang++ --version
+        - make all ECHO_BUILD_LINES=1
+      env:
+        - MATRIX_EVAL="CC=clang CXX=clang++ MacOS=true"
+
+    # Linux (Ubuntu - 1804) Configuration - build all
+    - os: linux
+      dist: bionic
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+            - libtool-bin
+            - p7zip-full
+            - libcurl4-openssl-dev  # for use-system libcurl
+            - libnghttp2-dev        # ""
+            - librtmp-dev           # ""
+            - libpsl-dev            # ""
+            - libidn2-0-dev         # ""
+            - openssl
+      env:
+        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
+      install:
+          - ./configure Release --apply-default-release-flags --openssl use-system --libcurl use-system
+          - cat ConfigurationFiles/Release.xml
+      script:
+        - make all
+
+    # Linux (Ubuntu - 1804) Configuration - run-tests
+    - os: linux
+      dist: bionic
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - g++-8
+            - libtool-bin
+            - p7zip-full
+      env:
+        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
+      install:
+          - ./configure Release --apply-default-release-flags --openssl use-system
+          - cat ConfigurationFiles/Release.xml
+      script:
+        - make all
+
+before_install:
+    - eval "${MATRIX_EVAL}"
