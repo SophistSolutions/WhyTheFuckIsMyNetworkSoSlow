@@ -1,9 +1,7 @@
 Top priority bug:
 
->>> RESPOND TO EMAIL ABOUT DOCKER STUFF
-
-
-	>	Cleanup BUILD code - and maybe do docker file builds - so I can easily build installers for windows, ununtu x86m and ubuntu raspberrypi
+	>	Cleanup BUILD code - and maybe do docker file builds -
+	    so I can easily build installers for windows, ununtu x86m and ubuntu raspberrypi
 
 -----
 
