@@ -5,7 +5,7 @@ Top priority bug:
 
 -----
 
-> use thius to add stroika bloom filter class and
+> use this to add stroika bloom filter class and
 use to check what machines we tried/found missing
 
 https://llimllib.github.io/bloomfilter-tutorial/
@@ -17,16 +17,16 @@ https://llimllib.github.io/bloomfilter-tutorial/
 
 * ADD ICMP PING to port scan (first thing) - to see if there
 
-
 ---
 to start looking for whe we get bogus machine discovered
 
-
 ----
 
-Use
- ConnectionPool
+Use ConnectionPool
+	* will make change to connectionpool so it works with connection options;
+	* then create a single shared connection pool for the WTF app, and if people can use it, great, and its OK to use direct connections if you dont want pooled
 
+--
 
 * On GUI 
   When address is not selected sort by, add sort by address
@@ -39,7 +39,6 @@ Use
 
 
 * Sort by name must be case insensitive sort
-
 
 ---
 
@@ -56,25 +55,6 @@ This curl is an example pulled from the docs page http://raspberrypi:8080/
 
 
 ---
-
-
-* Dont expose ICON urls - but CACHE them.
-  This is important because the machine in question can go away (e.g. the samsung tv icon 
-  goes away when the TV is off)
-
-MOSTLY DONE EXCEOT
-    URI TransformURL2LocalStorage_ (const URI& url)
-    {
-        // if we are unable to cache the url (say because the url is bad or the device is currently down)
-        // just return the original
-        try {
-            GUID g = BackendApp::Common::BLOBMgr::sThe.AddBLOBFromURL (url);
-            // tricky to know right host to supply here - will need some sort of configuration for this (due to firewalls, NAT etc)
-            URI result{L"http://localhost:8080"};
-// MUST DO BETTER JOB OF GETTING THIS BASE URL
-
-
-
 
 * IMPLEMENT FILTER API, so can easily
   filter by active/selected network 
@@ -138,13 +118,6 @@ Similarly look for netbios:
 
 ---
 
-> Fix parsing of SSDP presentationURL, and see that it shows up properly in the web GUI for devices (all the
-  rest should be plumbed - just the stroika ssdp parse code is questionable/incomplete)
-	- Improve UPnP::DeSerialize () - so it includes device icons (url to icon)
-	 (or icon by blob)
-
-
-
 * Fix top level makefile so checks for if npm is installed (check-prerequesites)
 
 * Probably need TWO classes of IDs - CURRENT (dynamically generated with GUID-GEN), and PERSISTENT IDs
@@ -171,7 +144,6 @@ Similarly look for netbios:
 - On unix - see why 'wifi0' is displayed as "Wired Ethernet" type? SB wireless!
 
 
-	
 - consider if its useful to incporperate https://github.com/the-tcpdump-group/libpcap/blob/master/doc/README.Win32.md to 
   scan net traffic
 
@@ -368,16 +340,6 @@ WSAPI above - if we fetch soemting that we dont have issue 404 and only 405 if i
 
 
 
------
-CLEANUP OUTPUT
-
-  Compiling Backend/Sources/Service.cpp ...
-         Compiling Backend/Sources/WebServices/WebServer.cpp ...
-         Linking  $StroikaRoot/Builds/Release/WhyTheFuckIsMyNetworkSoSlow/WhyTheFuckIsMyNetworkSoSlow-Backend...
-
-(new stroikaroot .... stuff)
-
-
 ----
 
 	DEFAULT PORT = config file and command-line args override and config-file-location override???
@@ -433,7 +395,6 @@ Under docker:
 
 >>> HANDLE BETTER when multicast crap doesn't work. Seems common enough - just log it as an erorr and set some error state, but keep running
 !!!!
-
 
 ------------------------------------------
 
