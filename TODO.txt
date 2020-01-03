@@ -54,59 +54,8 @@ This curl is an example pulled from the docs page http://raspberrypi:8080/
 - Wasn't 100% obvious all of the provided curls were equivalent/did the same thing. Could be helpful to make it more clear that either json can be passed in as a querystring or that the other fields sortBy and sortCompareNetwork can be used instead. FYI - upon rereading the docs. I now see the 2 sections both labeled queryString. This is good but wasn't clear to me that they were 2 different ways of doing the same thing.
 - Would be nice to have the version of the api (as seen in the curl at the top of the page) take a comma separated list of sort fields going from Most important to least important
 
-----
-
-
-
-* see if I can repdorcuce where on windows get device with no info - I think it came from SSDP
-{
-        "attachedNetworks" : {
-        },
-        "id" : "94696dc9-9c68-719d-9dc9-966896646799",
-        "name" : "Unknown"
-    }
-issue is
-        void AddIPAddresses_ (const Iterable<InternetAddress>& addrs, const optional<String>& hwAddr = nullopt)
-        {
-            // merge the addrs into each matching network interface
-            for (GUID nw : NetAndNetInterfaceMapper_::sThe.LookupNetworksGUIDs (addrs)) {
-                NetworkAttachmentInfo nwAttachmentInfo = fAttachedNetworks.LookupValue (nw);
-                nwAttachmentInfo.networkAddresses += addrs;
-                if (hwAddr) {
-                    nwAttachmentInfo.hardwareAddresses += *hwAddr;
-                }
-                fAttachedNetworks.Add (nw, nwAttachmentInfo);
-            }
-        }
-
-assumes we already know the network
-
-
-
-But we can get some addresses for no known netwrok like 169.... addr
-https://packetlife.net/blog/2008/sep/24/169-254-0-0-addresses-explained/
-
-
-
-
-
 
 ---
-
-* Redo HTTP client layer to use cached
-  connection pool.
-  Have pool (of fixed size). And all compoents doing
-  fetches share this. WAIT on getting connection(?) or maybe 
-  have timeout so if cannot get in certain amount of time, it gets created anew.
-
-  this really goes in stroika.
-
-  But also restructure my code so it shares a common
-  cache object. Eventually probably use external cache.
-  But we also need for fetching xml from each device.
-
-  STUFF TO FETCH XML DEVICE INFO NOT USING CACHE
-  
 
 
 * Dont expose ICON urls - but CACHE them.
