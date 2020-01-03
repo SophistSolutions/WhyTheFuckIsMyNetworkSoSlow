@@ -935,6 +935,11 @@ namespace {
                                 tmp.AddIPAddresses_ (i.fInternetAddress, i.fHardwareAddress); // merge in additions
                                 return tmp;
                             }
+                            else {
+                                // Generate GUID - based on ipaddrs
+                                tmp.fGUID = LookupPersistentDeviceID_ (tmp);
+                                return tmp;
+                            }
                         }();
 
                         di.PatchDerivedFields ();
