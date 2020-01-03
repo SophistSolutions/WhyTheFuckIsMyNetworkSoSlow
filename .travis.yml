@@ -62,8 +62,9 @@ jobs:
       install:
         - git submodule update --init --recursive
         # -mmacosx-version-min=10.15 needed for https://stackoverflow.com/questions/56924853/why-xcode-11-beta-cant-use-c17s-filesystem-header
-        - cd ThirdPartyComponents/Stroika/StroikaRoot && ./ScriptsLib/MakeBuildRoot ../../../
-        - cd ThirdPartyComponents/Stroika/StroikaRoot && ./configure Release --apply-default-release-flags --append-extra-compiler-and-linker-args -mmacosx-version-min=10.15
+        - cd ThirdPartyComponents/Stroika/StroikaRoot
+        - ./ScriptsLib/MakeBuildRoot ../../../
+        - ./configure Release --apply-default-release-flags --append-extra-compiler-and-linker-args -mmacosx-version-min=10.15
         - cat ConfigurationFiles/Release.xml
       script:
         - clang++ --version
@@ -86,8 +87,9 @@ jobs:
         - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
       install:
           - git submodule update --init --recursive
-          - cd ThirdPartyComponents/Stroika/StroikaRoot && ./ScriptsLib/MakeBuildRoot ../../../
-          - cd ThirdPartyComponents/Stroika/StroikaRoot && ./configure Release --apply-default-release-flags --openssl use-system
+          - cd ThirdPartyComponents/Stroika/StroikaRoot 
+          - ./ScriptsLib/MakeBuildRoot ../../../
+          - ./configure Release --apply-default-release-flags --openssl use-system
           - cat ConfigurationFiles/Release.xml
       script:
         - make all
