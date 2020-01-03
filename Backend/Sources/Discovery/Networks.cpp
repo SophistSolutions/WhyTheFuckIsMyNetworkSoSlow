@@ -74,7 +74,7 @@ namespace {
             // @todo - when one fails, we should try the other first next time
             for (auto&& url : kSources_) {
                 try {
-                    // this goes throug the gateway, not necesarily this network, if we had multiple networks with gateways!
+                    // this goes through the gateway, not necesarily this network, if we had multiple networks with gateways!
                     auto&& connection = IO::Network::Transfer::Connection::New ();
                     return IO::Network::InternetAddress{connection.GET (url).GetDataTextInputStream ().ReadAll ().Trim ()};
                 }
