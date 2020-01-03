@@ -20,7 +20,7 @@
       </ul>
     </div>
 
-    <div>@todo add link to where to post feedback (JIRA? or githib issues)</div>
+    <div>Report issues at <a href="https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues">github issues</a></div>
   </div>
 </template>
 
