@@ -42,6 +42,7 @@ jobs:
         #- choco install visualstudio2019buildtools --package-parameters "--allWorkloads --includeRecommended --includeOptional --passive --locale en-US"
         - choco install visualstudio2019community --package-parameters "--includeRecommended --includeOptional"
       install:
+        - git submodule update --init --recursive
         - set PATH=C:\Perl64\;%PATH%
         - perl configure Release-32 --arch x86 --apply-default-release-flags
         - cat ConfigurationFiles/Release.xml
@@ -59,6 +60,7 @@ jobs:
           - gnu-sed
           - p7zip
       install:
+        - git submodule update --init --recursive
         # -mmacosx-version-min=10.15 needed for https://stackoverflow.com/questions/56924853/why-xcode-11-beta-cant-use-c17s-filesystem-header
         - cd ThirdPartyComponents/Stroika/StroikaRoot && ./ScriptsLib/MakeBuildRoot ../../../
         - cd ThirdPartyComponents/Stroika/StroikaRoot && ./configure Release --apply-default-release-flags --append-extra-compiler-and-linker-args -mmacosx-version-min=10.15
@@ -83,6 +85,7 @@ jobs:
       env:
         - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
       install:
+          - git submodule update --init --recursive
           - cd ThirdPartyComponents/Stroika/StroikaRoot && ./ScriptsLib/MakeBuildRoot ../../../
           - cd ThirdPartyComponents/Stroika/StroikaRoot && ./configure Release --apply-default-release-flags --openssl use-system
           - cat ConfigurationFiles/Release.xml
