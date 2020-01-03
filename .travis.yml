@@ -60,7 +60,8 @@ jobs:
           - p7zip
       install:
         # -mmacosx-version-min=10.15 needed for https://stackoverflow.com/questions/56924853/why-xcode-11-beta-cant-use-c17s-filesystem-header
-        - ./configure Release --apply-default-release-flags --append-extra-compiler-and-linker-args -mmacosx-version-min=10.15
+        - cd ThirdPartyComponents/Stroika/StroikaRoot && ./ScriptsLib/MakeBuildRoot ../../../
+        - cd ThirdPartyComponents/Stroika/StroikaRoot && ./configure Release --apply-default-release-flags --append-extra-compiler-and-linker-args -mmacosx-version-min=10.15
         - cat ConfigurationFiles/Release.xml
       script:
         - clang++ --version
@@ -79,35 +80,11 @@ jobs:
             - g++-8
             - libtool-bin
             - p7zip-full
-            - libcurl4-openssl-dev  # for use-system libcurl
-            - libnghttp2-dev        # ""
-            - librtmp-dev           # ""
-            - libpsl-dev            # ""
-            - libidn2-0-dev         # ""
-            - openssl
       env:
         - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
       install:
-          - ./configure Release --apply-default-release-flags --openssl use-system --libcurl use-system
-          - cat ConfigurationFiles/Release.xml
-      script:
-        - make all
-
-    # Linux (Ubuntu - 1804) Configuration - run-tests
-    - os: linux
-      dist: bionic
-      addons:
-        apt:
-          sources:
-            - ubuntu-toolchain-r-test
-          packages:
-            - g++-8
-            - libtool-bin
-            - p7zip-full
-      env:
-        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
-      install:
-          - ./configure Release --apply-default-release-flags --openssl use-system
+          - cd ThirdPartyComponents/Stroika/StroikaRoot && ./ScriptsLib/MakeBuildRoot ../../../
+          - cd ThirdPartyComponents/Stroika/StroikaRoot && ./configure Release --apply-default-release-flags --openssl use-system
           - cat ConfigurationFiles/Release.xml
       script:
         - make all
