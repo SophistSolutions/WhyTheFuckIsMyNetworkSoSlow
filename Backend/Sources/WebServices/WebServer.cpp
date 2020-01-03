@@ -137,22 +137,22 @@ public:
                   [=] (Message* m) {
                       constexpr bool                              kDefault_FilterRunningOnly_{true};
                       Mapping<String, DataExchange::VariantValue> args              = PickoutParamValues (m->PeekRequest ());
-                      bool                                        filterRunningOnly = args.LookupValue (L"filter-only-running", DataExchange::VariantValue{kDefault_FilterRunningOnly_}).As<bool> ();
+                      bool                                        filterRunningOnly = args.LookupValue (L"filter-only-running"sv, DataExchange::VariantValue{kDefault_FilterRunningOnly_}).As<bool> ();
                       optional<DeviceSortParamters>               sort;
-                      if (auto o = args.Lookup (L"sort")) {
+                      if (auto o = args.Lookup (L"sort"sv)) {
                           ClientErrorException::TreatExceptionsAsClientError ([&] () {
                               sort = DeviceSortParamters::kMapper.ToObject<DeviceSortParamters> (DataExchange::Variant::JSON::Reader{}.Read (o->As<String> ()));
                           });
                       }
-                      if (auto o = args.Lookup (L"sortBy")) {
+                      if (auto o = args.Lookup (L"sortBy"sv)) {
                           ClientErrorException::TreatExceptionsAsClientError ([&] () {
                               sort = sort.value_or (DeviceSortParamters{});
                               sort->fSearchTerms += DeviceSortParamters::SearchTerm{
                                   Configuration::DefaultNames<DeviceSortParamters::SearchTerm::By>{}.GetValue (o->As<String> ().c_str (), ClientErrorException{
-                                                                                                                                              L"Invalid argument to query string sortBy"})};
+                                                                                                                                              L"Invalid argument to query string sortBy"sv})};
                           });
                       }
-                      if (args.LookupValue (L"recurse", false).As<bool> ()) {
+                      if (args.LookupValue (L"recurse"sv, false).As<bool> ()) {
                           WriteResponse (m->PeekResponse (), kDevices_, Device::kMapper.FromObject (fWSAPI_->GetDevices_Recurse (sort)));
                       }
                       else {
@@ -173,7 +173,7 @@ public:
                       constexpr bool                              kDefault_FilterRunningOnly_{true};
                       Mapping<String, DataExchange::VariantValue> args              = PickoutParamValues (m->PeekRequest ());
                       bool                                        filterRunningOnly = args.LookupValue (L"filter-only-running"sv, DataExchange::VariantValue{kDefault_FilterRunningOnly_}).As<bool> ();
-                      if (args.LookupValue (L"recurse", false).As<bool> ()) {
+                      if (args.LookupValue (L"recurse"sv, false).As<bool> ()) {
                           WriteResponse (m->PeekResponse (), kNetworkInterfaces_, NetworkInterface::kMapper.FromObject (fWSAPI_->GetNetworkInterfaces_Recurse (filterRunningOnly)));
                       }
                       else {
@@ -240,7 +240,7 @@ public:
                       ExpectedMethod (m->GetRequestReference (), kOperations_);
                       optional<unsigned int>                      samples;
                       Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
-                      if (auto rdr = args.Lookup (L"samples")) {
+                      if (auto rdr = args.Lookup (L"samples"sv)) {
                           samples = rdr->As<unsigned int> ();
                       }
                       WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_DNS_CalculateNegativeLookupTime (samples)));
@@ -251,7 +251,7 @@ public:
                       ExpectedMethod (m->GetRequestReference (), kOperations_);
                       String                                      name;
                       Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
-                      if (auto rdr = args.Lookup (L"name")) {
+                      if (auto rdr = args.Lookup (L"name"sv)) {
                           name = rdr->As<String> ();
                       }
                       else {
@@ -269,7 +269,7 @@ public:
           }}
         , fWSConnectionMgr_{SocketAddresses (InternetAddresses_Any (), 8080), fWSRouter_, ConnectionManager::Options{kMaxConcurrentConnections_, Socket::BindFlags{true}, kServerString_}} // listen and dispatch while this object exists
         , fGUIWebRouter_{Sequence<Route>{
-              Route{RegularExpression::kAny, FileSystemRouter{Execution::GetEXEDir () + L"html", {}, Sequence<String>{L"index.html"}}},
+              Route{RegularExpression::kAny, FileSystemRouter{Execution::GetEXEDir () + L"html", {}, Sequence<String>{L"index.html"sv}}},
           }}
         , fGUIWebConnectionMgr_{SocketAddresses (InternetAddresses_Any (), 80), fGUIWebRouter_, ConnectionManager::Options{kMaxGUIWebServerConcurrentConnections_, Socket::BindFlags{true}, kServerString_}}
     {
