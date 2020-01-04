@@ -80,10 +80,13 @@ namespace {
         // just return the original
         try {
             GUID g = BackendApp::Common::BLOBMgr::sThe.AddBLOBFromURL (url);
-            // tricky to know right host to supply here - will need some sort of configuration for this (due to firewalls, NAT etc)
-            URI result{L"http://localhost:8080"};
-            result.SetPath (L"/blob/" + g.ToString ());
-            return result;
+            // tricky to know right host to supply here - will need some sort of configuration for
+            // this (due to firewalls, NAT etc).
+            // Use relative URL for now, as that should work for most cases
+            return URI{
+                nullopt,
+                nullopt,
+                L"/blob/" + g.ToString ()};
         }
         catch (...) {
             DbgTrace (L"Failed to cache url (%s) - so returning original: %s", Characters::ToString (url).c_str (), Characters::ToString (current_exception ()).c_str ());
