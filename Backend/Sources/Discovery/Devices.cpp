@@ -209,7 +209,7 @@ namespace {
         Set<GUID> LookupNetworksGUIDs (const Iterable<InternetAddress>& ia) const
         {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
-            Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"{}::NetAndNetInterfaceMapper_::LookupNetworksGUIDs (%s)", Characters::ToString (ia).c_str ())};
+            Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"{}::NetAndNetInterfaceMapper_::LookupNetworksGUIDs", L"ia=%s", Characters::ToString (ia).c_str ())};
 #endif
             Set<GUID> results;
             for (Discovery::Network&& nw : Discovery::NetworksMgr::sThe.CollectActiveNetworks ()) {
@@ -791,6 +791,9 @@ namespace {
                 catch (...) {
                     DbgTrace (L"Failed to fetch description: %s", Characters::ToString (current_exception ()).c_str ());
                 }
+            }
+            else {
+                DbgTrace (L"no location, so no fetched device description");
             }
 
             WeakAssert (not locAddrs.empty ()); // CAN happen if dns name, and we cannot do dns lookup, but unsure we should include the device.
