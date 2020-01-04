@@ -769,11 +769,11 @@ namespace {
             optional<URI>    deviceIconURL;
 
             unsigned int retriedLockCount = 0;
-            try {
-                using namespace IO::Network::Transfer;
-                Connection::Ptr c = Connection::New ();
-                Response        r = c.GET (d.fLocation);
-                if (r.GetSucceeded ()) {
+            if (d.fLocation) {
+                try {
+                    using namespace IO::Network::Transfer;
+                    Connection::Ptr                     c          = Connection::New ();
+                    Response                            r          = c.GET (d.fLocation);
                     Frameworks::UPnP::DeviceDescription deviceInfo = DeSerialize (r.GetData ());
                     deviceFriendlyName                             = deviceInfo.fFriendlyName;
                     deviceType                                     = deviceInfo.fDeviceType;
@@ -788,9 +788,9 @@ namespace {
                     }
                     DbgTrace (L"Found device description = %s", Characters::ToString (deviceInfo).c_str ());
                 }
-            }
-            catch (...) {
-                DbgTrace (L"Failed to fetch description: %s", Characters::ToString (current_exception ()).c_str ());
+                catch (...) {
+                    DbgTrace (L"Failed to fetch description: %s", Characters::ToString (current_exception ()).c_str ());
+                }
             }
 
             WeakAssert (not locAddrs.empty ()); // CAN happen if dns name, and we cannot do dns lookup, but unsure we should include the device.
