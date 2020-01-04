@@ -898,13 +898,22 @@ namespace {
     private:
         static void DiscoveryChecker_ ()
         {
+            Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"{}::MyNeighborDiscoverer_::DiscoveryChecker_")};
             static constexpr Activity kDiscovering_NetNeighbors_{L"discovering this network neighbors"sv};
             using Neighbor = NeighborsMonitor::Neighbor;
             NeighborsMonitor monitor{};
             while (true) {
                 try {
                     DeclareActivity da{&kDiscovering_NetNeighbors_};
+                    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"monitor.GetNeighbors ()")};
                     for (Neighbor i : monitor.GetNeighbors ()) {
+#if USE_NOISY_TRACE_IN_THIS_MODULE_
+#if kStroika_Version_FullVersion >= Stroika_Make_FULL_VERSION(2, 1, kStroika_Version_Stage_Alpha, 4, 0)
+                        DbgTrace (L"i=%s", Characters::ToString (i).c_str ());
+#else
+                        DbgTrace (L"i.fInternetAddress=%s, i.fHardwareAddress=%s", Characters::ToString (fInternetAddress).c_str (), Characters::ToString (fHardwareAddress).c_str ());
+#endif
+#endif
                         // soon store/pay attention to macaddr as better indicator of unique device id than ip addr
 
                         // ignore multicast addresses as they are not real devices(???always???)
