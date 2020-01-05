@@ -144,7 +144,7 @@ String NetworkAttachmentInfo::ToString () const
     StringBuilder sb;
     sb += L"{";
     sb += L"hardwareAddress: " + Characters::ToString (hardwareAddresses) + L", ";
-    sb += L"networkAddresses: " + Characters::ToString (networkAddresses) + L", ";
+    sb += L"networkAddresses: " + Characters::ToString (networkAddresses);
     sb += L"}";
     return sb.str ();
 }
@@ -189,7 +189,7 @@ String Discovery::Device::ToString () const
     sb += L"presentationURL: " + Characters::ToString (fPresentationURL) + L", ";
     sb += L"operatingSystem: " + Characters::ToString (fOperatingSystem) + L", ";
 #if qDebug
-    sb += L"debugProps: " + Characters::ToString (fDebugProps) + L", ";
+    sb += L"debugProps: " + Characters::ToString (fDebugProps);
 #endif
     sb += L"}";
     return sb.str ();
@@ -333,7 +333,7 @@ namespace {
                 sb += L"Presentation-URL: " + Characters::ToString (fPresentationURL) + L", ";
                 sb += L"Last-SSDP-Message-Recieved-At: " + Characters::ToString (fLastSSDPMessageRecievedAt) + L", ";
 #if qDebug
-                sb += L"Last-Advertisement: " + Characters::ToString (fLastAdvertisement) + L", ";
+                sb += L"Last-Advertisement: " + Characters::ToString (fLastAdvertisement);
 #endif
                 sb += L"}";
                 return sb.str ();
