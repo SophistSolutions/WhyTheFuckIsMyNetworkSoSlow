@@ -227,7 +227,7 @@ namespace {
         Set<GUID> LookupNetworksGUIDs (const InternetAddress& ia) const
         {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
-            Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"{}::NetAndNetInterfaceMapper_::LookupNetworksGUIDs (%s)", Characters::ToString (ia).c_str ())};
+            Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"{}::NetAndNetInterfaceMapper_::LookupNetworksGUIDs", L"ia=%s", Characters::ToString (ia).c_str ())};
 #endif
             Set<GUID> results;
             for (Discovery::Network&& nw : Discovery::NetworksMgr::sThe.CollectActiveNetworks ()) {
@@ -908,11 +908,7 @@ namespace {
                     Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"monitor.GetNeighbors ()")};
                     for (Neighbor i : monitor.GetNeighbors ()) {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
-#if kStroika_Version_FullVersion >= Stroika_Make_FULL_VERSION(2, 1, kStroika_Version_Stage_Alpha, 4, 0)
                         DbgTrace (L"i=%s", Characters::ToString (i).c_str ());
-#else
-                        DbgTrace (L"i.fInternetAddress=%s, i.fHardwareAddress=%s", Characters::ToString (i.fInternetAddress).c_str (), Characters::ToString (i.fHardwareAddress).c_str ());
-#endif
 #endif
                         // soon store/pay attention to macaddr as better indicator of unique device id than ip addr
 
