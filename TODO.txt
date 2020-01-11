@@ -1,5 +1,12 @@
 Top priority bug:
 
+
+>>> Windows build fairly broken on virtualbox test vm
+	 (seems to only report a single device - but keeps changing which  - so array messed up - very weird)
+
+
+-----
+
 > Next main task is new UI I have sketched out
 
 -----
