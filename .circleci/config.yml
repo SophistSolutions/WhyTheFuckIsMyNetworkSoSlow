@@ -10,7 +10,7 @@ commands:
     steps:
     - checkout
     - run:
-        name: Update Submdoules
+        name: Update SubModules
         command: git submodule update --init --recursive
     - run:
         name: Configure
@@ -22,7 +22,7 @@ commands:
         name: Build
         command: make all -j2
     - store_artifacts:
-       path: ~/build-4-linux/Builds/<< parameters.configName >>/WhyTheFuckIsMyNetworkSoSlow
+       path: ~/build-4-linux/Builds/<< parameters.configName >>/WhyTheFuckIsMyNetworkSoSlow/*.deb
        destination: WhyTheFuckIsMyNetworkSoSlow
 
 jobs:
@@ -65,7 +65,7 @@ jobs:
     steps:
     - checkout
     - run:
-        name: Update Submdoules
+        name: Update SubModules
         command: git submodule update --init --recursive
     - run:
         name: Configure
