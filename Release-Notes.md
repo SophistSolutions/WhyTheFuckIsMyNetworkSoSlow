@@ -6,6 +6,43 @@ High level summary of changes in WhyTheFuckIsMyNetworkSoSlow.
 
 ## History
 
+---
+
+### 1.0d7 {2020-01-11}
+
+- https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/compare/1.0d6...1.0d7
+- Use Stroika [v2.1a4](https://github.com/SophistSolutions/Stroika/tree/v2.1a4) ([Stroika Release Notes](https://github.com/SophistSolutions/Stroika/blob/v2.1a4/Release-Notes.md))
+  - many changes (e.g. improved CIDR, SSDP, locking, new SystemFirewall setup)
+
+- CI systems
+  - CircleCI - builds there automatically (Linux only so far), and produces installers which can be distributed (x64, and raspberrypi .deb files)
+  - TravisCI
+
+- Device discovery
+  - experiment with different locking strategies (I think much improved)
+  - improved ip address filtering
+  - CIDR fixes
+  - SSDP improvements (much from stroika)
+
+- Network discovery
+  - genCIDRsFromBindings() now supports removing subsumed networks (cuz I saw that in Barharbor hotel)
+
+- Device Introspection
+  - first rough draft of port scanner
+
+- UI
+  - basic sorting support
+  - visual transitions as lists change
+
+- Build System
+  - For windows, react to Stroika configuration changes, and use makefile based projects
+  - cleaned up makefile for html - so builds out of IntermediateFiles (so can build multiple configs without interference)
+  - added windows configuration Release-Logging-U-64
+
+- new BLOBMgr - and WSAPI for getting BLOBs, and storing them (for icons)
+
+---
+
 ### 1.0d6 {2019-06-19}
 
 - https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/compare/1.0d5...1.0d6

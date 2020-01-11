@@ -1,13 +1,6 @@
 Top priority bug:
 
-
----
->> icons in main page not showing upon windows
-
----
-
-	>	Cleanup BUILD code - and maybe do docker file builds -
-	    so I can easily build installers for windows, ununtu x86m and ubuntu raspberrypi
+> Next main task is new UI I have sketched out
 
 -----
 
