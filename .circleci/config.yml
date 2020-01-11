@@ -20,9 +20,11 @@ commands:
           ./configure << parameters.configName >> << parameters.configureArgs >>
     - run:
         name: Build
-        command: make all -j2
+        command: |
+          make all -j2
+          (cd ~/build-4-linux/Builds/<< parameters.configName >>/WhyTheFuckIsMyNetworkSoSlow/ && mkdir Artifacts && cp *.deb Artifacts/)
     - store_artifacts:
-       path: ~/build-4-linux/Builds/<< parameters.configName >>/WhyTheFuckIsMyNetworkSoSlow/*.deb
+       path: ~/build-4-linux/Builds/<< parameters.configName >>/WhyTheFuckIsMyNetworkSoSlow/Artifacts
        destination: WhyTheFuckIsMyNetworkSoSlow
 
 jobs:
@@ -34,8 +36,8 @@ jobs:
     
     steps:
     - build-4-unix:
-          configName: Release
-          configureArgs: --config-tag Unix --apply-default-release-flags
+        configName: Release
+        configureArgs: --config-tag Unix --apply-default-release-flags
 
   build-raspberrypi:
     docker:
