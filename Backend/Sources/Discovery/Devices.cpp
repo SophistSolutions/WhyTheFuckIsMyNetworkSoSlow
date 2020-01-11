@@ -905,7 +905,7 @@ namespace {
             while (true) {
                 try {
                     DeclareActivity da{&kDiscovering_NetNeighbors_};
-                    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"monitor.GetNeighbors ()")};
+                    Debug::TraceContextBumper ctx1{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"monitor.GetNeighbors ()")};
                     for (Neighbor i : monitor.GetNeighbors ()) {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
                         DbgTrace (L"i=%s", Characters::ToString (i).c_str ());
