@@ -10,8 +10,13 @@ help:
 	@echo "and first thing when you run docker image, cat ReadMe.md"
 
 docker-images:
+ifeq ($(shell uname),Linux)
 	docker build -f Debian-Small/Dockerfile -t sophistsolutionsinc/whythefuckismynetworksoslow-debian-small .
 	docker build -f Debian-CrossCompile-raspberrypi/Dockerfile -t sophistsolutionsinc/whythefuckismynetworksoslow-debian-crosscompile-raspberrypi .
+endif
+ifeq (Windows,$(findstring Windows,$(OS)))
+	docker build -f Windows-VS2k19/Dockerfile -t sophistsolutionsinc/whythefuckismynetworksoslow-windows .
+endif
 
 push-images:
 	#if you get errors doing this (permission denied) make sure you ran docker login
