@@ -2,7 +2,7 @@
 
 ## Git clone
 
-git clone git@github.com:SophistSolutions/WhyTheFuckIsMyNetworkSoSlow.git
+git clone https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow.git
 
 ## Build default configurations
 

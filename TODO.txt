@@ -1,6 +1,13 @@
 Top priority bug:
 
 
+
+>	with next stroika release, can get proper interfface id for each definve found iwth ARP-getneigbobors ,
+   so use that on the discovered devie (and record this at least in debug info so we know device found by aprping
+   ) and also restrict what network intefaces we've found the device on.
+
+
+----
 >>> Windows build fairly broken on virtualbox test vm
 	 (seems to only report a single device - but keeps changing which  - so array messed up - very weird)
 
