@@ -237,6 +237,16 @@ const ObjectVariantMapper NetworkInterface::kMapper = [] () {
     mapper.AddCommonType<Sequence<InternetAddress>> ();
     mapper.AddCommonType<optional<Sequence<InternetAddress>>> ();
 
+    using IO::Network::CIDR;
+#if qCompilerAndStdLib_lambda_expand_in_namespace_Buggy
+    mapper.Add (klambda_expand_in_namespace_Buggy_workaround_Mapper_);
+#else
+    mapper.Add<CIDR> ([] ([[maybe_unused]] const ObjectVariantMapper& mapper, const CIDR* obj) -> VariantValue { return obj->ToString (); },
+                      [] ([[maybe_unused]] const ObjectVariantMapper& mapper, const VariantValue& d, CIDR* intoObj) -> void { *intoObj = CIDR{d.As<String> ()}; });
+#endif
+    mapper.AddCommonType<Set<CIDR>> ();
+    mapper.AddCommonType<Collection<CIDR>> ();
+
     mapper.AddCommonType<IO::Network::Interface::WirelessInfo::State> ();
     mapper.AddCommonType<optional<IO::Network::Interface::WirelessInfo::State>> ();
     mapper.AddCommonType<IO::Network::Interface::WirelessInfo::ConnectionMode> ();
@@ -263,11 +273,6 @@ const ObjectVariantMapper NetworkInterface::kMapper = [] () {
         {L"cipher", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface::WirelessInfo, fCipher), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
     mapper.AddCommonType<optional<NetworkInterface::WirelessInfo>> ();
-    mapper.AddClass<NetworkInterface::Binding> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-        {L"internetAddress", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface::Binding, fInternetAddress)},
-        {L"onLinkPrefixLength", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface::Binding, fOnLinkPrefixLength), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-    });
-    mapper.AddCommonType<Collection<NetworkInterface::Binding>> ();
     mapper.AddCommonType<NetworkInterface::Status> ();
     mapper.AddCommonType<Set<NetworkInterface::Status>> ();
     mapper.AddCommonType<optional<Set<NetworkInterface::Status>>> ();

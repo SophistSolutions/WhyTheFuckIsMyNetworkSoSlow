@@ -161,11 +161,11 @@ namespace {
             if (not i.fBindings.empty ()) {
                 Network nw;
                 {
-                    auto genCIDRsFromBindings = [] (const Iterable<Interface::Binding>& bindings) {
+                    auto genCIDRsFromBindings = [] (const Iterable<CIDR>& bindings) {
                         Set<CIDR> cidrs;
-                        for (Interface::Binding nib : bindings) {
+                        for (CIDR nib : bindings) {
                             if (not kIncludeMulticastAddressesInDiscovery) {
-                                if (nib.fInternetAddress.IsMulticastAddress ()) {
+                                if (nib.GetInternetAddress ().IsMulticastAddress ()) {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
                                     DbgTrace (L"CollectActiveNetworks_: interface=%s; ia=%s binding ignored because IsMulticastAddress", Characters::ToString (i.fGUID).c_str (), Characters::ToString (nib.fInternetAddress).c_str ());
 #endif
@@ -173,16 +173,16 @@ namespace {
                                 }
                             }
                             if (not kIncludeLinkLocalAddressesInDiscovery) {
-                                if (nib.fInternetAddress.IsLinkLocalAddress ()) {
+                                if (nib.GetInternetAddress ().IsLinkLocalAddress ()) {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
                                     DbgTrace (L"CollectActiveNetworks_: interface=%s; ia=%s binding ignored because IsLinkLocalAddress", Characters::ToString (i.fGUID).c_str (), Characters::ToString (nib.fInternetAddress).c_str ());
 #endif
                                     continue; // skip link-local addresses, they are only used for special purposes like discovery, and aren't part of the network
                                 }
                             }
-                            if (nib.fInternetAddress.GetAddressSize ().has_value ()) {
+                            if (nib.GetInternetAddress ().GetAddressSize ().has_value ()) {
                                 // Guess CIDR prefix is max (so one address - bad guess) - if we cannot read from adapter
-                                cidrs += CIDR{nib.fInternetAddress, nib.fOnLinkPrefixLength.value_or (*nib.fInternetAddress.GetAddressSize () * 8)};
+                                cidrs += CIDR{nib.GetInternetAddress (), nib.GetNumberOfSignificantBits ()};
                             }
                         }
                         // You CAN generate two CIDRs, one which subsumes the other. If so, lose any subsumed CIDRs from the list

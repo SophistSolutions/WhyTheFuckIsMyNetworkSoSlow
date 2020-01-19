@@ -680,10 +680,11 @@ namespace {
             newDev.fForcedName = Configuration::GetSystemConfiguration_ComputerNames ().fHostname;
             newDev.fTypes.Add (DeviceType::ePC); //tmphack @todo fix
             newDev.fThisDevice = true;
-            for (Interface i : IO::Network::GetInterfaces ()) {
+            SystemInterfacesMgr interfacesMgr;
+            for (Interface i : interfacesMgr.GetAll ()) {
                 if (i.fType != Interface::Type::eLoopback and i.fStatus and i.fStatus->Contains (Interface::Status::eRunning)) {
-                    i.fBindings.Apply ([&] (const Interface::Binding& ia) {
-                        newDev.AddIPAddresses_ (ia.fInternetAddress, i.fHardwareAddress);
+                    i.fBindings.Apply ([&] (const CIDR& ia) {
+                        newDev.AddIPAddresses_ (ia.GetInternetAddress (), i.fHardwareAddress);
                     });
                 }
             }
@@ -904,7 +905,7 @@ namespace {
             NeighborsMonitor monitor{};
             while (true) {
                 try {
-                    DeclareActivity da{&kDiscovering_NetNeighbors_};
+                    DeclareActivity           da{&kDiscovering_NetNeighbors_};
                     Debug::TraceContextBumper ctx1{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"monitor.GetNeighbors ()")};
                     for (Neighbor i : monitor.GetNeighbors ()) {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
