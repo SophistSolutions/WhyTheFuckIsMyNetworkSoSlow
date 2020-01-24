@@ -71,8 +71,9 @@ namespace {
         Debug::TraceContextBumper ctx{L"CollectAllNetworkInterfaces_"};
 #endif
         Require (sActive_);
+        SystemInterfacesMgr      sysNetInterfaces;
         vector<NetworkInterface> results;
-        for (Interface i : IO::Network::GetInterfaces ()) {
+        for (Interface i : sysNetInterfaces.GetAll ()) {
             NetworkInterface ni{i};
             /*
              *  For now, always hash the InternalInterfaceID into a new ID. But later will want to somehow match
