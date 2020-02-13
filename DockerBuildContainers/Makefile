@@ -15,10 +15,18 @@ ifeq ($(shell uname),Linux)
 	docker build -f Debian-CrossCompile-raspberrypi/Dockerfile -t sophistsolutionsinc/whythefuckismynetworksoslow-debian-crosscompile-raspberrypi .
 endif
 ifeq (Windows,$(findstring Windows,$(OS)))
-	docker build -f Windows-VS2k19/Dockerfile -t sophistsolutionsinc/whythefuckismynetworksoslow-windows .
+	docker build -f Windows-Cygwin-VS2k19/Dockerfile -t sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19 -m 2G .
+	docker build -f Windows-MinGW-VS2k19/Dockerfile -t sophistsolutionsinc/whythefuckismynetworksoslow-windows-mingw-vs2k19 -m 2G .
 endif
 
 push-images:
 	#if you get errors doing this (permission denied) make sure you ran docker login
+ifeq ($(shell uname),Linux)
 	docker push sophistsolutionsinc/whythefuckismynetworksoslow-debian-small
 	docker push sophistsolutionsinc/whythefuckismynetworksoslow-debian-crosscompile-raspberrypi
+endif
+ifeq (Windows,$(findstring Windows,$(OS)))
+	docker push sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19
+	docker push sophistsolutionsinc/whythefuckismynetworksoslow-windows-mingw-vs2k19
+endif
+

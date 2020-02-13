@@ -1,6 +1,38 @@
 Top priority bug:
 
+curl -v http://hercules:8080/networks --output -
+proiduces:
 
+	HTTP/1.1 403 Forbidden
+	< Access-Control-Allow-Origin: *
+	< Connection: Keep-Alive
+	< Content-Length: 113
+	< Content-Type: text/plain; charset=UTF-8
+	< Server: Why-The-Fuck-Is-My-Network-So-Slow/1.0
+	<
+	HTTP exception: status 403 (Forbidden) while sending 'GET' request to 'http://ip-api.com/json/108.49.240.210'.
+	* Connection #0 to host hercules left intact
+In some ways cool 403 from web request translated into 403 on our web server repsonse (double check true).
+But this error should be logged (we need some sort of log facility where users can see log of activity - new WSAPI)
+and this belongs to that log facility.
+
+And belongs EATEN/suppressed in our web service response.
+
+Similarly and perhaps related - we see no devices ever getting discovered!
+
+NOTE - working fine on raspberrypi , just not on hercules.
+-----
+
+
+Use CircleCI command for build like I did for WTF – as code factoring
+
+----
+
+Do build for windows (as I got working on stroika) wtih circleci/travisci
+
+
+
+-----
 
 >	with next stroika release, can get proper interfface id for each definve found iwth ARP-getneigbobors ,
    so use that on the discovered devie (and record this at least in debug info so we know device found by aprping

@@ -10,7 +10,15 @@ SHELL ["powershell"]
 #    --add Microsoft.VisualStudio.Component.VC.CoreBuildTools `
 #    --add Microsoft.VisualStudio.Component.VC.ATLMFC `
 #
-RUN Invoke-WebRequest "https://aka.ms/vs/16/release/vs_buildtools.exe" `
+
+#
+# VS versions
+#       https://docs.microsoft.com/en-us/visualstudio/releases/2019/history
+#
+ARG VS_Latest=https://aka.ms/vs/16/release/vs_buildtools.exe
+ARG VS_16_4_4=https://download.visualstudio.microsoft.com/download/pr/8ab6eab3-e151-4f4d-9ca5-07f8434e46bb/df2db8df6dbb2d9c22aa627ce065811926a7396cb7c8e421c1dd865aba2cf231/vs_BuildTools.exe
+
+RUN Invoke-WebRequest "$env:VS_16_4_4" `
     -OutFile "$env:TEMP\vs_buildtools.exe" -UseBasicParsing
 RUN & "$env:TEMP\vs_buildtools.exe" `
     --add Microsoft.VisualStudio.Workload.VCTools `
@@ -26,14 +34,17 @@ RUN iex ((new-object net.webclient).DownloadString('https://chocolatey.org/insta
 
 RUN choco install -y cyg-get
 RUN cyg-get default make unzip git wget patch pkg-config dos2unix p7zip
+## Sometimes helpful
+## cyg-get gdb
 RUN  `
     $env:PATH =  $env:PATH + ';c:\tools\cygwin\bin';   `
     [Environment]::SetEnvironmentVariable('PATH', $env:PATH, [EnvironmentVariableTarget]::Machine);
 
-COPY Windows-VS2k19/Getting-Started.md ./
-COPY Windows-VS2k19/FixupPath.bat ./
+COPY Windows-Cygwin-VS2k19/Getting-Started-With-Stroika.md ./
+COPY Windows-Cygwin-VS2k19/FixupPath.bat ./
 
-CMD ["cmd", "/c", "call FixupPath.bat && echo see Getting-Started.md && cmd"]
+CMD ["cmd", "/c", "call FixupPath.bat && echo see Getting-Started-With-Stroika.md && cmd"]
 
 ### NOTE TO RUN
-###     docker run -v c:\Sandbox:c:\Sandbox -it sophistsolutionsinc/whythefuckismynetworksoslow-windows:latest
+###     docker run -v c:\Sandbox:c:\Sandbox -it sophistsolutionsinc/ka-buildvm-windows-cygwin-vs2k19:latest
+###     docker run -it sophistsolutionsinc/ka-buildvm-windows-cygwin-vs2k19:latest
