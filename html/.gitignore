@@ -18,4 +18,7 @@ yarn-error.log*
 *.sln
 *.sw*
 
+# normal builds (make) won't produce these but its often helpful to test with npm run build/serve/etc/, and this will run here
 package-lock.json
+node_modules/
+dist/
