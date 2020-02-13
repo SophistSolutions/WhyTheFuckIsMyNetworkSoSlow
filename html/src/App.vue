@@ -4,19 +4,19 @@
       <v-toolbar-title>WhyTheFuckIsMyNetworkSoSlow</v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items class="hidden-sm-and-down">
-        <v-btn flat to="/networks">Networks</v-btn>
-        <v-btn flat to="/devices">Devices</v-btn>
+        <v-btn flat to="/networks-DEPRECATED">Networks {deprecated}</v-btn>
+        <v-btn flat to="/devices-DEPRECATED">Devices {deprecated}</v-btn>
         <v-btn flat to="/about">About</v-btn>
       </v-toolbar-items>
     </v-toolbar>
-    
-    <router-view/>
+
+    <router-view />
   </div>
 </template>
 
 <style lang="scss">
 #app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
+  font-family: "Avenir", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;

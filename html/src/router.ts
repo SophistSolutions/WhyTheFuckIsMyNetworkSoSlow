@@ -8,28 +8,32 @@ export default new Router({
     {
       path: "/",
       name: "home",
-      redirect: "networks",
+      redirect: "networks-DEPRECATED",
     },
     {
       path: "/about",
       name: "about",
-      component: () => import(/* webpackChunkName: "about" */ "./views/About.vue"),
+      component: () => import(/* webpackChunkName: "About" */ "./views/About.vue"),
     },
     {
-      path: "/networks",
-      name: "Networks",
+      path: "/networks-DEPRECATED",
+      name: "Networks {DEPRECATED}",
       // route level code-splitting
       // this generates a separate chunk (about.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
-      component: () => import(/* webpackChunkName: "about" */ "./views/NetworkView.vue"),
+      component: () =>
+        import(
+          /* webpackChunkName: "NetworkView-DEPRECATED" */ "./views/NetworkView-DEPRECATED.vue"
+        ),
     },
     {
-      path: "/devices",
-      name: "Devices",
+      path: "/devices-DEPRECATED",
+      name: "Devices {DEPRECATED}",
       // route level code-splitting
       // this generates a separate chunk (about.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
-      component: () => import(/* webpackChunkName: "about" */ "./views/DeviceView.vue"),
+      component: () =>
+        import(/* webpackChunkName: "DeviceView-DEPRECATED" */ "./views/DeviceView-DEPRECATED.vue"),
     },
   ],
 });

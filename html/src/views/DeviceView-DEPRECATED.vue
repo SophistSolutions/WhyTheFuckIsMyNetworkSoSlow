@@ -2,50 +2,36 @@
   <v-container class="devices">
     <v-layout row wrap>
       <v-flex md12>
-        <div>
-          Sort by:
-        </div>
+        <div>Sort by:</div>
         <div>
           <v-btn
             color="blue-grey"
             class="white--text"
             @click="selectSortField(SortFieldEnum.ADDRESS)"
-          > Address
+          >
+            Address
             <v-icon medium dark right>device_hub</v-icon>
           </v-btn>
           <v-btn
             color="blue-grey"
             class="white--text"
             @click="selectSortField(SortFieldEnum.PRIORITY)"
-          > Relavence
+          >
+            Relavence
             <v-icon medium dark right>priority_high</v-icon>
           </v-btn>
-          <v-btn
-            color="blue-grey"
-            class="white--text"
-            @click="selectSortField(SortFieldEnum.NAME)"
-          > Name
+          <v-btn color="blue-grey" class="white--text" @click="selectSortField(SortFieldEnum.NAME)">
+            Name
             <v-icon medium dark right>perm_identity</v-icon>
           </v-btn>
-          <v-btn
-            color="blue-grey"
-            class="white--text"
-            @click="selectSortField(SortFieldEnum.TYPE)"
-          > Type
+          <v-btn color="blue-grey" class="white--text" @click="selectSortField(SortFieldEnum.TYPE)">
+            Type
             <v-icon medium dark right>category</v-icon>
           </v-btn>
-          <v-btn
-            color="blue-grey"
-            class="white--text"
-            @click="selectSortAscending(true)"
-          >
+          <v-btn color="blue-grey" class="white--text" @click="selectSortAscending(true)">
             <v-icon medium dark>arrow_upward</v-icon>
           </v-btn>
-          <v-btn
-            color="blue-grey"
-            class="white--text"
-            @click="selectSortAscending(false)"
-          >
+          <v-btn color="blue-grey" class="white--text" @click="selectSortAscending(false)">
             <v-icon medium dark>arrow_downward</v-icon>
           </v-btn>
         </div>
@@ -58,7 +44,6 @@
           </div>
         </transition-group>
       </v-flex>
-
     </v-layout>
   </v-container>
 </template>
@@ -74,7 +59,7 @@ import { fetchNetworks } from "@/proxy/API";
 @Component({
   name: "Devices",
   components: {
-    Device: () => import("@/components/Device.vue"),
+    Device: () => import("@/components/Device-DEPRECATED.vue"),
   },
 })
 export default class Devices extends Vue {
