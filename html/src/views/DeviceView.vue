@@ -68,8 +68,8 @@ import { IDevice } from "@/models/device/IDevice";
 import { Component, Vue } from "vue-property-decorator";
 
 import { compareValues } from "@/CustomSort";
-import { fetchNetworks } from "@/proxy/API";
 import { ISortBy, SortFieldEnum } from "@/models/device/SearchSpecification";
+import { fetchNetworks } from "@/proxy/API";
 
 @Component({
   name: "Devices",

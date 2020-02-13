@@ -5,13 +5,15 @@ import { INetwork } from "@/models/network/INetwork";
 
 import { API_ROOT } from "@/config";
 
+import { Logger } from "@/utils/Logger.ts";
+
 export async function fetchNetworks(): Promise<INetwork[]> {
   return fetch(API_ROOT + `/networks?recurse=true`)
     .then((response) => response.json())
     .then((data) => {
       return data;
     })
-    .catch((error) => console.error(error));
+    .catch((error) => Logger.error(error));
 }
 
 export async function fetchDevices(searchCriteria?: ISortBy): Promise<IDevice[]> {
@@ -46,7 +48,7 @@ export async function fetchDevices(searchCriteria?: ISortBy): Promise<IDevice[]>
     .then((data) => {
       return data;
     })
-    .catch((error) => console.error(error));
+    .catch((error) => Logger.error(error));
 }
 
 export async function fetchAboutInfo(): Promise<IAbout> {
@@ -55,7 +57,7 @@ export async function fetchAboutInfo(): Promise<IAbout> {
     .then((data) => {
       return data;
     })
-    .catch((error) => console.error(error));
+    .catch((error) => Logger.error(error));
 }
 
 // TODO could instead do this but not modular enough for future
