@@ -1,38 +1,81 @@
 <template>
-  <div id="app">
-    <v-toolbar fixed>
-      <v-toolbar-title>WhyTheFuckIsMyNetworkSoSlow</v-toolbar-title>
-      <v-spacer></v-spacer>
-      <v-toolbar-items class="hidden-sm-and-down">
-        <v-btn flat to="/networks-DEPRECATED">Networks {deprecated}</v-btn>
-        <v-btn flat to="/devices-DEPRECATED">Devices {deprecated}</v-btn>
-        <v-btn flat to="/about">About</v-btn>
-      </v-toolbar-items>
-    </v-toolbar>
+  <v-app>
+    <v-app-bar app color="primary" dark>
+      <div class="d-flex align-center">
+        <div>WhyTheFuckIsMyNetworkSoSlow</div>
+      </div>
 
-    <router-view />
-  </div>
+      <v-spacer></v-spacer>
+
+      <div>PUT BREADCRUMBS HERE</div>
+      <!-- 
+    <a
+        v-for="(name, link) in breadcrumbs"
+        :key="link"
+        :href="eco.href"
+        class="subheading mx-3"
+        target="_blank"
+      >
+        {{ eco.text }}
+      </a>
+
+
+      <v-btn href="#networks-DEPRECATED" target="_blank" text>
+        <span class="mr-2">networks-DEPRECATED</span>
+        <v-icon>mdi-open-in-new</v-icon>
+      </v-btn>
+
+ -->
+      <v-spacer></v-spacer>
+
+      <v-menu bottom left>
+        <template v-slot:activator="{ on }">
+          <v-btn icon color="black" v-on="on">
+            <v-icon>mdi-dots-vertical</v-icon>
+          </v-btn>
+        </template>
+
+        <v-list>
+          <v-list-item>
+            <v-btn href="#about" target="_self" text>
+              <span class="mr-2">about</span>
+            </v-btn>
+          </v-list-item>
+          <v-spacer></v-spacer>
+          <v-list-item>
+            <v-btn href="#devices-DEPRECATED" target="_self" text>
+              <span class="mr-2">devices-DEPRECATED</span>
+            </v-btn>
+          </v-list-item>
+          <v-list-item>
+            <v-btn href="#networks-DEPRECATED" target="_self" text>
+              <span class="mr-2">networks-DEPRECATED</span>
+            </v-btn>
+          </v-list-item>
+          <v-spacer></v-spacer>
+          <v-list-item>
+            <v-btn href="#hello" target="_blank" text>
+              <span class="mr-2">hello</span>
+            </v-btn>
+          </v-list-item>
+        </v-list>
+      </v-menu>
+    </v-app-bar>
+
+    <v-content>
+      <router-view />
+    </v-content>
+  </v-app>
 </template>
 
-<style lang="scss">
-#app {
-  font-family: "Avenir", Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  max-width: 1280px !important;
-  margin: auto;
-  margin-top: 90px;
-}
-#nav {
-  padding: 30px;
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-    &.router-link-exact-active {
-      color: #42b983;
-    }
-  }
-}
-</style>
+<script lang="ts">
+import Vue from "vue";
+
+export default Vue.extend({
+  name: "App",
+
+  data: () => ({
+    breadcrumbs: [{ name: "about", link: "#about" }],
+  }),
+});
+</script>
