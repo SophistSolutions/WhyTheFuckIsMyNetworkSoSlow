@@ -6,7 +6,7 @@ import router from "./router";
 
 Vue.config.productionTip = false;
 
-new Vue({
+(window as any).myVueApp = new Vue({
   router,
   store,
   vuetify,

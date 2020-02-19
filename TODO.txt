@@ -1,3 +1,21 @@
+
+
+
+
+USE THIS FOR BREADCRUMBS
+
+	https://medium.com/@fagnersaraujo/automated-breadcrumbs-with-vuejs-7e1051de8028
+
+	>> what I did was a NON-MODULAR HACK for adjusting the breadcrumbs object.
+	Trick to patch the global list of breadcrumbs
+	Updated in each page.
+
+	INSTEAD, do watching on route object, and use it to generate the links (as in link above)
+
+
+
+
+
 Top priority bug:
 
 curl -v http://hercules:8080/networks --output -

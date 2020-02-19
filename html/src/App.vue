@@ -75,7 +75,7 @@ export default Vue.extend({
   data: () => ({
     breadcrumbs: [
       { text: "Home", disabled: false, to: "/" },
-      { text: "Networks", disabled: false, to: "networks-DEPRECATED" },
+      // { text: "Networks", disabled: false, to: "networks-DEPRECATED" },
     ],
   }),
 });

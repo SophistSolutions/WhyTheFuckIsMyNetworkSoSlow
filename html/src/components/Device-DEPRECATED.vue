@@ -42,12 +42,6 @@ import { IDevice, INetworkAttachmentInfo } from "../models/device/IDevice";
     device: Object as () => IDevice,
   },
 
-  mounted() {
-    this.breadcrumbs = [
-      { text: "Home", disabled: false, to: "/" },
-      { text: "Devices", disabled: false, to: "devices-DEPRECATED" },
-    ];
-  },
   methods: {
     getDeviceNetworkAddresses_(d: IDevice) {
       let result = "";

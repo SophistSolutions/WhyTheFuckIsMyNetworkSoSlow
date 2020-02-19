@@ -1,29 +1,35 @@
 <template>
   <div v-if="about" class="about">
-    <br>
+    <br />
     <h1>About 'Why The Fuck is My Network So Slow'</h1>
-    <br>
+    <br />
     <div>My Version: {{ about.applicationVersion }}</div>
     <div>My Operating System: {{ about.operatingSystem.fullVersionedName }}</div>
 
-    <br>
+    <br />
 
-    <div>Written by
+    <div>
+      Written by
       <ul>
-        <li>Lewis G. Pringle, Jr.
-          <a href="https://www.linkedin.com/in/lewispringle/">LinkedIn</a> |
+        <li>
+          Lewis G. Pringle, Jr. <a href="https://www.linkedin.com/in/lewispringle/">LinkedIn</a> |
           <a href="https://github.com/LewisPringle">GitHub</a>
         </li>
-        <li>Robert Lemos Pringle
+        <li>
+          Robert Lemos Pringle
           <a href="https://github.com/robertpringle">GitHub</a>
         </li>
       </ul>
     </div>
 
-    <div>Report issues at <a href="https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues">github issues</a></div>
+    <div>
+      Report issues at
+      <a href="https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues"
+        >github issues</a
+      >
+    </div>
   </div>
 </template>
-
 
 <script lang="ts">
 import { IAbout } from "@/models/IAbout";
@@ -38,6 +44,15 @@ export default class About extends Vue {
     this.$store.dispatch("fetchAboutInfo");
   }
 
+  private mounted() {
+    // @todo fix hack - dont do in mounted, use https://medium.com/@fagnersaraujo/automated-breadcrumbs-with-vuejs-7e1051de8028
+    // to get from router/watch router
+    this.$root.$children[0].$data.breadcrumbs = [
+      { text: "Home", disabled: false, to: "/" },
+      { text: "About", disabled: false, to: "about" },
+    ];
+  }
+
   private get about(): IAbout {
     return this.$store.getters.getAboutInfo;
   }
@@ -49,4 +64,3 @@ ul {
   list-style-type: none;
 }
 </style>
-
