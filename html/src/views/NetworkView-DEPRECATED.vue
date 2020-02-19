@@ -26,6 +26,15 @@ export default class Networks extends Vue {
     this.pollData();
   }
 
+  mounted() {
+    /*     console.log(vm.$data);
+    this.$vm.breadcrumbs = [
+      { text: "Home", disabled: false, to: "/" },
+      { text: "Devices", disabled: false, to: "devices-DEPRECATED" },
+    ];
+ */
+  }
+
   private beforeDestroy() {
     clearInterval(this.polling);
   }

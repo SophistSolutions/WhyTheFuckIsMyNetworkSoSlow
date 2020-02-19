@@ -10,24 +10,23 @@
           <a :href="device.presentationURL" target="_blank">Open Device</a>
         </p>
         <p v-if="device.icon">
-          <img :src="device.icon">
+          <img :src="device.icon" />
         </p>
         <p v-if="device.manufacturer">
           Manufacturer:
-          <span
-            v-if="device.manufacturer.shortName || device.manufacturer.fullName"
-          >{{device.manufacturer.shortName || device.manufacturer.fullName}}</span>
+          <span v-if="device.manufacturer.shortName || device.manufacturer.fullName">{{
+            device.manufacturer.shortName || device.manufacturer.fullName
+          }}</span>
           <span v-if="device.manufacturer.webSiteURL">
             <span v-if="device.manufacturer.shortName || device.manufacturer.fullName">; </span>
             Link:
-            <a
-              :href="device.manufacturer.webSiteURL"
-              target="_blank"
-            >{{device.manufacturer.webSiteURL}}</a>
+            <a :href="device.manufacturer.webSiteURL" target="_blank">{{
+              device.manufacturer.webSiteURL
+            }}</a>
           </span>
         </p>
-        <p>Internet Addresses: {{ getDeviceNetworkAddresses_ (device) }}</p>
-        <p>Hardware Addresses: {{ getDeviceHardwareAddresses_ (device) }}</p>
+        <p>Internet Addresses: {{ getDeviceNetworkAddresses_(device) }}</p>
+        <p>Hardware Addresses: {{ getDeviceHardwareAddresses_(device) }}</p>
       </v-card-text>
     </v-card>
   </div>
@@ -41,6 +40,13 @@ import { IDevice, INetworkAttachmentInfo } from "../models/device/IDevice";
   name: "Device",
   props: {
     device: Object as () => IDevice,
+  },
+
+  mounted() {
+    this.breadcrumbs = [
+      { text: "Home", disabled: false, to: "/" },
+      { text: "Devices", disabled: false, to: "devices-DEPRECATED" },
+    ];
   },
   methods: {
     getDeviceNetworkAddresses_(d: IDevice) {
