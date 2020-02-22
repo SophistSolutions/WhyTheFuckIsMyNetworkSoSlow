@@ -78,5 +78,11 @@ export default Vue.extend({
       // { text: "Networks", disabled: false, to: "networks-DEPRECATED" },
     ],
   }),
+
+  watch: {
+    $route() {
+      this.breadcrumbs = this.$route.meta.breadcrumbs;
+    },
+  },
 });
 </script>
