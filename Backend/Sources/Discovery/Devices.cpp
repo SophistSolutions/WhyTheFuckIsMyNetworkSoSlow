@@ -637,7 +637,7 @@ namespace {
 #if qLOCK_DEBUGGING_
                             DbgTrace (L"!!! no change in ***MyDeviceDiscoverer_***  so skipping ");
 #endif
-                            continue;
+                            goto nextTry;
                         }
 #if qLOCK_DEBUGGING_
                         DbgTrace (L"!!! have change in ***MyDeviceDiscoverer_ so waiting to update");
@@ -665,6 +665,8 @@ namespace {
                 catch (...) {
                     Execution::Logger::Get ().LogIfNew (Execution::Logger::Priority::eError, 5min, L"%s", Characters::ToString (current_exception ()).c_str ());
                 }
+
+nextTry:
                 Execution::Sleep (30s); // @todo tmphack - really wait til change in network
             }
         }
