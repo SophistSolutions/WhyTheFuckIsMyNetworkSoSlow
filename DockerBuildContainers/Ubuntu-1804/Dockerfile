@@ -10,6 +10,7 @@ RUN apt-get install -y gcc-8-arm-linux-gnueabihf
 # For html code
 RUN apt-get install -y nodejs npm
 
+RUN rm -f /Getting-Started-With-Stroika.md
 ADD Shared-Files/Getting-Started.md /
 
 CMD /bin/bash
