@@ -7,8 +7,11 @@ export default new Router({
   routes: [
     {
       path: "/",
-      name: "home",
-      redirect: "networks-DEPRECATED",
+      name: "Home",
+      component: () => import(/* webpackChunkName: "About" */ "./views/Home.vue"),
+      meta: {
+        breadcrumbs: [{ text: "Home", href: "/", exact: true }],
+      },
     },
     {
       path: "/about",
@@ -16,34 +19,29 @@ export default new Router({
       component: () => import(/* webpackChunkName: "About" */ "./views/About.vue"),
       meta: {
         breadcrumbs: [
-          { text: "Home", disabled: false, to: "/" },
-          { text: "about", disabled: false, to: "/about" },
+          { text: "Home", href: "/", disabled: false, exact: true },
+          { text: "About", disabled: true },
         ],
       },
     },
     {
       path: "/hello",
       name: "hello",
-      component: () => import(/* webpackChunkName: "About" */ "./views/Home.vue"),
-      meta: {
-        breadcrumbs: [
-          { text: "Home", disabled: false, to: "/" },
-          { text: "Hello", disabled: false, to: "/hello" },
-        ],
-      },
     },
     {
       path: "/networks-DEPRECATED",
-      name: "Networks {DEPRECATED}",
+      name: "Networks-DEPRECATED",
       // route level code-splitting
       // this generates a separate chunk (about.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
       component: () =>
-        import(/* webpackChunkName: "NetworkView-DEPRECATED" */ "./views/NetworkView-DEPRECATED.vue"),
+        import(
+          /* webpackChunkName: "NetworkView-DEPRECATED" */ "./views/NetworkView-DEPRECATED.vue"
+        ),
       meta: {
         breadcrumbs: [
-          { text: "Home", disabled: false, to: "/" },
-          { text: "Networks{deprecated}", disabled: false, to: "/networks-DEPRECATED" },
+          { text: "Home", href: "/", exact: true },
+          { text: "Networks {deprecated}", disabled: true },
         ],
       },
     },
@@ -57,8 +55,8 @@ export default new Router({
         import(/* webpackChunkName: "DeviceView-DEPRECATED" */ "./views/DeviceView-DEPRECATED.vue"),
       meta: {
         breadcrumbs: [
-          { text: "Home", disabled: false, to: "/" },
-          { text: "Devices{deprecated}", disabled: false, to: "/devices-DEPRECATED" },
+          { text: "Home", href: "/", exact: true },
+          { text: "Devices{deprecated}", disabled: true },
         ],
       },
     },

@@ -15,6 +15,12 @@
           <br />please join our online
           <a href="https://community.vuetifyjs.com" target="_blank">Discord Community</a>
         </p>
+
+        <div>
+          @todo put real home page here - Idea is like basic dashboard - very customizatble but
+          showing state of main network, and maybe links to graphs etc, and links to other summaries
+          (implemting first)
+        </div>
       </v-col>
 
       <v-col class="mb-5" cols="12">

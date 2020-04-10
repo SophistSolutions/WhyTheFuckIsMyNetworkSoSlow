@@ -35,6 +35,12 @@
 
         <v-list>
           <v-list-item>
+            <v-btn to="Home" text>
+              <span class="mr-2">Home</span>
+            </v-btn>
+          </v-list-item>
+          <v-divider> </v-divider>
+          <v-list-item>
             <v-btn to="about" text>
               <span class="mr-2">about</span>
             </v-btn>
@@ -51,11 +57,6 @@
             </v-btn>
           </v-list-item>
           <v-spacer></v-spacer>
-          <v-list-item>
-            <v-btn to="hello" text>
-              <span class="mr-2">hello</span>
-            </v-btn>
-          </v-list-item>
         </v-list>
       </v-menu>
     </v-app-bar>
@@ -73,10 +74,7 @@ export default Vue.extend({
   name: "App",
 
   data: () => ({
-    breadcrumbs: [
-      { text: "Home", disabled: false, to: "/" },
-      // { text: "Networks", disabled: false, to: "networks-DEPRECATED" },
-    ],
+    breadcrumbs: [{ text: "Home", disabled: true, to: "home" }],
   }),
 
   watch: {
@@ -86,3 +84,9 @@ export default Vue.extend({
   },
 });
 </script>
+
+<style lang="scss">
+.v-breadcrumbs__item {
+  display: inline;
+}
+</style>

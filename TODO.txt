@@ -1,9 +1,26 @@
 
 
 
+-----
 
 > Fix breadcrumb code so links work in breadcrumbs
 
+---
+
+
+reexamine 
+	BLOBMgr::AddBLOBFromURL (const URI& url)
+	code in WTF - not that its buggy per-se but usage seems wrong. We seem to keepadding
+	from webservice call - each time - and neverusing caching
+
+	Maybe not all wrong - but debug why this is so slow.
+	Maybe improve by using 
+	CONNECTIONPPOOL (cuz we create new connection each time). And maybe
+	depedning on TTL, avoid doing the CALL at all (make sure we avoid the call)
+	in the connection layer, doiing the cachin, if the value has not is within the TTL.
+
+
+----
 
 Top priority bug:
 
