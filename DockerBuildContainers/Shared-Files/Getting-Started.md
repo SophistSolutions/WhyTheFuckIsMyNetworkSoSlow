@@ -1,36 +1,42 @@
 # Quick-Start Building WhyTheFuckIsMyNetworkSoSlow
 
-~~~bash
+```bash
 mkdir Sandbox && cd Sandbox
-git clone https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow.git
+git clone --recurse-submodules https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow.git
 cd WhyTheFuckIsMyNetworkSoSlow
-git submodule update --init --recursive
 make all -j10
-~~~
+```
 
 `make all -j10` builds all defined (default) configurations.
 
 Alternatively, you can replace the last step:
-~~~bash
+
+```bash
 make all -j10
-~~~
+```
 
 with:
-~~~bash
+
+```bash
 make default-configurations
-~~~
+```
+
 - review the created configurations in `ConfigurationFiles` - perhaps making more, or different ones.
 
 then
-~~~bash
+
+```bash
 make CONFIGURAITON=YOUR-SELECTED-CONFIGURATION all -j10
-~~~
+```
+
 to build just that one configuration (building one is faster than building many).
 
 OR
-~~~bash
+
+```bash
 make TAGS=Unix all -j10
-~~~
+```
+
 to build all configurations with the tag Unix
 
 To learn more about Building Stroika-based applications and configurations, see
