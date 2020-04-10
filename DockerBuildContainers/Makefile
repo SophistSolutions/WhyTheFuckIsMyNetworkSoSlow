@@ -10,7 +10,7 @@ help:
 
 docker-images:
 ifeq ($(shell uname),Linux)
-	docker build -f Debian-Small/Dockerfile -t sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804 .
+	docker build -f Ubuntu-1804/Dockerfile -t sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804 .
 endif
 ifeq (Windows,$(findstring Windows,$(OS)))
 	docker build -f Windows-Cygwin-VS2k19/Dockerfile -t sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19 -m 2G .
