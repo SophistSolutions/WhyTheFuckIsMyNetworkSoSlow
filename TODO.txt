@@ -1,6 +1,15 @@
 
 
+FIX BUILD OF WTF - using DOCKER - so works on Ubuntu 1804
 
+
+----
+
+
+Fix build using CIRCLECI/travisci
+	(so I can get MSI build easily and test places)
+
+	
 -----
 
 > Fix breadcrumb code so links work in breadcrumbs
