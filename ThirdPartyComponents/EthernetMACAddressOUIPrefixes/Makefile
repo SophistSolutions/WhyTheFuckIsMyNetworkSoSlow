@@ -20,10 +20,10 @@ FETCHURLS+=https://raw.githubusercontent.com/nmap/nmap/master/nmap-mac-prefixes
 
 
 all:
-	@$(StroikaRoot)ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "Build OSI-MAC-Prefixes {$(CONFIGURATION)}:"
+	@$(StroikaRoot)ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "ThirdPartyComponents/OSI-MAC-Prefixes Build {$(CONFIGURATION)}:"
 	@$(StroikaRoot)ScriptsLib/CheckValidConfiguration $(CONFIGURATION)
 	@$(MAKE) --silent $(OUT_FILE) CONFIGURATION=$(CONFIGURATION) MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
-	@$(StroikaRoot)ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "Building $(OUT_FILE)...done"
+	@$(StroikaRoot)ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "ThirdPartyComponents/OSI-MAC-Prefixes Build $(OUT_FILE)...done"
 
 clean clobber:
 	@$(StroikaRoot)ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "ThirdPartyComponents/OSI-MAC-Prefixes $(call FUNCTION_CAPITALIZE_WORD,$@) {$(CONFIGURATION)}:"
