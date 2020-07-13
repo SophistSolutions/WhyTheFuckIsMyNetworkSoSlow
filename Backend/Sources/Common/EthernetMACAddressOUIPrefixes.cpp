@@ -42,7 +42,7 @@ optional<String> BackendApp::Common::LookupEthernetMACAddressOUIFromPrefix (cons
         // calls it first. But it doesn't take long  in release builds (less than a second)
         Mapping<String, String> tmp;
         try {
-            for (String line : TextReader::New (IO::FileSystem::FileInputStream::New (Execution::GetEXEDir () + L"data/OSI-MAC-PREFIXES.txt")).ReadLines ()) {
+            for (String line : TextReader::New (IO::FileSystem::FileInputStream::New (Execution::GetEXEDir () / "data/OSI-MAC-PREFIXES.txt"sv)).ReadLines ()) {
                 String macaddrprefix = line.SafeSubString (0, 6).ToLowerCase ();
                 if (macaddrprefix.length () == 6) {
                     tmp.Add (macaddrprefix, line.SafeSubString (7).RTrim ());

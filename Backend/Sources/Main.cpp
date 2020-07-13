@@ -164,7 +164,7 @@ int main (int argc, const char* argv[])
     try {
         static constexpr Activity kSettingUpFirewall_{L"setting up firewall"sv};
         DeclareActivity           da{&kSettingUpFirewall_};
-        IO::Network::SystemFirewall::Manager::sThe.Register (
+        IO::Network::SystemFirewall::Manager{}.Register (
             IO::Network::SystemFirewall::Rule{
                 L"WhyTheFuckIsMyNetworkSoSlow Recieve SSDP Notify UDP Access Allowed"sv,
                 L"Allow UDP/multicast (NOTIFY) traffic for WhyTheFuckIsMyNetworkSoSlow so SSDP listen works (search works without this)"sv,
