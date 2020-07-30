@@ -29,8 +29,6 @@ using namespace Stroika::Foundation;
 using namespace Stroika::Foundation::Characters;
 using namespace Stroika::Frameworks::Service;
 
-using Execution::Thread;
-
 using namespace WhyTheFuckIsMyNetworkSoSlow;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices;
@@ -58,7 +56,7 @@ void WTFAppServiceRep::MainLoop (const std::function<void ()>& startedCB)
     Logger::Get ().Log (Logger::Priority::eInfo, L"%s (version %s) service started successfully", kServiceDescription_.fPrettyName.c_str (), Characters::ToString (AppVersion::kVersion).c_str ());
 
     [[maybe_unused]] auto&& cleanup = Execution::Finally ([&] () {
-        Thread::SuppressInterruptionInContext suppressSoWeActuallyShutDownOtherTaskWhenWereBeingShutDown;
+        Execution::Thread::SuppressInterruptionInContext suppressSoWeActuallyShutDownOtherTaskWhenWereBeingShutDown;
         Logger::Get ().Log (Logger::Priority::eInfo, L"Beginning service shutdown");
     });
 

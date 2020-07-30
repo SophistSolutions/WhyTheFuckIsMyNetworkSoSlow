@@ -31,7 +31,6 @@ using namespace Stroika::Foundation::Execution;
 
 using Characters::String;
 using Execution::Logger;
-using Execution::Thread;
 
 using namespace WhyTheFuckIsMyNetworkSoSlow;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp;

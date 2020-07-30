@@ -50,7 +50,6 @@ using namespace Stroika::Frameworks;
 using namespace Stroika::Frameworks::UPnP;
 
 using Execution::RWSynchronized;
-using Execution::Thread;
 using IO::Network::InternetAddress;
 using Stroika::Foundation::Common::GUID;
 using Stroika::Foundation::Common::KeyValuePair;
