@@ -5,6 +5,10 @@ FIX BUILD OF WTF - using DOCKER - so works on Ubuntu 1804
 
 ----
 
++ Fix default machine name - if "Unknown" - to be the IP-address (preferring v4 if available)
+
+----
+
 
 Fix build using CIRCLECI/travisci
 	(so I can get MSI build easily and test places)
