@@ -4,52 +4,31 @@
       <v-card-title>
         Devices
         <v-spacer></v-spacer>
-        <v-text-field
-          v-model="search"
-          append-icon="mdi-magnify"
-          label="Search"
-          single-line
-          hide-details
-        ></v-text-field>
       </v-card-title>
       <v-data-table
         dense
         v-model="selectedRows"
         :headers="headers"
-        :items="devices"
+        :items="devicesAsDisplayed"
         :single-select="true"
         :search="search"
-        :sort-by="['name', 'manufacturer']"
+        :sort-by="[]"
         :sort-desc="[false, true]"
         multi-sort
         item-key="id"
         class="elevation-1"
       >
-        <template v-slot:top>
-          <!-- replace this with search 
-          <v-switch v-model="singleSelect" label="Single select" class="pa-3"></v-switch>
-          -->
-        </template>
-        <template v-slot:item.manufacturer="{ item }"
-          >{{ item.manufacturer == null ? "?" : item.manufacturer.fullName }}
-        </template>
-        <template v-slot:expanded-item="{ headers, item }">
-          <td :colspan="headers.length">More info about {{ item.name }}</td>
-        </template>
-
         <template v-slot:item="{ item }">
           <tr
             :class="selectedRows.indexOf(item.id) > -1 ? 'yellow' : ''"
             @click="rowClicked($event, item)"
           >
             <td>{{ item.name }}</td>
-            <td>{{ item.type == null ? null : item.type.join(", ") }}</td>
-            <td>{{ item.manufacturer == null ? null : item.manufacturer.fullName }}</td>
-            <td>
-              {{ item.operatingSystem == null ? null : item.operatingSystem.fullVersionedName }}
-            </td>
-            <td>{{ formatNetworks_(item.attachedNetworks) }}</td>
-            <td>{{ formatNetworkAddresses_(item.attachedNetworks) }}</td>
+            <td>{{ item.type }}</td>
+            <td>{{ item.manufacturer }}</td>
+            <td>{{ item.os }}</td>
+            <td>{{ item.networks }}</td>
+            <td>{{ item.localAddrresses }}</td>
           </tr>
         </template>
       </v-data-table>
@@ -59,7 +38,7 @@
 
 <script lang="ts">
 import { IDevice, INetworkAttachmentInfo } from "@/models/device/IDevice";
-import { Component, Vue } from "vue-property-decorator";
+import { Component, Vue, Watch } from "vue-property-decorator";
 
 import { compareValues } from "@/CustomSort";
 import { fetchNetworks } from "@/proxy/API";
@@ -74,7 +53,6 @@ export default class Devices extends Vue {
   private polling: undefined | number = undefined;
 
   private selectedRows: string[] = [];
-  private search: string = "";
 
   private rowClicked(e: any, row: IDevice) {
     this.toggleSelection(row.id);
@@ -113,6 +91,9 @@ export default class Devices extends Vue {
     return addresses.join(", ");
   }
 
+  private get search(): string {
+    return this.$store.getters.getSearchString;
+  }
   private get headers(): object[] {
     return [
       {
@@ -134,11 +115,11 @@ export default class Devices extends Vue {
       },
       {
         text: "Network",
-        value: "network",
+        value: "networks",
       },
       {
         text: "Local Address",
-        value: "attachedNetworks",
+        value: "localAddrresses",
       },
     ];
   }
@@ -164,6 +145,23 @@ export default class Devices extends Vue {
 
   private get devices(): IDevice[] {
     return this.$store.getters.getDevices;
+  }
+
+  @Watch("devices()")
+  private get devicesAsDisplayed(): object[] {
+    const result: object[] = [];
+    this.devices.forEach((i) => {
+      result.push({
+        id: i.id,
+        name: i.name,
+        type: i.type == null ? null : i.type.join(", "),
+        manufacturer: i.manufacturer == null ? "?" : i.manufacturer.fullName,
+        os: i.operatingSystem == null ? null : i.operatingSystem.fullVersionedName,
+        networks: this.formatNetworks_(i.attachedNetworks),
+        localAddrresses: this.formatNetworkAddresses_(i.attachedNetworks),
+      });
+    });
+    return result;
   }
 }
 </script>

@@ -24,6 +24,13 @@
       <v-btn icon>
         <!-- @todo add search function -->
         <v-icon>mdi-magnify</v-icon>
+        <v-text-field
+          v-model="search"
+          append-icon="mdi-magnify"
+          label="Search"
+          single-line
+          hide-details
+        ></v-text-field>
       </v-btn>
 
       <v-menu bottom left>
@@ -80,11 +87,15 @@ export default Vue.extend({
 
   data: () => ({
     breadcrumbs: [{ text: "Home", disabled: true, to: "home" }],
+    search: "",
   }),
 
   watch: {
     $route() {
       this.breadcrumbs = this.$route.meta.breadcrumbs;
+    },
+    search() {
+      this.$store.commit("setSearchString", this.search);
     },
   },
 });
