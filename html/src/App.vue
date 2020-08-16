@@ -47,6 +47,11 @@
           </v-list-item>
           <v-spacer></v-spacer>
           <v-list-item>
+            <v-btn to="devices" text>
+              <span class="mr-2">devices</span>
+            </v-btn>
+          </v-list-item>
+          <v-list-item>
             <v-btn to="devices-DEPRECATED" text>
               <span class="mr-2">devices-DEPRECATED</span>
             </v-btn>
