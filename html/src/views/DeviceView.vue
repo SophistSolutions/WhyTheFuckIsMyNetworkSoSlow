@@ -58,11 +58,10 @@
 </template>
 
 <script lang="ts">
-import { IDevice } from "@/models/device/IDevice";
+import { IDevice, INetworkAttachmentInfo } from "@/models/device/IDevice";
 import { Component, Vue } from "vue-property-decorator";
 
 import { compareValues } from "@/CustomSort";
-import { ISortBy, SortFieldEnum } from "@/models/device/SearchSpecification";
 import { fetchNetworks } from "@/proxy/API";
 
 @Component({
@@ -74,18 +73,19 @@ import { fetchNetworks } from "@/proxy/API";
 export default class Devices extends Vue {
   private polling: undefined | number = undefined;
 
-  selectedRows = [];
+  private selectedRows: string[] = [];
+  private search: string = "";
 
-  rowClicked(e, row) {
+  private rowClicked(e: any, row: IDevice) {
     this.toggleSelection(row.id);
     // @todo fix proper handling of shift key !e.shiftKey && !
     if (!e.ctrlKey) {
       // single select unless shift key
-      this.selectedRows = this.selectedRows.filter((selectedKeyID) => selectedKeyID == row.id);
+      this.selectedRows = this.selectedRows.filter((selectedKeyID) => selectedKeyID === row.id);
     }
-    console.log(row);
+    // console.log(row);
   }
-  toggleSelection(keyID) {
+  private toggleSelection(keyID: string) {
     if (this.selectedRows.includes(keyID)) {
       this.selectedRows = this.selectedRows.filter((selectedKeyID) => selectedKeyID !== keyID);
     } else {
@@ -94,9 +94,9 @@ export default class Devices extends Vue {
   }
 
   private formatNetworks_(attachedNetworks: { [key: string]: INetworkAttachmentInfo }): string {
-    let addresses = [];
+    const addresses: string[] = [];
     Object.entries(attachedNetworks).forEach((element) => {
-      console.log(element);
+      // console.log(element);
       addresses.push(element[0]);
     });
     return addresses.join(", ");
@@ -105,17 +105,15 @@ export default class Devices extends Vue {
   private formatNetworkAddresses_(attachedNetworks: {
     [key: string]: INetworkAttachmentInfo;
   }): string {
-    let addresses = [];
+    const addresses: string[] = [];
     Object.entries(attachedNetworks).forEach((element) => {
-      console.log(element);
-      element[1].networkAddresses.forEach((e) => addresses.push(e));
+      // console.log(element);
+      element[1].networkAddresses.forEach((e: string) => addresses.push(e));
     });
     return addresses.join(", ");
   }
 
-  private search: string = "";
-
-  private get headers(): IDevice[] {
+  private get headers(): object[] {
     return [
       {
         text: "Name",
@@ -161,18 +159,11 @@ export default class Devices extends Vue {
   private pollData() {
     this.polling = setInterval(() => {
       this.fetchDevices();
-    }, 10000);
+    }, 10 * 1000);
   }
 
   private get devices(): IDevice[] {
-    const devices: IDevice[] = this.$store.getters.getDevices;
-    // shallow clone
-    const ret = [...devices];
-    //return ret.sort();
-    return ret;
-    // TODO move sort to store
-
-    // return (this.$store.getters.getDevices) ? JSON.parse(JSON.stringify(devices)) : [];
+    return this.$store.getters.getDevices;
   }
 }
 </script>
