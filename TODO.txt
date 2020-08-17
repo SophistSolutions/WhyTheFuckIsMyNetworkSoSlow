@@ -5,6 +5,15 @@ FIX BUILD OF WTF - using DOCKER - so works on Ubuntu 1804
 
 ----
 
+	Use NAMES of networks in DEVICES panel
+	Use right number of linked devices in networks panel
+	Do LINKS between the two
+	Do HOME PAGE that has at least a couple basic links.
+	Could do ICONS for OS, and TYPES for devices (to look better)
+	If name 'unknown' for device, fill in IP ADDRESS.
+
+----
+
 + Fix default machine name - if "Unknown" - to be the IP-address (preferring v4 if available)
 
 ----

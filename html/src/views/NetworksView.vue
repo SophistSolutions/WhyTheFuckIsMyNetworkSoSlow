@@ -213,7 +213,7 @@ export default class Devices extends Vue {
   private get networksAsDisplayed(): object[] {
     const result: object[] = [];
     this.networks.forEach((i) => {
-      let location: string =
+      const location: string | null =
         i.geographicLocation == null
           ? null
           : i.geographicLocation.city + ", " + i.geographicLocation.regionCode;
@@ -226,7 +226,7 @@ export default class Devices extends Vue {
           (i.internetServiceProvider == null ? " " : " (" + i.internetServiceProvider.name + ")"),
         devices: "19",
         status: "healthy",
-        location: location,
+        location,
         // name: i.name,
         // type: i.type == null ? null : i.type.join(", "),
         // manufacturer: i.manufacturer == null ? "?" : i.manufacturer.fullName,
