@@ -6,6 +6,7 @@
         <v-spacer></v-spacer>
       </v-card-title>
       <v-data-table
+        height="4in"
         class="deviceList"
         dense
         v-model="selectedRows"
@@ -16,6 +17,8 @@
         :sort-by="sortBy"
         :sort-desc="sortDesc"
         multi-sort
+        disable-pagination
+        :hide-default-footer="true"
         item-key="id"
         xclass="elevation-1"
       >
@@ -42,12 +45,12 @@
       <template v-for="itemId in selectedRows">
         <table v-bind:key="itemId" class="selectedDevicesSection">
           <tr v-bind:key="itemId">
-            <td>ID</td>
-            <td>{{ itemId }}</td>
-          </tr>
-          <tr v-bind:key="itemId">
             <td>Name</td>
             <td>{{ deviceFromID_(itemId).name }}</td>
+          </tr>
+          <tr v-bind:key="itemId">
+            <td>ID</td>
+            <td>{{ itemId }}</td>
           </tr>
           <tr v-bind:key="itemId">
             <td>Types</td>
