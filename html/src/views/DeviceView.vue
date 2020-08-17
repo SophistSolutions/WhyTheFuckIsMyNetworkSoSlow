@@ -12,8 +12,8 @@
         :items="devicesAsDisplayed"
         :single-select="true"
         :search="search"
-        :sort-by="[]"
-        :sort-desc="[false, true]"
+        :sort-by="sortBy"
+        :sort-desc="sortDesc"
         multi-sort
         item-key="id"
         class="elevation-1"
@@ -53,6 +53,8 @@ export default class Devices extends Vue {
   private polling: undefined | number = undefined;
 
   private selectedRows: string[] = [];
+  private sortBy: any = [];
+  private sortDesc: any = [];
 
   private rowClicked(e: any, row: IDevice) {
     this.toggleSelection(row.id);
@@ -160,6 +162,15 @@ export default class Devices extends Vue {
         networks: this.formatNetworks_(i.attachedNetworks),
         localAddrresses: this.formatNetworkAddresses_(i.attachedNetworks),
       });
+    });
+    result.sort((a: any, b: any) => {
+      if (a.id < b.id) {
+        return -1;
+      }
+      if (a.id > b.id) {
+        return 1;
+      }
+      return 0;
     });
     return result;
   }
