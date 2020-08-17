@@ -6,6 +6,7 @@
         <v-spacer></v-spacer>
       </v-card-title>
       <v-data-table
+        class="deviceList"
         dense
         v-model="selectedRows"
         :headers="headers"
@@ -16,7 +17,7 @@
         :sort-desc="sortDesc"
         multi-sort
         item-key="id"
-        class="elevation-1"
+        xclass="elevation-1"
       >
         <template v-slot:item="{ item }">
           <tr
@@ -33,6 +34,52 @@
         </template>
       </v-data-table>
     </v-card>
+    <v-card v-if="selectedRows.length">
+      <v-card-title>
+        Selected
+        <v-spacer></v-spacer>
+      </v-card-title>
+      <template v-for="itemId in selectedRows">
+        <table v-bind:key="itemId" class="selectedDevicesSection">
+          <tr v-bind:key="itemId">
+            <td>ID</td>
+            <td>{{ itemId }}</td>
+          </tr>
+          <tr v-bind:key="itemId">
+            <td>Name</td>
+            <td>{{ deviceFromID_(itemId).name }}</td>
+          </tr>
+          <tr v-bind:key="itemId">
+            <td>Types</td>
+            <td>{{ deviceFromID_(itemId).type }}</td>
+          </tr>
+          <tr v-bind:key="itemId" v-if="deviceFromID_(itemId).icon">
+            <td>Icon</td>
+            <td>{{ deviceFromID_(itemId).icon }}</td>
+          </tr>
+          <tr v-bind:key="itemId" v-if="deviceFromID_(itemId).presentationURL">
+            <td>presentationURL</td>
+            <td>{{ deviceFromID_(itemId).presentationURL }}</td>
+          </tr>
+          <tr v-bind:key="itemId" v-if="deviceFromID_(itemId).operatingSystem">
+            <td>operatingSystem</td>
+            <td>{{ deviceFromID_(itemId).operatingSystem }}</td>
+          </tr>
+          <tr v-bind:key="itemId" v-if="deviceFromID_(itemId).manufacturer">
+            <td>Manufactures</td>
+            <td>{{ deviceFromID_(itemId).manufacturer }}</td>
+          </tr>
+          <tr v-bind:key="itemId">
+            <td>attachedNetworks</td>
+            <td>{{ deviceFromID_(itemId).attachedNetworks }}</td>
+          </tr>
+          <tr v-bind:key="itemId" v-if="deviceFromID_(itemId).debugProps">
+            <td>DEBUG INFO</td>
+            <td>{{ deviceFromID_(itemId).debugProps }}</td>
+          </tr>
+        </table>
+      </template>
+    </v-card>
   </v-container>
 </template>
 
@@ -45,9 +92,7 @@ import { fetchNetworks } from "@/proxy/API";
 
 @Component({
   name: "Devices",
-  components: {
-    Device: () => import("@/components/Device-DEPRECATED.vue"),
-  },
+  components: {},
 })
 export default class Devices extends Vue {
   private polling: undefined | number = undefined;
@@ -55,6 +100,19 @@ export default class Devices extends Vue {
   private selectedRows: string[] = [];
   private sortBy: any = [];
   private sortDesc: any = [];
+
+  // terrible inefficient approach - maybe create map object dervied from devices array
+  private deviceFromID_(id: string) {
+    let result = null;
+    this.devices.every((d) => {
+      if (d.id === id) {
+        result = d;
+        return false;
+      }
+      return true;
+    });
+    return result;
+  }
 
   private rowClicked(e: any, row: IDevice) {
     this.toggleSelection(row.id);
@@ -187,6 +245,12 @@ export default class Devices extends Vue {
 
 .deviceList {
   margin-top: 10px;
+}
+.selectedDevicesSection {
+  margin-top: 10px;
+  margin-left: 10px;
+  margin-right: 10px;
+  margin-bottom: 10px;
 }
 
 .flip-list-move {
