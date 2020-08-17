@@ -64,6 +64,13 @@
             </v-btn>
           </v-list-item>
           <v-list-item>
+            <v-btn to="networks" text>
+              <span class="mr-2">networks</span>
+            </v-btn>
+          </v-list-item>
+          <v-spacer></v-spacer>
+        </v-list>
+          <v-list-item>
             <v-btn to="networks-DEPRECATED" text>
               <span class="mr-2">networks-DEPRECATED</span>
             </v-btn>

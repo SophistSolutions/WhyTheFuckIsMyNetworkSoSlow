@@ -2,16 +2,16 @@
   <v-container class="devices" v-click-outside="clearSelectionIfOutsideDevicesContainer">
     <v-card>
       <v-card-title>
-        Devices
+        Networks
         <v-spacer></v-spacer>
       </v-card-title>
       <v-data-table
-        height="4in"
+        height="2in"
         class="deviceList"
         dense
         v-model="selectedRows"
         :headers="headers"
-        :items="devicesAsDisplayed"
+        :items="networksAsDisplayed"
         :single-select="true"
         :search="search"
         :sort-by="sortBy"
@@ -28,11 +28,11 @@
             @click="rowClicked($event, item)"
           >
             <td>{{ item.name }}</td>
-            <td>{{ item.type }}</td>
-            <td>{{ item.manufacturer }}</td>
-            <td>{{ item.os }}</td>
-            <td>{{ item.networks }}</td>
-            <td>{{ item.localAddrresses }}</td>
+            <td>{{ item.active }}</td>
+            <td>{{ item.status }}</td>
+            <td>{{ item.location }}</td>
+            <td>{{ item.internetInfo }}</td>
+            <td>{{ item.devices }}</td>
           </tr>
         </template>
       </v-data-table>
@@ -46,39 +46,31 @@
         <table v-bind:key="itemId" class="selectedDevicesSection">
           <tr v-bind:key="itemId">
             <td>Name</td>
-            <td>{{ deviceFromID_(itemId).name }}</td>
+            <td>{{ networkFromID_(itemId).name }}</td>
           </tr>
           <tr v-bind:key="itemId">
             <td>ID</td>
             <td>{{ itemId }}</td>
           </tr>
-          <tr v-bind:key="itemId">
-            <td>Types</td>
-            <td>{{ deviceFromID_(itemId).type }}</td>
+          <tr v-bind:key="itemId" v-if="networkFromID_(itemId).DNSServers">
+            <td>DNSServers</td>
+            <td>{{ networkFromID_(itemId).DNSServers.join(", ") }}</td>
           </tr>
-          <tr v-bind:key="itemId" v-if="deviceFromID_(itemId).icon">
-            <td>Icon</td>
-            <td>{{ deviceFromID_(itemId).icon }}</td>
+          <tr v-bind:key="itemId" v-if="networkFromID_(itemId).gateways">
+            <td>gateways</td>
+            <td>{{ networkFromID_(itemId).gateways.join(", ") }}</td>
           </tr>
-          <tr v-bind:key="itemId" v-if="deviceFromID_(itemId).presentationURL">
-            <td>presentationURL</td>
-            <td>{{ deviceFromID_(itemId).presentationURL }}</td>
+          <tr v-bind:key="itemId" v-if="networkFromID_(itemId).geographicLocation">
+            <td>geographicLocation</td>
+            <td>{{ networkFromID_(itemId).geographicLocation }}</td>
           </tr>
-          <tr v-bind:key="itemId" v-if="deviceFromID_(itemId).operatingSystem">
-            <td>operatingSystem</td>
-            <td>{{ deviceFromID_(itemId).operatingSystem }}</td>
+          <tr v-bind:key="itemId" v-if="networkFromID_(itemId).internetServiceProvider">
+            <td>internetServiceProvider</td>
+            <td>{{ networkFromID_(itemId).internetServiceProvider }}</td>
           </tr>
-          <tr v-bind:key="itemId" v-if="deviceFromID_(itemId).manufacturer">
-            <td>Manufactures</td>
-            <td>{{ deviceFromID_(itemId).manufacturer }}</td>
-          </tr>
-          <tr v-bind:key="itemId">
-            <td>attachedNetworks</td>
-            <td>{{ deviceFromID_(itemId).attachedNetworks }}</td>
-          </tr>
-          <tr v-bind:key="itemId" v-if="deviceFromID_(itemId).debugProps">
+          <tr v-bind:key="itemId" v-if="networkFromID_(itemId).debugProps">
             <td>DEBUG INFO</td>
-            <td>{{ deviceFromID_(itemId).debugProps }}</td>
+            <td>{{ networkFromID_(itemId).debugProps }}</td>
           </tr>
         </table>
       </template>
@@ -87,14 +79,14 @@
 </template>
 
 <script lang="ts">
-import { IDevice, INetworkAttachmentInfo } from "@/models/device/IDevice";
+import { INetwork } from "@/models/network/INetwork";
 import { Component, Vue, Watch } from "vue-property-decorator";
 
 import { compareValues } from "@/CustomSort";
 import { fetchNetworks } from "@/proxy/API";
 
 @Component({
-  name: "Devices",
+  name: "Networks",
   components: {},
 })
 export default class Devices extends Vue {
@@ -105,9 +97,9 @@ export default class Devices extends Vue {
   private sortDesc: any = [];
 
   // terrible inefficient approach - maybe create map object dervied from devices array
-  private deviceFromID_(id: string) {
+  private networkFromID_(id: string) {
     let result = null;
-    this.devices.every((d) => {
+    this.networks.every((d) => {
       if (d.id === id) {
         result = d;
         return false;
@@ -124,7 +116,7 @@ export default class Devices extends Vue {
   private clearSelectionIfOutsideDevicesContainer() {
     this.clearSelection();
   }
-  private rowClicked(e: any, row: IDevice) {
+  private rowClicked(e: any, row: INetwork) {
     this.toggleSelection(row.id);
     // @todo fix proper handling of shift key !e.shiftKey && !
     if (!e.ctrlKey) {
@@ -141,24 +133,38 @@ export default class Devices extends Vue {
     }
   }
 
-  private formatNetworks_(attachedNetworks: { [key: string]: INetworkAttachmentInfo }): string {
-    const addresses: string[] = [];
-    Object.entries(attachedNetworks).forEach((element) => {
-      // console.log(element);
-      addresses.push(element[0]);
-    });
-    return addresses.join(", ");
+  // private formatNetworks_(attachedNetworks: { [key: string]: INetworkAttachmentInfo }): string {
+  //   const addresses: string[] = [];
+  //   Object.entries(attachedNetworks).forEach((element) => {
+  //     // console.log(element);
+  //     addresses.push(element[0]);
+  //   });
+  //   return addresses.join(", ");
+  // }
+
+  // private formatNetworkAddresses_(attachedNetworks: {
+  //   [key: string]: INetworkAttachmentInfo;
+  // }): string {
+  //   const addresses: string[] = [];
+  //   Object.entries(attachedNetworks).forEach((element) => {
+  //     // console.log(element);
+  //     element[1].networkAddresses.forEach((e: string) => addresses.push(e));
+  //   });
+  //   return addresses.join(", ");
+  // }
+
+  private fetchAvailableNetworks() {
+    this.$store.dispatch("fetchAvailableNetworks");
   }
 
-  private formatNetworkAddresses_(attachedNetworks: {
-    [key: string]: INetworkAttachmentInfo;
-  }): string {
-    const addresses: string[] = [];
-    Object.entries(attachedNetworks).forEach((element) => {
-      // console.log(element);
-      element[1].networkAddresses.forEach((e: string) => addresses.push(e));
-    });
-    return addresses.join(", ");
+  private pollData() {
+    this.polling = setInterval(() => {
+      this.fetchAvailableNetworks();
+    }, 10 * 1000);
+  }
+
+  private get networks(): INetwork[] {
+    return this.$store.getters.getAvailableNetworks;
   }
 
   private get search(): string {
@@ -172,30 +178,30 @@ export default class Devices extends Vue {
         value: "name",
       },
       {
-        text: "Type",
-        value: "type",
+        text: "Active",
+        value: "active",
       },
       {
-        text: "Manufacturer",
-        value: "manufacturer",
+        text: "Status",
+        value: "status",
       },
       {
-        text: "OS",
-        value: "operatingSystem",
+        text: "Location",
+        value: "location",
       },
       {
-        text: "Network",
-        value: "networks",
+        text: "Internet",
+        value: "internetInfo",
       },
       {
-        text: "Local Address",
-        value: "localAddrresses",
+        text: "devices",
+        value: "devices",
       },
     ];
   }
 
   private created() {
-    this.fetchDevices();
+    this.fetchAvailableNetworks();
     this.pollData();
   }
 
@@ -203,32 +209,30 @@ export default class Devices extends Vue {
     clearInterval(this.polling);
   }
 
-  private fetchDevices() {
-    this.$store.dispatch("fetchDevices", null);
-  }
-
-  private pollData() {
-    this.polling = setInterval(() => {
-      this.fetchDevices();
-    }, 10 * 1000);
-  }
-
-  private get devices(): IDevice[] {
-    return this.$store.getters.getDevices;
-  }
-
-  @Watch("devices()")
-  private get devicesAsDisplayed(): object[] {
+  @Watch("networks()")
+  private get networksAsDisplayed(): object[] {
     const result: object[] = [];
-    this.devices.forEach((i) => {
+    this.networks.forEach((i) => {
+      let location: string =
+        i.geographicLocation == null
+          ? null
+          : i.geographicLocation.city + ", " + i.geographicLocation.regionCode;
       result.push({
         id: i.id,
-        name: i.name,
-        type: i.type == null ? null : i.type.join(", "),
-        manufacturer: i.manufacturer == null ? "?" : i.manufacturer.fullName,
-        os: i.operatingSystem == null ? null : i.operatingSystem.fullVersionedName,
-        networks: this.formatNetworks_(i.attachedNetworks),
-        localAddrresses: this.formatNetworkAddresses_(i.attachedNetworks),
+        name: i.networkAddresses.join(", "),
+        active: "true",
+        internetInfo:
+          (i.gateways == null ? "" : i.gateways.join(", ")) +
+          (i.internetServiceProvider == null ? " " : " (" + i.internetServiceProvider.name + ")"),
+        devices: "19",
+        status: "healthy",
+        location: location,
+        // name: i.name,
+        // type: i.type == null ? null : i.type.join(", "),
+        // manufacturer: i.manufacturer == null ? "?" : i.manufacturer.fullName,
+        // os: i.operatingSystem == null ? null : i.operatingSystem.fullVersionedName,
+        // networks: this.formatNetworks_(i.attachedNetworks),
+        // localAddrresses: this.formatNetworkAddresses_(i.attachedNetworks),
       });
     });
     result.sort((a: any, b: any) => {

@@ -29,6 +29,20 @@ export default new Router({
       name: "hello",
     },
     {
+      path: "/networks",
+      name: "Networks",
+      // route level code-splitting
+      // this generates a separate chunk (about.[hash].js) for this route
+      // which is lazy-loaded when the route is visited.
+      component: () => import(/* webpackChunkName: "NetworkView" */ "./views/NetworksView.vue"),
+      meta: {
+        breadcrumbs: [
+          { text: "Home", href: "/", exact: true },
+          { text: "Networks", disabled: true },
+        ],
+      },
+    },
+    {
       path: "/networks-DEPRECATED",
       name: "Networks-DEPRECATED",
       // route level code-splitting
