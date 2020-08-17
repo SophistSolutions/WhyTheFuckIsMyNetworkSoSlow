@@ -1,5 +1,5 @@
 <template>
-  <v-container class="devices">
+  <v-container class="devices" v-click-outside="clearSelectionIfOutsideDevicesContainer">
     <v-card>
       <v-card-title>
         Devices
@@ -117,6 +117,13 @@ export default class Devices extends Vue {
     return result;
   }
 
+  private clearSelection() {
+    this.selectedRows = [];
+  }
+
+  private clearSelectionIfOutsideDevicesContainer(e) {
+    this.clearSelection();
+  }
   private rowClicked(e: any, row: IDevice) {
     this.toggleSelection(row.id);
     // @todo fix proper handling of shift key !e.shiftKey && !
