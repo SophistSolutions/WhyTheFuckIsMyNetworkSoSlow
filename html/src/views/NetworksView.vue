@@ -39,7 +39,7 @@
     </v-card>
     <v-card v-if="selectedRows.length">
       <v-card-title>
-        Selected
+        Details
         <v-spacer></v-spacer>
       </v-card-title>
       <template v-for="itemId in selectedRows">
