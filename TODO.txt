@@ -5,6 +5,11 @@ FIX BUILD OF WTF - using DOCKER - so works on Ubuntu 1804
 
 ----
 
+make clean at top level of WTF followed by make rebuilds parts of TPP/Stroika/TPP, so fix that!
+
+
+----
+
 	Use NAMES of networks in DEVICES panel
 	Use right number of linked devices in networks panel
 	Do LINKS between the two
