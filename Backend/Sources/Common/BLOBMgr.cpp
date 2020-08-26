@@ -3,9 +3,7 @@
  */
 #include "Stroika/Frameworks/StroikaPreComp.h"
 
-#include "Stroika/Foundation/Characters/StringBuilder.h"
 #include "Stroika/Foundation/Characters/ToString.h"
-#include "Stroika/Foundation/Containers/Bijection.h"
 #include "Stroika/Foundation/Execution/Synchronized.h"
 #include "Stroika/Foundation/IO/Network/Transfer/Connection.h"
 
@@ -32,22 +30,34 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common;
 
 /*
  ********************************************************************************
+ ******************* BackendApp::Common::BLOBMgr::Activator *********************
+ ********************************************************************************
+ */
+
+BLOBMgr::Activator::Activator ()
+{
+    BLOBMgr::sThe.fThreadPool_.store (make_unique<Execution::ThreadPool> (1, L"URLBLOBFetcher"_k));
+}
+
+BLOBMgr::Activator::~Activator ()
+{
+    BLOBMgr::sThe.fThreadPool_.store (nullptr);
+}
+
+
+/*
+ ********************************************************************************
  ************************* BackendApp::Common::BLOBMgr **************************
  ********************************************************************************
  */
-BLOBMgr BLOBMgr::sThe;
-
-namespace {
-    Synchronized<Bijection<GUID, tuple<BLOB, InternetMediaType>>> sStorage_;
-}
 
 GUID BLOBMgr::AddBLOB (const BLOB& b, const InternetMediaType& ct)
 {
-    if (auto id = sStorage_.cget ()->InverseLookup (make_tuple (b, ct))) {
+    if (auto id = fStorage_.cget ()->InverseLookup (make_tuple (b, ct))) {
         return *id;
     }
     GUID g = GUID::GenerateNew ();
-    sStorage_.rwget ()->Add (g, make_tuple (b, ct));
+    fStorage_.rwget ()->Add (g, make_tuple (b, ct));
     return g;
 }
 
@@ -72,10 +82,36 @@ GUID BLOBMgr::AddBLOBFromURL (const URI& url)
     return AddBLOB (data.first, data.second);
 }
 
-tuple<BLOB, InternetMediaType> BLOBMgr::GetBLOB (const GUID& id) const
+optional<GUID> BLOBMgr::AsyncAddBLOBFromURL (const URI& url, bool allowExpired)
 {
-    if (auto r = sStorage_.cget ()->Lookup (id)) {
+    // create mapping of URL to guid, and if not presnt, add task to threadpool to AddBLOBFromURL and store mapping into mapping object
+
+    // @todo add logic for checking if expired and refetch then too
+    auto r = fURI2BLOBMap_.load ().Lookup (url);
+    if (not r.has_value ()) {
+        fThreadPool_.rwget ().rwref ()->AddTask ([=] () {
+            auto guid = AddBLOBFromURL (url); // @todo if this fails (CATCH) - then negative cache, so we dont try too often
+            auto l    = fURI2BLOBMap_.rwget ();
+            DbgTrace (L"Added icon mapping: %s maps to blobid %s", Characters::ToString (url).c_str (), Characters::ToString (guid).c_str ());
+            l.rwref ().Add (url, guid);
+        });
+    }
+    return r;
+}
+
+optional<GUID> BLOBMgr::Lookup (const URI& url, bool allowExpired)
+{
+    auto r = fURI2BLOBMap_.load ().Lookup (url);
+    if (r) {
         return *r;
     }
-    Execution::Throw (Execution::Exception<> (L"No such blob"sv));
+    return nullopt;
+}
+
+tuple<BLOB, InternetMediaType> BLOBMgr::GetBLOB (const GUID& id) const
+{
+    if (auto r = fStorage_.cget ()->Lookup (id)) {
+        return *r;
+    }
+    Execution::Throw (Execution::Exception<>{L"No such blob"sv});
 }

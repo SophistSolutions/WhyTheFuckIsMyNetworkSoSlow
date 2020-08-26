@@ -13,6 +13,8 @@
 #include "Stroika/Foundation/Execution/WaitableEvent.h"
 #include "Stroika/Frameworks/Service/Main.h"
 
+#include "Common/BLOBMgr.h"
+
 #include "Discovery/Devices.h"
 #include "Discovery/NetworkInterfaces.h"
 
@@ -48,6 +50,7 @@ void WTFAppServiceRep::MainLoop (const std::function<void ()>& startedCB)
     // deviceMgr calls NetworkMgr so order here is important. And webserver can call either. Allowing destruction to shutdown guarantees proper ordering
     // of dependencies on shutdown
 
+    Common::BLOBMgr::Activator                 blobMgrActivator;
     Discovery::NetworkInterfacesMgr::Activator networkInterfacesMgrActivator;
     Discovery::NetworksMgr::Activator          networkMgrActivator;
     Discovery::DevicesMgr::Activator           devicesMgrActivator;
