@@ -41,7 +41,7 @@ namespace {
         AssertNotNull (results);
         try {
             ConnectionOrientedStreamSocket::Ptr s = ConnectionOrientedStreamSocket::New (SocketAddress::INET, Socket::STREAM);
-            s.Connect (SocketAddress{ia, PortNumber}, quickOpen? 5s : 30s);
+            s.Connect (SocketAddress{ia, PortNumber}, quickOpen ? 5s : 30s);
             results->fKnownOpenPorts += PortNumber;
         }
         catch (...) {

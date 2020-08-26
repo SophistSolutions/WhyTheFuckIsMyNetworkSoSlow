@@ -89,13 +89,13 @@ namespace {
             // this (due to firewalls, NAT etc).
             // Use relative URL for now, as that should work for most cases
             if (g) {
-                return URI{  nullopt, nullopt,  L"/blob/" + g->ToString ()};
+                return URI{nullopt, nullopt, L"/blob/" + g->ToString ()};
             }
         }
         catch (...) {
             AssertNotReached ();
         }
-        DbgTrace (L"Failed to cache url (%s) - so returning original", Characters::ToString (url).c_str ();
+        DbgTrace (L"Failed to cache url (%s) - so returning original", Characters::ToString (url).c_str ());
         return url;
     }
     optional<URI> TransformURL2LocalStorage_ (const optional<URI>& url)

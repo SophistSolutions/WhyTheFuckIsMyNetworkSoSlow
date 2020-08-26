@@ -7,9 +7,9 @@
 #include "Stroika/Frameworks/StroikaPreComp.h"
 
 #include "Stroika/Foundation/Characters/String.h"
+#include "Stroika/Foundation/Common/GUID.h"
 #include "Stroika/Foundation/Containers/Bijection.h"
 #include "Stroika/Foundation/Containers/Mapping.h"
-#include "Stroika/Foundation/Common/GUID.h"
 #include "Stroika/Foundation/DataExchange/InternetMediaType.h"
 #include "Stroika/Foundation/Execution/Synchronized.h"
 #include "Stroika/Foundation/Execution/ThreadPool.h"
@@ -80,10 +80,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
          */
         nonvirtual tuple<BLOB, InternetMediaType> GetBLOB (const GUID& id) const;
 
-   private:
-       Execution:: Synchronized<Containers::Bijection<GUID, tuple<BLOB, InternetMediaType>>> fStorage_;
-       Execution::Synchronized<Containers::Mapping<URI, GUID>>                              fURI2BLOBMap_;
-       Execution::Synchronized < unique_ptr<Execution::ThreadPool>>                             fThreadPool_;
+    private:
+        Execution::Synchronized<Containers::Bijection<GUID, tuple<BLOB, InternetMediaType>>> fStorage_;
+        Execution::Synchronized<Containers::Mapping<URI, GUID>>                              fURI2BLOBMap_;
+        Execution::Synchronized<unique_ptr<Execution::ThreadPool>>                           fThreadPool_;
     };
     inline BLOBMgr BLOBMgr::sThe; // @todo recondider if this follows new Stroika Singleton pattern -- LGP 2020-08-20
 

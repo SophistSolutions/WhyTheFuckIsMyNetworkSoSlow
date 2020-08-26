@@ -44,7 +44,6 @@ BLOBMgr::Activator::~Activator ()
     BLOBMgr::sThe.fThreadPool_.store (nullptr);
 }
 
-
 /*
  ********************************************************************************
  ************************* BackendApp::Common::BLOBMgr **************************
