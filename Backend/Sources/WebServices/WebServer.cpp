@@ -10,9 +10,9 @@
 #include "Stroika/Foundation/Containers/Set.h"
 #include "Stroika/Foundation/Cryptography/Digest/Algorithm/MD5.h"
 #include "Stroika/Foundation/Cryptography/Format.h"
+#include "Stroika/Foundation/DataExchange/InternetMediaTypeRegistry.h"
 #include "Stroika/Foundation/DataExchange/Variant/JSON/Reader.h"
 #include "Stroika/Foundation/DataExchange/Variant/JSON/Writer.h"
-#include "Stroika/Foundation/DataExchange/InternetMediaTypeRegistry.h"
 #include "Stroika/Foundation/Execution/Activity.h"
 #include "Stroika/Foundation/Execution/Module.h"
 #include "Stroika/Foundation/Execution/Synchronized.h"
@@ -103,7 +103,7 @@ private:
 
 public:
     Rep_ (const shared_ptr<IWSAPI>& wsImpl)
-        : fWSAPI_ (wsImpl)
+        : fWSAPI_{wsImpl}
         , fWSRouter_{Sequence<Route>{
               /*
                *  To test this example:
