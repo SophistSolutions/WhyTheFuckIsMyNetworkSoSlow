@@ -1,6 +1,25 @@
 
 
 FIX BUILD OF WTF - using DOCKER - so works on Ubuntu 1804
+-----
+
+https://github.com/mfontanini/libtins (look at this? Use? Maybe not needed)
+----
+
+	> let run for a few days and try to connect with web browser.
+	  I get no response
+	  Service still running. Looking at tracelog I see lots of SSDP action running. 
+
+	  AND STATIC website still serving content.
+
+	GET of http://hercules.local:8080/ shows no activeity in tracelog but GET http://hercules.local shows lots of threadpool
+	tasks being serviced.
+
+	netstat shows lots of things connected/estabished on 8080
+
+
+	See if I can reproduce on debugger on windows
+		(((PROBABLY FIXED - SLOW MOSTLY DUE TO translate2localblob optiimziation lacking - but retest at home)))
 
 
 ----
