@@ -1,12 +1,11 @@
 <template>
-  <v-container class="devices" v-click-outside="clearSelectionIfOutsideDevicesContainer">
-    <v-card>
+  <v-container class="devicesPage" v-click-outside="clearSelectionIfOutsideDevicesContainer">
+    <v-card class="deviceListCard">
       <v-card-title>
         Devices
         <v-spacer></v-spacer>
       </v-card-title>
       <v-data-table
-        height="4in"
         class="deviceList elevation-1"
         dense
         v-model="selectedRows"
@@ -36,34 +35,35 @@
         </template>
       </v-data-table>
     </v-card>
-    <v-card v-if="selectedRows.length">
+
+    <v-card class="selectedItemCard" v-if="selectedRows.length">
       <v-card-title>
         Details
         <v-spacer></v-spacer>
       </v-card-title>
       <template v-for="itemId in selectedRows">
         <table v-bind:key="itemId" class="selectedDevicesSection">
-          <tr v-bind:key="itemId">
+          <tr>
             <td>Name</td>
             <td>{{ deviceFromID_(itemId).name }}</td>
           </tr>
-          <tr v-bind:key="itemId">
+          <tr>
             <td>ID</td>
             <td>{{ itemId }}</td>
           </tr>
-          <tr v-bind:key="itemId" v-if="deviceFromID_(itemId).type">
+          <tr v-if="deviceFromID_(itemId).type">
             <td>Types</td>
             <td>{{ deviceFromID_(itemId).type.join(", ") }}</td>
           </tr>
-          <tr v-bind:key="itemId" v-if="deviceFromID_(itemId).icon">
+          <tr v-if="deviceFromID_(itemId).icon">
             <td>Icon</td>
             <td>{{ deviceFromID_(itemId).icon }}</td>
           </tr>
-          <tr v-bind:key="itemId" v-if="deviceFromID_(itemId).presentationURL">
-            <td>Presentation URL</td>
+          <tr v-if="deviceFromID_(itemId).presentationURL">
+            <td>Presentation</td>
             <td>{{ deviceFromID_(itemId).presentationURL }}</td>
           </tr>
-          <tr v-bind:key="itemId" v-if="deviceFromID_(itemId).operatingSystem">
+          <tr v-if="deviceFromID_(itemId).operatingSystem">
             <td>operatingSystem</td>
             <td>
               {{
@@ -72,19 +72,19 @@
               }}
             </td>
           </tr>
-          <tr v-bind:key="itemId" v-if="deviceFromID_(itemId).manufacturer">
+          <tr v-if="deviceFromID_(itemId).manufacturer">
             <td>Manufacturers</td>
             <td>{{ deviceFromID_(itemId).manufacturer }}</td>
           </tr>
-          <tr v-bind:key="itemId">
-            <td>Attached Networks</td>
+          <tr>
+            <td>Networks</td>
             <td>{{ deviceFromID_(itemId).attachedNetworks }}</td>
           </tr>
-          <tr v-bind:key="itemId">
+          <tr>
             <td>Last Seen</td>
             <td>tbd - e.g. 4 minutes ago</td>
           </tr>
-          <tr v-bind:key="itemId" v-if="deviceFromID_(itemId).debugProps">
+          <tr v-if="deviceFromID_(itemId).debugProps">
             <td>DEBUG INFO</td>
             <td>{{ deviceFromID_(itemId).debugProps }}</td>
           </tr>
@@ -216,9 +216,13 @@ export default class Devices extends Vue {
   }
 
   private pollData() {
+    // first time check quickly, then more gradually
+    setTimeout(() => {
+      this.fetchDevices();
+    }, 5 * 1000);
     this.polling = setInterval(() => {
       this.fetchDevices();
-    }, 10 * 1000);
+    }, 15 * 1000);
   }
 
   private get devices(): IDevice[] {
@@ -255,11 +259,17 @@ export default class Devices extends Vue {
 </script>
 
 <style lang="scss">
-.devices {
-  position: relative;
-  max-width: 90%;
-  margin: auto;
+.devicesPage {
+}
+
+.deviceListCard {
+  margin-top: 10px;
+  margin-left: 10px;
+}
+
+.selectedItemCard {
   margin-top: 20px;
+  margin-left: 70px;
 }
 
 .deviceList {
@@ -267,28 +277,22 @@ export default class Devices extends Vue {
 }
 .selectedDevicesSection {
   margin-top: 10px;
-  margin-left: 10px;
-  margin-right: 10px;
-  margin-bottom: 10px;
+  margin-left: 30px;
 }
 
 .deviceRow {
-  // width: 100vw;
+  width: 100vw;
 
-  // > td {
-  //   white-space: nowrap;
-  //   overflow: hidden;
-  //   text-overflow: ellipsis;
-  // }
+  > td {
+    // white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 .selectedRow {
   background-color: yellow;
-
   &:hover {
     background-color: pink;
   }
-}
-.flip-list-move {
-  transition: transform 500ms;
 }
 </style>
