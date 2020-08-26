@@ -7,6 +7,7 @@
 #include "Stroika/Foundation/Characters/ToString.h"
 #include "Stroika/Foundation/Configuration/SystemConfiguration.h"
 #include "Stroika/Foundation/Containers/Set.h"
+#include "Stroika/Foundation/Debug/TimingTrace.h"
 #include "Stroika/Foundation/Execution/Synchronized.h"
 #include "Stroika/Foundation/IO/Network/DNS.h"
 #include "Stroika/Foundation/IO/Network/HTTP/ClientErrorException.h"
@@ -76,22 +77,26 @@ Sequence<String> WSImpl::GetDevices (const optional<DeviceSortParamters>& sort) 
 namespace {
     URI TransformURL2LocalStorage_ (const URI& url)
     {
+        Debug::TimingTrace ttrc{L"TransformURL2LocalStorage_", 0.1}; // sb very quick cuz we schedule url fetches for background
+
         // if we are unable to cache the url (say because the url is bad or the device is currently down)
         // just return the original
+
         try {
-            GUID g = BackendApp::Common::BLOBMgr::sThe.AddBLOBFromURL (url);
+            // This BLOBMgr code wont block - it will push a request into a Q, and fetch whatever data is has (maybe none)
+            optional<GUID> g = BackendApp::Common::BLOBMgr::sThe.AsyncAddBLOBFromURL (url);
             // tricky to know right host to supply here - will need some sort of configuration for
             // this (due to firewalls, NAT etc).
             // Use relative URL for now, as that should work for most cases
-            return URI{
-                nullopt,
-                nullopt,
-                L"/blob/" + g.ToString ()};
+            if (g) {
+                return URI{  nullopt, nullopt,  L"/blob/" + g->ToString ()};
+            }
         }
         catch (...) {
-            DbgTrace (L"Failed to cache url (%s) - so returning original: %s", Characters::ToString (url).c_str (), Characters::ToString (current_exception ()).c_str ());
-            return url;
+            AssertNotReached ();
         }
+        DbgTrace (L"Failed to cache url (%s) - so returning original", Characters::ToString (url).c_str ();
+        return url;
     }
     optional<URI> TransformURL2LocalStorage_ (const optional<URI>& url)
     {
@@ -102,6 +107,7 @@ namespace {
 Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const optional<DeviceSortParamters>& sort) const
 {
     Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::GetDevices_Recurse", L"sort=%s", Characters::ToString (sort).c_str ())};
+    Debug::TimingTrace        ttrc{L"WSImpl::GetDevices_Recurse", 1};
 
     // Compute effective sort Search Terms - filling in optional values
     Sequence<DeviceSortParamters::SearchTerm> searchTerms;
@@ -132,7 +138,7 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
     optional<Set<CIDR>> sortCompareNetwork;
     if (sort->fCompareNetwork) {
         // CIDR will contain a / and GUID won't so use that to distinguish
-        if (sort->fCompareNetwork->Contains (L"/")) {
+        if (sort->fCompareNetwork->Contains (L"/"_k)) {
             sortCompareNetwork = Set<CIDR>{CIDR{*sort->fCompareNetwork}}; // OK to throw if invalid
         }
         else {
@@ -294,7 +300,7 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
                     });
                 } break;
                 default: {
-                    Execution::Throw (ClientErrorException (L"missing or invalid By in search specification"));
+                    Execution::Throw (ClientErrorException{L"missing or invalid By in search specification"_k});
                 } break;
             }
         }
@@ -305,19 +311,21 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
 
 Device WSImpl::GetDevice (const String& id) const
 {
-    GUID compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
+    Debug::TimingTrace ttrc{L"WSImpl::GetDevice", 0.25};
+    GUID               compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
     // @todo quick hack impl
     for (auto i : GetDevices_Recurse (nullopt)) {
         if (i.fGUID == compareWithID) {
             return i;
         }
     }
-    Execution::Throw (ClientErrorException (L"no such id"sv));
+    Execution::Throw (ClientErrorException{L"no such id"sv});
 }
 
 Sequence<String> WSImpl::GetNetworks () const
 {
-    Sequence<String> result;
+    Debug::TimingTrace ttrc{L"WSImpl::GetNetworks", 0.25};
+    Sequence<String>   result;
     for (Discovery::Network n : Discovery::NetworksMgr::sThe.CollectActiveNetworks ()) {
         result += Characters::ToString (n.fGUID);
     }
@@ -326,6 +334,7 @@ Sequence<String> WSImpl::GetNetworks () const
 
 Sequence<BackendApp::WebServices::Network> WSImpl::GetNetworks_Recurse () const
 {
+    Debug::TimingTrace                         ttrc{L"WSImpl::GetNetworks_Recurse", 1};
     Sequence<BackendApp::WebServices::Network> result;
 
     // @todo parameterize if we return all or just active networks
@@ -357,18 +366,20 @@ Sequence<BackendApp::WebServices::Network> WSImpl::GetNetworks_Recurse () const
 
 Network WSImpl::GetNetwork (const String& id) const
 {
-    GUID compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
+    Debug::TimingTrace ttrc{L"WSImpl::GetNetwork", 1};
+    GUID               compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
     // @todo quick hack impl
     for (auto i : GetNetworks_Recurse ()) {
         if (i.fGUID == compareWithID) {
             return i;
         }
     }
-    Execution::Throw (ClientErrorException (L"no such id"sv));
+    Execution::Throw (ClientErrorException{L"no such id"sv});
 }
 
 Collection<String> WSImpl::GetNetworkInterfaces (bool filterRunningOnly) const
 {
+    Debug::TimingTrace ttrc{L"WSImpl::GetNetworkInterfaces", 1};
     Collection<String> result;
 
     for (Discovery::NetworkInterface n : Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ()) {
@@ -424,7 +435,7 @@ NetworkInterface WSImpl::GetNetworkInterface (const String& id) const
             return i;
         }
     }
-    Execution::Throw (ClientErrorException (L"no such id"sv));
+    Execution::Throw (ClientErrorException{L"no such id"sv});
 }
 
 double WSImpl::Operation_Ping (const String& address) const
@@ -450,7 +461,7 @@ double WSImpl::Operation_Ping (const String& address) const
     // write GetHostAddress () function in DNS that throws if not at least one
     auto addrs = DNS::Default ().GetHostAddresses (address, InternetAddress::AddressFamily::V4);
     if (addrs.size () < 1) {
-        Execution::Throw (Execution::Exception (L"no addr"sv));
+        Execution::Throw (Execution::Exception{L"no addr"sv});
     }
 
     NetworkMonitor::Ping::SampleResults t = NetworkMonitor::Ping::Sample (addrs[0], Ping::SampleOptions{kInterSampleTime_, sampleCount}, options);
@@ -514,7 +525,7 @@ Time::Duration WSImpl::Operation_DNS_CalculateNegativeLookupTime (optional<unsig
     constexpr unsigned int    kDefault_Samples = 7;
     unsigned int              useSamples       = samples.value_or (kDefault_Samples);
     if (useSamples == 0) {
-        Execution::Throw (ClientErrorException (L"samples must be > 0"sv));
+        Execution::Throw (ClientErrorException{L"samples must be > 0"sv});
     }
     uniform_int_distribution<mt19937::result_type> allUInt16Distribution{0, numeric_limits<uint32_t>::max ()};
     static mt19937                                 sRng_{std::random_device () ()};
