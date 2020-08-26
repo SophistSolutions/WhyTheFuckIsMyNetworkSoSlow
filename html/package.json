@@ -12,6 +12,7 @@
     "core-js": "^3.6.5",
     "vue": "^2.5.17",
     "vue-class-component": "^6.0.0",
+    "vue-moment": "^4.1.0",
     "vue-property-decorator": "^7.0.0",
     "vue-router": "^3.3.4",
     "vuetify": "^2.3.7",

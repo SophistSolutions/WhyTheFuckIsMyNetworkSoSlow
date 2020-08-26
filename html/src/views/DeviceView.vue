@@ -6,6 +6,8 @@
         <v-spacer></v-spacer>
       </v-card-title>
       <v-data-table
+        height="39vh"
+        fixed-header
         class="deviceList elevation-1"
         dense
         v-model="selectedRows"
@@ -27,6 +29,7 @@
           >
             <td>{{ item.name }}</td>
             <td>{{ item.type }}</td>
+            <td>{{ item.lastSeenAt | moment("from", "now") }}</td>
             <td>{{ item.manufacturer }}</td>
             <td>{{ item.os }}</td>
             <td>{{ item.networks }}</td>
@@ -64,7 +67,7 @@
             <td>{{ deviceFromID_(itemId).presentationURL }}</td>
           </tr>
           <tr v-if="deviceFromID_(itemId).operatingSystem">
-            <td>operatingSystem</td>
+            <td>OS</td>
             <td>
               {{
                 deviceFromID_(itemId).operatingSystem.fullVersionedName ||
@@ -74,7 +77,12 @@
           </tr>
           <tr v-if="deviceFromID_(itemId).manufacturer">
             <td>Manufacturers</td>
-            <td>{{ deviceFromID_(itemId).manufacturer }}</td>
+            <td>
+              {{
+                deviceFromID_(itemId).manufacturer.fullName ||
+                  deviceFromID_(itemId).manufacturer.shortName
+              }}
+            </td>
           </tr>
           <tr>
             <td>Networks</td>
@@ -82,7 +90,7 @@
           </tr>
           <tr>
             <td>Last Seen</td>
-            <td>tbd - e.g. 4 minutes ago</td>
+            <td>{{ devicexxxFromID_(itemId).lastSeenAt | moment("from", "now") }}</td>
           </tr>
           <tr v-if="deviceFromID_(itemId).debugProps">
             <td>DEBUG INFO</td>
@@ -96,6 +104,7 @@
 
 <script lang="ts">
 import { IDevice, INetworkAttachmentInfo } from "@/models/device/IDevice";
+import { INetwork } from "@/models/network/INetwork";
 import { Component, Vue, Watch } from "vue-property-decorator";
 
 import { compareValues } from "@/CustomSort";
@@ -116,6 +125,17 @@ export default class Devices extends Vue {
   private deviceFromID_(id: string) {
     let result = null;
     this.devices.every((d) => {
+      if (d.id === id) {
+        result = d;
+        return false;
+      }
+      return true;
+    });
+    return result;
+  }
+  private devicexxxFromID_(id: string) {
+    let result = null;
+    this.devicesAsDisplayed.every((d) => {
       if (d.id === id) {
         result = d;
         return false;
@@ -149,11 +169,28 @@ export default class Devices extends Vue {
     }
   }
 
+  private fetchAvailableNetworks() {
+    this.$store.dispatch("fetchAvailableNetworks");
+  }
+  private get networks(): INetwork[] {
+    return this.$store.getters.getAvailableNetworks;
+  }
+
   private formatNetworks_(attachedNetworks: { [key: string]: INetworkAttachmentInfo }): string {
     const addresses: string[] = [];
     Object.entries(attachedNetworks).forEach((element) => {
-      // console.log(element);
-      addresses.push(element[0]);
+      let netID = element[0];
+      this.networks.forEach((network: INetwork) => {
+        if (network.id === netID) {
+          //netID = network.networkAddresses.join(", ");
+          //for now looks better grabbing first
+          if (network.networkAddresses.length >= 1) {
+            netID = network.networkAddresses[0];
+          }
+        }
+      });
+
+      addresses.push(netID);
     });
     return addresses.join(", ");
   }
@@ -184,6 +221,10 @@ export default class Devices extends Vue {
         value: "type",
       },
       {
+        text: "Last Seen",
+        value: "lastSeenAt",
+      },
+      {
         text: "Manufacturer",
         value: "manufacturer",
       },
@@ -204,6 +245,7 @@ export default class Devices extends Vue {
 
   private created() {
     this.fetchDevices();
+    this.fetchAvailableNetworks();
     this.pollData();
   }
 
@@ -222,6 +264,7 @@ export default class Devices extends Vue {
     }, 5 * 1000);
     this.polling = setInterval(() => {
       this.fetchDevices();
+      this.fetchAvailableNetworks();
     }, 15 * 1000);
   }
 
@@ -237,6 +280,7 @@ export default class Devices extends Vue {
         id: i.id,
         name: i.name,
         type: i.type == null ? null : i.type.join(", "),
+        lastSeenAt: Date.now(),
         manufacturer:
           i.manufacturer == null ? "?" : i.manufacturer.fullName || i.manufacturer.shortName,
         os: i.operatingSystem == null ? null : i.operatingSystem.fullVersionedName,
@@ -282,6 +326,7 @@ export default class Devices extends Vue {
 
 .deviceRow {
   width: 100vw;
+  max-width: 100vw;
 
   > td {
     // white-space: nowrap;
