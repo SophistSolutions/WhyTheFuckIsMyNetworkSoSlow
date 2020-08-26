@@ -7,7 +7,7 @@
       </v-card-title>
       <v-data-table
         height="4in"
-        class="deviceList"
+        class="deviceList elevation-1"
         dense
         v-model="selectedRows"
         :headers="headers"
@@ -20,11 +20,10 @@
         disable-pagination
         :hide-default-footer="true"
         item-key="id"
-        xclass="elevation-1"
       >
         <template v-slot:item="{ item }">
           <tr
-            :class="selectedRows.indexOf(item.id) > -1 ? 'yellow' : ''"
+            :class="selectedRows.indexOf(item.id) > -1 ? 'deviceRow selectedRow' : 'deviceRow'"
             @click="rowClicked($event, item)"
           >
             <td>{{ item.name }}</td>
@@ -52,29 +51,38 @@
             <td>ID</td>
             <td>{{ itemId }}</td>
           </tr>
-          <tr v-bind:key="itemId">
+          <tr v-bind:key="itemId" v-if="deviceFromID_(itemId).type">
             <td>Types</td>
-            <td>{{ deviceFromID_(itemId).type }}</td>
+            <td>{{ deviceFromID_(itemId).type.join(", ") }}</td>
           </tr>
           <tr v-bind:key="itemId" v-if="deviceFromID_(itemId).icon">
             <td>Icon</td>
             <td>{{ deviceFromID_(itemId).icon }}</td>
           </tr>
           <tr v-bind:key="itemId" v-if="deviceFromID_(itemId).presentationURL">
-            <td>presentationURL</td>
+            <td>Presentation URL</td>
             <td>{{ deviceFromID_(itemId).presentationURL }}</td>
           </tr>
           <tr v-bind:key="itemId" v-if="deviceFromID_(itemId).operatingSystem">
             <td>operatingSystem</td>
-            <td>{{ deviceFromID_(itemId).operatingSystem }}</td>
+            <td>
+              {{
+                deviceFromID_(itemId).operatingSystem.fullVersionedName ||
+                  deviceFromID_(itemId).operatingSystem.shortName
+              }}
+            </td>
           </tr>
           <tr v-bind:key="itemId" v-if="deviceFromID_(itemId).manufacturer">
-            <td>Manufactures</td>
+            <td>Manufacturers</td>
             <td>{{ deviceFromID_(itemId).manufacturer }}</td>
           </tr>
           <tr v-bind:key="itemId">
-            <td>attachedNetworks</td>
+            <td>Attached Networks</td>
             <td>{{ deviceFromID_(itemId).attachedNetworks }}</td>
+          </tr>
+          <tr v-bind:key="itemId">
+            <td>Last Seen</td>
+            <td>tbd - e.g. 4 minutes ago</td>
           </tr>
           <tr v-bind:key="itemId" v-if="deviceFromID_(itemId).debugProps">
             <td>DEBUG INFO</td>
@@ -225,7 +233,8 @@ export default class Devices extends Vue {
         id: i.id,
         name: i.name,
         type: i.type == null ? null : i.type.join(", "),
-        manufacturer: i.manufacturer == null ? "?" : i.manufacturer.fullName,
+        manufacturer:
+          i.manufacturer == null ? "?" : i.manufacturer.fullName || i.manufacturer.shortName,
         os: i.operatingSystem == null ? null : i.operatingSystem.fullVersionedName,
         networks: this.formatNetworks_(i.attachedNetworks),
         localAddrresses: this.formatNetworkAddresses_(i.attachedNetworks),
@@ -263,6 +272,22 @@ export default class Devices extends Vue {
   margin-bottom: 10px;
 }
 
+.deviceRow {
+  // width: 100vw;
+
+  // > td {
+  //   white-space: nowrap;
+  //   overflow: hidden;
+  //   text-overflow: ellipsis;
+  // }
+}
+.selectedRow {
+  background-color: yellow;
+
+  &:hover {
+    background-color: pink;
+  }
+}
 .flip-list-move {
   transition: transform 500ms;
 }
