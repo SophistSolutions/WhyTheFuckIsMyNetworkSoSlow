@@ -36,12 +36,12 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery;
 namespace {
     // template so for some ports we can replace implementation and change how handled
     template <int PortNumber>
-    void DoTCPScan_ (const InternetAddress& ia, PortScanResults* results)
+    void DoTCPScan_ (const InternetAddress& ia, bool quickOpen, PortScanResults* results)
     {
         AssertNotNull (results);
         try {
             ConnectionOrientedStreamSocket::Ptr s = ConnectionOrientedStreamSocket::New (SocketAddress::INET, Socket::STREAM);
-            s.Connect (SocketAddress{ia, PortNumber});
+            s.Connect (SocketAddress{ia, PortNumber}, quickOpen? 5s : 30s);
             results->fKnownOpenPorts += PortNumber;
         }
         catch (...) {
@@ -50,16 +50,21 @@ namespace {
     }
 }
 
-PortScanResults Discovery::ScanPorts (const InternetAddress& ia)
+PortScanResults Discovery::ScanPorts (const InternetAddress& ia, const optional<ScanOptions>& options)
 {
     PortScanResults results{};
 
-    DoTCPScan_<22> (ia, &results);   // SSH
-    DoTCPScan_<80> (ia, &results);   // HTTP
-    DoTCPScan_<443> (ia, &results);  // HTTPS
-    DoTCPScan_<515> (ia, &results);  // Line Printer Daemon (LPD)
-    DoTCPScan_<631> (ia, &results);  // IPP (internet printing protocol)
-    DoTCPScan_<3389> (ia, &results); // RDP
+    if (options and options->fStyle == ScanOptions::eQuick) {
+        DoTCPScan_<22> (ia, true, &results); // SSH
+        return results;
+    }
+
+    DoTCPScan_<22> (ia, false, &results);   // SSH
+    DoTCPScan_<80> (ia, false, &results);   // HTTP
+    DoTCPScan_<443> (ia, false, &results);  // HTTPS
+    DoTCPScan_<515> (ia, false, &results);  // Line Printer Daemon (LPD)
+    DoTCPScan_<631> (ia, false, &results);  // IPP (internet printing protocol)
+    DoTCPScan_<3389> (ia, false, &results); // RDP
 
     return results;
 }

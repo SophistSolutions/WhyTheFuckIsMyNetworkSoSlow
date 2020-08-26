@@ -25,10 +25,17 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
         // later return other inferred results from scan, like Server: headers etc..
     };
 
+    struct ScanOptions {
+        enum Style { eQuick,
+                     eBasic,
+                     eFull };
+        optional<Style> fStyle;
+    };
+
     /**
      *  Don't throw on network errors, just report back a set of successfully scanned (known now open) ports.
      */
-    PortScanResults ScanPorts (const IO::Network::InternetAddress& ia);
+    PortScanResults ScanPorts (const IO::Network::InternetAddress& ia, const optional<ScanOptions>& options = nullopt);
 
 }
 
