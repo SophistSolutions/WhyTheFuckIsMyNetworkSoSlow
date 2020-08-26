@@ -340,6 +340,8 @@ namespace {
         };
         optional<SSDPInfo> fSSDPInfo;
 
+        optional<Set<uint16_t>> fKnownOpenPorts;
+
         void AddIPAddresses_ (const InternetAddress& addr, const optional<String>& hwAddr = nullopt)
         {
             // merge the addrs into each matching network interface
@@ -511,7 +513,11 @@ namespace {
                                                                       Characters::ToString (fSSDPInfo->fLocations) }
                                      }});
             }
-
+            if (fKnownOpenPorts) {
+                fDebugProps.Add (
+                    L"OpenPorts"sv,
+                    VariantValue{fKnownOpenPorts->Select<VariantValue> ([] (unsigned int i) { return VariantValue{i}; })});
+            }
 #endif
 
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
@@ -590,8 +596,8 @@ namespace {
     // @todo redo this with IDs, and have the thread keep running to update network info
     struct MyDeviceDiscoverer_ {
         MyDeviceDiscoverer_ ()
-            : fMyDeviceDiscovererThread_ (
-                  Thread::CleanupPtr::eAbortBeforeWaiting, Thread::New (DiscoveryChecker_, Thread::eAutoStart, L"MyDeviceDiscoverer"))
+            : fMyDeviceDiscovererThread_{
+                  Thread::CleanupPtr::eAbortBeforeWaiting, Thread::New (DiscoveryChecker_, Thread::eAutoStart, L"MyDeviceDiscoverer"_k)}
         {
         }
 
@@ -665,7 +671,7 @@ namespace {
                     Execution::Logger::Get ().LogIfNew (Execution::Logger::Priority::eError, 5min, L"%s", Characters::ToString (current_exception ()).c_str ());
                 }
 
-nextTry:
+            nextTry:
                 Execution::Sleep (30s); // @todo tmphack - really wait til change in network
             }
         }
@@ -855,11 +861,11 @@ namespace {
 #endif
 
                 if (not di.fOperatingSystem.has_value ()) {
-                    if (di.fSSDPInfo->fServer and di.fSSDPInfo->fServer->Contains (L"Linux")) {
-                        di.fOperatingSystem = Discovery::OperatingSystem{L"Linux"};
+                    if (di.fSSDPInfo->fServer and di.fSSDPInfo->fServer->Contains (L"Linux"_k)) {
+                        di.fOperatingSystem = Discovery::OperatingSystem{L"Linux"_k};
                     }
-                    else if (di.fSSDPInfo->fServer and di.fSSDPInfo->fServer->Contains (L"POSIX")) {
-                        di.fOperatingSystem = Discovery::OperatingSystem{L"POSIX"};
+                    else if (di.fSSDPInfo->fServer and di.fSSDPInfo->fServer->Contains (L"POSIX"_k)) {
+                        di.fOperatingSystem = Discovery::OperatingSystem{L"POSIX"_k};
                     }
                 }
                 di.PatchDerivedFields ();
@@ -1020,6 +1026,8 @@ namespace {
             //constexpr auto               kAllowedNetworkStaleness_ = 1min;
             constexpr Time::DurationSecondsType kAllowedNetworkStaleness_ = 60;
 
+            Set<unsigned int> addrsUsed; // @todo replace with Bloom Filter
+            unsigned int      addrUsedCnt{};
             while (true) {
                 Execution::Sleep (kMinTimeBetweenScans_);
 
@@ -1047,24 +1055,73 @@ namespace {
                         continue;
                     }
 
-                    static mt19937 sRng_{std::random_device () ()};
+                    //DbgTrace (L"***ipv4AddrRange=%s, addrange.GetNumberOfContainedPoints ()=%s", Characters::ToString (ipv4AddrRange).c_str (), Characters::ToString (ipv4AddrRange->GetNumberOfContainedPoints ()).c_str ());
 
-                    DbgTrace (L"***ipv4AddrRange=%s, addrange.GetNumberOfContainedPoints ()=%s", Characters::ToString (ipv4AddrRange).c_str (), Characters::ToString (ipv4AddrRange->GetNumberOfContainedPoints ()).c_str ());
+                    // pick first few addresses randomly
+                    constexpr auto         kRatio2TryRandom_ = .75;
+                    optional<unsigned int> selected;
+                    if (addrUsedCnt < static_cast<unsigned int> (ipv4AddrRange->GetNumberOfContainedPoints () * kRatio2TryRandom_)) {
+                        static mt19937 sRng_{std::random_device{}()};
+                        selected = uniform_int_distribution<unsigned int>{1, ipv4AddrRange->GetNumberOfContainedPoints () - 2}(sRng_);
+                    }
+                    else {
+                        // now do in order remaining
+                        for (unsigned int i = 1; i < ipv4AddrRange->GetNumberOfContainedPoints () - 2; i++) {
+                            if (not addrsUsed.Contains (i)) {
+                                selected = i;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!selected) {
+                        DbgTrace (L"Completed full scan, resetting list, and rescanning...");
+                        addrsUsed.clear (); // @todo replace with Bloom Filter
+                        addrUsedCnt = 0;
+                        continue;
+                    }
+
+                    auto runPingCheck = [] (const InternetAddress& ia) {
+                        //DbgTrace (L"Started port scanning %s", Characters::ToString (ia).c_str ());
+                        PortScanResults scanResults = ScanPorts (ia, ScanOptions{ScanOptions::eQuick});
+                        //DbgTrace (L"Port scanning %s returned these ports: %s", Characters::ToString (ia).c_str (), Characters::ToString (scanResults.fKnownOpenPorts).c_str ());
+
+                        if (not scanResults.fKnownOpenPorts.empty ()) {
+                            // also add check for ICMP PING
+                        }
+
+                        // then flag found device and when via random pings/portscan, and record portscan result.
+                        {
+                            auto           l = sDiscoveredDevices_.rwget ();
+                            DiscoveryInfo_ tmp{};
+                            tmp.AddIPAddresses_ (ia);
+                            if (optional<DiscoveryInfo_> oo = FindMatchingDevice_ (l, tmp)) {
+                                // if found, update to say what ports we found
+                                tmp = *oo;
+                                Memory::AccumulateIf (&tmp.fKnownOpenPorts, scanResults.fKnownOpenPorts);
+                                tmp.PatchDerivedFields ();
+                                l.rwref ().Add (tmp.fGUID, tmp);
+                                DbgTrace (L"Updated device %s for fKnownOpenPorts: %s", Characters::ToString (tmp.fGUID).c_str (), Characters::ToString (scanResults.fKnownOpenPorts).c_str ());
+                            }
+                            else if (not scanResults.fKnownOpenPorts.empty ()) {
+                                // only CREATE an entry for addresses where we found a port
+                                tmp.fKnownOpenPorts = scanResults.fKnownOpenPorts;
+                                tmp.PatchDerivedFields ();
+                                l.rwref ().Add (tmp.fGUID, tmp);
+                                DbgTrace (L"Added device %s for fKnownOpenPorts: %s", Characters::ToString (tmp.fGUID).c_str (), Characters::ToString (scanResults.fKnownOpenPorts).c_str ());
+                            }
+                            else {
+                                DbgTrace (L"Ignoring device at ip %s for because no scan results", Characters::ToString (ia).c_str ());
+                            }
+                        }
+                    };
 
                     // @todo - use a Bloom filter to filter choices already done
                     // but for now, pick a random address in our range
-                    unsigned int    selected = uniform_int_distribution<unsigned int>{0, ipv4AddrRange->GetNumberOfContainedPoints () - 1}(sRng_);
-                    InternetAddress ia       = ipv4AddrRange->GetLowerBound ().Offset (selected);
-
-                    DbgTrace (L"Started port scanning %s", Characters::ToString (ia).c_str ());
-                    PortScanResults scanResults = ScanPorts (ia);
-                    DbgTrace (L"Port scanning %s returned these ports: %s", Characters::ToString (ia).c_str (), Characters::ToString (scanResults.fKnownOpenPorts).c_str ());
-
-                    if (not scanResults.fKnownOpenPorts.empty ()) {
-                        // also add check for ICMP PING
-
-                        // then flag found device and when via random pings/portscan, and record portscan result.
-                    }
+                    InternetAddress ia = ipv4AddrRange->GetLowerBound ().Offset (*selected);
+                    runPingCheck (ia);
+                    addrsUsed += *selected;
+                    addrUsedCnt++;
                 }
                 catch (const Thread::InterruptException&) {
                     Execution::ReThrow ();
