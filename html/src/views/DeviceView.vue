@@ -135,7 +135,7 @@ export default class Devices extends Vue {
   }
   private devicexxxFromID_(id: string) {
     let result = null;
-    this.devicesAsDisplayed.every((d) => {
+    this.devicesAsDisplayed.every((d: any) => {
       if (d.id === id) {
         result = d;
         return false;
@@ -182,8 +182,8 @@ export default class Devices extends Vue {
       let netID = element[0];
       this.networks.forEach((network: INetwork) => {
         if (network.id === netID) {
-          //netID = network.networkAddresses.join(", ");
-          //for now looks better grabbing first
+          // netID = network.networkAddresses.join(", ");
+          // for now looks better grabbing first
           if (network.networkAddresses.length >= 1) {
             netID = network.networkAddresses[0];
           }
