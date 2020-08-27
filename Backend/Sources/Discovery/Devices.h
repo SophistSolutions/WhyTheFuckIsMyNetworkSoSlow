@@ -197,6 +197,16 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
         nonvirtual Collection<Device> GetActiveDevices (optional<Time::DurationSecondsType> allowedStaleness = {}) const;
 
     public:
+        /**
+         *  Background scanning - initaiate rescan (later parameterize) @todo parameterize - scan known, scan unknown, scan particular network (CIDR)
+         *  Consider if it should be called scan and return a future or just initialatescan?
+         * 
+         * For now - NYI
+         */
+        nonvirtual void InitiateReScan () const;
+        nonvirtual void InitiateReScan (const GUID& deviceID) const;
+
+    public:
         static DevicesMgr sThe;
     };
 

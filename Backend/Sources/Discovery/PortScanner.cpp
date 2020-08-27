@@ -59,12 +59,12 @@ PortScanResults Discovery::ScanPorts (const InternetAddress& ia, const optional<
         return results;
     }
 
-    DoTCPScan_<22> (ia, false, &results);   // SSH
-    DoTCPScan_<80> (ia, false, &results);   // HTTP
-    DoTCPScan_<443> (ia, false, &results);  // HTTPS
-    DoTCPScan_<515> (ia, false, &results);  // Line Printer Daemon (LPD)
-    DoTCPScan_<631> (ia, false, &results);  // IPP (internet printing protocol)
-    DoTCPScan_<3389> (ia, false, &results); // RDP
+    DoTCPScan_<22> (ia, true, &results);   // SSH
+    DoTCPScan_<80> (ia, true, &results);   // HTTP
+    DoTCPScan_<443> (ia, true, &results);  // HTTPS
+    DoTCPScan_<515> (ia, true, &results);  // Line Printer Daemon (LPD)
+    DoTCPScan_<631> (ia, true, &results);  // IPP (internet printing protocol)
+    DoTCPScan_<3389> (ia, true, &results); // RDP
 
     return results;
 }

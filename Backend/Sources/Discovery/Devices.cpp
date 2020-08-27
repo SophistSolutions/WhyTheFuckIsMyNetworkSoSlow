@@ -1143,6 +1143,105 @@ namespace {
     unique_ptr<RandomWalkThroughSubnetDiscoverer_> sRandomWalkThroughSubnetDiscoverer_;
 }
 
+namespace {
+    /*
+     ********************************************************************************
+     ***************************** KnownDevicePortScanner_ **************************
+     ********************************************************************************
+     */
+    struct KnownDevicePortScanner_ {
+        KnownDevicePortScanner_ ()
+            : fMyThread_ (
+                  Thread::CleanupPtr::eAbortBeforeWaiting, Thread::New (Checker_, Thread::eAutoStart, L"KnownDevicePortScanner"))
+        {
+        }
+
+    private:
+        static void Checker_ ()
+        {
+            static constexpr Activity kDiscovering_THIS_{L"checking status of active devices"sv};
+
+            static constexpr auto kMinTimeBetweenScans_{5s};
+
+            //constexpr auto               kAllowedNetworkStaleness_ = 1min;
+            constexpr Time::DurationSecondsType kAllowedNetworkStaleness_ = 60;
+
+            Sequence<GUID>           devices2Check;
+            optional<Iterator<GUID>> devices2CheckIterator;
+
+            while (true) {
+                Execution::Sleep (kMinTimeBetweenScans_);
+
+                try {
+                    DeclareActivity da{&kDiscovering_THIS_};
+
+                    if (devices2Check.empty ()) {
+                        devices2Check         = Sequence<GUID>{sDiscoveredDevices_.cget ().cref ().Keys ()};
+                        devices2CheckIterator = devices2Check.begin ();
+                    }
+                    if (devices2CheckIterator == devices2Check.end ()) {
+                        devices2CheckIterator = nullopt;
+                        devices2Check         = Sequence<GUID>{};
+                    }
+                    if (devices2Check.empty ()) {
+                        Execution::Sleep (30s);
+                        continue;
+                    }
+
+                    auto runPingCheck = [] (const InternetAddress& ia) {
+                        // @todo add RANDOM port as option so we randomly check ports
+
+                        //DbgTrace (L"Started port scanning %s", Characters::ToString (ia).c_str ());
+                        PortScanResults scanResults = ScanPorts (ia, ScanOptions{ScanOptions::eFull});
+                        //DbgTrace (L"Port scanning %s returned these ports: %s", Characters::ToString (ia).c_str (), Characters::ToString (scanResults.fKnownOpenPorts).c_str ());
+
+                        if (not scanResults.fKnownOpenPorts.empty ()) {
+                            // also add check for ICMP PING
+                        }
+
+                        // then flag found device and when via random pings/portscan, and record portscan result.
+                        if (not scanResults.fKnownOpenPorts.empty ()) {
+                            auto           l = sDiscoveredDevices_.rwget ();
+                            DiscoveryInfo_ tmp{};
+                            tmp.AddIPAddresses_ (ia);
+                            if (optional<DiscoveryInfo_> oo = FindMatchingDevice_ (l, tmp)) {
+                                // if found, update to say what ports we found
+                                tmp = *oo;
+                                Memory::AccumulateIf (&tmp.fKnownOpenPorts, scanResults.fKnownOpenPorts);
+                                tmp.fLastSeenAt = DateTime::Now ();
+                                tmp.PatchDerivedFields ();
+                                l.rwref ().Add (tmp.fGUID, tmp);
+                                DbgTrace (L"Updated device %s for fKnownOpenPorts: %s", Characters::ToString (tmp.fGUID).c_str (), Characters::ToString (scanResults.fKnownOpenPorts).c_str ());
+                            }
+                            else {
+                                AssertNotReached ();
+                            }
+                        }
+                    };
+
+                    if (auto o = sDiscoveredDevices_.cget ().cref ().Lookup (**devices2CheckIterator)) {
+                        // @todo - use a Bloom filter to filter choices already done
+                        // but for now, pick a random address in our range
+                        for (const auto& ia : o->GetInternetAddresses ()) {
+                            runPingCheck (ia);
+                        }
+                    }
+                    (*devices2CheckIterator)++;
+                }
+                catch (const Thread::InterruptException&) {
+                    Execution::ReThrow ();
+                }
+                catch (...) {
+                    Execution::Logger::Get ().LogIfNew (Execution::Logger::Priority::eError, 5min, L"%s", Characters::ToString (current_exception ()).c_str ());
+                }
+            }
+        }
+        Thread::CleanupPtr fMyThread_;
+    };
+
+    unique_ptr<KnownDevicePortScanner_> sKnownDevicePortScanner_;
+}
+
 /*
  ********************************************************************************
  ********************* Discovery::DevicesMgr::Activator *************************
@@ -1183,6 +1282,7 @@ namespace {
         if constexpr (kInclude_PortScan_Discoverer_) {
             return sRandomWalkThroughSubnetDiscoverer_ != nullptr;
         }
+        return sKnownDevicePortScanner_ != nullptr;
     }
 }
 
@@ -1202,6 +1302,7 @@ Discovery::DevicesMgr::Activator::Activator ()
     if constexpr (kInclude_PortScan_Discoverer_) {
         sRandomWalkThroughSubnetDiscoverer_ = make_unique<RandomWalkThroughSubnetDiscoverer_> ();
     }
+    sKnownDevicePortScanner_ = make_unique<KnownDevicePortScanner_> ();
 }
 
 Discovery::DevicesMgr::Activator::~Activator ()
@@ -1220,6 +1321,7 @@ Discovery::DevicesMgr::Activator::~Activator ()
     if constexpr (kInclude_PortScan_Discoverer_) {
         sRandomWalkThroughSubnetDiscoverer_.reset ();
     }
+    sKnownDevicePortScanner_.reset ();
 }
 
 /*
