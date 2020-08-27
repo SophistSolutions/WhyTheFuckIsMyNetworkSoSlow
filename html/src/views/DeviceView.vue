@@ -330,11 +330,16 @@ export default class Devices extends Vue {
     overflow: hidden;
     text-overflow: ellipsis;
   }
-}
-.selectedRow {
-  background-color: yellow;
+
   &:hover {
-    background-color: pink;
+    background-color: yellow !important;
+  }
+}
+
+.selectedRow {
+  background-color: lightyellow;
+  &:hover {
+    background-color: yellow !important;
   }
 }
 </style>
