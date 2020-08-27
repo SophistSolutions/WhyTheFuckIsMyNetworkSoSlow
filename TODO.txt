@@ -1,6 +1,36 @@
 
+fix "Unknwon" use primary IP
+
+Create Device GetPrimaryIPs ()- those that appear to be on internet connected ?? networks
 
 
+----
+
+return portscan data (open ports) in list in main part of device API
+(not just debug info)
+
+Consider API where it can be longitudinal report? Or maybe expand that later
+----
+
+use trackingtimercontext prints around locks to assure locks dont ever take too long (or we see in logs)
+
+----
+
+consier addigng operator DurecationSectonsType converter for Duration and see if hten can assign 1min etc to DurationSecondsType;
+----
+
+do a 'quietConnect() version that doesnt throw - but returns flag on failure to connect)
+(proably like C++ std c++ - overload taking a pointer to exception result to be filled in...
+unique_ptr<exception> ())
+[0011][0758.665]		<ConnectionOrientedStreamSocket_IMPL_::Connect (sockAddr=192.168.42.25:22, timeout=5 seconds)> {
+[0013][0761.298]		ThreadPool::WaitForNextTask_ () pulled a new task from 'pending-tasks' to run on this thread, leaving pending-task-list-size = 0
+[0013][0761.416]		<WSImpl::GetDevices_Recurse (sort={searchTerms: [ {by: Address, ascending: true, }, {by: Type, ascending: true, }, {by: Priority, ascending: true, } ], compareNetwork: '192.168.244.0/24', })> {
+[0013][0761.439]		} </WSImpl::GetDevices_Recurse>
+[0013][0761.508]		ThreadPool::WaitForNextTask_ () pulled a new task from 'pending-tasks' to run on this thread, leaving pending-task-list-size = 0
+
+
+
+----
 FOR DISPLAY DEBUG JSON INFO:
 	https://www.npmjs.com/package/vue-json-pretty
 

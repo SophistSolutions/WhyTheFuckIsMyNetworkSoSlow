@@ -1086,7 +1086,6 @@ namespace {
                     }
 
                     auto runPingCheck = [] (const InternetAddress& ia) {
-                        //DbgTrace (L"Started port scanning %s", Characters::ToString (ia).c_str ());
                         PortScanResults scanResults = ScanPorts (ia, ScanOptions{ScanOptions::eQuick});
                         //DbgTrace (L"Port scanning %s returned these ports: %s", Characters::ToString (ia).c_str (), Characters::ToString (scanResults.fKnownOpenPorts).c_str ());
 
@@ -1096,7 +1095,9 @@ namespace {
 
                         // then flag found device and when via random pings/portscan, and record portscan result.
                         {
-                            auto           l = sDiscoveredDevices_.rwget ();
+                            auto l = sDiscoveredDevices_.rwget (); // grab write lock because almost assured of making changes (at least last seen)
+                            // @todo RECONSIDER - MAYBE DO READ AND UPGRADE CUZ OF CASE WHERE NO SCAN RESULTS - WANT TO NOT BOTHER LOCKING
+
                             DiscoveryInfo_ tmp{};
                             tmp.AddIPAddresses_ (ia);
                             if (optional<DiscoveryInfo_> oo = FindMatchingDevice_ (l, tmp)) {
@@ -1188,12 +1189,11 @@ namespace {
                         continue;
                     }
 
-                    auto runPingCheck = [] (const InternetAddress& ia) {
-                        // @todo add RANDOM port as option so we randomly check ports
-
-                        //DbgTrace (L"Started port scanning %s", Characters::ToString (ia).c_str ());
-                        PortScanResults scanResults = ScanPorts (ia, ScanOptions{ScanOptions::eFull});
-                        //DbgTrace (L"Port scanning %s returned these ports: %s", Characters::ToString (ia).c_str (), Characters::ToString (scanResults.fKnownOpenPorts).c_str ());
+                    auto runPingCheck = [] (const GUID& deviceID, const InternetAddress& ia) {
+                        PortScanResults scanResults = ScanPorts (ia, ScanOptions{ScanOptions::eRandomBasicOne});
+#if USE_NOISY_TRACE_IN_THIS_MODULE_
+                        DbgTrace (L"Port scanning on existing device %s (addr %s) returned these ports: %s", Characters::ToString (deviceID).c_str (), Characters::ToString (ia).c_str (), Characters::ToString (scanResults.fKnownOpenPorts).c_str ());
+#endif
 
                         if (not scanResults.fKnownOpenPorts.empty ()) {
                             // also add check for ICMP PING
@@ -1204,7 +1204,7 @@ namespace {
                             auto           l = sDiscoveredDevices_.rwget ();
                             DiscoveryInfo_ tmp{};
                             tmp.AddIPAddresses_ (ia);
-                            if (optional<DiscoveryInfo_> oo = FindMatchingDevice_ (l, tmp)) {
+                            if (optional<DiscoveryInfo_> oo = l.cref ().Lookup (deviceID)) {
                                 // if found, update to say what ports we found
                                 tmp = *oo;
                                 Memory::AccumulateIf (&tmp.fKnownOpenPorts, scanResults.fKnownOpenPorts);
@@ -1214,16 +1214,14 @@ namespace {
                                 DbgTrace (L"Updated device %s for fKnownOpenPorts: %s", Characters::ToString (tmp.fGUID).c_str (), Characters::ToString (scanResults.fKnownOpenPorts).c_str ());
                             }
                             else {
-                                AssertNotReached ();
+                                WeakAsserteNotReached (); // objects CAN disappear from list of devices (eventually we will support expiring/deleting)
                             }
                         }
                     };
 
                     if (auto o = sDiscoveredDevices_.cget ().cref ().Lookup (**devices2CheckIterator)) {
-                        // @todo - use a Bloom filter to filter choices already done
-                        // but for now, pick a random address in our range
                         for (const auto& ia : o->GetInternetAddresses ()) {
-                            runPingCheck (ia);
+                            runPingCheck (o->fGUID, ia);
                         }
                     }
                     (*devices2CheckIterator)++;

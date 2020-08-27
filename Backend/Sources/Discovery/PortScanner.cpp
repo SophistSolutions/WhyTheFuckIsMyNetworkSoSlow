@@ -3,6 +3,8 @@
 */
 #include "Stroika/Frameworks/StroikaPreComp.h"
 
+#include <random>
+
 #include "Stroika/Foundation/Characters/ToString.h"
 #include "Stroika/Foundation/Containers/Set.h"
 #include "Stroika/Foundation/Debug/TimingTrace.h"
@@ -48,6 +50,30 @@ namespace {
             // Ignored - we typically we get connection failures
         }
     }
+    void DoTCPScan_ (int portNumber, const InternetAddress& ia, bool quickOpen, PortScanResults* results)
+    {
+        switch (portNumber) {
+            case 22:
+                DoTCPScan_<22> (ia, quickOpen, results);
+                break;
+            case 80:
+                DoTCPScan_<80> (ia, quickOpen, results);
+                break;
+            case 443:
+                DoTCPScan_<443> (ia, quickOpen, results);
+                break;
+            case 515:
+                DoTCPScan_<515> (ia, quickOpen, results);
+                break;
+            case 631:
+                DoTCPScan_<631> (ia, quickOpen, results);
+                break;
+            case 3389:
+                DoTCPScan_<3389> (ia, quickOpen, results);
+                break;
+        }
+    }
+
 }
 
 PortScanResults Discovery::ScanPorts (const InternetAddress& ia, const optional<ScanOptions>& options)
@@ -56,6 +82,21 @@ PortScanResults Discovery::ScanPorts (const InternetAddress& ia, const optional<
 
     if (options and options->fStyle == ScanOptions::eQuick) {
         DoTCPScan_<22> (ia, true, &results); // SSH
+        return results;
+    }
+    if (options and options->fStyle == ScanOptions::eRandomBasicOne) {
+
+        Sequence<uint16_t> ports{
+            22,   // SSH
+            80,   // HTTP
+            443,  // HTTPS
+            515,  // Line Printer Daemon (LPD)
+            631,  // IPP (internet printing protocol)
+            3389, // RDP
+        };
+        static mt19937 sRng_{std::random_device{}()};
+        size_t         selected = uniform_int_distribution<size_t>{0, ports.size () - 1}(sRng_);
+        DoTCPScan_ (ports[selected], ia, true, &results);
         return results;
     }
 
