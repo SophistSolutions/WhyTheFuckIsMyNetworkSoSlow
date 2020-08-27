@@ -1,8 +1,8 @@
 import store from "@/store/store";
 import Vue from "vue";
+import VueMoment from "vue-moment";
 import App from "./App.vue";
 import vuetify from "./plugins/vuetify";
-import VueMoment from "vue-moment";
 import router from "./router";
 
 Vue.config.productionTip = false;

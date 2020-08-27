@@ -19,6 +19,7 @@
 #include "Stroika/Foundation/IO/Network/Interface.h"
 #include "Stroika/Foundation/IO/Network/InternetAddress.h"
 #include "Stroika/Foundation/IO/Network/URI.h"
+#include "Stroika/Foundation/Time/DateTime.h"
 #include "Stroika/Foundation/Time/Duration.h"
 
 #include "../Common/GeoLocation.h"
@@ -230,6 +231,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         /**
          */
         optional<URI> fIcon;
+
+        /**
+         */
+        optional<Time::DateTime> fLastSeenAt;
 
         /**
          */

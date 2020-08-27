@@ -634,6 +634,7 @@ namespace {
                         di.fForcedName      = o->fForcedName;
                         di.fThisDevice      = o->fThisDevice;
                         di.fOperatingSystem = OperatingSystem{Configuration::GetSystemConfiguration_ActualOperatingSystem ().fPrettyNameWithVersionDetails};
+                        di.fLastSeenAt      = DateTime::Now ();
                         di.PatchDerivedFields ();
 
                         // Skip upgrade look to reduce the number of write locks we do, for the common case when there is no
@@ -855,6 +856,7 @@ namespace {
                 Memory::CopyToIf (manufactureName, &di.fSSDPInfo->fManufacturer);
 
                 di.fSSDPInfo->fLastSSDPMessageRecievedAt = Time::DateTime::Now (); // update each message, even if already created
+                di.fLastSeenAt                           = di.fSSDPInfo->fLastSSDPMessageRecievedAt;
 
 #if qDebug
                 di.fSSDPInfo->fLastAdvertisement = d;
@@ -957,6 +959,8 @@ namespace {
                                 return tmp;
                             }
                         }();
+
+                        // INTENTIONALLY DONT UPDATE tmp.fLastSeenAt cuz this info can be quite stale
 
                         di.PatchDerivedFields ();
 
@@ -1099,6 +1103,7 @@ namespace {
                                 // if found, update to say what ports we found
                                 tmp = *oo;
                                 Memory::AccumulateIf (&tmp.fKnownOpenPorts, scanResults.fKnownOpenPorts);
+                                tmp.fLastSeenAt = DateTime::Now ();
                                 tmp.PatchDerivedFields ();
                                 l.rwref ().Add (tmp.fGUID, tmp);
                                 DbgTrace (L"Updated device %s for fKnownOpenPorts: %s", Characters::ToString (tmp.fGUID).c_str (), Characters::ToString (scanResults.fKnownOpenPorts).c_str ());
@@ -1106,6 +1111,7 @@ namespace {
                             else if (not scanResults.fKnownOpenPorts.empty ()) {
                                 // only CREATE an entry for addresses where we found a port
                                 tmp.fKnownOpenPorts = scanResults.fKnownOpenPorts;
+                                tmp.fLastSeenAt     = DateTime::Now ();
                                 tmp.PatchDerivedFields ();
                                 l.rwref ().Add (tmp.fGUID, tmp);
                                 DbgTrace (L"Added device %s for fKnownOpenPorts: %s", Characters::ToString (tmp.fGUID).c_str (), Characters::ToString (scanResults.fKnownOpenPorts).c_str ());

@@ -69,10 +69,7 @@
           <tr v-if="deviceFromID_(itemId).operatingSystem">
             <td>OS</td>
             <td>
-              {{
-                deviceFromID_(itemId).operatingSystem.fullVersionedName ||
-                  deviceFromID_(itemId).operatingSystem.shortName
-              }}
+              {{ deviceFromID_(itemId).operatingSystem.fullVersionedName }}
             </td>
           </tr>
           <tr v-if="deviceFromID_(itemId).manufacturer">
@@ -280,9 +277,9 @@ export default class Devices extends Vue {
         id: i.id,
         name: i.name,
         type: i.type == null ? null : i.type.join(", "),
-        lastSeenAt: Date.now(),
+        lastSeenAt: i.lastSeenAt,
         manufacturer:
-          i.manufacturer == null ? "?" : i.manufacturer.fullName || i.manufacturer.shortName,
+          i.manufacturer == null ? "" : i.manufacturer.fullName || i.manufacturer.shortName,
         os: i.operatingSystem == null ? null : i.operatingSystem.fullVersionedName,
         networks: this.formatNetworks_(i.attachedNetworks),
         localAddrresses: this.formatNetworkAddresses_(i.attachedNetworks),

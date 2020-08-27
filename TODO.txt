@@ -4,7 +4,19 @@
 FOR DISPLAY DEBUG JSON INFO:
 	https://www.npmjs.com/package/vue-json-pretty
 
+----
+	Build issue
+		> change html
+		> cd html
+		> make CONFIGURATION=XXX all
+		> cd..
+		> make same above
+		and I DONT see hte HTML changes
 
+		BUT - in the html dir - add a clobber, and I do see the changes
+	(MINOR)
+	(ISSUE ONLY ON WINDOWS and due to lack of symbolic links working with npm)
+----
 
 
 
