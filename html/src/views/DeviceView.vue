@@ -1,5 +1,5 @@
 <template>
-  <v-container class="devicesPage" v-click-outside="clearSelectionIfOutsideDevicesContainer">
+  <v-container class="devicesPage">
     <v-card class="deviceListCard">
       <v-card-title>
         Devices
@@ -10,6 +10,7 @@
         class="deviceList elevation-1"
         dense
         show-expand
+        :calculate-widths="true"
         :single-expand="true"
         :headers="headers"
         :items="devicesAsDisplayed"
@@ -278,40 +279,41 @@ export default class Devices extends Vue {
   margin-left: 10px;
 }
 
-.selectedItemCard {
-  margin-top: 20px;
-  margin-left: 70px;
-}
-
 .deviceList {
   margin-top: 10px;
 }
 
-.selectedDevicesSection {
-  margin-top: 10px;
-  margin-left: 30px;
-}
+// .selectedDevicesSection {
+//   margin-top: 10px;
+//   margin-left: 30px;
+// }
 
-.deviceRow {
-  width: 100vw;
-  max-width: 100vw;
+// .deviceList td {
+//   white-space: nowrap;
+//   overflow: hidden;
+//   text-overflow: ellipsis;
+// }
 
-  > td {
-    // white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
+// .deviceRow {
+//   width: 100vw;
+//   max-width: 100vw;
 
-  &:hover {
-    background-color: yellow !important;
-  }
-}
+//   > td {
+//     // white-space: nowrap;
+//     overflow: hidden;
+//     text-overflow: ellipsis;
+//   }
 
-.selectedRow {
-  background-color: lightyellow;
+//   &:hover {
+//     background-color: yellow !important;
+//   }
+// }
 
-  &:hover {
-    background-color: yellow !important;
-  }
-}
+// .selectedRow {
+//   background-color: lightyellow;
+
+//   &:hover {
+//     background-color: yellow !important;
+//   }
+// }
 </style>
