@@ -1,7 +1,12 @@
 
-fix "Unknwon" use primary IP
+switch to expando region instead of separate selected area
 
-Create Device GetPrimaryIPs ()- those that appear to be on internet connected ?? networks
+---
+add editable field for 'Notes'
+
+----
+FOR DISPLAY DEBUG JSON INFO:
+	https://www.npmjs.com/package/vue-json-pretty
 
 ---
 
@@ -9,13 +14,10 @@ add CMD icons to devices page for 'scan more aggressively' and maybe have space 
 
 ---
 
-arrow keys in devices list gui
+arrow keys in devices list gui beae)
 
 
 ---
-
-consider expando region instead of separate selected area
-----
 
 return portscan data (open ports) in list in main part of device API
 (not just debug info)
@@ -40,10 +42,6 @@ unique_ptr<exception> ())
 [0013][0761.508]		ThreadPool::WaitForNextTask_ () pulled a new task from 'pending-tasks' to run on this thread, leaving pending-task-list-size = 0
 
 
-
-----
-FOR DISPLAY DEBUG JSON INFO:
-	https://www.npmjs.com/package/vue-json-pretty
 
 ----
 	Build issue
