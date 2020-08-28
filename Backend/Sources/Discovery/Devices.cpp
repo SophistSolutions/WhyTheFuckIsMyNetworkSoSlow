@@ -530,11 +530,6 @@ namespace {
                                                                       Characters::ToString (fSSDPInfo->fLocations) }
                                      }});
             }
-            if (fOpenPorts) {
-                fDebugProps.Add (
-                    L"OpenPorts"sv,
-                    VariantValue{fOpenPorts->Select<VariantValue> ([] (String i) { return VariantValue{i}; })});
-            }
 #endif
 
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
