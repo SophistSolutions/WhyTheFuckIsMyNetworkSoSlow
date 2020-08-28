@@ -102,6 +102,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
         Mapping<GUID, NetworkAttachmentInfo> fAttachedNetworks;
         optional<Set<GUID>>                  fAttachedInterfaces;
         optional<Time::DateTime>             fLastSeenAt;
+        optional<Set<String>>                fOpenPorts;
         optional<URI>                        fIcon;
         optional<Manufacturer>               fManufacturer;
         optional<URI>                        fPresentationURL;
@@ -150,6 +151,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
                 return false;
             }
             if (fLastSeenAt != rhs.fLastSeenAt) {
+                return false;
+            }
+            if (fOpenPorts != rhs.fOpenPorts) {
                 return false;
             }
             if (fIcon != rhs.fIcon) {

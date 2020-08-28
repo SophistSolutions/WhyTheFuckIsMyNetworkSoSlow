@@ -1,5 +1,17 @@
 
-switch to expando region instead of separate selected area
+---
+
+return portscan data (open ports) in list in main part of device API
+(not just debug info)
+
+Consider API where it can be longitudinal report? Or maybe expand that later
+
+	(not sure port scan data accurate - investigate - seems no)
+
+-----
+
+
+Quiet TCP Connect (stroika work)
 
 ---
 add editable field for 'Notes'
@@ -21,12 +33,6 @@ add CMD icons to devices page for 'scan more aggressively' and maybe have space 
 arrow keys in devices list gui beae)
 
 
----
-
-return portscan data (open ports) in list in main part of device API
-(not just debug info)
-
-Consider API where it can be longitudinal report? Or maybe expand that later
 ----
 
 use trackingtimercontext prints around locks to assure locks dont ever take too long (or we see in logs)

@@ -16,11 +16,13 @@
 
 namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
 
+    using Characters::String;
     using Containers::Set;
 
     // @todo add list of SCANNED ports, ToString () method
     struct PortScanResults {
-        Set<uint16_t> fKnownOpenPorts;
+        //Set<uint16_t> fKnownOpenPorts;
+        Set<String> fDiscoveredOpenPorts; // in format tcp:80, or icmp:8, or udp:4040
 
         // later return other inferred results from scan, like Server: headers etc..
     };

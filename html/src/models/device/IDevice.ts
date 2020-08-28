@@ -16,6 +16,7 @@ export interface IDevice {
   attachedNetworks: { [key: string]: INetworkAttachmentInfo };
   name: string;
   lastSeenAt?: object;
+  openPorts?: string[];
   icon?: string;
   manufacturer?: IManufacturer;
   type: Array<DeviceTypeEnum | string>;

@@ -353,8 +353,6 @@ namespace {
         };
         optional<SSDPInfo> fSSDPInfo;
 
-        optional<Set<uint16_t>> fKnownOpenPorts;
-
         void AddIPAddresses_ (const InternetAddress& addr, const optional<String>& hwAddr = nullopt)
         {
             // merge the addrs into each matching network interface
@@ -532,10 +530,10 @@ namespace {
                                                                       Characters::ToString (fSSDPInfo->fLocations) }
                                      }});
             }
-            if (fKnownOpenPorts) {
+            if (fOpenPorts) {
                 fDebugProps.Add (
                     L"OpenPorts"sv,
-                    VariantValue{fKnownOpenPorts->Select<VariantValue> ([] (unsigned int i) { return VariantValue{i}; })});
+                    VariantValue{fOpenPorts->Select<VariantValue> ([] (String i) { return VariantValue{i}; })});
             }
 #endif
 
@@ -1108,36 +1106,42 @@ namespace {
                         PortScanResults scanResults = ScanPorts (ia, ScanOptions{ScanOptions::eQuick});
                         //DbgTrace (L"Port scanning %s returned these ports: %s", Characters::ToString (ia).c_str (), Characters::ToString (scanResults.fKnownOpenPorts).c_str ());
 
-                        if (not scanResults.fKnownOpenPorts.empty ()) {
+                        if (not scanResults.fDiscoveredOpenPorts.empty ()) {
                             // also add check for ICMP PING
                         }
 
                         // then flag found device and when via random pings/portscan, and record portscan result.
-                        {
+                        if (scanResults.fDiscoveredOpenPorts.empty ()) {
+                            DbgTrace (L"No obvious device at ip %s for because no scan results (ScanOptions::eQuick)", Characters::ToString (ia).c_str ());
+                        }
+                        else {
+                            DiscoveryInfo_ tmp{};
+                            tmp.AddIPAddresses_ (ia);
+
                             auto l = sDiscoveredDevices_.rwget (); // grab write lock because almost assured of making changes (at least last seen)
                             // @todo RECONSIDER - MAYBE DO READ AND UPGRADE CUZ OF CASE WHERE NO SCAN RESULTS - WANT TO NOT BOTHER LOCKING
 
-                            DiscoveryInfo_ tmp{};
-                            tmp.AddIPAddresses_ (ia);
                             if (optional<DiscoveryInfo_> oo = FindMatchingDevice_ (l, tmp)) {
+                                AssertNotReached ();
+                                WeakAsserteNotReached (); // This case should basically never happen (maybe lose support)
                                 // if found, update to say what ports we found
                                 tmp = *oo;
-                                Memory::AccumulateIf (&tmp.fKnownOpenPorts, scanResults.fKnownOpenPorts);
+                                Memory::AccumulateIf (&tmp.fOpenPorts, scanResults.fDiscoveredOpenPorts);
                                 tmp.fLastSeenAt = DateTime::Now ();
                                 tmp.PatchDerivedFields ();
                                 l.rwref ().Add (tmp.fGUID, tmp);
-                                DbgTrace (L"Updated device %s for fKnownOpenPorts: %s", Characters::ToString (tmp.fGUID).c_str (), Characters::ToString (scanResults.fKnownOpenPorts).c_str ());
-                            }
-                            else if (not scanResults.fKnownOpenPorts.empty ()) {
-                                // only CREATE an entry for addresses where we found a port
-                                tmp.fKnownOpenPorts = scanResults.fKnownOpenPorts;
-                                tmp.fLastSeenAt     = DateTime::Now ();
-                                tmp.PatchDerivedFields ();
-                                l.rwref ().Add (tmp.fGUID, tmp);
-                                DbgTrace (L"Added device %s for fKnownOpenPorts: %s", Characters::ToString (tmp.fGUID).c_str (), Characters::ToString (scanResults.fKnownOpenPorts).c_str ());
+                                DbgTrace (L"Updated device %s for fKnownOpenPorts: %s", Characters::ToString (tmp.fGUID).c_str (), Characters::ToString (scanResults.fDiscoveredOpenPorts).c_str ());
                             }
                             else {
-                                DbgTrace (L"Ignoring device at ip %s for because no scan results", Characters::ToString (ia).c_str ());
+                                // only CREATE an entry for addresses where we found a port
+                                tmp.fOpenPorts  = scanResults.fDiscoveredOpenPorts;
+                                tmp.fLastSeenAt = DateTime::Now ();
+                                tmp.PatchDerivedFields ();
+#if qDebug
+                                tmp.fDebugProps.Add (L"Found-Through-Network-SYN-Scan", true);
+#endif
+                                l.rwref ().Add (tmp.fGUID, tmp);
+                                DbgTrace (L"Added device %s for fKnownOpenPorts: %s", Characters::ToString (tmp.fGUID).c_str (), Characters::ToString (scanResults.fDiscoveredOpenPorts).c_str ());
                             }
                         }
                     };
@@ -1145,7 +1149,23 @@ namespace {
                     // @todo - use a Bloom filter to filter choices already done
                     // but for now, pick a random address in our range
                     InternetAddress ia = ipv4AddrRange->GetLowerBound ().Offset (*selected);
-                    runPingCheck (ia);
+
+                    /*
+                     *  dont bother probing if we already have the device in our list
+                     */
+                    bool need2CheckAddr{true};
+                    {
+                        auto           l = sDiscoveredDevices_.cget (); // grab write lock because almost assured of making changes (at least last seen)
+                        DiscoveryInfo_ tmp{};
+                        tmp.AddIPAddresses_ (ia);
+                        if (optional<DiscoveryInfo_> oo = FindMatchingDevice_ (l, tmp)) {
+                            need2CheckAddr = false;
+                        }
+                    }
+
+                    if (need2CheckAddr) {
+                        runPingCheck (ia);
+                    }
                     addrsUsed += *selected;
                     addrUsedCnt++;
                 }
@@ -1214,23 +1234,23 @@ namespace {
                         DbgTrace (L"Port scanning on existing device %s (addr %s) returned these ports: %s", Characters::ToString (deviceID).c_str (), Characters::ToString (ia).c_str (), Characters::ToString (scanResults.fKnownOpenPorts).c_str ());
 #endif
 
-                        if (not scanResults.fKnownOpenPorts.empty ()) {
+                        if (not scanResults.fDiscoveredOpenPorts.empty ()) {
                             // also add check for ICMP PING
                         }
 
                         // then flag found device and when via random pings/portscan, and record portscan result.
-                        if (not scanResults.fKnownOpenPorts.empty ()) {
+                        if (not scanResults.fDiscoveredOpenPorts.empty ()) {
                             auto           l = sDiscoveredDevices_.rwget ();
                             DiscoveryInfo_ tmp{};
                             tmp.AddIPAddresses_ (ia);
                             if (optional<DiscoveryInfo_> oo = l.cref ().Lookup (deviceID)) {
                                 // if found, update to say what ports we found
                                 tmp = *oo;
-                                Memory::AccumulateIf (&tmp.fKnownOpenPorts, scanResults.fKnownOpenPorts);
+                                Memory::AccumulateIf (&tmp.fOpenPorts, scanResults.fDiscoveredOpenPorts);
                                 tmp.fLastSeenAt = DateTime::Now ();
                                 tmp.PatchDerivedFields ();
                                 l.rwref ().Add (tmp.fGUID, tmp);
-                                DbgTrace (L"Updated device %s for fKnownOpenPorts: %s", Characters::ToString (tmp.fGUID).c_str (), Characters::ToString (scanResults.fKnownOpenPorts).c_str ());
+                                DbgTrace (L"Updated device %s for fKnownOpenPorts: %s", Characters::ToString (tmp.fGUID).c_str (), Characters::ToString (scanResults.fDiscoveredOpenPorts).c_str ());
                             }
                             else {
                                 WeakAsserteNotReached (); // objects CAN disappear from list of devices (eventually we will support expiring/deleting)

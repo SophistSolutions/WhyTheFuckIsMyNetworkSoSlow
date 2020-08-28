@@ -160,6 +160,7 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
             newDev.fTypes = d.fTypes; // leave missing if no discovered types
         }
         newDev.fLastSeenAt = d.fLastSeenAt;
+        newDev.fOpenPorts  = d.fOpenPorts;
         for (auto i : d.fAttachedNetworks) {
             constexpr bool            kIncludeLinkLocalAddresses_{Discovery::kIncludeLinkLocalAddressesInDiscovery};
             constexpr bool            kIncludeMulticastAddreses_{Discovery::kIncludeMulticastAddressesInDiscovery};

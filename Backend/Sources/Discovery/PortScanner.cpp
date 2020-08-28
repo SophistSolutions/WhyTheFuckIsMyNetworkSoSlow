@@ -44,7 +44,8 @@ namespace {
         try {
             ConnectionOrientedStreamSocket::Ptr s = ConnectionOrientedStreamSocket::New (SocketAddress::INET, Socket::STREAM);
             s.Connect (SocketAddress{ia, PortNumber}, quickOpen ? 5s : 30s);
-            results->fKnownOpenPorts += PortNumber;
+            //  results->fKnownOpenPorts += PortNumber;
+            results->fDiscoveredOpenPorts += Characters::Format (L"tcp:%d", PortNumber);
         }
         catch (...) {
             // Ignored - we typically we get connection failures

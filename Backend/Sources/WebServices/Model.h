@@ -245,6 +245,16 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         Mapping<GUID, NetworkAttachmentInfo> fAttachedNetworks;
 
         /**
+         *  Ports can be open with a number of different protocols. Examples include:
+         *      tcp:80,
+         *      udp:3451
+         *      icmp: 8     (refers to message type 8)
+         * 
+         *  This is a loose notion of port because ICMP doesn't truely have ports, but message types
+         */
+        optional<Set<String>> fOpenPorts;
+
+        /**
          *  This comes from the SSDP presentation url. Its a URL which can be used by a UI and web-browser to
          * 'open' the device and view/control it.
          */

@@ -45,6 +45,10 @@
                 <td>Icon</td>
                 <td>{{ item.icon }}</td>
               </tr>
+              <tr v-if="deviceFromID_(item.id).openPorts">
+                <td>Open Ports</td>
+                <td>{{ deviceFromID_(item.id).openPorts.join(", ") }}</td>
+              </tr>
               <tr v-if="deviceFromID_(item.id).presentationURL">
                 <td>Presentation</td>
                 <td>{{ deviceFromID_(item.id).presentationURL }}</td>
