@@ -171,6 +171,19 @@ Set<InternetAddress> Discovery::Device::GetInternetAddresses () const
     return result;
 }
 
+Sequence<InternetAddress> Discovery::Device::GetPreferredDisplayInternetAddresses () const
+{
+    // @todo get BEST IP ADDRS to use for lookup (maybe array of them - all real LAN IP addresses) - prefer IPv4, maybe just suppress IPV6 addresses IF they match IPv4, and suppress inactive attached networks (if at least one actie attached nework)
+    Sequence<InternetAddress> result;
+    for (auto iNet : fAttachedNetworks) {
+        for (auto a : iNet.fValue.networkAddresses) {
+            result += a;
+            break;
+        }
+    }
+    return result;
+}
+
 String Discovery::Device::ToString () const
 {
     StringBuilder sb;
@@ -422,6 +435,12 @@ namespace {
                         name = *o;
                         break;
                     }
+                }
+            }
+            if (name.empty ()) {
+                constexpr bool kUseFirstIPAddrIfUnknown_ = true;
+                if (kUseFirstIPAddrIfUnknown_) {
+                    name = GetPreferredDisplayInternetAddresses ().Join<String> ([] (auto i) { return i.ToString (); }, [] (String l, String r) { return l + L", " + r; });
                 }
             }
             if (name.empty ()) {

@@ -66,7 +66,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
      */
     struct NetworkAttachmentInfo {
         Set<String>          hardwareAddresses;
-        Set<InternetAddress> networkAddresses; // node not socket addresses
+        Set<InternetAddress> networkAddresses; // Bindings
 
 #if __cpp_impl_three_way_comparison < 201711
         bool operator== (const NetworkAttachmentInfo& rhs) const
@@ -119,6 +119,12 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
          *  Combine from all network interfaces.
          */
         nonvirtual Set<InternetAddress> GetInternetAddresses () const;
+
+        /**
+         *  Get PREFERERRED (typically one) IP Address; typically this is the LOCAL IP addr on the main real network. None of these things are objective, and could change over time.
+         *  Typically this will return 1 IPv4 Address
+         */
+        nonvirtual Sequence<InternetAddress> GetPreferredDisplayInternetAddresses () const;
 
         nonvirtual String ToString () const;
 

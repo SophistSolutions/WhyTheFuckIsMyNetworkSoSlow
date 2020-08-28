@@ -3,7 +3,18 @@ fix "Unknwon" use primary IP
 
 Create Device GetPrimaryIPs ()- those that appear to be on internet connected ?? networks
 
+---
 
+add CMD icons to devices page for 'scan more aggressively' and maybe have space for scan speed status.
+
+---
+
+arrow keys in devices list gui
+
+
+---
+
+consider expando region instead of separate selected area
 ----
 
 return portscan data (open ports) in list in main part of device API
