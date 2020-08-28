@@ -6,11 +6,11 @@
         <v-spacer></v-spacer>
       </v-card-title>
       <v-data-table
-        height="39vh"
         fixed-header
         class="deviceList elevation-1"
         dense
-        v-model="selectedRows"
+        show-expand
+        :single-expand="true"
         :headers="headers"
         :items="devicesAsDisplayed"
         :single-select="true"
@@ -22,79 +22,63 @@
         :hide-default-footer="true"
         item-key="id"
       >
-        <template v-slot:item="{ item }">
-          <tr
-            :class="selectedRows.indexOf(item.id) > -1 ? 'deviceRow selectedRow' : 'deviceRow'"
-            @click="rowClicked($event, item)"
-          >
-            <td>{{ item.name }}</td>
-            <td>{{ item.type }}</td>
-            <td>{{ item.lastSeenAt | moment("from", "now") }}</td>
-            <td>{{ item.manufacturer }}</td>
-            <td>{{ item.os }}</td>
-            <td>{{ item.networks }}</td>
-            <td>{{ item.localAddrresses }}</td>
-          </tr>
+        <template v-slot:item.lastSeenAt="{ headers, item }">
+          <td>{{ item.lastSeenAt | moment("from", "now") }}</td>
+        </template>
+        <template v-slot:expanded-item="{ headers, item }">
+          <td :colspan="headers.length">
+            <table v-bind:key="item.id">
+              <tr>
+                <td>Name</td>
+                <td>{{ item.name }}</td>
+              </tr>
+              <tr>
+                <td>ID</td>
+                <td>{{ item.id }}</td>
+              </tr>
+              <tr v-if="deviceFromID_(item.id).type">
+                <td>Types</td>
+                <td>{{ deviceFromID_(item.id).type.join(", ") }}</td>
+              </tr>
+              <tr v-if="item.icon">
+                <td>Icon</td>
+                <td>{{ item.icon }}</td>
+              </tr>
+              <tr v-if="deviceFromID_(item.id).presentationURL">
+                <td>Presentation</td>
+                <td>{{ deviceFromID_(item.id).presentationURL }}</td>
+              </tr>
+              <tr v-if="deviceFromID_(item.id).operatingSystem">
+                <td>OS</td>
+                <td>
+                  {{ deviceFromID_(item.id).operatingSystem.fullVersionedName }}
+                </td>
+              </tr>
+              <tr v-if="deviceFromID_(item.id).manufacturer">
+                <td>Manufacturers</td>
+                <td>
+                  {{
+                    deviceFromID_(item.id).manufacturer.fullName ||
+                      deviceFromID_(item.id).manufacturer.shortName
+                  }}
+                </td>
+              </tr>
+              <tr>
+                <td>Networks</td>
+                <td>{{ deviceFromID_(item.id).attachedNetworks }}</td>
+              </tr>
+              <tr>
+                <td>Last Seen</td>
+                <td>{{ devicexxxFromID_(item.id).lastSeenAt | moment("from", "now") }}</td>
+              </tr>
+              <tr v-if="deviceFromID_(item.id).debugProps">
+                <td>DEBUG INFO</td>
+                <td>{{ deviceFromID_(item.id).debugProps }}</td>
+              </tr>
+            </table>
+          </td>
         </template>
       </v-data-table>
-    </v-card>
-
-    <v-card class="selectedItemCard" v-if="selectedRows.length">
-      <v-card-title>
-        Details
-        <v-spacer></v-spacer>
-      </v-card-title>
-      <template v-for="itemId in selectedRows">
-        <table v-bind:key="itemId" class="selectedDevicesSection">
-          <tr>
-            <td>Name</td>
-            <td>{{ deviceFromID_(itemId).name }}</td>
-          </tr>
-          <tr>
-            <td>ID</td>
-            <td>{{ itemId }}</td>
-          </tr>
-          <tr v-if="deviceFromID_(itemId).type">
-            <td>Types</td>
-            <td>{{ deviceFromID_(itemId).type.join(", ") }}</td>
-          </tr>
-          <tr v-if="deviceFromID_(itemId).icon">
-            <td>Icon</td>
-            <td>{{ deviceFromID_(itemId).icon }}</td>
-          </tr>
-          <tr v-if="deviceFromID_(itemId).presentationURL">
-            <td>Presentation</td>
-            <td>{{ deviceFromID_(itemId).presentationURL }}</td>
-          </tr>
-          <tr v-if="deviceFromID_(itemId).operatingSystem">
-            <td>OS</td>
-            <td>
-              {{ deviceFromID_(itemId).operatingSystem.fullVersionedName }}
-            </td>
-          </tr>
-          <tr v-if="deviceFromID_(itemId).manufacturer">
-            <td>Manufacturers</td>
-            <td>
-              {{
-                deviceFromID_(itemId).manufacturer.fullName ||
-                  deviceFromID_(itemId).manufacturer.shortName
-              }}
-            </td>
-          </tr>
-          <tr>
-            <td>Networks</td>
-            <td>{{ deviceFromID_(itemId).attachedNetworks }}</td>
-          </tr>
-          <tr>
-            <td>Last Seen</td>
-            <td>{{ devicexxxFromID_(itemId).lastSeenAt | moment("from", "now") }}</td>
-          </tr>
-          <tr v-if="deviceFromID_(itemId).debugProps">
-            <td>DEBUG INFO</td>
-            <td>{{ deviceFromID_(itemId).debugProps }}</td>
-          </tr>
-        </table>
-      </template>
     </v-card>
   </v-container>
 </template>
@@ -114,7 +98,6 @@ import { fetchNetworks } from "@/proxy/API";
 export default class Devices extends Vue {
   private polling: undefined | number = undefined;
 
-  private selectedRows: string[] = [];
   private sortBy: any = [];
   private sortDesc: any = [];
 
@@ -142,28 +125,11 @@ export default class Devices extends Vue {
     return result;
   }
 
-  private clearSelection() {
-    this.selectedRows = [];
-  }
-
-  private clearSelectionIfOutsideDevicesContainer() {
-    this.clearSelection();
-  }
   private rowClicked(e: any, row: IDevice) {
-    this.toggleSelection(row.id);
-    // @todo fix proper handling of shift key !e.shiftKey && !
     if (!e.ctrlKey) {
       // single select unless shift key
-      this.selectedRows = this.selectedRows.filter((selectedKeyID) => selectedKeyID === row.id);
     }
     // console.log(row);
-  }
-  private toggleSelection(keyID: string) {
-    if (this.selectedRows.includes(keyID)) {
-      this.selectedRows = this.selectedRows.filter((selectedKeyID) => selectedKeyID !== keyID);
-    } else {
-      this.selectedRows.push(keyID);
-    }
   }
 
   private fetchAvailableNetworks() {
@@ -236,6 +202,10 @@ export default class Devices extends Vue {
       {
         text: "Local Address",
         value: "localAddrresses",
+      },
+      {
+        text: "Details",
+        value: "data-table-expand",
       },
     ];
   }
@@ -316,6 +286,7 @@ export default class Devices extends Vue {
 .deviceList {
   margin-top: 10px;
 }
+
 .selectedDevicesSection {
   margin-top: 10px;
   margin-left: 30px;
@@ -338,6 +309,7 @@ export default class Devices extends Vue {
 
 .selectedRow {
   background-color: lightyellow;
+
   &:hover {
     background-color: yellow !important;
   }
