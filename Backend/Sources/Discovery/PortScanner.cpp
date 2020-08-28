@@ -85,7 +85,6 @@ PortScanResults Discovery::ScanPorts (const InternetAddress& ia, const optional<
         return results;
     }
     if (options and options->fStyle == ScanOptions::eRandomBasicOne) {
-
         Sequence<uint16_t> ports{
             22,   // SSH
             80,   // HTTP
@@ -93,6 +92,7 @@ PortScanResults Discovery::ScanPorts (const InternetAddress& ia, const optional<
             515,  // Line Printer Daemon (LPD)
             631,  // IPP (internet printing protocol)
             3389, // RDP
+            5060, // SIP
         };
         static mt19937 sRng_{std::random_device{}()};
         size_t         selected = uniform_int_distribution<size_t>{0, ports.size () - 1}(sRng_);
@@ -106,6 +106,7 @@ PortScanResults Discovery::ScanPorts (const InternetAddress& ia, const optional<
     DoTCPScan_<515> (ia, true, &results);  // Line Printer Daemon (LPD)
     DoTCPScan_<631> (ia, true, &results);  // IPP (internet printing protocol)
     DoTCPScan_<3389> (ia, true, &results); // RDP
+    DoTCPScan_<5060> (ia, true, &results); // SIP (https://isc.sans.edu/diary/Cyber+Security+Awareness+Month+-+Day+20+-+Ports+5060+%26+5061+-+SIP+%28VoIP%29/7405)
 
     return results;
 }
