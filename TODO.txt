@@ -4,6 +4,10 @@ switch to expando region instead of separate selected area
 ---
 add editable field for 'Notes'
 
+
+----
+make editable area a COMPONENT so and new SINGLE-DEVICE page (or change this page into that hiding list and focusing on single device)
+then allow links to that single-device page
 ----
 FOR DISPLAY DEBUG JSON INFO:
 	https://www.npmjs.com/package/vue-json-pretty

@@ -440,7 +440,7 @@ namespace {
             if (name.empty ()) {
                 constexpr bool kUseFirstIPAddrIfUnknown_ = true;
                 if (kUseFirstIPAddrIfUnknown_) {
-                    name = GetPreferredDisplayInternetAddresses ().Join<String> ([] (auto i) { return i.ToString (); }, [] (String l, String r) { return l + L", " + r; });
+                    name = GetPreferredDisplayInternetAddresses ().Join ();
                 }
             }
             if (name.empty ()) {
