@@ -114,10 +114,15 @@ namespace {
 #endif
         static const Time::Duration                                             kCacheTTL_{5min}; // @todo fix when Stroika Duration bug supports constexpr this should
         static Cache::SynchronizedTimedCache<InternetAddress, optional<String>> sCache_{kCacheTTL_};
-        return sCache_.LookupValue (inetAddr, [] (const InternetAddress& inetAddr) {
-            static const DNS kDNS_ = DNS::Default ();
-            return kDNS_.ReverseLookup (inetAddr);
-        });
+        try {
+            return sCache_.LookupValue (inetAddr, [] (const InternetAddress& inetAddr) {
+                static const DNS kDNS_ = DNS::Default ();
+                return kDNS_.ReverseLookup (inetAddr);
+            });
+        }
+        catch (...) {
+            return nullopt; // if DNS is failing, just dont do this match, dont abandon all data collection
+        }
     }
     Set<InternetAddress> DNSLookup_ (const String& hostOrIPAddress)
     {
@@ -475,7 +480,7 @@ namespace {
                 // See if its addresses intersect with any network gateways - if so - its a router
                 Set<InternetAddress> gateways;
                 for (GUID netGUID : fAttachedNetworks.Keys ()) {
-                    gateways += NetworksMgr::sThe.GetNetworkByID (netGUID).fGateways;
+                    IgnoreExceptionsExceptThreadAbortForCall (gateways += NetworksMgr::sThe.GetNetworkByID (netGUID).fGateways);    // if network disappears dont fail to patch
                 }
                 if (not(gateways ^ GetInternetAddresses ()).empty ()) {
                     fTypes.Add (Discovery::DeviceType::eRouter);
