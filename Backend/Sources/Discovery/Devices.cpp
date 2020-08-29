@@ -178,15 +178,31 @@ Set<InternetAddress> Discovery::Device::GetInternetAddresses () const
 
 Sequence<InternetAddress> Discovery::Device::GetPreferredDisplayInternetAddresses () const
 {
-    // @todo get BEST IP ADDRS to use for lookup (maybe array of them - all real LAN IP addresses) - prefer IPv4, maybe just suppress IPV6 addresses IF they match IPv4, and suppress inactive attached networks (if at least one actie attached nework)
-    Sequence<InternetAddress> result;
+    /*
+     *  Try to pick the best IP Addrs, and put them first.
+     *
+     *  Prefer IPv4, @todo maybe just suppress IPV6 addresses IF they match IPv4
+     * 
+     * @todo suppress choices for inactive networks
+     */
+    Set<InternetAddress> result;
     for (auto iNet : fAttachedNetworks) {
-        for (auto a : iNet.fValue.networkAddresses) {
-            result += a;
+        for (auto aNetAddr : iNet.fValue.networkAddresses) {
+            if (aNetAddr.GetAddressFamily () == InternetAddress::AddressFamily::V4) {
+                result += aNetAddr;
+            }
             break;
         }
     }
-    return result;
+    if (result.empty ()) {
+        for (auto iNet : fAttachedNetworks) {
+            for (auto aNetAddr : iNet.fValue.networkAddresses) {
+                result += aNetAddr;
+                break;
+            }
+        }
+    }
+    return Sequence<InternetAddress>{result};
 }
 
 String Discovery::Device::ToString () const

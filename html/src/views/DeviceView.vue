@@ -145,32 +145,31 @@ export default class Devices extends Vue {
   }
 
   private formatNetworks_(attachedNetworks: { [key: string]: INetworkAttachmentInfo }): string {
-    const addresses: string[] = [];
+    let addresses: string[] = [];
     Object.entries(attachedNetworks).forEach((element) => {
       let netID = element[0];
       this.networks.forEach((network: INetwork) => {
         if (network.id === netID) {
-          // netID = network.networkAddresses.join(", ");
-          // for now looks better grabbing first
           if (network.networkAddresses.length >= 1) {
             netID = network.networkAddresses[0];
           }
         }
       });
-
       addresses.push(netID);
     });
+    addresses = addresses.filter((value, index, self) => self.indexOf(value) === index);
     return addresses.join(", ");
   }
 
   private formatNetworkAddresses_(attachedNetworks: {
     [key: string]: INetworkAttachmentInfo;
   }): string {
-    const addresses: string[] = [];
+    let addresses: string[] = [];
     Object.entries(attachedNetworks).forEach((element) => {
       // console.log(element);
       element[1].networkAddresses.forEach((e: string) => addresses.push(e));
     });
+    addresses = addresses.filter((value, index, self) => self.indexOf(value) === index);
     return addresses.join(", ");
   }
 

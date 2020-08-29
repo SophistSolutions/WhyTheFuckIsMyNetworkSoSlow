@@ -1,17 +1,26 @@
 
 ---
+lose crazy template crap with
+    void DoTCPScan_ (const InternetAddress& ia, bool quickOpen, PortScanResults* results)
 
-return portscan data (open ports) in list in main part of device API
-(not just debug info)
+----
 
-Consider API where it can be longitudinal report? Or maybe expand that later
+	> Have UI (and configuration knobs) to show scan rate(s), and allow configuring those rates, adn progress through scanning networks.
 
-	(not sure port scan data accurate - investigate - seems no)
+	> Maybe whole section on stats gathering and options
 
+	>	CHeckboxes for features to turn on/off
+	
 -----
 
+	SERIOUSL CONSIDER LOSING THE NOTHROW EXCPETION CRAP (QUIET) I just added.
+	MAYBE EQUIV to suppress TRACEMSG on a threadlocalvariable basis.
+	Equiv, more flexible, and less overhead/crap (only checked for if tracing on)
+
+----
 
 Quiet TCP Connect (stroika work)
+	(testing but more cleanups on OUR SIDE HERE)
 
 ---
 add editable field for 'Notes'
@@ -26,7 +35,8 @@ FOR DISPLAY DEBUG JSON INFO:
 
 ---
 
-add CMD icons to devices page for 'scan more aggressively' and maybe have space for scan speed status.
+add CMD icons to devices page for 'scan more aggressively' 
+and maybe have space for scan speed status.
 
 ---
 
