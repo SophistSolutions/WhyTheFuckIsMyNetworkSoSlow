@@ -30,6 +30,8 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery;
 // Comment this in to turn on aggressive noisy DbgTrace in this module
 //#define USE_NOISY_TRACE_IN_THIS_MODULE_ 1
 
+#define SUPPRESS_NOISY_TRACE_IN_THIS_MODULE_ 1
+
 /*
  ********************************************************************************
  ************************* Discovery::ScanPorts *********************************
@@ -40,13 +42,14 @@ namespace {
     template <int PortNumber>
     void DoTCPScan_ (const InternetAddress& ia, bool quickOpen, PortScanResults* results)
     {
+#if SUPPRESS_NOISY_TRACE_IN_THIS_MODULE_
+        Debug::TraceContextSuppressor traceSuppress;
+#endif
         AssertNotNull (results);
         try {
             ConnectionOrientedStreamSocket::Ptr s = ConnectionOrientedStreamSocket::New (SocketAddress::INET, Socket::STREAM);
-            unique_ptr<exception>               ignoredException; // just to quiet logs - avoid throw on failed connect
-            if (s.Connect (SocketAddress{ ia, PortNumber }, quickOpen ? 5s : 30s, &ignoredException)) {
-                results->fDiscoveredOpenPorts += Characters::Format (L"tcp:%d", PortNumber);
-            }
+            s.Connect (SocketAddress{ia, PortNumber}, quickOpen ? 5s : 30s);
+            results->fDiscoveredOpenPorts += Characters::Format (L"tcp:%d", PortNumber);
         }
         catch (...) {
             // Ignored - we typically we get connection failures
@@ -84,7 +87,6 @@ namespace {
                 break;
         }
     }
-
 }
 
 PortScanResults Discovery::ScanPorts (const InternetAddress& ia, const optional<ScanOptions>& options)

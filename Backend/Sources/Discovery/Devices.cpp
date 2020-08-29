@@ -496,7 +496,7 @@ namespace {
                 // See if its addresses intersect with any network gateways - if so - its a router
                 Set<InternetAddress> gateways;
                 for (GUID netGUID : fAttachedNetworks.Keys ()) {
-                    IgnoreExceptionsExceptThreadAbortForCall (gateways += NetworksMgr::sThe.GetNetworkByID (netGUID).fGateways);    // if network disappears dont fail to patch
+                    IgnoreExceptionsExceptThreadAbortForCall (gateways += NetworksMgr::sThe.GetNetworkByID (netGUID).fGateways); // if network disappears dont fail to patch
                 }
                 if (not(gateways ^ GetInternetAddresses ()).empty ()) {
                     fTypes.Add (Discovery::DeviceType::eRouter);
