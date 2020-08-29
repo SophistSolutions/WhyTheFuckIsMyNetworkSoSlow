@@ -26,6 +26,16 @@
         <template v-slot:item.lastSeenAt="{ headers, item }">
           <td>{{ item.lastSeenAt | moment("from", "now") }}</td>
         </template>
+        <template v-slot:item.type="{ headers, item }">
+          <td>
+            <span v-for="t in iconURLs(deviceFromID_(item.id).type)">
+              <img :src="t.url" :title="t.label" height="24" width="24" />
+            </span>
+            <span v-for="t in nonIconTypes(deviceFromID_(item.id).type)">
+              {{ t }}
+            </span>
+          </td>
+        </template>
         <template v-slot:expanded-item="{ headers, item }">
           <td :colspan="headers.length">
             <table v-bind:key="item.id">
@@ -137,6 +147,35 @@ export default class Devices extends Vue {
     // console.log(row);
   }
 
+  private iconURLs(t: any) {
+    const result: object[] = [];
+    if (t) {
+      t.forEach((ti: string) => {
+        if (ti == "Router") {
+          result.push({ url: "images/RouterDevice.ico", label: ti });
+        } else if (ti == "Network-Infrastructure") {
+          result.push({ url: "images/network-infrastructure.ico", label: ti });
+        } else if (ti == "Personal-Computer") {
+          result.push({ url: "images/PC-Device.png", label: ti });
+        }
+      });
+    }
+    return result;
+  }
+  private nonIconTypes(t: any) {
+    const result: string[] = [];
+    if (t) {
+      t.forEach((ti: string) => {
+        if (ti == "Router") {
+        } else if (ti == "Network-Infrastructure") {
+        } else if (ti == "Personal-Computer") {
+        } else {
+          result.push(ti);
+        }
+      });
+    }
+    return result;
+  }
   private fetchAvailableNetworks() {
     this.$store.dispatch("fetchAvailableNetworks");
   }
