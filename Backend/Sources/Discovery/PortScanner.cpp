@@ -60,8 +60,14 @@ namespace {
             case 80:
                 DoTCPScan_<80> (ia, quickOpen, results);
                 break;
+            case 139:
+                DoTCPScan_<139> (ia, quickOpen, results);
+                break;
             case 443:
                 DoTCPScan_<443> (ia, quickOpen, results);
+                break;
+            case 445:
+                DoTCPScan_<445> (ia, quickOpen, results);
                 break;
             case 515:
                 DoTCPScan_<515> (ia, quickOpen, results);
@@ -71,6 +77,9 @@ namespace {
                 break;
             case 3389:
                 DoTCPScan_<3389> (ia, quickOpen, results);
+                break;
+            case 5060:
+                DoTCPScan_<5060> (ia, quickOpen, results);
                 break;
         }
     }
@@ -89,7 +98,9 @@ PortScanResults Discovery::ScanPorts (const InternetAddress& ia, const optional<
         Sequence<uint16_t> ports{
             22,   // SSH
             80,   // HTTP
+            139,  // SMB
             443,  // HTTPS
+            445,  // microsoft-ds
             515,  // Line Printer Daemon (LPD)
             631,  // IPP (internet printing protocol)
             3389, // RDP
@@ -103,7 +114,9 @@ PortScanResults Discovery::ScanPorts (const InternetAddress& ia, const optional<
 
     DoTCPScan_<22> (ia, true, &results);   // SSH
     DoTCPScan_<80> (ia, true, &results);   // HTTP
+    DoTCPScan_<139> (ia, true, &results);  // SMB
     DoTCPScan_<443> (ia, true, &results);  // HTTPS
+    DoTCPScan_<445> (ia, true, &results);  // microsoft-ds
     DoTCPScan_<515> (ia, true, &results);  // Line Printer Daemon (LPD)
     DoTCPScan_<631> (ia, true, &results);  // IPP (internet printing protocol)
     DoTCPScan_<3389> (ia, true, &results); // RDP
