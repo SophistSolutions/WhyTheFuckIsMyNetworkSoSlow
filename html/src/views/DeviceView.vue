@@ -13,7 +13,7 @@
         :expanded.sync="expanded"
         :single-expand="true"
         :headers="headers"
-        :items="devicesAsDisplayed"
+        :items="deviceRows"
         :single-select="true"
         :search="search"
         :sort-by="sortBy"
@@ -29,7 +29,7 @@
         </template>
         <template v-slot:item.type="{ headers, item }">
           <td>
-            <span v-for="t in computeDeviceTypeIconURLs_(deviceFromID_(item.id).type)">
+            <span v-for="t in computeDeviceTypeIconURLs_(item.type)">
               <img v-if="t.url" :src="t.url" :title="t.label" height="24" width="24" />
               <span v-if="!t.url">
                 {{ t.label }}
@@ -58,48 +58,45 @@
                 <td>ID</td>
                 <td>{{ item.id }}</td>
               </tr>
-              <tr v-if="deviceFromID_(item.id).type">
+              <tr v-if="item.type">
                 <td>Types</td>
-                <td>{{ deviceFromID_(item.id).type.join(", ") }}</td>
+                <td>{{ item.type.join(", ") }}</td>
               </tr>
               <tr v-if="item.icon">
                 <td>Icon</td>
                 <td>{{ item.icon }}</td>
               </tr>
-              <tr v-if="deviceFromID_(item.id).openPorts">
+              <tr v-if="item.openPorts">
                 <td>Open Ports</td>
-                <td>{{ deviceFromID_(item.id).openPorts.join(", ") }}</td>
+                <td>{{ item.openPorts.join(", ") }}</td>
               </tr>
-              <tr v-if="deviceFromID_(item.id).presentationURL">
+              <tr v-if="item.presentationURL">
                 <td>Presentation</td>
-                <td>{{ deviceFromID_(item.id).presentationURL }}</td>
+                <td>{{ item.presentationURL }}</td>
               </tr>
-              <tr v-if="deviceFromID_(item.id).operatingSystem">
+              <tr v-if="item.operatingSystem">
                 <td>OS</td>
                 <td>
-                  {{ deviceFromID_(item.id).operatingSystem.fullVersionedName }}
+                  {{ item.operatingSystem.fullVersionedName }}
                 </td>
               </tr>
-              <tr v-if="deviceFromID_(item.id).manufacturer">
+              <tr v-if="item.manufacturer">
                 <td>Manufacturers</td>
                 <td>
-                  {{
-                    deviceFromID_(item.id).manufacturer.fullName ||
-                      deviceFromID_(item.id).manufacturer.shortName
-                  }}
+                  {{ item.manufacturer.fullName || item.manufacturer.shortName }}
                 </td>
               </tr>
               <tr>
                 <td>Networks</td>
-                <td>{{ deviceFromID_(item.id).attachedNetworks }}</td>
+                <td>{{ item.attachedNetworks }}</td>
               </tr>
               <tr>
                 <td>Last Seen</td>
-                <td>{{ devicexxxFromID_(item.id).lastSeenAt | moment("from", "now") }}</td>
+                <td>{{ item.lastSeenAt | moment("from", "now") }}</td>
               </tr>
-              <tr v-if="deviceFromID_(item.id).debugProps">
+              <tr v-if="item.debugProps">
                 <td>DEBUG INFO</td>
-                <td>{{ deviceFromID_(item.id).debugProps }}</td>
+                <td>{{ item.debugProps }}</td>
               </tr>
             </table>
           </td>
@@ -130,30 +127,6 @@ export default class Devices extends Vue {
   private sortDesc: any = [];
   private expanded: any[] = [];
 
-  // terrible inefficient approach - maybe create map object dervied from devices array
-  private deviceFromID_(id: string) {
-    let result = null;
-    this.devices.every((d) => {
-      if (d.id === id) {
-        result = d;
-        return false;
-      }
-      return true;
-    });
-    return result;
-  }
-  private devicexxxFromID_(id: string) {
-    let result = null;
-    this.devicesAsDisplayed.every((d: any) => {
-      if (d.id === id) {
-        result = d;
-        return false;
-      }
-      return true;
-    });
-    return result;
-  }
-
   private rowClicked(row: any) {
     // @todo Try this again with vue3 - https://github.com/vuetifyjs/vuetify/issues/9720
     // if (!e.ctrlKey) {
@@ -170,9 +143,19 @@ export default class Devices extends Vue {
     const result: object[] = [];
     if (t) {
       if (t.fullVersionedName.startsWith("Windows")) {
-        result.push({ url: "images/WindowsOS.ico", label: t.fullVersionedName });
+        result.push({
+          url: "images/WindowsOS.ico",
+          label: t.fullVersionedName,
+        });
+      } else if (t.fullVersionedName.startsWith("Linux")) {
+        result.push({
+          url: "images/Linux.png",
+          label: t.fullVersionedName,
+        });
       } else {
-        result.push({ label: t.fullVersionedName });
+        result.push({
+          label: t.fullVersionedName,
+        });
       }
     }
     return result;
@@ -183,13 +166,29 @@ export default class Devices extends Vue {
     if (t) {
       t.forEach((ti: string) => {
         if (ti === "Router") {
-          result.push({ url: "images/RouterDevice.ico", label: ti });
+          result.push({
+            url: "images/RouterDevice.ico",
+            label: ti,
+          });
         } else if (ti === "Network-Infrastructure") {
-          result.push({ url: "images/network-infrastructure.ico", label: ti });
+          result.push({
+            url: "images/network-infrastructure.ico",
+            label: ti,
+          });
         } else if (ti === "Personal-Computer") {
-          result.push({ url: "images/PC-Device.png", label: ti });
+          result.push({
+            url: "images/PC-Device.png",
+            label: ti,
+          });
+        } else if (ti === "Speaker") {
+          result.push({
+            url: "images/SpeakerDeviceIcon.png",
+            label: ti,
+          });
         } else {
-          result.push({ label: ti });
+          result.push({
+            label: ti,
+          });
         }
       });
     }
@@ -235,6 +234,7 @@ export default class Devices extends Vue {
   private get search(): string {
     return this.$store.getters.getSearchString;
   }
+
   private get headers(): object[] {
     return [
       {
@@ -252,7 +252,7 @@ export default class Devices extends Vue {
       },
       {
         text: "Manufacturer",
-        value: "manufacturer",
+        value: "manufacturerSummary",
       },
       {
         text: "OS",
@@ -260,11 +260,11 @@ export default class Devices extends Vue {
       },
       {
         text: "Network",
-        value: "networks",
+        value: "networksSummary",
       },
       {
         text: "Local Address",
-        value: "localAddrresses",
+        value: "localAddresses",
       },
       {
         text: "Details",
@@ -303,20 +303,17 @@ export default class Devices extends Vue {
   }
 
   @Watch("devices()")
-  private get devicesAsDisplayed(): object[] {
+  private get deviceRows(): object[] {
     const result: object[] = [];
     this.devices.forEach((i) => {
       result.push({
-        id: i.id,
-        name: i.name,
-        type: i.type == null ? null : i.type.join(", "),
-        lastSeenAt: i.lastSeenAt,
-        manufacturer:
-          i.manufacturer == null ? "" : i.manufacturer.fullName || i.manufacturer.shortName,
-        os: i.operatingSystem == null ? null : i.operatingSystem.fullVersionedName,
-        operatingSystem: i.operatingSystem,
-        networks: this.formatNetworks_(i.attachedNetworks),
-        localAddrresses: this.formatNetworkAddresses_(i.attachedNetworks),
+        ...i,
+        ...{
+          networksSummary: this.formatNetworks_(i.attachedNetworks),
+          localAddresses: this.formatNetworkAddresses_(i.attachedNetworks),
+          manufacturerSummary:
+            i.manufacturer == null ? "" : i.manufacturer.fullName || i.manufacturer.shortName,
+        },
       });
     });
     result.sort((a: any, b: any) => {
@@ -345,38 +342,4 @@ export default class Devices extends Vue {
 .deviceList {
   margin-top: 10px;
 }
-
-// .selectedDevicesSection {
-//   margin-top: 10px;
-//   margin-left: 30px;
-// }
-
-// .deviceList td {
-//   white-space: nowrap;
-//   overflow: hidden;
-//   text-overflow: ellipsis;
-// }
-
-// .deviceRow {
-//   width: 100vw;
-//   max-width: 100vw;
-
-//   > td {
-//     // white-space: nowrap;
-//     overflow: hidden;
-//     text-overflow: ellipsis;
-//   }
-
-//   &:hover {
-//     background-color: yellow !important;
-//   }
-// }
-
-// .selectedRow {
-//   background-color: lightyellow;
-
-//   &:hover {
-//     background-color: yellow !important;
-//   }
-// }
 </style>
