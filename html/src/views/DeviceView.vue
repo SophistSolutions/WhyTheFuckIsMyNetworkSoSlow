@@ -10,7 +10,6 @@
         class="deviceList elevation-1"
         dense
         show-expand
-        :calculate-widths="true"
         :single-expand="true"
         :headers="headers"
         :items="devicesAsDisplayed"
@@ -28,14 +27,25 @@
         </template>
         <template v-slot:item.type="{ headers, item }">
           <td>
-            <span v-for="t in iconURLs(deviceFromID_(item.id).type)">
-              <img :src="t.url" :title="t.label" height="24" width="24" />
-            </span>
-            <span v-for="t in nonIconTypes(deviceFromID_(item.id).type)">
-              {{ t }}
+            <span v-for="t in computeDeviceTypeIconURLs_(deviceFromID_(item.id).type)">
+              <img v-if="t.url" :src="t.url" :title="t.label" height="24" width="24" />
+              <span v-if="!t.url">
+                {{ t.label }}
+              </span>
             </span>
           </td>
         </template>
+        <template v-slot:item.operatingSystem="{ headers, item }">
+          <td>
+            <span v-for="t in computeOSIconURLList_(item.operatingSystem)" v-bind:key="t">
+              <img v-if="t.url" :src="t.url" :title="t.label" height="24" width="24" />
+              <span v-if="!t.url">
+                {{ t.label }}
+              </span>
+            </span>
+          </td>
+        </template>
+
         <template v-slot:expanded-item="{ headers, item }">
           <td :colspan="headers.length">
             <table v-bind:key="item.id">
@@ -101,6 +111,8 @@
 <script lang="ts">
 import { IDevice, INetworkAttachmentInfo } from "@/models/device/IDevice";
 import { INetwork } from "@/models/network/INetwork";
+import { OperatingSystem } from "@/models/OperatingSystem";
+
 import { Component, Vue, Watch } from "vue-property-decorator";
 
 import { compareValues } from "@/CustomSort";
@@ -147,35 +159,36 @@ export default class Devices extends Vue {
     // console.log(row);
   }
 
-  private iconURLs(t: any) {
+  private computeOSIconURLList_(t: OperatingSystem) {
+    const result: object[] = [];
+    if (t) {
+      if (t.fullVersionedName.startsWith("Windows")) {
+        result.push({ url: "images/WindowsOS.ico", label: t.fullVersionedName });
+      } else {
+        result.push({ label: t.fullVersionedName });
+      }
+    }
+    return result;
+  }
+
+  private computeDeviceTypeIconURLs_(t: any) {
     const result: object[] = [];
     if (t) {
       t.forEach((ti: string) => {
-        if (ti == "Router") {
+        if (ti === "Router") {
           result.push({ url: "images/RouterDevice.ico", label: ti });
-        } else if (ti == "Network-Infrastructure") {
+        } else if (ti === "Network-Infrastructure") {
           result.push({ url: "images/network-infrastructure.ico", label: ti });
-        } else if (ti == "Personal-Computer") {
+        } else if (ti === "Personal-Computer") {
           result.push({ url: "images/PC-Device.png", label: ti });
-        }
-      });
-    }
-    return result;
-  }
-  private nonIconTypes(t: any) {
-    const result: string[] = [];
-    if (t) {
-      t.forEach((ti: string) => {
-        if (ti == "Router") {
-        } else if (ti == "Network-Infrastructure") {
-        } else if (ti == "Personal-Computer") {
         } else {
-          result.push(ti);
+          result.push({ label: ti });
         }
       });
     }
     return result;
   }
+
   private fetchAvailableNetworks() {
     this.$store.dispatch("fetchAvailableNetworks");
   }
@@ -294,6 +307,7 @@ export default class Devices extends Vue {
         manufacturer:
           i.manufacturer == null ? "" : i.manufacturer.fullName || i.manufacturer.shortName,
         os: i.operatingSystem == null ? null : i.operatingSystem.fullVersionedName,
+        operatingSystem: i.operatingSystem,
         networks: this.formatNetworks_(i.attachedNetworks),
         localAddrresses: this.formatNetworkAddresses_(i.attachedNetworks),
       });
