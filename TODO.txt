@@ -1,3 +1,4 @@
+if port 515 (print) then add type PRINT
 
 ---
 lose crazy template crap with
