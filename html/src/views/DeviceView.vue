@@ -160,10 +160,9 @@ export default class Devices extends Vue {
     //   // single select unless shift key
     //
     const index = this.expanded.indexOf(row);
+    this.expanded = [];
     if (index === -1) {
       this.expanded.push(row);
-    } else {
-      this.expanded.splice(row, 1);
     }
   }
 
