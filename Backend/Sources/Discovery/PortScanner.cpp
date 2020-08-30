@@ -10,6 +10,7 @@
 #include "Stroika/Foundation/Debug/TimingTrace.h"
 #include "Stroika/Foundation/Execution/Activity.h"
 #include "Stroika/Foundation/IO/Network/ConnectionOrientedStreamSocket.h"
+#include "Stroika/Foundation/IO/Network/Port.h"
 
 #include "NetworkInterfaces.h"
 
@@ -38,9 +39,7 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery;
  ********************************************************************************
  */
 namespace {
-    // template so for some ports we can replace implementation and change how handled
-    template <int PortNumber>
-    void DoTCPScan_ (const InternetAddress& ia, bool quickOpen, PortScanResults* results)
+    void DoTCPScan_ (const InternetAddress& ia, PortType portNumber, bool quickOpen, PortScanResults* results)
     {
 #if SUPPRESS_NOISY_TRACE_IN_THIS_MODULE_
         Debug::TraceContextSuppressor traceSuppress;
@@ -48,43 +47,11 @@ namespace {
         AssertNotNull (results);
         try {
             ConnectionOrientedStreamSocket::Ptr s = ConnectionOrientedStreamSocket::New (SocketAddress::INET, Socket::STREAM);
-            s.Connect (SocketAddress{ia, PortNumber}, quickOpen ? 5s : 30s);
-            results->fDiscoveredOpenPorts += Characters::Format (L"tcp:%d", PortNumber);
+            s.Connect (SocketAddress{ia, portNumber}, quickOpen ? 5s : 30s);
+            results->fDiscoveredOpenPorts += Characters::Format (L"tcp:%d", portNumber);
         }
         catch (...) {
             // Ignored - we typically we get connection failures
-        }
-    }
-    void DoTCPScan_ (int portNumber, const InternetAddress& ia, bool quickOpen, PortScanResults* results)
-    {
-        switch (portNumber) {
-            case 22:
-                DoTCPScan_<22> (ia, quickOpen, results);
-                break;
-            case 80:
-                DoTCPScan_<80> (ia, quickOpen, results);
-                break;
-            case 139:
-                DoTCPScan_<139> (ia, quickOpen, results);
-                break;
-            case 443:
-                DoTCPScan_<443> (ia, quickOpen, results);
-                break;
-            case 445:
-                DoTCPScan_<445> (ia, quickOpen, results);
-                break;
-            case 515:
-                DoTCPScan_<515> (ia, quickOpen, results);
-                break;
-            case 631:
-                DoTCPScan_<631> (ia, quickOpen, results);
-                break;
-            case 3389:
-                DoTCPScan_<3389> (ia, quickOpen, results);
-                break;
-            case 5060:
-                DoTCPScan_<5060> (ia, quickOpen, results);
-                break;
         }
     }
 }
@@ -94,36 +61,31 @@ PortScanResults Discovery::ScanPorts (const InternetAddress& ia, const optional<
     PortScanResults results{};
 
     if (options and options->fStyle == ScanOptions::eQuick) {
-        DoTCPScan_<22> (ia, true, &results); // SSH
-        return results;
-    }
-    if (options and options->fStyle == ScanOptions::eRandomBasicOne) {
-        Sequence<uint16_t> ports{
-            22,   // SSH
-            80,   // HTTP
-            139,  // SMB
-            443,  // HTTPS
-            445,  // microsoft-ds
-            515,  // Line Printer Daemon (LPD)
-            631,  // IPP (internet printing protocol)
-            3389, // RDP
-            5060, // SIP
-        };
-        static mt19937 sRng_{std::random_device{}()};
-        size_t         selected = uniform_int_distribution<size_t>{0, ports.size () - 1}(sRng_);
-        DoTCPScan_ (ports[selected], ia, true, &results);
+        DoTCPScan_ (ia, WellKnownPorts::TCP::kSSH, true, &results);
         return results;
     }
 
-    DoTCPScan_<22> (ia, true, &results);   // SSH
-    DoTCPScan_<80> (ia, true, &results);   // HTTP
-    DoTCPScan_<139> (ia, true, &results);  // SMB
-    DoTCPScan_<443> (ia, true, &results);  // HTTPS
-    DoTCPScan_<445> (ia, true, &results);  // microsoft-ds
-    DoTCPScan_<515> (ia, true, &results);  // Line Printer Daemon (LPD)
-    DoTCPScan_<631> (ia, true, &results);  // IPP (internet printing protocol)
-    DoTCPScan_<3389> (ia, true, &results); // RDP
-    DoTCPScan_<5060> (ia, true, &results); // SIP (https://isc.sans.edu/diary/Cyber+Security+Awareness+Month+-+Day+20+-+Ports+5060+%26+5061+-+SIP+%28VoIP%29/7405)
+    static const Sequence<PortType> kBasicPorts_{
+        WellKnownPorts::TCP::kSSH,
+        WellKnownPorts::TCP::kHTTP, 
+        WellKnownPorts::TCP::kHTTPS,
+        WellKnownPorts::TCP::kSMB,
+        WellKnownPorts::TCP::kMicrosoftDS,
+        WellKnownPorts::TCP::kLPD,
+        WellKnownPorts::TCP::kIPP,
+        WellKnownPorts::TCP::kRDP,
+        WellKnownPorts::TCP::kSIP,
+    };
+    if (options and options->fStyle == ScanOptions::eRandomBasicOne) {
+        static mt19937 sRng_{std::random_device{}()};
+        size_t         selected = uniform_int_distribution<size_t>{0, kBasicPorts_.size () - 1}(sRng_);
+        DoTCPScan_ (ia, kBasicPorts_[selected], true, &results);
+        return results;
+    }
+
+    for (auto port : kBasicPorts_) {
+        DoTCPScan_ (ia, port, true, &results);
+    }
 
     return results;
 }
