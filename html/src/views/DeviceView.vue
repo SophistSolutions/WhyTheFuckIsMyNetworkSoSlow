@@ -10,6 +10,7 @@
         class="deviceList elevation-1"
         dense
         show-expand
+        :expanded.sync="expanded"
         :single-expand="true"
         :headers="headers"
         :items="devicesAsDisplayed"
@@ -21,6 +22,7 @@
         disable-pagination
         :hide-default-footer="true"
         item-key="id"
+        @click:row="rowClicked"
       >
         <template v-slot:item.lastSeenAt="{ headers, item }">
           <td>{{ item.lastSeenAt | moment("from", "now") }}</td>
@@ -45,7 +47,6 @@
             </span>
           </td>
         </template>
-
         <template v-slot:expanded-item="{ headers, item }">
           <td :colspan="headers.length">
             <table v-bind:key="item.id">
@@ -127,6 +128,7 @@ export default class Devices extends Vue {
 
   private sortBy: any = [];
   private sortDesc: any = [];
+  private expanded: any[] = [];
 
   // terrible inefficient approach - maybe create map object dervied from devices array
   private deviceFromID_(id: string) {
@@ -152,11 +154,17 @@ export default class Devices extends Vue {
     return result;
   }
 
-  private rowClicked(e: any, row: IDevice) {
-    if (!e.ctrlKey) {
-      // single select unless shift key
+  private rowClicked(row: any) {
+    // @todo Try this again with vue3 - https://github.com/vuetifyjs/vuetify/issues/9720
+    // if (!e.ctrlKey) {
+    //   // single select unless shift key
+    //
+    const index = this.expanded.indexOf(row);
+    if (index === -1) {
+      this.expanded.push(row);
+    } else {
+      this.expanded.splice(row, 1);
     }
-    // console.log(row);
   }
 
   private computeOSIconURLList_(t: OperatingSystem) {
