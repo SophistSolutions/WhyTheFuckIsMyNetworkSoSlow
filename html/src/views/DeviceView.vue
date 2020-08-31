@@ -152,6 +152,11 @@ export default class Devices extends Vue {
           url: "images/Linux.png",
           label: t.fullVersionedName,
         });
+      } else if (t.fullVersionedName.startsWith("POSIX")) {
+        result.push({
+          url: "images/UnixOSIcon.png",
+          label: t.fullVersionedName,
+        });
       } else {
         result.push({
           label: t.fullVersionedName,
@@ -183,6 +188,16 @@ export default class Devices extends Vue {
         } else if (ti === "Speaker") {
           result.push({
             url: "images/SpeakerDeviceIcon.png",
+            label: ti,
+          });
+        } else if (ti === "TV") {
+          result.push({
+            url: "images/TV-Icon.png",
+            label: ti,
+          });
+        } else if (ti === "Media-Player") {
+          result.push({
+            url: "images/Media-Player-Icon.png",
             label: ti,
           });
         } else {

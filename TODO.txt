@@ -1,8 +1,27 @@
 if port 515 (print) then add type PRINT
+	(and mfg contains Epson or Hewlet packard)
 
 ---
-lose crazy template crap with
-    void DoTCPScan_ (const InternetAddress& ia, bool quickOpen, PortScanResults* results)
+FOR DISPLAY DEBUG JSON INFO:
+	https://www.npmjs.com/package/vue-json-pretty
+
+---
+
+	Maybe - on OS guess - and TYPES - have CONFIDENCE (0..1)
+
+----
+
+	>>> Icon for tV, Printer, Media Player
+
+	OS ICON for POSIX, and MacOS
+
+---
+Get TRAVISCI working
+
+----
+
+Same cleanup to NETWORKS page Ive alreayd done to DEVICES page
+
 
 ----
 
@@ -12,16 +31,6 @@ lose crazy template crap with
 
 	>	CHeckboxes for features to turn on/off
 	
------
-
-	SERIOUSL CONSIDER LOSING THE NOTHROW EXCPETION CRAP (QUIET) I just added.
-	MAYBE EQUIV to suppress TRACEMSG on a threadlocalvariable basis.
-	Equiv, more flexible, and less overhead/crap (only checked for if tracing on)
-
-----
-
-Quiet TCP Connect (stroika work)
-	(testing but more cleanups on OUR SIDE HERE)
 
 ---
 add editable field for 'Notes'
@@ -31,9 +40,6 @@ add editable field for 'Notes'
 make editable area a COMPONENT so and new SINGLE-DEVICE page (or change this page into that hiding list and focusing on single device)
 then allow links to that single-device page
 ----
-FOR DISPLAY DEBUG JSON INFO:
-	https://www.npmjs.com/package/vue-json-pretty
-
 ---
 
 add CMD icons to devices page for 'scan more aggressively' 
