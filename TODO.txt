@@ -1,6 +1,11 @@
 if port 515 (print) then add type PRINT
 	(and mfg contains Epson or Hewlet packard)
 
+
+---
+
+https://linuxconfig.org/how-to-determine-os-of-the-remote-host
+
 ---
 FOR DISPLAY DEBUG JSON INFO:
 	https://www.npmjs.com/package/vue-json-pretty
@@ -11,9 +16,7 @@ FOR DISPLAY DEBUG JSON INFO:
 
 ----
 
-	>>> Icon for tV, Printer, Media Player
-
-	OS ICON for POSIX, and MacOS
+	>>> Icon for  MacOS
 
 ---
 Get TRAVISCI working
