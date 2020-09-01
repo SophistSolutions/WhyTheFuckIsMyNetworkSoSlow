@@ -1,8 +1,8 @@
 if port 515 (print) then add type PRINT
 	(and mfg contains Epson or Hewlet packard)
 ----
+Run DEBUG build directly on HERCULES - and run various sorts of devices (recurse-true) and get assert errro
 
-	On UNIX - new TCP COnnect with timeout not reporting correctly (fails to connec?)
 ---
 
 On unix, in hercules, the reported time is off by 4 hours - must be issue with timezones.

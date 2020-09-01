@@ -1138,8 +1138,7 @@ namespace {
                             // @todo RECONSIDER - MAYBE DO READ AND UPGRADE CUZ OF CASE WHERE NO SCAN RESULTS - WANT TO NOT BOTHER LOCKING
 
                             if (optional<DiscoveryInfo_> oo = FindMatchingDevice_ (l, tmp)) {
-                                AssertNotReached ();
-                                WeakAsserteNotReached (); // This case should basically never happen (maybe lose support)
+                                WeakAsserteNotReached (); // This case should basically never happen (maybe lose support) - because we check before running ping if its already in the list
                                 // if found, update to say what ports we found
                                 tmp = *oo;
                                 Memory::AccumulateIf (&tmp.fOpenPorts, scanResults.fDiscoveredOpenPorts);
