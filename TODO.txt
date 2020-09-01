@@ -1,6 +1,26 @@
 if port 515 (print) then add type PRINT
 	(and mfg contains Epson or Hewlet packard)
+----
 
+	On UNIX - new TCP COnnect with timeout not reporting correctly (fails to connec?)
+---
+
+On unix, in hercules, the reported time is off by 4 hours - must be issue with timezones.
+	For example, WSAPI reported
+		2020-09-01T12:43:01-04:00 at 8:am. Showed UTC TIME, but with tz suffix of -4 (so both right in isoliation but not togehter)
+
+		(stroika regression??? I changed much of this code recently - kMin/Max etc changes)
+		On WINDOWS reports
+
+		2020-09-01T08:49:55-04:00
+
+		MAYBE issue is where I capture gettimeofday - I THOUGHT it was returning in localtime but
+		it really returns in GMT, then I would get this bug..
+	
+---
+
+	Include self-reported icon (field) in the 'TYPES' list - at least for now.
+	(maybe in name?)
 
 ---
 
@@ -25,6 +45,11 @@ Get TRAVISCI working
 
 Same cleanup to NETWORKS page Ive alreayd done to DEVICES page
 
+---
+
+	Specail TYPE and ICON for LURKERS (devices on the network with no open
+	ports - thinks like amazon echo?, cameras, etc. Not sure if/what they have
+	open)
 
 ----
 
