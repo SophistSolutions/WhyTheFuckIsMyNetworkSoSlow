@@ -1,6 +1,3 @@
-if port 515 (print) then add type PRINT
-	(and mfg contains Epson or Hewlet packard)
-----
 Run DEBUG build directly on HERCULES - and run various sorts of devices (recurse-true) and get assert errro
 
 ---

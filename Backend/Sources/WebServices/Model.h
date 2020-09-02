@@ -78,6 +78,18 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         optional<String> fFullName;
         optional<URI>    fWebSiteURL;
 
+
+        bool Contains (const String& name)
+        {
+            if (fShortName and fShortName->Contains (name, Characters::CompareOptions::eCaseInsensitive)) {
+                return true;
+            }
+            if (fFullName and fFullName->Contains (name, Characters::CompareOptions::eCaseInsensitive)) {
+                return true;
+            }
+            return false;
+        }
+
 #if __cpp_impl_three_way_comparison < 201711
         bool operator== (const Manufacturer& rhs) const
         {
