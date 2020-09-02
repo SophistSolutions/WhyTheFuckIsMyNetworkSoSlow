@@ -2,6 +2,34 @@ Run DEBUG build directly on HERCULES - and run various sorts of devices (recurse
 
 ---
 
+Name	192.168.244.28
+ID	98c79b9a-959b-97c5-9a64-956899c6c86e
+Open Ports	tcp:139, tcp:22, tcp:3389, tcp:443, tcp:5060, tcp:631, tcp:80
+	(MAYBE PORT THING FAILING STILL - port 22 NOT OPEN on this device)
+	(UNIX ISSUE)
+
+	AND
+
+		Name	192.168.244.92
+		ID	92956497-c999-9e68-9b6a-686d98699299
+		Open Ports	tcp:22
+		Manufacturers	Apple
+		Networks	{ "c6936b94-c6
+----
+
+
+---
+
+Add FILESERVER icon (for Drobo/Synology )
+
+
+---
+Guess more ports based on SSDP messages (urls in ssdp)
+
+---
+
+---
+
 On unix, in hercules, the reported time is off by 4 hours - must be issue with timezones.
 	For example, WSAPI reported
 		2020-09-01T12:43:01-04:00 at 8:am. Showed UTC TIME, but with tz suffix of -4 (so both right in isoliation but not togehter)
