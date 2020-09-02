@@ -136,7 +136,7 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
 
     // Compute effective sortCompareNetwork - as a set of CIDRs
     optional<Set<CIDR>> sortCompareNetwork;
-    if (sort->fCompareNetwork) {
+    if (sort and sort->fCompareNetwork) {
         // CIDR will contain a / and GUID won't so use that to distinguish
         if (sort->fCompareNetwork->Contains (L"/"_k)) {
             sortCompareNetwork = Set<CIDR>{CIDR{*sort->fCompareNetwork}}; // OK to throw if invalid
