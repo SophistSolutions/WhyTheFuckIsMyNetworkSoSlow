@@ -19,18 +19,21 @@ in WTF - make default-configurations crashes on macos
 
 ---
 
-Run DEBUG build directly on HERCULES - and run various sorts of devices (recurse-true) and get assert errro
-
-
----
-
-	Fix server side sorting before release
+	Switch to server side sorting before release (becaues it works better - smarter and easier to do smart there)
 
 ---
 
 	Test on raspberypi - must build on Ubuntu 18x system not ubuntu 20
 
 ---
+
+
+Name	192.168.244.72
+ID	98929b6c-64c5-989a-669d-6e9e97989697
+Open Ports	tcp:139, tcp:22
+
+	But when I ssh to it I get no response.
+
 
 Name	192.168.244.28
 ID	98c79b9a-959b-97c5-9a64-956899c6c86e
