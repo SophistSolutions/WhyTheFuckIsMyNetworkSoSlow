@@ -190,6 +190,11 @@ export default class Devices extends Vue {
             url: "images/SpeakerDeviceIcon.png",
             label: ti,
           });
+        } else if (ti === "Printer") {
+          result.push({
+            url: "images/Printer.ico",
+            label: ti,
+          });
         } else if (ti === "TV") {
           result.push({
             url: "images/TV-Icon.png",
