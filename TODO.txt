@@ -15,6 +15,22 @@ Open Ports	tcp:139, tcp:22, tcp:3389, tcp:443, tcp:5060, tcp:631, tcp:80
 		Open Ports	tcp:22
 		Manufacturers	Apple
 		Networks	{ "c6936b94-c6
+		(MAYBE OK)
+
+		192.168.244.92 SCAN with zemnap had alot of ports open
+		22/tcp    open     ssh             OpenSSH 8.1 (protocol 2.0)
+		88/tcp    open     kerberos-sec    Heimdal Kerberos (server time: 2020-09-02 00:34:58Z)
+		5900/tcp  open     vnc             Apple remote desktop vnc
+
+on device  192.168.244.44
+	8080/tcp open  http-proxy
+	GET and look at SERVER host
+
+on device
+ a a2ec
+ 192.168.244.13 - elizabeths iphone
+ 62078/tcp open  iphone-sync?
+
 ----
 
 
