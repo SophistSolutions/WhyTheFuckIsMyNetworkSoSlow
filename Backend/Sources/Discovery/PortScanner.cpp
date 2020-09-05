@@ -67,7 +67,7 @@ PortScanResults Discovery::ScanPorts (const InternetAddress& ia, const optional<
 
     static const Sequence<PortType> kBasicPorts_{
         WellKnownPorts::TCP::kSSH,
-        WellKnownPorts::TCP::kHTTP, 
+        WellKnownPorts::TCP::kHTTP,
         WellKnownPorts::TCP::kHTTPS,
         WellKnownPorts::TCP::kSMB,
         WellKnownPorts::TCP::kMicrosoftDS,

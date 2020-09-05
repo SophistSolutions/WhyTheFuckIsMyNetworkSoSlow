@@ -7,8 +7,8 @@
 
 #include "Stroika/Foundation/Cache/SynchronizedCallerStalenessCache.h"
 #include "Stroika/Foundation/Cache/SynchronizedTimedCache.h"
-#include "Stroika/Foundation/Characters/RegularExpression.h"
 #include "Stroika/Foundation/Characters/Format.h"
+#include "Stroika/Foundation/Characters/RegularExpression.h"
 #include "Stroika/Foundation/Characters/StringBuilder.h"
 #include "Stroika/Foundation/Characters/ToString.h"
 #include "Stroika/Foundation/Configuration/SystemConfiguration.h"
@@ -538,10 +538,7 @@ namespace {
 
             static const String kIPPPort_ = Characters::Format (L"tcp:%d", IO::Network::WellKnownPorts::TCP::kIPP);
             static const String kLPDPort_ = Characters::Format (L"tcp:%d", IO::Network::WellKnownPorts::TCP::kLPD);
-            if (fOpenPorts and (fOpenPorts->Contains (kIPPPort_) or fOpenPorts->Contains (kIPPPort_))
-                and (fManufacturer and 
-                    (fManufacturer->Contains (L"Hewlett Packard"_k) or fManufacturer->Contains (L"Epson"_k) or fManufacturer->Contains (L"Canon"_k) or fManufacturer->Contains (L"Brother"_k))
-                      )) {
+            if (fOpenPorts and (fOpenPorts->Contains (kIPPPort_) or fOpenPorts->Contains (kIPPPort_)) and (fManufacturer and (fManufacturer->Contains (L"Hewlett Packard"_k) or fManufacturer->Contains (L"Epson"_k) or fManufacturer->Contains (L"Canon"_k) or fManufacturer->Contains (L"Brother"_k)))) {
                 fTypes.Add (DeviceType::ePrinter);
             }
 

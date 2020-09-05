@@ -78,7 +78,6 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         optional<String> fFullName;
         optional<URI>    fWebSiteURL;
 
-
         bool Contains (const String& name)
         {
             if (fShortName and fShortName->Contains (name, Characters::CompareOptions::eCaseInsensitive)) {

@@ -32,8 +32,8 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common;
 namespace {
     String NormalizeISPName_ (const String& ispName)
     {
-        if (ispName.Contains (L"d/b/a Verizon")) {
-            return L"Verizon";
+        if (ispName.Contains (L"d/b/a Verizon"_k)) {
+            return L"Verizon"_k;
         }
         return ispName;
     }
@@ -75,24 +75,26 @@ optional<tuple<GEOLocationInformation, InternetServiceProvider>> BackendApp::Com
         [] (InternetAddress ia) -> optional<tuple<GEOLocationInformation, InternetServiceProvider>> {
             using namespace DataExchange;
             using namespace IO::Network::Transfer;
-            Debug::TraceContextBumper     ctx{L"GEOLocAndISPLookup::{}... real lookup - cachemiss"};
+            Debug::TraceContextBumper ctx{L"GEOLocAndISPLookup::{}... real lookup - cache miss"};
+
             auto&&                        connection = Connection::New ();
             Mapping<String, VariantValue> m          = Variant::JSON::Reader ().Read (connection.GET (URI{L"http://ip-api.com/json/" + ia.ToString ()}).GetDataTextInputStream ()).As<Mapping<String, VariantValue>> ();
             GEOLocationInformation        geoloc{};
             auto                          cvt = [] (optional<VariantValue> v) -> optional<String> { return v ? optional<String>{v->As<String> ()} : optional<String>{}; };
-            geoloc.fRegionCode                = cvt (m.Lookup (L"region"));
-            geoloc.fCountryCode               = cvt (m.Lookup (L"countryCode"));
-            geoloc.fCity                      = cvt (m.Lookup (L"city"));
-            geoloc.fPostalCode                = cvt (m.Lookup (L"zip"));
-            optional<VariantValue> lat        = m.Lookup (L"lat");
-            optional<VariantValue> lon        = m.Lookup (L"lon");
+            geoloc.fRegionCode                = cvt (m.Lookup (L"region"_k));
+            geoloc.fCountryCode               = cvt (m.Lookup (L"countryCode"_k));
+            geoloc.fCity                      = cvt (m.Lookup (L"city"_k));
+            geoloc.fPostalCode                = cvt (m.Lookup (L"zip"_k));
+            optional<VariantValue> lat        = m.Lookup (L"lat"_k);
+            optional<VariantValue> lon        = m.Lookup (L"lon"_k);
             if (lat and lon) {
                 geoloc.fLatitudeAndLongitude = make_tuple (lat->As<float> (), lon->As<float> ());
             }
             InternetServiceProvider isp{};
-            isp.name = NormalizeISPName_ (cvt (m.Lookup (L"isp")));
+            isp.name = NormalizeISPName_ (cvt (m.Lookup (L"isp"_k)));
             return make_tuple (geoloc, isp);
         },
-        SynchronizedTimedCache<tuple<InternetAddress>, optional<tuple<GEOLocationInformation, InternetServiceProvider>>>{kInfoTimeoutInSeconds_}};
+        SynchronizedTimedCache<tuple<InternetAddress>, optional<tuple<GEOLocationInformation, InternetServiceProvider>>>{kInfoTimeoutInSeconds_}
+    };
     return sMemoizeCache_.Compute (ia);
 }
