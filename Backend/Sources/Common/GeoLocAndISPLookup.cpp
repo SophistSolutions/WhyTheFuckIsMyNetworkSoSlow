@@ -48,7 +48,13 @@ namespace {
  ******************* BackendApp::Common::GEOLocAndISPLookup *********************
  ********************************************************************************
  */
-optional<tuple<GEOLocationInformation, InternetServiceProvider>> BackendApp::Common::GEOLocAndISPLookup (InternetAddress ia)
+#if qCompilerAndStdLib_template_template_argument_as_different_template_paramters_Buggy
+namespace {
+    template <typename T1, typename T2>
+    using CACHE_BWA_ = SynchronizedTimedCache<T1, T2>;
+}
+#endif
+optional<tuple<GEOLocationInformation, InternetServiceProvider>> BackendApp::Common::GEOLocAndISPLookup(InternetAddress ia)
 {
     /*
      *  Could fetch from https://ipstack.com/documentation but required signup for account.
@@ -60,8 +66,12 @@ optional<tuple<GEOLocationInformation, InternetServiceProvider>> BackendApp::Com
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
     Debug::TraceContextBumper ctx{L"GEOLocAndISPLookup"};
 #endif
-    constexpr Time::DurationSecondsType                                                                                        kInfoTimeoutInSeconds_{10 * 60.0};
+    constexpr Time::DurationSecondsType kInfoTimeoutInSeconds_{10 * 60.0};
+#if qCompilerAndStdLib_template_template_argument_as_different_template_paramters_Buggy
+    static Memoizer<optional<tuple<GEOLocationInformation, InternetServiceProvider>>, CACHE_BWA_, InternetAddress> sMemoizeCache_ = {
+#else
     static Memoizer<optional<tuple<GEOLocationInformation, InternetServiceProvider>>, SynchronizedTimedCache, InternetAddress> sMemoizeCache_ = {
+#endif
         [] (InternetAddress ia) -> optional<tuple<GEOLocationInformation, InternetServiceProvider>> {
             using namespace DataExchange;
             using namespace IO::Network::Transfer;
