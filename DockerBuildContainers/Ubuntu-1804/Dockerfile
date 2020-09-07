@@ -5,8 +5,10 @@ FROM ${BASE_IMAGE:-sophistsolutionsinc/stroika-buildvm-ubuntu1804-small}
 # (not sure why apt-get upgrade needed, but since around 2020-09-07 needed to make following installer work)
 RUN apt-get update && apt-get upgrade -y
 
+RUN apt-get install -y g++-8
+
 # Cross-compile for ARM
-RUN apt-get install -y gcc-8-arm-linux-gnueabihf
+RUN apt-get install -y g++-8-arm-linux-gnueabihf
 
 # For html code
 RUN apt-get install -y nodejs npm
