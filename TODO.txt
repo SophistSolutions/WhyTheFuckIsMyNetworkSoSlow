@@ -2,7 +2,29 @@ STROIKA do macos installer for samples
 and do macos installer for WTF
 	https://medium.com/swlh/the-easiest-way-to-build-macos-installer-for-your-application-34a11dd08744
 
+---------------
 
+Build script printing wrong stuff (like where instalelr is buuot to, and the releasehtml without the slash)
+built this way on docker dev vm (not sure everwhere)
+
+
+      ThirdPartyComponents/Stroika-Import Build Stroika CONFIGURATION=raspberrypi-release...done
+      ThirdPartyComponents/OSI-MAC-Prefixes Build {raspberrypi-release}:
+      ThirdPartyComponents/OSI-MAC-Prefixes Build ../../Builds/raspberrypi-release/ThirdPartyComponents/share/OSI-MAC-PREFIXES.txt...done
+      WhyTheFuckIsMyNetworkSoSlow/HTML Build:
+         npm install ( log2 IntermediateFiles/raspberrypi-releasehtml/NPM-Install.txt ) ...
+         Building ( log2 IntermediateFiles/raspberrypi-releasehtml/Build.txt ) ...
+         Copying to Builds/raspberrypi-releasehtml/ ...
+      Building WhyTheFuckIsMyNetworkSoSlow/Backend:
+      Building Installers:
+         Building DEB installer:
+            temp files: /tmp/tmp.muUcQJ6Qjw/; log: IntermediateFiles/raspberrypi-releaseDEB-Installer-Build.Out
+            Built: Builds/raspberrypi-releasewhythefuckismynetworksoslow-1.0d8x.Linux.armhf.deb
+
+-----
+
+On RaspbeerryPi - DEBUG build crashes on startup with stackoverflow - but release version seems to work fine
+	(ssdp works here though not on macos it appears)
 
 ----
 

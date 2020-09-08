@@ -13,7 +13,17 @@ RUN apt-get install -y g++-8-arm-linux-gnueabihf
 # For html code
 RUN apt-get install -y nodejs npm
 
+# Because Ubuntu1804 node version not working
+RUN apt-get install -y curl
+RUN curl -sL https://deb.nodesource.com/setup_10.x -o nodesource_setup.sh
+RUN bash nodesource_setup.sh
+RUN apt-get install -y nodejs
+
 RUN rm -f /Getting-Started-With-Stroika.md
 ADD Shared-Files/Getting-Started.md /
 
 CMD /bin/bash
+
+### NOTE TO RUN
+###     docker run -v /Sandbox:/Sandbox -it sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19
+###     docker run -it sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19
