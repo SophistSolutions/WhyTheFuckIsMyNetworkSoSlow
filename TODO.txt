@@ -1,15 +1,17 @@
-STROIKA do macos installer for samples
-and do macos installer for WTF
-	https://medium.com/swlh/the-easiest-way-to-build-macos-installer-for-your-application-34a11dd08744
+Get TRAVISCI builds working and copying out build artifcats
 
+Improve auto release of installers to release process (maybe still do manaully this next time)
+
+
+---
+	ONCE we have installers and travisci working on all target platforms, fixup NETWORKS page, and maybe
+	primitive HOME page, and MAYBE links between net and devices page, and then release
 
 ----
 
-(((FIX MISSING ARG TO MAKE CHTML CLEAN)))
-c:\Sandbox\WhyTheFuckIsMyNetworkSoSlowDev>make CONFIGURATION=Debug-U-64 clean
-WhyTheFuckIsMyNetworkSoSlow Clean {Debug-U-64}:
-   WhyTheFuckIsMyNetworkSoSlow/Backend Clean {Debug-U-64}:
-   WhyTheFuckIsMyNetworkSoSlow/HTML Clean:
+STROIKA do macos installer for samples
+and do macos installer for WTF
+	https://medium.com/swlh/the-easiest-way-to-build-macos-installer-for-your-application-34a11dd08744
 
 ----
 
@@ -22,6 +24,11 @@ WhyTheFuckIsMyNetworkSoSlow Clean {Debug-U-64}:
 	  Some very occasionally (friends laptop when they visit
 	  ))
 	  Others maybe NEW (not seen before))
+	  Maybe something like	
+	  	FOR LAST DAY (PCT scans on this network)
+		FOR LAST MONTH (PCT scans on this network)
+		FOR LAST YEAR (PCT scans on this network)
+		- OR - better - some 2d smooth representation of how this pct changes over lengthing timespans
 
 ---------------
 
