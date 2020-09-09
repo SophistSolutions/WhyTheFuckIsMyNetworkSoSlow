@@ -2,13 +2,13 @@ DEFAULT_GOAL := help
 
 
 help:
-	@echo "make docker-images to create the docker images on your computer"
+	@echo "make build-images to create the docker images on your computer"
 	@echo "to run the image, use:"
 	@echo "    docker run -it sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804   OR"
 	@echo "n.b. use --security-opt seccomp=unconfined to run debugger (ptrace/address randomization disable)"
 	@echo "and first thing when you run docker image, cat ReadMe.md"
 
-docker-images:
+build-images:
 ifeq ($(shell uname),Linux)
 	docker build -f Ubuntu-1804/Dockerfile -t sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804 .
 endif
