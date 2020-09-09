@@ -2,9 +2,8 @@ export TOP_ROOT=$(abspath ../../)/
 StroikaRoot=$(TOP_ROOT)ThirdPartyComponents/Stroika/StroikaRoot/
 
 ifneq ($(CONFIGURATION),)
-	include $(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/Configuration.mk
+	-include $(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/Configuration.mk
 endif
-
 
 SrcDir				=	$(TOP_ROOT)Backend/Sources/
 ObjDir				=	$(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow-Backend/

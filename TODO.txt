@@ -2,6 +2,27 @@ STROIKA do macos installer for samples
 and do macos installer for WTF
 	https://medium.com/swlh/the-easiest-way-to-build-macos-installer-for-your-application-34a11dd08744
 
+
+----
+
+(((FIX MISSING ARG TO MAKE CHTML CLEAN)))
+c:\Sandbox\WhyTheFuckIsMyNetworkSoSlowDev>make CONFIGURATION=Debug-U-64 clean
+WhyTheFuckIsMyNetworkSoSlow Clean {Debug-U-64}:
+   WhyTheFuckIsMyNetworkSoSlow/Backend Clean {Debug-U-64}:
+   WhyTheFuckIsMyNetworkSoSlow/HTML Clean:
+
+----
+
+	> Specially mark/categorize 
+	  devices by the percentage of scans 
+	  done of a network that the device is
+	  found on that network.
+
+	  For example - some devices are always tehre (router, printer etc).
+	  Some very occasionally (friends laptop when they visit
+	  ))
+	  Others maybe NEW (not seen before))
+
 ---------------
 
 Build script printing wrong stuff (like where instalelr is buuot to, and the releasehtml without the slash)
@@ -20,6 +41,15 @@ built this way on docker dev vm (not sure everwhere)
          Building DEB installer:
             temp files: /tmp/tmp.muUcQJ6Qjw/; log: IntermediateFiles/raspberrypi-releaseDEB-Installer-Build.Out
             Built: Builds/raspberrypi-releasewhythefuckismynetworksoslow-1.0d8x.Linux.armhf.deb
+----
+
+
+	Get docker builds all cleaned up and working (and script running them all and copying out build artificats 
+	or use that to on travisci to get build artifcats in some automatic way)
+
+
+windows nodejs install (not working)
+https://vocon-it.com/2019/11/19/install-npm-using-chocolatey-on-windows/
 
 -----
 
