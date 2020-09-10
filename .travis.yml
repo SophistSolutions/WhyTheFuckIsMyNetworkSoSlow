@@ -48,7 +48,7 @@ jobs:
           --detach --name buildContainer
           sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19 || echo 'Failed: $?'"
         - docker exec buildContainer systeminfo
-        - docker exec buildContainer sh -c "git clone git@github.com:SophistSolutions/WhyTheFuckIsMyNetworkSoSlow.git && cd WhyTheFuckIsMyNetworkSoSlow && git checkout $TRAVIS_COMMIT"
+        - docker exec buildContainer sh -c "git clone https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow.git && cd WhyTheFuckIsMyNetworkSoSlow && git checkout $TRAVIS_COMMIT"
         - docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow buildContainer sh -c "make build-root"
         # Only for build speed: --Xerces no --OpenSSL no --lzma no --boost no
         - docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow/ThirdPartyComponents/Stroika/StroikaRoot buildContainer sh -c "./configure Release-U-64 --arch x86_64 --config-tag Windows --config-tag 64 --apply-default-release-flags --Xerces no"
