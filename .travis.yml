@@ -13,13 +13,13 @@ language: cpp
 
 os: linux
 
-## I tried this directly and it didn't help, but try again as instructions on 
+## I tried this directly and it didn't help, but try again as instructions on
 ## https://docs.travis-ci.com/user/speeding-up-the-build/#parallelizing-your-build-on-one-virtual-machine
 ## suggested it.
 env:
   global:
     - MAKEFLAGS="-j 4"
-    
+
 branches:
   only:
     - v1-Dev
@@ -27,29 +27,36 @@ branches:
 
 jobs:
   allow_failures:
-      - env:
+    - env:
         - MATRIX_EVAL="CC=clang CXX=clang++ MacOS=true" # https://stroika.atlassian.net/browse/STK-705 - retry mid december
-      - env:
-        - MATRIX_EVAL="Windows=true"
 
   include:
-    # Windows Configuration (still not working as of 2020-01-01)
+    #
+    # Windows Configuration
+    #
     - os: windows
       before_install:
-        - choco install activeperl
-        #- choco install visualstudio2019buildtools --package-parameters "--includeRecommended --includeOptional"
-        #- choco install visualstudio2019-workload-vctools
-        #- choco install visualstudio2019buildtools --package-parameters "--allWorkloads --includeRecommended --includeOptional --passive --locale en-US"
-        - choco install visualstudio2019community --package-parameters "--includeRecommended --includeOptional"
+        - systeminfo
+        - travis_wait 45 docker pull sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19
       install:
-        - git submodule update --init --recursive
-        - set PATH=C:\Perl64\;%PATH%
-        - perl configure Release-32 --arch x86 --apply-default-release-flags
-        - cat ConfigurationFiles/Release.xml
+        # Not sure why, but this run appears to require EITHER --interactive or --tty, else it fails
+        - "docker run
+          --tty
+          --memory 4G --cpus 2 --storage-opt 'size=35GB'
+          --detach --name buildContainer
+          sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19 || echo 'Failed: $?'"
+        - docker exec buildContainer systeminfo
+        - docker exec buildContainer sh -c "git clone git@github.com:SophistSolutions/WhyTheFuckIsMyNetworkSoSlow.git && cd WhyTheFuckIsMyNetworkSoSlow && git checkout $TRAVIS_COMMIT"
+        - docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow buildContainer sh -c "make build-root"
+        # Only for build speed: --Xerces no --OpenSSL no --lzma no --boost no
+        - docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow buildContainer sh -c "./configure Release-U-64 --arch x86_64 --config-tag Windows --config-tag 64 --apply-default-release-flags --Xerces no"
+        - docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow buildContainer cat ConfigurationFiles/Release-U-64.xml
       script:
-        - make all
+        - docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow --env MAKEFLAGS=$MAKEFLAGS buildContainer make all -j4
+      after_failure:
+        - echo "HANDLING FAILURE DUMPING DEBUG STUFF:"
       env:
-        - MATRIX_EVAL="Windows=true"
+        - MATRIX_EVAL="Windows=true Is64Bit=true"
 
     # MacOS Configuration (still not working as of 2020-01-01 - due to https://stroika.atlassian.net/browse/STK-705 but should be soon)
     - os: osx
@@ -57,8 +64,8 @@ jobs:
       addons:
         homebrew:
           packages:
-          - gnu-sed
-          - p7zip
+            - gnu-sed
+            - p7zip
       install:
         - git submodule update --init --recursive
         # -mmacosx-version-min=10.15 needed for https://stackoverflow.com/questions/56924853/why-xcode-11-beta-cant-use-c17s-filesystem-header
@@ -87,14 +94,14 @@ jobs:
       env:
         - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
       install:
-          - git submodule update --init --recursive
-          - pushd ThirdPartyComponents/Stroika/StroikaRoot
-          - ./ScriptsLib/MakeBuildRoot ../../../
-          - ./configure Release --apply-default-release-flags --openssl use-system
-          - cat ConfigurationFiles/Release.xml
-          - popd
+        - git submodule update --init --recursive
+        - pushd ThirdPartyComponents/Stroika/StroikaRoot
+        - ./ScriptsLib/MakeBuildRoot ../../../
+        - ./configure Release --apply-default-release-flags --openssl use-system
+        - cat ConfigurationFiles/Release.xml
+        - popd
       script:
         - make all
 
 before_install:
-    - eval "${MATRIX_EVAL}"
+  - eval "${MATRIX_EVAL}"
