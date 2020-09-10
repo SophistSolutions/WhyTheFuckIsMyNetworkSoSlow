@@ -97,11 +97,9 @@ jobs:
         - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
       install:
         - git submodule update --init --recursive
-        - pushd ThirdPartyComponents/Stroika/StroikaRoot
-        - ./ScriptsLib/MakeBuildRoot ../../../
-        - ./configure Release --apply-default-release-flags --openssl use-system
-        - cat ConfigurationFiles/Release.xml
-        - popd
+        - make build-root
+        - (pushd ThirdPartyComponents/Stroika/StroikaRoot && ./configure Release --apply-default-release-flags)
+        - (pushd ThirdPartyComponents/Stroika/StroikaRoot && cat ConfigurationFiles/Release.xml)
       script:
         - make all
 
