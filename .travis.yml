@@ -49,12 +49,13 @@ jobs:
           sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19 || echo 'Failed: $?'"
         - docker exec buildContainer systeminfo
         - docker exec buildContainer sh -c "git clone https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow.git && cd WhyTheFuckIsMyNetworkSoSlow && git checkout $TRAVIS_COMMIT && git submodule update --recursive --init"
-        - docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow buildContainer sh -c "make build-root"
+        - docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow buildContainer make build-root
         # Only for build speed: --Xerces no --OpenSSL no --lzma no --boost no
         - docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow/ThirdPartyComponents/Stroika/StroikaRoot buildContainer sh -c "./configure Release-U-64 --arch x86_64 --config-tag Windows --config-tag 64 --apply-default-release-flags --Xerces no"
         - docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow buildContainer cat ConfigurationFiles/Release-U-64.xml
       script:
-        - docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow --env MAKEFLAGS=$MAKEFLAGS buildContainer make all
+        #- docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow --env MAKEFLAGS=$MAKEFLAGS buildContainer sh -c "make all"
+        - docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow buildContainer make all
       after_failure:
         - echo "HANDLING FAILURE DUMPING DEBUG STUFF:"
       env:
