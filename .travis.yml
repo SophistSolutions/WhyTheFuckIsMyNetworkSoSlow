@@ -44,7 +44,6 @@ jobs:
         # Not sure why, but this run appears to require EITHER --interactive or --tty, else it fails
         - "docker run
           --tty
-          --memory 4G --cpus 2 --storage-opt 'size=35GB'
           --detach --name buildContainer
           sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19 || echo 'Failed: $?'"
         - docker exec buildContainer systeminfo
