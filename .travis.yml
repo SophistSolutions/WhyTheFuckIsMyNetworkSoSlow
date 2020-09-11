@@ -55,7 +55,8 @@ jobs:
         - docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow buildContainer cat ConfigurationFiles/Release-U-64.xml
       script:
         #- docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow --env MAKEFLAGS=$MAKEFLAGS buildContainer sh -c "make all"
-        - travis_wait 45 docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow/ThirdPartyComponents/Stroika/StroikaRoot buildContainer make all
+        - docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow/ThirdPartyComponents/Stroika/StroikaRoot buildContainer make all
+        #- travis_wait 45 docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow/ThirdPartyComponents/Stroika/StroikaRoot buildContainer make all
         - docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow buildContainer make all
       after_failure:
         - echo "HANDLING FAILURE DUMPING DEBUG STUFF:"
