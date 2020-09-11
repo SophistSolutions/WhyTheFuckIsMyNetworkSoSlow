@@ -51,7 +51,7 @@ jobs:
         - docker exec buildContainer sh -c "git clone https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow.git && cd WhyTheFuckIsMyNetworkSoSlow && git checkout $TRAVIS_COMMIT && git submodule update --recursive --init"
         - docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow buildContainer make build-root
         # Only for build speed: --Xerces no --OpenSSL no --lzma no --boost no
-        - docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow/ThirdPartyComponents/Stroika/StroikaRoot buildContainer sh -c "./configure Release-U-64 --arch x86_64 --config-tag Windows --config-tag 64 --apply-default-release-flags --Xerces no"
+        - docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow/ThirdPartyComponents/Stroika/StroikaRoot buildContainer sh -c "./configure Release-U-64 --arch x86_64 --config-tag Windows --config-tag 64 --apply-default-release-flags  --Xerces no --OpenSSL no --lzma no --boost no"
         - docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow buildContainer cat ConfigurationFiles/Release-U-64.xml
       script:
         #- docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow --env MAKEFLAGS=$MAKEFLAGS buildContainer sh -c "make all"
