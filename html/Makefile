@@ -27,7 +27,10 @@ endif
 clean clobber:
 	@$(StroikaRoot)/ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "WhyTheFuckIsMyNetworkSoSlow/HTML $(call FUNCTION_CAPITALIZE_WORD,$@) {$(CONFIGURATION)}:"
 ifeq ($(CONFIGURATION),)
-	@echo "NYI" && exit 1;
+	@rm -rf ../IntermediateFiles/*/WhyTheFuckIsMyNetworkSoSlow/html
+	@if [ "$@" == "clobber" ] ; then \
+		rm -rf ../Builds/*/WhyTheFuckIsMyNetworkSoSlow/html;\
+	fi
 endif
 ifneq ($(CONFIGURATION),)
 	@#rm -f src/*.js
