@@ -2,6 +2,22 @@ Get TRAVISCI builds working and copying out build artifcats
 
 Improve auto release of installers to release process (maybe still do manaully this next time)
 
+----
+
+try to get docker macos working and do builds that way for WTF
+
+
+----
+
+	change travici stuff here and STROIKA - to NOT checkout git stuff twice but use -v arg to docker to expose existing data
+	THEN easier to copy out results (artifacts) - though maybe useless cuz no way to do anything with them (withotu S3 account)
+	OH - maybe I can push to sophists.ftp?
+
+---
+auto build of artifiacts (release script to make / copy out artificatcs)
+NICE if can run from travisci but appearntly no
+
+---
 
 ---
 	ONCE we have installers and travisci working on all target platforms, fixup NETWORKS page, and maybe
