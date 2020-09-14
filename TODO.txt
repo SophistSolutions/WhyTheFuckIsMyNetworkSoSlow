@@ -1,3 +1,22 @@
+ ThirdPartyComponents/OSI-MAC-Prefixes Build {Release-U-64}:
+         wget --quiet --no-check-certificate --tries=2 -O ../../Builds/Release-U-64/ThirdPartyComponents/share/OSI-MAC-PREFIXES.txt https://raw.githubusercontent.com/nmap/nmap/master/nmap-mac-prefixes ... 
+            failed
+         WARNING: mirror failed, so retrying:
+         wget --quiet --no-check-certificate --tries=2 -O ../../Builds/Release-U-64/ThirdPartyComponents/share/OSI-MAC-PREFIXES.txt https://raw.githubusercontent.com/nmap/nmap/master/nmap-mac-prefixes ... 
+            failed
+
+MIRROR ABOVE LIKE I DID FOR OTHER PACKAGE FOR TRAVISCI FAILURES
+
+----
+
+
+
+
+
+
+----
+
+
 Get TRAVISCI builds working and copying out build artifcats
 
 Improve auto release of installers to release process (maybe still do manaully this next time)
