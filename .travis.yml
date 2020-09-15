@@ -29,8 +29,6 @@ jobs:
   allow_failures:
     - env:
         - MATRIX_EVAL="CC=clang CXX=clang++ MacOS=true" # https://stroika.atlassian.net/browse/STK-705 - retry mid december
-    - env:
-        - MATRIX_EVAL="Windows=true Is64Bit=true"
 
   include:
     #
@@ -49,17 +47,14 @@ jobs:
         - docker exec buildContainer systeminfo
         - docker exec buildContainer sh -c "git clone https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow.git && cd WhyTheFuckIsMyNetworkSoSlow && git checkout $TRAVIS_COMMIT && git submodule update --recursive --init"
         - docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow buildContainer make build-root
-        # Only for build speed: --Xerces no --OpenSSL no --lzma no --boost no
-        - docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow/ThirdPartyComponents/Stroika/StroikaRoot buildContainer sh -c "./configure Release-U-64 --arch x86_64 --config-tag Windows --config-tag 64 --apply-default-release-flags  --Xerces no --OpenSSL no --lzma no --boost no"
+        # Only for build speed: --Xerces no etc
+        - docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow/ThirdPartyComponents/Stroika/StroikaRoot buildContainer sh -c "./configure Release-U-64 --arch x86_64 --config-tag Windows --config-tag 64 --apply-default-release-flags --Xerces no --OpenSSL no --lzma no --boost no"
         - docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow buildContainer cat ConfigurationFiles/Release-U-64.xml
       script:
         - docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow/ThirdPartyComponents/Stroika/StroikaRoot --env MAKEFLAGS="$MAKEFLAGS" buildContainer make libraries
         - docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow buildContainer make all
       after_failure:
         - echo "HANDLING FAILURE DUMPING DEBUG STUFF:"
-        - wget --quiet --no-check-certificate -O ./Builds/Release-U-64/ThirdPartyComponents/share/OSI-MAC-PREFIXES.txt https://raw.githubusercontent.com/nmap/nmap/master/nmap-mac-prefixes
-        - wget -d --no-check-certificate -O ./Builds/Release-U-64/ThirdPartyComponents/share/OSI-MAC-PREFIXES.txt https://raw.githubusercontent.com/nmap/nmap/master/nmap-mac-prefixes
-        - wget -d -v --no-check-certificate -O ./Builds/Release-U-64/ThirdPartyComponents/share/OSI-MAC-PREFIXES.txt https://raw.githubusercontent.com/nmap/nmap/master/nmap-mac-prefixes
       env:
         - MATRIX_EVAL="Windows=true Is64Bit=true"
 
