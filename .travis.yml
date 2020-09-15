@@ -25,7 +25,7 @@ branches:
 jobs:
   allow_failures:
     - env:
-        - MATRIX_EVAL="CC=clang CXX=clang++ MacOS=true" # https://stroika.atlassian.net/browse/STK-705 - retry mid december
+        - MATRIX_EVAL="CXX=clang++ MacOS=true" # https://stroika.atlassian.net/browse/STK-705 - retry mid december
 
   include:
     #
@@ -53,11 +53,11 @@ jobs:
       after_failure:
         - echo "HANDLING FAILURE DUMPING DEBUG STUFF:"
       env:
-        - MATRIX_EVAL="Windows=true Is64Bit=true"
+        - MATRIX_EVAL="Windows=true ARCH=x86_64"
 
     # MacOS Configuration (still not working as of 2020-01-01 - due to https://stroika.atlassian.net/browse/STK-705 but should be soon)
     - os: osx
-      osx_image: xcode11.3
+      osx_image: xcode11.6
       addons:
         homebrew:
           packages:
@@ -75,7 +75,7 @@ jobs:
         - clang++ --version
         - make all ECHO_BUILD_LINES=1
       env:
-        - MATRIX_EVAL="CC=clang CXX=clang++ MacOS=true"
+        - MATRIX_EVAL="CXX=clang++ MacOS=true"
 
     # Linux (Ubuntu - 1804) Configuration - build all
     - os: linux
@@ -89,7 +89,7 @@ jobs:
             - libtool-bin
             - p7zip-full
       env:
-        - MATRIX_EVAL="CC=gcc-8 && CXX=g++-8"
+        - MATRIX_EVAL="CXX=g++-8"
       install:
         - git submodule update --init --recursive
         - make build-root
