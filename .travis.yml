@@ -57,10 +57,9 @@ jobs:
         - docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow buildContainer make all
       after_failure:
         - echo "HANDLING FAILURE DUMPING DEBUG STUFF:"
-        - curl -v https://raw.githubusercontent.com/nmap/nmap/master/nmap-mac-prefixes
-        - wget --quiet --no-check-certificate -O OSI-MAC-PREFIXES.txt https://raw.githubusercontent.com/nmap/nmap/master/nmap-mac-prefixes
-        - wget -d --no-check-certificate -O OSI-MAC-PREFIXES.txt https://raw.githubusercontent.com/nmap/nmap/master/nmap-mac-prefixes
-        - wget -d -v --no-check-certificate -O OSI-MAC-PREFIXES.txt https://raw.githubusercontent.com/nmap/nmap/master/nmap-mac-prefixes
+        - wget --quiet --no-check-certificate -O ./Builds/Release-U-64/ThirdPartyComponents/share/OSI-MAC-PREFIXES.txt https://raw.githubusercontent.com/nmap/nmap/master/nmap-mac-prefixes
+        - wget -d --no-check-certificate -O ./Builds/Release-U-64/ThirdPartyComponents/share/OSI-MAC-PREFIXES.txt https://raw.githubusercontent.com/nmap/nmap/master/nmap-mac-prefixes
+        - wget -d -v --no-check-certificate -O ./Builds/Release-U-64/ThirdPartyComponents/share/OSI-MAC-PREFIXES.txt https://raw.githubusercontent.com/nmap/nmap/master/nmap-mac-prefixes
       env:
         - MATRIX_EVAL="Windows=true Is64Bit=true"
 
