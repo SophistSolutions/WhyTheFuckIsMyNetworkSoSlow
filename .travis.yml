@@ -71,14 +71,14 @@ jobs:
         - ./configure Release --apply-default-release-flags --append-extra-compiler-and-linker-args -mmacosx-version-min=10.15 --Xerces no --OpenSSL system --lzma no --boost no
         - cat ConfigurationFiles/Release.xml
         - popd
-      script:
         - clang++ --version
+      script:
         - make all
       env:
         - MATRIX_EVAL="CXX=clang++ PLATFORM=MacOS"
 
     #
-    # Linux (Ubuntu - 1804) Configuration - build all
+    # Linux (Ubuntu - 1804) Configuration
     #
     - os: linux
       dist: bionic

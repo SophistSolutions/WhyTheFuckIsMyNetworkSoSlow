@@ -7,7 +7,15 @@
 
 MIRROR ABOVE LIKE I DID FOR OTHER PACKAGE FOR TRAVISCI FAILURES
 
-(tried mirror and still didnt work)
+----
+
+maybe use
+
+https://docs.travis-ci.com/user/docker/
+
+to do docker - loooks like MAYBE simpler than what Im doing now, and MAYBE more performnant if it caches teh
+images. IF YES, then do for STROIKA too
+
 
 
 ----
