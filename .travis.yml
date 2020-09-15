@@ -11,8 +11,6 @@
 #
 language: cpp
 
-os: linux
-
 env:
   global:
     - MAKEFLAGS="-j 4"
