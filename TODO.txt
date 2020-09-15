@@ -8,15 +8,15 @@
 MIRROR ABOVE LIKE I DID FOR OTHER PACKAGE FOR TRAVISCI FAILURES
 
 ----
-	>> further improve docker build script (maybe make actual .sh script)
-	missing a few installers from last release and missing macos
+	ReleaseScript.md
+		>> further improve docker build script (maybe make actual .sh script)
+		missing a few installers from last release and missing macos
 
 
 
 
 
 ----
-
 
 Get TRAVISCI builds working and copying out build artifcats
 

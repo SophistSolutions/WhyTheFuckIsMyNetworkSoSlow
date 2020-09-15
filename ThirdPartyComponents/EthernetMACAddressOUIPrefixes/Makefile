@@ -15,8 +15,10 @@ OUT_FILE=$(BUILDS_DIR)OSI-MAC-PREFIXES.txt
 ### @todo Find mirorrs and perhaps post-process
 ### @todo figure out if there are any licensing issues with using this data? Hopefully the fact
 ### that I dont distribute it, but reference it, side-steps such issues (but unclear).
+### \note - reliably fails to download from TRAVIS-CI machines, so mirror nmap-mac-prefixes
 FETCHURLS=
 FETCHURLS+=https://raw.githubusercontent.com/nmap/nmap/master/nmap-mac-prefixes
+FETCHURLS+=ftp://ftp.sophists.com/Pub/Mirror/nmap-mac-prefixes
 
 
 all:
