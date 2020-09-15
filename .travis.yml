@@ -5,7 +5,6 @@
 # \note We use 'Release' configurations because they builds a bit faster than the 'Debug' configurations, and
 #       we are limited with travis ci to a build that takes 50 minutes. We run out of time otherwise, and maybe
 #       even to some degree with these settings. May need todo more to make this work.
-#       Similarly, use --openssl use-system for speed of build.
 #
 # See https://travis-ci.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow for builds/status
 #
@@ -68,8 +67,8 @@ jobs:
         # -mmacosx-version-min=10.15 needed for https://stackoverflow.com/questions/56924853/why-xcode-11-beta-cant-use-c17s-filesystem-header
         - pushd ThirdPartyComponents/Stroika/StroikaRoot
         - ./ScriptsLib/MakeBuildRoot ../../../
-        # Only for build speed: --Xerces no etc
-        - ./configure Release --apply-default-release-flags --append-extra-compiler-and-linker-args -mmacosx-version-min=10.15 --Xerces no --OpenSSL no --lzma no --boost no
+        # Only for build speed: --Xerces no, --openssl system,  etc
+        - ./configure Release --apply-default-release-flags --append-extra-compiler-and-linker-args -mmacosx-version-min=10.15 --Xerces no --OpenSSL system --lzma no --boost no
         - cat ConfigurationFiles/Release.xml
         - popd
       script:
