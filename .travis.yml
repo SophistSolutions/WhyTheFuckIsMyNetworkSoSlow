@@ -57,6 +57,7 @@ jobs:
         - docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow buildContainer make all
       after_failure:
         - echo "HANDLING FAILURE DUMPING DEBUG STUFF:"
+        - echo curl -v https://raw.githubusercontent.com/nmap/nmap/master/nmap-mac-prefixes
       env:
         - MATRIX_EVAL="Windows=true Is64Bit=true"
 
