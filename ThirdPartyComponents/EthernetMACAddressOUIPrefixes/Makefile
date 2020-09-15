@@ -32,4 +32,5 @@ clean clobber:
 	@rm -f $(OUT_FILE)
 
 $(OUT_FILE):
+	@mkdir -p $(BUILDS_DIR)
 	@MAKE_INDENT_LEVEL=$(MAKE_INDENT_LEVEL) $(StroikaRoot)ScriptsLib/WebGet $(OUT_FILE) $(FETCHURLS)
