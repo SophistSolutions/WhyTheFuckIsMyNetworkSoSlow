@@ -23,9 +23,9 @@ branches:
     - v1-Release
 
 jobs:
-  allow_failures:
-    - env:
-        - MATRIX_EVAL="CXX=clang++ MacOS=true" # https://stroika.atlassian.net/browse/STK-705 - retry mid december
+  # allow_failures:
+  #   - env:
+  #       - MATRIX_EVAL="CXX=clang++ PLATFORM=MacOS"
 
   include:
     #
@@ -53,9 +53,9 @@ jobs:
       after_failure:
         - echo "HANDLING FAILURE DUMPING DEBUG STUFF:"
       env:
-        - MATRIX_EVAL="Windows=true ARCH=x86_64"
+        - MATRIX_EVAL="PLATFORM=Windows ARCH=x86_64"
 
-    # MacOS Configuration (still not working as of 2020-01-01 - due to https://stroika.atlassian.net/browse/STK-705 but should be soon)
+    # MacOS Configuration
     - os: osx
       osx_image: xcode11.6
       addons:
@@ -74,9 +74,9 @@ jobs:
         - popd
       script:
         - clang++ --version
-        - make all ECHO_BUILD_LINES=1
+        - make all
       env:
-        - MATRIX_EVAL="CXX=clang++ MacOS=true"
+        - MATRIX_EVAL="CXX=clang++ PLATFORM=MacOS"
 
     # Linux (Ubuntu - 1804) Configuration - build all
     - os: linux
