@@ -7,6 +7,9 @@
 
 MIRROR ABOVE LIKE I DID FOR OTHER PACKAGE FOR TRAVISCI FAILURES
 
+(tried mirror and still didnt work)
+
+
 ----
 	ReleaseScript.md
 		>> further improve docker build script (maybe make actual .sh script)
