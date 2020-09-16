@@ -67,8 +67,8 @@ jobs:
         # -mmacosx-version-min=10.15 needed for https://stackoverflow.com/questions/56924853/why-xcode-11-beta-cant-use-c17s-filesystem-header
         - pushd ThirdPartyComponents/Stroika/StroikaRoot
         - ./ScriptsLib/MakeBuildRoot ../../../
-        # Only for build speed: --Xerces no, --openssl system,  etc
-        - ./configure Release --apply-default-release-flags --append-extra-compiler-and-linker-args -mmacosx-version-min=10.15 --Xerces no --OpenSSL system --lzma no --boost no
+        # Only for build speed: --Xerces no,  etc
+        - ./configure Release --apply-default-release-flags --append-extra-compiler-and-linker-args -mmacosx-version-min=10.15 --Xerces no --lzma no --boost no
         - cat ConfigurationFiles/Release.xml
         - popd
         - clang++ --version
