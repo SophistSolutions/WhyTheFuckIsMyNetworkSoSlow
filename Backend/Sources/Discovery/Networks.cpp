@@ -46,12 +46,10 @@ namespace {
     GUID ComputeGUIDForNetwork_ (const Discovery::Network& nw)
     {
         StringBuilder sb;
-        using namespace Stroika::Foundation::Cryptography;
-        using DIGESTER_ = Digest::Digester<Digest::Algorithm::MD5>;
         sb += Characters::ToString (nw.fGateways);         // NO WHERE NEAR GOOD ENUF - take into account public IP ADDR and hardware address of router - but still ALLOW for any of these to float
         sb += Characters::ToString (nw.fNetworkAddresses); // ""
-        string tmp = sb.str ().AsUTF8 ();
-        return Cryptography::Format<GUID> (DIGESTER_::ComputeDigest ((const std::byte*)tmp.c_str (), (const std::byte*)tmp.c_str () + tmp.length ()));
+        using namespace Stroika::Foundation::Cryptography::Digest;
+        return Hash<String, Digester<Algorithm::MD5>, GUID>{}(sb.str ());
     }
 }
 
@@ -271,13 +269,11 @@ namespace {
         for (auto i = accumResults.begin (); i != accumResults.end (); ++i) {
             if (i->fGUID == GUID::Zero ()) {
                 StringBuilder sb;
-                using namespace Stroika::Foundation::Cryptography;
                 sb += Characters::ToString (i->fGateways);         // NO WHERE NEAR GOOD ENUF - take into account public IP ADDR and hardware address of router - but still ALLOW for any of these to float
                 sb += Characters::ToString (i->fNetworkAddresses); // ""
-                using DIGESTER_ = Digest::Digester<Digest::Algorithm::MD5>;
-                string tmp      = sb.str ().AsUTF8 ();
-                auto   v        = *i;
-                v.fGUID         = Cryptography::Format<GUID> (DIGESTER_::ComputeDigest ((const std::byte*)tmp.c_str (), (const std::byte*)tmp.c_str () + tmp.length ()));
+                auto v = *i;
+                using namespace Stroika::Foundation::Cryptography::Digest;
+                v.fGUID = Hash<String, Digester<Algorithm::MD5>, GUID>{}(sb.str ());
                 accumResults.Update (i, v);
             }
         }

@@ -10,6 +10,7 @@
 #include "Stroika/Foundation/Characters/StringBuilder.h"
 #include "Stroika/Foundation/Characters/ToString.h"
 #include "Stroika/Foundation/Cryptography/Digest/Algorithm/MD5.h"
+#include "Stroika/Foundation/Cryptography/Digest/Hash.h"
 #include "Stroika/Foundation/Cryptography/Format.h"
 #include "Stroika/Foundation/IO/Network/Interface.h"
 #include "Stroika/Foundation/IO/Network/LinkMonitor.h"
@@ -85,10 +86,8 @@ namespace {
              *  as a separate datum.
              */
             {
-                using namespace Stroika::Foundation::Cryptography;
-                using DIGESTER_ = Digest::Digester<Digest::Algorithm::MD5>;
-                string tmp      = i.fInternalInterfaceID.AsUTF8 ();
-                ni.fGUID        = Cryptography::Format<Common::GUID> (DIGESTER_::ComputeDigest ((const std::byte*)tmp.c_str (), (const std::byte*)tmp.c_str () + tmp.length ()));
+                using namespace Stroika::Foundation::Cryptography::Digest;
+                ni.fGUID = Hash<String, Digester<Algorithm::MD5>, Common::GUID>{}(i.fInternalInterfaceID);
 #if qDebug
                 // nothing useful to add yet
                 ni.fDebugProps.Add (L"test"sv,

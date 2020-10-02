@@ -54,7 +54,7 @@ namespace {
     using CACHE_BWA_ = SynchronizedTimedCache<T1, T2>;
 }
 #endif
-optional<tuple<GEOLocationInformation, InternetServiceProvider>> BackendApp::Common::GEOLocAndISPLookup(InternetAddress ia)
+optional<tuple<GEOLocationInformation, InternetServiceProvider>> BackendApp::Common::GEOLocAndISPLookup (InternetAddress ia)
 {
     /*
      *  Could fetch from https://ipstack.com/documentation but required signup for account.

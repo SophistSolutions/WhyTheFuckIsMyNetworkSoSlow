@@ -14,6 +14,7 @@
 #include "Stroika/Foundation/Configuration/SystemConfiguration.h"
 #include "Stroika/Foundation/Containers/Set.h"
 #include "Stroika/Foundation/Cryptography/Digest/Algorithm/MD5.h"
+#include "Stroika/Foundation/Cryptography/Digest/Hash.h"
 #include "Stroika/Foundation/Cryptography/Format.h"
 #include "Stroika/Foundation/Debug/TimingTrace.h"
 #include "Stroika/Foundation/Execution/Activity.h"
@@ -89,8 +90,8 @@ namespace {
             }
         }
         sb += d.name;
-        using namespace Cryptography::Digest;
-        return Cryptography::Format<GUID> (Digester<Algorithm::MD5>::ComputeDigest (Memory::BLOB::Raw (sb.str ().AsUTF8 ())));
+        using namespace Stroika::Foundation::Cryptography::Digest;
+        return Hash<String, Digester<Algorithm::MD5>, GUID>{}(sb.str ());
     }
 }
 
