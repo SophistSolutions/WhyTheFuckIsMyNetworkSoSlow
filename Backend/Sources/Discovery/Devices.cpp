@@ -5,6 +5,7 @@
 
 #include <random>
 
+#include "Stroika/Foundation/Cache/BloomFilter.h"
 #include "Stroika/Foundation/Cache/SynchronizedCallerStalenessCache.h"
 #include "Stroika/Foundation/Cache/SynchronizedTimedCache.h"
 #include "Stroika/Foundation/Characters/Format.h"
@@ -1064,6 +1065,7 @@ namespace {
     private:
         static void Checker_ ()
         {
+            Debug::TraceContextBumper ctx{L"RandomWalkThroughSubnetDiscoverer_::Checker_"};
             static constexpr Activity kDiscovering_THIS_{L"discovering by random scans"sv};
 
             static constexpr auto kMinTimeBetweenScans_{5s};
@@ -1071,60 +1073,77 @@ namespace {
             //constexpr auto               kAllowedNetworkStaleness_ = 1min;
             constexpr Time::DurationSecondsType kAllowedNetworkStaleness_ = 60;
 
-            Set<unsigned int> addrsUsed; // @todo replace with Bloom Filter
-            unsigned int      addrUsedCnt{};
-            while (true) {
-                Execution::Sleep (kMinTimeBetweenScans_);
+            optional<InternetAddressRange>      scanAddressRange;
+            unique_ptr<Cache::BloomFilter<int>> addressesProbablyUsed;
 
+            double sizeFactor{1};                       // (DOESNT APPEAR NEEDED) - use more bloom filter bits than needed for full set, cuz otherwise get too many collisions as adding
+            double maxFalsePositivesAllowed      = .5;  // bloom filter stops working well if much past this probability limit
+            double maxFractionOfAddrSpaceScanned = .75; // our algorithm wastes alot of time computing random numbers past this limit
+            while (true) {
                 try {
                     DeclareActivity da{&kDiscovering_THIS_};
 
-                    Sequence<Discovery::Network> activeNetworks = Discovery::NetworksMgr::sThe.CollectActiveNetworks (kAllowedNetworkStaleness_);
-                    if (activeNetworks.empty ()) {
-                        Execution::Sleep (30s);
-                        continue;
-                    }
-                    Discovery::Network nw = activeNetworks[0];
-                    // Scanning really only works for IPv4 since too large a range otherwise
-                    optional<InternetAddressRange> ipv4AddrRange;
-                    for (CIDR cidr : nw.fNetworkAddresses) {
-                        if (cidr.GetInternetAddress ().GetAddressFamily () == InternetAddress::AddressFamily::V4) {
-                            ipv4AddrRange = cidr.GetRange ();
-                            break;
+                    // Keep scanning the given range til we're (mostly) done
+                    if (not scanAddressRange) {
+                        Sequence<Discovery::Network> activeNetworks = Discovery::NetworksMgr::sThe.CollectActiveNetworks (kAllowedNetworkStaleness_);
+                        if (activeNetworks.empty ()) {
+                            DbgTrace (L"No active network, so postponing random device address scan");
+                            Execution::Sleep (30s);
+                            continue;
                         }
-                    }
-
-                    if (not ipv4AddrRange) {
-                        // try again later
-                        Execution::Sleep (30s);
-                        continue;
-                    }
-
-                    //DbgTrace (L"***ipv4AddrRange=%s, addrange.GetNumberOfContainedPoints ()=%s", Characters::ToString (ipv4AddrRange).c_str (), Characters::ToString (ipv4AddrRange->GetNumberOfContainedPoints ()).c_str ());
-
-                    // pick first few addresses randomly
-                    constexpr auto         kRatio2TryRandom_ = .75;
-                    optional<unsigned int> selected;
-                    if (addrUsedCnt < static_cast<unsigned int> (ipv4AddrRange->GetNumberOfContainedPoints () * kRatio2TryRandom_)) {
-                        static mt19937 sRng_{std::random_device{}()};
-                        selected = uniform_int_distribution<unsigned int>{1, ipv4AddrRange->GetNumberOfContainedPoints () - 2}(sRng_);
-                    }
-                    else {
-                        // now do in order remaining
-                        for (unsigned int i = 1; i < ipv4AddrRange->GetNumberOfContainedPoints () - 2; i++) {
-                            if (not addrsUsed.Contains (i)) {
-                                selected = i;
+                        // Scanning really only works for IPv4 since too large a range otherwise
+                        for (Discovery::Network nw : activeNetworks) {
+                            for (CIDR cidr : nw.fNetworkAddresses) {
+                                if (cidr.GetInternetAddress ().GetAddressFamily () == InternetAddress::AddressFamily::V4) {
+                                    scanAddressRange = cidr.GetRange ();
+                                    DbgTrace (L"Selecting scanAddressRange=%s", Characters::ToString (scanAddressRange).c_str ());
+                                    break;
+                                }
+                            }
+                            if (scanAddressRange) {
                                 break;
                             }
                         }
+                        if (scanAddressRange) {
+                            addressesProbablyUsed = make_unique<Cache::BloomFilter<int>> (static_cast<size_t> (sizeFactor * scanAddressRange->GetNumberOfContainedPoints ()));
+                        }
                     }
-
-                    if (!selected) {
-                        DbgTrace (L"Completed full scan, resetting list, and rescanning...");
-                        addrsUsed.clear (); // @todo replace with Bloom Filter
-                        addrUsedCnt = 0;
+                    if (not scanAddressRange) {
+                        // try again later
+                        DbgTrace (L"No active IPV4 network, so postponing random device address scan");
+                        Execution::Sleep (30s);
                         continue;
                     }
+                    AssertNotNull (addressesProbablyUsed);
+
+                    //
+                    // pick first few addresses randomly, and when nearly full, clear, and try again
+                    // This doesn't gaurantee scanning every address, but the number of addresses could be large (e.g. class B network)
+                    // and it takes so long to scan, we'll miss a bunch anyhow. Retrying later statistically guarnatees we find everything
+                    // thats responding and around long enuf
+                    //
+                    optional<unsigned int> selected;
+
+                    auto bloomFilterStats = addressesProbablyUsed->GetStatistics ();
+                    //DbgTrace (L"***addressesProbablyUsed->GetStatistics ()=%s", Characters::ToString (bloomFilterStats).c_str ());
+                    if (bloomFilterStats.ProbabilityOfFalsePositive () < maxFalsePositivesAllowed and
+                        double (bloomFilterStats.fApparentlyDistinctAddCalls) / scanAddressRange->GetNumberOfContainedPoints () < maxFractionOfAddrSpaceScanned) {
+                        static mt19937 sRng_{std::random_device{}()};
+                        selected = uniform_int_distribution<unsigned int>{1, scanAddressRange->GetNumberOfContainedPoints () - 2}(sRng_);
+                    }
+                    else {
+                        DbgTrace (L"Completed full (%d/%d => %f fraction) scan of (scanAddressRange=%s), with randomCollisions=%d, resetting list, to start rescanning...",
+                                  bloomFilterStats.fApparentlyDistinctAddCalls, scanAddressRange->GetNumberOfContainedPoints (),
+                                  double (bloomFilterStats.fApparentlyDistinctAddCalls) / scanAddressRange->GetNumberOfContainedPoints (),
+                                  Characters::ToString (scanAddressRange).c_str (),
+                                  bloomFilterStats.fActualAddCalls - bloomFilterStats.fApparentlyDistinctAddCalls);
+                        DbgTrace (L"addressesProbablyUsed.GetStatistics ()=%s", Characters::ToString (bloomFilterStats).c_str ());
+                        addressesProbablyUsed.reset ();
+                        scanAddressRange.reset ();
+                        Execution::Sleep (1s);
+                        continue;
+                    }
+                    Assert (selected);
 
                     auto runPingCheck = [] (const InternetAddress& ia) {
                         PortScanResults scanResults = ScanPorts (ia, ScanOptions{ScanOptions::eQuick});
@@ -1169,28 +1188,28 @@ namespace {
                         }
                     };
 
-                    // @todo - use a Bloom filter to filter choices already done
-                    // but for now, pick a random address in our range
-                    InternetAddress ia = ipv4AddrRange->GetLowerBound ().Offset (*selected);
+                    // We MAY skip scanning some addresses because of bloomfilter inaccuracy, but this allows us to skip lots
+                    // of pointless random rescans, so its worth it to check the result of Add()
+                    if (addressesProbablyUsed->Add (*selected)) {
+                        InternetAddress ia = scanAddressRange->GetLowerBound ().Offset (*selected);
 
-                    /*
-                     *  dont bother probing if we already have the device in our list
-                     */
-                    bool need2CheckAddr{true};
-                    {
-                        auto           l = sDiscoveredDevices_.cget (); // grab write lock because almost assured of making changes (at least last seen)
-                        DiscoveryInfo_ tmp{};
-                        tmp.AddIPAddresses_ (ia);
-                        if (optional<DiscoveryInfo_> oo = FindMatchingDevice_ (l, tmp)) {
-                            need2CheckAddr = false;
+                        /*
+                         *  dont bother probing if we already have the device in our list
+                         */
+                        bool need2CheckAddr{true};
+                        {
+                            auto           l = sDiscoveredDevices_.cget (); // grab write lock because almost assured of making changes (at least last seen)
+                            DiscoveryInfo_ tmp{};
+                            tmp.AddIPAddresses_ (ia);
+                            if (optional<DiscoveryInfo_> oo = FindMatchingDevice_ (l, tmp)) {
+                                need2CheckAddr = false;
+                            }
+                        }
+                        if (need2CheckAddr) {
+                            runPingCheck (ia);
+                            Execution::Sleep (kMinTimeBetweenScans_);
                         }
                     }
-
-                    if (need2CheckAddr) {
-                        runPingCheck (ia);
-                    }
-                    addrsUsed += *selected;
-                    addrUsedCnt++;
                 }
                 catch (const Thread::InterruptException&) {
                     Execution::ReThrow ();
