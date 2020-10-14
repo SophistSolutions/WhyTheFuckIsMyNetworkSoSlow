@@ -1073,6 +1073,11 @@ namespace {
             //constexpr auto               kAllowedNetworkStaleness_ = 1min;
             constexpr Time::DurationSecondsType kAllowedNetworkStaleness_ = 60;
 
+            /*
+             *  Use a BloomFilter instead of a Set<> since we dont want to waste alot of memory storing
+             *  EVERY item we visited and discarded, and we dont need to be perfect, its a slow random walk and devices
+             *  could appear and disappear during a scan anyhow...
+             */
             optional<InternetAddressRange>      scanAddressRange;
             unique_ptr<Cache::BloomFilter<int>> addressesProbablyUsed;
 
