@@ -17,9 +17,4 @@ clean clobber:
 	@# (buggy IMHO) - so don't aggravate that - but avoid it for now -- LGP 2019-01-20
 	@if [ "$@" == "clobber" ] ; then \
 		$(MAKE) --directory=StroikaRoot --no-print-directory --silent $@ CONFIGURATION=$(CONFIGURATION) MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1));\
-	fi
-ifeq ($(CONFIGURATION),)
-	@if [ "$@" == "clobber" ] ; then \
-		rm -rf StroikaRoot/ConfigurationFiles StroikaRoot/Builds StroikaRoot/IntermediateFiles;\
-	fi
-endif
+	mi
