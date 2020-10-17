@@ -104,7 +104,7 @@ namespace {
     const String kDeviceType_WANConnectionDevice_{L"urn:schemas-upnp-org:device:WANConnectionDevice:1"sv};
     const String kDeviceType_WANDevice_{L"urn:schemas-upnp-org:device:WANDevice:1"sv};
     const String kDeviceType_MediaRenderer_{L"urn:schemas-upnp-org:device:MediaRenderer:1"sv};
-
+    const String kDeviceType_DIALServer_{L"urn:dial-multiscreen-org:device:dial:1"sv}; // typically TV, Blu-ray player, set-top-box, or similar device
     // probably shouldn't be this specifc
     const String kDeviceType_Roku_{L"urn:roku-com:device:player:1-0"sv};
 }
@@ -490,9 +490,18 @@ namespace {
             }
 
             if (fSSDPInfo.has_value () and
-                // @todo - need a better way to detect - look at services not device type?
-                (fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_Roku_))) {
+                (
+                    // @todo - need a better way to detect - look at services not device type?
+                    fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_Roku_))) {
                 fTypes.Add (Discovery::DeviceType::eMediaPlayer);
+            }
+
+            // So far only seen used for Amazon Fire Stick, but could be used for TV, according to
+            // http://www.dial-multiscreen.org/dial-protocol-specification
+            if (fSSDPInfo.has_value () and
+                (fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_DIALServer_))) {
+                fTypes.Add (Discovery::DeviceType::eMediaPlayer);
+                //fTypes.Add (Discovery::DeviceType::eTV);
             }
 
             {
