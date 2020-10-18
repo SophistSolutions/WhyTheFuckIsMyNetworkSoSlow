@@ -1,10 +1,4 @@
 
-----
-
-	Hard to tell where used name came from
-		Each place we get a name from - like reversedns etc - 
-		also add that to debuginfo so we can see teh 3 or 4 
-		places to get a name from and pick the best
 ---
 
 Include PING test in reported open ports, and 'last time seen'

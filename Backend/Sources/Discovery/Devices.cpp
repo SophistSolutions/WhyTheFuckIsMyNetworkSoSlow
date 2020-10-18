@@ -438,6 +438,9 @@ namespace {
                     if (newName.Match (kSonosRE_, &m1, &m2)) {
                         Assert (m1.has_value () and m2.has_value ());
                         name = fSSDPInfo->fDeviceType2FriendlyNameMap[kDeviceType_SpeakerGroup_] + *m2;
+#if qDebug
+                        fDebugProps.Add (L"SSDP-DeviceType2FriendlyName-SONOS-HACK"sv, name);
+#endif
                     }
                 }
 
@@ -445,6 +448,9 @@ namespace {
                 if (name.empty ()) {
                     if (not fSSDPInfo->fDeviceType2FriendlyNameMap.empty ()) {
                         name = fSSDPInfo->fDeviceType2FriendlyNameMap.Nth (0).fValue;
+#if qDebug
+                        fDebugProps.Add (L"SSDP-DeviceType2FriendlyName"sv, name);
+#endif
                     }
                 }
 
@@ -455,6 +461,9 @@ namespace {
                 for (auto i : GetInternetAddresses ()) {
                     if (auto o = ReverseDNSLookup_ (i)) {
                         name = *o;
+#if qDebug
+                        fDebugProps.Add (L"reverse-dns-name"sv, name);
+#endif
                         break;
                     }
                 }
