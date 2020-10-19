@@ -28,14 +28,14 @@ clean clobber:
 	@$(StroikaRoot)/ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "WhyTheFuckIsMyNetworkSoSlow/HTML $(call FUNCTION_CAPITALIZE_WORD,$@) {$(CONFIGURATION)}:"
 ifeq ($(CONFIGURATION),)
 	@rm -rf ../IntermediateFiles/*/WhyTheFuckIsMyNetworkSoSlow/html
-	@if [ "$@" == "clobber" ] ; then \
+	@if [ "$@"=="clobber" ] ; then \
 		rm -rf ../Builds/*/WhyTheFuckIsMyNetworkSoSlow/html;\
 	fi
 endif
 ifneq ($(CONFIGURATION),)
 	@#rm -f src/*.js
 	@rm -rf $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_)
-	@if [ "$@" == "clobber" ] ; then \
+	@if [ "$@"=="clobber" ] ; then \
 		rm -rf $(PER_CONFIGURATION_BUILDS_DIR);\
 	fi
 endif
