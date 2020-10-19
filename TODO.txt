@@ -1,8 +1,4 @@
 
----
-
-Include PING test in reported open ports, and 'last time seen'
-
 ----
 
 consider rule - if name contains MACBOOKPRO AND manufacture from ethernet info is Apple, then

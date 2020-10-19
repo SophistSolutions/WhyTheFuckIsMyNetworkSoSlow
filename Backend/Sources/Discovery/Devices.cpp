@@ -30,6 +30,7 @@
 #include "Stroika/Foundation/IO/Network/Transfer/Connection.h"
 
 #include "Stroika/Frameworks/UPnP/DeviceDescription.h"
+#include "Stroika/Frameworks/NetworkMonitor/Ping.h"
 #include "Stroika/Frameworks/UPnP/SSDP/Client/Listener.h"
 #include "Stroika/Frameworks/UPnP/SSDP/Client/Search.h"
 
@@ -1299,8 +1300,16 @@ namespace {
                         DbgTrace (L"Port scanning on existing device %s (addr %s) returned these ports: %s", Characters::ToString (deviceID).c_str (), Characters::ToString (ia).c_str (), Characters::ToString (scanResults.fKnownOpenPorts).c_str ());
 #endif
 
-                        if (not scanResults.fDiscoveredOpenPorts.empty ()) {
+                        {
                             // also add check for ICMP PING
+                            Frameworks::NetworkMonitor::Ping::Pinger p{ia};
+                            try {
+                                auto r = p.RunOnce ();//incomplete
+                                // @todo document TTL arg to Pinger...
+                                scanResults.fDiscoveredOpenPorts.Add (L"icmp:ping"sv);
+                            }
+                            catch (...) {
+                            }
                         }
 
                         // then flag found device and when via random pings/portscan, and record portscan result.
