@@ -29,8 +29,8 @@
 #include "Stroika/Foundation/IO/Network/Neighbors.h"
 #include "Stroika/Foundation/IO/Network/Transfer/Connection.h"
 
-#include "Stroika/Frameworks/UPnP/DeviceDescription.h"
 #include "Stroika/Frameworks/NetworkMonitor/Ping.h"
+#include "Stroika/Frameworks/UPnP/DeviceDescription.h"
 #include "Stroika/Frameworks/UPnP/SSDP/Client/Listener.h"
 #include "Stroika/Frameworks/UPnP/SSDP/Client/Search.h"
 
@@ -961,8 +961,7 @@ namespace {
      */
     struct MyNeighborDiscoverer_ {
         MyNeighborDiscoverer_ ()
-            : fMyThread_ (
-                  Thread::CleanupPtr::eAbortBeforeWaiting, Thread::New (DiscoveryChecker_, Thread::eAutoStart, L"MyNeighborDiscoverer"))
+            : fMyThread_{Thread::CleanupPtr::eAbortBeforeWaiting, Thread::New (DiscoveryChecker_, Thread::eAutoStart, L"MyNeighborDiscoverer"sv)}
         {
         }
 
@@ -1257,8 +1256,7 @@ namespace {
      */
     struct KnownDevicePortScanner_ {
         KnownDevicePortScanner_ ()
-            : fMyThread_ (
-                  Thread::CleanupPtr::eAbortBeforeWaiting, Thread::New (Checker_, Thread::eAutoStart, L"KnownDevicePortScanner"))
+            : fMyThread_{Thread::CleanupPtr::eAbortBeforeWaiting, Thread::New (Checker_, Thread::eAutoStart, L"KnownDevicePortScanner"sv)}
         {
         }
 
@@ -1304,7 +1302,7 @@ namespace {
                             // also add check for ICMP PING
                             Frameworks::NetworkMonitor::Ping::Pinger p{ia};
                             try {
-                                auto r = p.RunOnce ();//incomplete
+                                auto r = p.RunOnce (); //incomplete
                                 // @todo document TTL arg to Pinger...
                                 scanResults.fDiscoveredOpenPorts.Add (L"icmp:ping"sv);
                             }
