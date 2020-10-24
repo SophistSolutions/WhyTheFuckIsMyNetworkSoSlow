@@ -1,9 +1,21 @@
 
+
+- Include the device ICON in its name field (prepend or append? prepend. Old Devices API shows those icons.
+  OR - maybe use that in the device type field? Not sure. Maybe that makes more sense to show icon
+  there? But add to existing icon? We can have  mutliple types so thats probably what makes the most sense.
+  Its basically another 'type'.
+
+
 ----
 
 consider rule - if name contains MACBOOKPRO AND manufacture from ethernet info is Apple, then
 mark it as type PC.
+----
 
+	>> Finish draft of networks page (as good as current devices page)
+	   and then do release.
+
+	   
 ----
 
 maybe use
@@ -12,8 +24,6 @@ https://docs.travis-ci.com/user/docker/
 
 to do docker - loooks like MAYBE simpler than what Im doing now, and MAYBE more performnant if it caches teh
 images. IF YES, then do for STROIKA too
-
-
 
 ----
 	ReleaseScript.md

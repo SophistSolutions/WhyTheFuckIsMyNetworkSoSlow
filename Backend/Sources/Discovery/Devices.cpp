@@ -496,7 +496,118 @@ namespace {
             if (fSSDPInfo.has_value () and
                 // @todo - need a better way to detect - look at services not device type?
                 (fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_MediaRenderer_))) {
-                fTypes.Add (Discovery::DeviceType::eTV);
+
+#if 0
+From yamaha playbar:
+Living Room
+ID	4fb4912c-2468-9659-67e9-ae4a38f684cc
+Types	TV
+Icon	http://localhost:8080/blob/35114267-7df6-55aa-b809-2a60c39fbc6c
+Open Ports	icmp:ping, tcp:80
+Presentation	http://192.168.1.85/
+OS	Linux
+Manufacturers	Yamaha Corporation
+Networks	{ "b4724405-c085-725d-1cd6-8fb4edb28b53": { "hardwareAddresses": [ "bc-30-d9-87-c7-4f" ], "networkAddresses": [ "192.168.1.85" ] } }
+Last Seen	2 minutes ago
+DEBUG INFO	{ "MACAddr2OUINames": { "bc-30-d9-87-c7-4f": "Arcadyan" }, "SSDP-DeviceType2FriendlyName": "Living Room", "SSDPInfo": { "USNs": "[ 'uuid:9ab0c000-f668-11de-9976-bc30d987c74e::upnp:rootdevice' ]", "deviceType2FriendlyNameMap": "[ {'urn:schemas-upnp-org:device:MediaRenderer:1': 'Living Room'} ]", "lastAdvertisement": "{USN : 'uuid:9ab0c000-f668-11de-9976-bc30d987c74e::upnp:rootdevice', Location : 'http://192.168.1.85:49154/MediaRenderer/desc.xml', Server : 'Linux/3.2 UPnP/1.0 Network_Module/1.0 (YAS-408)', Target : 'upnp:rootdevice', Raw-Headers : [], }", "lastSSDPMessageRecievedAt": "Sat Oct 24 8:57:43 2020 localtime", "locations": "[ 'http://192.168.1.85:49154/MediaRenderer/desc.xml' ]", "manufacturer": "'Yamaha Corporation'", "manufacturer-URL": "'http://www.yamaha.com/'", "server": "'Linux/3.2 UPnP/1.0 Network_Module/1.0 (YAS-408)'" } }
+
+
+http://192.168.1.85:49154/MediaRenderer/desc.xml:
+This XML file does not appear to have any style information associated with it. The document tree is shown below.
+<root xmlns="urn:schemas-upnp-org:device-1-0" xmlns:yamaha="urn:schemas-yamaha-com:device-1-0">
+<script>(function(){var t=[],e=!0;window.addEventListener("onelogin.markSubmitCandidates",(function(n){t.forEach((function(t){t.setAttribute&&t.setAttribute("data-ol-has-click-handler","")})),t=[],e=!1,window.dispatchEvent(new CustomEvent("onelogin.submitCandidatesMarked"))}),{once:!0}),EventTarget.prototype.ol_originalAddEventListener=EventTarget.prototype.addEventListener,EventTarget.prototype.addEventListener=function(n,o){var r=arguments.length>2&&void 0!==arguments[2]&&arguments[2];this.ol_originalAddEventListener(n,o,r),e&&"click"===n&&t.push(this)}})("")</script>
+<specVersion>
+<major>1</major>
+<minor>0</minor>
+</specVersion>
+<device>
+<dlna:X_DLNADOC xmlns:dlna="urn:schemas-dlna-org:device-1-0">DMR-1.50</dlna:X_DLNADOC>
+<deviceType>urn:schemas-upnp-org:device:MediaRenderer:1</deviceType>
+<friendlyName>Living Room</friendlyName>
+<manufacturer>Yamaha Corporation</manufacturer>
+<manufacturerURL>http://www.yamaha.com/</manufacturerURL>
+<modelDescription>MusicCast</modelDescription>
+<modelName>YAS-408</modelName>
+<modelNumber>408</modelNumber>
+<modelURL>http://www.yamaha.com/</modelURL>
+<serialNumber>042B2C93</serialNumber>
+<UDN>uuid:9ab0c000-f668-11de-9976-bc30d987c74e</UDN>
+<iconList>
+<icon>
+<mimetype>image/jpeg</mimetype>
+<width>48</width>
+<height>48</height>
+<depth>24</depth>
+<url>/Icons/48x48.jpg</url>
+</icon>
+<icon>
+<mimetype>image/jpeg</mimetype>
+<width>120</width>
+<height>120</height>
+<depth>24</depth>
+<url>/Icons/120x120.jpg</url>
+</icon>
+<icon>
+<mimetype>image/png</mimetype>
+<width>48</width>
+<height>48</height>
+<depth>24</depth>
+<url>/Icons/48x48.png</url>
+</icon>
+<icon>
+<mimetype>image/png</mimetype>
+<width>120</width>
+<height>120</height>
+<depth>24</depth>
+<url>/Icons/120x120.png</url>
+</icon>
+</iconList>
+<serviceList>
+<service>
+<serviceType>urn:schemas-upnp-org:service:AVTransport:1</serviceType>
+<serviceId>urn:upnp-org:serviceId:AVTransport</serviceId>
+<SCPDURL>/AVTransport/desc.xml</SCPDURL>
+<controlURL>/AVTransport/ctrl</controlURL>
+<eventSubURL>/AVTransport/event</eventSubURL>
+</service>
+<service>
+<serviceType>urn:schemas-upnp-org:service:RenderingControl:1</serviceType>
+<serviceId>urn:upnp-org:serviceId:RenderingControl</serviceId>
+<SCPDURL>/RenderingControl/desc.xml</SCPDURL>
+<controlURL>/RenderingControl/ctrl</controlURL>
+<eventSubURL>/RenderingControl/event</eventSubURL>
+</service>
+<service>
+<serviceType>urn:schemas-upnp-org:service:ConnectionManager:1</serviceType>
+<serviceId>urn:upnp-org:serviceId:ConnectionManager</serviceId>
+<SCPDURL>/ConnectionManager/desc.xml</SCPDURL>
+<controlURL>/ConnectionManager/ctrl</controlURL>
+<eventSubURL>/ConnectionManager/event</eventSubURL>
+</service>
+</serviceList>
+<presentationURL>http://192.168.1.85/</presentationURL>
+</device>
+<yamaha:X_device>
+<yamaha:X_URLBase>http://192.168.1.85:80/</yamaha:X_URLBase>
+<yamaha:X_serviceList>
+<yamaha:X_service>
+<yamaha:X_specType>urn:schemas-yamaha-com:service:X_YamahaRemoteControl:1</yamaha:X_specType>
+<yamaha:X_controlURL>/YamahaRemoteControl/ctrl</yamaha:X_controlURL>
+<yamaha:X_unitDescURL>/YamahaRemoteControl/desc.xml</yamaha:X_unitDescURL>
+</yamaha:X_service>
+<yamaha:X_service>
+<yamaha:X_specType>urn:schemas-yamaha-com:service:X_YamahaExtendedControl:1</yamaha:X_specType>
+<yamaha:X_yxcControlURL>/YamahaExtendedControl/v1/</yamaha:X_yxcControlURL>
+<yamaha:X_yxcVersion>0605 </yamaha:X_yxcVersion>
+</yamaha:X_service>
+</yamaha:X_serviceList>
+</yamaha:X_device>
+</root>
+
+SB able to tell TV from playbar from SERVICE LIST; look at my TVS service list
+#endif
+                //fTypes.Add (Discovery::DeviceType::eTV);
+                fTypes.Add (Discovery::DeviceType::eSpeaker);
             }
 
             if (fSSDPInfo.has_value () and
