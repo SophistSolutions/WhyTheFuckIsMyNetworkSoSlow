@@ -79,6 +79,7 @@
 </template>
 
 <script lang="ts">
+import { IDevice, INetworkAttachmentInfo } from "@/models/device/IDevice";
 import { INetwork } from "@/models/network/INetwork";
 import { Component, Vue, Watch } from "vue-property-decorator";
 
@@ -157,10 +158,25 @@ export default class Devices extends Vue {
     this.$store.dispatch("fetchAvailableNetworks");
   }
 
+  private fetchDevices() {
+    this.$store.dispatch("fetchDevices", null);
+  }
+
+  private created() {
+    this.fetchDevices();
+    this.fetchAvailableNetworks();
+    this.pollData();
+  }
+
+  private beforeDestroy() {
+    clearInterval(this.polling);
+  }
+
   private pollData() {
     this.polling = setInterval(() => {
+      this.fetchDevices();
       this.fetchAvailableNetworks();
-    }, 10 * 1000);
+    }, 15 * 1000);
   }
 
   private get networks(): INetwork[] {
@@ -200,13 +216,43 @@ export default class Devices extends Vue {
     ];
   }
 
-  private created() {
-    this.fetchAvailableNetworks();
-    this.pollData();
+  private get devices(): IDevice[] {
+    return this.$store.getters.getDevices;
   }
 
-  private beforeDestroy() {
-    clearInterval(this.polling);
+  private getDevicesInNetwork(nw: INetwork): string[] {
+    var ids: string[] = [];
+    this.devices.forEach((i: IDevice) => {
+      let hasThisNetwork = false;
+      console.log("i=");
+      console.log(i);
+      // i.attachedNetworks.forEach((nwIDValPair: any) => {
+      //   // if (network.id === nw.id) {
+      //   // console.log(nwIDValPair);
+      //   //   hasThisNetwork = true;
+      //   // }
+      // });
+
+      Object.entries(i.attachedNetworks).forEach((element) => {
+        if (element[0] == nw.id) {
+          hasThisNetwork = true;
+        }
+        // let netID = element[0];
+        // this.networks.forEach((network: INetwork) => {
+        //   if (network.id === netID) {
+        //     if (network.networkAddresses.length >= 1) {
+        //       netID = network.networkAddresses[0];
+        //     }
+        //   }
+        // });
+        // addresses.push(netID);
+      });
+
+      if (hasThisNetwork) {
+        ids.push(i.id);
+      }
+    });
+    return ids;
   }
 
   @Watch("networks()")
@@ -224,7 +270,7 @@ export default class Devices extends Vue {
         internetInfo:
           (i.gateways == null ? "" : i.gateways.join(", ")) +
           (i.internetServiceProvider == null ? " " : " (" + i.internetServiceProvider.name + ")"),
-        devices: "19",
+        devices: this.getDevicesInNetwork(i).length,
         status: "healthy",
         location,
         // name: i.name,

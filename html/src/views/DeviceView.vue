@@ -309,9 +309,8 @@ export default class Devices extends Vue {
 
   private pollData() {
     // first time check quickly, then more gradually
-    setTimeout(() => {
-      this.fetchDevices();
-    }, 5 * 1000);
+    this.fetchDevices();
+    this.fetchAvailableNetworks();
     this.polling = setInterval(() => {
       this.fetchDevices();
       this.fetchAvailableNetworks();
