@@ -7,7 +7,7 @@
       </v-card-title>
       <v-data-table
         height="2in"
-        class="deviceList"
+        class="networkList"
         dense
         v-model="selectedRows"
         :headers="headers"
@@ -46,7 +46,7 @@
         <table v-bind:key="itemId" class="selectedDevicesSection">
           <tr v-bind:key="itemId">
             <td>Name</td>
-            <td>{{ networkFromID_(itemId).name }}</td>
+            <td>{{ networkFromID_(itemId).networkAddresses.join(", ") }}</td>
           </tr>
           <tr v-bind:key="itemId">
             <td>ID</td>
@@ -90,7 +90,7 @@ import { fetchNetworks } from "@/proxy/API";
   name: "Networks",
   components: {},
 })
-export default class Devices extends Vue {
+export default class Networks extends Vue {
   private polling: undefined | number = undefined;
 
   private selectedRows: string[] = [];
@@ -98,8 +98,8 @@ export default class Devices extends Vue {
   private sortDesc: any = [];
 
   // terrible inefficient approach - maybe create map object dervied from devices array
-  private networkFromID_(id: string) {
-    let result = null;
+  private networkFromID_(id: string): INetwork | null {
+    let result: INetwork | null = null;
     this.networks.every((d) => {
       if (d.id === id) {
         result = d;
@@ -133,26 +133,6 @@ export default class Devices extends Vue {
       this.selectedRows.push(keyID);
     }
   }
-
-  // private formatNetworks_(attachedNetworks: { [key: string]: INetworkAttachmentInfo }): string {
-  //   const addresses: string[] = [];
-  //   Object.entries(attachedNetworks).forEach((element) => {
-  //     // console.log(element);
-  //     addresses.push(element[0]);
-  //   });
-  //   return addresses.join(", ");
-  // }
-
-  // private formatNetworkAddresses_(attachedNetworks: {
-  //   [key: string]: INetworkAttachmentInfo;
-  // }): string {
-  //   const addresses: string[] = [];
-  //   Object.entries(attachedNetworks).forEach((element) => {
-  //     // console.log(element);
-  //     element[1].networkAddresses.forEach((e: string) => addresses.push(e));
-  //   });
-  //   return addresses.join(", ");
-  // }
 
   private fetchAvailableNetworks() {
     this.$store.dispatch("fetchAvailableNetworks");
@@ -221,33 +201,14 @@ export default class Devices extends Vue {
   }
 
   private getDevicesInNetwork(nw: INetwork): string[] {
-    var ids: string[] = [];
+    const ids: string[] = [];
     this.devices.forEach((i: IDevice) => {
       let hasThisNetwork = false;
-      console.log("i=");
-      console.log(i);
-      // i.attachedNetworks.forEach((nwIDValPair: any) => {
-      //   // if (network.id === nw.id) {
-      //   // console.log(nwIDValPair);
-      //   //   hasThisNetwork = true;
-      //   // }
-      // });
-
       Object.entries(i.attachedNetworks).forEach((element) => {
-        if (element[0] == nw.id) {
+        if (element[0] === nw.id) {
           hasThisNetwork = true;
         }
-        // let netID = element[0];
-        // this.networks.forEach((network: INetwork) => {
-        //   if (network.id === netID) {
-        //     if (network.networkAddresses.length >= 1) {
-        //       netID = network.networkAddresses[0];
-        //     }
-        //   }
-        // });
-        // addresses.push(netID);
       });
-
       if (hasThisNetwork) {
         ids.push(i.id);
       }
@@ -303,7 +264,7 @@ export default class Devices extends Vue {
   margin-top: 20px;
 }
 
-.deviceList {
+.networkList {
   margin-top: 10px;
 }
 .selectedDevicesSection {
