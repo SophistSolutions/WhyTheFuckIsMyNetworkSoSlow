@@ -1,21 +1,23 @@
-
-
 - Include the device ICON in its name field (prepend or append? prepend. Old Devices API shows those icons.
   OR - maybe use that in the device type field? Not sure. Maybe that makes more sense to show icon
   there? But add to existing icon? We can have  mutliple types so thats probably what makes the most sense.
   Its basically another 'type'.
+----
 
+	>> maybe get docker builds working
+	   and then do release.
 
+	   C:\Sandbox\WhyTheFuckIsMyNetworkSoSlowDev\RunReleaseBuilds.sh
+----
+	> Have quick connect icon on devices
+	  popup for popular connect tecnhiques, like 
+	    > http link (open port or presenation url)
+		> RDP port invoke somehow rdp connection
+		at least in details, but maybe at top level of list?
 ----
 
 consider rule - if name contains MACBOOKPRO AND manufacture from ethernet info is Apple, then
 mark it as type PC.
-----
-
-	>> Finish draft of networks page (as good as current devices page)
-	   and then do release.
-
-	   
 ----
 
 maybe use

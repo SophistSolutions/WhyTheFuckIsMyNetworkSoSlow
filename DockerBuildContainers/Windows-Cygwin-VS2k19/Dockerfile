@@ -2,7 +2,7 @@
 
 SHELL ["cmd", "/S", "/C"]
 
-RUN choco install -y --force nodejs
+RUN choco install -y --force nodejs-lts
 RUN npm i -g npm 
 
 RUN rm -f /Getting-Started-With-Stroika.md
