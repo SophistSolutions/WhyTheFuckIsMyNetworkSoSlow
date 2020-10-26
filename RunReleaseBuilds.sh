@@ -11,10 +11,14 @@ echo Doing release builds
 ARTIFACTS_DIR=Build-ARTIFACTS/
 UNIX_BUILD_SSHPREFIX=lewis@hercules
 GIT_REPO=https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow.git
+STROIKA_REL_ROOT=ThirdPartyComponents/Stroika/StroikaRoot/
+VERSION=`$STROIKA_REL_ROOT/ScriptsLib/ExtractVersionInformation VERSION FullVersionString`
+
+echo ">>> Build Artifacts Output to $ARTIFACTS_DIR"
+echo ">>> VERSION=$VERSION"
 
 rm -rf $ARTIFACTS_DIR
 mkdir -p $ARTIFACTS_DIR
-echo "Output to $ARTIFACTS_DIR"
 
 
 function runWinBld {
@@ -34,11 +38,12 @@ function runWinBld {
     docker exec $containerName cmd /C "git clone --branch $branch --recurse-submodules $GIT_REPO WTFDev"
     docker exec $containerName cmd /C "cd WTFDev && make default-configurations"
 
-    echo ">>> Starting $cfg build"
+    arch=`$STROIKA_REL_ROOT/ScriptsLib/GetConfigurationParameter $cfg ARCH`
+    echo ">>> Starting $cfg build (arch=$arch)"
     docker exec $containerName cmd /C "cd WTFDev && make CONFIGURATION=$cfg $jobsFlag"
     echo ">>> Extracting build artifacts"
     docker stop $containerName
-    docker cp $containerName:WTFDev/Builds/$cfg/WhyTheFuckIsMyNetworkSoSlow/WhyTheFuckIsMyNetworkSoSlow-Windows-x86_64-$cfg.msi $ARTIFACTS_DIR
+    docker cp $containerName:WTFDev/Builds/$cfg/WhyTheFuckIsMyNetworkSoSlow/WhyTheFuckIsMyNetworkSoSlow-Windows-$arch-$cfg.msi $ARTIFACTS_DIR
 	TOTAL_MINUTES_SPENT=$(($(( $(date +%s) - $STARTAT_INT )) / 60))
     echo ">>> Build took $TOTAL_MINUTES_SPENT minutes"
 }
@@ -58,12 +63,15 @@ function runUnixBld {
     ssh $UNIX_BUILD_SSHPREFIX "docker stop $containerName; docker rm $containerName"
 
     ssh $UNIX_BUILD_SSHPREFIX docker run --tty --detach --name $containerName $containerImage
-    ssh $UNIX_BUILD_SSHPREFIX docker exec $containerName git clone --branch $branch --recurse-submodules $GIT_REPO
-    ssh $UNIX_BUILD_SSHPREFIX docker exec --workdir /WhyTheFuckIsMyNetworkSoSlow $containerName make build-root
-    ssh $UNIX_BUILD_SSHPREFIX docker exec --workdir /WhyTheFuckIsMyNetworkSoSlow/ThirdPartyComponents/Stroika/StroikaRoot $containerName './configure Release --apply-default-release-flags --compiler-driver g++-8'
-    ssh $UNIX_BUILD_SSHPREFIX docker exec --workdir /WhyTheFuckIsMyNetworkSoSlow $containerName "bash -c \"time make all $jobsFlag\""
-    ssh $UNIX_BUILD_SSHPREFIX docker cp $containerName:/WhyTheFuckIsMyNetworkSoSlow/Builds/$cfg/WhyTheFuckIsMyNetworkSoSlow/whythefuckismynetworksoslow-1.0d8x.Linux.x86_64.deb /tmp
-    scp $UNIX_BUILD_SSHPREFIX:/tmp/whythefuckismynetworksoslow-1.0d8x.Linux.x86_64.deb $ARTIFACTS_DIR
+    ssh $UNIX_BUILD_SSHPREFIX docker exec $containerName git clone --branch $branch --recurse-submodules $GIT_REPO WTFDev
+    ssh $UNIX_BUILD_SSHPREFIX docker exec --workdir /WTFDev $containerName make build-root
+    ssh $UNIX_BUILD_SSHPREFIX docker exec --workdir /WTFDev/ThirdPartyComponents/Stroika/StroikaRoot $containerName './configure Release --apply-default-release-flags --compiler-driver g++-8'
+    arch=`ssh $UNIX_BUILD_SSHPREFIX docker exec --workdir /WTFDev/ThirdPartyComponents/Stroika/StroikaRoot $containerName ScriptsLib/GetConfigurationParameter $cfg ARCH`
+    echo ">>> Starting $cfg build (arch=$arch)"
+    ssh $UNIX_BUILD_SSHPREFIX docker exec --workdir /WTFDev $containerName "bash -c \"time make all $jobsFlag\""
+    echo ">>> Extracting build artifacts"
+    ssh $UNIX_BUILD_SSHPREFIX docker cp $containerName:/WTFDev/Builds/$cfg/WhyTheFuckIsMyNetworkSoSlow/whythefuckismynetworksoslow-$VERSION.Linux.$arch.deb /tmp
+    scp $UNIX_BUILD_SSHPREFIX:/tmp/whythefuckismynetworksoslow-$VERSION.Linux.$arch.deb $ARTIFACTS_DIR
 
 	TOTAL_MINUTES_SPENT=$(($(( $(date +%s) - $STARTAT_INT )) / 60))
     echo ">>> Build took $TOTAL_MINUTES_SPENT minutes"
