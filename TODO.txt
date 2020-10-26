@@ -1,3 +1,11 @@
+ Compiling Backend/Sources/Main.cpp ...
+         Compiling Backend/Sources/Service.cpp ...
+         Linking Builds/ReleaseWhyTheFuckIsMyNetworkSoSlow-Backend ..
+
+		 ===
+
+
+
 - Include the device ICON in its name field (prepend or append? prepend. Old Devices API shows those icons.
   OR - maybe use that in the device type field? Not sure. Maybe that makes more sense to show icon
   there? But add to existing icon? We can have  mutliple types so thats probably what makes the most sense.

@@ -1,13 +1,19 @@
 #!/bin/bash
 
+#
+# Not fully general for building, as contains lots of tweaks specific to what configs I build/distribute
+# and the layout of build machines I work with (nice if I could just use travisci/circleci but those too painful still)
+#   --LGP 2020-10-26
+#
+
 echo Doing release builds
 
-ARTIFACTS_DIR=Build-ARTIFACTS
+ARTIFACTS_DIR=Build-ARTIFACTS/
 UNIX_BUILD_SSHPREFIX=lewis@hercules
 GIT_REPO=https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow.git
 
 rm -rf $ARTIFACTS_DIR
-mkdir $ARTIFACTS_DIR
+mkdir -p $ARTIFACTS_DIR
 echo "Output to $ARTIFACTS_DIR"
 
 
@@ -57,14 +63,12 @@ function runUnixBld {
     ssh $UNIX_BUILD_SSHPREFIX docker exec --workdir /WhyTheFuckIsMyNetworkSoSlow/ThirdPartyComponents/Stroika/StroikaRoot $containerName './configure Release --apply-default-release-flags --compiler-driver g++-8'
     ssh $UNIX_BUILD_SSHPREFIX docker exec --workdir /WhyTheFuckIsMyNetworkSoSlow $containerName "bash -c \"time make all $jobsFlag\""
     ssh $UNIX_BUILD_SSHPREFIX docker cp $containerName:/WhyTheFuckIsMyNetworkSoSlow/Builds/$cfg/WhyTheFuckIsMyNetworkSoSlow/whythefuckismynetworksoslow-1.0d8x.Linux.x86_64.deb /tmp
-    scp $UNIX_BUILD_SSHPREFIX:/tmp/whythefuckismynetworksoslow-1.0d8x.Linux.x86_64.deb .
+    scp $UNIX_BUILD_SSHPREFIX:/tmp/whythefuckismynetworksoslow-1.0d8x.Linux.x86_64.deb $ARTIFACTS_DIR
 
 	TOTAL_MINUTES_SPENT=$(($(( $(date +%s) - $STARTAT_INT )) / 60))
     echo ">>> Build took $TOTAL_MINUTES_SPENT minutes"
 }
 
-
 runWinBld Release-U-64 v1-Dev -j8 WTF_Win_Build sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19:latest
 runUnixBld Release v1-Dev -j10 wtfBuildUbuntux64 sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804
-
 
