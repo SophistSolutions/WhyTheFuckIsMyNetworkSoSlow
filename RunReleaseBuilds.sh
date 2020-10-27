@@ -6,7 +6,7 @@
 #   --LGP 2020-10-26
 #
 
-echo Doing release builds
+echo Doing all package installer builds
 
 ARTIFACTS_DIR=Build-ARTIFACTS/
 UNIX_BUILD_SSHPREFIX=lewis@hercules
@@ -38,12 +38,13 @@ function runWinBld {
 
     docker stop $containerName; docker rm $containerName
     docker run -itd --name $containerName $containerImage
-    docker exec $containerName cmd /C "git clone --branch $branch --recurse-submodules $GIT_REPO WTFDev"
-    docker exec $containerName cmd /C "cd WTFDev && cd $STROIKA_REL_ROOT && ./configure $cfg $cfgDef"
+    docker exec $containerName sh -c "git clone --branch $branch --recurse-submodules $GIT_REPO WTFDev"
+    docker exec --workdir /WTFDev $containerName make build-root
+    docker exec --workdir /WTFDev/$STROIKA_REL_ROOT $containerName sh -c "./configure $cfg $cfgDef"
 
-    arch=`$STROIKA_REL_ROOT/ScriptsLib/GetConfigurationParameter $cfg ARCH`
+    arch=`docker exec --workdir /WTFDev/$STROIKA_REL_ROOT $containerName sh -c "ScriptsLib/GetConfigurationParameter $cfg ARCH"`
     echo ">>> Starting $cfg build (arch=$arch)"
-    docker exec $containerName cmd /C "cd WTFDev && make CONFIGURATION=$cfg $jobsFlag"
+    docker exec --workdir /WTFDev $containerName sh -c "time make CONFIGURATION=$cfg $jobsFlag"
     echo ">>> Extracting build artifacts"
     docker stop $containerName
     docker cp $containerName:WTFDev/Builds/$cfg/WhyTheFuckIsMyNetworkSoSlow/WhyTheFuckIsMyNetworkSoSlow-Windows-$arch-$cfg.msi $ARTIFACTS_DIR
@@ -83,6 +84,16 @@ function runUnixBld {
     echo ">>> Build took $TOTAL_MINUTES_SPENT minutes"
 }
 
-runWinBld Release-U-64 "--apply-default-release-flags --arch x86_64" v1-Dev -j8 WTF_Win_Build sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19:latest
-runUnixBld Release "--apply-default-release-flags --compiler-driver g++-8" v1-Dev -j10 wtfBuildUbuntux64 sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804
+USE_BRANCH=v1-Dev
+
+WIN_BLD_DOCKER_IMAGE=sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19:latest
+UNIX_BLD_DOCKER_IMAGE=sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804
+
+runUnixBld Release "--apply-default-release-flags --compiler-driver g++-8" $USE_BRANCH -j10 wtfBuildUbuntux64 $UNIX_BLD_DOCKER_IMAGE
+runUnixBld Release "--apply-default-release-flags --compiler-driver arm-linux-gnueabihf-g++-8 --cross-compiling true" $USE_BRANCH -j10 wtfBuildUbuntux64 $UNIX_BLD_DOCKER_IMAGE
+
+runWinBld Debug   "--apply-default-debug-flags   --arch x86_64" $USE_BRANCH -j8 WTF_Win_Build $WIN_BLD_DOCKER_IMAGE
+runWinBld Release "--apply-default-release-flags --arch x86"    $USE_BRANCH -j8 WTF_Win_Build $WIN_BLD_DOCKER_IMAGE
+runWinBld Release "--apply-default-release-flags --arch x86_64" $USE_BRANCH -j8 WTF_Win_Build $WIN_BLD_DOCKER_IMAGE
+
 
