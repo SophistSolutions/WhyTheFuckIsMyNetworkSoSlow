@@ -24,20 +24,22 @@ mkdir -p $ARTIFACTS_DIR
 
 function runWinBld {
     cfg=$1
-    branch=$2
-    jobsFlag=$3
-    containerName=$4
-    containerImage=$5
+    cfgDef=$2
+    branch=$3
+    jobsFlag=$4
+    containerName=$5
+    containerImage=$6
 
     STARTAT_INT=$(date +%s)
     STARTAT=`date`;
     echo ">>> Creating Windows Build Container (startat = $STARTAT, containerName=$containerName)"
-    echo ">>> branch=$branch, and cfg=$cfg, jobsFlag=$jobsFlag"
-    docker stop $containerName
-    docker rm $containerName
+    echo ">>> branch=$branch, and jobsFlag=$jobsFlag"
+    echo ">>> cfg=$cfg, cfgDef=$cfgDef"
+
+    docker stop $containerName; docker rm $containerName
     docker run -itd --name $containerName $containerImage
     docker exec $containerName cmd /C "git clone --branch $branch --recurse-submodules $GIT_REPO WTFDev"
-    docker exec $containerName cmd /C "cd WTFDev && make default-configurations"
+    docker exec $containerName cmd /C "cd WTFDev && cd $STROIKA_REL_ROOT && ./configure $cfg $cfgDef"
 
     arch=`$STROIKA_REL_ROOT/ScriptsLib/GetConfigurationParameter $cfg ARCH`
     echo ">>> Starting $cfg build (arch=$arch)"
@@ -51,22 +53,24 @@ function runWinBld {
 
 function runUnixBld {
     cfg=$1
-    branch=$2
-    jobsFlag=$3
-    containerName=$4
-    containerImage=$5
+    cfgDef=$2
+    branch=$3
+    jobsFlag=$4
+    containerName=$5
+    containerImage=$6
 
     STARTAT_INT=$(date +%s)
     STARTAT=`date`;
     echo ">>> Creating Unix Build Container (startat = $STARTAT, containerName=$containerName)"
-    echo ">>> branch=$branch, and cfg=$cfg, jobsFlag=$jobsFlag"
+    echo ">>> branch=$branch, and jobsFlag=$jobsFlag"
+    echo ">>> cfg=$cfg, cfgDef=$cfgDef"
 
     ssh $UNIX_BUILD_SSHPREFIX "docker stop $containerName; docker rm $containerName"
 
     ssh $UNIX_BUILD_SSHPREFIX docker run --tty --detach --name $containerName $containerImage
     ssh $UNIX_BUILD_SSHPREFIX docker exec $containerName git clone --branch $branch --recurse-submodules $GIT_REPO WTFDev
     ssh $UNIX_BUILD_SSHPREFIX docker exec --workdir /WTFDev $containerName make build-root
-    ssh $UNIX_BUILD_SSHPREFIX docker exec --workdir /WTFDev/ThirdPartyComponents/Stroika/StroikaRoot $containerName './configure Release --apply-default-release-flags --compiler-driver g++-8'
+    ssh $UNIX_BUILD_SSHPREFIX docker exec --workdir /WTFDev/ThirdPartyComponents/Stroika/StroikaRoot $containerName "./configure $cfg $cfgDef"
     arch=`ssh $UNIX_BUILD_SSHPREFIX docker exec --workdir /WTFDev/ThirdPartyComponents/Stroika/StroikaRoot $containerName ScriptsLib/GetConfigurationParameter $cfg ARCH`
     echo ">>> Starting $cfg build (arch=$arch)"
     ssh $UNIX_BUILD_SSHPREFIX docker exec --workdir /WTFDev $containerName "bash -c \"time make all $jobsFlag\""
@@ -79,6 +83,6 @@ function runUnixBld {
     echo ">>> Build took $TOTAL_MINUTES_SPENT minutes"
 }
 
-runWinBld Release-U-64 v1-Dev -j8 WTF_Win_Build sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19:latest
-runUnixBld Release v1-Dev -j10 wtfBuildUbuntux64 sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804
+runWinBld Release-U-64 "--apply-default-release-flags --arch x86_64" v1-Dev -j8 WTF_Win_Build sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19:latest
+runUnixBld Release "--apply-default-release-flags --compiler-driver g++-8" v1-Dev -j10 wtfBuildUbuntux64 sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804
 
