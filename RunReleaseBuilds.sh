@@ -46,8 +46,10 @@ function runWinBld {
     echo ">>> Starting $cfg build (arch=$arch)"
     docker exec --workdir /WTFDev $containerName sh -c "time make CONFIGURATION=$cfg $jobsFlag"
     echo ">>> Extracting build artifacts"
+    # due to flaws in docker (windows must stop) - and cp no wildcards
     docker stop $containerName
-    docker cp $containerName:WTFDev/Builds/$cfg/WhyTheFuckIsMyNetworkSoSlow/WhyTheFuckIsMyNetworkSoSlow-Windows-$arch-$cfg.msi $ARTIFACTS_DIR
+    docker cp $containerName:WTFDev/Builds/$cfg/WhyTheFuckIsMyNetworkSoSlow/WhyTheFuckIsMyNetworkSoSlow-Windows-$cfg-$VERSION-$arch.msi $ARTIFACTS_DIR 2> /dev/null
+    docker cp $containerName:WTFDev/Builds/$cfg/WhyTheFuckIsMyNetworkSoSlow/WhyTheFuckIsMyNetworkSoSlow-Windows-$VERSION-$arch.msi $ARTIFACTS_DIR 2> /dev/null
 	TOTAL_MINUTES_SPENT=$(($(( $(date +%s) - $STARTAT_INT )) / 60))
     echo ">>> Build took $TOTAL_MINUTES_SPENT minutes"
 }
@@ -76,9 +78,9 @@ function runUnixBld {
     echo ">>> Starting $cfg build (arch=$arch)"
     ssh $UNIX_BUILD_SSHPREFIX docker exec --workdir /WTFDev $containerName "bash -c \"time make all $jobsFlag\""
     echo ">>> Extracting build artifacts"   ## sadly cannot use wildcards in docker cp as of 2020-10-27
-    ssh $UNIX_BUILD_SSHPREFIX docker cp $containerName:/WTFDev/Builds/$cfg/WhyTheFuckIsMyNetworkSoSlow/whythefuckismynetworksoslow-$VERSION.Linux.$arch.deb /tmp 2> /dev/null
-    ssh $UNIX_BUILD_SSHPREFIX docker cp $containerName:/WTFDev/Builds/$cfg/WhyTheFuckIsMyNetworkSoSlow/whythefuckismynetworksoslow-$VERSION.Linux.$arch.rpm /tmp 2> /dev/null
-    scp $UNIX_BUILD_SSHPREFIX:/tmp/whythefuckismynetworksoslow-$VERSION.Linux.$arch.* $ARTIFACTS_DIR
+    ssh $UNIX_BUILD_SSHPREFIX docker cp $containerName:/WTFDev/Builds/$cfg/WhyTheFuckIsMyNetworkSoSlow/whythefuckismynetworksoslow-Linux-$VERSION_$arch.deb /tmp 2> /dev/null
+    ssh $UNIX_BUILD_SSHPREFIX docker cp $containerName:/WTFDev/Builds/$cfg/WhyTheFuckIsMyNetworkSoSlow/whythefuckismynetworksoslow-Linux-$VERSION.$arch.rpm /tmp 2> /dev/null
+    scp $UNIX_BUILD_SSHPREFIX:/tmp/whythefuckismynetworksoslow-Linux* $ARTIFACTS_DIR
 
 	TOTAL_MINUTES_SPENT=$(($(( $(date +%s) - $STARTAT_INT )) / 60))
     echo ">>> Build took $TOTAL_MINUTES_SPENT minutes"
