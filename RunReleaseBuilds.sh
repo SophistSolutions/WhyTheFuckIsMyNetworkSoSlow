@@ -78,9 +78,13 @@ function runUnixBld {
     echo ">>> Starting $cfg build (arch=$arch)"
     ssh $UNIX_BUILD_SSHPREFIX docker exec --workdir /WTFDev $containerName "bash -c \"time make all $jobsFlag\""
     echo ">>> Extracting build artifacts"   ## sadly cannot use wildcards in docker cp as of 2020-10-27
-    ssh $UNIX_BUILD_SSHPREFIX docker cp $containerName:/WTFDev/Builds/$cfg/WhyTheFuckIsMyNetworkSoSlow/whythefuckismynetworksoslow-Linux-$VERSION_$arch.deb /tmp 2> /dev/null
-    ssh $UNIX_BUILD_SSHPREFIX docker cp $containerName:/WTFDev/Builds/$cfg/WhyTheFuckIsMyNetworkSoSlow/whythefuckismynetworksoslow-Linux-$VERSION.$arch.rpm /tmp 2> /dev/null
+    ssh $UNIX_BUILD_SSHPREFIX docker cp $containerName:/WTFDev/Builds/$cfg/WhyTheFuckIsMyNetworkSoSlow/whythefuckismynetworksoslow-Linux-"$VERSION"_$arch.deb /tmp 2> /dev/null
+    ssh $UNIX_BUILD_SSHPREFIX docker cp $containerName:/WTFDev/Builds/$cfg/WhyTheFuckIsMyNetworkSoSlow/whythefuckismynetworksoslow-Linux-"$cfg-$VERSION"_$arch.deb /tmp 2> /dev/null
+    ssh $UNIX_BUILD_SSHPREFIX docker cp $containerName:/WTFDev/Builds/$cfg/WhyTheFuckIsMyNetworkSoSlow/whythefuckismynetworksoslow-Linux-"$VERSION".$arch.rpm /tmp 2> /dev/null
+    ssh $UNIX_BUILD_SSHPREFIX docker cp $containerName:/WTFDev/Builds/$cfg/WhyTheFuckIsMyNetworkSoSlow/whythefuckismynetworksoslow-Linux-"$cfg-$VERSION".$arch.rpm /tmp 2> /dev/null
     scp $UNIX_BUILD_SSHPREFIX:/tmp/whythefuckismynetworksoslow-Linux* $ARTIFACTS_DIR
+
+    Builds/Release/WhyTheFuckIsMyNetworkSoSlow/whythefuckismynetworksoslow-Linux-1.0d8x_armhf.deb
 
 	TOTAL_MINUTES_SPENT=$(($(( $(date +%s) - $STARTAT_INT )) / 60))
     echo ">>> Build took $TOTAL_MINUTES_SPENT minutes"
@@ -91,11 +95,11 @@ USE_BRANCH=v1-Dev
 WIN_BLD_DOCKER_IMAGE=sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19:latest
 UNIX_BLD_DOCKER_IMAGE=sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804
 
+runUnixBld Debug "--apply-default-debug-flags --compiler-driver g++-8" $USE_BRANCH -j10 wtfBuildUbuntux64 $UNIX_BLD_DOCKER_IMAGE
 runUnixBld Release "--apply-default-release-flags --compiler-driver g++-8" $USE_BRANCH -j10 wtfBuildUbuntux64 $UNIX_BLD_DOCKER_IMAGE
 runUnixBld Release "--apply-default-release-flags --compiler-driver arm-linux-gnueabihf-g++-8 --cross-compiling true" $USE_BRANCH -j10 wtfBuildUbuntux64 $UNIX_BLD_DOCKER_IMAGE
 
 runWinBld Debug   "--apply-default-debug-flags   --arch x86_64" $USE_BRANCH -j8 WTF_Win_Build $WIN_BLD_DOCKER_IMAGE
 runWinBld Release "--apply-default-release-flags --arch x86"    $USE_BRANCH -j8 WTF_Win_Build $WIN_BLD_DOCKER_IMAGE
+runWinBld Debug "--apply-default-debug-flags --arch x86_64"     $USE_BRANCH -j8 WTF_Win_Build $WIN_BLD_DOCKER_IMAGE
 runWinBld Release "--apply-default-release-flags --arch x86_64" $USE_BRANCH -j8 WTF_Win_Build $WIN_BLD_DOCKER_IMAGE
-
-
