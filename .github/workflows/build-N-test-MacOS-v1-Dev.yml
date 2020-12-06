@@ -57,25 +57,14 @@ jobs:
           brew install gnu-sed
           brew install p7zip
           brew install automake
-          make install-realpath
+          make --no-print-directory --directory ThirdPartyComponents/Stroika/StroikaRoot install-realpath
       - name: Configure
         run: |
-          cd ThirdPartyComponents/Stroika/StroikaRoot
-          ./configure ${{ matrix.config_name }} ${{ matrix.extra_config_args }}
+          cd ThirdPartyComponents/Stroika/StroikaRoot && ./configure ${{ matrix.config_name }} ${{ matrix.extra_config_args }}
           cat ConfigurationFiles/${{ matrix.config_name }}.xml
-      - name: Build third-party-components
-        run: |
-          make third-party-components
-          make clean
-      - name: Build Library
-        run: |
-          make libraries
       - name: Build All
         run: |
           make all
-      - name: Run-Tests
-        run: |
-          make run-tests
       - name: Workaround GitHub-Actions-MacOS Issue with env.TMPDIR
         run: |
           mkdir /tmp/LOGS-ARCHIVE
