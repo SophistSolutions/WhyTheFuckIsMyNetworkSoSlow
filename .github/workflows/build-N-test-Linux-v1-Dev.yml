@@ -96,6 +96,8 @@ jobs:
     container: ${{ matrix.container_image }}
     steps:
       - uses: actions/checkout@v2
+      - name: Checkout submodules
+        run: git submodule update --init --recursive
       - name: Build System Info
         if: ${{ matrix.os=='unix' }}
         run: |
@@ -111,6 +113,10 @@ jobs:
         run: |
           echo "CWD=" `pwd`
           df -h
+      - name: Create build root structure
+        shell: "bash"
+        run: |
+          make build-root
       - name: Configure ${{ matrix.config_name }}
         run: |
           cd ThirdPartyComponents/Stroika/StroikaRoot && ./configure ${{ matrix.config_name }} --compiler-driver ${{ matrix.compiler }} ${{ matrix.extra_config_args }} --cppstd-version ${{ matrix.cpp_version }}

@@ -58,6 +58,9 @@ jobs:
           brew install p7zip
           brew install automake
           make --no-print-directory --directory ThirdPartyComponents/Stroika/StroikaRoot install-realpath
+      - name: Create build root structure
+        run: |
+          make build-root
       - name: Configure
         run: |
           cd ThirdPartyComponents/Stroika/StroikaRoot && ./configure ${{ matrix.config_name }} ${{ matrix.extra_config_args }}
