@@ -33,28 +33,28 @@ jobs:
           - displayTargetName: windows-x86-Debug
             os: windows
             runs_on: windows-latest
-            container_image: sophistsolutionsinc/stroika-buildvm-windows-cygwin-vs2k19
+            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19
             config_name: Debug
             extra_config_args: --arch x86 --apply-default-debug-flags --trace2file enable
             includeInDevBranchBuilds: true
           # - displayTargetName: windows-x86-Release
           #   os: windows
           #   runs_on: windows-latest
-          #   container_image: sophistsolutionsinc/stroika-buildvm-windows-cygwin-vs2k19
+          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19
           #   config_name: Release
           #   extra_config_args: --arch x86 --apply-default-release-flags --trace2file enable
           #   includeInDevBranchBuilds: false
           # - displayTargetName: windows-x86_64-Debug
           #   os: windows
           #   runs_on: windows-latest
-          #   container_image: sophistsolutionsinc/stroika-buildvm-windows-cygwin-vs2k19
+          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19
           #   config_name: Debug
           #   extra_config_args: --arch x86_64 --apply-default-debug-flags --trace2file enable
           #   includeInDevBranchBuilds: false
           # - displayTargetName: windows-x86_64-Release
           #   os: windows
           #   runs_on: windows-latest
-          #   container_image: sophistsolutionsinc/stroika-buildvm-windows-cygwin-vs2k19
+          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19
           #   config_name: Release
           #   extra_config_args: --arch x86 --apply-default-release-flags --trace2file enable
           #   includeInDevBranchBuilds: false
@@ -91,6 +91,10 @@ jobs:
         shell: "bash"
         run: |
           docker exec buildContainer sh -c "git clone https://github.com/SophistSolutions/Stroika.git && cd Stroika && git checkout ${{ steps.extract_branch.outputs.branch }}"
+      - name: Create build root structure
+        shell: "bash"
+        run: |
+          docker exec --workdir c:/Stroika buildContainer make build-root
       - name: Configure
         shell: "bash"
         run: |
