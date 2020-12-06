@@ -44,7 +44,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Checkout submodules
-        run: git submodule update --init --recursive
+        run: cd WhyTheFuckIsMyNetworkSoSlow && git submodule update --init --recursive
       - name: Build System Info
         run: |
           echo "CWD: `pwd`"
@@ -68,10 +68,6 @@ jobs:
       - name: Build All
         run: |
           make all
-      - name: Workaround GitHub-Actions-MacOS Issue with env.TMPDIR
-        run: |
-          mkdir /tmp/LOGS-ARCHIVE
-          cp $TMPDIR/Trace*.txt /tmp/LOGS-ARCHIVE
       - name: DEBUG Workaround GitHub-Actions-MacOS Issue with env.TMPDIR
         run: |
           echo "TMPDIR=$TMPDIR"
@@ -82,17 +78,9 @@ jobs:
       - name: Build System Info
         run: |
           df -h
-      - name: Archive Log Results
-        uses: actions/upload-artifact@v2
-        with:
-          name: Log Results (${{ matrix.displayTargetName }})
-          path: |
-            Builds/${{ matrix.config_name }}/PerformanceDump.txt
-            /tmp/LOGS-ARCHIVE
-            #${{ env.TMPDIR }}/Trace*.txt
-      - name: Archive Sample Results
+      - name: Archive Installers Results
         uses: actions/upload-artifact@v2
         with:
           name: Samples (${{ matrix.displayTargetName }})
           path: |
-            Builds/${{ matrix.config_name }}/Samples-*
+            Builds/${{ matrix.config_name }}/WhyTheFuckIsMyNetworkSoSlow/*.{rpm,msi,deb}
