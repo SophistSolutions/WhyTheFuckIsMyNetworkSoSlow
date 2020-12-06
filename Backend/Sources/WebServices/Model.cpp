@@ -455,6 +455,33 @@ DISABLE_COMPILER_MSC_WARNING_END (4573);
 
 DISABLE_COMPILER_MSC_WARNING_START (4573);
 DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
+#if qCompilerAndStdLib_static_initializer_lambda_funct_init_Buggy
+namespace {
+    ObjectVariantMapper mkMapper_ ()
+    {
+        ObjectVariantMapper mapper;
+
+        mapper.AddCommonType<optional<String>> ();
+        mapper.AddCommonType<Sequence<double>> ();
+        mapper.AddCommonType<Time::Duration> ();
+        mapper.AddClass<Operations::TraceRouteResults::Hop> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+            {L"timeToHop", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Operations::TraceRouteResults::Hop, fTime)},
+            {L"address", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Operations::TraceRouteResults::Hop, fAddress)},
+        });
+        mapper.AddCommonType<Sequence<Operations::TraceRouteResults::Hop>> ();
+        mapper.AddClass<Operations::TraceRouteResults> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+            {L"hops", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Operations::TraceRouteResults, fHops)},
+        });
+        mapper.AddClass<Operations::DNSLookupResults> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+            {L"result", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Operations::DNSLookupResults, fResult)},
+            {L"lookup-time", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Operations::DNSLookupResults, fLookupTime)},
+        });
+
+        return mapper;
+    }
+}
+const ObjectVariantMapper Operations::kMapper = mkMapper_ ();
+#else
 const ObjectVariantMapper Operations::kMapper = [] () {
     ObjectVariantMapper mapper;
 
@@ -476,6 +503,7 @@ const ObjectVariantMapper Operations::kMapper = [] () {
 
     return mapper;
 }();
+#endif
 DISABLE_COMPILER_GCC_WARNING_END ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
 DISABLE_COMPILER_MSC_WARNING_END (4573);
 
