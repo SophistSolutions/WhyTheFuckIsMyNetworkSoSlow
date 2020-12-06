@@ -43,6 +43,8 @@ jobs:
       MAKEFLAGS: "--jobs=3 QUICK_BUILD=1"
     steps:
       - uses: actions/checkout@v2
+      - name: Checkout submodules
+        run: git submodule update --init --recursive
       - name: Build System Info
         run: |
           echo "CWD: `pwd`"
@@ -58,6 +60,7 @@ jobs:
           make install-realpath
       - name: Configure
         run: |
+          cd ThirdPartyComponents/Stroika/StroikaRoot
           ./configure ${{ matrix.config_name }} ${{ matrix.extra_config_args }}
           cat ConfigurationFiles/${{ matrix.config_name }}.xml
       - name: Build third-party-components

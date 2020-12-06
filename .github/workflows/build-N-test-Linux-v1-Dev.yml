@@ -113,6 +113,7 @@ jobs:
           df -h
       - name: Configure ${{ matrix.config_name }}
         run: |
+          cd ThirdPartyComponents/Stroika/StroikaRoot
           ./configure ${{ matrix.config_name }} --compiler-driver ${{ matrix.compiler }} ${{ matrix.extra_config_args }} --cppstd-version ${{ matrix.cpp_version }}
           cat ConfigurationFiles/${{ matrix.config_name }}.xml
       - name: Make all

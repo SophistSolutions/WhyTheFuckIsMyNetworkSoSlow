@@ -84,7 +84,6 @@ jobs:
       - name: Print Info about docker system
         shell: "bash"
         run: |
-          docker ps -a
           docker exec buildContainer systeminfo
           docker exec buildContainer df -h
       - name: Git Checkout
