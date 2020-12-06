@@ -1,3 +1,46 @@
+----
+	
+	>	See if we can get circleci builds working, and then release
+	---
+	
+	
+	ReleaseScript.md
+		>> UPDASTE DOCS TO REF NEW RunReleaseBuilds.sh script
+		(or delete and put docs into .sh - unify names)
+---
+
+	THEN RELEASE
+
+---
+	> two devices with mfg = Murata Manufacturing
+	  are probably my heat control devices
+
+	  did port scan with nmap
+
+		 telnet 192.168.244.152 37447
+			produces Your friendly neighborhood debug shell.
+
+			"
+TCPOPEN:
+	37447
+	49013
+	52541
+	57659
+
+		second device 192.168.244.172 - 
+	46869/tcp open     unknown
+	53399/tcp open     unknown
+	56671/tcp open     unknown
+	60024/tcp open     unknown
+	MAYBE trick to dientifying is that resolved hostname starts with 
+		XL857- and then a string of hex digits (which didnt turn out to be mac address)
+	
+	 telnet 192.168.244.172 60024 
+	 	gets same freindly neighborhood shell
+----
+
+
+
  Compiling Backend/Sources/Main.cpp ...
          Compiling Backend/Sources/Service.cpp ...
          Linking Builds/ReleaseWhyTheFuckIsMyNetworkSoSlow-Backend ..
@@ -34,15 +77,6 @@ https://docs.travis-ci.com/user/docker/
 
 to do docker - loooks like MAYBE simpler than what Im doing now, and MAYBE more performnant if it caches teh
 images. IF YES, then do for STROIKA too
-
-----
-	ReleaseScript.md
-		>> further improve docker build script (maybe make actual .sh script)
-		missing a few installers from last release and missing macos
-
-
-
-
 
 ----
 
