@@ -1,0 +1,125 @@
+#
+# build-N-test-v1-Dev and build-N-test-v1-Release are neary
+# identical, but a few tests are commented out (to not needlessly stress CI system)
+# for v1-Dev builds
+#
+# NOTE: I've tried many tricks - none which seem to work - to get this working on one file with one
+# workflow and tests
+#     https://github.community/t/what-is-the-correct-if-condition-syntax-for-checking-matrix-os-version/16221
+#     https://github.community/t/how-to-conditionally-include-exclude-items-in-matrix-eg-based-on-branch/16853
+#
+# but none seem to work
+#
+
+name: build-N-test-Linux-v1-Dev
+
+on:
+  push:
+    branches:
+      - v1-Dev
+      #- v1-Release
+  workflow_dispatch:
+    inputs:
+      ignored:
+        description: "ignored"
+        required: false
+        default: ""
+
+## NB: JOBS section IDENTICAL between v1-Dev and v1-Release files EXCEPT that on v1-Dev file
+## comment out all entries marked with includeInDevBranchBuilds: false
+jobs:
+  build-n-test:
+    runs-on: ${{ matrix.runs_on }}
+    strategy:
+      matrix:
+        include:
+          ## ubuntu 18.04
+          - displayTargetName: ubuntu-18.04-g++-8 (Debug)
+            os: unix
+            compiler: g++-8
+            runs_on: ubuntu-latest
+            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804
+            cpp_version: c++17
+            config_name: Debug
+            extra_config_args: --apply-default-debug-flags --trace2file enable
+            includeInDevBranchBuilds: true
+
+          # ubuntu 20.04
+          # - displayTargetName: ubuntu-20.04-g++-9 (Debug)
+          #   os: unix
+          #   compiler: g++-9
+          #   runs_on: ubuntu-latest
+          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
+          #   cpp_version: c++17
+          #   config_name: Debug
+          #   extra_config_args: --apply-default-debug-flags --trace2file enable
+          #   includeInDevBranchBuilds: false
+          # - displayTargetName: ubuntu-20.04-g++-10 (Debug)
+          #   os: unix
+          #   compiler: g++-10
+          #   runs_on: ubuntu-latest
+          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
+          #   cpp_version: c++17
+          #   config_name: Debug
+          #   extra_config_args: --apply-default-debug-flags --trace2file enable
+          #   includeInDevBranchBuilds: false
+          - displayTargetName: ubuntu-20.04-g++-10
+            os: unix
+            compiler: g++-10
+            runs_on: ubuntu-latest
+            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
+            cpp_version: c++17
+            config_name: Release
+            extra_config_args: --apply-default-release-flags --trace2file enable
+            includeInDevBranchBuilds: true
+          # - displayTargetName: ubuntu-20.04-g++-10-c++2a
+          #   os: unix
+          #   compiler: g++-10
+          #   runs_on: ubuntu-latest
+          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
+          #   cpp_version: c++2a
+          #   config_name: Release
+          #   extra_config_args: --apply-default-release-flags --trace2file enable
+          #   includeInDevBranchBuilds: false
+          # - displayTargetName: ubuntu-20.04-clang++-10
+          #   os: unix
+          #   compiler: clang++-10
+          #   runs_on: ubuntu-latest
+          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
+          #   cpp_version: c++17
+          #   config_name: Release
+          #   extra_config_args: --apply-default-release-flags --trace2file enable
+          #   includeInDevBranchBuilds: false
+    env:
+      # vm has 2 virtual CPUs, but 8GB ram, so jobs=5 (empirical), and QUICK_BUILD avoids some internal testing
+      MAKEFLAGS: "--jobs=3 QUICK_BUILD=1"
+    container: ${{ matrix.container_image }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build System Info
+        if: ${{ matrix.os=='unix' }}
+        run: |
+          lsb_release -d 2>/dev/null || true
+          echo "CWD=" `pwd`
+          echo "nproc=" `nproc`
+          grep "model name" /proc/cpuinfo | head -1
+          grep processor /proc/cpuinfo | wc -l
+          grep MemTotal /proc/meminfo
+          df -h
+      - name: Build System Info (Windows)
+        if: ${{ matrix.os=='windows' }}
+        run: |
+          echo "CWD=" `pwd`
+          df -h
+      - name: Configure ${{ matrix.config_name }}
+        run: |
+          ./configure ${{ matrix.config_name }} --compiler-driver ${{ matrix.compiler }} ${{ matrix.extra_config_args }} --cppstd-version ${{ matrix.cpp_version }}
+          cat ConfigurationFiles/${{ matrix.config_name }}.xml
+      - name: Make all
+        run: make all
+      - name: Archive Build Results
+        uses: actions/upload-artifact@v2
+        with:
+          name: Sample apps (${{ matrix.displayTargetName }})
+          path: |
+            Builds/${{ matrix.config_name }}/WhyTheFuckIsMyNetworkSoSlow/*.{rpm,msi,deb}
