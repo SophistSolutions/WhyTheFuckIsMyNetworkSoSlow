@@ -250,7 +250,7 @@ namespace {
 #endif
             Set<GUID> results;
             for (Discovery::Network&& nw : Discovery::NetworksMgr::sThe.CollectActiveNetworks ()) {
-                for (const InternetAddress& i : ia) {
+                for (InternetAddress i : ia) {
                     if (nw.Contains (i)) {
                         results += nw.fGUID;
                     }
@@ -1442,7 +1442,7 @@ namespace {
                     };
 
                     if (auto o = sDiscoveredDevices_.cget ().cref ().Lookup (**devices2CheckIterator)) {
-                        for (const auto& ia : o->GetInternetAddresses ()) {
+                        for (auto ia : o->GetInternetAddresses ()) {
                             runPingCheck (o->fGUID, ia);
                         }
                     }
