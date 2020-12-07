@@ -96,6 +96,10 @@ jobs:
     container: ${{ matrix.container_image }}
     steps:
       - uses: actions/checkout@v2
+      - name: DEBUG
+        run: |
+          pwd
+          ls -l
       - name: Checkout submodules
         run: cd WhyTheFuckIsMyNetworkSoSlow && git submodule update --init --recursive
       - name: Build System Info
