@@ -101,7 +101,7 @@ jobs:
           pwd
           ls -l
       - name: Checkout submodules
-        run: cd WhyTheFuckIsMyNetworkSoSlow && git submodule update --init --recursive
+        run: git submodule update --init --recursive
       - name: Build System Info
         if: ${{ matrix.os=='unix' }}
         run: |
