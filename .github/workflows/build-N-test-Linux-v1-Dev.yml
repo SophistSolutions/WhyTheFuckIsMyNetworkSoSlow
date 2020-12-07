@@ -99,8 +99,13 @@ jobs:
       - name: Checkout
         run: |
           git clone -n https://github.com/SophistSolutions/Stroika.git
+          ls -al
+          echo SHA=$GITHUB_SHA
           git checkout $GITHUB_SHA
+          ls -al
+          pwd
           git submodule update --recursive --init
+          ls -lR
       - name: DEBUG
         run: |
           pwd
