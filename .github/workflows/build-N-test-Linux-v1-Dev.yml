@@ -95,7 +95,12 @@ jobs:
       MAKEFLAGS: "--jobs=3 QUICK_BUILD=1"
     container: ${{ matrix.container_image }}
     steps:
-      - uses: actions/checkout@v2
+      # - uses: actions/checkout@v2
+      - name: Checkout
+        run: |
+          git clone -n https://github.com/SophistSolutions/Stroika.git
+          git checkout $GITHUB_SHA
+          git submodule update --recursive --init
       - name: DEBUG
         run: |
           pwd
