@@ -126,11 +126,6 @@ jobs:
           cat ConfigurationFiles/${{ matrix.config_name }}.xml
       - name: Make all
         run: make all
-      - name: DEBUG
-        run: |
-          ls -l Builds
-          ls -l Builds/${{ matrix.config_name }}
-          ls -l Builds/${{ matrix.config_name }}/WhyTheFuckIsMyNetworkSoSlow
       - name: Archive Build Results
         uses: actions/upload-artifact@v2
         with:

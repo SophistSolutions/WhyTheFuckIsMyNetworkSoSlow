@@ -64,11 +64,6 @@ jobs:
       ARTIFACTS_DIR: "c:/Artifacts/"
     steps:
       - uses: actions/checkout@v2
-      # https://stackoverflow.com/questions/58033366/how-to-get-current-branch-within-github-actions
-      - name: Extract branch name
-        shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
-        id: extract_branch
       - name: Build System Info
         shell: "bash"
         run: |
@@ -89,7 +84,8 @@ jobs:
       - name: Git Checkout
         shell: "bash"
         run: |
-          docker exec buildContainer sh -c "git clone https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow.git  --branch ${{ steps.extract_branch.outputs.branch }}  --recurse-submodules"
+          docker exec buildContainer sh -c "git clone https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow.git"
+          docker exec buildContainer --workdir c:/WhyTheFuckIsMyNetworkSoSlow/ sh -c "git checkout ${{env.GITHUB_SHA}} && git submodule update --recursive --init"
       - name: Create build root structure
         shell: "bash"
         run: |
@@ -114,8 +110,6 @@ jobs:
         run: |
           docker stop buildContainer
           docker cp buildContainer:WhyTheFuckIsMyNetworkSoSlow/Builds/${{ matrix.config_name }}/ $ARTIFACTS_DIR 2> /dev/null
-          #rm -rf $ARTIFACTS_DIR/{ThirdPartyComponents,Tests,*.lib}
-          ls -l $ARTIFACTS_DIR
       - name: Archive Installer Results
         uses: actions/upload-artifact@v2
         with:
