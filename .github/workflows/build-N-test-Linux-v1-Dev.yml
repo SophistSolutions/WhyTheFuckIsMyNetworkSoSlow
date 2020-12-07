@@ -101,18 +101,11 @@ jobs:
           git clone https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow.git
           ls -al
           echo GITHUB_REF=$GITHUB_REF
-          cd Stroika && git checkout $GITHUB_REF
+          cd WhyTheFuckIsMyNetworkSoSlow && git checkout $GITHUB_REF
           ls -al
           pwd
-          cd Stroika && git submodule update --recursive --init
+          cd WhyTheFuckIsMyNetworkSoSlow && git submodule update --recursive --init
           ls -lR
-      - name: DEBUG
-        run: |
-          pwd
-          ls -la
-          #cat .gitmodules
-          #git submodule
-          #git submodule status
       - name: Build System Info
         if: ${{ matrix.os=='unix' }}
         run: |
@@ -128,13 +121,6 @@ jobs:
         run: |
           echo "CWD=" `pwd`
           df -h
-      - name: Checkout submodules
-        run: |
-          pwd
-          ls -al
-          git status
-          git submodule status
-          git submodule update --init --recursive
       - name: Create build root structure
         shell: "bash"
         run: |
