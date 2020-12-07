@@ -85,7 +85,7 @@ jobs:
         shell: "bash"
         run: |
           docker exec buildContainer git clone https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow.git
-          docker exec buildContainer --workdir c:/WhyTheFuckIsMyNetworkSoSlow/ git checkout ${{env.GITHUB_SHA}}
+          docker exec buildContainer --workdir c:/WhyTheFuckIsMyNetworkSoSlow/ git checkout $GITHUB_SHA
           docker exec buildContainer --workdir c:/WhyTheFuckIsMyNetworkSoSlow/ git submodule update --recursive --init
       - name: Create build root structure
         shell: "bash"
