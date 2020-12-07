@@ -99,9 +99,7 @@ jobs:
       - name: DEBUG
         run: |
           pwd
-          ls -l
-      - name: Checkout submodules
-        run: git submodule update --init --recursive
+          ls -la
       - name: Build System Info
         if: ${{ matrix.os=='unix' }}
         run: |
@@ -117,6 +115,8 @@ jobs:
         run: |
           echo "CWD=" `pwd`
           df -h
+      - name: Checkout submodules
+        run: git submodule update --init --recursive
       - name: Create build root structure
         shell: "bash"
         run: |

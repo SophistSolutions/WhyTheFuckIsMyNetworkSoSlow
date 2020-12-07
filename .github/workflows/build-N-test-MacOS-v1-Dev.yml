@@ -43,10 +43,6 @@ jobs:
       MAKEFLAGS: "--jobs=3 QUICK_BUILD=1"
     steps:
       - uses: actions/checkout@v2
-      - name: DEBUG
-        run: |
-          pwd
-          ls -l
       - name: Checkout submodules
         run: git submodule update --init --recursive
       - name: Build System Info
