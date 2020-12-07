@@ -10,10 +10,10 @@
 name: build-N-test-Windows-v1-Dev
 
 on:
-  # push:
-  #   branches:
-  #     - v1-Dev
-  #     #- v1-Release
+  push:
+    branches:
+      - v1-Dev
+      #- v1-Release
   workflow_dispatch:
     inputs:
       ignored:
