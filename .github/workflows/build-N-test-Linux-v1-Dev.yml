@@ -136,4 +136,4 @@ jobs:
         with:
           name: Installers (${{ matrix.displayTargetName }})
           path: |
-            Builds/${{ matrix.config_name }}/WhyTheFuckIsMyNetworkSoSlow/*.{rpm,msi,deb}
+            Builds/${{ matrix.config_name }}/WhyTheFuckIsMyNetworkSoSlow/*.deb

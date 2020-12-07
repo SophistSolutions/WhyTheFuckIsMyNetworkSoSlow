@@ -116,9 +116,9 @@ jobs:
           docker cp buildContainer:WhyTheFuckIsMyNetworkSoSlow/Builds/${{ matrix.config_name }}/ $ARTIFACTS_DIR 2> /dev/null
           #rm -rf $ARTIFACTS_DIR/{ThirdPartyComponents,Tests,*.lib}
           ls -l $ARTIFACTS_DIR
-      - name: Archive Sample Results
+      - name: Archive Installer Results
         uses: actions/upload-artifact@v2
         with:
-          name: Samples (${{ matrix.displayTargetName }})
+          name: Installers (${{ matrix.displayTargetName }})
           path: |
-            Builds/${{ matrix.config_name }}/WhyTheFuckIsMyNetworkSoSlow/*.{rpm,msi,deb}
+            ${{ env.ARTIFACTS_DIR }}/WhyTheFuckIsMyNetworkSoSlow/*.msi
