@@ -74,6 +74,6 @@ jobs:
       - name: Archive Installers Results
         uses: actions/upload-artifact@v2
         with:
-          name: Samples (${{ matrix.displayTargetName }})
+          name: Installers (${{ matrix.displayTargetName }})
           path: |
             Builds/${{ matrix.config_name }}/WhyTheFuckIsMyNetworkSoSlow/*
