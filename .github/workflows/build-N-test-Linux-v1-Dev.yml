@@ -100,8 +100,8 @@ jobs:
         run: |
           git clone https://github.com/SophistSolutions/Stroika.git
           ls -al
-          echo SHA=$GITHUB_SHA
-          cd Stroika && git checkout $GITHUB_SHA
+          echo GITHUB_REF=$GITHUB_REF
+          cd Stroika && git checkout $GITHUB_REF
           ls -al
           pwd
           cd Stroika && git submodule update --recursive --init
