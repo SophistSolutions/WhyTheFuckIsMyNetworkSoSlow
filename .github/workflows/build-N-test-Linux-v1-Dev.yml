@@ -101,10 +101,13 @@ jobs:
           git clone https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow.git
           echo GITHUB_REF=$GITHUB_REF
           #cd WhyTheFuckIsMyNetworkSoSlow && git checkout $GITHUB_REF
+          pwd
           cd WhyTheFuckIsMyNetworkSoSlow && git checkout v1-Dev
-          ls -al . WhyTheFuckIsMyNetworkSoSlow WhyTheFuckIsMyNetworkSoSlow/ThirdPartyComponents
+          pwd
+          ls -al
           pwd
           cd WhyTheFuckIsMyNetworkSoSlow && git submodule update --recursive --init
+          pwd
           echo AFTER SUBMODULE
           ls -al . WhyTheFuckIsMyNetworkSoSlow WhyTheFuckIsMyNetworkSoSlow/ThirdPartyComponents
       - name: Build System Info
