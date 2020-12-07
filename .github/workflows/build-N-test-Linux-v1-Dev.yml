@@ -98,6 +98,10 @@ jobs:
       # - uses: actions/checkout@v2
       - name: Checkout
         run: |
+          echo before checkout:
+          pwd
+          ls -al
+          echo NOW DO CHECKOUT
           git clone https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow.git
           echo GITHUB_REF=$GITHUB_REF
           #cd WhyTheFuckIsMyNetworkSoSlow && git checkout $GITHUB_REF
