@@ -96,9 +96,6 @@ jobs:
     container: ${{ matrix.container_image }}
     steps:
       - uses: actions/checkout@v2
-        with:
-          repository: SophistSolutions/WhyTheFuckIsMyNetworkSoSlow.git
-          submodules: recursive
       - name: DEBUG
         run: |
           pwd
