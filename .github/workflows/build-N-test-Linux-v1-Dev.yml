@@ -98,7 +98,7 @@ jobs:
       # - uses: actions/checkout@v2
       - name: Checkout
         run: |
-          git clone -n https://github.com/SophistSolutions/Stroika.git
+          git clone https://github.com/SophistSolutions/Stroika.git
           ls -al
           echo SHA=$GITHUB_SHA
           cd Stroika && git checkout $GITHUB_SHA
