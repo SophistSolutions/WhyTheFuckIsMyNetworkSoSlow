@@ -96,13 +96,15 @@ jobs:
     container: ${{ matrix.container_image }}
     steps:
       - uses: actions/checkout@v2
+        with:
+          submodules: recursive
       - name: DEBUG
         run: |
           pwd
           ls -la
-          cat .gitmodules
-          git submodule
-          git submodule status
+          #cat .gitmodules
+          #git submodule
+          #git submodule status
       - name: Build System Info
         if: ${{ matrix.os=='unix' }}
         run: |
