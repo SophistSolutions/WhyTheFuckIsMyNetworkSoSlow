@@ -103,7 +103,7 @@ jobs:
           echo GITHUB_REF=$GITHUB_REF
           #cd WhyTheFuckIsMyNetworkSoSlow && git checkout $GITHUB_REF
           cd WhyTheFuckIsMyNetworkSoSlow && git checkout v1-Dev
-          ls -al WhyTheFuckIsMyNetworkSoSlow
+          ls -alR
           pwd
           cd WhyTheFuckIsMyNetworkSoSlow && git submodule update --recursive --init
           ls -lR
