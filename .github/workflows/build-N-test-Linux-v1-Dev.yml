@@ -98,7 +98,7 @@ jobs:
       # - uses: actions/checkout@v2
       - name: Checkout
         run: |
-          git clone https://github.com/SophistSolutions/Stroika.git
+          git clone https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow.git
           ls -al
           echo GITHUB_REF=$GITHUB_REF
           cd Stroika && git checkout $GITHUB_REF
