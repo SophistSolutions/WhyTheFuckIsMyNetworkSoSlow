@@ -115,6 +115,7 @@ jobs:
           docker stop buildContainer
           docker cp buildContainer:WhyTheFuckIsMyNetworkSoSlow/Builds/${{ matrix.config_name }}/ $ARTIFACTS_DIR 2> /dev/null
           #rm -rf $ARTIFACTS_DIR/{ThirdPartyComponents,Tests,*.lib}
+          ls -l $ARTIFACTS_DIR
       - name: Archive Sample Results
         uses: actions/upload-artifact@v2
         with:
