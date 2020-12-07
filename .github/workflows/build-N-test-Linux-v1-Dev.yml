@@ -95,25 +95,6 @@ jobs:
       MAKEFLAGS: "--jobs=3 QUICK_BUILD=1"
     container: ${{ matrix.container_image }}
     steps:
-      # - uses: actions/checkout@v2
-      - name: Checkout
-        run: |
-          echo before checkout:
-          pwd
-          ls -al
-          echo NOW DO CHECKOUT
-          git clone https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow.git .
-          echo GITHUB_REF=$GITHUB_REF
-          #cd WhyTheFuckIsMyNetworkSoSlow && git checkout $GITHUB_REF
-          pwd
-          git checkout v1-Dev
-          pwd
-          ls -al
-          pwd
-          git submodule update --recursive --init
-          pwd
-          echo AFTER SUBMODULE
-          ls -al . WhyTheFuckIsMyNetworkSoSlow WhyTheFuckIsMyNetworkSoSlow/ThirdPartyComponents
       - name: Build System Info
         if: ${{ matrix.os=='unix' }}
         run: |
@@ -129,6 +110,15 @@ jobs:
         run: |
           echo "CWD=" `pwd`
           df -h
+      # Couldn't get uses: actions/checkout@v2 working with submodules
+      - name: Checkout
+        run: |
+          pwd
+          git clone https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow.git .
+          echo GITHUB_REF=$GITHUB_REF
+          #cd WhyTheFuckIsMyNetworkSoSlow && git checkout $GITHUB_REF
+          git checkout v1-Dev
+          git submodule update --recursive --init
       - name: Create build root structure
         shell: "bash"
         run: |
