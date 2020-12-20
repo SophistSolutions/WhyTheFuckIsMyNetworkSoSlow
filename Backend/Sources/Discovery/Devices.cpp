@@ -28,6 +28,7 @@
 #include "Stroika/Foundation/IO/Network/LinkMonitor.h"
 #include "Stroika/Foundation/IO/Network/Neighbors.h"
 #include "Stroika/Foundation/IO/Network/Transfer/Connection.h"
+#include "Stroika/Foundation/Traversal/DiscreteRange.h"
 
 #include "Stroika/Frameworks/NetworkMonitor/Ping.h"
 #include "Stroika/Frameworks/UPnP/DeviceDescription.h"
@@ -50,6 +51,8 @@ using namespace Stroika::Foundation::DataExchange;
 using namespace Stroika::Foundation::Execution;
 using namespace Stroika::Foundation::IO;
 using namespace Stroika::Foundation::IO::Network;
+using namespace Stroika::Foundation::Traversal;
+
 using namespace Stroika::Frameworks;
 using namespace Stroika::Frameworks::UPnP;
 
@@ -500,16 +503,16 @@ namespace {
 #if 0
 From yamaha playbar:
 Living Room
-ID	4fb4912c-2468-9659-67e9-ae4a38f684cc
-Types	TV
-Icon	http://localhost:8080/blob/35114267-7df6-55aa-b809-2a60c39fbc6c
-Open Ports	icmp:ping, tcp:80
-Presentation	http://192.168.1.85/
-OS	Linux
-Manufacturers	Yamaha Corporation
-Networks	{ "b4724405-c085-725d-1cd6-8fb4edb28b53": { "hardwareAddresses": [ "bc-30-d9-87-c7-4f" ], "networkAddresses": [ "192.168.1.85" ] } }
-Last Seen	2 minutes ago
-DEBUG INFO	{ "MACAddr2OUINames": { "bc-30-d9-87-c7-4f": "Arcadyan" }, "SSDP-DeviceType2FriendlyName": "Living Room", "SSDPInfo": { "USNs": "[ 'uuid:9ab0c000-f668-11de-9976-bc30d987c74e::upnp:rootdevice' ]", "deviceType2FriendlyNameMap": "[ {'urn:schemas-upnp-org:device:MediaRenderer:1': 'Living Room'} ]", "lastAdvertisement": "{USN : 'uuid:9ab0c000-f668-11de-9976-bc30d987c74e::upnp:rootdevice', Location : 'http://192.168.1.85:49154/MediaRenderer/desc.xml', Server : 'Linux/3.2 UPnP/1.0 Network_Module/1.0 (YAS-408)', Target : 'upnp:rootdevice', Raw-Headers : [], }", "lastSSDPMessageRecievedAt": "Sat Oct 24 8:57:43 2020 localtime", "locations": "[ 'http://192.168.1.85:49154/MediaRenderer/desc.xml' ]", "manufacturer": "'Yamaha Corporation'", "manufacturer-URL": "'http://www.yamaha.com/'", "server": "'Linux/3.2 UPnP/1.0 Network_Module/1.0 (YAS-408)'" } }
+ID  4fb4912c-2468-9659-67e9-ae4a38f684cc
+Types   TV
+Icon    http://localhost:8080/blob/35114267-7df6-55aa-b809-2a60c39fbc6c
+Open Ports  icmp:ping, tcp:80
+Presentation    http://192.168.1.85/
+OS  Linux
+Manufacturers   Yamaha Corporation
+Networks    { "b4724405-c085-725d-1cd6-8fb4edb28b53": { "hardwareAddresses": [ "bc-30-d9-87-c7-4f" ], "networkAddresses": [ "192.168.1.85" ] } }
+Last Seen   2 minutes ago
+DEBUG INFO  { "MACAddr2OUINames": { "bc-30-d9-87-c7-4f": "Arcadyan" }, "SSDP-DeviceType2FriendlyName": "Living Room", "SSDPInfo": { "USNs": "[ 'uuid:9ab0c000-f668-11de-9976-bc30d987c74e::upnp:rootdevice' ]", "deviceType2FriendlyNameMap": "[ {'urn:schemas-upnp-org:device:MediaRenderer:1': 'Living Room'} ]", "lastAdvertisement": "{USN : 'uuid:9ab0c000-f668-11de-9976-bc30d987c74e::upnp:rootdevice', Location : 'http://192.168.1.85:49154/MediaRenderer/desc.xml', Server : 'Linux/3.2 UPnP/1.0 Network_Module/1.0 (YAS-408)', Target : 'upnp:rootdevice', Raw-Headers : [], }", "lastSSDPMessageRecievedAt": "Sat Oct 24 8:57:43 2020 localtime", "locations": "[ 'http://192.168.1.85:49154/MediaRenderer/desc.xml' ]", "manufacturer": "'Yamaha Corporation'", "manufacturer-URL": "'http://www.yamaha.com/'", "server": "'Linux/3.2 UPnP/1.0 Network_Module/1.0 (YAS-408)'" } }
 
 
 http://192.168.1.85:49154/MediaRenderer/desc.xml:
@@ -1207,8 +1210,8 @@ namespace {
              *  EVERY item we visited and discarded, and we dont need to be perfect, its a slow random walk and devices
              *  could appear and disappear during a scan anyhow...
              */
-            optional<InternetAddressRange>      scanAddressRange;
-            unique_ptr<Cache::BloomFilter<int>> addressesProbablyUsed;
+            optional<DiscreteRange<InternetAddress>> scanAddressRange;
+            unique_ptr<Cache::BloomFilter<int>>      addressesProbablyUsed;
 
             double sizeFactor{1};                       // (DOESNT APPEAR NEEDED) - use more bloom filter bits than needed for full set, cuz otherwise get too many collisions as adding
             double maxFalsePositivesAllowed      = .5;  // bloom filter stops working well if much past this probability limit
