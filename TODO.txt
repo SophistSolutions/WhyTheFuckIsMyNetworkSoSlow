@@ -1,6 +1,8 @@
 ----
 	
-	>	See if we can get circleci builds working, and then release
+	github action builds seem to work fine
+		@todo RELEASE builds
+		@todo list release artifacts someplace
 	---
 	
 	
