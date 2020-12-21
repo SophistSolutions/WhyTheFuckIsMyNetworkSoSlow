@@ -1,0 +1,286 @@
+#
+# build-N-test-v1-Dev and build-N-test-v1-Release are neary
+# identical, but a few tests are commented out (to not needlessly stress CI system)
+# for v1-Dev builds
+#
+# NOTE: I've tried many tricks - none which seem to work - to get this working on one file with one
+# workflow and tests
+#     https://github.community/t/what-is-the-correct-if-condition-syntax-for-checking-matrix-os-version/16221
+#     https://github.community/t/how-to-conditionally-include-exclude-items-in-matrix-eg-based-on-branch/16853
+#
+# but none seem to work
+#
+
+name: build-N-test-v1-Dev
+
+on:
+  push:
+    branches:
+      - v1-Dev
+      #- v1-Release
+  workflow_dispatch:
+    inputs:
+      ignored:
+        description: "ignored"
+        required: false
+        default: ""
+
+## NB: JOBS section IDENTICAL between v1-Dev and v1-Release files EXCEPT that on v1-Dev file
+## comment out all entries marked with includeInDevBranchBuilds: false
+jobs:
+  build-n-test-Linux:
+    runs-on: ${{ matrix.runs_on }}
+    strategy:
+      matrix:
+        include:
+          ## ubuntu 18.04
+          - displayTargetName: ubuntu-18.04-g++-8 (Debug)
+            os: unix
+            compiler: g++-8
+            runs_on: ubuntu-latest
+            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804
+            cpp_version: c++17
+            config_name: Debug
+            extra_config_args: --apply-default-debug-flags --trace2file enable
+            includeInDevBranchBuilds: true
+
+          # ubuntu 20.04
+          # - displayTargetName: ubuntu-20.04-g++-9 (Debug)
+          #   os: unix
+          #   compiler: g++-9
+          #   runs_on: ubuntu-latest
+          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
+          #   cpp_version: c++17
+          #   config_name: Debug
+          #   extra_config_args: --apply-default-debug-flags --trace2file enable
+          #   includeInDevBranchBuilds: false
+          # - displayTargetName: ubuntu-20.04-g++-10 (Debug)
+          #   os: unix
+          #   compiler: g++-10
+          #   runs_on: ubuntu-latest
+          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
+          #   cpp_version: c++17
+          #   config_name: Debug
+          #   extra_config_args: --apply-default-debug-flags --trace2file enable
+          #   includeInDevBranchBuilds: false
+          - displayTargetName: ubuntu-20.04-g++-10
+            os: unix
+            compiler: g++-10
+            runs_on: ubuntu-latest
+            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
+            cpp_version: c++17
+            config_name: Release
+            extra_config_args: --apply-default-release-flags --trace2file enable
+            includeInDevBranchBuilds: true
+          # - displayTargetName: ubuntu-20.04-g++-10-c++2a
+          #   os: unix
+          #   compiler: g++-10
+          #   runs_on: ubuntu-latest
+          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
+          #   cpp_version: c++2a
+          #   config_name: Release
+          #   extra_config_args: --apply-default-release-flags --trace2file enable
+          #   includeInDevBranchBuilds: false
+          # - displayTargetName: ubuntu-20.04-clang++-10
+          #   os: unix
+          #   compiler: clang++-10
+          #   runs_on: ubuntu-latest
+          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
+          #   cpp_version: c++17
+          #   config_name: Release
+          #   extra_config_args: --apply-default-release-flags --trace2file enable
+          #   includeInDevBranchBuilds: false
+    env:
+      # vm has 2 virtual CPUs, but 8GB ram, so jobs=5 (empirical), and QUICK_BUILD avoids some internal testing
+      MAKEFLAGS: "--jobs=3 QUICK_BUILD=1"
+    container: ${{ matrix.container_image }}
+    steps:
+      - name: Build System Info
+        if: ${{ matrix.os=='unix' }}
+        run: |
+          lsb_release -d 2>/dev/null || true
+          echo "CWD=" `pwd`
+          echo "nproc=" `nproc`
+          grep "model name" /proc/cpuinfo | head -1
+          grep processor /proc/cpuinfo | wc -l
+          grep MemTotal /proc/meminfo
+          df -h
+      - name: Build System Info (Windows)
+        if: ${{ matrix.os=='windows' }}
+        run: |
+          echo "CWD=" `pwd`
+          df -h
+      # Couldn't get uses: actions/checkout@v2 working with submodules
+      - name: Checkout
+        run: |
+          git clone https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow.git .
+          git checkout $GITHUB_SHA
+          git submodule update --recursive --init
+      - name: Create build root structure
+        shell: "bash"
+        run: |
+          make build-root
+      - name: Configure ${{ matrix.config_name }}
+        run: |
+          cd ThirdPartyComponents/Stroika/StroikaRoot && ./configure ${{ matrix.config_name }} --compiler-driver ${{ matrix.compiler }} ${{ matrix.extra_config_args }} --cppstd-version ${{ matrix.cpp_version }}
+          cat ConfigurationFiles/${{ matrix.config_name }}.xml
+      - name: Make all
+        run: make all
+      - name: Archive Build Results
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.displayTargetName }} Installers
+          path: |
+            Builds/${{ matrix.config_name }}/WhyTheFuckIsMyNetworkSoSlow/*.deb
+
+  build-n-test-MacOS:
+    runs-on: ${{ matrix.runs_on }}
+    strategy:
+      matrix:
+        # Add to extra_config_args for build speed: --Xerces no --OpenSSL no --lzma no --boost no
+        include:
+          - displayTargetName: MacOS-x86_64-Debug
+            os: macos-10.15
+            runs_on: macos-10.15
+            config_name: Debug
+            extra_config_args: --apply-default-debug-flags --trace2file enable
+            includeInDevBranchBuilds: true
+          # - displayTargetName: MacOS-x86_64
+          #   os: macos-10.15
+          #   runs_on: macos-10.15
+          #   config_name: Release
+          #   extra_config_args: --apply-default-release-flags --trace2file enable
+          #   includeInDevBranchBuilds: false
+    env:
+      # vm has 2 virtual CPUs, but 8GB ram, so jobs=5 (empirical), and QUICK_BUILD avoids some internal testing
+      MAKEFLAGS: "--jobs=3 QUICK_BUILD=1"
+    steps:
+      - uses: actions/checkout@v2
+      - name: Checkout submodules
+        run: git submodule update --init --recursive
+      - name: Build System Info
+        run: |
+          echo "CWD: `pwd`"
+          df -h
+          system_profiler SPSoftwareDataType
+          sw_vers
+      # If we had docker ability, most of these would be built into a docker file
+      - name: Install Basic Build requirements
+        run: |
+          brew install gnu-sed
+          brew install p7zip
+          brew install automake
+          make --no-print-directory --directory ThirdPartyComponents/Stroika/StroikaRoot install-realpath
+      - name: Create build root structure
+        run: |
+          make build-root
+      - name: Configure
+        run: |
+          cd ThirdPartyComponents/Stroika/StroikaRoot && ./configure ${{ matrix.config_name }} ${{ matrix.extra_config_args }}
+          cat ConfigurationFiles/${{ matrix.config_name }}.xml
+      - name: Build All
+        run: |
+          make all
+      - name: Build System Info
+        run: |
+          df -h
+      - name: Archive Installers Results
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.displayTargetName }} Installers
+          path: |
+            Builds/${{ matrix.config_name }}/WhyTheFuckIsMyNetworkSoSlow/*
+
+  build-n-test-Windows:
+    runs-on: ${{ matrix.runs_on }}
+    strategy:
+      matrix:
+        # Add to extra_config_args for build speed: --Xerces no --OpenSSL no --lzma no --boost no
+        include:
+          - displayTargetName: windows-x86-Debug
+            os: windows
+            runs_on: windows-latest
+            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19
+            config_name: windows-x86-Debug
+            extra_config_args: --arch x86 --apply-default-debug-flags --trace2file enable
+            includeInDevBranchBuilds: true
+          # - displayTargetName: windows-x86-Release
+          #   os: windows
+          #   runs_on: windows-latest
+          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19
+          #   config_name: Release
+          #   extra_config_args: --arch x86 --apply-default-release-flags --trace2file enable
+          #   includeInDevBranchBuilds: false
+          # - displayTargetName: windows-x86_64-Debug
+          #   os: windows
+          #   runs_on: windows-latest
+          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19
+          #   config_name: Debug
+          #   extra_config_args: --arch x86_64 --apply-default-debug-flags --trace2file enable
+          #   includeInDevBranchBuilds: false
+          # - displayTargetName: windows-x86_64-Release
+          #   os: windows
+          #   runs_on: windows-latest
+          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19
+          #   config_name: Release
+          #   extra_config_args: --arch x86 --apply-default-release-flags --trace2file enable
+          #   includeInDevBranchBuilds: false
+    env:
+      # vm has 2 virtual CPUs, but 8GB ram, so jobs=5 (empirical), and QUICK_BUILD avoids some internal testing
+      MAKEFLAGS: "--jobs=3 QUICK_BUILD=1"
+      ARTIFACTS_DIR: "c:/Artifacts/"
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build System Info
+        shell: "bash"
+        run: |
+          echo "CWD: `pwd`"
+          df -h
+          systeminfo
+          echo NUMBER_OF_PROCESSORS=$NUMBER_OF_PROCESSORS
+      - name: docker pull ${{ matrix.container_image }}
+        run: docker pull ${{ matrix.container_image }}
+      - name: Start docker build environment
+        run: |
+          docker run --tty --memory 5G --cpus 2 --storage-opt 'size=50GB' --detach --name buildContainer ${{ matrix.container_image }}
+      - name: Print Info about docker system
+        shell: "bash"
+        run: |
+          docker exec buildContainer systeminfo
+          docker exec buildContainer df -h
+      - name: Git Checkout
+        shell: "bash"
+        run: |
+          docker exec buildContainer git clone https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow.git
+          docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow/ buildContainer git checkout $GITHUB_SHA
+          docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow/ buildContainer git submodule update --recursive --init
+      - name: Create build root structure
+        shell: "bash"
+        run: |
+          docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow buildContainer make build-root
+      - name: Configure
+        shell: "bash"
+        run: |
+          docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow/ThirdPartyComponents/Stroika/StroikaRoot buildContainer sh -c "./configure ${{ matrix.config_name }} ${{ matrix.extra_config_args }}"
+          docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow/ThirdPartyComponents/Stroika/StroikaRoot buildContainer cat ConfigurationFiles/${{ matrix.config_name }}.xml
+      - name: Build
+        shell: "bash"
+        run: |
+          docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow --env MAKEFLAGS="$MAKEFLAGS" buildContainer make all
+      - name: Build System Info
+        shell: "bash"
+        run: |
+          df -h
+          docker exec buildContainer df -h
+      - name: Copy Build Artifacts
+        shell: "bash"
+        # due to flaws in docker (windows must stop) - and cp no wildcards
+        run: |
+          docker stop buildContainer
+          docker cp buildContainer:WhyTheFuckIsMyNetworkSoSlow/Builds/${{ matrix.config_name }}/ $ARTIFACTS_DIR 2> /dev/null
+      - name: Archive Installer Results
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.displayTargetName }} Installers
+          path: |
+            ${{ env.ARTIFACTS_DIR }}/WhyTheFuckIsMyNetworkSoSlow/*.msi
