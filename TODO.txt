@@ -71,17 +71,6 @@ consider rule - if name contains MACBOOKPRO AND manufacture from ethernet info i
 mark it as type PC.
 ----
 
-maybe use
-
-https://docs.travis-ci.com/user/docker/
-
-to do docker - loooks like MAYBE simpler than what Im doing now, and MAYBE more performnant if it caches teh
-images. IF YES, then do for STROIKA too
-
-----
-
-Get TRAVISCI builds working and copying out build artifcats
-
 Improve auto release of installers to release process (maybe still do manaully this next time)
 
 ----
