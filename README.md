@@ -1,6 +1,6 @@
 # WhyTheFuckIsMyNetworkSoSlow
 
-This project's goal is to allow everyday people with limited to no knowledge of network technology to
+This project's goal is to allow people (even with modest knowledge of network technology) to
 diagnose their own personal networks, to indicate network issues and to provide advice for improving network efficiency.
 
 - To test:

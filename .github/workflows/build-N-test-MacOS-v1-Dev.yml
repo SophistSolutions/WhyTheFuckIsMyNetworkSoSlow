@@ -26,13 +26,13 @@ jobs:
       matrix:
         # Add to extra_config_args for build speed: --Xerces no --OpenSSL no --lzma no --boost no
         include:
-          - displayTargetName: MacOS-Debug
+          - displayTargetName: MacOS-x86_64-Debug
             os: macos-10.15
             runs_on: macos-10.15
             config_name: Debug
             extra_config_args: --apply-default-debug-flags --trace2file enable
             includeInDevBranchBuilds: true
-          # - displayTargetName: MacOS
+          # - displayTargetName: MacOS-x86_64
           #   os: macos-10.15
           #   runs_on: macos-10.15
           #   config_name: Release
@@ -74,6 +74,6 @@ jobs:
       - name: Archive Installers Results
         uses: actions/upload-artifact@v2
         with:
-          name: Installers (${{ matrix.displayTargetName }})
+          name: ${{ matrix.displayTargetName }} Installers
           path: |
             Builds/${{ matrix.config_name }}/WhyTheFuckIsMyNetworkSoSlow/*

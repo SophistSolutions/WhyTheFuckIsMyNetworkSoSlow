@@ -114,6 +114,6 @@ jobs:
       - name: Archive Installer Results
         uses: actions/upload-artifact@v2
         with:
-          name: Installers (${{ matrix.displayTargetName }})
+          name: ${{ matrix.displayTargetName }} Installers
           path: |
             ${{ env.ARTIFACTS_DIR }}/WhyTheFuckIsMyNetworkSoSlow/*.msi

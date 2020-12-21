@@ -129,6 +129,6 @@ jobs:
       - name: Archive Build Results
         uses: actions/upload-artifact@v2
         with:
-          name: Installers (${{ matrix.displayTargetName }})
+          name: ${{ matrix.displayTargetName }} Installers
           path: |
             Builds/${{ matrix.config_name }}/WhyTheFuckIsMyNetworkSoSlow/*.deb
