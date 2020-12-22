@@ -62,6 +62,7 @@ jobs:
             cpp_version: c++17
             config_name: Release
             extra_config_args: --apply-default-release-flags --compiler-driver arm-linux-gnueabihf-g++-8 --cross-compiling true
+            includeInDevBranchBuilds: true
 
           # ubuntu 20.04
           # - displayTargetName: ubuntu-20.04-g++-10 (Debug)
