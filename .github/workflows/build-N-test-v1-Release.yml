@@ -45,24 +45,24 @@ jobs:
             includeInDevBranchBuilds: true
 
           # ubuntu 20.04
-          # - displayTargetName: ubuntu-20.04-g++-9 (Debug)
-          #   os: unix
-          #   compiler: g++-9
-          #   runs_on: ubuntu-latest
-          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
-          #   cpp_version: c++17
-          #   config_name: Debug
-          #   extra_config_args: --apply-default-debug-flags --trace2file enable
-          #   includeInDevBranchBuilds: false
-          # - displayTargetName: ubuntu-20.04-g++-10 (Debug)
-          #   os: unix
-          #   compiler: g++-10
-          #   runs_on: ubuntu-latest
-          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
-          #   cpp_version: c++17
-          #   config_name: Debug
-          #   extra_config_args: --apply-default-debug-flags --trace2file enable
-          #   includeInDevBranchBuilds: false
+          - displayTargetName: ubuntu-20.04-g++-9 (Debug)
+            os: unix
+            compiler: g++-9
+            runs_on: ubuntu-latest
+            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
+            cpp_version: c++17
+            config_name: Debug
+            extra_config_args: --apply-default-debug-flags --trace2file enable
+            includeInDevBranchBuilds: false
+          - displayTargetName: ubuntu-20.04-g++-10 (Debug)
+            os: unix
+            compiler: g++-10
+            runs_on: ubuntu-latest
+            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
+            cpp_version: c++17
+            config_name: Debug
+            extra_config_args: --apply-default-debug-flags --trace2file enable
+            includeInDevBranchBuilds: false
           - displayTargetName: ubuntu-20.04-g++-10
             os: unix
             compiler: g++-10
@@ -72,24 +72,24 @@ jobs:
             config_name: Release
             extra_config_args: --apply-default-release-flags --trace2file enable
             includeInDevBranchBuilds: true
-          # - displayTargetName: ubuntu-20.04-g++-10-c++2a
-          #   os: unix
-          #   compiler: g++-10
-          #   runs_on: ubuntu-latest
-          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
-          #   cpp_version: c++2a
-          #   config_name: Release
-          #   extra_config_args: --apply-default-release-flags --trace2file enable
-          #   includeInDevBranchBuilds: false
-          # - displayTargetName: ubuntu-20.04-clang++-10
-          #   os: unix
-          #   compiler: clang++-10
-          #   runs_on: ubuntu-latest
-          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
-          #   cpp_version: c++17
-          #   config_name: Release
-          #   extra_config_args: --apply-default-release-flags --trace2file enable
-          #   includeInDevBranchBuilds: false
+          - displayTargetName: ubuntu-20.04-g++-10-c++2a
+            os: unix
+            compiler: g++-10
+            runs_on: ubuntu-latest
+            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
+            cpp_version: c++2a
+            config_name: Release
+            extra_config_args: --apply-default-release-flags --trace2file enable
+            includeInDevBranchBuilds: false
+          - displayTargetName: ubuntu-20.04-clang++-10
+            os: unix
+            compiler: clang++-10
+            runs_on: ubuntu-latest
+            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
+            cpp_version: c++17
+            config_name: Release
+            extra_config_args: --apply-default-release-flags --trace2file enable
+            includeInDevBranchBuilds: false
     env:
       # vm has 2 virtual CPUs, but 8GB ram, so jobs=5 (empirical), and QUICK_BUILD avoids some internal testing
       MAKEFLAGS: "--jobs=3 QUICK_BUILD=1"
@@ -145,12 +145,12 @@ jobs:
             config_name: Debug
             extra_config_args: --apply-default-debug-flags --trace2file enable
             includeInDevBranchBuilds: true
-          # - displayTargetName: MacOS-x86_64
-          #   os: macos-10.15
-          #   runs_on: macos-10.15
-          #   config_name: Release
-          #   extra_config_args: --apply-default-release-flags --trace2file enable
-          #   includeInDevBranchBuilds: false
+          - displayTargetName: MacOS-x86_64
+            os: macos-10.15
+            runs_on: macos-10.15
+            config_name: Release
+            extra_config_args: --apply-default-release-flags --trace2file enable
+            includeInDevBranchBuilds: false
     env:
       # vm has 2 virtual CPUs, but 8GB ram, so jobs=5 (empirical), and QUICK_BUILD avoids some internal testing
       MAKEFLAGS: "--jobs=3 QUICK_BUILD=1"
@@ -204,27 +204,27 @@ jobs:
             config_name: windows-x86-Debug
             extra_config_args: --arch x86 --apply-default-debug-flags --trace2file enable
             includeInDevBranchBuilds: true
-          # - displayTargetName: windows-x86-Release
-          #   os: windows
-          #   runs_on: windows-latest
-          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19
-          #   config_name: Release
-          #   extra_config_args: --arch x86 --apply-default-release-flags --trace2file enable
-          #   includeInDevBranchBuilds: false
-          # - displayTargetName: windows-x86_64-Debug
-          #   os: windows
-          #   runs_on: windows-latest
-          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19
-          #   config_name: Debug
-          #   extra_config_args: --arch x86_64 --apply-default-debug-flags --trace2file enable
-          #   includeInDevBranchBuilds: false
-          # - displayTargetName: windows-x86_64-Release
-          #   os: windows
-          #   runs_on: windows-latest
-          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19
-          #   config_name: Release
-          #   extra_config_args: --arch x86 --apply-default-release-flags --trace2file enable
-          #   includeInDevBranchBuilds: false
+          - displayTargetName: windows-x86-Release
+            os: windows
+            runs_on: windows-latest
+            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19
+            config_name: Release
+            extra_config_args: --arch x86 --apply-default-release-flags --trace2file enable
+            includeInDevBranchBuilds: false
+          - displayTargetName: windows-x86_64-Debug
+            os: windows
+            runs_on: windows-latest
+            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19
+            config_name: Debug
+            extra_config_args: --arch x86_64 --apply-default-debug-flags --trace2file enable
+            includeInDevBranchBuilds: false
+          - displayTargetName: windows-x86_64-Release
+            os: windows
+            runs_on: windows-latest
+            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19
+            config_name: Release
+            extra_config_args: --arch x86 --apply-default-release-flags --trace2file enable
+            includeInDevBranchBuilds: false
     env:
       # vm has 2 virtual CPUs, but 8GB ram, so jobs=5 (empirical), and QUICK_BUILD avoids some internal testing
       MAKEFLAGS: "--jobs=3 QUICK_BUILD=1"
