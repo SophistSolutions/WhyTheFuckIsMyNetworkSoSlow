@@ -44,16 +44,26 @@ jobs:
             extra_config_args: --apply-default-debug-flags --trace2file enable
             includeInDevBranchBuilds: true
 
-          # ubuntu 20.04
-          # - displayTargetName: ubuntu-20.04-g++-9 (Debug)
+          # - displayTargetName: ubuntu-18.04-g++-8
           #   os: unix
-          #   compiler: g++-9
+          #   compiler: g++-8
           #   runs_on: ubuntu-latest
-          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
+          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804
           #   cpp_version: c++17
-          #   config_name: Debug
-          #   extra_config_args: --apply-default-debug-flags --trace2file enable
+          #   config_name: Release
+          #   extra_config_args: --apply-default-release-flags
           #   includeInDevBranchBuilds: false
+
+          - displayTargetName: raspberrypi
+            os: unix
+            compiler: g++-8
+            runs_on: ubuntu-latest
+            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804
+            cpp_version: c++17
+            config_name: Release
+            extra_config_args: --apply-default-release-flags --compiler-driver arm-linux-gnueabihf-g++-8 --cross-compiling true
+
+          # ubuntu 20.04
           # - displayTargetName: ubuntu-20.04-g++-10 (Debug)
           #   os: unix
           #   compiler: g++-10
@@ -70,7 +80,7 @@ jobs:
             container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
             cpp_version: c++17
             config_name: Release
-            extra_config_args: --apply-default-release-flags --trace2file enable
+            extra_config_args: --apply-default-release-flags
             includeInDevBranchBuilds: true
           # - displayTargetName: ubuntu-20.04-g++-10-c++2a
           #   os: unix
@@ -78,15 +88,6 @@ jobs:
           #   runs_on: ubuntu-latest
           #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
           #   cpp_version: c++2a
-          #   config_name: Release
-          #   extra_config_args: --apply-default-release-flags --trace2file enable
-          #   includeInDevBranchBuilds: false
-          # - displayTargetName: ubuntu-20.04-clang++-10
-          #   os: unix
-          #   compiler: clang++-10
-          #   runs_on: ubuntu-latest
-          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
-          #   cpp_version: c++17
           #   config_name: Release
           #   extra_config_args: --apply-default-release-flags --trace2file enable
           #   includeInDevBranchBuilds: false
@@ -149,7 +150,7 @@ jobs:
           #   os: macos-10.15
           #   runs_on: macos-10.15
           #   config_name: Release
-          #   extra_config_args: --apply-default-release-flags --trace2file enable
+          #   extra_config_args: --apply-default-release-flags
           #   includeInDevBranchBuilds: false
     env:
       # vm has 2 virtual CPUs, but 8GB ram, so jobs=5 (empirical), and QUICK_BUILD avoids some internal testing
