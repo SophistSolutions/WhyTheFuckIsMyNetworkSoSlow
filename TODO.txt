@@ -1,20 +1,7 @@
 ----
-	
-	github action builds seem to work fine
-		@todo RELEASE builds
-	---
+
 	ReleaseScript.md
-		>> UPDASTE DOCS TO REF NEW RunReleaseBuilds.sh script
-		(or delete and put docs into .sh - unify names)
-
-
---
-
-update name of installers build artifcacts 
-for x86/x64 and add installers for raspberrypi
-
-
-
+		>> UPDASTE DOCS and delet ethe sdh script
 
 ---
 
@@ -62,13 +49,7 @@ TCPOPEN:
   OR - maybe use that in the device type field? Not sure. Maybe that makes more sense to show icon
   there? But add to existing icon? We can have  mutliple types so thats probably what makes the most sense.
   Its basically another 'type'.
-----
-
-	>> maybe get docker builds working
-	   and then do release.
-
-	   C:\Sandbox\WhyTheFuckIsMyNetworkSoSlowDev\RunReleaseBuilds.sh
-----
+---
 	> Have quick connect icon on devices
 	  popup for popular connect tecnhiques, like 
 	    > http link (open port or presenation url)
