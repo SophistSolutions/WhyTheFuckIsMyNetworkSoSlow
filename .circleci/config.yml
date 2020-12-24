@@ -41,7 +41,7 @@ jobs:
 
   build-raspberrypi:
     docker:
-      - image: sophistsolutionsinc/whythefuckismynetworksoslow-debian-crosscompile-raspberrypi
+      - image: sophistsolutionsinc/whythefuckismynetworksoslow-debian-small
 
     working_directory: ~/build-4-linux
 
