@@ -37,7 +37,7 @@ jobs:
     steps:
       - build-4-unix:
           configName: Release
-          configureArgs: --config-tag Unix --apply-default-release-flags
+          configureArgs: --apply-default-release-flags --compiler-driver g++-8
 
   build-raspberrypi:
     docker:
@@ -48,7 +48,7 @@ jobs:
     steps:
       - build-4-unix:
           configName: raspberrypi-release
-          configureArgs: --config-tag Unix --config-tag raspberrypi --apply-default-release-flags --compiler-driver 'arm-linux-gnueabihf-g++-8' --cross-compiling true;
+          configureArgs: --apply-default-release-flags --compiler-driver 'arm-linux-gnueabihf-g++-8' --cross-compiling true;
 
   build-macos:
     macos:
