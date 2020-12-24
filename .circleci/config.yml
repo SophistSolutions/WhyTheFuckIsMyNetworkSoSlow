@@ -30,7 +30,7 @@ commands:
 jobs:
   build-ubuntu1804:
     docker:
-      - image: sophistsolutionsinc/whythefuckismynetworksoslow-debian-small
+      - image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804
 
     working_directory: ~/build-4-linux
 
@@ -41,7 +41,7 @@ jobs:
 
   build-raspberrypi:
     docker:
-      - image: sophistsolutionsinc/whythefuckismynetworksoslow-debian-small
+      - image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804
 
     working_directory: ~/build-4-linux
 

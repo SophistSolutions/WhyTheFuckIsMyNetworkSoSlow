@@ -8,7 +8,7 @@ High level summary of changes in WhyTheFuckIsMyNetworkSoSlow.
 
 ---
 
-### 1.0d9 {2020-12-24}
+### 1.0d9, 1.0d10 {2020-12-24}
 
 - Fixed small issue building raspberry pi image
 
