@@ -3,8 +3,8 @@
     <br />
     <h1>About 'Why The Fuck is My Network So Slow'</h1>
     <br />
-    <div>My Version: {{ about.applicationVersion }}</div>
-    <div>My Operating System: {{ about.operatingSystem.fullVersionedName }}</div>
+    <div>App Version: {{ about.applicationVersion }}</div>
+    <div>App Running on Operating System: {{ about.operatingSystem.fullVersionedName }}</div>
 
     <br />
 

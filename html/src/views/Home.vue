@@ -9,9 +9,9 @@
     </v-row>
     <v-row>
       <v-col class="mb-4">
-        Networks (active + favorites)
+        <router-link to="/Networks">Networks</router-link> (active + favorites)
         <ul>
-          <li>Net 1</li>
+          <li>192.168.244.0/24</li>
           <div>: 23 devices, operating normally</div>
           <li>Net 2</li>
           <div>: 23 devices, operating normally</div>
