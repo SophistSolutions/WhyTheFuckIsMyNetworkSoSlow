@@ -1,13 +1,3 @@
-----
-	>	Get CircleCI builds working...
-
-----
-	ReleaseScript.md
-		>> UPDASTE DOCS and delet ethe sdh script
-
----
-
-	THEN RELEASE
 
 ---
 	> two devices with mfg = Murata Manufacturing
