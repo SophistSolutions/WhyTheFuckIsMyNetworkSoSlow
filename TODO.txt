@@ -1,41 +1,21 @@
 
----
-	> two devices with mfg = Murata Manufacturing
-	  are probably my heat control devices
 
-	  did port scan with nmap
+ make -j 10 
+  for backend and html produces
+  ke[3]: warning: jobserver unavailable: using -j1.  Add '+' to parent make rule.
+make[3]: warning: jobserver unavailable: using -j1.  Add '+' to parent make rule.
+make[3]: warning: jobserver unavailable: using -j1.  Add '+' to parent make rule.
 
-		 telnet 192.168.244.152 37447
-			produces Your friendly neighborhood debug shell.
 
-			"
-TCPOPEN:
-	37447
-	49013
-	52541
-	57659
 
-		second device 192.168.244.172 - 
-	46869/tcp open     unknown
-	53399/tcp open     unknown
-	56671/tcp open     unknown
-	60024/tcp open     unknown
-	MAYBE trick to dientifying is that resolved hostname starts with 
-		XL857- and then a string of hex digits (which didnt turn out to be mac address)
-	
-	 telnet 192.168.244.172 60024 
-	 	gets same freindly neighborhood shell
 ----
+	>	upgrade to latest vue
+---
+	>	Do first draft of HOME page
+		summary of total devices, total list active networks (total number)
+		and links to each
 
-
-
- Compiling Backend/Sources/Main.cpp ...
-         Compiling Backend/Sources/Service.cpp ...
-         Linking Builds/ReleaseWhyTheFuckIsMyNetworkSoSlow-Backend ..
-
-		 ===
-
-
+===
 
 - Include the device ICON in its name field (prepend or append? prepend. Old Devices API shows those icons.
   OR - maybe use that in the device type field? Not sure. Maybe that makes more sense to show icon
@@ -57,23 +37,10 @@ Improve auto release of installers to release process (maybe still do manaully t
 
 ----
 
-try to get docker macos working and do builds that way for WTF
-
-
-----
-
-	change travici stuff here and STROIKA - to NOT checkout git stuff twice but use -v arg to docker to expose existing data
-	THEN easier to copy out results (artifacts) - though maybe useless cuz no way to do anything with them (withotu S3 account)
-	OH - maybe I can push to sophists.ftp?
+MacOS Installer
 
 ---
-auto build of artifiacts (release script to make / copy out artificatcs)
-NICE if can run from travisci but appearntly no
-
----
-
----
-	ONCE we have installers and travisci working on all target platforms, fixup NETWORKS page, and maybe
+	fixup NETWORKS page, and maybe
 	primitive HOME page, and MAYBE links between net and devices page, and then release
 
 ----
@@ -98,34 +65,6 @@ and do macos installer for WTF
 		FOR LAST MONTH (PCT scans on this network)
 		FOR LAST YEAR (PCT scans on this network)
 		- OR - better - some 2d smooth representation of how this pct changes over lengthing timespans
-
----------------
-
-Build script printing wrong stuff (like where instalelr is buuot to, and the releasehtml without the slash)
-built this way on docker dev vm (not sure everwhere)
-
-
-      ThirdPartyComponents/Stroika-Import Build Stroika CONFIGURATION=raspberrypi-release...done
-      ThirdPartyComponents/OSI-MAC-Prefixes Build {raspberrypi-release}:
-      ThirdPartyComponents/OSI-MAC-Prefixes Build ../../Builds/raspberrypi-release/ThirdPartyComponents/share/OSI-MAC-PREFIXES.txt...done
-      WhyTheFuckIsMyNetworkSoSlow/HTML Build:
-         npm install ( log2 IntermediateFiles/raspberrypi-releasehtml/NPM-Install.txt ) ...
-         Building ( log2 IntermediateFiles/raspberrypi-releasehtml/Build.txt ) ...
-         Copying to Builds/raspberrypi-releasehtml/ ...
-      Building WhyTheFuckIsMyNetworkSoSlow/Backend:
-      Building Installers:
-         Building DEB installer:
-            temp files: /tmp/tmp.muUcQJ6Qjw/; log: IntermediateFiles/raspberrypi-releaseDEB-Installer-Build.Out
-            Built: Builds/raspberrypi-releasewhythefuckismynetworksoslow-1.0d8x.Linux.armhf.deb
-----
-
-
-	Get docker builds all cleaned up and working (and script running them all and copying out build artificats 
-	or use that to on travisci to get build artifcats in some automatic way)
-
-
-windows nodejs install (not working)
-https://vocon-it.com/2019/11/19/install-npm-using-chocolatey-on-windows/
 
 -----
 
@@ -152,10 +91,6 @@ On RaspbeerryPi - DEBUG build crashes on startup with stackoverflow - but releas
 ---
 
 	Switch to server side sorting before release (becaues it works better - smarter and easier to do smart there)
-
----
-
-	Test on raspberypi - must build on Ubuntu 18x system not ubuntu 20
 
 ---
 
@@ -196,18 +131,12 @@ on device
  192.168.244.13 - elizabeths iphone
  62078/tcp open  iphone-sync?
 
-----
-
-
 ---
 
 Add FILESERVER icon (for Drobo/Synology )
 
-
 ---
 Guess more ports based on SSDP messages (urls in ssdp)
-
----
 
 ---
 
@@ -243,9 +172,6 @@ FOR DISPLAY DEBUG JSON INFO:
 ----
 
 	>>> Icon for  MacOS
-
----
-Get TRAVISCI working
 
 ----
 
@@ -316,11 +242,6 @@ unique_ptr<exception> ())
 		BUT - in the html dir - add a clobber, and I do see the changes
 	(MINOR)
 	(ISSUE ONLY ON WINDOWS and due to lack of symbolic links working with npm)
-----
-
-
-
-FIX BUILD OF WTF - using DOCKER - so works on Ubuntu 1804
 -----
 
 https://github.com/mfontanini/libtins (look at this? Use? Maybe not needed)
@@ -341,7 +262,6 @@ https://github.com/mfontanini/libtins (look at this? Use? Maybe not needed)
 	See if I can reproduce on debugger on windows
 		(((PROBABLY FIXED - SLOW MOSTLY DUE TO translate2localblob optiimziation lacking - but retest at home)))
 
-
 ----
 
 make clean at top level of WTF (on UNIX) followed by make rebuilds parts of TPP/Stroika/TPP, so fix that!
@@ -360,13 +280,6 @@ make clean at top level of WTF (on UNIX) followed by make rebuilds parts of TPP/
 
 + Fix default machine name - if "Unknown" - to be the IP-address (preferring v4 if available)
 
-----
-
-
-Fix build using CIRCLECI/travisci
-	(so I can get MSI build easily and test places)
-
-	
 -----
 
 > Fix breadcrumb code so links work in breadcrumbs
