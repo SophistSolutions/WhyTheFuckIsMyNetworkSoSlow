@@ -36,7 +36,7 @@
 
             <v-list>
                 <v-list-item>
-                    <v-btn to="Home" text>
+                    <v-btn to="/" text>
                         <span class="mr-2">Home</span>
                     </v-btn>
                 </v-list-item>
