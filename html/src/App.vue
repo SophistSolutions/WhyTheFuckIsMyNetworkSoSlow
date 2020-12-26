@@ -63,7 +63,7 @@
               <span class="mr-2">networks</span>
             </v-btn>
           </v-list-item>
-          <v-spacer></v-spacer>
+          <v-divider> </v-divider>
           <v-list-item>
             <v-btn to="devices-DEPRECATED" text>
               <span class="mr-2">devices-DEPRECATED</span>
@@ -132,7 +132,8 @@ Vue.directive("click-outside", {
 </script>
 
 <style lang="scss">
-.v-breadcrumbs__item {
-  display: inline;
+a.v-breadcrumbs__item {
+  color: white !important;
+  text-decoration: underline !important;
 }
 </style>

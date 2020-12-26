@@ -84,7 +84,7 @@ export default new Router({
         import(/* webpackChunkName: "DeviceView-DEPRECATED" */ "./views/DeviceView.vue"),
       meta: {
         breadcrumbs: [
-          { text: "Home", href: "/", exact: true },
+          { text: "Home", href: "/" },
           { text: "Devices", disabled: true },
         ],
       },
