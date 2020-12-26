@@ -25,11 +25,10 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
-import Component from "vue-class-component";
-import { INetwork } from "@/models/network/INetwork";
 import { IDevice, INetworkAttachmentInfo } from "@/models/device/IDevice";
-import { Component, Vue, Watch } from "vue-property-decorator";
+import { INetwork } from "@/models/network/INetwork";
+import Vue from "vue";
+import { Component, Watch } from "vue-property-decorator";
 
 @Component({
   name: "Home",
@@ -56,30 +55,14 @@ export default class Home extends Vue {
   }
 
   private get networks(): INetwork[] {
-    let allNetworks: INetwork[] = this.$store.getters.getAvailableNetworks;
-    let result: INetwork[] = [];
+    const allNetworks: INetwork[] = this.$store.getters.getAvailableNetworks;
+    const result: INetwork[] = [];
     allNetworks.forEach((i) => {
       if (i.internetServiceProvider != null || i.geographicLocation != null) {
         result.push(i);
       }
     });
     return result;
-  }
-
-  private getDevicesInNetwork(nw: INetwork): string[] {
-    const ids: string[] = [];
-    this.devices.forEach((i: IDevice) => {
-      let hasThisNetwork = false;
-      Object.entries(i.attachedNetworks).forEach((element) => {
-        if (element[0] === nw.id) {
-          hasThisNetwork = true;
-        }
-      });
-      if (hasThisNetwork) {
-        ids.push(i.id);
-      }
-    });
-    return ids;
   }
 
   @Watch("networks()")
