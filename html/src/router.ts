@@ -8,14 +8,14 @@ export default new Router({
     {
       path: "/",
       name: "Home",
-      component: () => import(/* webpackChunkName: "About" */ "./views/Home.vue"),
+      component: () => import(/* webpackChunkName: "Home" */ "./views/Home.vue"),
       meta: {
-        breadcrumbs: [{ text: "Home", href: "/", exact: true }],
+        breadcrumbs: [{ text: "Home", exact: true, disabled: true }],
       },
     },
     {
       path: "/about",
-      name: "about",
+      name: "About",
       component: () => import(/* webpackChunkName: "About" */ "./views/About.vue"),
       meta: {
         breadcrumbs: [
@@ -23,10 +23,6 @@ export default new Router({
           { text: "About", disabled: true },
         ],
       },
-    },
-    {
-      path: "/hello",
-      name: "hello",
     },
     {
       path: "/networks",
