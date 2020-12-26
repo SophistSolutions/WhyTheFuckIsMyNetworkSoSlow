@@ -72,7 +72,11 @@
               </tr>
               <tr v-if="item.presentationURL">
                 <td>Presentation</td>
-                <td>{{ item.presentationURL }}</td>
+                <td>
+                  <a v-bind:href="item.presentationURL" target="_blank">{{
+                    item.presentationURL
+                  }}</a>
+                </td>
               </tr>
               <tr v-if="item.operatingSystem">
                 <td>OS</td>

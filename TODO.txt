@@ -6,6 +6,14 @@
 make[3]: warning: jobserver unavailable: using -j1.  Add '+' to parent make rule.
 make[3]: warning: jobserver unavailable: using -j1.  Add '+' to parent make rule.
 
+
+----
+
+manifeacturer 'synonlogy with 
+http://192.168.244.83:5000/ssdp/desc-DSM-eth1.xml
+modelType = NAS
+
+
 ----
 	>	upgrade to latest vue
 ---
@@ -32,7 +40,7 @@ Improve auto release of installers to release process (maybe still do manaully t
 MacOS Installer
 
 ---
-	fixup NETWORKS page, and maybe
+	fixup NETWORKS page, to use same expando crap from devices page
 ----
 
 STROIKA do macos installer for samples
