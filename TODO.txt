@@ -6,17 +6,9 @@
 make[3]: warning: jobserver unavailable: using -j1.  Add '+' to parent make rule.
 make[3]: warning: jobserver unavailable: using -j1.  Add '+' to parent make rule.
 
-
-
 ----
 	>	upgrade to latest vue
 ---
-	>	Do first draft of HOME page
-		summary of total devices, total list active networks (total number)
-		and links to each
-
-===
-
 - Include the device ICON in its name field (prepend or append? prepend. Old Devices API shows those icons.
   OR - maybe use that in the device type field? Not sure. Maybe that makes more sense to show icon
   there? But add to existing icon? We can have  mutliple types so thats probably what makes the most sense.
@@ -41,8 +33,6 @@ MacOS Installer
 
 ---
 	fixup NETWORKS page, and maybe
-	primitive HOME page, and MAYBE links between net and devices page, and then release
-
 ----
 
 STROIKA do macos installer for samples

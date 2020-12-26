@@ -88,7 +88,9 @@
               </tr>
               <tr>
                 <td>Networks</td>
-                <td>{{ item.attachedNetworks }}</td>
+                <td>
+                  {{ item.attachedNetworks }}
+                </td>
               </tr>
               <tr>
                 <td>Last Seen</td>

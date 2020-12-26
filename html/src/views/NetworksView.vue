@@ -32,7 +32,9 @@
             <td>{{ item.status }}</td>
             <td>{{ item.location }}</td>
             <td>{{ item.internetInfo }}</td>
-            <td>{{ item.devices }}</td>
+            <td>
+              <router-link to="/devices">{{ item.devices }}</router-link>
+            </td>
           </tr>
         </template>
       </v-data-table>
@@ -133,18 +135,9 @@ export default class Networks extends Vue {
       this.selectedRows.push(keyID);
     }
   }
-
-  private fetchAvailableNetworks() {
-    this.$store.dispatch("fetchAvailableNetworks");
-  }
-
-  private fetchDevices() {
-    this.$store.dispatch("fetchDevices", null);
-  }
-
   private created() {
-    this.fetchDevices();
-    this.fetchAvailableNetworks();
+    this.$store.dispatch("fetchDevices", null);
+    this.$store.dispatch("fetchAvailableNetworks");
     this.pollData();
   }
 
@@ -154,8 +147,8 @@ export default class Networks extends Vue {
 
   private pollData() {
     this.polling = setInterval(() => {
-      this.fetchDevices();
-      this.fetchAvailableNetworks();
+      this.$store.dispatch("fetchDevices", null);
+      this.$store.dispatch("fetchAvailableNetworks");
     }, 15 * 1000);
   }
 
