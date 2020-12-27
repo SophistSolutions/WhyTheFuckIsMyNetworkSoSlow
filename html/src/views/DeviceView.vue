@@ -39,7 +39,7 @@
         </template>
         <template v-slot:item.operatingSystem="{ headers, item }">
           <td>
-            <span v-for="t in computeOSIconURLList_(item.operatingSystem)" v-bind:key="t">
+            <span v-for="t in computeOSIconURLList_(item.operatingSystem)">
               <img v-if="t.url" :src="t.url" :title="t.label" height="24" width="24" />
               <span v-if="!t.url">
                 {{ t.label }}
