@@ -1,5 +1,14 @@
+IN DEVICE PANEL:
+	Add services tab
+	Under there open for presentation url. 
+	But also open ssh and rdp. List pretty known sevices with link buttons. 
+
+----
+
+And do details page for single device single network as complionent. 
 
 
+---
  make -j 10 
   for backend and html produces
   ke[3]: warning: jobserver unavailable: using -j1.  Add '+' to parent make rule.

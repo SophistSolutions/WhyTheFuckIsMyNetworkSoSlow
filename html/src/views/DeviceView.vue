@@ -49,62 +49,7 @@
         </template>
         <template v-slot:expanded-item="{ headers, item }">
           <td :colspan="headers.length">
-            <table v-bind:key="item.id">
-              <tr>
-                <td>Name</td>
-                <td>{{ item.name }}</td>
-              </tr>
-              <tr>
-                <td>ID</td>
-                <td>{{ item.id }}</td>
-              </tr>
-              <tr v-if="item.type">
-                <td>Types</td>
-                <td>{{ item.type.join(", ") }}</td>
-              </tr>
-              <tr v-if="item.icon">
-                <td>Icon</td>
-                <td>{{ item.icon }}</td>
-              </tr>
-              <tr v-if="item.openPorts">
-                <td>Open Ports</td>
-                <td>{{ item.openPorts.join(", ") }}</td>
-              </tr>
-              <tr v-if="item.presentationURL">
-                <td>Presentation</td>
-                <td>
-                  <a v-bind:href="item.presentationURL" target="_blank">{{
-                    item.presentationURL
-                  }}</a>
-                </td>
-              </tr>
-              <tr v-if="item.operatingSystem">
-                <td>OS</td>
-                <td>
-                  {{ item.operatingSystem.fullVersionedName }}
-                </td>
-              </tr>
-              <tr v-if="item.manufacturer">
-                <td>Manufacturers</td>
-                <td>
-                  {{ item.manufacturer.fullName || item.manufacturer.shortName }}
-                </td>
-              </tr>
-              <tr>
-                <td>Networks</td>
-                <td>
-                  {{ item.attachedNetworks }}
-                </td>
-              </tr>
-              <tr>
-                <td>Last Seen</td>
-                <td>{{ item.lastSeenAt | moment("from", "now") }}</td>
-              </tr>
-              <tr v-if="item.debugProps">
-                <td>DEBUG INFO</td>
-                <td>{{ item.debugProps }}</td>
-              </tr>
-            </table>
+            <DeviceDetails :device="item" :networks="networks"></DeviceDetails>
           </td>
         </template>
       </v-data-table>
@@ -124,7 +69,9 @@ import { fetchNetworks } from "@/proxy/API";
 
 @Component({
   name: "Devices",
-  components: {},
+  components: {
+    DeviceDetails: () => import("@/components/DeviceDetails.vue"),
+  },
 })
 export default class Devices extends Vue {
   private polling: undefined | number = undefined;
