@@ -1,11 +1,22 @@
-IN DEVICE PANEL:
-	Add services tab
-	Under there open for presentation url. 
-	But also open ssh and rdp. List pretty known sevices with link buttons. 
 
 ----
 
 And do details page for single device single network as complionent. 
+	DONE for DEvice page.
+
+		(no - first switch to name/value param style, like ?id=xxx instead of /xxx
+		and then add that same support to DEVICES page but with network=XXX)
+
+	NOW do for NETWORK-ID page.
+
+
+----
+
+
+IN DEVICE PANEL:
+	Add services tab
+	Under there open for presentation url. 
+	But also open ssh and rdp. List pretty known sevices with link buttons. 
 
 
 ---

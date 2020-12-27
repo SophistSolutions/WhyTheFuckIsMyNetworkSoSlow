@@ -57,20 +57,16 @@ export default class Device extends Vue {
   }
 
   private get device(): IDevice {
-    let a = this.devices;
-    console.log("a=", a);
-    let b = this.$route.params.id;
-    console.log("b=", b);
-    let d = this.devices[this.$route.params.id];
-    console.log("d=", d);
-
-    let r = {};
-    a.forEach((i) => {
-      console.log("i=", i);
-      if (i.id == b) {
+    let r = null;
+    this.devices.forEach((i) => {
+      // console.log("i=", i);
+      if (i.id === this.$route.params.id) {
         r = i;
       }
     });
+    if (r === null) {
+      r = { id: "INVALID", attachedNetworks: {}, name: "INVALID", type: "INVALID" as any };
+    }
     return r;
   }
 
