@@ -57,7 +57,7 @@ export default class Network extends Vue {
   }
 
   private get network(): INetwork {
-    let r = null;
+    let r: INetwork | null = null;
     this.networks.forEach((i) => {
       // console.log("i=", i);
       if (i.id === this.$route.params.id) {
@@ -65,7 +65,22 @@ export default class Network extends Vue {
       }
     });
     if (r === null) {
-      r = { id: "INVALID" };
+      r = {
+        id: "INVALID",
+        DNSServers: [],
+        attachedInterfaces: [],
+        externalAddresses: [],
+        gateways: [],
+        geographicLocation: {
+          city: "",
+          coordinates: {} as any,
+          countryCode: "",
+          postalCode: "",
+          regionCode: "",
+        },
+        internetServiceProvider: { name: "INVALID" },
+        networkAddresses: [],
+      };
     }
     return r;
   }
