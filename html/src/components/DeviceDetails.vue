@@ -17,7 +17,7 @@
       </tr>
       <tr v-if="device.icon">
         <td>Icon</td>
-        <td>{{ device.icon }}</td>
+        <td><img :src="device.icon" /></td>
       </tr>
       <tr v-if="device.openPorts">
         <td>Open Ports</td>
@@ -35,12 +35,6 @@
           {{ device.operatingSystem.fullVersionedName }}
         </td>
       </tr>
-      <tr v-if="device.manufacturer">
-        <td>Manufacturers</td>
-        <td>
-          {{ device.manufacturer.fullName || device.manufacturer.shortName }}
-        </td>
-      </tr>
       <tr>
         <td>Networks</td>
         <td>
@@ -56,7 +50,23 @@
         <td>Hardware Addresses</td>
         <td>{{ getDeviceHardwareAddresses_(device) }}</td>
       </tr>
-
+      <tr v-if="device.manufacturer">
+        <td>
+          Manufacturer
+        </td>
+        <td>
+          <span v-if="device.manufacturer.shortName || device.manufacturer.fullName">{{
+            device.manufacturer.shortName || device.manufacturer.fullName
+          }}</span>
+          <span v-if="device.manufacturer.webSiteURL">
+            <span v-if="device.manufacturer.shortName || device.manufacturer.fullName">; </span>
+            Link:
+            <a :href="device.manufacturer.webSiteURL" target="_blank">{{
+              device.manufacturer.webSiteURL
+            }}</a>
+          </span>
+        </td>
+      </tr>
       <tr>
         <td>Last Seen</td>
         <td>{{ device.lastSeenAt | moment("from", "now") }}</td>
@@ -66,28 +76,6 @@
         <td>{{ device.debugProps }}</td>
       </tr>
     </table>
-
-    <p v-if="device.type">Type: {{ device.type.join(", ") }}</p>
-    <p v-if="device.operatingSystem">OS: {{ device.operatingSystem.fullVersionedName }}</p>
-    <p v-if="device.presentationURL">
-      <a :href="device.presentationURL" target="_blank">Open Device</a>
-    </p>
-    <p v-if="device.icon">
-      <img :src="device.icon" />
-    </p>
-    <p v-if="device.manufacturer">
-      Manufacturer:
-      <span v-if="device.manufacturer.shortName || device.manufacturer.fullName">{{
-        device.manufacturer.shortName || device.manufacturer.fullName
-      }}</span>
-      <span v-if="device.manufacturer.webSiteURL">
-        <span v-if="device.manufacturer.shortName || device.manufacturer.fullName">; </span>
-        Link:
-        <a :href="device.manufacturer.webSiteURL" target="_blank">{{
-          device.manufacturer.webSiteURL
-        }}</a>
-      </span>
-    </p>
   </div>
 </template>
 

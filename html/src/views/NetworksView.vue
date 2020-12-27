@@ -45,36 +45,9 @@
         <v-spacer></v-spacer>
       </v-card-title>
       <template v-for="itemId in selectedRows">
-        <table v-bind:key="itemId" class="selectedDevicesSection">
-          <tr v-bind:key="itemId">
-            <td>Name</td>
-            <td>{{ networkFromID_(itemId).networkAddresses.join(", ") }}</td>
-          </tr>
-          <tr v-bind:key="itemId">
-            <td>ID</td>
-            <td>{{ itemId }}</td>
-          </tr>
-          <tr v-bind:key="itemId" v-if="networkFromID_(itemId).DNSServers">
-            <td>DNSServers</td>
-            <td>{{ networkFromID_(itemId).DNSServers.join(", ") }}</td>
-          </tr>
-          <tr v-bind:key="itemId" v-if="networkFromID_(itemId).gateways">
-            <td>gateways</td>
-            <td>{{ networkFromID_(itemId).gateways.join(", ") }}</td>
-          </tr>
-          <tr v-bind:key="itemId" v-if="networkFromID_(itemId).geographicLocation">
-            <td>geographicLocation</td>
-            <td>{{ networkFromID_(itemId).geographicLocation }}</td>
-          </tr>
-          <tr v-bind:key="itemId" v-if="networkFromID_(itemId).internetServiceProvider">
-            <td>internetServiceProvider</td>
-            <td>{{ networkFromID_(itemId).internetServiceProvider }}</td>
-          </tr>
-          <tr v-bind:key="itemId" v-if="networkFromID_(itemId).debugProps">
-            <td>DEBUG INFO</td>
-            <td>{{ networkFromID_(itemId).debugProps }}</td>
-          </tr>
-        </table>
+        <div class="selectedDevicesSection">
+          <NetworkDetails :network="networkFromID_(itemId)" :devices="devices"></NetworkDetails>
+        </div>
       </template>
     </v-card>
   </v-container>
@@ -90,7 +63,9 @@ import { fetchNetworks } from "@/proxy/API";
 
 @Component({
   name: "Networks",
-  components: {},
+  components: {
+    NetworkDetails: () => import("@/components/NetworkDetails.vue"),
+  },
 })
 export default class Networks extends Vue {
   private polling: undefined | number = undefined;
@@ -261,8 +236,7 @@ export default class Networks extends Vue {
   margin-top: 10px;
 }
 .selectedDevicesSection {
-  margin-top: 10px;
-  margin-left: 10px;
+  margin-left: 40px;
   margin-right: 10px;
   margin-bottom: 10px;
 }
