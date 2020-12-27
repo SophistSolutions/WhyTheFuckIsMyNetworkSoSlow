@@ -19,8 +19,23 @@ export default new Router({
       component: () => import(/* webpackChunkName: "About" */ "./views/About.vue"),
       meta: {
         breadcrumbs: [
-          { text: "Home", href: "/", disabled: false, exact: true },
+          { text: "Home", href: "/#/" },
           { text: "About", disabled: true },
+        ],
+      },
+    },
+    {
+      path: "/device/:id",
+      name: "Device",
+      // route level code-splitting
+      // this generates a separate chunk (about.[hash].js) for this route
+      // which is lazy-loaded when the route is visited.
+      component: () => import(/* webpackChunkName: "Device" */ "./views/Device.vue"),
+      meta: {
+        breadcrumbs: [
+          { text: "Home", href: "/#/" },
+          { text: "Devices", href: "/#/devices" },
+          { text: "Device", disabled: true },
         ],
       },
     },
@@ -33,7 +48,7 @@ export default new Router({
       component: () => import(/* webpackChunkName: "Devices" */ "./views/Devices.vue"),
       meta: {
         breadcrumbs: [
-          { text: "Home", href: "/" },
+          { text: "Home", href: "/#/" },
           { text: "Devices", disabled: true },
         ],
       },
@@ -47,7 +62,7 @@ export default new Router({
       component: () => import(/* webpackChunkName: "NetworkView" */ "./views/NetworksView.vue"),
       meta: {
         breadcrumbs: [
-          { text: "Home", href: "/", exact: true },
+          { text: "Home", href: "/#/" },
           { text: "Networks", disabled: true },
         ],
       },
@@ -64,7 +79,7 @@ export default new Router({
         ),
       meta: {
         breadcrumbs: [
-          { text: "Home", href: "/", exact: true },
+          { text: "Home", href: "/#/" },
           { text: "Networks {deprecated}", disabled: true },
         ],
       },
@@ -79,7 +94,7 @@ export default new Router({
         import(/* webpackChunkName: "DeviceView-DEPRECATED" */ "./views/DeviceView-DEPRECATED.vue"),
       meta: {
         breadcrumbs: [
-          { text: "Home", href: "/", exact: true },
+          { text: "Home", href: "/#/" },
           { text: "Devices{deprecated}", disabled: true },
         ],
       },

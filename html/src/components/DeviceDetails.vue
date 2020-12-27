@@ -7,7 +7,9 @@
       </tr>
       <tr>
         <td>ID</td>
-        <td>{{ device.id }}</td>
+        <td>
+          <router-link v-bind:to="'/device/' + device.id">{{ device.id }}</router-link>
+        </td>
       </tr>
       <tr v-if="device.type">
         <td>Types</td>
