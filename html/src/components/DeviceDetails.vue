@@ -90,24 +90,26 @@
 </template>
 
 <script lang="ts">
-import { IDevice, INetworkAttachmentInfo } from "../models/device/IDevice";
+import { IDevice, INetworkAttachmentInfo } from "@/models/device/IDevice";
 import { INetwork } from "@/models/network/INetwork";
 import { OperatingSystem } from "@/models/OperatingSystem";
-import { Component, Vue, Watch, Prop } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 
 @Component({
   name: "DeviceDetails",
 })
 export default class DeviceDetails2 extends Vue {
   @Prop({
-    default: "Couldn't connect to the server",
+    required: true,
+    default: null,
   })
-  device: IDevice;
+  public device!: IDevice;
 
   @Prop({
-    default: "Couldn't connect to the server",
+    required: true,
+    default: null,
   })
-  networks: INetwork[];
+  public networks!: INetwork[];
 
   private getDeviceHardwareAddresses_(d: IDevice) {
     let result = "";
