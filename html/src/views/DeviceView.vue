@@ -25,7 +25,9 @@
         @click:row="rowClicked"
       >
         <template v-slot:item.lastSeenAt="{ headers, item }">
-          <td>{{ item.lastSeenAt | moment("from", "now") }}</td>
+          <td>
+            <span v-if="item.lastSeenAt">{{ item.lastSeenAt | moment("from", "now") }}</span>
+          </td>
         </template>
         <template v-slot:item.type="{ headers, item }">
           <td>
