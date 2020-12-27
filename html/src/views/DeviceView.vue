@@ -274,7 +274,6 @@ export default class Devices extends Vue {
     return this.$store.getters.getDevices;
   }
 
-  @Watch("devices()")
   private get deviceRows(): object[] {
     const result: object[] = [];
     this.devices.forEach((i) => {
