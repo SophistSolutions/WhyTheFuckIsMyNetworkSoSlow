@@ -1,23 +1,16 @@
 
 ----
 
-And do details page for single device single network as complionent. 
-	DONE for DEvice page.
+DEVICES page but with network=XXX
 
-		(no - first switch to name/value param style, like ?id=xxx instead of /xxx
-		and then add that same support to DEVICES page but with network=XXX)
-
-	NOW do for NETWORK-ID page.
-
+and then on networkdetails page, include link to above
 
 ----
-
 
 IN DEVICE PANEL:
 	Add services tab
 	Under there open for presentation url. 
 	But also open ssh and rdp. List pretty known sevices with link buttons. 
-
 
 ---
  make -j 10 
@@ -25,7 +18,6 @@ IN DEVICE PANEL:
   ke[3]: warning: jobserver unavailable: using -j1.  Add '+' to parent make rule.
 make[3]: warning: jobserver unavailable: using -j1.  Add '+' to parent make rule.
 make[3]: warning: jobserver unavailable: using -j1.  Add '+' to parent make rule.
-
 
 ----
 

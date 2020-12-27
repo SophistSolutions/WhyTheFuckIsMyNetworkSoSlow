@@ -184,7 +184,6 @@ export default class Networks extends Vue {
     return ids;
   }
 
-  @Watch("networks()")
   private get networksAsDisplayed(): object[] {
     const result: object[] = [];
     this.networks.forEach((i) => {

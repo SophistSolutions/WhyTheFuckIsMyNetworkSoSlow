@@ -65,7 +65,6 @@ export default class Home extends Vue {
     return result;
   }
 
-  @Watch("networks()")
   private get networksAsDisplayed(): object[] {
     const result: object[] = [];
     this.networks.forEach((i) => {
