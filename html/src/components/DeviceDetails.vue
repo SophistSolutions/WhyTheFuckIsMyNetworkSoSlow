@@ -73,7 +73,15 @@
       </tr>
       <tr v-if="device.debugProps">
         <td>DEBUG INFO</td>
-        <td>{{ device.debugProps }}</td>
+        <td>
+          <json-viewer
+            :value="device.debugProps"
+            :expand-depth="1"
+            copyable
+            boxed
+            sort
+          ></json-viewer>
+        </td>
       </tr>
     </table>
   </div>

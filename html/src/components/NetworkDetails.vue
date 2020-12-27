@@ -31,7 +31,15 @@
       </tr>
       <tr v-if="network.debugProps">
         <td>DEBUG INFO</td>
-        <td>{{ network.debugProps }}</td>
+        <td>
+          <json-viewer
+            :value="network.debugProps"
+            :expand-depth="1"
+            copyable
+            boxed
+            sort
+          ></json-viewer>
+        </td>
       </tr>
     </table>
   </div>
@@ -39,9 +47,9 @@
 
 <script lang="ts">
 import { IDevice, INetworkAttachmentInfo } from "@/models/device/IDevice";
+import { IGeographicLocation } from "@/models/network/IGeographicLocation";
 import { INetwork } from "@/models/network/INetwork";
 import { OperatingSystem } from "@/models/OperatingSystem";
-import { IGeographicLocation } from "@/models/IGeographicLocation";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 
 @Component({
@@ -61,24 +69,24 @@ export default class NetworkDetails extends Vue {
   public devices!: IDevice[];
 
   private formatLocation_(l: IGeographicLocation): string {
-    var result: string = "";
+    let result: string = "";
     if (l.city != null) {
       result += l.city;
     }
     if (l.regionCode != null) {
-      if (result != "") {
+      if (result !== "") {
         result += " ";
       }
       result += l.regionCode;
     }
     if (l.countryCode != null) {
-      if (result != "") {
+      if (result !== "") {
         result += ", ";
       }
       result += l.countryCode;
     }
     if (l.postalCode != null) {
-      if (result != "") {
+      if (result !== "") {
         result += " ";
       }
       result += l.postalCode;

@@ -12,6 +12,7 @@
     "core-js": "^3.8.1",
     "vue": "^2.6.12",
     "vue-class-component": "^6.0.0",
+    "vue-json-viewer": "^2.2.16",
     "vue-moment": "^4.1.0",
     "vue-property-decorator": "^7.0.0",
     "vue-router": "^3.4.9",
