@@ -25,6 +25,20 @@ export default new Router({
       },
     },
     {
+      path: "/devices",
+      name: "Devices",
+      // route level code-splitting
+      // this generates a separate chunk (about.[hash].js) for this route
+      // which is lazy-loaded when the route is visited.
+      component: () => import(/* webpackChunkName: "Devices" */ "./views/Devices.vue"),
+      meta: {
+        breadcrumbs: [
+          { text: "Home", href: "/" },
+          { text: "Devices", disabled: true },
+        ],
+      },
+    },
+    {
       path: "/networks",
       name: "Networks",
       // route level code-splitting
@@ -67,20 +81,6 @@ export default new Router({
         breadcrumbs: [
           { text: "Home", href: "/", exact: true },
           { text: "Devices{deprecated}", disabled: true },
-        ],
-      },
-    },
-    {
-      path: "/devices",
-      name: "Devices",
-      // route level code-splitting
-      // this generates a separate chunk (about.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import(/* webpackChunkName: "Devices" */ "./views/Devices.vue"),
-      meta: {
-        breadcrumbs: [
-          { text: "Home", href: "/" },
-          { text: "Devices", disabled: true },
         ],
       },
     },
