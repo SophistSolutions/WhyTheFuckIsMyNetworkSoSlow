@@ -2,7 +2,7 @@
   <v-container>
     <v-card class="deviceListCard">
       <v-card-title>
-        Device {{ device.name }} ({{ $route.params.id }})
+        Device "{{ device.name }}" ({{ $route.params.id }})
         <v-spacer></v-spacer>
       </v-card-title>
       <div class="devicesDetailsSection">
