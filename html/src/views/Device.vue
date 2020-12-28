@@ -1,11 +1,13 @@
 <template>
-  <v-container class="devicesPage">
+  <v-container>
     <v-card class="deviceListCard">
       <v-card-title>
-        Devices {{ $route.params.id }}
+        Device {{ device.name }} ({{ $route.params.id }})
         <v-spacer></v-spacer>
       </v-card-title>
-      <DeviceDetails :device="device" :networks="networks"></DeviceDetails>
+      <div class="devicesDetailsSection">
+        <DeviceDetails :device="device" :networks="networks"></DeviceDetails>
+      </div>
     </v-card>
   </v-container>
 </template>
@@ -76,4 +78,8 @@ export default class Device extends Vue {
 }
 </script>
 
-<style lang="scss"></style>
+<style lang="scss">
+.devicesDetailsSection {
+  margin-left: 2em;
+}
+</style>

@@ -61,6 +61,7 @@
 
 <script lang="ts">
 import { IDevice, INetworkAttachmentInfo } from "@/models/device/IDevice";
+import { ComputeDeviceTypeIconURLs, ComputeOSIconURLList } from "@/models/device/Utils";
 import { INetwork } from "@/models/network/INetwork";
 import { OperatingSystem } from "@/models/OperatingSystem";
 
@@ -94,80 +95,12 @@ export default class Devices extends Vue {
     }
   }
 
-  private computeOSIconURLList_(t: OperatingSystem) {
-    const result: object[] = [];
-    if (t) {
-      if (t.fullVersionedName.startsWith("Windows")) {
-        result.push({
-          url: "images/WindowsOS.ico",
-          label: t.fullVersionedName,
-        });
-      } else if (t.fullVersionedName.startsWith("Linux")) {
-        result.push({
-          url: "images/Linux.png",
-          label: t.fullVersionedName,
-        });
-      } else if (t.fullVersionedName.startsWith("POSIX")) {
-        result.push({
-          url: "images/UnixOSIcon.png",
-          label: t.fullVersionedName,
-        });
-      } else {
-        result.push({
-          label: t.fullVersionedName,
-        });
-      }
-    }
-    return result;
+  // for now use private method since cannot access global functions from template??? Ask John?
+  private computeDeviceTypeIconURLs_(t: string[] | null) {
+    return ComputeDeviceTypeIconURLs(t);
   }
-
-  private computeDeviceTypeIconURLs_(t: any) {
-    const result: object[] = [];
-    if (t) {
-      t.forEach((ti: string) => {
-        if (ti === "Router") {
-          result.push({
-            url: "images/RouterDevice.ico",
-            label: ti,
-          });
-        } else if (ti === "Network-Infrastructure") {
-          result.push({
-            url: "images/network-infrastructure.ico",
-            label: ti,
-          });
-        } else if (ti === "Personal-Computer") {
-          result.push({
-            url: "images/PC-Device.png",
-            label: ti,
-          });
-        } else if (ti === "Speaker") {
-          result.push({
-            url: "images/SpeakerDeviceIcon.png",
-            label: ti,
-          });
-        } else if (ti === "Printer") {
-          result.push({
-            url: "images/Printer.ico",
-            label: ti,
-          });
-        } else if (ti === "TV") {
-          result.push({
-            url: "images/TV-Icon.png",
-            label: ti,
-          });
-        } else if (ti === "Media-Player") {
-          result.push({
-            url: "images/Media-Player-Icon.png",
-            label: ti,
-          });
-        } else {
-          result.push({
-            label: ti,
-          });
-        }
-      });
-    }
-    return result;
+  private computeOSIconURLList_(t: OperatingSystem | null) {
+    return ComputeOSIconURLList(t);
   }
 
   private fetchAvailableNetworks() {
