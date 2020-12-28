@@ -238,8 +238,4 @@ export default class Networks extends Vue {
   margin-right: 10px;
   margin-bottom: 10px;
 }
-
-.flip-list-move {
-  transition: transform 500ms;
-}
 </style>
