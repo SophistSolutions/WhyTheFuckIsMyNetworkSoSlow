@@ -58,7 +58,6 @@ import { IDevice, INetworkAttachmentInfo } from "@/models/device/IDevice";
 import { INetwork } from "@/models/network/INetwork";
 import { Component, Vue, Watch } from "vue-property-decorator";
 
-import { compareValues } from "@/CustomSort";
 import { fetchNetworks } from "@/proxy/API";
 
 @Component({

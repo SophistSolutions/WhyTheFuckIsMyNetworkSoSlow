@@ -67,7 +67,6 @@ import { OperatingSystem } from "@/models/OperatingSystem";
 
 import { Component, Vue, Watch } from "vue-property-decorator";
 
-import { compareValues } from "@/CustomSort";
 import { fetchNetworks } from "@/proxy/API";
 
 @Component({
