@@ -1,7 +1,7 @@
-Switch Networks page to use DEVICES like page Control listbox
-	fixup NETWORKS page, to use same expando crap from devices page
-Same cleanup to NETWORKS page Ive alreayd done to DEVICES page
 
+---
+confusing thing in Networks and Devices views:
+	  click in opened selected box NOT treated as unclick close box - maybe have (x) box to close/collapse?
 -----
 
 	devices, debugInfo, lastAdvertisement value is a STRING, but should be an OBJECT, so that 

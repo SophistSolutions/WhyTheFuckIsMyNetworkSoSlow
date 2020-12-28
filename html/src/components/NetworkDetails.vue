@@ -32,13 +32,7 @@
       <tr v-if="network.debugProps">
         <td>DEBUG INFO</td>
         <td>
-          <json-viewer
-            :value="network.debugProps"
-            :expand-depth="1"
-            copyable
-            boxed
-            sort
-          ></json-viewer>
+          <json-viewer :value="network.debugProps" :expand-depth="1" copyable sort></json-viewer>
         </td>
       </tr>
     </table>
