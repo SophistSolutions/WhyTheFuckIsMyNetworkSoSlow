@@ -7,7 +7,7 @@
           <router-link v-bind:to="'/network/' + network.id">{{ network.id }}</router-link>
         </td>
       </tr>
-      <tr>
+      <tr v-if="network.networkAddresses && network.networkAddresses.length">
         <td>Name</td>
         <td>{{ network.networkAddresses.join(", ") }}</td>
       </tr>
@@ -91,14 +91,6 @@ export default class NetworkDetails extends Vue {
       }
       result += l.postalCode;
     }
-
-    //   export interface IGeographicLocation {
-    //     city: string;
-    //     coordinates: ICoordinates;
-    //     countryCode: string;
-    //     postalCode: string;
-    //     regionCode: string;
-    // }
     return result;
   }
 }

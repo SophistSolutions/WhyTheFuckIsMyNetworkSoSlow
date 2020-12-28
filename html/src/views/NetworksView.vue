@@ -1,15 +1,16 @@
 <template>
-  <v-container class="devices" v-click-outside="clearSelectionIfOutsideDevicesContainer">
+  <v-container class="devices">
     <v-card>
       <v-card-title>
         Networks
         <v-spacer></v-spacer>
       </v-card-title>
       <v-data-table
-        height="2in"
         class="networkList"
         dense
-        v-model="selectedRows"
+        show-expand
+        :expanded.sync="expanded"
+        :single-expand="true"
         :headers="headers"
         :items="networksAsDisplayed"
         :single-select="true"
@@ -20,35 +21,19 @@
         disable-pagination
         :hide-default-footer="true"
         item-key="id"
-        xclass="elevation-1"
+        @click:row="rowClicked"
       >
-        <template v-slot:item="{ item }">
-          <tr
-            :class="selectedRows.indexOf(item.id) > -1 ? 'yellow' : ''"
-            @click="rowClicked($event, item)"
-          >
-            <td>{{ item.name }}</td>
-            <td>{{ item.active }}</td>
-            <td>{{ item.status }}</td>
-            <td>{{ item.location }}</td>
-            <td>{{ item.internetInfo }}</td>
-            <td>
-              <router-link to="/devices">{{ item.devices }}</router-link>
-            </td>
-          </tr>
+        <template v-slot:item.devices="{ headers, item }">
+          <td>
+            <router-link to="/devices">{{ item.devices }}</router-link>
+          </td>
+        </template>
+        <template v-slot:expanded-item="{ headers, item }">
+          <td :colspan="headers.length">
+            <NetworkDetails :network="networkFromID_(item.id)" :devices="devices"></NetworkDetails>
+          </td>
         </template>
       </v-data-table>
-    </v-card>
-    <v-card v-if="selectedRows.length">
-      <v-card-title>
-        Details
-        <v-spacer></v-spacer>
-      </v-card-title>
-      <template v-for="itemId in selectedRows">
-        <div class="selectedDevicesSection">
-          <NetworkDetails :network="networkFromID_(itemId)" :devices="devices"></NetworkDetails>
-        </div>
-      </template>
     </v-card>
   </v-container>
 </template>
@@ -69,9 +54,9 @@ import { fetchNetworks } from "@/proxy/API";
 export default class Networks extends Vue {
   private polling: undefined | number = undefined;
 
-  private selectedRows: string[] = [];
   private sortBy: any = [];
   private sortDesc: any = [];
+  private expanded: any[] = [];
 
   // terrible inefficient approach - maybe create map object dervied from devices array
   private networkFromID_(id: string): INetwork | null {
@@ -86,27 +71,15 @@ export default class Networks extends Vue {
     return result;
   }
 
-  private clearSelection() {
-    this.selectedRows = [];
-  }
-
-  private clearSelectionIfOutsideDevicesContainer() {
-    this.clearSelection();
-  }
-  private rowClicked(e: any, row: INetwork) {
-    this.toggleSelection(row.id);
-    // @todo fix proper handling of shift key !e.shiftKey && !
-    if (!e.ctrlKey) {
-      // single select unless shift key
-      this.selectedRows = this.selectedRows.filter((selectedKeyID) => selectedKeyID === row.id);
-    }
-    // console.log(row);
-  }
-  private toggleSelection(keyID: string) {
-    if (this.selectedRows.includes(keyID)) {
-      this.selectedRows = this.selectedRows.filter((selectedKeyID) => selectedKeyID !== keyID);
-    } else {
-      this.selectedRows.push(keyID);
+  private rowClicked(row: any) {
+    // @todo Try this again with vue3 - https://github.com/vuetifyjs/vuetify/issues/9720
+    // if (!e.ctrlKey) {
+    //   // single select unless shift key
+    //
+    const index = this.expanded.indexOf(row);
+    this.expanded = [];
+    if (index === -1) {
+      this.expanded.push(row);
     }
   }
   private created() {
@@ -159,6 +132,10 @@ export default class Networks extends Vue {
       {
         text: "devices",
         value: "devices",
+      },
+      {
+        text: "Details",
+        value: "data-table-expand",
       },
     ];
   }
