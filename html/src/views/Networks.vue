@@ -2,17 +2,7 @@
   <v-container class="devices">
     <app-bar>
       <template v-slot:extrastuff>
-        <v-btn icon>
-          <!-- @todo add search function -->
-          <v-icon>mdi-magnify</v-icon>
-          <v-text-field
-            v-model="search"
-            append-icon="mdi-magnify"
-            label="Search"
-            single-line
-            hide-details
-          ></v-text-field>
-        </v-btn>
+        <search :searchFor.sync="search" />
       </template>
     </app-bar>
     <v-card>
@@ -65,6 +55,7 @@ import { fetchNetworks } from "@/proxy/API";
   components: {
     AppBar: () => import("@/components/AppBar.vue"),
     NetworkDetails: () => import("@/components/NetworkDetails.vue"),
+    Search: () => import("@/components/Search.vue"),
   },
 })
 export default class Networks extends Vue {

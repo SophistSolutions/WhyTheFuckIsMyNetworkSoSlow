@@ -1,6 +1,4 @@
-Get rid of SEARCH from VUEEX - not needed.
-Instead do the way i have it now in devices and networks pages.
-and create COMPONENT for SEARCH section, so shorter/simpler to declare
+create COMPONENT for SEARCH section, so shorter/simpler to declare
 in the extenions.
 
 FIX the extneion for app-toolbar to only grow vertically when I have the slot.

@@ -7,20 +7,9 @@
           v-model="selectedNetwork"
           label="On networks"
           outlined
-        ></v-select>
-
+        />
         <v-spacer />
-        <v-btn icon>
-          <!-- @todo add search function -->
-          <v-icon>mdi-magnify</v-icon>
-          <v-text-field
-            v-model="search"
-            append-icon="mdi-magnify"
-            label="Search"
-            single-line
-            hide-details
-          ></v-text-field>
-        </v-btn>
+        <search :searchFor.sync="search" />
       </template>
     </app-bar>
 
@@ -99,11 +88,17 @@ import { fetchNetworks } from "@/proxy/API";
   components: {
     AppBar: () => import("@/components/AppBar.vue"),
     DeviceDetails: () => import("@/components/DeviceDetails.vue"),
+    Search: () => import("@/components/Search.vue"),
   },
 })
 export default class Devices extends Vue {
   private polling: undefined | number = undefined;
 
+  // private get search(): string {
+  //   console.log("refs=" + Object.keys(this.$refs));
+  //   console.log(this.$refs.appbar);
+  //   return this.$refs.search.searchFor;
+  // }
   private search: string = "";
   private sortBy: any = [];
   private sortDesc: any = [];
