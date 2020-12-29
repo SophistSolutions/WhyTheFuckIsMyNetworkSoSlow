@@ -1,20 +1,15 @@
 <template>
   <v-container class="devicesPage">
-    <app-bar />
-    <v-toolbar extended color="primary" dark extension-height="12">
-      <table>
-        <tr>
-          <td>
-            <v-select
-              :items="selectableNetworks"
-              v-model="selectedNetwork"
-              label="On networks"
-              outlined
-            ></v-select>
-          </td>
-        </tr>
-      </table>
-    </v-toolbar>
+    <app-bar>
+      <template v-slot:extrastuff>
+        <v-select
+          :items="selectableNetworks"
+          v-model="selectedNetwork"
+          label="On networks"
+          outlined
+        ></v-select>
+      </template>
+    </app-bar>
 
     <v-card class="deviceListCard">
       <v-card-title>

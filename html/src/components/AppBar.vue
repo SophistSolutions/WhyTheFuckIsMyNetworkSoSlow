@@ -76,6 +76,10 @@
         <v-spacer></v-spacer>
       </v-list>
     </v-menu>
+
+    <extrastuff>
+      <slot name="extrastuff"></slot>
+    </extrastuff>
   </v-app-bar>
 </template>
 
