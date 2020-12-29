@@ -11,26 +11,6 @@ import Vue from "vue";
 
 export default Vue.extend({
   name: "App",
-
-  data: () => ({
-    breadcrumbs: [
-      {
-        text: "Home",
-        disabled: true,
-        to: "home",
-      },
-    ],
-    search: "",
-  }),
-
-  watch: {
-    $route() {
-      this.breadcrumbs = this.$route.meta.breadcrumbs;
-    },
-    search() {
-      this.$store.commit("setSearchString", this.search);
-    },
-  },
 });
 
 Vue.directive("click-outside", {
@@ -53,6 +33,9 @@ Vue.directive("click-outside", {
 </script>
 
 <style lang="scss">
+// figure out why I cannot migrate this worarkound to the app-bar component?
+// also, find a better way than using !important
+// --LGP 2020-12-29
 a.v-breadcrumbs__item {
   color: white !important;
   text-decoration: underline !important;

@@ -1,6 +1,3 @@
-create COMPONENT for SEARCH section, so shorter/simpler to declare
-in the extenions.
-
 FIX the extneion for app-toolbar to only grow vertically when I have the slot.
 
 
