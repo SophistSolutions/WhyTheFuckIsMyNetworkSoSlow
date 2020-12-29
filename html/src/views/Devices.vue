@@ -108,9 +108,9 @@ export default class Devices extends Vue {
   private sortBy: any = [];
   private sortDesc: any = [];
   private expanded: any[] = [];
-  private selectedNetwork: string = null;
+  private selectedNetwork: string | null = null;
   private get selectableNetworks(): object[] {
-    let r = [{ text: "All", value: null }];
+    const r: object[] = [{ text: "All", value: null }];
     this.networks.forEach((n) => {
       r.push({ text: GetNetworkName(n), value: n.id });
     });

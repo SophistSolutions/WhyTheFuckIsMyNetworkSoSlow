@@ -4,6 +4,6 @@ import { OperatingSystem } from "@/models/OperatingSystem";
 
 /*
  */
-export function GetNetworkName(n: INetwork): String {
+export function GetNetworkName(n: INetwork): string {
   return n.networkAddresses.join(", ");
 }
