@@ -1,5 +1,20 @@
 <template>
   <v-container class="devicesPage">
+    <v-toolbar extended color="primary" dark extension-height="12">
+      <table>
+        <tr>
+          <td>
+            <v-select
+              :items="selectableNetworks"
+              v-model="selectedNetwork"
+              label="On networks"
+              outlined
+            ></v-select>
+          </td>
+        </tr>
+      </table>
+    </v-toolbar>
+
     <v-card class="deviceListCard">
       <v-card-title>
         Devices
@@ -62,6 +77,7 @@
 <script lang="ts">
 import { IDevice, INetworkAttachmentInfo } from "@/models/device/IDevice";
 import { ComputeDeviceTypeIconURLs, ComputeOSIconURLList } from "@/models/device/Utils";
+import { GetNetworkName } from "@/models/network/Utils";
 import { INetwork } from "@/models/network/INetwork";
 import { OperatingSystem } from "@/models/OperatingSystem";
 
@@ -81,6 +97,14 @@ export default class Devices extends Vue {
   private sortBy: any = [];
   private sortDesc: any = [];
   private expanded: any[] = [];
+  private selectedNetwork: string = null;
+  private get selectableNetworks(): object[] {
+    let r = [{ text: "All", value: null }];
+    this.networks.forEach((n) => {
+      r.push({ text: GetNetworkName(n), value: n.id });
+    });
+    return r;
+  }
 
   private rowClicked(row: any) {
     // @todo Try this again with vue3 - https://github.com/vuetifyjs/vuetify/issues/9720
@@ -211,15 +235,17 @@ export default class Devices extends Vue {
   private get deviceRows(): object[] {
     const result: object[] = [];
     this.devices.forEach((i) => {
-      result.push({
-        ...i,
-        ...{
-          networksSummary: this.formatNetworks_(i.attachedNetworks),
-          localAddresses: this.formatNetworkAddresses_(i.attachedNetworks),
-          manufacturerSummary:
-            i.manufacturer == null ? "" : i.manufacturer.fullName || i.manufacturer.shortName,
-        },
-      });
+      if (this.selectedNetwork == null || i.attachedNetworks.hasOwnProperty(this.selectedNetwork)) {
+        result.push({
+          ...i,
+          ...{
+            networksSummary: this.formatNetworks_(i.attachedNetworks),
+            localAddresses: this.formatNetworkAddresses_(i.attachedNetworks),
+            manufacturerSummary:
+              i.manufacturer == null ? "" : i.manufacturer.fullName || i.manufacturer.shortName,
+          },
+        });
+      }
     });
     result.sort((a: any, b: any) => {
       if (a.id < b.id) {

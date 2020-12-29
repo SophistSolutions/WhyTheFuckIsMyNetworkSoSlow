@@ -1,20 +1,33 @@
 
 ---
-confusing thing in Networks and Devices views:
-	  click in opened selected box NOT treated as unclick close box - maybe have (x) box to close/collapse?
+
+	POPUP menu in toolbar near serach (only shown on DEVICES page) - says FILTER BY NETWORK, can be
+	ALL, or any one selected network.
+
+	EVENTUALLY migrate this to a UI somewhere bweteen the healthfrmae filters UI and the 
+	new filters UI in amazon EC2 web pages.
+
 -----
 
-	devices, debugInfo, lastAdvertisement value is a STRING, but should be an OBJECT, so that 
-	its better expandable in the GUI.
-	
-----
+	In DEVICES page - in column for 'networks' - add link to network names in that networks column
+	to the standalone network page for that network; and same with in DeviceDetails page (easier there
+	and probably more important)
 
+----
 DEVICES page but with network=XXX (need some control)
 	(next to search, have element wtih ICON which is popup containing 
 	networks, ALL, or a list of specific choosable networks)
 
 and then on networkdetails page, include link to above
 
+---
+confusing thing in Networks and Devices views:
+	  click in opened selected box NOT treated as unclick close box - maybe have (x) box to close/collapse?
+
+----
+	devices, debugInfo, lastAdvertisement value is a STRING, but should be an OBJECT, so that 
+	its better expandable in the GUI.
+	
 ----
 
 IN DEVICE PANEL:
