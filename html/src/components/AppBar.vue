@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar app color="primary" dark>
+  <v-app-bar app color="primary" dark :extension-height="this.$slots.extrastuff ? 40 : 0">
     <v-app-bar-nav-icon />
     <div class="d-flex align-center">
       <div>WhyTheFuckIsMyNetworkSoSlow</div>
@@ -76,14 +76,7 @@ import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 @Component({
   name: "AppBar",
 })
-export default class AppBar extends Vue {
-  private get search() {
-    return this.$store.getters.getSearchString;
-  }
-  private set search(value) {
-    this.$store.commit("setSearchString", value);
-  }
-}
+export default class AppBar extends Vue {}
 </script>
 
 <style scoped lang="scss"></style>
