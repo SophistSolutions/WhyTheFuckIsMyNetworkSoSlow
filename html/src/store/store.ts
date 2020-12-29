@@ -21,7 +21,6 @@ export default new Vuex.Store({
     availableNetworks: [] as INetwork[],
     selectedNetworkId: {} as string,
     devices: [] as IDevice[],
-    searchString: "" as string,
   },
   mutations: {
     setAvailableNetworks(state, networks: INetwork[]) {
@@ -33,9 +32,6 @@ export default new Vuex.Store({
     },
     setSelectedNetwork(state, networkId: string) {
       Vue.set(state, mutations.ROOT_SET_SELECTED_NETWORK_ID, networkId);
-    },
-    setSearchString(state, searchString: string) {
-      Vue.set(state, mutations.ROOT_SET_SEARCH_STRING_ID, searchString);
     },
     setAboutInfo(state, aboutInfo: IAbout) {
       Vue.set(state, mutations.ROOT_SET_ABOUT_INFO, aboutInfo);
@@ -54,9 +50,6 @@ export default new Vuex.Store({
     setSelectedNetwork({ commit }, networkId: string) {
       commit("setSelectedNetwork", networkId);
     },
-    setSearchString({ commit }, searchString: string) {
-      commit("searchString", searchString);
-    },
   },
   getters: {
     getAvailableNetworks: (state) => {
@@ -67,9 +60,6 @@ export default new Vuex.Store({
     },
     getSelectedNetworkId: (state) => {
       return state.selectedNetworkId;
-    },
-    getSearchString: (state) => {
-      return state.searchString;
     },
     getAboutInfo: (state) => {
       return state.about;

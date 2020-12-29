@@ -86,8 +86,8 @@
 <script lang="ts">
 import { IDevice, INetworkAttachmentInfo } from "@/models/device/IDevice";
 import { ComputeDeviceTypeIconURLs, ComputeOSIconURLList } from "@/models/device/Utils";
-import { GetNetworkName } from "@/models/network/Utils";
 import { INetwork } from "@/models/network/INetwork";
+import { GetNetworkName } from "@/models/network/Utils";
 import { OperatingSystem } from "@/models/OperatingSystem";
 
 import { Component, Vue, Watch } from "vue-property-decorator";
