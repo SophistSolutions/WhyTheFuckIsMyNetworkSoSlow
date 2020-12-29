@@ -2,14 +2,26 @@
   <v-container class="devicesPage">
     <app-bar>
       <template v-slot:extrastuff>
-        <v-select
-          :items="selectableNetworks"
-          v-model="selectedNetwork"
-          label="On networks"
-          outlined
-        />
-        <v-spacer />
-        <search :searchFor.sync="search" />
+        <v-container>
+          <v-row>
+            <v-col>
+              <v-select
+                :items="selectableNetworks"
+                v-model="selectedNetwork"
+                label="On networks"
+                outlined
+              />
+            </v-col>
+            <v-col><Search :searchFor.sync="search" /> </v-col>
+            <v-col>
+              <FilterSummaryMessage
+                :nItemsSelected="deviceRows.length"
+                :nTotalItems="devices.length"
+                itemsName="devices"
+              />
+            </v-col>
+          </v-row>
+        </v-container>
       </template>
     </app-bar>
 
@@ -88,6 +100,7 @@ import { fetchNetworks } from "@/proxy/API";
   components: {
     AppBar: () => import("@/components/AppBar.vue"),
     DeviceDetails: () => import("@/components/DeviceDetails.vue"),
+    FilterSummaryMessage: () => import("@/components/FilterSummaryMessage.vue"),
     Search: () => import("@/components/Search.vue"),
   },
 })

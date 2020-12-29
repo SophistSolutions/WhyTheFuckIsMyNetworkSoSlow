@@ -2,7 +2,20 @@
   <v-container class="devices">
     <app-bar>
       <template v-slot:extrastuff>
-        <search :searchFor.sync="search" />
+        <v-container>
+          <v-row>
+            <v-col>
+              <Search :searchFor.sync="search" />
+            </v-col>
+            <v-col>
+              <FilterSummaryMessage
+                :nItemsSelected="networksAsDisplayed.length"
+                :nTotalItems="networks.length"
+                itemsName="networks"
+              />
+            </v-col>
+          </v-row>
+        </v-container>
       </template>
     </app-bar>
     <v-card>
@@ -54,6 +67,7 @@ import { fetchNetworks } from "@/proxy/API";
   name: "Networks",
   components: {
     AppBar: () => import("@/components/AppBar.vue"),
+    FilterSummaryMessage: () => import("@/components/FilterSummaryMessage.vue"),
     NetworkDetails: () => import("@/components/NetworkDetails.vue"),
     Search: () => import("@/components/Search.vue"),
   },

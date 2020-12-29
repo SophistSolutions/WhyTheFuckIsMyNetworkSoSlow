@@ -65,7 +65,7 @@
       </v-list>
     </v-menu>
     <template v-slot:extension>
-      <slot name="extrastuff"></slot>
+      <slot name="extrastuff" />
     </template>
   </v-app-bar>
 </template>

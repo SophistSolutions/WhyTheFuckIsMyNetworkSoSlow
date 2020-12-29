@@ -1,15 +1,24 @@
 FIX the extneion for app-toolbar to only grow vertically when I have the slot.
 
-
-
------------
-Consider swtich to
-	https://vuematerial.io/components/list
-
-	vutify
-
 ---
+about page - text should be more shifted to the right.
 ---
+	fix display of networks/devices page so I do filter myself
+	so I can get count of items
+---
+	In listbox for devices (and networks) pages, show only one line!
+-
+
+imporve layout / display of filter area
+
+==
+	take argument in devices page filter by network, and then add
+	and when called, set property and then remove from url, and then
+	use with links in the networks page to get all devices on that network.
+
+===
+	devices page - add thing to filter showing only recent devices.
+===
 
 	POPUP menu in toolbar near serach (only shown on DEVICES page) - says FILTER BY NETWORK, can be
 	ALL, or any one selected network.

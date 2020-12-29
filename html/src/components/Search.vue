@@ -1,15 +1,14 @@
 <template>
-  <v-btn icon>
-    <v-icon>mdi-magnify</v-icon>
+  <v-container>
     <v-text-field
-      v-model="searchFor_bwa"
+      v-model="searchForBWA"
       append-icon="mdi-magnify"
       label="Search"
       single-line
       hide-details
-      @keyup="$emit('update:searchFor', searchFor_bwa)"
+      @keyup="$emit('update:searchFor', searchForBWA)"
     ></v-text-field>
-  </v-btn>
+  </v-container>
 </template>
 
 <script lang="ts">
@@ -21,11 +20,13 @@ import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 export default class AppBar extends Vue {
   @Prop()
   public searchFor: string = "";
-  private searchFor_bwa: string = ""; // see https://stackoverflow.com/questions/43933405/can-i-disable-certain-vue-warnings-for-a-specific-component
+
+  // see https://stackoverflow.com/questions/43933405/can-i-disable-certain-vue-warnings-for-a-specific-component
+  private searchForBWA: string = "";
 
   @Watch("searchFor")
-  watchChangeInSearchFor() {
-    this.searchFor_bwa = this.searchFor;
+  private watchChangeInSearchFor() {
+    this.searchForBWA = this.searchFor;
   }
 }
 </script>
