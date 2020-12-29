@@ -8,6 +8,19 @@
           label="On networks"
           outlined
         ></v-select>
+
+        <v-spacer />
+        <v-btn icon>
+          <!-- @todo add search function -->
+          <v-icon>mdi-magnify</v-icon>
+          <v-text-field
+            v-model="search"
+            append-icon="mdi-magnify"
+            label="Search"
+            single-line
+            hide-details
+          ></v-text-field>
+        </v-btn>
       </template>
     </app-bar>
 
@@ -91,6 +104,7 @@ import { fetchNetworks } from "@/proxy/API";
 export default class Devices extends Vue {
   private polling: undefined | number = undefined;
 
+  private search: string = "";
   private sortBy: any = [];
   private sortDesc: any = [];
   private expanded: any[] = [];
@@ -157,10 +171,6 @@ export default class Devices extends Vue {
     });
     addresses = addresses.filter((value, index, self) => self.indexOf(value) === index);
     return addresses.join(", ");
-  }
-
-  private get search(): string {
-    return this.$store.getters.getSearchString;
   }
 
   private get headers(): object[] {

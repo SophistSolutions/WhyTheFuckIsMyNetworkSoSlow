@@ -1,6 +1,6 @@
 <template>
   <v-app-bar app color="primary" dark>
-    <v-app-bar-nav-icon></v-app-bar-nav-icon>
+    <v-app-bar-nav-icon />
     <div class="d-flex align-center">
       <div>WhyTheFuckIsMyNetworkSoSlow</div>
     </div>
@@ -19,18 +19,6 @@
     </v-breadcrumbs>
 
     <v-spacer></v-spacer>
-
-    <v-btn icon>
-      <!-- @todo add search function -->
-      <v-icon>mdi-magnify</v-icon>
-      <v-text-field
-        v-model="search"
-        append-icon="mdi-magnify"
-        label="Search"
-        single-line
-        hide-details
-      ></v-text-field>
-    </v-btn>
 
     <v-menu bottom left>
       <template v-slot:activator="{ on }">
@@ -76,10 +64,9 @@
         <v-spacer></v-spacer>
       </v-list>
     </v-menu>
-
-    <extrastuff>
+    <template v-slot:extension>
       <slot name="extrastuff"></slot>
-    </extrastuff>
+    </template>
   </v-app-bar>
 </template>
 

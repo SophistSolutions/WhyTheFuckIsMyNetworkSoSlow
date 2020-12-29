@@ -1,6 +1,20 @@
 <template>
   <v-container class="devices">
-    <app-bar />
+    <app-bar>
+      <template v-slot:extrastuff>
+        <v-btn icon>
+          <!-- @todo add search function -->
+          <v-icon>mdi-magnify</v-icon>
+          <v-text-field
+            v-model="search"
+            append-icon="mdi-magnify"
+            label="Search"
+            single-line
+            hide-details
+          ></v-text-field>
+        </v-btn>
+      </template>
+    </app-bar>
     <v-card>
       <v-card-title>
         Networks
@@ -56,6 +70,7 @@ import { fetchNetworks } from "@/proxy/API";
 export default class Networks extends Vue {
   private polling: undefined | number = undefined;
 
+  private search: string = "";
   private sortBy: any = [];
   private sortDesc: any = [];
   private expanded: any[] = [];
@@ -105,9 +120,6 @@ export default class Networks extends Vue {
     return this.$store.getters.getAvailableNetworks;
   }
 
-  private get search(): string {
-    return this.$store.getters.getSearchString;
-  }
   private get headers(): object[] {
     return [
       {

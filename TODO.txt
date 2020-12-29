@@ -1,4 +1,10 @@
 
+Consider swtich to
+	https://vuematerial.io/components/list
+
+	vutify
+
+---
 ---
 
 	POPUP menu in toolbar near serach (only shown on DEVICES page) - says FILTER BY NETWORK, can be
