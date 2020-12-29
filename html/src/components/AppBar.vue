@@ -47,29 +47,29 @@
         </v-list-item>
         <v-divider> </v-divider>
         <v-list-item>
-          <v-btn to="about" text>
+          <v-btn to="/about" text>
             <span class="mr-2">about</span>
           </v-btn>
         </v-list-item>
         <v-spacer></v-spacer>
         <v-list-item>
-          <v-btn to="devices" text>
+          <v-btn to="/devices" text>
             <span class="mr-2">devices</span>
           </v-btn>
         </v-list-item>
         <v-list-item>
-          <v-btn to="networks" text>
+          <v-btn to="/networks" text>
             <span class="mr-2">networks</span>
           </v-btn>
         </v-list-item>
         <v-divider> </v-divider>
         <v-list-item>
-          <v-btn to="devices-DEPRECATED" text>
+          <v-btn to="/devices-DEPRECATED" text>
             <span class="mr-2">devices-DEPRECATED</span>
           </v-btn>
         </v-list-item>
         <v-list-item>
-          <v-btn to="networks-DEPRECATED" text>
+          <v-btn to="/networks-DEPRECATED" text>
             <span class="mr-2">networks-DEPRECATED</span>
           </v-btn>
         </v-list-item>

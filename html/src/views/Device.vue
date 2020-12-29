@@ -69,7 +69,7 @@ export default class Device extends Vue {
       }
     });
     if (r === null) {
-      r = { id: "INVALID", attachedNetworks: {}, name: "INVALID", type: "INVALID" as any };
+      r = { id: "INVALID", attachedNetworks: {}, name: "INVALID", type: null as any };
     }
     return r;
   }

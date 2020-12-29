@@ -67,7 +67,7 @@
           </span>
         </td>
       </tr>
-      <tr>
+      <tr v-if="device.lastSeenAt">
         <td>Last Seen</td>
         <td>{{ device.lastSeenAt | moment("from", "now") }}</td>
       </tr>
