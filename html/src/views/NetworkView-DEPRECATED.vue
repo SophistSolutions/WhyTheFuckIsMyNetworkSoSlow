@@ -1,5 +1,6 @@
 <template>
   <div class="networks">
+    <app-bar />
     <div class="networkList" v-for="network in networks" :key="network.id">
       <Network name="Network" :network="network"></Network>
     </div>
@@ -15,6 +16,7 @@ import { fetchNetworks } from "@/proxy/API";
 @Component({
   name: "Networks",
   components: {
+    AppBar: () => import("@/components/AppBar.vue"),
     Network: () => import("@/components/Network-DEPRECATED.vue"),
   },
 })

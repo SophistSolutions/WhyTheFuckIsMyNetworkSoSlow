@@ -1,5 +1,6 @@
 <template>
   <div v-if="about" class="about">
+    <app-bar />
     <br />
     <h1>About 'Why The Fuck is My Network So Slow'</h1>
     <br />
@@ -38,6 +39,9 @@ import Component from "vue-class-component";
 
 @Component({
   props: {},
+  components: {
+    AppBar: () => import("@/components/AppBar.vue"),
+  },
 })
 export default class About extends Vue {
   private created() {

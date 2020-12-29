@@ -1,5 +1,6 @@
 <template>
   <v-container class="devices">
+    <app-bar />
     <v-card>
       <v-card-title>
         Networks
@@ -48,6 +49,7 @@ import { fetchNetworks } from "@/proxy/API";
 @Component({
   name: "Networks",
   components: {
+    AppBar: () => import("@/components/AppBar.vue"),
     NetworkDetails: () => import("@/components/NetworkDetails.vue"),
   },
 })

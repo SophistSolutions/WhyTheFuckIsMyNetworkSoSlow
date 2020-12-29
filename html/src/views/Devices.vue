@@ -1,5 +1,6 @@
 <template>
   <v-container class="devicesPage">
+    <app-bar />
     <v-toolbar extended color="primary" dark extension-height="12">
       <table>
         <tr>
@@ -88,6 +89,7 @@ import { fetchNetworks } from "@/proxy/API";
 @Component({
   name: "Devices",
   components: {
+    AppBar: () => import("@/components/AppBar.vue"),
     DeviceDetails: () => import("@/components/DeviceDetails.vue"),
   },
 })

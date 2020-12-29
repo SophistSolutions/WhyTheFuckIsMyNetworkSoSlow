@@ -1,5 +1,6 @@
 <template>
   <v-container>
+    <app-bar />
     <v-card>
       <v-card-title>
         Network {{ $route.params.id }}
@@ -19,6 +20,7 @@ import { Component, Vue, Watch } from "vue-property-decorator";
 @Component({
   name: "Network",
   components: {
+    AppBar: () => import("@/components/AppBar.vue"),
     NetworkDetails: () => import("@/components/NetworkDetails.vue"),
   },
 })

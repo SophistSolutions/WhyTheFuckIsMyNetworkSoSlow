@@ -1,5 +1,6 @@
 <template>
   <v-container>
+    <app-bar />
     <v-card class="deviceListCard">
       <v-card-title>
         Device "{{ device.name }}" ({{ $route.params.id }})
@@ -21,6 +22,7 @@ import { Component, Vue, Watch } from "vue-property-decorator";
 @Component({
   name: "Device",
   components: {
+    AppBar: () => import("@/components/AppBar.vue"),
     DeviceDetails: () => import("@/components/DeviceDetails.vue"),
   },
 })

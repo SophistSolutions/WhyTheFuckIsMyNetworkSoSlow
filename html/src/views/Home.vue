@@ -1,5 +1,6 @@
 <template>
   <v-container>
+    <app-bar />
     <v-row class="text-center">
       <v-col class="mb-4">
         <h1 class="display-2 font-weight-bold mb-3">
@@ -32,7 +33,9 @@ import { Component, Watch } from "vue-property-decorator";
 
 @Component({
   name: "Home",
-  components: {},
+  components: {
+    AppBar: () => import("@/components/AppBar.vue"),
+  },
 })
 export default class Home extends Vue {
   private polling: undefined | number = undefined;

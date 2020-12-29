@@ -1,5 +1,6 @@
 <template>
   <v-container class="devices">
+    <app-bar />
     <v-layout row wrap>
       <v-flex md12>
         <div>Sort by:</div>
@@ -59,6 +60,7 @@ import { fetchNetworks } from "@/proxy/API";
 @Component({
   name: "Devices",
   components: {
+    AppBar: () => import("@/components/AppBar.vue"),
     Device: () => import("@/components/Device-DEPRECATED.vue"),
   },
 })
