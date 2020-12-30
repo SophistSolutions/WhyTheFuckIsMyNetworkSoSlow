@@ -2,13 +2,16 @@
   <v-container class="devices">
     <app-bar>
       <template v-slot:extrastuff>
-        <v-container>
-          <v-row>
+        <v-container fluid class="extrastuff">
+          <v-row no-gutters align="end">
             <v-col>
-              <Search :searchFor.sync="search" />
+              <Search dense :searchFor.sync="search" />
             </v-col>
             <v-col>
+              <!-- <v-col style="display: flex; flex-direction: column; justify-content: space-between;;"> -->
+              <!-- <div /> -->
               <FilterSummaryMessage
+                dense
                 :nItemsSelected="networksAsDisplayed.length"
                 :nTotalItems="networks.length"
                 itemsName="networks"
@@ -226,6 +229,10 @@ export default class Networks extends Vue {
   margin-top: 20px;
 }
 
+.extrastuff {
+  padding: 0 12px;
+  //background-color: red;
+}
 .networkList {
   margin-top: 10px;
 }

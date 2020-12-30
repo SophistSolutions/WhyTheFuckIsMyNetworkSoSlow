@@ -2,19 +2,23 @@
   <v-container class="devicesPage">
     <app-bar>
       <template v-slot:extrastuff>
-        <v-container>
-          <v-row>
+        <v-container fluid class="extrastuff">
+          <v-row no-gutters align="end">
             <v-col>
               <v-select
+                dense
+                hide-details="true"
                 :items="selectableNetworks"
                 v-model="selectedNetwork"
                 label="On networks"
-                outlined
               />
             </v-col>
-            <v-col><Search :searchFor.sync="search" /> </v-col>
+            <v-col>
+              <Search :searchFor.sync="search" dense />
+            </v-col>
             <v-col>
               <FilterSummaryMessage
+                dense
                 :nItemsSelected="deviceRows.length"
                 :nTotalItems="devices.length"
                 itemsName="devices"
@@ -287,5 +291,11 @@ export default class Devices extends Vue {
 
 .deviceList {
   margin-top: 10px;
+}
+
+.extrastuff {
+  padding: 0 12px;
+  border: 4px red;
+  // background-color: black;
 }
 </style>

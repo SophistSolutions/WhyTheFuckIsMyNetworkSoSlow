@@ -1,5 +1,5 @@
 <template>
-  <span>{{ msg }}</span>
+  <div>{{ msg }}</div>
 </template>
 
 <script lang="ts">
@@ -10,13 +10,13 @@ import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 })
 export default class FilterSummaryMessage extends Vue {
   @Prop({ required: true })
-  public nTotalItems: number;
+  public nTotalItems: number | null;
 
   @Prop({ required: true })
-  public nItemsSelected: number;
+  public nItemsSelected: number | null;
 
   @Prop({ default: "items" })
-  public itemsName: string;
+  public itemsName: string | null;
 
   private msg: string = "";
 
@@ -28,7 +28,7 @@ export default class FilterSummaryMessage extends Vue {
   @Watch("nItemsSelected")
   @Watch("itemsName")
   private onChange() {
-    if (this.nItemsSelected == this.nTotalItems) {
+    if (this.nItemsSelected === this.nTotalItems) {
       this.msg = `Unfiltered: all ${this.nTotalItems} ${this.itemsName} showing`;
     } else {
       this.msg = `Filtered: showing ${this.nItemsSelected} of ${this.nTotalItems} ${this.itemsName}`;
@@ -37,4 +37,8 @@ export default class FilterSummaryMessage extends Vue {
 }
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+div {
+  text-align: right;
+}
+</style>

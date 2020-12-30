@@ -1,14 +1,12 @@
 <template>
-  <v-container>
-    <v-text-field
-      v-model="searchForBWA"
-      append-icon="mdi-magnify"
-      label="Search"
-      single-line
-      hide-details
-      @keyup="$emit('update:searchFor', searchForBWA)"
-    ></v-text-field>
-  </v-container>
+  <v-text-field
+    v-model="searchForBWA"
+    append-icon="mdi-magnify"
+    label="Search"
+    single-line
+    hide-details
+    @keyup="$emit('update:searchFor', searchForBWA)"
+  ></v-text-field>
 </template>
 
 <script lang="ts">

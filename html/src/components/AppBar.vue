@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar app color="primary" dark :extension-height="this.$slots.extrastuff ? 40 : 0">
+  <v-app-bar app color="primary" dark>
     <v-app-bar-nav-icon />
     <div class="d-flex align-center">
       <div>WhyTheFuckIsMyNetworkSoSlow</div>
@@ -64,7 +64,7 @@
         <v-spacer></v-spacer>
       </v-list>
     </v-menu>
-    <template v-slot:extension>
+    <template v-slot:extension v-if="this.$slots.extrastuff">
       <slot name="extrastuff" />
     </template>
   </v-app-bar>
@@ -80,3 +80,9 @@ export default class AppBar extends Vue {}
 </script>
 
 <style scoped lang="scss"></style>
+
+<style lang="scss">
+.v-toolbar__extension {
+  padding: 0 0 0 0;
+}
+</style>
