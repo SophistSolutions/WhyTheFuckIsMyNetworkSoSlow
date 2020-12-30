@@ -13,8 +13,6 @@
 				networks, ALL, or a list of specific choosable networks)
 
 			and then on networkdetails page, include link to above
-===
-	devices page - add thing to filter showing only recent devices.
 -----
 confusing thing in Networks and Devices views:
 	  click in opened selected box NOT treated as unclick close box - maybe have (x) box to close/collapse?

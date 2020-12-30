@@ -14,6 +14,15 @@
               />
             </v-col>
             <v-col>
+              <v-select
+                dense
+                hide-details="true"
+                :items="selectableTimeframes"
+                v-model="selectedTimeframe"
+                label="Seen"
+              />
+            </v-col>
+            <v-col>
               <Search :searchFor.sync="search" dense />
             </v-col>
             <v-col>
@@ -121,12 +130,23 @@ export default class Devices extends Vue {
   private expanded: any[] = [];
   private selectedNetwork: string | null = null;
   private get selectableNetworks(): object[] {
-    const r: object[] = [{ text: "All", value: null }];
+    const r: object[] = [{ text: "Any", value: null }];
     this.networks.forEach((n) => {
       r.push({ text: GetNetworkName(n), value: n.id });
     });
     return r;
   }
+  private get selectableTimeframes(): object[] {
+    return [
+      { text: "Ever", value: null },
+      { text: "Last Few Minutes", value: "PT2M" },
+      { text: "Last Hour", value: "PT1H" },
+      { text: "Last Day", value: "P1D" },
+      { text: ">15 Min Ago", value: "-PT15M" },
+      { text: ">1 Day Ago", value: "-P1D" },
+    ];
+  }
+  private selectedTimeframe: string | null = null;
 
   private rowClicked(row: any) {
     // @todo Try this again with vue3 - https://github.com/vuetifyjs/vuetify/issues/9720
@@ -177,7 +197,6 @@ export default class Devices extends Vue {
   }): string {
     let addresses: string[] = [];
     Object.entries(attachedNetworks).forEach((element) => {
-      // console.log(element);
       element[1].networkAddresses.forEach((e: string) => addresses.push(e));
     });
     addresses = addresses.filter((value, index, self) => self.indexOf(value) === index);
@@ -253,7 +272,34 @@ export default class Devices extends Vue {
   private get filteredDevices(): object[] {
     const result: object[] = [];
     this.devices.forEach((i) => {
-      if (this.selectedNetwork == null || i.attachedNetworks.hasOwnProperty(this.selectedNetwork)) {
+      let passedFilter = true;
+      if (
+        passedFilter &&
+        !(this.selectedNetwork == null || i.attachedNetworks.hasOwnProperty(this.selectedNetwork))
+      ) {
+        passedFilter = false;
+      }
+      if (passedFilter && this.selectedTimeframe !== null) {
+        if (i.lastSeenAt == null) {
+          // not sure how to treat missing data so for now treat as passed filter
+        } else {
+          const timeSinceSeenAsMS = Date.now() - new Date(i.lastSeenAt).getTime();
+          const selectedTimeframeAsMS = this.$moment
+            .duration(this.selectedTimeframe)
+            .asMilliseconds();
+          if (selectedTimeframeAsMS < 0) {
+            // Treat negative duration as meaning stuff OLDER than
+            if (-selectedTimeframeAsMS > timeSinceSeenAsMS) {
+              passedFilter = false;
+            }
+          } else {
+            if (selectedTimeframeAsMS < timeSinceSeenAsMS) {
+              passedFilter = false;
+            }
+          }
+        }
+      }
+      if (passedFilter) {
         const r = {
           ...i,
           ...{
