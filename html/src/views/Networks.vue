@@ -12,7 +12,7 @@
               <!-- <div /> -->
               <FilterSummaryMessage
                 dense
-                :nItemsSelected="networksAsDisplayed.length"
+                :nItemsSelected="filteredNetworks.length"
                 :nTotalItems="networks.length"
                 itemsName="networks"
               />
@@ -33,9 +33,8 @@
         :expanded.sync="expanded"
         :single-expand="true"
         :headers="headers"
-        :items="networksAsDisplayed"
+        :items="filteredNetworks"
         :single-select="true"
-        :search="search"
         :sort-by="sortBy"
         :sort-desc="sortDesc"
         multi-sort
@@ -182,14 +181,14 @@ export default class Networks extends Vue {
     return ids;
   }
 
-  private get networksAsDisplayed(): object[] {
+  private get filteredNetworks(): object[] {
     const result: object[] = [];
     this.networks.forEach((i) => {
       const location: string | null =
         i.geographicLocation == null
           ? null
           : i.geographicLocation.city + ", " + i.geographicLocation.regionCode;
-      result.push({
+      const r: any = {
         id: i.id,
         name: i.networkAddresses.join(", "),
         active: "true",
@@ -205,7 +204,18 @@ export default class Networks extends Vue {
         // os: i.operatingSystem == null ? null : i.operatingSystem.fullVersionedName,
         // networks: this.formatNetworks_(i.attachedNetworks),
         // localAddrresses: this.formatNetworkAddresses_(i.attachedNetworks),
-      });
+      };
+      if (
+        this.search === "" ||
+        JSON.stringify(r)
+          .toLowerCase()
+          .includes(this.search.toLowerCase())
+      ) {
+        console.log("MATCH: this.search=", this.search, " and r=", JSON.stringify(r));
+        result.push(r);
+      } else {
+        console.log("NO MATCH: this.search=", this.search, " and r=", JSON.stringify(r));
+      }
     });
     result.sort((a: any, b: any) => {
       if (a.id < b.id) {

@@ -19,7 +19,7 @@
             <v-col>
               <FilterSummaryMessage
                 dense
-                :nItemsSelected="deviceRows.length"
+                :nItemsSelected="filteredDevices.length"
                 :nTotalItems="devices.length"
                 itemsName="devices"
               />
@@ -42,9 +42,8 @@
         :expanded.sync="expanded"
         :single-expand="true"
         :headers="headers"
-        :items="deviceRows"
+        :items="filteredDevices"
         :single-select="true"
-        :search="search"
         :sort-by="sortBy"
         :sort-desc="sortDesc"
         multi-sort
@@ -251,11 +250,11 @@ export default class Devices extends Vue {
     return this.$store.getters.getDevices;
   }
 
-  private get deviceRows(): object[] {
+  private get filteredDevices(): object[] {
     const result: object[] = [];
     this.devices.forEach((i) => {
       if (this.selectedNetwork == null || i.attachedNetworks.hasOwnProperty(this.selectedNetwork)) {
-        result.push({
+        const r = {
           ...i,
           ...{
             networksSummary: this.formatNetworks_(i.attachedNetworks),
@@ -263,7 +262,15 @@ export default class Devices extends Vue {
             manufacturerSummary:
               i.manufacturer == null ? "" : i.manufacturer.fullName || i.manufacturer.shortName,
           },
-        });
+        };
+        if (
+          this.search === "" ||
+          JSON.stringify(r)
+            .toLowerCase()
+            .includes(this.search.toLowerCase())
+        ) {
+          result.push(r);
+        }
       }
     });
     result.sort((a: any, b: any) => {
