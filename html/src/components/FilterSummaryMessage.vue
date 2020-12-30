@@ -10,13 +10,13 @@ import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 })
 export default class FilterSummaryMessage extends Vue {
   @Prop({ required: true })
-  public nTotalItems: number | null;
+  public nTotalItems!: number;
 
   @Prop({ required: true })
-  public nItemsSelected: number | null;
+  public nItemsSelected!: number;
 
   @Prop({ default: "items" })
-  public itemsName: string | null;
+  public itemsName!: string;
 
   private msg: string = "";
 
