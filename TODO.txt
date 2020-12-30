@@ -1,4 +1,3 @@
-about page - text should be more shifted to the right.
 ---
 	In listbox for devices (and networks) pages, show only one line!
 -
