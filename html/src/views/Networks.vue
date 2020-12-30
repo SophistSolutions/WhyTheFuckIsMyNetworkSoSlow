@@ -211,10 +211,10 @@ export default class Networks extends Vue {
           .toLowerCase()
           .includes(this.search.toLowerCase())
       ) {
-        console.log("MATCH: this.search=", this.search, " and r=", JSON.stringify(r));
+        // console.log("MATCH: this.search=", this.search, " and r=", JSON.stringify(r));
         result.push(r);
       } else {
-        console.log("NO MATCH: this.search=", this.search, " and r=", JSON.stringify(r));
+        // console.log("NO MATCH: this.search=", this.search, " and r=", JSON.stringify(r));
       }
     });
     result.sort((a: any, b: any) => {
