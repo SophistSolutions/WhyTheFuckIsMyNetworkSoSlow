@@ -1,6 +1,4 @@
 ---
-	In listbox for devices (and networks) pages, show only one line!
--
 	take argument in devices page filter by network, and then add
 	and when called, set property and then remove from url, and then
 	use with links in the networks page to get all devices on that network.

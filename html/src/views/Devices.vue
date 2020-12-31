@@ -1,5 +1,5 @@
 <template>
-  <v-container class="devicesPage">
+  <v-container>
     <app-bar>
       <template v-slot:extrastuff>
         <v-container fluid class="extrastuff">
@@ -62,32 +62,37 @@
         @click:row="rowClicked"
       >
         <template v-slot:item.lastSeenAt="{ headers, item }">
-          <td>
-            <span v-if="item.lastSeenAt">{{ item.lastSeenAt | moment("from", "now") }}</span>
-          </td>
+          <ReadOnlyTextWithTitle
+            v-if="item.lastSeenAt"
+            :message="item.lastSeenAt | moment('from', 'now')"
+          />
         </template>
         <template v-slot:item.type="{ headers, item }">
-          <td>
-            <span v-for="t in computeDeviceTypeIconURLs_(item.type)">
-              <img v-if="t.url" :src="t.url" :title="t.label" height="24" width="24" />
-              <span v-if="!t.url">
-                {{ t.label }}
-              </span>
-            </span>
-          </td>
+          <span v-for="t in computeDeviceTypeIconURLs_(item.type)">
+            <img v-if="t.url" :src="t.url" :title="t.label" height="24" width="24" />
+            <ReadOnlyTextWithTitle v-if="!t.url" :message="t.label" />
+          </span>
         </template>
         <template v-slot:item.operatingSystem="{ headers, item }">
-          <td>
-            <span v-for="t in computeOSIconURLList_(item.operatingSystem)">
-              <img v-if="t.url" :src="t.url" :title="t.label" height="24" width="24" />
-              <span v-if="!t.url">
-                {{ t.label }}
-              </span>
-            </span>
-          </td>
+          <span v-for="t in computeOSIconURLList_(item.operatingSystem)">
+            <img v-if="t.url" :src="t.url" :title="t.label" height="24" width="24" />
+            <ReadOnlyTextWithTitle v-if="!t.url" :message="t.label" />
+          </span>
+        </template>
+        <template v-slot:item.name="{ item }">
+          <ReadOnlyTextWithTitle :message="item.name" />
+        </template>
+        <template v-slot:item.manufacturerSummary="{ item }">
+          <ReadOnlyTextWithTitle :message="item.manufacturerSummary" />
+        </template>
+        <template v-slot:item.localAddresses="{ item }">
+          <ReadOnlyTextWithTitle :message="item.localAddresses" />
+        </template>
+        <template v-slot:item.networksSummary="{ item }">
+          <ReadOnlyTextWithTitle :message="item.networksSummary" />
         </template>
         <template v-slot:expanded-item="{ headers, item }">
-          <td :colspan="headers.length">
+          <td colspan="100">
             <DeviceDetails :device="item" :networks="networks"></DeviceDetails>
           </td>
         </template>
@@ -113,17 +118,12 @@ import { fetchNetworks } from "@/proxy/API";
     AppBar: () => import("@/components/AppBar.vue"),
     DeviceDetails: () => import("@/components/DeviceDetails.vue"),
     FilterSummaryMessage: () => import("@/components/FilterSummaryMessage.vue"),
+    ReadOnlyTextWithTitle: () => import("@/components/ReadOnlyTextWithTitle.vue"),
     Search: () => import("@/components/Search.vue"),
   },
 })
 export default class Devices extends Vue {
   private polling: undefined | number = undefined;
-
-  // private get search(): string {
-  //   console.log("refs=" + Object.keys(this.$refs));
-  //   console.log(this.$refs.appbar);
-  //   return this.$refs.search.searchFor;
-  // }
   private search: string = "";
   private sortBy: any = [];
   private sortDesc: any = [];
@@ -209,34 +209,48 @@ export default class Devices extends Vue {
         text: "Name",
         align: "start",
         value: "name",
+        cellClass: "nowrap",
+        width: "20%",
       },
       {
         text: "Type",
         value: "type",
+        width: "10%",
       },
       {
         text: "Last Seen",
         value: "lastSeenAt",
+        cellClass: "nowrap",
+        width: "14%",
       },
       {
         text: "Manufacturer",
         value: "manufacturerSummary",
+        cellClass: "nowrap",
+        width: "20%",
       },
       {
         text: "OS",
         value: "operatingSystem",
-      },
-      {
-        text: "Network",
-        value: "networksSummary",
+        cellClass: "nowrap",
+        width: "8%",
       },
       {
         text: "Local Address",
         value: "localAddresses",
+        cellClass: "nowrap",
+        width: "20%",
+      },
+      {
+        text: "Network",
+        value: "networksSummary",
+        cellClass: "nowrap",
+        width: "15%",
       },
       {
         text: "Details",
         value: "data-table-expand",
+        width: "10%",
       },
     ];
   }
@@ -334,7 +348,14 @@ export default class Devices extends Vue {
 </script>
 
 <style lang="scss">
-.devicesPage {
+.deviceList > div > table {
+  table-layout: fixed;
+  //background-color: red;
+}
+.nowrap {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .deviceListCard {

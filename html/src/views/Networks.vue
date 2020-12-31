@@ -48,8 +48,17 @@
             <router-link to="/devices">{{ item.devices }}</router-link>
           </td>
         </template>
+        <template v-slot:item.name="{ item }">
+          <ReadOnlyTextWithTitle :message="item.name" />
+        </template>
+        <template v-slot:item.location="{ item }">
+          <ReadOnlyTextWithTitle :message="item.location" />
+        </template>
+        <template v-slot:item.internetInfo="{ item }">
+          <ReadOnlyTextWithTitle :message="item.internetInfo" />
+        </template>
         <template v-slot:expanded-item="{ headers, item }">
-          <td :colspan="headers.length">
+          <td colspan="100">
             <NetworkDetails :network="networkFromID_(item.id)" :devices="devices"></NetworkDetails>
           </td>
         </template>
@@ -71,6 +80,7 @@ import { fetchNetworks } from "@/proxy/API";
     AppBar: () => import("@/components/AppBar.vue"),
     FilterSummaryMessage: () => import("@/components/FilterSummaryMessage.vue"),
     NetworkDetails: () => import("@/components/NetworkDetails.vue"),
+    ReadOnlyTextWithTitle: () => import("@/components/ReadOnlyTextWithTitle.vue"),
     Search: () => import("@/components/Search.vue"),
   },
 })
@@ -133,30 +143,43 @@ export default class Networks extends Vue {
         text: "Name",
         align: "start",
         value: "name",
+        cellClass: "nowrap",
+        width: "20%",
       },
       {
         text: "Active",
         value: "active",
+        cellClass: "nowrap",
+        width: "10%",
       },
       {
         text: "Status",
         value: "status",
+        cellClass: "nowrap",
+        width: "10%",
       },
       {
         text: "Location",
         value: "location",
+        cellClass: "nowrap",
+        width: "20%",
       },
       {
         text: "Internet",
         value: "internetInfo",
+        cellClass: "nowrap",
+        width: "20%",
       },
       {
         text: "devices",
         value: "devices",
+        cellClass: "nowrap",
+        width: "10%",
       },
       {
         text: "Details",
         value: "data-table-expand",
+        width: "10%",
       },
     ];
   }
@@ -246,6 +269,16 @@ export default class Networks extends Vue {
 .networkList {
   margin-top: 10px;
 }
+.networkList > div > table {
+  table-layout: fixed;
+  //background-color: red;
+}
+.nowrap {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .selectedDevicesSection {
   margin-left: 40px;
   margin-right: 10px;

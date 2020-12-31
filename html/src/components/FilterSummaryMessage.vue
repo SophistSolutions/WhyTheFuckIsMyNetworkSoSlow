@@ -5,6 +5,9 @@
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 
+/*
+ *  This is for use in the filter section of the app-bar, to say how much is filtered out.
+ */
 @Component({
   name: "FilterSummaryMessage",
 })
