@@ -15,7 +15,7 @@
           <li v-for="network in networksAsDisplayed" :key="network.id">
             {{ network.name }}
             <div>
-              : {{ getDevicesInNetwork(network).length }}
+              : {{ GetDeviceIDsInNetwork(network, devices).length }}
               <router-link to="/devices">devices</router-link>, operating normally
             </div>
           </li>
@@ -28,7 +28,7 @@
 <script lang="ts">
 import { IDevice, INetworkAttachmentInfo } from "@/models/device/IDevice";
 import { INetwork } from "@/models/network/INetwork";
-import { GetNetworkName } from "@/models/network/Utils";
+import { FormatLocation, GetDeviceIDsInNetwork, GetNetworkName } from "@/models/network/Utils";
 import Vue from "vue";
 import { Component, Watch } from "vue-property-decorator";
 
@@ -72,10 +72,6 @@ export default class Home extends Vue {
   private get networksAsDisplayed(): object[] {
     const result: object[] = [];
     this.networks.forEach((i) => {
-      const location: string | null =
-        i.geographicLocation == null
-          ? null
-          : i.geographicLocation.city + ", " + i.geographicLocation.regionCode;
       result.push({
         id: i.id,
         name: GetNetworkName(i),
@@ -85,7 +81,7 @@ export default class Home extends Vue {
           (i.internetServiceProvider == null ? " " : " (" + i.internetServiceProvider.name + ")"),
         devices: this.getDevicesInNetwork(i).length,
         status: "healthy",
-        location,
+        location: FormatLocation(i.geographicLocation),
       });
     });
     result.sort((a: any, b: any) => {
@@ -102,22 +98,6 @@ export default class Home extends Vue {
 
   private get devices(): IDevice[] {
     return this.$store.getters.getDevices;
-  }
-
-  private getDevicesInNetwork(nw: INetwork): string[] {
-    const ids: string[] = [];
-    this.devices.forEach((i: IDevice) => {
-      let hasThisNetwork = false;
-      Object.entries(i.attachedNetworks).forEach((element) => {
-        if (element[0] === nw.id) {
-          hasThisNetwork = true;
-        }
-      });
-      if (hasThisNetwork) {
-        ids.push(i.id);
-      }
-    });
-    return ids;
   }
 }
 </script>

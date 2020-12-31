@@ -63,3 +63,23 @@ export function GetDeviceIDsInNetwork(nw: INetwork, devices: IDevice[]): string[
   });
   return ids;
 }
+
+export function FormatAttachedNetworks(
+  attachedNetworks: { [key: string]: INetworkAttachmentInfo },
+  networks: INetwork[]
+): string {
+  let addresses: string[] = [];
+  Object.entries(attachedNetworks).forEach((element) => {
+    let netID = element[0];
+    networks.forEach((network: INetwork) => {
+      if (network.id === netID) {
+        if (network.networkAddresses.length >= 1) {
+          netID = network.networkAddresses[0];
+        }
+      }
+    });
+    addresses.push(netID);
+  });
+  addresses = addresses.filter((value, index, self) => self.indexOf(value) === index);
+  return addresses.join(", ");
+}

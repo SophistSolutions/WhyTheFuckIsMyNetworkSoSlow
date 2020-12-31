@@ -105,7 +105,11 @@
 import { IDevice, INetworkAttachmentInfo } from "@/models/device/IDevice";
 import { ComputeDeviceTypeIconURLs, ComputeOSIconURLList } from "@/models/device/Utils";
 import { INetwork } from "@/models/network/INetwork";
-import { FormatAttachedNetworkAddresses, GetNetworkName } from "@/models/network/Utils";
+import {
+  FormatAttachedNetworkAddresses,
+  FormatAttachedNetworks,
+  GetNetworkName,
+} from "@/models/network/Utils";
 import { OperatingSystem } from "@/models/OperatingSystem";
 
 import { Component, Vue, Watch } from "vue-property-decorator";
@@ -132,20 +136,46 @@ export default class Devices extends Vue {
   private expanded: any[] = [];
   private selectedNetwork: string | null = null;
   private get selectableNetworks(): object[] {
-    const r: object[] = [{ text: "Any", value: null }];
+    const r: object[] = [
+      {
+        text: "Any",
+        value: null,
+      },
+    ];
     this.networks.forEach((n) => {
-      r.push({ text: GetNetworkName(n), value: n.id });
+      r.push({
+        text: GetNetworkName(n),
+        value: n.id,
+      });
     });
     return r;
   }
   private get selectableTimeframes(): object[] {
     return [
-      { text: "Ever", value: null },
-      { text: "Last Few Minutes", value: "PT2M" },
-      { text: "Last Hour", value: "PT1H" },
-      { text: "Last Day", value: "P1D" },
-      { text: ">15 Min Ago", value: "-PT15M" },
-      { text: ">1 Day Ago", value: "-P1D" },
+      {
+        text: "Ever",
+        value: null,
+      },
+      {
+        text: "Last Few Minutes",
+        value: "PT2M",
+      },
+      {
+        text: "Last Hour",
+        value: "PT1H",
+      },
+      {
+        text: "Last Day",
+        value: "P1D",
+      },
+      {
+        text: ">15 Min Ago",
+        value: "-PT15M",
+      },
+      {
+        text: ">1 Day Ago",
+        value: "-P1D",
+      },
     ];
   }
   private selectedTimeframe: string | null = null;
@@ -167,23 +197,6 @@ export default class Devices extends Vue {
   }
   private get networks(): INetwork[] {
     return this.$store.getters.getAvailableNetworks;
-  }
-
-  private formatNetworks_(attachedNetworks: { [key: string]: INetworkAttachmentInfo }): string {
-    let addresses: string[] = [];
-    Object.entries(attachedNetworks).forEach((element) => {
-      let netID = element[0];
-      this.networks.forEach((network: INetwork) => {
-        if (network.id === netID) {
-          if (network.networkAddresses.length >= 1) {
-            netID = network.networkAddresses[0];
-          }
-        }
-      });
-      addresses.push(netID);
-    });
-    addresses = addresses.filter((value, index, self) => self.indexOf(value) === index);
-    return addresses.join(", ");
   }
 
   private get headers(): object[] {
@@ -300,7 +313,7 @@ export default class Devices extends Vue {
         const r = {
           ...i,
           ...{
-            networksSummary: this.formatNetworks_(i.attachedNetworks),
+            networksSummary: FormatAttachedNetworks(i.attachedNetworks, this.networks),
             localAddresses: FormatAttachedNetworkAddresses(i.attachedNetworks),
             manufacturerSummary:
               i.manufacturer == null ? "" : i.manufacturer.fullName || i.manufacturer.shortName,
@@ -335,6 +348,7 @@ export default class Devices extends Vue {
   table-layout: fixed;
   //background-color: red;
 }
+
 .nowrap {
   white-space: nowrap;
   overflow: hidden;
@@ -344,6 +358,7 @@ export default class Devices extends Vue {
 .detailsSection {
   margin-top: 1em;
 }
+
 .deviceListCard {
   margin-top: 10px;
   margin-left: 10px;

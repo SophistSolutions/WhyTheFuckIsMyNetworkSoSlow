@@ -70,7 +70,7 @@
 <script lang="ts">
 import { IDevice, INetworkAttachmentInfo } from "@/models/device/IDevice";
 import { INetwork } from "@/models/network/INetwork";
-import { GetDeviceIDsInNetwork, GetNetworkName } from "@/models/network/Utils";
+import { FormatLocation, GetDeviceIDsInNetwork, GetNetworkName } from "@/models/network/Utils";
 import { Component, Vue, Watch } from "vue-property-decorator";
 
 import { fetchNetworks } from "@/proxy/API";
@@ -193,10 +193,6 @@ export default class Networks extends Vue {
   private get filteredNetworks(): object[] {
     const result: object[] = [];
     this.networks.forEach((i) => {
-      const location: string | null =
-        i.geographicLocation == null
-          ? null
-          : i.geographicLocation.city + ", " + i.geographicLocation.regionCode;
       const r: any = {
         id: i.id,
         name: GetNetworkName(i),
@@ -206,7 +202,7 @@ export default class Networks extends Vue {
           (i.internetServiceProvider == null ? " " : " (" + i.internetServiceProvider.name + ")"),
         devices: GetDeviceIDsInNetwork(i, this.devices).length,
         status: "healthy",
-        location,
+        location: FormatLocation(i.geographicLocation),
       };
       if (
         this.search === "" ||
@@ -246,22 +242,19 @@ export default class Networks extends Vue {
   padding: 0 12px;
   //background-color: red;
 }
+
 .networkList {
   margin-top: 10px;
 }
+
 .networkList > div > table {
   table-layout: fixed;
   //background-color: red;
 }
+
 .nowrap {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.selectedDevicesSection {
-  margin-left: 40px;
-  margin-right: 10px;
-  margin-bottom: 10px;
 }
 </style>
