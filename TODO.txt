@@ -23,7 +23,18 @@ IN DEVICE PANEL:
 	Add services tab
 	Under there open for presentation url. 
 	But also open ssh and rdp. List pretty known sevices with link buttons. 
+----
 
+	> in HTML, replace Model and (Model/Utils helpers) with two models
+	  Model.Wire
+	  Model.API
+	  with Model.Wire being what we currently have - the objects as the come from WSAPIServer
+	  and Model.API being concrete classes with accessors that provide computed pretty stuff on top
+	  and use that to replace stuff like GetName() etc... from those utils files.
+
+	  John says Axios makes it easy to do this mapping; and even so should take a day
+	  so leave it for a later GUI work pass
+	  
 ---
  make -j 10 
   for backend and html produces

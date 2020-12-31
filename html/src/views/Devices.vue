@@ -68,13 +68,13 @@
           />
         </template>
         <template v-slot:item.type="{ headers, item }">
-          <span v-for="t in computeDeviceTypeIconURLs_(item.type)">
+          <span v-for="t in ComputeDeviceTypeIconURLs(item.type)">
             <img v-if="t.url" :src="t.url" :title="t.label" height="24" width="24" />
             <ReadOnlyTextWithTitle v-if="!t.url" :message="t.label" />
           </span>
         </template>
         <template v-slot:item.operatingSystem="{ headers, item }">
-          <span v-for="t in computeOSIconURLList_(item.operatingSystem)">
+          <span v-for="t in ComputeOSIconURLList(item.operatingSystem)">
             <img v-if="t.url" :src="t.url" :title="t.label" height="24" width="24" />
             <ReadOnlyTextWithTitle v-if="!t.url" :message="t.label" />
           </span>
@@ -93,7 +93,7 @@
         </template>
         <template v-slot:expanded-item="{ headers, item }">
           <td colspan="100">
-            <DeviceDetails :device="item" :networks="networks"></DeviceDetails>
+            <DeviceDetails class="detailsSection" :device="item" :networks="networks" />
           </td>
         </template>
       </v-data-table>
@@ -105,7 +105,7 @@
 import { IDevice, INetworkAttachmentInfo } from "@/models/device/IDevice";
 import { ComputeDeviceTypeIconURLs, ComputeOSIconURLList } from "@/models/device/Utils";
 import { INetwork } from "@/models/network/INetwork";
-import { GetNetworkName } from "@/models/network/Utils";
+import { FormatAttachedNetworkAddresses, GetNetworkName } from "@/models/network/Utils";
 import { OperatingSystem } from "@/models/OperatingSystem";
 
 import { Component, Vue, Watch } from "vue-property-decorator";
@@ -123,6 +123,8 @@ import { fetchNetworks } from "@/proxy/API";
   },
 })
 export default class Devices extends Vue {
+  private ComputeDeviceTypeIconURLs = ComputeDeviceTypeIconURLs;
+  private ComputeOSIconURLList = ComputeOSIconURLList;
   private polling: undefined | number = undefined;
   private search: string = "";
   private sortBy: any = [];
@@ -160,14 +162,6 @@ export default class Devices extends Vue {
     }
   }
 
-  // for now use private method since cannot access global functions from template??? Ask John?
-  private computeDeviceTypeIconURLs_(t: string[] | null) {
-    return ComputeDeviceTypeIconURLs(t);
-  }
-  private computeOSIconURLList_(t: OperatingSystem | null) {
-    return ComputeOSIconURLList(t);
-  }
-
   private fetchAvailableNetworks() {
     this.$store.dispatch("fetchAvailableNetworks");
   }
@@ -187,17 +181,6 @@ export default class Devices extends Vue {
         }
       });
       addresses.push(netID);
-    });
-    addresses = addresses.filter((value, index, self) => self.indexOf(value) === index);
-    return addresses.join(", ");
-  }
-
-  private formatNetworkAddresses_(attachedNetworks: {
-    [key: string]: INetworkAttachmentInfo;
-  }): string {
-    let addresses: string[] = [];
-    Object.entries(attachedNetworks).forEach((element) => {
-      element[1].networkAddresses.forEach((e: string) => addresses.push(e));
     });
     addresses = addresses.filter((value, index, self) => self.indexOf(value) === index);
     return addresses.join(", ");
@@ -318,7 +301,7 @@ export default class Devices extends Vue {
           ...i,
           ...{
             networksSummary: this.formatNetworks_(i.attachedNetworks),
-            localAddresses: this.formatNetworkAddresses_(i.attachedNetworks),
+            localAddresses: FormatAttachedNetworkAddresses(i.attachedNetworks),
             manufacturerSummary:
               i.manufacturer == null ? "" : i.manufacturer.fullName || i.manufacturer.shortName,
           },
@@ -358,6 +341,9 @@ export default class Devices extends Vue {
   text-overflow: ellipsis;
 }
 
+.detailsSection {
+  margin-top: 1em;
+}
 .deviceListCard {
   margin-top: 10px;
   margin-left: 10px;

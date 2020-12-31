@@ -6,7 +6,7 @@
         Network {{ $route.params.id }}
         <v-spacer></v-spacer>
       </v-card-title>
-      <NetworkDetails :network="network" :devices="devices"></NetworkDetails>
+      <NetworkDetails class="detailsSection" :network="network" :devices="devices"></NetworkDetails>
     </v-card>
   </v-container>
 </template>
@@ -93,4 +93,8 @@ export default class Network extends Vue {
 }
 </script>
 
-<style lang="scss"></style>
+<style lang="scss">
+.detailsSection {
+  margin-left: 2em;
+}
+</style>

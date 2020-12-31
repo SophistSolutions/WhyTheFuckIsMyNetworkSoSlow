@@ -6,9 +6,7 @@
         Device "{{ device.name }}" ({{ $route.params.id }})
         <v-spacer></v-spacer>
       </v-card-title>
-      <div class="devicesDetailsSection">
-        <DeviceDetails :device="device" :networks="networks"></DeviceDetails>
-      </div>
+      <DeviceDetails class="detailsSection" :device="device" :networks="networks"></DeviceDetails>
     </v-card>
   </v-container>
 </template>
@@ -81,7 +79,7 @@ export default class Device extends Vue {
 </script>
 
 <style lang="scss">
-.devicesDetailsSection {
+.detailsSection {
   margin-left: 2em;
 }
 </style>

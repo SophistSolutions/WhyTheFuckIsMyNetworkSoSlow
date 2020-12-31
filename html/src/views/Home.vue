@@ -28,6 +28,7 @@
 <script lang="ts">
 import { IDevice, INetworkAttachmentInfo } from "@/models/device/IDevice";
 import { INetwork } from "@/models/network/INetwork";
+import { GetNetworkName } from "@/models/network/Utils";
 import Vue from "vue";
 import { Component, Watch } from "vue-property-decorator";
 
@@ -77,7 +78,7 @@ export default class Home extends Vue {
           : i.geographicLocation.city + ", " + i.geographicLocation.regionCode;
       result.push({
         id: i.id,
-        name: i.networkAddresses.join(", "),
+        name: GetNetworkName(i),
         active: "true",
         internetInfo:
           (i.gateways == null ? "" : i.gateways.join(", ")) +
@@ -85,12 +86,6 @@ export default class Home extends Vue {
         devices: this.getDevicesInNetwork(i).length,
         status: "healthy",
         location,
-        // name: i.name,
-        // type: i.type == null ? null : i.type.join(", "),
-        // manufacturer: i.manufacturer == null ? "?" : i.manufacturer.fullName,
-        // os: i.operatingSystem == null ? null : i.operatingSystem.fullVersionedName,
-        // networks: this.formatNetworks_(i.attachedNetworks),
-        // localAddrresses: this.formatNetworkAddresses_(i.attachedNetworks),
       });
     });
     result.sort((a: any, b: any) => {

@@ -1,15 +1,15 @@
 <template>
-  <div class="network">
-    <table v-bind:key="network.id">
+  <div>
+    <table class="detailsTable" v-bind:key="network.id">
       <tr>
         <td>ID</td>
         <td>
           <router-link v-bind:to="'/network/' + network.id">{{ network.id }}</router-link>
         </td>
       </tr>
-      <tr v-if="network.networkAddresses && network.networkAddresses.length">
+      <tr>
         <td>Name</td>
-        <td>{{ network.networkAddresses.join(", ") }}</td>
+        <td>{{ GetNetworkName(network) }}</td>
       </tr>
       <tr v-if="network.DNSServers && network.DNSServers.length">
         <td>DNS Servers</td>
@@ -22,7 +22,7 @@
       <tr v-if="network.geographicLocation">
         <td>Geographic Location</td>
         <td>
-          {{ formatLocation_(network.geographicLocation) }}
+          {{ FormatLocation(network.geographicLocation) }}
         </td>
       </tr>
       <tr v-if="network.internetServiceProvider">
@@ -43,6 +43,7 @@
 import { IDevice, INetworkAttachmentInfo } from "@/models/device/IDevice";
 import { IGeographicLocation } from "@/models/network/IGeographicLocation";
 import { INetwork } from "@/models/network/INetwork";
+import { FormatLocation, GetNetworkName } from "@/models/network/Utils";
 import { OperatingSystem } from "@/models/OperatingSystem";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 
@@ -62,32 +63,17 @@ export default class NetworkDetails extends Vue {
   })
   public devices!: IDevice[];
 
-  private formatLocation_(l: IGeographicLocation): string {
-    let result: string = "";
-    if (l.city != null) {
-      result += l.city;
-    }
-    if (l.regionCode != null) {
-      if (result !== "") {
-        result += " ";
-      }
-      result += l.regionCode;
-    }
-    if (l.countryCode != null) {
-      if (result !== "") {
-        result += ", ";
-      }
-      result += l.countryCode;
-    }
-    if (l.postalCode != null) {
-      if (result !== "") {
-        result += " ";
-      }
-      result += l.postalCode;
-    }
-    return result;
-  }
+  private GetNetworkName = GetNetworkName;
+  private FormatLocation = FormatLocation;
 }
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.detailsTable {
+  table-layout: fixed;
+}
+.detailsTable td {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+</style>

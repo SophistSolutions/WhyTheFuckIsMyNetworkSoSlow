@@ -1,6 +1,6 @@
 <template>
-  <div class="device">
-    <table v-bind:key="device.id">
+  <div>
+    <table class="deviceDetailsTable" v-bind:key="device.id">
       <tr>
         <td>Name</td>
         <td>{{ device.name }}</td>
@@ -36,19 +36,29 @@
         </td>
       </tr>
       <tr>
-        <td>Networks</td>
+        <td>Network Adapters</td>
         <td>
-          {{ device.attachedNetworks }}
+          <ul>
+            <li v-for="attachedNetID in Object.keys(device.attachedNetworks)">
+              <table>
+                <tr>
+                  <td>Adapter ID</td>
+                  <td class=".flex-nowrap">{{ attachedNetID }}</td>
+                </tr>
+                <tr v-if="device.attachedNetworks[attachedNetID].hardwareAddresses">
+                  <td>Hardware Addresses</td>
+                  <td class=".flex-nowrap">
+                    {{ device.attachedNetworks[attachedNetID].hardwareAddresses.join(", ") }}
+                  </td>
+                </tr>
+                <tr v-if="device.attachedNetworks[attachedNetID].networkAddresses">
+                  <td>Network Address Bindings</td>
+                  <td>{{ device.attachedNetworks[attachedNetID].networkAddresses.join(", ") }}</td>
+                </tr>
+              </table>
+            </li>
+          </ul>
         </td>
-      </tr>
-
-      <tr>
-        <td>Internet Addresses</td>
-        <td>{{ getDeviceNetworkAddresses_(device) }}</td>
-      </tr>
-      <tr>
-        <td>Hardware Addresses</td>
-        <td>{{ getDeviceHardwareAddresses_(device) }}</td>
       </tr>
       <tr v-if="device.manufacturer">
         <td>
@@ -103,42 +113,6 @@ export default class DeviceDetails2 extends Vue {
   })
   public networks!: INetwork[];
 
-  private getDeviceHardwareAddresses_(d: IDevice) {
-    let result = "";
-    for (const value of Object.entries(d.attachedNetworks)) {
-      if (result !== "") {
-        result += ", ";
-      }
-      result += value[1].hardwareAddresses.join(", ");
-    }
-    return result;
-  }
-  private getDeviceNetworkAddresses_(d: IDevice) {
-    let result = "";
-    for (const value of Object.entries(d.attachedNetworks)) {
-      if (result !== "") {
-        result += ", ";
-      }
-      result += value[1].networkAddresses.join(", ");
-    }
-    return result;
-  }
-  private formatNetworks_(attachedNetworks: { [key: string]: INetworkAttachmentInfo }): string {
-    let addresses: string[] = [];
-    Object.entries(attachedNetworks).forEach((element) => {
-      let netID = element[0];
-      this.networks.forEach((network: INetwork) => {
-        if (network.id === netID) {
-          if (network.networkAddresses.length >= 1) {
-            netID = network.networkAddresses[0];
-          }
-        }
-      });
-      addresses.push(netID);
-    });
-    addresses = addresses.filter((value, index, self) => self.indexOf(value) === index);
-    return addresses.join(", ");
-  }
   private formatNetworkAddresses_(attachedNetworks: {
     [key: string]: INetworkAttachmentInfo;
   }): string {
@@ -155,7 +129,6 @@ export default class DeviceDetails2 extends Vue {
     return {
       ...d,
       ...{
-        networksSummary: this.formatNetworks_(d.attachedNetworks),
         localAddresses: this.formatNetworkAddresses_(d.attachedNetworks),
         manufacturerSummary:
           d.manufacturer == null ? "" : d.manufacturer.fullName || d.manufacturer.shortName,
@@ -165,4 +138,12 @@ export default class DeviceDetails2 extends Vue {
 }
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.deviceDetailsTable {
+  table-layout: fixed;
+}
+.deviceDetailsTable td {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+</style>

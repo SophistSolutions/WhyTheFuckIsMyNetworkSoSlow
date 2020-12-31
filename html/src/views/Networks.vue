@@ -70,6 +70,7 @@
 <script lang="ts">
 import { IDevice, INetworkAttachmentInfo } from "@/models/device/IDevice";
 import { INetwork } from "@/models/network/INetwork";
+import { GetDeviceIDsInNetwork, GetNetworkName } from "@/models/network/Utils";
 import { Component, Vue, Watch } from "vue-property-decorator";
 
 import { fetchNetworks } from "@/proxy/API";
@@ -116,6 +117,7 @@ export default class Networks extends Vue {
       this.expanded.push(row);
     }
   }
+
   private created() {
     this.$store.dispatch("fetchDevices", null);
     this.$store.dispatch("fetchAvailableNetworks");
@@ -188,22 +190,6 @@ export default class Networks extends Vue {
     return this.$store.getters.getDevices;
   }
 
-  private getDevicesInNetwork(nw: INetwork): string[] {
-    const ids: string[] = [];
-    this.devices.forEach((i: IDevice) => {
-      let hasThisNetwork = false;
-      Object.entries(i.attachedNetworks).forEach((element) => {
-        if (element[0] === nw.id) {
-          hasThisNetwork = true;
-        }
-      });
-      if (hasThisNetwork) {
-        ids.push(i.id);
-      }
-    });
-    return ids;
-  }
-
   private get filteredNetworks(): object[] {
     const result: object[] = [];
     this.networks.forEach((i) => {
@@ -213,20 +199,14 @@ export default class Networks extends Vue {
           : i.geographicLocation.city + ", " + i.geographicLocation.regionCode;
       const r: any = {
         id: i.id,
-        name: i.networkAddresses.join(", "),
+        name: GetNetworkName(i),
         active: "true",
         internetInfo:
           (i.gateways == null ? "" : i.gateways.join(", ")) +
           (i.internetServiceProvider == null ? " " : " (" + i.internetServiceProvider.name + ")"),
-        devices: this.getDevicesInNetwork(i).length,
+        devices: GetDeviceIDsInNetwork(i, this.devices).length,
         status: "healthy",
         location,
-        // name: i.name,
-        // type: i.type == null ? null : i.type.join(", "),
-        // manufacturer: i.manufacturer == null ? "?" : i.manufacturer.fullName,
-        // os: i.operatingSystem == null ? null : i.operatingSystem.fullVersionedName,
-        // networks: this.formatNetworks_(i.attachedNetworks),
-        // localAddrresses: this.formatNetworkAddresses_(i.attachedNetworks),
       };
       if (
         this.search === "" ||
