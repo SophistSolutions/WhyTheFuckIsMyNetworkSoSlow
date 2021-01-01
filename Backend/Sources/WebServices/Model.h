@@ -131,7 +131,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
         /**
          *  GUID for this interface - MANUFACTURED by WTF
-         // @todo rename fID, and actually auto-generate it uniquly somehow (or OK to use iwndows based one)
+         // @todo rename fID, and actually auto-generate it uniquely somehow (or OK to use windows based one)
          */
         GUID fGUID;
 
@@ -153,7 +153,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
         Network () = default;
         Network (const Set<CIDR>& nas)
-            : fNetworkAddresses (nas)
+            : fNetworkAddresses {nas}
         {
         }
 

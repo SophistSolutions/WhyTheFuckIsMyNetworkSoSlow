@@ -793,9 +793,11 @@ namespace {
                         DiscoveryInfo_ di = [&] () {
                             DiscoveryInfo_ tmp{};
                             tmp.fAttachedNetworks = o->fAttachedNetworks;
+                            tmp.fAttachedInterfaces = o->fAttachedInterfaces;
                             if (optional<DiscoveryInfo_> oo = FindMatchingDevice_ (l, tmp)) {
                                 tmp = *oo; // merge
                                 tmp.fAttachedNetworks += o->fAttachedNetworks;
+                                Memory::AccumulateIf (&tmp.fAttachedInterfaces, o->fAttachedInterfaces);
                                 return tmp;
                             }
                             else {
