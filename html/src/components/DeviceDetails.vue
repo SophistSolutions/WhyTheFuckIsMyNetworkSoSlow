@@ -1,6 +1,6 @@
 <template>
   <div>
-    <table class="deviceDetailsTable" v-bind:key="device.id">
+    <table class="detailsTable" v-bind:key="device.id">
       <tr>
         <td class="labelColumn">Name (ID)</td>
         <td>
@@ -156,10 +156,10 @@ export default class DeviceDetails extends Vue {
 td.labelColumn {
   vertical-align: top;
 }
-.deviceDetailsTable {
+.detailsTable {
   table-layout: fixed;
 }
-.deviceDetailsTable td {
+.detailsTable td {
   padding-left: 5px;
   padding-right: 10px;
 }
