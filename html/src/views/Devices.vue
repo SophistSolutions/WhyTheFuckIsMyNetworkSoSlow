@@ -89,8 +89,6 @@
           <ReadOnlyTextWithHover :message="item.localAddresses" />
         </template>
         <template v-slot:item.networksSummary="{ item }">
-          <!-- <ReadOnlyTextWithHover :message="item.networksSummary" /> -->
-
           <span v-for="anw in Object.keys(item.attachedNetworks)">
             <ReadOnlyTextWithHover
               :message="GetNetworkName(GetNetworkByID(anw, networks))"
@@ -227,6 +225,7 @@ export default class Devices extends Vue {
       {
         text: "Type",
         value: "type",
+        cellClass: "nowrap",
         width: "10%",
       },
       {

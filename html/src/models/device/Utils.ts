@@ -55,45 +55,60 @@ export function ComputeDeviceTypeIconURLs(
   }> = [];
   if (t) {
     t.forEach((ti: string) => {
-      if (ti === "Router") {
-        result.push({
-          url: "images/RouterDevice.ico",
-          label: ti,
-        });
-      } else if (ti === "Network-Infrastructure") {
-        result.push({
-          url: "images/network-infrastructure.ico",
-          label: ti,
-        });
-      } else if (ti === "Personal-Computer") {
-        result.push({
-          url: "images/PC-Device.png",
-          label: ti,
-        });
-      } else if (ti === "Speaker") {
-        result.push({
-          url: "images/SpeakerDeviceIcon.png",
-          label: ti,
-        });
-      } else if (ti === "Printer") {
-        result.push({
-          url: "images/Printer.ico",
-          label: ti,
-        });
-      } else if (ti === "TV") {
-        result.push({
-          url: "images/TV-Icon.png",
-          label: ti,
-        });
-      } else if (ti === "Media-Player") {
-        result.push({
-          url: "images/Media-Player-Icon.png",
-          label: ti,
-        });
-      } else {
-        result.push({
-          label: ti,
-        });
+      switch (ti) {
+        case "Network-Infrastructure":
+          result.push({
+            url: "images/network-infrastructure.ico",
+            label: ti,
+          });
+          break;
+        case "Media-Player":
+          result.push({
+            url: "images/Media-Player-Icon.png",
+            label: ti,
+          });
+          break;
+        case "Personal-Computer":
+          result.push({
+            url: "images/PC-Device.png",
+            label: ti,
+          });
+          break;
+        case "Printer":
+          result.push({
+            url: "images/Printer.ico",
+            label: ti,
+          });
+          break;
+        case "Router":
+          result.push({
+            url: "images/RouterDevice.ico",
+            label: ti,
+          });
+          break;
+        case "Speaker":
+          result.push({
+            url: "images/SpeakerDeviceIcon.png",
+            label: ti,
+          });
+          break;
+        case "TV":
+          result.push({
+            url: "images/TV-Icon.png",
+            label: ti,
+          });
+          break;
+        case "Virtual-Machine":
+          result.push({
+            url: "images/Virtual-Machine.png",
+            label: ti,
+          });
+          break;
+        default:
+          result.push({
+            label: ti,
+          });
+          break;
       }
     });
   }

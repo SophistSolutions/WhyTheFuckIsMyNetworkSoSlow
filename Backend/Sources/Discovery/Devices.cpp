@@ -667,6 +667,9 @@ SB able to tell TV from playbar from SERVICE LIST; look at my TVS service list
                                 fManufacturer->fShortName = *o;
                             }
                         }
+                        if (o == L"Oracle VirtualBox virtual NIC"sv) {
+                            fTypes.Add (Discovery::DeviceType::eVirtualMachine);
+                        }
                     }
                 }
             }
@@ -689,8 +692,7 @@ SB able to tell TV from playbar from SERVICE LIST; look at my TVS service list
                                          pair<String, VariantValue>{L"manufacturer-URL"sv, Characters::ToString (fSSDPInfo->fManufacturerURI)},
                                          pair<String, VariantValue>{L"lastAdvertisement"sv, Characters::ToString (fSSDPInfo->fLastAdvertisement)},
                                          pair<String, VariantValue>{L"lastSSDPMessageRecievedAt"sv, Characters::ToString (fSSDPInfo->fLastSSDPMessageRecievedAt)},
-                                         pair<String, VariantValue> { L"locations"sv,
-                                                                      Characters::ToString (fSSDPInfo->fLocations) }
+                                         pair<String, VariantValue>{L"locations"sv, Characters::ToString (fSSDPInfo->fLocations) }
                                      }});
             }
 #endif

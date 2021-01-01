@@ -221,17 +221,18 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         /**
          */
         enum class DeviceType {
+            eMediaPlayer,
+            eNetworkInfrastructure,
             ePC,
-            eTablet,
             ePhone,
+            ePrinter,
             eRouter,
             eSpeaker,
-            ePrinter,
-            eNetworkInfrastructure,
-            eMediaPlayer,
+            eTablet,
             eTV,
+            eVirtualMachine,
 
-            Stroika_Define_Enum_Bounds (ePC, eTV)
+            Stroika_Define_Enum_Bounds (eMediaPlayer, eVirtualMachine)
         };
 
         /**
