@@ -3,11 +3,7 @@
     <table class="detailsTable" v-bind:key="device.id">
       <tr>
         <td class="labelColumn">Name (ID)</td>
-        <td>
-          <router-link v-bind:to="'/device/' + device.id">{{ device.name }}</router-link> ({{
-            device.id
-          }})
-        </td>
+        <td>{{ device.name }} ({{ device.id }})</td>
       </tr>
       <tr v-if="device.type">
         <td class="labelColumn">Types</td>
@@ -16,6 +12,23 @@
       <tr v-if="device.icon">
         <td>Icon</td>
         <td><img :src="device.icon" /></td>
+      </tr>
+      <tr v-if="device.manufacturer">
+        <td class="labelColumn">
+          Manufacturer
+        </td>
+        <td>
+          <span v-if="device.manufacturer.shortName || device.manufacturer.fullName">{{
+            device.manufacturer.shortName || device.manufacturer.fullName
+          }}</span>
+          <span v-if="device.manufacturer.webSiteURL">
+            <span v-if="device.manufacturer.shortName || device.manufacturer.fullName">; </span>
+            Link:
+            <a :href="device.manufacturer.webSiteURL" target="_blank">{{
+              device.manufacturer.webSiteURL
+            }}</a>
+          </span>
+        </td>
       </tr>
       <tr v-if="device.presentationURL">
         <td class="labelColumn">Presentation</td>
@@ -61,23 +74,6 @@
               </table>
             </li>
           </ul>
-        </td>
-      </tr>
-      <tr v-if="device.manufacturer">
-        <td class="labelColumn">
-          Manufacturer
-        </td>
-        <td>
-          <span v-if="device.manufacturer.shortName || device.manufacturer.fullName">{{
-            device.manufacturer.shortName || device.manufacturer.fullName
-          }}</span>
-          <span v-if="device.manufacturer.webSiteURL">
-            <span v-if="device.manufacturer.shortName || device.manufacturer.fullName">; </span>
-            Link:
-            <a :href="device.manufacturer.webSiteURL" target="_blank">{{
-              device.manufacturer.webSiteURL
-            }}</a>
-          </span>
         </td>
       </tr>
       <tr v-if="device.openPorts">

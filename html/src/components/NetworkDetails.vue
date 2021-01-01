@@ -2,14 +2,8 @@
   <div>
     <table class="detailsTable" v-bind:key="network.id">
       <tr>
-        <td>ID</td>
-        <td>
-          <router-link v-bind:to="'/network/' + network.id">{{ network.id }}</router-link>
-        </td>
-      </tr>
-      <tr>
-        <td>Name</td>
-        <td>{{ GetNetworkName(network) }}</td>
+        <td>Name (ID)</td>
+        <td>{{ GetNetworkName(network) }} ({{ network.id }})</td>
       </tr>
       <tr v-if="network.DNSServers && network.DNSServers.length">
         <td>DNS Servers</td>

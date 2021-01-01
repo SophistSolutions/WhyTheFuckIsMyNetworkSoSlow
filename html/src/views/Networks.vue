@@ -59,6 +59,7 @@
         </template>
         <template v-slot:expanded-item="{ headers, item }">
           <td colspan="100">
+            <Link2DetailsPage :link="'/#/network/' + item.id" />
             <NetworkDetails
               class="detailsSection"
               :network="networkFromID_(item.id)"
@@ -89,6 +90,7 @@ import { fetchNetworks } from "@/proxy/API";
   components: {
     AppBar: () => import("@/components/AppBar.vue"),
     FilterSummaryMessage: () => import("@/components/FilterSummaryMessage.vue"),
+    Link2DetailsPage: () => import("@/components/Link2DetailsPage.vue"),
     NetworkDetails: () => import("@/components/NetworkDetails.vue"),
     ReadOnlyTextWithHover: () => import("@/components/ReadOnlyTextWithHover.vue"),
     Search: () => import("@/components/Search.vue"),

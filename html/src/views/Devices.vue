@@ -100,6 +100,7 @@
         </template>
         <template v-slot:expanded-item="{ headers, item }">
           <td colspan="100">
+            <Link2DetailsPage :link="'/#/device/' + item.id" />
             <DeviceDetails class="detailsSection" :device="item" :networks="networks" />
           </td>
         </template>
@@ -132,6 +133,7 @@ import { fetchNetworks } from "@/proxy/API";
     AppBar: () => import("@/components/AppBar.vue"),
     DeviceDetails: () => import("@/components/DeviceDetails.vue"),
     FilterSummaryMessage: () => import("@/components/FilterSummaryMessage.vue"),
+    Link2DetailsPage: () => import("@/components/Link2DetailsPage.vue"),
     ReadOnlyTextWithHover: () => import("@/components/ReadOnlyTextWithHover.vue"),
     Search: () => import("@/components/Search.vue"),
   },

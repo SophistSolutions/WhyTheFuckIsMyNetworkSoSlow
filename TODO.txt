@@ -1,21 +1,10 @@
-in deviceINfo page, and networkINof compoent add optional (INCLUDE-DETAILS-PAGE-LINK)
-and set true embedded and false in stnadardlone page
-
 --> AUTO ADD TYPE "Virtual-Machine" when you see manufacture of device
 	"oracle virtualbox ..."
 	
 - Include SerVICES panel in details
 	(each service where appropirate include LINK to open/view)
 	
-link from network/ID page to devices page with restruicton on network
-
-
-
-
-
-
-
-
+- link from network/ID page to devices page with restruicton on network
 
 
 
@@ -28,7 +17,6 @@ link from network/ID page to devices page with restruicton on network
 		with john how to do that with view model tirggered on changes in devices.
 
 		MAYBE use WATCH, and then reactive array viewmodel (yes I think thats best)
-
 
 
 ----
