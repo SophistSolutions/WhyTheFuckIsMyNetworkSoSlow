@@ -18,15 +18,15 @@ export function GetNetworkByID(networkID: string, networks: INetwork[]): INetwor
       return n;
     }
   }
-  throw "no such network id found";
+  throw new Error("no such network id found");
 }
 
 export function GetNetworkLink(n: INetwork | string): string | null {
   if (typeof n === "string" || n instanceof String) {
     return `/#/network/${n}`;
   }
-  if ((<INetwork>n).id) {
-    return `/#/network/${(<INetwork>n).id}`;
+  if ((n as INetwork).id) {
+    return `/#/network/${(n as INetwork).id}`;
   }
   return null;
 }
