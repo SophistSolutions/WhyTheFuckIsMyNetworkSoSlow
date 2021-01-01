@@ -1,6 +1,3 @@
---> AUTO ADD TYPE "Virtual-Machine" when you see manufacture of device
-	"oracle virtualbox ..."
-	
 - Include SerVICES panel in details
 	(each service where appropirate include LINK to open/view)
 	
