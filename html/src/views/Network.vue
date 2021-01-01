@@ -3,7 +3,7 @@
     <app-bar />
     <v-card>
       <v-card-title>
-        Network {{ $route.params.id }}
+        Network "{{ GetNetworkName(network) }}" ({{ $route.params.id }})
         <v-spacer></v-spacer>
       </v-card-title>
       <NetworkDetails class="detailsSection" :network="network" :devices="devices"></NetworkDetails>
@@ -14,6 +14,7 @@
 <script lang="ts">
 import { IDevice, INetworkAttachmentInfo } from "@/models/device/IDevice";
 import { INetwork } from "@/models/network/INetwork";
+import { GetNetworkName } from "@/models/network/Utils";
 
 import { Component, Vue, Watch } from "vue-property-decorator";
 
@@ -26,6 +27,8 @@ import { Component, Vue, Watch } from "vue-property-decorator";
 })
 export default class Network extends Vue {
   private polling: undefined | number = undefined;
+
+  private GetNetworkName = GetNetworkName;
 
   private fetchAvailableNetworks() {
     this.$store.dispatch("fetchAvailableNetworks");
