@@ -41,6 +41,8 @@ import { Component, Watch } from "vue-property-decorator";
 export default class Home extends Vue {
   private polling: undefined | number = undefined;
 
+  private GetDeviceIDsInNetwork = GetDeviceIDsInNetwork;
+
   private created() {
     this.$store.dispatch("fetchDevices", null);
     this.$store.dispatch("fetchAvailableNetworks");
@@ -79,7 +81,7 @@ export default class Home extends Vue {
         internetInfo:
           (i.gateways == null ? "" : i.gateways.join(", ")) +
           (i.internetServiceProvider == null ? " " : " (" + i.internetServiceProvider.name + ")"),
-        devices: this.getDevicesInNetwork(i).length,
+        devices: GetDeviceIDsInNetwork(i, this.devices).length,
         status: "healthy",
         location: FormatLocation(i.geographicLocation),
       });

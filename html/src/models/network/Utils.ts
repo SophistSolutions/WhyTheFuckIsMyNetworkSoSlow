@@ -11,8 +11,35 @@ export function GetNetworkName(n: INetwork): string {
   return n.networkAddresses.join(", ");
 }
 
-export function FormatLocation(l: IGeographicLocation): string {
+export function GetNetworkByID(networkID: string, networks: INetwork[]): INetwork {
+  let n: INetwork;
+  for (n of networks) {
+    if (networkID === n.id) {
+      return n;
+    }
+  }
+  throw "no such network id found";
+}
+
+export function GetNetworkLink(n: INetwork | string): string | null {
+  if (typeof n === "string" || n instanceof String) {
+    return `/#/network/${n}`;
+  }
+  if ((<INetwork>n).id) {
+    return `/#/network/${(<INetwork>n).id}`;
+  }
+  return null;
+}
+
+/**
+ *
+ * @param l argument can be null, in which case this returns ""
+ */
+export function FormatLocation(l?: IGeographicLocation): string {
   let result: string = "";
+  if (l == null) {
+    return result;
+  }
   if (l.city != null) {
     result += l.city;
   }
@@ -37,17 +64,6 @@ export function FormatLocation(l: IGeographicLocation): string {
   return result;
 }
 
-export function FormatAttachedNetworkAddresses(attachedNetworks: {
-  [key: string]: INetworkAttachmentInfo;
-}): string {
-  let addresses: string[] = [];
-  Object.entries(attachedNetworks).forEach((element) => {
-    element[1].networkAddresses.forEach((e: string) => addresses.push(e));
-  });
-  addresses = addresses.filter((value, index, self) => self.indexOf(value) === index);
-  return addresses.join(", ");
-}
-
 export function GetDeviceIDsInNetwork(nw: INetwork, devices: IDevice[]): string[] {
   const ids: string[] = [];
   devices.forEach((i: IDevice) => {
@@ -64,6 +80,26 @@ export function GetDeviceIDsInNetwork(nw: INetwork, devices: IDevice[]): string[
   return ids;
 }
 
+/*
+ *
+ */
+export function FormatAttachedNetworkLocalAddresses(attachedNetworks: {
+  [key: string]: INetworkAttachmentInfo;
+}): string {
+  let addresses: string[] = [];
+  Object.entries(attachedNetworks).forEach((element) => {
+    element[1].networkAddresses.forEach((e: string) => addresses.push(e));
+  });
+  addresses = addresses.filter((value, index, self) => self.indexOf(value) === index);
+  return addresses.join(", ");
+}
+
+export function FormatAttachedNetwork(anw: INetworkAttachmentInfo): string {
+  return anw.networkAddresses.join(", ");
+}
+
+/*
+ */
 export function FormatAttachedNetworks(
   attachedNetworks: { [key: string]: INetworkAttachmentInfo },
   networks: INetwork[]

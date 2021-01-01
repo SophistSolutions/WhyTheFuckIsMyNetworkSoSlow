@@ -29,10 +29,16 @@
         <td>Internet Service Provider</td>
         <td>{{ network.internetServiceProvider.name }}</td>
       </tr>
+      <tr v-if="network.attachedInterfaces">
+        <td>ATTACHED INTERFACES</td>
+        <td>
+          <json-viewer :value="network.attachedInterfaces" :expand-depth="0" copyable sort />
+        </td>
+      </tr>
       <tr v-if="network.debugProps">
         <td>DEBUG INFO</td>
         <td>
-          <json-viewer :value="network.debugProps" :expand-depth="1" copyable sort></json-viewer>
+          <json-viewer :value="network.debugProps" :expand-depth="1" copyable sort />
         </td>
       </tr>
     </table>
@@ -73,7 +79,7 @@ export default class NetworkDetails extends Vue {
   table-layout: fixed;
 }
 .detailsTable td {
-  padding-left: 10px;
+  padding-left: 5px;
   padding-right: 10px;
 }
 </style>

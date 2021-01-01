@@ -49,17 +49,21 @@
           </td>
         </template>
         <template v-slot:item.name="{ item }">
-          <ReadOnlyTextWithTitle :message="item.name" />
+          <ReadOnlyTextWithHover :message="GetNetworkName(item)" :link="GetNetworkLink(item)" />
         </template>
         <template v-slot:item.location="{ item }">
-          <ReadOnlyTextWithTitle :message="item.location" />
+          <ReadOnlyTextWithHover :message="item.location" />
         </template>
         <template v-slot:item.internetInfo="{ item }">
-          <ReadOnlyTextWithTitle :message="item.internetInfo" />
+          <ReadOnlyTextWithHover :message="item.internetInfo" />
         </template>
         <template v-slot:expanded-item="{ headers, item }">
           <td colspan="100">
-            <NetworkDetails :network="networkFromID_(item.id)" :devices="devices"></NetworkDetails>
+            <NetworkDetails
+              class="detailsSection"
+              :network="networkFromID_(item.id)"
+              :devices="devices"
+            ></NetworkDetails>
           </td>
         </template>
       </v-data-table>
@@ -70,7 +74,12 @@
 <script lang="ts">
 import { IDevice, INetworkAttachmentInfo } from "@/models/device/IDevice";
 import { INetwork } from "@/models/network/INetwork";
-import { FormatLocation, GetDeviceIDsInNetwork, GetNetworkName } from "@/models/network/Utils";
+import {
+  FormatLocation,
+  GetDeviceIDsInNetwork,
+  GetNetworkLink,
+  GetNetworkName,
+} from "@/models/network/Utils";
 import { Component, Vue, Watch } from "vue-property-decorator";
 
 import { fetchNetworks } from "@/proxy/API";
@@ -81,12 +90,15 @@ import { fetchNetworks } from "@/proxy/API";
     AppBar: () => import("@/components/AppBar.vue"),
     FilterSummaryMessage: () => import("@/components/FilterSummaryMessage.vue"),
     NetworkDetails: () => import("@/components/NetworkDetails.vue"),
-    ReadOnlyTextWithTitle: () => import("@/components/ReadOnlyTextWithTitle.vue"),
+    ReadOnlyTextWithHover: () => import("@/components/ReadOnlyTextWithHover.vue"),
     Search: () => import("@/components/Search.vue"),
   },
 })
 export default class Networks extends Vue {
   private polling: undefined | number = undefined;
+
+  private GetNetworkLink = GetNetworkLink;
+  private GetNetworkName = GetNetworkName;
 
   private search: string = "";
   private sortBy: any = [];
@@ -194,7 +206,7 @@ export default class Networks extends Vue {
     const result: object[] = [];
     this.networks.forEach((i) => {
       const r: any = {
-        id: i.id,
+        ...i,
         name: GetNetworkName(i),
         active: "true",
         internetInfo:
@@ -241,6 +253,10 @@ export default class Networks extends Vue {
 .extrastuff {
   padding: 0 12px;
   //background-color: red;
+}
+
+.detailsSection {
+  margin-top: 1em;
 }
 
 .networkList {

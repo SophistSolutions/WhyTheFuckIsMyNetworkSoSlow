@@ -1,3 +1,47 @@
+in deviceINfo page, and networkINof compoent add optional (INCLUDE-DETAILS-PAGE-LINK)
+and set true embedded and false in stnadardlone page
+
+--> AUTO ADD TYPE "Virtual-Machine" when you see manufacture of device
+	"oracle virtualbox ..."
+	
+- Include SerVICES panel in details
+	(each service where appropirate include LINK to open/view)
+	
+link from network/ID page to devices page with restruicton on network
+
+
+
+
+
+
+
+
+
+
+
+
+>	almost ready for checkin - excep tfor comma in netwoks assocaited with a device line.
+
+	>>> IDEAS - FIRST maybe make array optional arg to ReadOnlyTextImte
+
+	>>> OR - create viewmodel that has array-based summary information. DISCUSS 
+		with john how to do that with view model tirggered on changes in devices.
+
+		MAYBE use WATCH, and then reactive array viewmodel (yes I think thats best)
+
+
+
+----
+
+	>> NEXT WTF release do UI project to rewrite so view-store are 'slices' and maintian lists instead of maps 
+	   to better reflect ui ordering choices.
+
+	   Do mapping from API-Model (keep wire model, api/business-model, and ui-model)
+	   Keep all in vuex store, and have ui driven from ui-model
+
+
+
+
 ---
 	take argument in devices page filter by network, and then add
 	and when called, set property and then remove from url, and then
@@ -34,7 +78,7 @@ IN DEVICE PANEL:
 
 	  John says Axios makes it easy to do this mapping; and even so should take a day
 	  so leave it for a later GUI work pass
-	  
+
 ---
  make -j 10 
   for backend and html produces

@@ -62,7 +62,7 @@
         @click:row="rowClicked"
       >
         <template v-slot:item.lastSeenAt="{ headers, item }">
-          <ReadOnlyTextWithTitle
+          <ReadOnlyTextWithHover
             v-if="item.lastSeenAt"
             :message="item.lastSeenAt | moment('from', 'now')"
           />
@@ -70,26 +70,33 @@
         <template v-slot:item.type="{ headers, item }">
           <span v-for="t in ComputeDeviceTypeIconURLs(item.type)">
             <img v-if="t.url" :src="t.url" :title="t.label" height="24" width="24" />
-            <ReadOnlyTextWithTitle v-if="!t.url" :message="t.label" />
+            <ReadOnlyTextWithHover v-if="!t.url" :message="t.label" />
           </span>
         </template>
         <template v-slot:item.operatingSystem="{ headers, item }">
           <span v-for="t in ComputeOSIconURLList(item.operatingSystem)">
             <img v-if="t.url" :src="t.url" :title="t.label" height="24" width="24" />
-            <ReadOnlyTextWithTitle v-if="!t.url" :message="t.label" />
+            <ReadOnlyTextWithHover v-if="!t.url" :message="t.label" />
           </span>
         </template>
         <template v-slot:item.name="{ item }">
-          <ReadOnlyTextWithTitle :message="item.name" />
+          <ReadOnlyTextWithHover :message="item.name" />
         </template>
         <template v-slot:item.manufacturerSummary="{ item }">
-          <ReadOnlyTextWithTitle :message="item.manufacturerSummary" />
+          <ReadOnlyTextWithHover :message="item.manufacturerSummary" />
         </template>
         <template v-slot:item.localAddresses="{ item }">
-          <ReadOnlyTextWithTitle :message="item.localAddresses" />
+          <ReadOnlyTextWithHover :message="item.localAddresses" />
         </template>
         <template v-slot:item.networksSummary="{ item }">
-          <ReadOnlyTextWithTitle :message="item.networksSummary" />
+          <!-- <ReadOnlyTextWithHover :message="item.networksSummary" /> -->
+
+          <span v-for="anw in Object.keys(item.attachedNetworks)">
+            <ReadOnlyTextWithHover
+              :message="GetNetworkName(GetNetworkByID(anw, networks))"
+              :link="GetNetworkLink(anw)"
+            />,
+          </span>
         </template>
         <template v-slot:expanded-item="{ headers, item }">
           <td colspan="100">
@@ -106,8 +113,11 @@ import { IDevice, INetworkAttachmentInfo } from "@/models/device/IDevice";
 import { ComputeDeviceTypeIconURLs, ComputeOSIconURLList } from "@/models/device/Utils";
 import { INetwork } from "@/models/network/INetwork";
 import {
-  FormatAttachedNetworkAddresses,
+  FormatAttachedNetwork,
+  FormatAttachedNetworkLocalAddresses,
   FormatAttachedNetworks,
+  GetNetworkByID,
+  GetNetworkLink,
   GetNetworkName,
 } from "@/models/network/Utils";
 import { OperatingSystem } from "@/models/OperatingSystem";
@@ -122,13 +132,17 @@ import { fetchNetworks } from "@/proxy/API";
     AppBar: () => import("@/components/AppBar.vue"),
     DeviceDetails: () => import("@/components/DeviceDetails.vue"),
     FilterSummaryMessage: () => import("@/components/FilterSummaryMessage.vue"),
-    ReadOnlyTextWithTitle: () => import("@/components/ReadOnlyTextWithTitle.vue"),
+    ReadOnlyTextWithHover: () => import("@/components/ReadOnlyTextWithHover.vue"),
     Search: () => import("@/components/Search.vue"),
   },
 })
 export default class Devices extends Vue {
   private ComputeDeviceTypeIconURLs = ComputeDeviceTypeIconURLs;
   private ComputeOSIconURLList = ComputeOSIconURLList;
+  private FormatAttachedNetwork = FormatAttachedNetwork;
+  private GetNetworkLink = GetNetworkLink;
+  private GetNetworkByID = GetNetworkByID;
+  private GetNetworkName = GetNetworkName;
   private polling: undefined | number = undefined;
   private search: string = "";
   private sortBy: any = [];
@@ -314,7 +328,7 @@ export default class Devices extends Vue {
           ...i,
           ...{
             networksSummary: FormatAttachedNetworks(i.attachedNetworks, this.networks),
-            localAddresses: FormatAttachedNetworkAddresses(i.attachedNetworks),
+            localAddresses: FormatAttachedNetworkLocalAddresses(i.attachedNetworks),
             manufacturerSummary:
               i.manufacturer == null ? "" : i.manufacturer.fullName || i.manufacturer.shortName,
           },

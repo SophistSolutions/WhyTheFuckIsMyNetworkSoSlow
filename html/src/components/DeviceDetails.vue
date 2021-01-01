@@ -2,57 +2,60 @@
   <div>
     <table class="deviceDetailsTable" v-bind:key="device.id">
       <tr>
-        <td>Name</td>
-        <td>{{ device.name }}</td>
-      </tr>
-      <tr>
-        <td>ID</td>
+        <td class="labelColumn">Name (ID)</td>
         <td>
-          <router-link v-bind:to="'/device/' + device.id">{{ device.id }}</router-link>
+          <router-link v-bind:to="'/device/' + device.id">{{ device.name }}</router-link> ({{
+            device.id
+          }})
         </td>
       </tr>
       <tr v-if="device.type">
-        <td>Types</td>
+        <td class="labelColumn">Types</td>
         <td>{{ device.type.join(", ") }}</td>
       </tr>
       <tr v-if="device.icon">
         <td>Icon</td>
         <td><img :src="device.icon" /></td>
       </tr>
-      <tr v-if="device.openPorts">
-        <td>Open Ports</td>
-        <td>{{ device.openPorts.join(", ") }}</td>
-      </tr>
       <tr v-if="device.presentationURL">
-        <td>Presentation</td>
+        <td class="labelColumn">Presentation</td>
         <td>
           <a v-bind:href="device.presentationURL" target="_blank">{{ device.presentationURL }}</a>
         </td>
       </tr>
       <tr v-if="device.operatingSystem">
-        <td>OS</td>
+        <td class="labelColumn">OS</td>
         <td>
           {{ device.operatingSystem.fullVersionedName }}
         </td>
       </tr>
+      <tr v-if="device.lastSeenAt">
+        <td class="labelColumn">Last Seen</td>
+        <td>{{ device.lastSeenAt | moment("from", "now") }}</td>
+      </tr>
       <tr>
-        <td>Network Adapters</td>
+        <td class="labelColumn">Networks</td>
         <td>
           <ul>
             <li v-for="attachedNetID in Object.keys(device.attachedNetworks)">
               <table>
                 <tr>
-                  <td>Adapter ID</td>
-                  <td class=".flex-nowrap">{{ attachedNetID }}</td>
+                  <td>Name (ID)</td>
+                  <td class=".flex-nowrap">
+                    <a :href="GetNetworkLink(attachedNetID)">
+                      {{ GetNetworkName(GetNetworkByID(attachedNetID, networks)) }}</a
+                    >
+                    ({{ attachedNetID }})
+                  </td>
                 </tr>
                 <tr v-if="device.attachedNetworks[attachedNetID].hardwareAddresses">
-                  <td>Hardware Addresses</td>
+                  <td>Hardware Address(es)</td>
                   <td class=".flex-nowrap">
                     {{ device.attachedNetworks[attachedNetID].hardwareAddresses.join(", ") }}
                   </td>
                 </tr>
                 <tr v-if="device.attachedNetworks[attachedNetID].networkAddresses">
-                  <td>Network Address Bindings</td>
+                  <td>Network Address Binding(s)</td>
                   <td>{{ device.attachedNetworks[attachedNetID].networkAddresses.join(", ") }}</td>
                 </tr>
               </table>
@@ -61,7 +64,7 @@
         </td>
       </tr>
       <tr v-if="device.manufacturer">
-        <td>
+        <td class="labelColumn">
           Manufacturer
         </td>
         <td>
@@ -77,12 +80,18 @@
           </span>
         </td>
       </tr>
-      <tr v-if="device.lastSeenAt">
-        <td>Last Seen</td>
-        <td>{{ device.lastSeenAt | moment("from", "now") }}</td>
+      <tr v-if="device.openPorts">
+        <td class="labelColumn">Open Ports</td>
+        <td>{{ device.openPorts.join(", ") }}</td>
+      </tr>
+      <tr v-if="device.attachedNetworkInterfaces">
+        <td class="labelColumn">ATTACHED NETWORK INTERFACES</td>
+        <td>
+          <json-viewer :value="device.attachedNetworkInterfaces" :expand-depth="0" copyable sort />
+        </td>
       </tr>
       <tr v-if="device.debugProps">
-        <td>DEBUG INFO</td>
+        <td class="labelColumn">DEBUG INFO</td>
         <td>
           <json-viewer :value="device.debugProps" :expand-depth="1" copyable sort></json-viewer>
         </td>
@@ -94,13 +103,14 @@
 <script lang="ts">
 import { IDevice, INetworkAttachmentInfo } from "@/models/device/IDevice";
 import { INetwork } from "@/models/network/INetwork";
+import { GetNetworkByID, GetNetworkLink, GetNetworkName } from "@/models/network/Utils";
 import { OperatingSystem } from "@/models/OperatingSystem";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 
 @Component({
   name: "DeviceDetails",
 })
-export default class DeviceDetails2 extends Vue {
+export default class DeviceDetails extends Vue {
   @Prop({
     required: true,
     default: null,
@@ -112,6 +122,10 @@ export default class DeviceDetails2 extends Vue {
     default: null,
   })
   public networks!: INetwork[];
+
+  private GetNetworkName = GetNetworkName;
+  private GetNetworkLink = GetNetworkLink;
+  private GetNetworkByID = GetNetworkByID;
 
   private formatNetworkAddresses_(attachedNetworks: {
     [key: string]: INetworkAttachmentInfo;
@@ -139,11 +153,14 @@ export default class DeviceDetails2 extends Vue {
 </script>
 
 <style scoped lang="scss">
+td.labelColumn {
+  vertical-align: top;
+}
 .deviceDetailsTable {
   table-layout: fixed;
 }
 .deviceDetailsTable td {
-  padding-left: 10px;
+  padding-left: 5px;
   padding-right: 10px;
 }
 </style>
