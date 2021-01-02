@@ -45,7 +45,7 @@
       >
         <template v-slot:item.devices="{ headers, item }">
           <td>
-            <router-link to="/devices">{{ item.devices }}</router-link>
+            <a :href="GetDevicesForNetworkLink(item.id)">{{ item.devices }}</a>
           </td>
         </template>
         <template v-slot:item.name="{ item }">
@@ -78,6 +78,7 @@ import { INetwork } from "@/models/network/INetwork";
 import {
   FormatLocation,
   GetDeviceIDsInNetwork,
+  GetDevicesForNetworkLink,
   GetNetworkLink,
   GetNetworkName,
 } from "@/models/network/Utils";
@@ -101,6 +102,7 @@ export default class Networks extends Vue {
 
   private GetNetworkLink = GetNetworkLink;
   private GetNetworkName = GetNetworkName;
+  private GetDevicesForNetworkLink = GetDevicesForNetworkLink;
 
   private search: string = "";
   private sortBy: any = [];
