@@ -91,7 +91,8 @@
         <template v-slot:item.networksSummary="{ item }">
           <span v-for="anw in Object.keys(item.attachedNetworks)">
             <ReadOnlyTextWithHover
-              :message="GetNetworkName(GetNetworkByID(anw, networks))"
+              v-if="GetNetworkByIDQuietly(anw, networks)"
+              :message="GetNetworkName(GetNetworkByIDQuietly(anw, networks))"
               :link="GetNetworkLink(anw)"
             />,
           </span>
@@ -116,12 +117,13 @@ import {
   FormatAttachedNetworkLocalAddresses,
   FormatAttachedNetworks,
   GetNetworkByID,
+  GetNetworkByIDQuietly,
   GetNetworkLink,
   GetNetworkName,
 } from "@/models/network/Utils";
 import { OperatingSystem } from "@/models/OperatingSystem";
 
-import { Component, Vue, Watch } from "vue-property-decorator";
+import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 
 import { fetchNetworks } from "@/proxy/API";
 
@@ -137,18 +139,22 @@ import { fetchNetworks } from "@/proxy/API";
   },
 })
 export default class Devices extends Vue {
+  @Prop()
+  public selectedNetwork!: string | null;
+
   private ComputeDeviceTypeIconURLs = ComputeDeviceTypeIconURLs;
   private ComputeOSIconURLList = ComputeOSIconURLList;
   private FormatAttachedNetwork = FormatAttachedNetwork;
   private GetNetworkLink = GetNetworkLink;
   private GetNetworkByID = GetNetworkByID;
+  private GetNetworkByIDQuietly = GetNetworkByIDQuietly;
   private GetNetworkName = GetNetworkName;
   private polling: undefined | number = undefined;
   private search: string = "";
   private sortBy: any = [];
   private sortDesc: any = [];
   private expanded: any[] = [];
-  private selectedNetwork: string | null = null;
+
   private get selectableNetworks(): object[] {
     const r: object[] = [
       {
