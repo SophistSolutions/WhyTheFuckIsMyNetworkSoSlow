@@ -277,7 +277,7 @@ export default class Devices extends Vue {
     // working (so far)
     if (this.$route.query.selectedNetwork) {
       const s: string = this.$route.query.selectedNetwork as string;
-      this.$router.push({
+      this.$router.replace({
         path: this.$route.path,
         // params: { selectedNetwork: this.$route.query.selectedNetwork },
       });
