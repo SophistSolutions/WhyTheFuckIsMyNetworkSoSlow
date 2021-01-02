@@ -12,13 +12,21 @@ export function GetNetworkName(n: INetwork): string {
 }
 
 export function GetNetworkByID(networkID: string, networks: INetwork[]): INetwork {
+  const n: INetwork | null = GetNetworkByIDQuietly(networkID, networks);
+  if (n == null) {
+    throw new Error("no such network id found");
+  }
+  return n;
+}
+
+export function GetNetworkByIDQuietly(networkID: string, networks: INetwork[]): INetwork | null {
   let n: INetwork;
   for (n of networks) {
     if (networkID === n.id) {
       return n;
     }
   }
-  throw new Error("no such network id found");
+  return null;
 }
 
 export function GetNetworkLink(n: INetwork | string): string | null {
