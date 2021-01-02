@@ -115,7 +115,6 @@ import { INetwork } from "@/models/network/INetwork";
 import {
   FormatAttachedNetwork,
   FormatAttachedNetworkLocalAddresses,
-  FormatAttachedNetworks,
   GetNetworkByID,
   GetNetworkByIDQuietly,
   GetNetworkLink,
@@ -273,7 +272,18 @@ export default class Devices extends Vue {
   }
 
   private created() {
-    this.selectedNetworkCurrent = this.selectedNetwork;
+    // @see https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/14
+    // This works, but maybe cleaner to do within the router, but wasn't able to get
+    // working (so far)
+    if (this.$route.query.selectedNetwork) {
+      const s: string = this.$route.query.selectedNetwork as string;
+      this.$router.push({
+        path: this.$route.path,
+        // params: { selectedNetwork: this.$route.query.selectedNetwork },
+      });
+      this.selectedNetworkCurrent = s;
+    }
+
     this.fetchDevices();
     this.fetchAvailableNetworks();
     this.pollData();

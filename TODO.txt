@@ -4,8 +4,6 @@
 - link from network/ID page to devices page with restruicton on network
 
 
-
-
 >	almost ready for checkin - excep tfor comma in netwoks assocaited with a device line.
 
 	>>> IDEAS - FIRST maybe make array optional arg to ReadOnlyTextImte

@@ -52,6 +52,22 @@ export default new Router({
           { text: "Devices", disabled: true },
         ],
       },
+      // @see https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/14
+      // Cannot get this working but got basically same thing working from created
+      // method
+      // beforeEnter: (to, from, next) => {
+      //   // do something with to.query and then save it in store
+      //   if (to.query.selectedNetwork) {
+      //     next({
+      //       path: "/devices",
+      //       replace: true,
+      //       params: { selectedNetwork: to.query.selectedNetwork },
+      //     });
+      //   } else {
+      //     next();
+      //   }
+      // },
+      // props: (route) => ({ selectedNetwork: route.query.selectedNetwork }),
     },
     {
       path: "/network/:id",
