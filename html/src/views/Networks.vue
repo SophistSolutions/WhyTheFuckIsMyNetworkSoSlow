@@ -2,20 +2,20 @@
   <v-container class="devices">
     <app-bar>
       <template v-slot:extrastuff>
-        <v-container fluid class="extrastuff">
-          <v-row no-gutters align="end">
-            <v-col>
+        <v-container class="extrastuff">
+          <v-row no-gutters dense align="end">
+            <v-col cols="3">
               <Search dense :searchFor.sync="search" />
             </v-col>
-            <v-col>
-              <!-- <v-col style="display: flex; flex-direction: column; justify-content: space-between;;"> -->
-              <!-- <div /> -->
+            <v-col cols="9" align="end">
               <FilterSummaryMessage
                 dense
+                :filtered="filtered"
                 :nItemsSelected="filteredNetworks.length"
                 :nTotalItems="networks.length"
                 itemsName="networks"
               />
+              <ClearButton v-if="filtered" v-on:click="clearFilter" />
             </v-col>
           </v-row>
         </v-container>
@@ -90,6 +90,7 @@ import { fetchNetworks } from "@/proxy/API";
   name: "Networks",
   components: {
     AppBar: () => import("@/components/AppBar.vue"),
+    ClearButton: () => import("@/components/ClearButton.vue"),
     FilterSummaryMessage: () => import("@/components/FilterSummaryMessage.vue"),
     Link2DetailsPage: () => import("@/components/Link2DetailsPage.vue"),
     NetworkDetails: () => import("@/components/NetworkDetails.vue"),
@@ -204,6 +205,13 @@ export default class Networks extends Vue {
 
   private get devices(): IDevice[] {
     return this.$store.getters.getDevices;
+  }
+
+  private get filtered(): boolean {
+    return this.search !== "";
+  }
+  private clearFilter() {
+    this.search = "";
   }
 
   private get filteredNetworks(): object[] {

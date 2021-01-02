@@ -1,5 +1,5 @@
 <template>
-  <div>{{ msg }}</div>
+  <span>{{ msg }}</span>
 </template>
 
 <script lang="ts">
@@ -15,6 +15,9 @@ export default class FilterSummaryMessage extends Vue {
   @Prop({ required: true })
   public nTotalItems!: number;
 
+  @Prop({ required: false })
+  public filtered!: boolean;
+
   @Prop({ required: true })
   public nItemsSelected!: number;
 
@@ -27,14 +30,19 @@ export default class FilterSummaryMessage extends Vue {
     this.onChange();
   }
 
+  @Watch("filtered")
   @Watch("nTotalItems")
   @Watch("nItemsSelected")
   @Watch("itemsName")
   private onChange() {
-    if (this.nItemsSelected === this.nTotalItems) {
-      this.msg = `Unfiltered: all ${this.nTotalItems} ${this.itemsName} showing`;
-    } else {
+    let filtered = this.filtered;
+    if (filtered === null) {
+      filtered = this.nItemsSelected === this.nTotalItems;
+    }
+    if (filtered) {
       this.msg = `Filtered: showing ${this.nItemsSelected} of ${this.nTotalItems} ${this.itemsName}`;
+    } else {
+      this.msg = `Unfiltered: all ${this.nTotalItems} ${this.itemsName} showing`;
     }
   }
 }

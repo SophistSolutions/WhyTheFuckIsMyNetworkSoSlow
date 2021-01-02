@@ -1,4 +1,18 @@
-	In devices filter area, add CLEAR button (disabled if already clear)
+
+in device filter add 'services' filter so can see what things have that services
+
+ADN RELATED 0 ahve services section to open those services
+
+----
+
+	IDEA:
+		ADD TO issues
+
+		COULD change the history thing I do on devices page so every update to filter goes into URL, NetworkAdapterNamesuse
+
+		uses REPLACE of the URL, so we never need to clear it in the router, just set the filter
+		values in UI to correspond to those in the navbar. Means you can save state of search
+		more easily to hand to someone else.
 
 ----
 	Maybe add 'types' filter popup in devices page

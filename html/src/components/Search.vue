@@ -1,7 +1,7 @@
 <template>
   <v-text-field
     v-model="searchForBWA"
-    append-icon="mdi-magnify"
+    prepend-icon="mdi-magnify"
     label="Search"
     single-line
     hide-details

@@ -4,7 +4,7 @@
       <template v-slot:extrastuff>
         <v-container fluid class="extrastuff">
           <v-row no-gutters align="end">
-            <v-col>
+            <v-col cols="2">
               <v-select
                 dense
                 hide-details="true"
@@ -13,7 +13,7 @@
                 label="On networks"
               />
             </v-col>
-            <v-col>
+            <v-col cols="2">
               <v-select
                 dense
                 hide-details="true"
@@ -22,16 +22,18 @@
                 label="Seen"
               />
             </v-col>
-            <v-col>
+            <v-col cols="3">
               <Search :searchFor.sync="search" dense />
             </v-col>
-            <v-col>
+            <v-col cols="5" align="end">
               <FilterSummaryMessage
                 dense
+                :filtered="filtered"
                 :nItemsSelected="filteredDevices.length"
                 :nTotalItems="devices.length"
                 itemsName="devices"
               />
+              <ClearButton v-if="filtered" v-on:click="clearFilter" />
             </v-col>
           </v-row>
         </v-container>
@@ -130,6 +132,7 @@ import { fetchNetworks } from "@/proxy/API";
   name: "Devices",
   components: {
     AppBar: () => import("@/components/AppBar.vue"),
+    ClearButton: () => import("@/components/ClearButton.vue"),
     DeviceDetails: () => import("@/components/DeviceDetails.vue"),
     FilterSummaryMessage: () => import("@/components/FilterSummaryMessage.vue"),
     Link2DetailsPage: () => import("@/components/Link2DetailsPage.vue"),
@@ -309,6 +312,18 @@ export default class Devices extends Vue {
 
   private get devices(): IDevice[] {
     return this.$store.getters.getDevices;
+  }
+
+  private get filtered(): boolean {
+    return (
+      this.selectedNetworkCurrent !== null || this.selectedTimeframe !== null || this.search !== ""
+    );
+  }
+
+  private clearFilter() {
+    this.selectedNetworkCurrent = null;
+    this.selectedTimeframe = null;
+    this.search = "";
   }
 
   private get filteredDevices(): object[] {

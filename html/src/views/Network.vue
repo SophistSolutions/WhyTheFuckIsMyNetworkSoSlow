@@ -6,7 +6,7 @@
         Network "{{ GetNetworkName(network) }}" ({{ $route.params.id }})
         <v-spacer></v-spacer>
       </v-card-title>
-      <NetworkDetails class="detailsSection" :network="network" :devices="devices"></NetworkDetails>
+      <NetworkDetails class="detailsSection" :network="network" :devices="devices" />
     </v-card>
   </v-container>
 </template>
