@@ -23,6 +23,14 @@
         <td>Internet Service Provider</td>
         <td>{{ network.internetServiceProvider.name }}</td>
       </tr>
+      <tr>
+        <td>Devices</td>
+        <td>
+          <a :href="GetDevicesForNetworkLink(network.id)">{{
+            GetDeviceIDsInNetwork(network, devices).length
+          }}</a>
+        </td>
+      </tr>
       <tr v-if="network.attachedInterfaces">
         <td>ATTACHED INTERFACES</td>
         <td>
@@ -43,7 +51,12 @@
 import { IDevice, INetworkAttachmentInfo } from "@/models/device/IDevice";
 import { IGeographicLocation } from "@/models/network/IGeographicLocation";
 import { INetwork } from "@/models/network/INetwork";
-import { FormatLocation, GetNetworkName } from "@/models/network/Utils";
+import {
+  FormatLocation,
+  GetDeviceIDsInNetwork,
+  GetDevicesForNetworkLink,
+  GetNetworkName,
+} from "@/models/network/Utils";
 import { OperatingSystem } from "@/models/OperatingSystem";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 
@@ -65,6 +78,8 @@ export default class NetworkDetails extends Vue {
 
   private GetNetworkName = GetNetworkName;
   private FormatLocation = FormatLocation;
+  private GetDeviceIDsInNetwork = GetDeviceIDsInNetwork;
+  private GetDevicesForNetworkLink = GetDevicesForNetworkLink;
 }
 </script>
 

@@ -1,6 +1,3 @@
-- in network page include devices count/link (like in networks page)
-
-----
 	In devices filter area, add CLEAR button (disabled if already clear)
 
 ----
