@@ -1,9 +1,25 @@
-- Include SerVICES panel in details
+- in network page include devices count/link (like in networks page)
+
+----
+	In devices filter area, add CLEAR button (disabled if already clear)
+
+----
+	Maybe add 'types' filter popup in devices page
+
+---
+IN DEVICE PANEL:
+	Add services tab
+	Under there open for presentation url. 
+	But also open ssh and rdp. List pretty known sevices with link buttons. 
+
+- in devices page: Include SerVICES panel in details
 	(each service where appropirate include LINK to open/view)
-	
-- link from network/ID page to devices page with restruicton on network
 
+----
 
+	in sonos naming code - if starts with - Sonos Play:5  lose leading -
+
+---
 >	almost ready for checkin - excep tfor comma in netwoks assocaited with a device line.
 
 	>>> IDEAS - FIRST maybe make array optional arg to ReadOnlyTextImte
@@ -13,7 +29,6 @@
 
 		MAYBE use WATCH, and then reactive array viewmodel (yes I think thats best)
 
-
 ----
 
 	>> NEXT WTF release do UI project to rewrite so view-store are 'slices' and maintian lists instead of maps 
@@ -21,35 +36,12 @@
 
 	   Do mapping from API-Model (keep wire model, api/business-model, and ui-model)
 	   Keep all in vuex store, and have ui driven from ui-model
-
-
-
-
----
-	take argument in devices page filter by network, and then add
-	and when called, set property and then remove from url, and then
-	use with links in the networks page to get all devices on that network.
-			In DEVICES page - in column for 'networks' - add link to network names in that networks column
-			to the standalone network page for that network; and same with in DeviceDetails page (easier there
-			and probably more important)
-
-			DEVICES page but with network=XXX (need some control)
-				(next to search, have element wtih ICON which is popup containing 
-				networks, ALL, or a list of specific choosable networks)
-
-			and then on networkdetails page, include link to above
 -----
 confusing thing in Networks and Devices views:
 	  click in opened selected box NOT treated as unclick close box - maybe have (x) box to close/collapse?
 ----
 	devices, debugInfo, lastAdvertisement value is a STRING, but should be an OBJECT, so that 
 	its better expandable in the GUI.
-----
-
-IN DEVICE PANEL:
-	Add services tab
-	Under there open for presentation url. 
-	But also open ssh and rdp. List pretty known sevices with link buttons. 
 ----
 
 	> in HTML, replace Model and (Model/Utils helpers) with two models
