@@ -9,7 +9,7 @@
                 dense
                 hide-details="true"
                 :items="selectableNetworks"
-                v-model="selectedNetwork"
+                v-model="selectedNetworkCurrent"
                 label="On networks"
               />
             </v-col>
@@ -141,7 +141,7 @@ import { fetchNetworks } from "@/proxy/API";
 export default class Devices extends Vue {
   @Prop()
   public selectedNetwork!: string | null;
-
+  private selectedNetworkCurrent: string | null = null;
   private ComputeDeviceTypeIconURLs = ComputeDeviceTypeIconURLs;
   private ComputeOSIconURLList = ComputeOSIconURLList;
   private FormatAttachedNetwork = FormatAttachedNetwork;
@@ -273,6 +273,7 @@ export default class Devices extends Vue {
   }
 
   private created() {
+    this.selectedNetworkCurrent = this.selectedNetwork;
     this.fetchDevices();
     this.fetchAvailableNetworks();
     this.pollData();
@@ -306,7 +307,10 @@ export default class Devices extends Vue {
       let passedFilter = true;
       if (
         passedFilter &&
-        !(this.selectedNetwork == null || i.attachedNetworks.hasOwnProperty(this.selectedNetwork))
+        !(
+          this.selectedNetworkCurrent == null ||
+          i.attachedNetworks.hasOwnProperty(this.selectedNetworkCurrent)
+        )
       ) {
         passedFilter = false;
       }
@@ -334,7 +338,6 @@ export default class Devices extends Vue {
         const r = {
           ...i,
           ...{
-            networksSummary: FormatAttachedNetworks(i.attachedNetworks, this.networks),
             localAddresses: FormatAttachedNetworkLocalAddresses(i.attachedNetworks),
             manufacturerSummary:
               i.manufacturer == null ? "" : i.manufacturer.fullName || i.manufacturer.shortName,
