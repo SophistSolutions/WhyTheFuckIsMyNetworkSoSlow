@@ -30,12 +30,6 @@
           </span>
         </td>
       </tr>
-      <tr v-if="device.presentationURL">
-        <td class="labelColumn">Presentation</td>
-        <td>
-          <a v-bind:href="device.presentationURL" target="_blank">{{ device.presentationURL }}</a>
-        </td>
-      </tr>
       <tr v-if="device.operatingSystem">
         <td class="labelColumn">OS</td>
         <td>
@@ -49,31 +43,124 @@
       <tr>
         <td class="labelColumn">Networks</td>
         <td>
-          <ul>
-            <li v-for="attachedNetID in Object.keys(device.attachedNetworks)">
-              <table>
-                <tr>
-                  <td>Name (ID)</td>
-                  <td class=".flex-nowrap">
-                    <a :href="GetNetworkLink(attachedNetID)">
-                      {{ GetNetworkName(GetNetworkByID(attachedNetID, networks)) }}</a
-                    >
-                    ({{ attachedNetID }})
-                  </td>
-                </tr>
-                <tr v-if="device.attachedNetworks[attachedNetID].hardwareAddresses">
-                  <td>Hardware Address(es)</td>
-                  <td class=".flex-nowrap">
-                    {{ device.attachedNetworks[attachedNetID].hardwareAddresses.join(", ") }}
-                  </td>
-                </tr>
-                <tr v-if="device.attachedNetworks[attachedNetID].networkAddresses">
-                  <td>Network Address Binding(s)</td>
-                  <td>{{ device.attachedNetworks[attachedNetID].networkAddresses.join(", ") }}</td>
-                </tr>
-              </table>
-            </li>
-          </ul>
+          <table>
+            <tr v-for="attachedNetID in Object.keys(device.attachedNetworks)">
+              <td valign="top">&#x25cf;</td>
+              <td>
+                <table>
+                  <tr>
+                    <td>Name (ID)</td>
+                    <td class=".flex-nowrap">
+                      <a :href="GetNetworkLink(attachedNetID)">
+                        {{ GetNetworkName(GetNetworkByID(attachedNetID, networks)) }}</a
+                      >
+                      ({{ attachedNetID }})
+                    </td>
+                  </tr>
+                  <tr v-if="device.attachedNetworks[attachedNetID].hardwareAddresses">
+                    <td>Hardware Address(es)</td>
+                    <td class=".flex-nowrap">
+                      {{ device.attachedNetworks[attachedNetID].hardwareAddresses.join(", ") }}
+                    </td>
+                  </tr>
+                  <tr v-if="device.attachedNetworks[attachedNetID].networkAddresses">
+                    <td>Network Address Binding(s)</td>
+                    <td>
+                      {{ device.attachedNetworks[attachedNetID].networkAddresses.join(", ") }}
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+      <tr>
+        <td class="labelColumn">Services</td>
+        <td>
+          <table>
+            <tr v-if="device.presentationURL">
+              <td>&#x25cf;</td>
+              <td class="labelColumn">Presentation</td>
+              <td>
+                <a v-bind:href="device.presentationURL" target="_blank">{{
+                  device.presentationURL
+                }}</a>
+              </td>
+            </tr>
+            <!-- see https://www.w3.org/wiki/UriSchemes -->
+            <tr
+              v-if="
+                device.openPorts &&
+                  device.openPorts.includes('tcp:3389') &&
+                  localNetworkAddresses.length > 0
+              "
+            >
+              <td>&#x25cf;</td>
+              <td>rdp</td>
+              <td>
+                <a v-for="la in localNetworkAddresses" :href="'rdp://' + la">{{ "rdp://" + la }}</a>
+              </td>
+            </tr>
+            <tr
+              v-if="
+                device.openPorts &&
+                  device.openPorts.includes('tcp:22') &&
+                  localNetworkAddresses.length > 0
+              "
+            >
+              <td>&#x25cf;</td>
+              <td>ssh</td>
+              <td>
+                <a v-for="la in localNetworkAddresses" :href="'telnet:@' + la">{{
+                  "telnet:@" + la
+                }}</a>
+              </td>
+            </tr>
+            <tr
+              v-if="
+                device.openPorts &&
+                  device.openPorts.includes('tcp:139') &&
+                  localNetworkAddresses.length > 0
+              "
+            >
+              <td>&#x25cf;</td>
+              <td>smb</td>
+              <td>
+                <a v-for="la in localNetworkAddresses" :href="'smb://' + la">{{ "smb://" + la }}</a>
+              </td>
+            </tr>
+            <tr
+              v-if="
+                device.openPorts &&
+                  device.openPorts.includes('tcp:80') &&
+                  localNetworkAddresses.length > 0
+              "
+            >
+              <td>&#x25cf;</td>
+              <td>web</td>
+              <td>
+                <a v-for="la in localNetworkAddresses" :href="'http://@' + la">{{
+                  "http://@" + la
+                }}</a>
+              </td>
+            </tr>
+            <tr
+              v-if="
+                device.openPorts &&
+                  device.openPorts.includes('tcp:443') &&
+                  localNetworkAddresses.length > 0
+              "
+            >
+              <td>&#x25cf;</td>
+              <td>web</td>
+              <td>
+                <a v-for="la in localNetworkAddresses" :href="'https://@' + la">{{
+                  "https://@" + la
+                }}</a>
+              </td>
+            </tr>
+          </table>
         </td>
       </tr>
       <tr v-if="device.openPorts">
@@ -122,6 +209,15 @@ export default class DeviceDetails extends Vue {
   private GetNetworkName = GetNetworkName;
   private GetNetworkLink = GetNetworkLink;
   private GetNetworkByID = GetNetworkByID;
+
+  private get localNetworkAddresses(): string[] {
+    let addresses: string[] = [];
+    Object.entries(this.device.attachedNetworks).forEach((element) => {
+      // console.log(element);
+      element[1].networkAddresses.forEach((e: string) => addresses.push(e));
+    });
+    return addresses.filter((value, index, self) => self.indexOf(value) === index);
+  }
 
   private formatNetworkAddresses_(attachedNetworks: {
     [key: string]: INetworkAttachmentInfo;

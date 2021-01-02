@@ -1,7 +1,5 @@
-
-in device filter add 'services' filter so can see what things have that services
-
-ADN RELATED 0 ahve services section to open those services
+Have services column in devices, and filter in devices
+	smb, printer, web, ssh, rdp
 
 ----
 
@@ -17,19 +15,8 @@ ADN RELATED 0 ahve services section to open those services
 ----
 	Maybe add 'types' filter popup in devices page
 
----
-IN DEVICE PANEL:
-	Add services tab
-	Under there open for presentation url. 
-	But also open ssh and rdp. List pretty known sevices with link buttons. 
-
-- in devices page: Include SerVICES panel in details
-	(each service where appropirate include LINK to open/view)
-
 ----
-
 	in sonos naming code - if starts with - Sonos Play:5  lose leading -
-
 ---
 >	almost ready for checkin - excep tfor comma in netwoks assocaited with a device line.
 
