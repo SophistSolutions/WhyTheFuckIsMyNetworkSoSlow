@@ -34,7 +34,17 @@ export function GetNetworkLink(n: INetwork | string): string | null {
     return `/#/network/${n}`;
   }
   if ((n as INetwork).id) {
-    return `/#/network/${(n as INetwork).id}`;
+    return GetNetworkLink((n as INetwork).id);
+  }
+  return null;
+}
+
+export function GetDevicesForNetworkLink(n: INetwork | string): string | null {
+  if (typeof n === "string" || n instanceof String) {
+    return `/#/devices?selectedNetwork=${n}`;
+  }
+  if ((n as INetwork).id) {
+    return GetDevicesForNetworkLink((n as INetwork).id);
   }
   return null;
 }
