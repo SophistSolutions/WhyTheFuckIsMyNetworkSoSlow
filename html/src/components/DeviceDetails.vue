@@ -145,6 +145,23 @@
                 }}</a>
               </td>
             </tr>
+            <!-- vif not right for case of only presentations -->
+            <tr
+              v-if="
+                !device.presentationURL &&
+                  (!device.openPorts ||
+                    localNetworkAddresses.length ||
+                    !(
+                      device.openPorts.includes('tcp:80') ||
+                      device.openPorts.includes('tcp:443') ||
+                      device.openPorts.includes('tcp:139') ||
+                      device.openPorts.includes('tcp:22') ||
+                      device.openPorts.includes('tcp:3389')
+                    ))
+              "
+            >
+              <td><em>none</em></td>
+            </tr>
             <tr
               v-if="
                 device.openPorts &&
