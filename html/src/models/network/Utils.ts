@@ -115,3 +115,58 @@ export function FormatAttachedNetworkLocalAddresses(attachedNetworks: {
 export function FormatAttachedNetwork(anw: INetworkAttachmentInfo): string {
   return anw.networkAddresses.join(", ");
 }
+
+export function GetLocalNetworkAddresses(device: IDevice): string[] {
+  const addresses: string[] = [];
+  Object.entries(device.attachedNetworks).forEach((element) => {
+    element[1].networkAddresses.forEach((e: string) => addresses.push(e));
+  });
+  return addresses.filter((value, index, self) => self.indexOf(value) === index);
+}
+
+/**
+ * returned devices are { name: .e.g ssh, links: [{href: telnet://202.2.2.2}] }, returns array of them
+ * @param device
+ */
+export function GetServices(device: IDevice): object[] {
+  const localNetworkAddresses = GetLocalNetworkAddresses(device);
+  const result: object[] = [];
+  // see https://www.w3.org/wiki/UriSchemes
+  // @todo add more, but this is probably the most important ones to list...
+  {
+    const links: object[] = [];
+    if (device.presentationURL) {
+      links.push({ href: device.presentationURL });
+    }
+    if (device.openPorts && device.openPorts.includes("tcp:80")) {
+      localNetworkAddresses.forEach((la) => links.push({ href: `http://${la}` }));
+    }
+    if (device.openPorts && device.openPorts.includes("tcp:443")) {
+      localNetworkAddresses.forEach((la) => links.push({ href: `https://${la}` }));
+    }
+    if (links.length !== 0) {
+      result.push({ name: "web", links });
+    }
+  }
+  if (device.openPorts && device.openPorts.includes("tcp:3389")) {
+    const links: object[] = [];
+    localNetworkAddresses.forEach((la) => links.push({ href: `rdp://${la}` }));
+    result.push({ name: "rdp", links });
+  }
+  if (device.openPorts && device.openPorts.includes("tcp:22")) {
+    const links: object[] = [];
+    localNetworkAddresses.forEach((la) => links.push({ href: `ssh://${la}` }));
+    result.push({ name: "ssh", links });
+  }
+  if (device.openPorts && device.openPorts.includes("tcp:139")) {
+    const links: object[] = [];
+    localNetworkAddresses.forEach((la) => links.push({ href: `smb://${la}` }));
+    result.push({ name: "smb", links });
+  }
+  if (device.openPorts && device.openPorts.includes("tcp:23")) {
+    const links: object[] = [];
+    localNetworkAddresses.forEach((la) => links.push({ href: `telnet://${la}` }));
+    result.push({ name: "telnet", links });
+  }
+  return result;
+}

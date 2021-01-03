@@ -79,87 +79,14 @@
         <td class="labelColumn">Services</td>
         <td>
           <table>
-            <tr v-if="device.presentationURL">
+            <tr v-for="svc in GetServices(device)">
               <td>&#x25cf;</td>
-              <td class="labelColumn">Presentation</td>
+              <td class="labelColumn">{{ svc.name }}</td>
               <td>
-                <a v-bind:href="device.presentationURL" target="_blank">{{
-                  device.presentationURL
-                }}</a>
+                <a v-for="l in svc.links" v-bind:href="l.href" target="_blank">{{ l.href }}</a>
               </td>
             </tr>
-            <!-- see https://www.w3.org/wiki/UriSchemes -->
-            <tr
-              v-if="
-                device.openPorts &&
-                  device.openPorts.includes('tcp:3389') &&
-                  localNetworkAddresses.length > 0
-              "
-            >
-              <td>&#x25cf;</td>
-              <td>rdp</td>
-              <td>
-                <a v-for="la in localNetworkAddresses" :href="'rdp://' + la">{{ "rdp://" + la }}</a>
-              </td>
-            </tr>
-            <tr
-              v-if="
-                device.openPorts &&
-                  device.openPorts.includes('tcp:22') &&
-                  localNetworkAddresses.length > 0
-              "
-            >
-              <td>&#x25cf;</td>
-              <td>ssh</td>
-              <td>
-                <a v-for="la in localNetworkAddresses" :href="'telnet:@' + la">{{
-                  "telnet:@" + la
-                }}</a>
-              </td>
-            </tr>
-            <tr
-              v-if="
-                device.openPorts &&
-                  device.openPorts.includes('tcp:139') &&
-                  localNetworkAddresses.length > 0
-              "
-            >
-              <td>&#x25cf;</td>
-              <td>smb</td>
-              <td>
-                <a v-for="la in localNetworkAddresses" :href="'smb://' + la">{{ "smb://" + la }}</a>
-              </td>
-            </tr>
-            <tr
-              v-if="
-                device.openPorts &&
-                  device.openPorts.includes('tcp:80') &&
-                  localNetworkAddresses.length > 0
-              "
-            >
-              <td>&#x25cf;</td>
-              <td>web</td>
-              <td>
-                <a v-for="la in localNetworkAddresses" :href="'http://@' + la">{{
-                  "http://@" + la
-                }}</a>
-              </td>
-            </tr>
-            <!-- vif not right for case of only presentations -->
-            <tr
-              v-if="
-                !device.presentationURL &&
-                  (!device.openPorts ||
-                    localNetworkAddresses.length ||
-                    !(
-                      device.openPorts.includes('tcp:80') ||
-                      device.openPorts.includes('tcp:443') ||
-                      device.openPorts.includes('tcp:139') ||
-                      device.openPorts.includes('tcp:22') ||
-                      device.openPorts.includes('tcp:3389')
-                    ))
-              "
-            >
+            <tr v-if="GetServices(device).length == 0">
               <td><em>none</em></td>
             </tr>
             <tr
@@ -203,7 +130,12 @@
 <script lang="ts">
 import { IDevice, INetworkAttachmentInfo } from "@/models/device/IDevice";
 import { INetwork } from "@/models/network/INetwork";
-import { GetNetworkByID, GetNetworkLink, GetNetworkName } from "@/models/network/Utils";
+import {
+  GetNetworkByID,
+  GetNetworkLink,
+  GetNetworkName,
+  GetServices,
+} from "@/models/network/Utils";
 import { OperatingSystem } from "@/models/OperatingSystem";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 
@@ -226,6 +158,7 @@ export default class DeviceDetails extends Vue {
   private GetNetworkName = GetNetworkName;
   private GetNetworkLink = GetNetworkLink;
   private GetNetworkByID = GetNetworkByID;
+  private GetServices = GetServices;
 
   private get localNetworkAddresses(): string[] {
     const addresses: string[] = [];
