@@ -133,19 +133,16 @@ export function GetServices(device: IDevice): object[] {
   const result: object[] = [];
   // see https://www.w3.org/wiki/UriSchemes
   // @todo add more, but this is probably the most important ones to list...
-  {
+  if (device.openPorts) {
     const links: object[] = [];
-    if (device.presentationURL) {
-      links.push({ href: device.presentationURL });
+    if (device.openPorts.includes("tcp:515")) {
+      localNetworkAddresses.forEach((la) => links.push({ href: `lpd://${la}` }));
     }
-    if (device.openPorts && device.openPorts.includes("tcp:80")) {
-      localNetworkAddresses.forEach((la) => links.push({ href: `http://${la}` }));
-    }
-    if (device.openPorts && device.openPorts.includes("tcp:443")) {
-      localNetworkAddresses.forEach((la) => links.push({ href: `https://${la}` }));
+    if (device.openPorts.includes("tcp:631")) {
+      localNetworkAddresses.forEach((la) => links.push({ href: `ipp://${la}` }));
     }
     if (links.length !== 0) {
-      result.push({ name: "web", links });
+      result.push({ name: "print", links });
     }
   }
   if (device.openPorts && device.openPorts.includes("tcp:3389")) {
@@ -167,6 +164,21 @@ export function GetServices(device: IDevice): object[] {
     const links: object[] = [];
     localNetworkAddresses.forEach((la) => links.push({ href: `telnet://${la}` }));
     result.push({ name: "telnet", links });
+  }
+  {
+    const links: object[] = [];
+    if (device.presentationURL) {
+      links.push({ href: device.presentationURL });
+    }
+    if (device.openPorts && device.openPorts.includes("tcp:80")) {
+      localNetworkAddresses.forEach((la) => links.push({ href: `http://${la}` }));
+    }
+    if (device.openPorts && device.openPorts.includes("tcp:443")) {
+      localNetworkAddresses.forEach((la) => links.push({ href: `https://${la}` }));
+    }
+    if (links.length !== 0) {
+      result.push({ name: "web", links });
+    }
   }
   return result;
 }
