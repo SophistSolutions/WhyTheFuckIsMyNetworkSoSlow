@@ -22,8 +22,7 @@ on:
     inputs:
       branch:
         description: "branch to build"
-        required: false
-        default: "v1-Dev"
+        required: true
 
 env:
   COMMIT_ID2BUILD: ${{ github.event.inputs.branch || github.ref }}
@@ -99,8 +98,6 @@ jobs:
           #   includeInDevBranchBuilds: false
     container: ${{ matrix.container_image }}
     steps:
-      - name: XXXXDEBUG
-        run: echo COMMIT_ID2BUILD=$COMMIT_ID2BUILD
       - name: Build System Info
         if: ${{ matrix.os=='unix' }}
         run: |
@@ -120,7 +117,7 @@ jobs:
       - name: Checkout
         run: |
           git clone https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow.git .
-          git checkout $GITHUB_SHA
+          git checkout $COMMIT_ID2BUILD
           git submodule update --recursive --init
       - name: Create build root structure
         shell: "bash"
@@ -159,6 +156,8 @@ jobs:
           #   includeInDevBranchBuilds: false
     steps:
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ env.COMMIT_ID2BUILD }}
       - name: Checkout submodules
         run: git submodule update --init --recursive
       - name: Build System Info
@@ -231,7 +230,6 @@ jobs:
     env:
       ARTIFACTS_DIR: "c:/Artifacts/"
     steps:
-      - uses: actions/checkout@v2
       - name: Build System Info
         shell: "bash"
         run: |
@@ -253,7 +251,7 @@ jobs:
         shell: "bash"
         run: |
           docker exec buildContainer git clone https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow.git
-          docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow/ buildContainer git checkout $GITHUB_SHA
+          docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow/ buildContainer git checkout $COMMIT_ID2BUILD
           docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow/ buildContainer git submodule update --recursive --init
       - name: Create build root structure
         shell: "bash"
