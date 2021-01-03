@@ -14,9 +14,6 @@ import { Component, Prop, Vue, Watch } from "vue-property-decorator";
   name: "ClearButton",
 })
 export default class ClearButton extends Vue {
-  @Prop()
-  public click: Function;
-
   private myclick() {
     this.$emit("click");
   }
