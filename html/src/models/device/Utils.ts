@@ -116,7 +116,7 @@ export function ComputeDeviceTypeIconURLs(
 }
 
 /*
- *  Return an array of image-url/label pairs, for the given array of device types.
+ *  Returnimage-url/label for the given service type.
  */
 export function ComputeServiceTypeIconURL(
   t: string
@@ -124,47 +124,34 @@ export function ComputeServiceTypeIconURL(
   url?: string | null;
   label: string;
 } {
-  const result: Array<{
-    url?: string | null;
-    label: string;
-  }> = [];
-  if (t) {
-    t.forEach((ti: string) => {
-      switch (ti) {
-        case "web":
-          result.push({
-            url: "images/web-page.png",
-            label: ti,
-          });
-          break;
-        case "ssh":
-          result.push({
-            url: "images/ssh.png",
-            label: ti,
-          });
-          break;
-        case "rdp":
-          result.push({
-            url: "images/rdp.png",
-            label: ti,
-          });
-          break;
-        case "smb":
-          result.push({
-            url: "images/smb.png",
-            label: ti,
-          });
-          break;
-        default:
-          result.push({
-            label: ti,
-          });
-          break;
-      }
-    });
+  switch (t) {
+    case "web":
+      return {
+        url: "images/web-page.png",
+        label: t,
+      };
+    case "ssh":
+      return {
+        url: "images/ssh.png",
+        label: t,
+      };
+    case "rdp":
+      return {
+        url: "images/rdp.png",
+        label: t,
+      };
+    case "smb":
+      return {
+        url: "images/smb.png",
+        label: t,
+      };
+    default:
+      return {
+        label: t,
+      };
   }
-  return result;
 }
+
 export function ComputeServiceTypeIconURLs(
   t: string[] | null
 ): Array<{
@@ -177,37 +164,7 @@ export function ComputeServiceTypeIconURLs(
   }> = [];
   if (t) {
     t.forEach((ti: string) => {
-      switch (ti) {
-        case "web":
-          result.push({
-            url: "images/web-page.png",
-            label: ti,
-          });
-          break;
-        case "ssh":
-          result.push({
-            url: "images/ssh.png",
-            label: ti,
-          });
-          break;
-        case "rdp":
-          result.push({
-            url: "images/rdp.png",
-            label: ti,
-          });
-          break;
-        case "smb":
-          result.push({
-            url: "images/smb.png",
-            label: ti,
-          });
-          break;
-        default:
-          result.push({
-            label: ti,
-          });
-          break;
-      }
+      result.push(ComputeServiceTypeIconURL(ti));
     });
   }
   return result;

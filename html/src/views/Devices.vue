@@ -254,13 +254,13 @@ export default class Devices extends Vue {
         text: "Last Seen",
         value: "lastSeenAt",
         cellClass: "nowrap",
-        width: "14%",
+        width: "13%",
       },
       {
         text: "Manufacturer",
         value: "manufacturerSummary",
         cellClass: "nowrap",
-        width: "20%",
+        width: "17%",
       },
       {
         text: "OS",
@@ -278,7 +278,7 @@ export default class Devices extends Vue {
         text: "Local Address",
         value: "localAddresses",
         cellClass: "nowrap",
-        width: "20%",
+        width: "18%",
       },
       {
         text: "Network",
@@ -289,7 +289,7 @@ export default class Devices extends Vue {
       {
         text: "Details",
         value: "data-table-expand",
-        width: "10%",
+        width: "6em",
       },
     ];
   }

@@ -198,7 +198,7 @@ export default class Networks extends Vue {
       {
         text: "Details",
         value: "data-table-expand",
-        width: "10%",
+        width: "6em",
       },
     ];
   }
