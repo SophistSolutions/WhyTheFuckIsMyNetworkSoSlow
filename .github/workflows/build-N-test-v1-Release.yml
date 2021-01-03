@@ -1,7 +1,7 @@
 #
 # build-N-test-v1-Dev and build-N-test-v1-Release are neary
 # identical, but a few tests are commented out (to not needlessly stress CI system)
-# for v1-Dev builds
+# for v1-Dev builds; and on.push.branches setting
 #
 # NOTE: I've tried many tricks - none which seem to work - to get this working on one file with one
 # workflow and tests
@@ -16,14 +16,18 @@ name: build-N-test-v1-Release
 on:
   push:
     branches:
-      #- v1-Dev
+      # - v1-Dev
       - v1-Release
   workflow_dispatch:
     inputs:
-      ignored:
-        description: "ignored"
-        required: false
-        default: ""
+      branch:
+        description: "branch to build"
+        required: true
+
+env:
+  COMMIT_ID2BUILD: ${{ github.event.inputs.branch || github.sha }}
+  # vm has 2 virtual CPUs, but 8GB ram, so jobs=5 (empirical), and QUICK_BUILD avoids some internal testing
+  MAKEFLAGS: "--jobs=3 QUICK_BUILD=1"
 
 ## NB: JOBS section IDENTICAL between v1-Dev and v1-Release files EXCEPT that on v1-Dev file
 ## comment out all entries marked with includeInDevBranchBuilds: false
@@ -92,9 +96,6 @@ jobs:
             config_name: Release
             extra_config_args: --apply-default-release-flags --trace2file enable
             includeInDevBranchBuilds: false
-    env:
-      # vm has 2 virtual CPUs, but 8GB ram, so jobs=5 (empirical), and QUICK_BUILD avoids some internal testing
-      MAKEFLAGS: "--jobs=3 QUICK_BUILD=1"
     container: ${{ matrix.container_image }}
     steps:
       - name: Build System Info
@@ -116,7 +117,7 @@ jobs:
       - name: Checkout
         run: |
           git clone https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow.git .
-          git checkout $GITHUB_SHA
+          git checkout $COMMIT_ID2BUILD
           git submodule update --recursive --init
       - name: Create build root structure
         shell: "bash"
@@ -153,11 +154,10 @@ jobs:
             config_name: Release
             extra_config_args: --apply-default-release-flags
             includeInDevBranchBuilds: false
-    env:
-      # vm has 2 virtual CPUs, but 8GB ram, so jobs=5 (empirical), and QUICK_BUILD avoids some internal testing
-      MAKEFLAGS: "--jobs=3 QUICK_BUILD=1"
     steps:
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ env.COMMIT_ID2BUILD }}
       - name: Checkout submodules
         run: git submodule update --init --recursive
       - name: Build System Info
@@ -228,11 +228,8 @@ jobs:
             extra_config_args: --arch x86_64 --apply-default-release-flags --trace2file enable
             includeInDevBranchBuilds: false
     env:
-      # vm has 2 virtual CPUs, but 8GB ram, so jobs=5 (empirical), and QUICK_BUILD avoids some internal testing
-      MAKEFLAGS: "--jobs=3 QUICK_BUILD=1"
       ARTIFACTS_DIR: "c:/Artifacts/"
     steps:
-      - uses: actions/checkout@v2
       - name: Build System Info
         shell: "bash"
         run: |
@@ -254,7 +251,7 @@ jobs:
         shell: "bash"
         run: |
           docker exec buildContainer git clone https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow.git
-          docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow/ buildContainer git checkout $GITHUB_SHA
+          docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow/ buildContainer git checkout $COMMIT_ID2BUILD
           docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow/ buildContainer git submodule update --recursive --init
       - name: Create build root structure
         shell: "bash"

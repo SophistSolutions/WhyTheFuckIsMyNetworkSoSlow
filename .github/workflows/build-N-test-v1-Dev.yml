@@ -1,7 +1,7 @@
 #
 # build-N-test-v1-Dev and build-N-test-v1-Release are neary
 # identical, but a few tests are commented out (to not needlessly stress CI system)
-# for v1-Dev builds
+# for v1-Dev builds; and on.push.branches setting; and top level name: field
 #
 # NOTE: I've tried many tricks - none which seem to work - to get this working on one file with one
 # workflow and tests
