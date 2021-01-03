@@ -80,7 +80,14 @@
         <td>
           <table>
             <tr v-for="svc in GetServices(device)">
-              <td>&#x25cf;</td>
+              <td>
+                <img
+                  v-if="ComputeServiceTypeIconURL(svc.name).url"
+                  :src="ComputeServiceTypeIconURL(svc.name).url"
+                  height="20"
+                  width="20"
+                />
+              </td>
               <td class="labelColumn">{{ svc.name }}</td>
               <td>
                 <a v-for="l in svc.links" v-bind:href="l.href" class="list-items" target="_blank">{{
@@ -116,6 +123,11 @@
 
 <script lang="ts">
 import { IDevice, INetworkAttachmentInfo } from "@/models/device/IDevice";
+import {
+  ComputeDeviceTypeIconURLs,
+  ComputeOSIconURLList,
+  ComputeServiceTypeIconURL,
+} from "@/models/device/Utils";
 import { INetwork } from "@/models/network/INetwork";
 import {
   GetNetworkByID,
@@ -146,6 +158,7 @@ export default class DeviceDetails extends Vue {
   private GetNetworkLink = GetNetworkLink;
   private GetNetworkByID = GetNetworkByID;
   private GetServices = GetServices;
+  private ComputeServiceTypeIconURL = ComputeServiceTypeIconURL;
 
   private get localNetworkAddresses(): string[] {
     const addresses: string[] = [];
