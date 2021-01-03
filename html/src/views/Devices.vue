@@ -90,6 +90,14 @@
         <template v-slot:item.localAddresses="{ item }">
           <ReadOnlyTextWithHover :message="item.localAddresses" />
         </template>
+        <template v-slot:item.services="{ item }">
+          <span v-for="s in item.services">
+            <span v-for="t in ComputeServiceTypeIconURLs([s.name])">
+              <img v-if="t.url" :src="t.url" :title="t.label" height="24" width="24" />
+              <ReadOnlyTextWithHover v-if="!t.url" :message="t.label" />
+            </span>
+          </span>
+        </template>
         <template v-slot:item.networksSummary="{ item }">
           <span v-for="anw in Object.keys(item.attachedNetworks)">
             <ReadOnlyTextWithHover
@@ -112,7 +120,11 @@
 
 <script lang="ts">
 import { IDevice, INetworkAttachmentInfo } from "@/models/device/IDevice";
-import { ComputeDeviceTypeIconURLs, ComputeOSIconURLList } from "@/models/device/Utils";
+import {
+  ComputeDeviceTypeIconURLs,
+  ComputeOSIconURLList,
+  ComputeServiceTypeIconURLs,
+} from "@/models/device/Utils";
 import { INetwork } from "@/models/network/INetwork";
 import {
   FormatAttachedNetwork,
@@ -121,6 +133,7 @@ import {
   GetNetworkByIDQuietly,
   GetNetworkLink,
   GetNetworkName,
+  GetServices,
 } from "@/models/network/Utils";
 import { OperatingSystem } from "@/models/OperatingSystem";
 
@@ -145,6 +158,7 @@ export default class Devices extends Vue {
   public selectedNetwork!: string | null;
   private selectedNetworkCurrent: string | null = null;
   private ComputeDeviceTypeIconURLs = ComputeDeviceTypeIconURLs;
+  private ComputeServiceTypeIconURLs = ComputeServiceTypeIconURLs;
   private ComputeOSIconURLList = ComputeOSIconURLList;
   private FormatAttachedNetwork = FormatAttachedNetwork;
   private GetNetworkLink = GetNetworkLink;
@@ -253,6 +267,12 @@ export default class Devices extends Vue {
         value: "operatingSystem",
         cellClass: "nowrap",
         width: "8%",
+      },
+      {
+        text: "Services",
+        value: "services",
+        cellClass: "nowrap",
+        width: "13%",
       },
       {
         text: "Local Address",
@@ -366,6 +386,7 @@ export default class Devices extends Vue {
             localAddresses: FormatAttachedNetworkLocalAddresses(i.attachedNetworks),
             manufacturerSummary:
               i.manufacturer == null ? "" : i.manufacturer.fullName || i.manufacturer.shortName,
+            services: GetServices(i),
           },
         };
         if (

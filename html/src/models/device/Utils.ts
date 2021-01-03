@@ -114,3 +114,101 @@ export function ComputeDeviceTypeIconURLs(
   }
   return result;
 }
+
+/*
+ *  Return an array of image-url/label pairs, for the given array of device types.
+ */
+export function ComputeServiceTypeIconURL(
+  t: string
+): {
+  url?: string | null;
+  label: string;
+} {
+  const result: Array<{
+    url?: string | null;
+    label: string;
+  }> = [];
+  if (t) {
+    t.forEach((ti: string) => {
+      switch (ti) {
+        case "web":
+          result.push({
+            url: "images/web-page.png",
+            label: ti,
+          });
+          break;
+        case "ssh":
+          result.push({
+            url: "images/ssh.png",
+            label: ti,
+          });
+          break;
+        case "rdp":
+          result.push({
+            url: "images/rdp.png",
+            label: ti,
+          });
+          break;
+        case "smb":
+          result.push({
+            url: "images/smb.png",
+            label: ti,
+          });
+          break;
+        default:
+          result.push({
+            label: ti,
+          });
+          break;
+      }
+    });
+  }
+  return result;
+}
+export function ComputeServiceTypeIconURLs(
+  t: string[] | null
+): Array<{
+  url?: string | null;
+  label: string;
+}> {
+  const result: Array<{
+    url?: string | null;
+    label: string;
+  }> = [];
+  if (t) {
+    t.forEach((ti: string) => {
+      switch (ti) {
+        case "web":
+          result.push({
+            url: "images/web-page.png",
+            label: ti,
+          });
+          break;
+        case "ssh":
+          result.push({
+            url: "images/ssh.png",
+            label: ti,
+          });
+          break;
+        case "rdp":
+          result.push({
+            url: "images/rdp.png",
+            label: ti,
+          });
+          break;
+        case "smb":
+          result.push({
+            url: "images/smb.png",
+            label: ti,
+          });
+          break;
+        default:
+          result.push({
+            label: ti,
+          });
+          break;
+      }
+    });
+  }
+  return result;
+}

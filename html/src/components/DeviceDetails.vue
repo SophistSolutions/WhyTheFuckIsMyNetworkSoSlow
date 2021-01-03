@@ -89,21 +89,6 @@
             <tr v-if="GetServices(device).length == 0">
               <td><em>none</em></td>
             </tr>
-            <tr
-              v-if="
-                device.openPorts &&
-                  device.openPorts.includes('tcp:443') &&
-                  localNetworkAddresses.length > 0
-              "
-            >
-              <td>&#x25cf;</td>
-              <td>web</td>
-              <td>
-                <a v-for="la in localNetworkAddresses" :href="'https://@' + la">{{
-                  "https://@" + la
-                }}</a>
-              </td>
-            </tr>
           </table>
         </td>
       </tr>
