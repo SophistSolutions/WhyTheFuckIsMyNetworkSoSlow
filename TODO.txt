@@ -1,5 +1,29 @@
-Have services column in devices, and filter in devices
+
+when I get fix for input github action stuff working,
+do for stroika builds too
+---
+
+check stackoverflow messages
+
+
+
+
+---
+
+
+Have services filter in devices
 	smb, printer, web, ssh, rdp
+
+	THEN I HTINK I CNA release
+
+
+
+https://dev.to/kanishkt123/runtime-environment-variables-with-github-actions-2if8
+
+figure out how to use the input param to build a specific branch
+but tricky cuz we checkout differnetly for differnt places, but maybe
+have the action RESET the GITHUB_SHA variable?
+
 
 ----
 
