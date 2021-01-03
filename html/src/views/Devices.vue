@@ -71,13 +71,13 @@
         </template>
         <template v-slot:item.type="{ headers, item }">
           <span v-for="t in ComputeDeviceTypeIconURLs(item.type)">
-            <img v-if="t.url" :src="t.url" :title="t.label" height="24" width="24" />
+            <img v-if="t.url" :src="t.url" :title="t.label" height="20" width="20" />
             <ReadOnlyTextWithHover v-if="!t.url" :message="t.label" />
           </span>
         </template>
         <template v-slot:item.operatingSystem="{ headers, item }">
           <span v-for="t in ComputeOSIconURLList(item.operatingSystem)">
-            <img v-if="t.url" :src="t.url" :title="t.label" height="24" width="24" />
+            <img v-if="t.url" :src="t.url" :title="t.label" height="20" width="20" />
             <ReadOnlyTextWithHover v-if="!t.url" :message="t.label" />
           </span>
         </template>
@@ -93,7 +93,7 @@
         <template v-slot:item.services="{ item }">
           <span v-for="s in item.services">
             <span v-for="t in ComputeServiceTypeIconURLs([s.name])">
-              <img v-if="t.url" :src="t.url" :title="t.label" height="24" width="24" />
+              <img v-if="t.url" :src="t.url" :title="t.label" height="20" width="20" />
               <ReadOnlyTextWithHover v-if="!t.url" :message="t.label" />
             </span>
           </span>
