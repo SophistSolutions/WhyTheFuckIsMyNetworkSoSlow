@@ -20,10 +20,15 @@ on:
       #- v1-Release
   workflow_dispatch:
     inputs:
-      ignored:
-        description: "ignored"
+      branch:
+        description: "branch to build"
         required: false
-        default: ""
+        default: "v1-Dev"
+
+env:
+  COMMIT_ID2BUILD: ${{ github.event.inputs.branch || github.ref }}
+  # vm has 2 virtual CPUs, but 8GB ram, so jobs=5 (empirical), and QUICK_BUILD avoids some internal testing
+  MAKEFLAGS: "--jobs=3 QUICK_BUILD=1"
 
 ## NB: JOBS section IDENTICAL between v1-Dev and v1-Release files EXCEPT that on v1-Dev file
 ## comment out all entries marked with includeInDevBranchBuilds: false
@@ -92,11 +97,10 @@ jobs:
           #   config_name: Release
           #   extra_config_args: --apply-default-release-flags --trace2file enable
           #   includeInDevBranchBuilds: false
-    env:
-      # vm has 2 virtual CPUs, but 8GB ram, so jobs=5 (empirical), and QUICK_BUILD avoids some internal testing
-      MAKEFLAGS: "--jobs=3 QUICK_BUILD=1"
     container: ${{ matrix.container_image }}
     steps:
+      - name: XXXXDEBUG
+        run: echo COMMIT_ID2BUILD=$COMMIT_ID2BUILD
       - name: Build System Info
         if: ${{ matrix.os=='unix' }}
         run: |
@@ -153,9 +157,6 @@ jobs:
           #   config_name: Release
           #   extra_config_args: --apply-default-release-flags
           #   includeInDevBranchBuilds: false
-    env:
-      # vm has 2 virtual CPUs, but 8GB ram, so jobs=5 (empirical), and QUICK_BUILD avoids some internal testing
-      MAKEFLAGS: "--jobs=3 QUICK_BUILD=1"
     steps:
       - uses: actions/checkout@v2
       - name: Checkout submodules
@@ -228,8 +229,6 @@ jobs:
           #   extra_config_args: --arch x86_64 --apply-default-release-flags --trace2file enable
           #   includeInDevBranchBuilds: false
     env:
-      # vm has 2 virtual CPUs, but 8GB ram, so jobs=5 (empirical), and QUICK_BUILD avoids some internal testing
-      MAKEFLAGS: "--jobs=3 QUICK_BUILD=1"
       ARTIFACTS_DIR: "c:/Artifacts/"
     steps:
       - uses: actions/checkout@v2
