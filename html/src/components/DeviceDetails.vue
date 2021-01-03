@@ -83,7 +83,9 @@
               <td>&#x25cf;</td>
               <td class="labelColumn">{{ svc.name }}</td>
               <td>
-                <a v-for="l in svc.links" v-bind:href="l.href" target="_blank">{{ l.href }}</a>
+                <a v-for="l in svc.links" v-bind:href="l.href" class="list-items" target="_blank">{{
+                  l.href
+                }}</a>
               </td>
             </tr>
             <tr v-if="GetServices(device).length == 0">
@@ -168,6 +170,9 @@ export default class DeviceDetails extends Vue {
 </script>
 
 <style scoped lang="scss">
+.list-items {
+  padding-right: 1em;
+}
 td.labelColumn {
   vertical-align: top;
 }
