@@ -211,31 +211,19 @@ export default class DeviceDetails extends Vue {
   private GetNetworkByID = GetNetworkByID;
 
   private get localNetworkAddresses(): string[] {
-    let addresses: string[] = [];
+    const addresses: string[] = [];
     Object.entries(this.device.attachedNetworks).forEach((element) => {
-      // console.log(element);
       element[1].networkAddresses.forEach((e: string) => addresses.push(e));
     });
     return addresses.filter((value, index, self) => self.indexOf(value) === index);
   }
 
-  private formatNetworkAddresses_(attachedNetworks: {
-    [key: string]: INetworkAttachmentInfo;
-  }): string {
-    let addresses: string[] = [];
-    Object.entries(attachedNetworks).forEach((element) => {
-      // console.log(element);
-      element[1].networkAddresses.forEach((e: string) => addresses.push(e));
-    });
-    addresses = addresses.filter((value, index, self) => self.indexOf(value) === index);
-    return addresses.join(", ");
-  }
   private get deviceDetails(): object {
     const d = this.device;
     return {
       ...d,
       ...{
-        localAddresses: this.formatNetworkAddresses_(d.attachedNetworks),
+        localAddresses: this.localNetworkAddresses.join(", "),
         manufacturerSummary:
           d.manufacturer == null ? "" : d.manufacturer.fullName || d.manufacturer.shortName,
       },
