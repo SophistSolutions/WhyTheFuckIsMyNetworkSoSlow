@@ -98,6 +98,12 @@ jobs:
             includeInDevBranchBuilds: false
     container: ${{ matrix.container_image }}
     steps:
+      - name: DEBUGINFO
+        run: |
+          echo COMMIT_ID2BUILD=$COMMIT_ID2BUILD
+          echo github.event.inputs.branch=${{ github.event.inputs.branch }}
+          echo github.sha=${{ github.sha }}
+
       - name: Build System Info
         if: ${{ matrix.os=='unix' }}
         run: |
