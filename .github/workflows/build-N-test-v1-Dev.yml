@@ -25,7 +25,7 @@ on:
         required: true
 
 env:
-  COMMIT_ID2BUILD: ${{ github.event.inputs.branch || github.ref }}
+  COMMIT_ID2BUILD: ${{ github.event.inputs.branch || github.sha }}
   # vm has 2 virtual CPUs, but 8GB ram, so jobs=5 (empirical), and QUICK_BUILD avoids some internal testing
   MAKEFLAGS: "--jobs=3 QUICK_BUILD=1"
 
