@@ -125,14 +125,9 @@ export function ComputeServiceTypeIconURL(
   label: string;
 } {
   switch (t) {
-    case "web":
+    case "print":
       return {
-        url: "images/web-page.png",
-        label: t,
-      };
-    case "ssh":
-      return {
-        url: "images/ssh.png",
+        url: "images/Printer.ico",
         label: t,
       };
     case "rdp":
@@ -140,9 +135,19 @@ export function ComputeServiceTypeIconURL(
         url: "images/rdp.png",
         label: t,
       };
+    case "ssh":
+      return {
+        url: "images/ssh.png",
+        label: t,
+      };
     case "smb":
       return {
         url: "images/smb.png",
+        label: t,
+      };
+    case "web":
+      return {
+        url: "images/web-page.png",
         label: t,
       };
     default:
