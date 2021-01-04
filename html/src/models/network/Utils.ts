@@ -128,13 +128,15 @@ export function GetLocalNetworkAddresses(device: IDevice): string[] {
  * returned devices are { name: .e.g ssh, links: [{href: telnet://202.2.2.2}] }, returns array of them
  * @param device
  */
-export function GetServices(device: IDevice): object[] {
+export function GetServices(
+  device: IDevice
+): Array<{ name: string; links: Array<{ href: string }> }> {
   const localNetworkAddresses = GetLocalNetworkAddresses(device);
-  const result: object[] = [];
+  const result: Array<{ name: string; links: Array<{ href: string }> }> = [];
   // see https://www.w3.org/wiki/UriSchemes
   // @todo add more, but this is probably the most important ones to list...
   if (device.openPorts) {
-    const links: object[] = [];
+    const links: Array<{ href: string }> = [];
     if (device.openPorts.includes("tcp:515")) {
       localNetworkAddresses.forEach((la) => links.push({ href: `lpd://${la}` }));
     }
@@ -146,27 +148,27 @@ export function GetServices(device: IDevice): object[] {
     }
   }
   if (device.openPorts && device.openPorts.includes("tcp:3389")) {
-    const links: object[] = [];
+    const links: Array<{ href: string }> = [];
     localNetworkAddresses.forEach((la) => links.push({ href: `rdp://${la}` }));
     result.push({ name: "rdp", links });
   }
   if (device.openPorts && device.openPorts.includes("tcp:22")) {
-    const links: object[] = [];
+    const links: Array<{ href: string }> = [];
     localNetworkAddresses.forEach((la) => links.push({ href: `ssh://${la}` }));
     result.push({ name: "ssh", links });
   }
   if (device.openPorts && device.openPorts.includes("tcp:139")) {
-    const links: object[] = [];
+    const links: Array<{ href: string }> = [];
     localNetworkAddresses.forEach((la) => links.push({ href: `smb://${la}` }));
     result.push({ name: "smb", links });
   }
   if (device.openPorts && device.openPorts.includes("tcp:23")) {
-    const links: object[] = [];
+    const links: Array<{ href: string }> = [];
     localNetworkAddresses.forEach((la) => links.push({ href: `telnet://${la}` }));
     result.push({ name: "telnet", links });
   }
   {
-    const links: object[] = [];
+    const links: Array<{ href: string }> = [];
     if (device.presentationURL) {
       links.push({ href: device.presentationURL });
     }
