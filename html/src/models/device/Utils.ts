@@ -142,7 +142,7 @@ export function ComputeServiceTypeIconURL(
       };
     case "smb":
       return {
-        url: "images/smb.png",
+        url: "images/SMB.png",
         label: t,
       };
     case "web":
