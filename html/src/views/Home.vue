@@ -4,7 +4,7 @@
     <v-row class="text-center">
       <v-col class="mb-4">
         <h1 class="display-2 font-weight-bold mb-3">
-          Why The Fuck is My Network So Slow?
+          Why the Fuck is My Network So Slow?
         </h1>
       </v-col>
     </v-row>
