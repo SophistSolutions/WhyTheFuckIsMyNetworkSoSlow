@@ -1,4 +1,11 @@
+test a little
+write release notes
+writeup next things TODO
+do release
 
+
+
+---
 when I get fix for input github action stuff working,
 do for stroika builds too
 ---
