@@ -341,7 +341,7 @@ export default class Devices extends Vue {
         text: "Type",
         value: "type",
         cellClass: "nowrap",
-        width: "10%",
+        width: "5em",
       },
       {
         text: "Last Seen",
@@ -359,7 +359,7 @@ export default class Devices extends Vue {
         text: "OS",
         value: "operatingSystem",
         cellClass: "nowrap",
-        width: "8%",
+        width: "5em",
       },
       {
         text: "Services",
