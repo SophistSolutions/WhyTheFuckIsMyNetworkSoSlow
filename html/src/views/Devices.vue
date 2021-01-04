@@ -22,10 +22,49 @@
                 label="Seen"
               />
             </v-col>
-            <v-col cols="3">
+            <v-col cols="2">
+              <v-select
+                dense
+                small
+                multiple
+                hide-details="true"
+                hint="Any means dont filter on this; multiple selected items treated as OR"
+                :items="selectableServices"
+                v-model="selectedServices"
+                :menu-props="{ auto: true, overflowY: true }"
+                label="With services"
+              >
+                <template v-slot:prepend-item>
+                  <v-list-item ripple @click="selectServicesFilter_ToggleSelectAll">
+                    <v-list-item-action>
+                      <v-icon :color="selectedServices.length > 0 ? 'indigo darken-4' : ''">
+                        {{ selectServicesFilter_icon }}
+                      </v-icon>
+                    </v-list-item-action>
+                    <v-list-item-content>
+                      <v-list-item-title>
+                        Any
+                      </v-list-item-title>
+                    </v-list-item-content>
+                  </v-list-item>
+                  <v-divider class="mt-2"></v-divider>
+                </template>
+
+                <template slot="selection" slot-scope="{ item, index }">
+                  <span v-if="filterAllowAllServices && index === 0">Any</span>
+                  <span v-if="index === 0 && !filterAllowAllServices">{{ item.text }}</span>
+                  <span
+                    v-if="index === 1 && !filterAllowAllServices"
+                    class="grey--text caption othersSpan"
+                    >(+{{ selectedServices.length - 1 }} others)</span
+                  >
+                </template>
+              </v-select>
+            </v-col>
+            <v-col cols="2">
               <Search :searchFor.sync="search" dense />
             </v-col>
-            <v-col cols="5" align="end">
+            <v-col cols="4" align="end">
               <FilterSummaryMessage
                 dense
                 :filtered="filtered"
@@ -156,6 +195,7 @@ import { fetchNetworks } from "@/proxy/API";
 export default class Devices extends Vue {
   @Prop()
   public selectedNetwork!: string | null;
+
   private selectedNetworkCurrent: string | null = null;
   private ComputeDeviceTypeIconURLs = ComputeDeviceTypeIconURLs;
   private ComputeServiceTypeIconURLs = ComputeServiceTypeIconURLs;
@@ -170,6 +210,31 @@ export default class Devices extends Vue {
   private sortBy: any = [];
   private sortDesc: any = [];
   private expanded: any[] = [];
+
+  private selectedTimeframe: string | null = null;
+  private selectedServices: string[] = this.selectableServices.map((x) => x.value);
+
+  private get filterAllowAllServices() {
+    return this.selectedServices.length === this.selectableServices.length;
+  }
+  private get selectServicesFilter_icon() {
+    if (this.filterAllowAllServices) {
+      return "mdi-close-box";
+    }
+    if (this.selectedServices.length > 0 && !this.filterAllowAllServices) {
+      return "mdi-minus-box";
+    }
+    return "mdi-checkbox-blank-outline";
+  }
+  private selectServicesFilter_ToggleSelectAll() {
+    this.$nextTick(() => {
+      if (this.filterAllowAllServices) {
+        this.selectedServices = [];
+      } else {
+        this.selectedServices = this.selectableServices.map((x) => x.value);
+      }
+    });
+  }
 
   private get selectableNetworks(): object[] {
     const r: object[] = [
@@ -214,7 +279,35 @@ export default class Devices extends Vue {
       },
     ];
   }
-  private selectedTimeframe: string | null = null;
+
+  private get selectableServices(): Array<{ text: string; value: string }> {
+    return [
+      {
+        text: "Other",
+        value: "other",
+      },
+      {
+        text: "Print",
+        value: "print",
+      },
+      {
+        text: "RDP (Remote Desktop)",
+        value: "rdp",
+      },
+      {
+        text: "SSH",
+        value: "ssh",
+      },
+      {
+        text: "SMB (Windows Network FS)",
+        value: "smb",
+      },
+      {
+        text: "Web (HTTP/HTTPS)",
+        value: "web",
+      },
+    ];
+  }
 
   private rowClicked(row: any) {
     // @todo Try this again with vue3 - https://github.com/vuetifyjs/vuetify/issues/9720
@@ -336,13 +429,17 @@ export default class Devices extends Vue {
 
   private get filtered(): boolean {
     return (
-      this.selectedNetworkCurrent !== null || this.selectedTimeframe !== null || this.search !== ""
+      this.selectedNetworkCurrent !== null ||
+      this.selectedTimeframe !== null ||
+      this.search !== "" ||
+      !this.filterAllowAllServices
     );
   }
 
   private clearFilter() {
     this.selectedNetworkCurrent = null;
     this.selectedTimeframe = null;
+    this.selectedServices = this.selectableServices.map((x) => x.value);
     this.search = "";
   }
 
@@ -378,6 +475,12 @@ export default class Devices extends Vue {
             }
           }
         }
+      }
+      if (passedFilter && !this.filterAllowAllServices) {
+        passedFilter =
+          GetServices(i)
+            .map((x) => x.name)
+            .filter((value) => this.selectedServices.includes(value)).length > 0;
       }
       if (passedFilter) {
         const r = {

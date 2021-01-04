@@ -5,17 +5,13 @@ do for stroika builds too
 
 check stackoverflow messages
 
+---
 
+	> BETH suggests consulting lawyer about storing Personally identification data
+	like machines IP addresses etc
 
 
 ---
-
-
-Have services filter in devices
-	smb, printer, web, ssh, rdp
-
-	THEN I HTINK I CNA release
-
 
 
 https://dev.to/kanishkt123/runtime-environment-variables-with-github-actions-2if8
