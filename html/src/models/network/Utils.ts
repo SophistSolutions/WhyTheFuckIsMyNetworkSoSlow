@@ -154,7 +154,7 @@ export function GetServices(
   }
   if (device.openPorts && device.openPorts.includes("tcp:22")) {
     const links: Array<{ href: string }> = [];
-    localNetworkAddresses.forEach((la) => links.push({ href: `ssh://${la}` }));
+    localNetworkAddresses.forEach((la) => links.push({ href: `ssh://@${la}` }));
     result.push({ name: "ssh", links });
   }
   if (device.openPorts && device.openPorts.includes("tcp:139")) {
@@ -164,7 +164,7 @@ export function GetServices(
   }
   if (device.openPorts && device.openPorts.includes("tcp:23")) {
     const links: Array<{ href: string }> = [];
-    localNetworkAddresses.forEach((la) => links.push({ href: `telnet://${la}` }));
+    localNetworkAddresses.forEach((la) => links.push({ href: `telnet://@${la}` }));
     result.push({ name: "telnet", links });
   }
   {
@@ -177,6 +177,9 @@ export function GetServices(
     }
     if (device.openPorts && device.openPorts.includes("tcp:443")) {
       localNetworkAddresses.forEach((la) => links.push({ href: `https://${la}` }));
+    }
+    if (device.openPorts && device.openPorts.includes("tcp:8080")) {
+      localNetworkAddresses.forEach((la) => links.push({ href: `http://${la}:8080` }));
     }
     if (links.length !== 0) {
       result.push({ name: "web", links });

@@ -11,7 +11,7 @@
       </tr>
       <tr v-if="device.icon">
         <td>Icon</td>
-        <td><img :src="device.icon" /></td>
+        <td><img :src="device.icon" width="24" height="24" /></td>
       </tr>
       <tr v-if="device.manufacturer">
         <td class="labelColumn">
