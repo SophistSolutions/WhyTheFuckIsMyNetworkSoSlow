@@ -692,12 +692,12 @@ SB able to tell TV from playbar from SERVICE LIST; look at my TVS service list
                 fDebugProps.Add (L"SSDPInfo"sv,
                                  VariantValue{
                                      Mapping<String, VariantValue> {
-                                         pair<String, VariantValue>{L"deviceType2FriendlyNameMap"sv, Characters::ToString (fSSDPInfo->fDeviceType2FriendlyNameMap)},
-                                         pair<String, VariantValue>{L"USNs"sv, Characters::ToString (fSSDPInfo->fUSNs)},
+                                         pair<String, VariantValue>{L"deviceType2FriendlyNameMap"sv, Mapping<String, VariantValue> { fSSDPInfo->fDeviceType2FriendlyNameMap }},
+                                         pair<String, VariantValue>{L"USNs"sv, WebServices::Model::Device::kMapper.FromObject (fSSDPInfo->fUSNs)},
                                          pair<String, VariantValue>{L"server"sv, Characters::ToString (fSSDPInfo->fServer)},
                                          pair<String, VariantValue>{L"manufacturer"sv, Characters::ToString (fSSDPInfo->fManufacturer)},
                                          pair<String, VariantValue>{L"manufacturer-URL"sv, Characters::ToString (fSSDPInfo->fManufacturerURI)},
-                                         pair<String, VariantValue>{L"lastAdvertisement"sv, Characters::ToString (fSSDPInfo->fLastAdvertisement)},
+                                         pair<String, VariantValue>{L"lastAdvertisement"sv, WebServices::Model::Device::kMapper.FromObject (fSSDPInfo->fLastAdvertisement)},
                                          pair<String, VariantValue>{L"lastSSDPMessageRecievedAt"sv, Characters::ToString (fSSDPInfo->fLastSSDPMessageRecievedAt)},
                                          pair<String, VariantValue>{L"locations"sv, Characters::ToString (fSSDPInfo->fLocations) }
                                      }});
