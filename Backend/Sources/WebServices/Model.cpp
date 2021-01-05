@@ -10,6 +10,8 @@
 #include "Stroika/Foundation/IO/Network/CIDR.h"
 #include "Stroika/Foundation/IO/Network/InternetAddress.h"
 
+#include "Stroika/Frameworks/UPnP/SSDP/Advertisement.h"
+
 #include "Model.h"
 
 using namespace std;
@@ -350,6 +352,18 @@ const ObjectVariantMapper Device::kMapper = [] () {
     mapper.AddCommonType<optional<Set<String>>> ();
     mapper.AddCommonType<URI> ();
     mapper.AddCommonType<optional<URI>> ();
+    {
+        // only used in debug output, but still used for devices
+        using Stroika::Frameworks::UPnP::SSDP::Advertisement;
+        mapper.AddClass<Advertisement> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+            {L"fAlive", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Advertisement, fAlive), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+            {L"fUSN", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Advertisement, fUSN)},
+            {L"fServer", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Advertisement, fServer)},
+            {L"fTarget", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Advertisement, fTarget)},
+            {L"fRawHeaders", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Advertisement, fRawHeaders)},
+        });
+        mapper.AddCommonType<optional<Stroika::Frameworks::UPnP::SSDP::Advertisement>> ();
+    }
     mapper.AddClass<NetworkAttachmentInfo> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
         {L"hardwareAddresses", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkAttachmentInfo, hardwareAddresses), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"networkAddresses", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkAttachmentInfo, networkAddresses)},
