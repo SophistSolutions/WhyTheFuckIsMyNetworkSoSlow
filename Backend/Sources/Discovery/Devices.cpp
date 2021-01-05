@@ -441,7 +441,14 @@ namespace {
                     optional<String>               m1, m2;
                     if (newName.Match (kSonosRE_, &m1, &m2)) {
                         Assert (m1.has_value () and m2.has_value ());
-                        name = fSSDPInfo->fDeviceType2FriendlyNameMap[kDeviceType_SpeakerGroup_] + *m2;
+                        String speakerGroup = fSSDPInfo->fDeviceType2FriendlyNameMap[kDeviceType_SpeakerGroup_];
+                        if (speakerGroup.empty ()) {
+                            Assert (m2->length () >= 3);    // because matched SPACE-SPACE.*
+                            name = m2->SubString (3);
+                        }
+                        else {
+                            name = speakerGroup + *m2;
+                        }
 #if qDebug
                         fDebugProps.Add (L"SSDP-DeviceType2FriendlyName-SONOS-HACK"sv, name);
 #endif
