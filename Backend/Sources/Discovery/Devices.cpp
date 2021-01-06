@@ -733,6 +733,7 @@ namespace {
                         di.fLastSeenAt      = DateTime::Now ();
                         di.PatchDerivedFields ();
 
+                        Assert (not (di.fGUID == GUID::Zero ()));
                         // Skip upgrade look to reduce the number of write locks we do, for the common case when there is no
                         // actual change
                         if (l->Lookup (di.fGUID) == di) {
@@ -745,6 +746,7 @@ namespace {
                         DbgTrace (L"!!! have change in ***MyDeviceDiscoverer_ so waiting to update");
 #endif
 
+                        Assert (not(di.fGUID == GUID::Zero ()));
                         if (not sDiscoveredDevices_.UpgradeLockNonAtomicallyQuietly (
                                 &l, [&] (auto&& writeLock) {
                                     writeLock.rwref ().Add (di.fGUID, di);
@@ -967,6 +969,7 @@ namespace {
                     }
                 }
                 di.PatchDerivedFields ();
+                Assert (not(di.fGUID == GUID::Zero ()));
                 if (not sDiscoveredDevices_.UpgradeLockNonAtomicallyQuietly (
                         &l, [&] (auto&& writeLock) {
                             writeLock.rwref ().Add (di.fGUID, di);
@@ -1071,6 +1074,7 @@ namespace {
                         DbgTrace (L"have change in ***MyNeighborDiscoverer_*** so about to call UpgradeLockNonAtomicallyQuietly/1");
 #endif
 
+                        Assert (not(di.fGUID == GUID::Zero ()));
                         if (not sDiscoveredDevices_.UpgradeLockNonAtomicallyQuietly (
                                 &l, [&] (auto&& writeLock) {
                                     writeLock.rwref ().Add (di.fGUID, di);
@@ -1229,10 +1233,12 @@ namespace {
                                 Memory::AccumulateIf (&tmp.fOpenPorts, scanResults.fDiscoveredOpenPorts);
                                 tmp.fLastSeenAt = DateTime::Now ();
                                 tmp.PatchDerivedFields ();
+                                Assert (not(tmp.fGUID == GUID::Zero ()));
                                 l.rwref ().Add (tmp.fGUID, tmp);
                                 DbgTrace (L"Updated device %s for fKnownOpenPorts: %s", Characters::ToString (tmp.fGUID).c_str (), Characters::ToString (scanResults.fDiscoveredOpenPorts).c_str ());
                             }
                             else {
+                                tmp.fGUID = LookupPersistentDeviceID_ (tmp);
                                 // only CREATE an entry for addresses where we found a port
                                 tmp.fOpenPorts  = scanResults.fDiscoveredOpenPorts;
                                 tmp.fLastSeenAt = DateTime::Now ();
@@ -1240,6 +1246,7 @@ namespace {
 #if qDebug
                                 tmp.fDebugProps.Add (L"Found-Through-Network-SYN-Scan", true);
 #endif
+                                Assert (not(tmp.fGUID == GUID::Zero ()));
                                 l.rwref ().Add (tmp.fGUID, tmp);
                                 DbgTrace (L"Added device %s for fKnownOpenPorts: %s", Characters::ToString (tmp.fGUID).c_str (), Characters::ToString (scanResults.fDiscoveredOpenPorts).c_str ());
                             }
@@ -1356,6 +1363,7 @@ namespace {
                                 Memory::AccumulateIf (&tmp.fOpenPorts, scanResults.fDiscoveredOpenPorts);
                                 tmp.fLastSeenAt = DateTime::Now ();
                                 tmp.PatchDerivedFields ();
+                                Assert (not(tmp.fGUID == GUID::Zero ()));
                                 l.rwref ().Add (tmp.fGUID, tmp);
                                 DbgTrace (L"Updated device %s for fKnownOpenPorts: %s", Characters::ToString (tmp.fGUID).c_str (), Characters::ToString (scanResults.fDiscoveredOpenPorts).c_str ());
                             }
