@@ -681,6 +681,15 @@ SB able to tell TV from playbar from SERVICE LIST; look at my TVS service list
                                 fManufacturer->fShortName = *o;
                             }
                         }
+                    }
+                }
+            }
+
+            // Add various type(s) if hardware address matches and other open ports fields
+            {
+                static const String kSMBPort_ = Characters::Format (L"tcp:%d", IO::Network::WellKnownPorts::TCP::kSMB);
+                for (auto hwa : GetHardwareAddresses ()) {
+                    if (auto o = BackendApp::Common::LookupEthernetMACAddressOUIFromPrefix (hwa)) {
                         if (o == L"Oracle VirtualBox virtual NIC"sv) {
                             fTypes.Add (Discovery::DeviceType::eVirtualMachine);
                         }
@@ -693,7 +702,7 @@ SB able to tell TV from playbar from SERVICE LIST; look at my TVS service list
 
             static const String kIPPPort_ = Characters::Format (L"tcp:%d", IO::Network::WellKnownPorts::TCP::kIPP);
             static const String kLPDPort_ = Characters::Format (L"tcp:%d", IO::Network::WellKnownPorts::TCP::kLPD);
-            if (fOpenPorts and (fOpenPorts->Contains (kIPPPort_) or fOpenPorts->Contains (kIPPPort_)) and (fManufacturer and (fManufacturer->Contains (L"Hewlett Packard"_k) or fManufacturer->Contains (L"Epson"_k) or fManufacturer->Contains (L"Canon"_k) or fManufacturer->Contains (L"Brother"_k)))) {
+            if (fOpenPorts and (fOpenPorts->Contains (kIPPPort_) or fOpenPorts->Contains (kLPDPort_)) and (fManufacturer and (fManufacturer->Contains (L"Hewlett Packard"_k) or fManufacturer->Contains (L"Epson"_k) or fManufacturer->Contains (L"Canon"_k) or fManufacturer->Contains (L"Brother"_k)))) {
                 fTypes.Add (DeviceType::ePrinter);
             }
 
