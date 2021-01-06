@@ -677,6 +677,9 @@ SB able to tell TV from playbar from SERVICE LIST; look at my TVS service list
                         if (o == L"Oracle VirtualBox virtual NIC"sv) {
                             fTypes.Add (Discovery::DeviceType::eVirtualMachine);
                         }
+                        if ((o == L"Synology Incorporated"sv or o == L"Buffalo.inc"sv or o == L"Seagate Technology"sv or o == L"Seagate Cloud Systems"sv) and fOpenPorts and fOpenPorts->Contains (kSMBPort_)) {
+                            fTypes.Add (Discovery::DeviceType::eNetworkAttachedStorage);
+                        }
                     }
                 }
             }

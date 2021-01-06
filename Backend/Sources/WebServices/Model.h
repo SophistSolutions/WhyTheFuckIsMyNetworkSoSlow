@@ -153,7 +153,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
         Network () = default;
         Network (const Set<CIDR>& nas)
-            : fNetworkAddresses {nas}
+            : fNetworkAddresses{nas}
         {
         }
 
@@ -222,6 +222,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
          */
         enum class DeviceType {
             eMediaPlayer,
+            eNetworkAttachedStorage,
             eNetworkInfrastructure,
             ePC,
             ePhone,

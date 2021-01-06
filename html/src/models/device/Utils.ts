@@ -56,6 +56,12 @@ export function ComputeDeviceTypeIconURLs(
   if (t) {
     t.forEach((ti: string) => {
       switch (ti) {
+        case "Network-Attached-Storage":
+          result.push({
+            url: "images/NAS.png",
+            label: ti,
+          });
+          break;
         case "Network-Infrastructure":
           result.push({
             url: "images/network-infrastructure.ico",
