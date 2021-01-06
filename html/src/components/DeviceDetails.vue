@@ -50,22 +50,27 @@
                 <table>
                   <tr>
                     <td>Name (ID)</td>
-                    <td class=".flex-nowrap">
-                      <a :href="GetNetworkLink(attachedNetID)">
-                        {{ GetNetworkName(GetNetworkByID(attachedNetID, networks)) }}</a
-                      >
-                      ({{ attachedNetID }})
+                    <td class="nowrap">
+                      <ReadOnlyTextWithHover
+                        :message="
+                          GetNetworkName(GetNetworkByID(attachedNetID, networks)) +
+                            ' (' +
+                            attachedNetID +
+                            ')'
+                        "
+                        :link="GetNetworkLink(attachedNetID)"
+                      />
                     </td>
                   </tr>
                   <tr v-if="device.attachedNetworks[attachedNetID].hardwareAddresses">
                     <td>Hardware Address(es)</td>
-                    <td class=".flex-nowrap">
+                    <td class="nowrap">
                       {{ device.attachedNetworks[attachedNetID].hardwareAddresses.join(", ") }}
                     </td>
                   </tr>
                   <tr v-if="device.attachedNetworks[attachedNetID].networkAddresses">
                     <td>Network Address Binding(s)</td>
-                    <td>
+                    <td class="nowrap">
                       {{ device.attachedNetworks[attachedNetID].networkAddresses.join(", ") }}
                     </td>
                   </tr>
@@ -140,6 +145,9 @@ import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 
 @Component({
   name: "DeviceDetails",
+  components: {
+    ReadOnlyTextWithHover: () => import("@/components/ReadOnlyTextWithHover.vue"),
+  },
 })
 export default class DeviceDetails extends Vue {
   @Prop({
@@ -195,5 +203,11 @@ td.labelColumn {
 .detailsTable td {
   padding-left: 5px;
   padding-right: 10px;
+}
+
+.nowrap {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>

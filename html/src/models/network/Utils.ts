@@ -152,6 +152,11 @@ export function GetServices(
     localNetworkAddresses.forEach((la) => links.push({ href: `rdp://${la}` }));
     result.push({ name: "rdp", links });
   }
+  if (device.openPorts && device.openPorts.includes("tcp:5900")) {
+    const links: Array<{ href: string }> = [];
+    localNetworkAddresses.forEach((la) => links.push({ href: `vnc://${la}` }));
+    result.push({ name: "vnc", links });
+  }
   if (device.openPorts && device.openPorts.includes("tcp:22")) {
     const links: Array<{ href: string }> = [];
     localNetworkAddresses.forEach((la) => links.push({ href: `ssh://@${la}` }));

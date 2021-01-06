@@ -151,6 +151,11 @@ export function ComputeServiceTypeIconURL(
         url: "images/SMB.png",
         label: t,
       };
+    case "vnc":
+      return {
+        url: "images/vnc.png",
+        label: t,
+      };
     case "web":
       return {
         url: "images/web-page.png",

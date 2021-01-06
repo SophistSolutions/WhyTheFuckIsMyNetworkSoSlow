@@ -143,7 +143,7 @@
               v-if="GetNetworkByIDQuietly(anw, networks)"
               :message="GetNetworkName(GetNetworkByIDQuietly(anw, networks))"
               :link="GetNetworkLink(anw)"
-            />,
+            />&nbsp;
           </span>
         </template>
         <template v-slot:expanded-item="{ headers, item }">
