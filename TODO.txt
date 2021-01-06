@@ -1,9 +1,52 @@
+
+undo hack i did for Device::kModel and add kModel for ssdp lastAdvertisement
+to STROIKA (eventually temp in device code) - and maybe private kModel static to use in that 
+debug routine.
+
+---
+	Fix TV ICON/TYPE info for samsung TV (supprotig dial etc)
+---
+
 test a little
 write release notes
 writeup next things TODO
 do release
+---
+	DEBUG INFO SSDP result shows as string not json
+		(mostly fixed but need change to stroika for rest (optional<string> arg to VariantValue))
+----
+THIS SHOULD APPEAR AS DEVICE TYPE NAS:
+	92.168.244.83 (ef8b7040-3c70-ed14-1ee8-977ee9a8383c)
+	Manufacturer	Synology Incorporated
+	Last Seen	3 minutes ago
+	Networks	
+	●	
+	Name (ID)	192.168.244.0/24 (bae36d95-4e42-8576-2219-b23be1be698a)
+	Hardware Address(es)	00:11:32:9b:3a:d0
+	Network Address Binding(s)	192.168.244.83
+	Services	
+		ssh	ssh://192.168.244.83
+		smb	smb://192.168.244.83
+		web	http://192.168.244.83https://192.168.244.83
 
+	&&&& ADD TYPE=eNetworkAttachedStorage
+	to DeviceTypes in C++ and check for synology MFG (and buffalo -- etc - search for pop ones through my map id file) and has 
+	smb support, and give it nettatachedstorage type. THEN fix GUI 
+	to also support
 
+----
+
+ht
+----
+
+test on tablet and fixup device details page
+
+	Device details one item wrap. And a couple columns adjust size. 
+
+----
+https://apps.apple.com/us/app/pluto-hud/id1544577573?mt=12 
+
+Hints about privacy policy
 
 ---
 when I get fix for input github action stuff working,
@@ -17,16 +60,13 @@ check stackoverflow messages
 	> BETH suggests consulting lawyer about storing Personally identification data
 	like machines IP addresses etc
 
-
 ---
-
 
 https://dev.to/kanishkt123/runtime-environment-variables-with-github-actions-2if8
 
 figure out how to use the input param to build a specific branch
 but tricky cuz we checkout differnetly for differnt places, but maybe
 have the action RESET the GITHUB_SHA variable?
-
 
 ----
 
@@ -41,9 +81,6 @@ have the action RESET the GITHUB_SHA variable?
 
 ----
 	Maybe add 'types' filter popup in devices page
-
-----
-	in sonos naming code - if starts with - Sonos Play:5  lose leading -
 ---
 >	almost ready for checkin - excep tfor comma in netwoks assocaited with a device line.
 
