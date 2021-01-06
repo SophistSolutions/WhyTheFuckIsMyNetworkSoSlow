@@ -444,7 +444,7 @@ namespace {
                         Assert (m1.has_value () and m2.has_value ());
                         String speakerGroup = fSSDPInfo->fDeviceType2FriendlyNameMap[kDeviceType_SpeakerGroup_];
                         if (speakerGroup.empty ()) {
-                            Assert (m2->length () >= 3);    // because matched SPACE-SPACE.*
+                            Assert (m2->length () >= 3); // because matched SPACE-SPACE.*
                             name = m2->SubString (3);
                         }
                         else {
@@ -709,7 +709,8 @@ SB able to tell TV from playbar from SERVICE LIST; look at my TVS service list
                                          pair<String, VariantValue>{L"manufacturer-URL"sv, Characters::ToString (fSSDPInfo->fManufacturerURI)},
                                          pair<String, VariantValue>{L"lastAdvertisement"sv, WebServices::Model::Device::kMapper.FromObject (fSSDPInfo->fLastAdvertisement)},
                                          pair<String, VariantValue>{L"lastSSDPMessageRecievedAt"sv, Characters::ToString (fSSDPInfo->fLastSSDPMessageRecievedAt)},
-                                         pair<String, VariantValue>{L"locations"sv, Characters::ToString (fSSDPInfo->fLocations) }
+                                         pair<String, VariantValue> { L"locations"sv,
+                                                                      Characters::ToString (fSSDPInfo->fLocations) }
                                      }});
             }
 #endif
@@ -811,7 +812,7 @@ namespace {
                         auto           l  = sDiscoveredDevices_.cget ();
                         DiscoveryInfo_ di = [&] () {
                             DiscoveryInfo_ tmp{};
-                            tmp.fAttachedNetworks = o->fAttachedNetworks;
+                            tmp.fAttachedNetworks   = o->fAttachedNetworks;
                             tmp.fAttachedInterfaces = o->fAttachedInterfaces;
                             if (optional<DiscoveryInfo_> oo = FindMatchingDevice_ (l, tmp)) {
                                 tmp = *oo; // merge
