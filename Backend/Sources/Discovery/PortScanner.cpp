@@ -75,7 +75,8 @@ PortScanResults Discovery::ScanPorts (const InternetAddress& ia, const optional<
         WellKnownPorts::TCP::kIPP,
         WellKnownPorts::TCP::kRDP,
         WellKnownPorts::TCP::kSIP,
-        8080,   // not formally well known, but common enough for alternate http
+        8080, // not formally well known, but common enough for alternate http
+        5900, // VNC (@todo add to stroika names)
     };
     if (options and options->fStyle == ScanOptions::eRandomBasicOne) {
         static mt19937 sRng_{std::random_device{}()};
