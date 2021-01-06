@@ -353,7 +353,7 @@ export default class Devices extends Vue {
         text: "Manufacturer",
         value: "manufacturerSummary",
         cellClass: "nowrap",
-        width: "17%",
+        width: "18%",
       },
       {
         text: "OS",
