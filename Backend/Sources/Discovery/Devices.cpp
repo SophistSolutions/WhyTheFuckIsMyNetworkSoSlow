@@ -109,6 +109,7 @@ namespace {
     const String kDeviceType_WANDevice_{L"urn:schemas-upnp-org:device:WANDevice:1"sv};
     const String kDeviceType_MediaRenderer_{L"urn:schemas-upnp-org:device:MediaRenderer:1"sv};
     const String kDeviceType_DIALServer_{L"urn:dial-multiscreen-org:device:dial:1"sv}; // typically TV, Blu-ray player, set-top-box, or similar device
+    const String kDeviceType_DIALReceiver_{L"urn:dial-multiscreen-org:device:dialreceiver:1"sv};
     // probably shouldn't be this specifc
     const String kDeviceType_Roku_{L"urn:roku-com:device:player:1-0"sv};
 }
@@ -633,6 +634,12 @@ SB able to tell TV from playbar from SERVICE LIST; look at my TVS service list
                 (fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_DIALServer_))) {
                 fTypes.Add (Discovery::DeviceType::eMediaPlayer);
                 //fTypes.Add (Discovery::DeviceType::eTV);
+            }
+
+            if (fSSDPInfo.has_value () and
+                (fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_DIALReceiver_))) {
+                fTypes.Add (Discovery::DeviceType::eMediaPlayer);
+                fTypes.Add (Discovery::DeviceType::eTV);
             }
 
             {
