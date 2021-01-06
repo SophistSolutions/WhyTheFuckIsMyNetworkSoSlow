@@ -1,3 +1,16 @@
+Hercules (00000000-0000-0000-0000-000000000000)
+	-Name (ID)	192.168.244.0/24 (bae36d95-4e42-8576-2219-b23be1be698a)
+	Hardware Address(es)	
+	Network Address Binding(s)	192.168.244.187
+Hercules (fd34c4fb-f00c-26e1-31ba-3e9703494ed1)
+	-Name (ID)	172.17.0.0/16 (67e209ad-95e4-f760-4f9c-c60985a0d4bf)
+	Hardware Address(es)	02:42:8a:60:ff:4c
+	Network Address Binding(s)	172.17.0.0
+	-Name (ID)	192.168.244.0/24 (bae36d95-4e42-8576-2219-b23be1be698a)
+	Hardware Address(es)	10:7b:44:f2:d4:cb
+	Network Address Binding(s)	192.168.244.0
+
+----
 
 undo hack i did for Device::kModel and add kModel for ssdp lastAdvertisement
 to STROIKA (eventually temp in device code) - and maybe private kModel static to use in that 
