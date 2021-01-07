@@ -24,7 +24,6 @@ we get answer from vuex)
 
 -----
 
-	>>> RELEASE Notes
 	>>> ADD SORT ICONS FUNCTION SO TV comes before speaker, and
 	   add TICKET for issue that we want the hoever text to include all items
 	   and the elipsis has to operate over all of them.... Need some fancy component 
@@ -50,9 +49,7 @@ when we convert this to CIDR for fBindings, we get 192.168.244.0/24
 
 ----
 
-undo hack i did for Device::kModel and add kModel for ssdp lastAdvertisement
-to STROIKA (eventually temp in device code) - and maybe private kModel static to use in that 
-debug routine.
+cleanup kMyMapper_ = [] () { once I have added ampper to Stroika for advertsiemtn;
 
 ---
 	Fix TV ICON/TYPE info for samsung TV (supprotig dial etc)
