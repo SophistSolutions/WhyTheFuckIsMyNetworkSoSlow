@@ -6,8 +6,6 @@ High level summary of changes in WhyTheFuckIsMyNetworkSoSlow.
 
 ## History
 
-    Added Stroika::Frameworks::UPnP::SSDP::Advertisement to Device::kMapper (for use in emitted debug info)
-
 ---
 
 ### v12x

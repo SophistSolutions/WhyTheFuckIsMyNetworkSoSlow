@@ -288,6 +288,31 @@ namespace {
     NetAndNetInterfaceMapper_ NetAndNetInterfaceMapper_::sThe;
 }
 
+DISABLE_COMPILER_MSC_WARNING_START (4573);
+DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
+const ObjectVariantMapper kMyMapper_ = [] () {
+    ObjectVariantMapper mapper;
+
+    mapper.AddCommonType<Set<String>> ();
+    mapper.AddCommonType<optional<Set<String>>> ();
+
+    // @todo migrate this to Stroika defintiion
+    // only used in debug output, but still used for devices
+    using Stroika::Frameworks::UPnP::SSDP::Advertisement;
+    mapper.AddClass<Advertisement> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+        {L"fAlive", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Advertisement, fAlive), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"fUSN", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Advertisement, fUSN)},
+        {L"fServer", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Advertisement, fServer)},
+        {L"fTarget", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Advertisement, fTarget)},
+        {L"fRawHeaders", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Advertisement, fRawHeaders)},
+    });
+    mapper.AddCommonType<optional<Stroika::Frameworks::UPnP::SSDP::Advertisement>> ();
+
+    return mapper;
+}();
+DISABLE_COMPILER_GCC_WARNING_END ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
+DISABLE_COMPILER_MSC_WARNING_END (4573);
+
 /*
  ********************************************************************************
  *************************** sDiscoveredDevices_ ********************************
@@ -602,11 +627,11 @@ namespace {
                                  VariantValue{
                                      Mapping<String, VariantValue> {
                                          pair<String, VariantValue>{L"deviceType2FriendlyNameMap"sv, Mapping<String, VariantValue> { fSSDPInfo->fDeviceType2FriendlyNameMap }},
-                                         pair<String, VariantValue>{L"USNs"sv, WebServices::Model::Device::kMapper.FromObject (fSSDPInfo->fUSNs)},
+                                         pair<String, VariantValue>{L"USNs"sv, kMyMapper_.FromObject (fSSDPInfo->fUSNs)},
                                          pair<String, VariantValue>{L"server"sv, Characters::ToString (fSSDPInfo->fServer)},
                                          pair<String, VariantValue>{L"manufacturer"sv, Characters::ToString (fSSDPInfo->fManufacturer)},
                                          pair<String, VariantValue>{L"manufacturer-URL"sv, Characters::ToString (fSSDPInfo->fManufacturerURI)},
-                                         pair<String, VariantValue>{L"lastAdvertisement"sv, WebServices::Model::Device::kMapper.FromObject (fSSDPInfo->fLastAdvertisement)},
+                                         pair<String, VariantValue>{L"lastAdvertisement"sv, kMyMapper_.FromObject (fSSDPInfo->fLastAdvertisement)},
                                          pair<String, VariantValue>{L"lastSSDPMessageRecievedAt"sv, Characters::ToString (fSSDPInfo->fLastSSDPMessageRecievedAt)},
                                          pair<String, VariantValue> { L"locations"sv,
                                                                       Characters::ToString (fSSDPInfo->fLocations) }
@@ -733,7 +758,7 @@ namespace {
                         di.fLastSeenAt      = DateTime::Now ();
                         di.PatchDerivedFields ();
 
-                        Assert (not (di.fGUID == GUID::Zero ()));
+                        Assert (not(di.fGUID == GUID::Zero ()));
                         // Skip upgrade look to reduce the number of write locks we do, for the common case when there is no
                         // actual change
                         if (l->Lookup (di.fGUID) == di) {
