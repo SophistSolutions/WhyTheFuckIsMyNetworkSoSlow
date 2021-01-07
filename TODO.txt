@@ -50,7 +50,23 @@ when we convert this to CIDR for fBindings, we get 192.168.244.0/24
 ----
 
 cleanup kMyMapper_ = [] () { once I have added ampper to Stroika for advertsiemtn;
+---
+	Per-Device historical graphs that may make sense:
 
+			> online
+			X-Axis time-history, and y-axis constant height and green if yes, and red if no, and
+		    white for unknown regions.
+
+			@todo figure something better to display here for y-axis scale? Like a health measure or 
+			inverse ping-time to that device?
+
+			OR - maybe - when I can measure traffic to/from that device, height could be an estimate
+			of that level of traffic (with 0 above x-axis so you can still see online but without traffic
+			) 
+
+			MAYBE START with just online-reachable (simple first graph idea) - and have option to add extra
+			overlays (line chart showing traffic level), and line chart showing (some?which) ping times
+			
 ---
 	Fix TV ICON/TYPE info for samsung TV (supprotig dial etc)
 ---

@@ -3,10 +3,17 @@
 This project's goal is to allow people (even with modest knowledge of network technology) to
 diagnose their own personal networks, to indicate network issues and to provide advice for improving network efficiency.
 
+    NOTE - as of the current release, all you can really do effectively is to explore the devices present on your network (not doing much monitoring yet, except manually through the web API).
+
 - To test:
 
-  - curl http://localhost/ OR
-  - curl http://localhost:8080/ OR
+  - Install (msi/deb/rpm installs in release section below)
+
+    installation starts background web-service, on port 80 for GUI, and 8080 for API-Server
+
+  - In a browser, visit:
+    - <http://localhost/> OR
+    - <http://localhost:8080/> OR
 
 - TODO items
   See <https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues>

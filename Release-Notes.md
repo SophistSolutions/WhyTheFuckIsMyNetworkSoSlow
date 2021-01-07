@@ -2,13 +2,13 @@
 
 ## About
 
-High level summary of changes in WhyTheFuckIsMyNetworkSoSlow.
+High level summary of changes in WhyTheFuckIsMyNetworkSoSlow
 
 ## History
 
 ---
 
-### v12x
+### 1.0d12 {2021-01-07}
 
 #### TLDR
 
@@ -39,7 +39,7 @@ High level summary of changes in WhyTheFuckIsMyNetworkSoSlow.
   - Improvements to github action workflows
   - npm latest components (but cannot switch to vue 3 yet cuz no migration tool yet)
   - Cleaned up most build eslint warnings
-  - configuring brnach to build in github actions so you can force a rebuild using the release workflow using the DEV branch
+  - configuring branch to build in github actions so you can force a rebuild using the release workflow using the DEV branch
   - vetur.config.js file so it finds the package.config file and editring in vscode works better
 - API-Server
   - map OracleVM MACADDR to mean type is new Virtual-Machine; and html: support that Virtual-Machine type and other gui cleanups
