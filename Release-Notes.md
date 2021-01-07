@@ -6,21 +6,23 @@ High level summary of changes in WhyTheFuckIsMyNetworkSoSlow.
 
 ## History
 
+    Added Stroika::Frameworks::UPnP::SSDP::Advertisement to Device::kMapper (for use in emitted debug info)
+
+---
+
 ### v12x
 
 #### TLDR
 
 - Major GUI cleanups - so now browsing a network and set of devices works well.
-  Still no performance monitoring in GUI, nor anythign editable or persistent.
+  Still no performance monitoring in GUI, nor anything editable or persistent.
 
 - Small backend and build system improvements
 
 #### Details
 
 - html/gui
-
   - Major cleanups
-
     - Devices page and Networks page listbox now work well, with both list views doing the same expando style view details
     - Use components much more, and put details view for devices and networks into a component
       - now devices and networks list pages have details that can be popped into separate monitoring window
@@ -28,7 +30,6 @@ High level summary of changes in WhyTheFuckIsMyNetworkSoSlow.
     - Draft HOME page
     - Cleanup all the noisy warnings/issues with the vue code - both static es-lint warnings as well as dynamic warnings in the chrome debugger.
     - new Filterbar, defined separately in each page, and done decently for Devices and Networks pages (merged search there, but now also other filters); this required lots of work on the app-bar functionalty and moved it from App.vue to component used in each page view. It shows filter summary including number of matches.
-
   - Minor cleanups
     - html: lose a Watch() call that got warnings and didnt appear to be needed
     - cleaned up router usage
@@ -36,27 +37,21 @@ High level summary of changes in WhyTheFuckIsMyNetworkSoSlow.
     - use vue-json-viewer to display debugging json code
     - cleaned up confusion between networks and attachedinterfaces to devices output: for now attachedinterfaces only MINIMALLY (for debugging) supported. Will want to support a bit more later.
     - Added services panel in devices pages
-
 - Build System
-
   - Improvements to github action workflows
   - npm latest components (but cannot switch to vue 3 yet cuz no migration tool yet)
   - Cleaned up most build eslint warnings
   - configuring brnach to build in github actions so you can force a rebuild using the release workflow using the DEV branch
   - vetur.config.js file so it finds the package.config file and editring in vscode works better
-
 - API-Server
   - map OracleVM MACADDR to mean type is new Virtual-Machine; and html: support that Virtual-Machine type and other gui cleanups
   - Added a few extra ports to scan
   - Improvements to device scanning logic (fixed bug with 0 GUID); and improvements to guessing types (and new device/service types)
   - tweaked (json not string a few) fDebugProps (need stroika improvement to add the rest)
 - Notes/Docs
-
   - DeviceDiscoveryHints.md file
 
-    #if 0
-
-    Added Stroika::Frameworks::UPnP::SSDP::Advertisement to Device::kMapper (for use in emitted debug info)
+---
 
 ### 1.0d9, 1.0d10 {2020-12-24}
 
