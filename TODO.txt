@@ -11,6 +11,17 @@ Hercules (fd34c4fb-f00c-26e1-31ba-3e9703494ed1)
 	Network Address Binding(s)	192.168.244.0
 
 
+--
+
+Do :busy=isBusy
+
+set isBusy when fetching and isBusy = false when we get answer (not sure how to tell when
+we get answer from vuex)
+	https://dev.to/viniciuskneves/watch-for-vuex-state-changes-2mgj
+
+	(this mostly makes celar, but still not clear if we do 3 gets in a row, how to make
+	sure the RECEIPS match the last one?)
+
 -----
 
 	>>> RELEASE Notes
