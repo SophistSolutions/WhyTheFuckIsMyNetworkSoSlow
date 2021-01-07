@@ -102,43 +102,43 @@
         item-key="id"
         @click:row="rowClicked"
       >
-        <template v-slot:item.lastSeenAt="{ headers, item }">
+        <template v-slot:[`item.lastSeenAt`]="{ item }">
           <ReadOnlyTextWithHover
             v-if="item.lastSeenAt"
             :message="item.lastSeenAt | moment('from', 'now')"
           />
         </template>
-        <template v-slot:item.type="{ headers, item }">
-          <span v-for="t in ComputeDeviceTypeIconURLs(item.type)">
+        <template v-slot:[`item.type`]="{ item }">
+          <span v-for="(t, i) in ComputeDeviceTypeIconURLs(item.type)" :key="i">
             <img v-if="t.url" :src="t.url" :title="t.label" height="20" width="20" />
             <ReadOnlyTextWithHover v-if="!t.url" :message="t.label" />
           </span>
         </template>
-        <template v-slot:item.operatingSystem="{ headers, item }">
-          <span v-for="t in ComputeOSIconURLList(item.operatingSystem)">
+        <template v-slot:[`item.operatingSystem`]="{ item }">
+          <span v-for="(t, i) in ComputeOSIconURLList(item.operatingSystem)" :key="i">
             <img v-if="t.url" :src="t.url" :title="t.label" height="20" width="20" />
             <ReadOnlyTextWithHover v-if="!t.url" :message="t.label" />
           </span>
         </template>
-        <template v-slot:item.name="{ item }">
+        <template v-slot:[`item.name`]="{ item }">
           <ReadOnlyTextWithHover :message="item.name" />
         </template>
-        <template v-slot:item.manufacturerSummary="{ item }">
+        <template v-slot:[`item.manufacturerSummary`]="{ item }">
           <ReadOnlyTextWithHover :message="item.manufacturerSummary" />
         </template>
-        <template v-slot:item.localAddresses="{ item }">
+        <template v-slot:[`item.localAddresses`]="{ item }">
           <ReadOnlyTextWithHover :message="item.localAddresses" />
         </template>
-        <template v-slot:item.services="{ item }">
-          <span v-for="s in item.services">
-            <span v-for="t in ComputeServiceTypeIconURLs([s.name])">
+        <template v-slot:[`item.services`]="{ item }">
+          <span v-for="(s, i) in item.services" :key="i">
+            <span v-for="(t, i) in ComputeServiceTypeIconURLs([s.name])" :key="i">
               <img v-if="t.url" :src="t.url" :title="t.label" height="20" width="20" />
               <ReadOnlyTextWithHover v-if="!t.url" :message="t.label" />
             </span>
           </span>
         </template>
-        <template v-slot:item.networksSummary="{ item }">
-          <span v-for="anw in Object.keys(item.attachedNetworks)">
+        <template v-slot:[`item.networksSummary`]="{ item }">
+          <span v-for="(anw, i) in Object.keys(item.attachedNetworks)" :key="i">
             <ReadOnlyTextWithHover
               v-if="GetNetworkByIDQuietly(anw, networks)"
               :message="GetNetworkName(GetNetworkByIDQuietly(anw, networks))"
@@ -146,7 +146,7 @@
             />&nbsp;
           </span>
         </template>
-        <template v-slot:expanded-item="{ headers, item }">
+        <template v-slot:expanded-item="{ item }">
           <td colspan="100">
             <Link2DetailsPage :link="'/#/device/' + item.id" />
             <DeviceDetails class="detailsSection" :device="item" :networks="networks" />

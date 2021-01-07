@@ -43,21 +43,21 @@
         item-key="id"
         @click:row="rowClicked"
       >
-        <template v-slot:item.devices="{ headers, item }">
+        <template v-slot:[`item.devices`]="{ item }">
           <td>
             <a :href="GetDevicesForNetworkLink(item.id)">{{ item.devices }}</a>
           </td>
         </template>
-        <template v-slot:item.name="{ item }">
+        <template v-slot:[`item.name`]="{ item }">
           <ReadOnlyTextWithHover :message="GetNetworkName(item)" :link="GetNetworkLink(item)" />
         </template>
-        <template v-slot:item.location="{ item }">
+        <template v-slot:[`item.location`]="{ item }">
           <ReadOnlyTextWithHover :message="item.location" />
         </template>
-        <template v-slot:item.internetInfo="{ item }">
+        <template v-slot:[`item.internetInfo`]="{ item }">
           <ReadOnlyTextWithHover :message="item.internetInfo" />
         </template>
-        <template v-slot:expanded-item="{ headers, item }">
+        <template v-slot:expanded-item="{ item }">
           <td colspan="100">
             <Link2DetailsPage :link="'/#/network/' + item.id" />
             <NetworkDetails
