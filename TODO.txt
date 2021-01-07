@@ -10,6 +10,33 @@ Hercules (fd34c4fb-f00c-26e1-31ba-3e9703494ed1)
 	Hardware Address(es)	10:7b:44:f2:d4:cb
 	Network Address Binding(s)	192.168.244.0
 
+
+-----
+
+	>>> RELEASE Notes
+	>>> ADD SORT ICONS FUNCTION SO TV comes before speaker, and
+	   add TICKET for issue that we want the hoever text to include all items
+	   and the elipsis has to operate over all of them.... Need some fancy component 
+	   todo this that agrggesates the text but inside it iterates and shows icons
+
+------------------
+
+for (PIP_ADAPTER_UNICAST_ADDRESS pu = currAddresses->FirstUnicastAddress; pu != nullptr; pu = pu->Next) {
+                    SocketAddress sa{pu->Address};
+                    if (sa.IsInternetAddress ()) {
+                        DbgTrace (L"***sa=%s, linkPrefix=%d", Characters::ToString (sa).c_str (), (int)pu->OnLinkPrefixLength);
+                        newInterface.fBindings.Add (pu->OnLinkPrefixLength == 255 ? sa.GetInternetAddress () : CIDR{sa.GetInternetAddress (), pu->OnLinkPrefixLength});
+                    }
+                }
+***sa=192.168.244.56:0, linkPrefix=24
+when we convert this to CIDR for fBindings, we get 192.168.244.0/24
+
+-----
+
+	BINDING ADDRESSES From the DEVICE record from which WTF is running reports the wrong
+	address (CIDR NOT ACTUAL ADDRESS). This is due to a stroika bug, and will be fixed 
+	in the next Stroka (and WTF) release
+
 ----
 
 undo hack i did for Device::kModel and add kModel for ssdp lastAdvertisement
