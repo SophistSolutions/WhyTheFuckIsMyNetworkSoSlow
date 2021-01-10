@@ -291,23 +291,11 @@ namespace {
 DISABLE_COMPILER_MSC_WARNING_START (4573);
 DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
 const ObjectVariantMapper kMyMapper_ = [] () {
-    ObjectVariantMapper mapper;
-
-    mapper.AddCommonType<Set<String>> ();
-    mapper.AddCommonType<optional<Set<String>>> ();
-
-    // @todo migrate this to Stroika defintiion
-    // only used in debug output, but still used for devices
     using Stroika::Frameworks::UPnP::SSDP::Advertisement;
-    mapper.AddClass<Advertisement> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-        {L"fAlive", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Advertisement, fAlive), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"fUSN", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Advertisement, fUSN)},
-        {L"fServer", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Advertisement, fServer)},
-        {L"fTarget", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Advertisement, fTarget)},
-        {L"fRawHeaders", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Advertisement, fRawHeaders)},
-    });
-    mapper.AddCommonType<optional<Stroika::Frameworks::UPnP::SSDP::Advertisement>> ();
-
+    ObjectVariantMapper mapper;
+    mapper.AddCommonType<Set<URI>> ();
+    mapper += Advertisement::kMapper;
+    mapper.AddCommonType<optional<Advertisement>> ();
     return mapper;
 }();
 DISABLE_COMPILER_GCC_WARNING_END ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
@@ -628,13 +616,13 @@ namespace {
                                      Mapping<String, VariantValue> {
                                          pair<String, VariantValue>{L"deviceType2FriendlyNameMap"sv, Mapping<String, VariantValue> { fSSDPInfo->fDeviceType2FriendlyNameMap }},
                                          pair<String, VariantValue>{L"USNs"sv, kMyMapper_.FromObject (fSSDPInfo->fUSNs)},
-                                         pair<String, VariantValue>{L"server"sv, Characters::ToString (fSSDPInfo->fServer)},
-                                         pair<String, VariantValue>{L"manufacturer"sv, Characters::ToString (fSSDPInfo->fManufacturer)},
-                                         pair<String, VariantValue>{L"manufacturer-URL"sv, Characters::ToString (fSSDPInfo->fManufacturerURI)},
+                                         pair<String, VariantValue>{L"server"sv, fSSDPInfo->fServer},
+                                         pair<String, VariantValue>{L"manufacturer"sv, fSSDPInfo->fManufacturer},
+                                         pair<String, VariantValue>{L"manufacturer-URL"sv, kMyMapper_.FromObject (fSSDPInfo->fManufacturerURI)},
                                          pair<String, VariantValue>{L"lastAdvertisement"sv, kMyMapper_.FromObject (fSSDPInfo->fLastAdvertisement)},
-                                         pair<String, VariantValue>{L"lastSSDPMessageRecievedAt"sv, Characters::ToString (fSSDPInfo->fLastSSDPMessageRecievedAt)},
+                                         pair<String, VariantValue>{L"lastSSDPMessageRecievedAt"sv, fSSDPInfo->fLastSSDPMessageRecievedAt},
                                          pair<String, VariantValue> { L"locations"sv,
-                                                                      Characters::ToString (fSSDPInfo->fLocations) }
+                                                                      kMyMapper_.FromObject (fSSDPInfo->fLocations) }
                                      }});
             }
 #endif
@@ -758,7 +746,7 @@ namespace {
                         di.fLastSeenAt      = DateTime::Now ();
                         di.PatchDerivedFields ();
 
-                        Assert (not(di.fGUID == GUID::Zero ()));
+                        Assert (di.fGUID != GUID{});
                         // Skip upgrade look to reduce the number of write locks we do, for the common case when there is no
                         // actual change
                         if (l->Lookup (di.fGUID) == di) {
@@ -771,7 +759,7 @@ namespace {
                         DbgTrace (L"!!! have change in ***MyDeviceDiscoverer_ so waiting to update");
 #endif
 
-                        Assert (not(di.fGUID == GUID::Zero ()));
+                        Assert (di.fGUID != GUID{});
                         if (not sDiscoveredDevices_.UpgradeLockNonAtomicallyQuietly (
                                 &l, [&] (auto&& writeLock) {
                                     writeLock.rwref ().Add (di.fGUID, di);
@@ -994,7 +982,7 @@ namespace {
                     }
                 }
                 di.PatchDerivedFields ();
-                Assert (not(di.fGUID == GUID::Zero ()));
+                Assert (di.fGUID != GUID{});
                 if (not sDiscoveredDevices_.UpgradeLockNonAtomicallyQuietly (
                         &l, [&] (auto&& writeLock) {
                             writeLock.rwref ().Add (di.fGUID, di);
@@ -1099,7 +1087,7 @@ namespace {
                         DbgTrace (L"have change in ***MyNeighborDiscoverer_*** so about to call UpgradeLockNonAtomicallyQuietly/1");
 #endif
 
-                        Assert (not(di.fGUID == GUID::Zero ()));
+                        Assert (di.fGUID != GUID{});
                         if (not sDiscoveredDevices_.UpgradeLockNonAtomicallyQuietly (
                                 &l, [&] (auto&& writeLock) {
                                     writeLock.rwref ().Add (di.fGUID, di);
@@ -1258,7 +1246,7 @@ namespace {
                                 Memory::AccumulateIf (&tmp.fOpenPorts, scanResults.fDiscoveredOpenPorts);
                                 tmp.fLastSeenAt = DateTime::Now ();
                                 tmp.PatchDerivedFields ();
-                                Assert (not(tmp.fGUID == GUID::Zero ()));
+                                Assert (tmp.fGUID != GUID{});
                                 l.rwref ().Add (tmp.fGUID, tmp);
                                 DbgTrace (L"Updated device %s for fKnownOpenPorts: %s", Characters::ToString (tmp.fGUID).c_str (), Characters::ToString (scanResults.fDiscoveredOpenPorts).c_str ());
                             }
@@ -1271,7 +1259,7 @@ namespace {
 #if qDebug
                                 tmp.fDebugProps.Add (L"Found-Through-Network-SYN-Scan", true);
 #endif
-                                Assert (not(tmp.fGUID == GUID::Zero ()));
+                                Assert (tmp.fGUID != GUID{});
                                 l.rwref ().Add (tmp.fGUID, tmp);
                                 DbgTrace (L"Added device %s for fKnownOpenPorts: %s", Characters::ToString (tmp.fGUID).c_str (), Characters::ToString (scanResults.fDiscoveredOpenPorts).c_str ());
                             }
@@ -1388,7 +1376,7 @@ namespace {
                                 Memory::AccumulateIf (&tmp.fOpenPorts, scanResults.fDiscoveredOpenPorts);
                                 tmp.fLastSeenAt = DateTime::Now ();
                                 tmp.PatchDerivedFields ();
-                                Assert (not(tmp.fGUID == GUID::Zero ()));
+                                Assert (tmp.fGUID != GUID{});
                                 l.rwref ().Add (tmp.fGUID, tmp);
                                 DbgTrace (L"Updated device %s for fKnownOpenPorts: %s", Characters::ToString (tmp.fGUID).c_str (), Characters::ToString (scanResults.fDiscoveredOpenPorts).c_str ());
                             }

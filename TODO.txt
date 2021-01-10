@@ -1,3 +1,14 @@
+
+
+
+
+update TODO and github issues
+
+
+fix readme file (looks bad)
+
+---
+
 Hercules (00000000-0000-0000-0000-000000000000)
 	-Name (ID)	192.168.244.0/24 (bae36d95-4e42-8576-2219-b23be1be698a)
 	Hardware Address(es)	
@@ -47,9 +58,6 @@ when we convert this to CIDR for fBindings, we get 192.168.244.0/24
 	address (CIDR NOT ACTUAL ADDRESS). This is due to a stroika bug, and will be fixed 
 	in the next Stroka (and WTF) release
 
-----
-
-cleanup kMyMapper_ = [] () { once I have added ampper to Stroika for advertsiemtn;
 ---
 	Per-Device historical graphs that may make sense:
 
@@ -69,12 +77,6 @@ cleanup kMyMapper_ = [] () { once I have added ampper to Stroika for advertsiemt
 			
 ---
 	Fix TV ICON/TYPE info for samsung TV (supprotig dial etc)
----
-
-test a little
-write release notes
-writeup next things TODO
-do release
 ---
 	DEBUG INFO SSDP result shows as string not json
 		(mostly fixed but need change to stroika for rest (optional<string> arg to VariantValue))
@@ -98,9 +100,6 @@ THIS SHOULD APPEAR AS DEVICE TYPE NAS:
 	smb support, and give it nettatachedstorage type. THEN fix GUI 
 	to also support
 
-----
-
-ht
 ----
 
 test on tablet and fixup device details page
