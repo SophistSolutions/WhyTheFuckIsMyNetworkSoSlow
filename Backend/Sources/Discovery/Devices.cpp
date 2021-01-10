@@ -24,6 +24,7 @@
 #include "Stroika/Foundation/Execution/Synchronized.h"
 #include "Stroika/Foundation/Execution/Thread.h"
 #include "Stroika/Foundation/IO/Network/DNS.h"
+#include "Stroika/Foundation/IO/Network/HTTP/ClientErrorException.h"
 #include "Stroika/Foundation/IO/Network/Interface.h"
 #include "Stroika/Foundation/IO/Network/LinkMonitor.h"
 #include "Stroika/Foundation/IO/Network/Neighbors.h"
@@ -1518,4 +1519,67 @@ Collection<Discovery::Device> Discovery::DevicesMgr::GetActiveDevices (optional<
     DbgTrace (L"returns: %s", Characters::ToString (results).c_str ());
 #endif
     return results;
+}
+
+void Discovery::DevicesMgr::InitiateReScan (const GUID& deviceID)
+{
+#if USE_NOISY_TRACE_IN_THIS_MODULE_
+    Debug::TraceContextBumper ctx{L"Discovery::InitiateReScan"};
+#endif
+    Debug::TimingTrace        ttrc{L"Discovery::DevicesMgr::InitiateReScan"};
+    static constexpr Activity kRescanning_Device_{L"rescanning device"sv};
+    DeclareActivity           da{&kRescanning_Device_};
+
+    auto findDeviceInfoAndClearFoundPorts = [] (const GUID& deviceID) {
+        auto l = sDiscoveredDevices_.rwget ();
+        if (optional<DiscoveryInfo_> oo = l.rwref ().Lookup (deviceID)) {
+            DiscoveryInfo_ tmp{*oo};
+            tmp.PatchDerivedFields ();
+            Assert (tmp.fGUID != GUID{});
+            tmp.fOpenPorts = nullopt;
+            l.rwref ().Add (tmp.fGUID, tmp);
+            return tmp;
+        }
+        Execution::Throw (IO::Network::HTTP::ClientErrorException{L"deviceID not recognized"});
+    };
+    auto addOpenPort = [] (const GUID& deviceID, const String& openPort) {
+        auto l = sDiscoveredDevices_.rwget ();
+        if (optional<DiscoveryInfo_> oo = l.rwref ().Lookup (deviceID)) {
+            DiscoveryInfo_ tmp{*oo};
+            Memory::AccumulateIf (&tmp.fOpenPorts, openPort);
+            tmp.fLastSeenAt = DateTime::Now ();
+            tmp.PatchDerivedFields ();
+            Assert (tmp.fGUID != GUID{});
+            l.rwref ().Add (tmp.fGUID, tmp);
+            DbgTrace (L"Updated device %s for fKnownOpenPorts: %s", Characters::ToString (tmp.fGUID).c_str (), Characters::ToString (openPort).c_str ());
+        }
+        else {
+            AssertNotReached ();
+        }
+    };
+    auto icmpPing = [] (const InternetAddress& ia) -> bool {
+        Frameworks::NetworkMonitor::Ping::Pinger p{ia};
+        try {
+            auto r = p.RunOnce (); //incomplete
+            return true;
+        }
+        catch (...) {
+            return false;
+        }
+    };
+
+    DiscoveryInfo_ initialDeviceInfo = findDeviceInfoAndClearFoundPorts (deviceID);
+    for (auto ia : initialDeviceInfo.GetInternetAddresses ()) {
+        if (icmpPing (ia)) {
+            addOpenPort (deviceID, L"icmp:ping"sv);
+        }
+    }
+    // now now just run scan using limited portscan API
+    // but redo scanning one at a time so I can SHOW results immediately, as they appear
+    for (auto ia : initialDeviceInfo.GetInternetAddresses ()) {
+        PortScanResults results = ScanPorts (ia, ScanOptions{ScanOptions::eFull});
+        for (String p : results.fDiscoveredOpenPorts) {
+            addOpenPort (deviceID, p);
+        }
+    }
 }

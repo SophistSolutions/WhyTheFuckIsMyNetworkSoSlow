@@ -16,6 +16,15 @@ export async function fetchNetworks(): Promise<INetwork[]> {
     .catch((error) => Logger.error(error));
 }
 
+export async function rescanDevice(deviceID: string): Promise<void> {
+  return fetch(API_ROOT + `/operations/scan/FullRescan?deviceID=${deviceID}`)
+    .then((response) => response.json())
+    .then((data) => {
+      return data;
+    })
+    .catch((error) => Logger.error(error));
+}
+
 export async function fetchDevices(searchCriteria?: ISortBy): Promise<IDevice[]> {
   // @todo make these search params depend on parameters,
   // and especially make compareNetwork depend on current active network

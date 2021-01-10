@@ -216,7 +216,7 @@ public:
                           WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_Ping (address->As<String> ())));
                       }
                       else {
-                          Execution::Throw (ClientErrorException (L"missing target argument"sv));
+                          Execution::Throw (ClientErrorException{L"missing target argument"sv});
                       }
                   }},
               Route{
@@ -232,7 +232,7 @@ public:
                           WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_TraceRoute (address->As<String> (), reverseDNSResult)));
                       }
                       else {
-                          Execution::Throw (ClientErrorException (L"missing target argument"sv));
+                          Execution::Throw (ClientErrorException{L"missing target argument"sv});
                       }
                   }},
               Route{
@@ -256,7 +256,7 @@ public:
                           name = rdr->As<String> ();
                       }
                       else {
-                          Execution::Throw (ClientErrorException (L"missing name argument"sv));
+                          Execution::Throw (ClientErrorException{L"missing name argument"sv});
                       }
                       WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_DNS_Lookup (name)));
                   }},
@@ -265,6 +265,19 @@ public:
                   [=] (Message* m) {
                       ExpectedMethod (m->GetRequestReference (), kOperations_);
                       WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_DNS_CalculateScore ()));
+                  }},
+              Route{
+                  L"operations/scan/FullRescan"_RegEx,
+                  [=] (Message* m) {
+                      Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
+                      ExpectedMethod (m->GetRequestReference (), kOperations_);
+                      if (auto rdr = args.Lookup (L"deviceID"sv)) {
+                          String deviceID = rdr->As<String> ();
+                          WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_Scan_FullRescan (deviceID)));
+                      }
+                      else {
+                          Execution::Throw (ClientErrorException{L"missing deviceID argument"sv});
+                      }
                   }},
 
           }}
@@ -358,6 +371,7 @@ const WebServiceMethodDescription WebServer::Rep_::kOperations_{
         L"curl http://localhost:8080/operations/dns/calculate-negative-lookup-time"sv,
         L"curl http://localhost:8080/operations/dns/lookup?name=www.youtube.com"sv,
         L"curl http://localhost:8080/operations/dns/calculate-score"sv,
+        L"curl http://localhost:8080/operations/scan/FullRescan?device=ID"sv,
     },
     Sequence<String>{
         L"perform a wide variety of operations - mostly for debugging for now but may stay around."sv,
@@ -366,6 +380,7 @@ const WebServiceMethodDescription WebServer::Rep_::kOperations_{
         L"/operations/dns/calculate-negative-lookup-time[&samples=uint]?"sv,
         L"/operations/dns/lookup[&name=string]"sv,
         L"/operations/dns/calculate-score; returns number 0 (worst) to 1.0 (best)"sv,
+        L"/operations/scan/FullRescan?device=ID; clears found ports for deviceID, and immediately rescans before returning; returns summary"sv,
     },
 };
 

@@ -573,3 +573,12 @@ double WSImpl::Operation_DNS_CalculateScore () const
     Ensure (0 <= score and score <= 1.0);
     return score;
 }
+
+DataExchange::VariantValue WSImpl::Operation_Scan_FullRescan (const String& deviceID) const
+{
+    Debug::TraceContextBumper  ctx{L"WSImpl::Operation_Scan_FullRescan"};
+    DataExchange::VariantValue x;
+    GUID                       useDeviceID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{deviceID}; });
+    Discovery::DevicesMgr::sThe.InitiateReScan (useDeviceID);
+    return x;
+}

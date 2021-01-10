@@ -106,9 +106,19 @@
           </table>
         </td>
       </tr>
-      <tr v-if="device.openPorts">
+      <tr>
         <td class="labelColumn">Open Ports</td>
-        <td>{{ device.openPorts.join(", ") }}</td>
+        <td>
+          <v-btn
+            class="smallBtnMargin"
+            elevation="2"
+            x-small
+            @click="rescanDevice"
+            :disabled="isRescanning"
+            >Rescan</v-btn
+          >
+          <span v-if="device.openPorts">{{ device.openPorts.join(", ") }}</span>
+        </td>
       </tr>
       <tr v-if="device.attachedNetworkInterfaces">
         <td class="labelColumn">ATTACHED NETWORK INTERFACES</td>
@@ -142,6 +152,7 @@ import {
 } from "@/models/network/Utils";
 import { OperatingSystem } from "@/models/OperatingSystem";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import { rescanDevice } from "@/proxy/API";
 
 @Component({
   name: "DeviceDetails",
@@ -162,6 +173,8 @@ export default class DeviceDetails extends Vue {
   })
   public networks!: INetwork[];
 
+  private isRescanning: boolean = false;
+
   private GetNetworkName = GetNetworkName;
   private GetNetworkLink = GetNetworkLink;
   private GetNetworkByID = GetNetworkByID;
@@ -174,6 +187,16 @@ export default class DeviceDetails extends Vue {
       element[1].localAddresses.forEach((e: string) => addresses.push(e));
     });
     return addresses.filter((value, index, self) => self.indexOf(value) === index);
+  }
+
+  private async rescanDevice() {
+    this.isRescanning = true;
+    try {
+      this.$store.dispatch("fetchDevices", null);
+      await rescanDevice(this.device.id);
+    } finally {
+      this.isRescanning = false;
+    }
   }
 
   private get deviceDetails(): object {
@@ -204,10 +227,13 @@ td.labelColumn {
   padding-left: 5px;
   padding-right: 10px;
 }
-
 .nowrap {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.smallBtnMargin {
+  margin-left: 1em;
+  margin-right: 1em;
 }
 </style>
