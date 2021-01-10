@@ -194,6 +194,7 @@ export default class DeviceDetails extends Vue {
     try {
       this.$store.dispatch("fetchDevices", null);
       await rescanDevice(this.device.id);
+      this.$store.dispatch("fetchDevices", null);
     } finally {
       this.isRescanning = false;
     }

@@ -267,7 +267,7 @@ namespace {
 
         // Assure all networks have an ID
         for (auto i = accumResults.begin (); i != accumResults.end (); ++i) {
-            if (i->fGUID == GUID::Zero ()) {
+            if (i->fGUID == GUID{}) {
                 StringBuilder sb;
                 sb += Characters::ToString (i->fGateways);         // NO WHERE NEAR GOOD ENUF - take into account public IP ADDR and hardware address of router - but still ALLOW for any of these to float
                 sb += Characters::ToString (i->fNetworkAddresses); // ""

@@ -66,7 +66,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
      */
     struct NetworkAttachmentInfo {
         Set<String>               hardwareAddresses;
-        Sequence<InternetAddress> localAddresses; // bound addresses (this machine @ this address)
+        Set<InternetAddress> localAddresses; // bound addresses (this machine @ this address)
 
 #if __cpp_impl_three_way_comparison < 201711
         bool operator== (const NetworkAttachmentInfo& rhs) const
