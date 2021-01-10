@@ -5,8 +5,6 @@ DIsplay JSON for attached interfaces. AND display pretty summary (upper case onl
 
 
 
-
-
 -----
 
 update TODO and github issues
