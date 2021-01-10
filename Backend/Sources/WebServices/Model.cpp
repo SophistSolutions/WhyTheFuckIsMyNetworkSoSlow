@@ -29,16 +29,6 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model;
 
-#if qCompilerAndStdLib_lambda_expand_in_namespace_Buggy
-const ObjectVariantMapper klambda_expand_in_namespace_Buggy_workaround_Mapper_ = [] () {
-    using IO::Network::CIDR;
-    ObjectVariantMapper mapper;
-    mapper.Add<CIDR> ([] ([[maybe_unused]] const ObjectVariantMapper& mapper, const CIDR* obj) -> VariantValue { return obj->ToString (); },
-                      [] ([[maybe_unused]] const ObjectVariantMapper& mapper, const VariantValue& d, CIDR* intoObj) -> void { *intoObj = CIDR{d.As<String> ()}; });
-    return mapper;
-}();
-#endif
-
 namespace Stroika::Foundation::DataExchange {
     template <>
     CIDR ObjectVariantMapper::ToObject (const ToObjectMapperType<CIDR>& toObjectMapper, const VariantValue& v) const
@@ -129,20 +119,16 @@ String Network::ToString () const
     return sb.str ();
 }
 
-DISABLE_COMPILER_MSC_WARNING_START (4573);
-DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
 const ObjectVariantMapper Network::kMapper = [] () {
     using namespace BackendApp::Common;
 
     ObjectVariantMapper mapper;
 
+    DISABLE_COMPILER_MSC_WARNING_START (4573);
+    DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
     using IO::Network::CIDR;
-#if qCompilerAndStdLib_lambda_expand_in_namespace_Buggy
-    mapper.Add (klambda_expand_in_namespace_Buggy_workaround_Mapper_);
-#else
-    mapper.Add<CIDR> ([] ([[maybe_unused]] const ObjectVariantMapper& mapper, const CIDR* obj) -> VariantValue { return obj->ToString (); },
-                      [] ([[maybe_unused]] const ObjectVariantMapper& mapper, const VariantValue& d, CIDR* intoObj) -> void { *intoObj = CIDR{d.As<String> ()}; });
-#endif
+    mapper.AddCommonType<CIDR> ();
+    mapper.AddCommonType<Sequence<CIDR>> ();
     mapper.AddCommonType<Set<CIDR>> ();
     mapper.AddCommonType<InternetAddress> ();
     mapper.AddCommonType<Sequence<InternetAddress>> ();
@@ -201,11 +187,11 @@ const ObjectVariantMapper Network::kMapper = [] () {
 #endif
     });
     mapper.AddCommonType<Sequence<Network>> ();
+    DISABLE_COMPILER_GCC_WARNING_END ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
+    DISABLE_COMPILER_MSC_WARNING_END (4573);
 
     return mapper;
 }();
-DISABLE_COMPILER_GCC_WARNING_END ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
-DISABLE_COMPILER_MSC_WARNING_END (4573);
 
 /*
  ********************************************************************************
@@ -248,6 +234,7 @@ const ObjectVariantMapper NetworkInterface::kMapper = [] () {
 #endif
     mapper.AddCommonType<Set<CIDR>> ();
     mapper.AddCommonType<Collection<CIDR>> ();
+    mapper.AddCommonType<Collection<InternetAddress>> ();
 
     mapper.AddCommonType<IO::Network::Interface::WirelessInfo::State> ();
     mapper.AddCommonType<optional<IO::Network::Interface::WirelessInfo::State>> ();
@@ -288,7 +275,8 @@ const ObjectVariantMapper NetworkInterface::kMapper = [] () {
             {L"hardwareAddress", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fHardwareAddress)},
             {L"transmitSpeedBaud", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fTransmitSpeedBaud), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"receiveLinkSpeedBaud", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fReceiveLinkSpeedBaud), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-            {L"bindings", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fBindings)},
+            {L"boundAddressRanges", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fBoundAddressRanges)},
+            {L"boundAddresses", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fBoundAddresses)},
             {L"gateways", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fGateways), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"DNSServers", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fDNSServers), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"wirelessInformation", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkInterface, fWirelessInfo), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
@@ -314,7 +302,7 @@ String NetworkAttachmentInfo::ToString () const
     StringBuilder sb;
     sb += L"{";
     sb += L"hardwareAddresses: " + Characters::ToString (hardwareAddresses) + L", ";
-    sb += L"networkAddresses: " + Characters::ToString (networkAddresses) + L", ";
+    sb += L"localAddresses: " + Characters::ToString (localAddresses) + L", ";
     sb += L"}";
     return sb.str ();
 }
@@ -325,11 +313,11 @@ String NetworkAttachmentInfo::ToString () const
  ********************************************************************************
  */
 
-DISABLE_COMPILER_MSC_WARNING_START (4573);
-DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
 const ObjectVariantMapper Device::kMapper = [] () {
     ObjectVariantMapper mapper;
 
+    DISABLE_COMPILER_MSC_WARNING_START (4573);
+    DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
     mapper += OperatingSystem::kMapper;
     mapper.AddCommonType<optional<OperatingSystem>> ();
     mapper += Manufacturer::kMapper;
@@ -337,6 +325,8 @@ const ObjectVariantMapper Device::kMapper = [] () {
     mapper.AddCommonType<InternetAddress> ();
     mapper.AddCommonType<optional<InternetAddress>> ();
     mapper.AddCommonType<Sequence<InternetAddress>> ();
+    mapper.AddCommonType<CIDR> ();
+    mapper.AddCommonType<Sequence<CIDR>> ();
     mapper.AddCommonType<DateTime> ();
     mapper.AddCommonType<optional<DateTime>> ();
     mapper.AddCommonType<Set<GUID>> ();
@@ -354,7 +344,7 @@ const ObjectVariantMapper Device::kMapper = [] () {
     mapper.AddCommonType<optional<URI>> ();
     mapper.AddClass<NetworkAttachmentInfo> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
         {L"hardwareAddresses", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkAttachmentInfo, hardwareAddresses), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"networkAddresses", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkAttachmentInfo, networkAddresses)},
+        {L"localAddresses", Stroika_Foundation_DataExchange_StructFieldMetaInfo (NetworkAttachmentInfo, localAddresses)},
     });
     mapper.AddCommonType<Mapping<GUID, NetworkAttachmentInfo>> ();
     mapper.AddClass<Device> (initializer_list<ObjectVariantMapper::StructFieldInfo> {
@@ -374,16 +364,16 @@ const ObjectVariantMapper Device::kMapper = [] () {
 #endif
     });
     mapper.AddCommonType<Sequence<Device>> ();
+    DISABLE_COMPILER_GCC_WARNING_END ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
+    DISABLE_COMPILER_MSC_WARNING_END (4573);
     return mapper;
 }();
-DISABLE_COMPILER_GCC_WARNING_END ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
-DISABLE_COMPILER_MSC_WARNING_END (4573);
 
 Set<InternetAddress> Device::GetInternetAddresses () const
 {
     Set<InternetAddress> result;
     for (auto iNet : fAttachedNetworks) {
-        result += iNet.fValue.networkAddresses;
+        result += iNet.fValue.localAddresses;
     }
     return result;
 }

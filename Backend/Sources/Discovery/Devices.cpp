@@ -156,7 +156,7 @@ String NetworkAttachmentInfo::ToString () const
     StringBuilder sb;
     sb += L"{";
     sb += L"hardwareAddress: " + Characters::ToString (hardwareAddresses) + L", ";
-    sb += L"networkAddresses: " + Characters::ToString (networkAddresses);
+    sb += L"localAddresses: " + Characters::ToString (localAddresses);
     sb += L"}";
     return sb.str ();
 }
@@ -179,7 +179,7 @@ Set<InternetAddress> Discovery::Device::GetInternetAddresses () const
 {
     Set<InternetAddress> result;
     for (auto iNet : fAttachedNetworks) {
-        result += iNet.fValue.networkAddresses;
+        result += iNet.fValue.localAddresses;
     }
     return result;
 }
@@ -195,7 +195,7 @@ Sequence<InternetAddress> Discovery::Device::GetPreferredDisplayInternetAddresse
      */
     Set<InternetAddress> result;
     for (auto iNet : fAttachedNetworks) {
-        for (auto aNetAddr : iNet.fValue.networkAddresses) {
+        for (auto aNetAddr : iNet.fValue.localAddresses) {
             if (aNetAddr.GetAddressFamily () == InternetAddress::AddressFamily::V4) {
                 result += aNetAddr;
             }
@@ -204,7 +204,7 @@ Sequence<InternetAddress> Discovery::Device::GetPreferredDisplayInternetAddresse
     }
     if (result.empty ()) {
         for (auto iNet : fAttachedNetworks) {
-            for (auto aNetAddr : iNet.fValue.networkAddresses) {
+            for (auto aNetAddr : iNet.fValue.localAddresses) {
                 result += aNetAddr;
                 break;
             }
@@ -420,7 +420,7 @@ namespace {
                 }
                 for (GUID nw : NetAndNetInterfaceMapper_::sThe.LookupNetworksGUIDs (ia)) {
                     NetworkAttachmentInfo nwAttachmentInfo = fAttachedNetworks.LookupValue (nw);
-                    nwAttachmentInfo.networkAddresses += ia;
+                    nwAttachmentInfo.localAddresses += ia;
                     if (hwAddr) {
                         nwAttachmentInfo.hardwareAddresses += *hwAddr;
                     }
@@ -802,8 +802,8 @@ namespace {
             SystemInterfacesMgr interfacesMgr;
             for (Interface i : interfacesMgr.GetAll ()) {
                 if (i.fType != Interface::Type::eLoopback and i.fStatus and i.fStatus->Contains (Interface::Status::eRunning)) {
-                    i.fBindings.Apply ([&] (const CIDR& ia) {
-                        newDev.AddIPAddresses_ (ia.GetInternetAddress (), i.fHardwareAddress);
+                    i.fBoundAddresses.Apply ([&] (const InternetAddress& ia) {
+                        newDev.AddIPAddresses_ (ia, i.fHardwareAddress);
                     });
                 }
             }
@@ -1169,7 +1169,7 @@ namespace {
                         // Scanning really only works for IPv4 since too large a range otherwise
                         for (Discovery::Network nw : activeNetworks) {
                             for (CIDR cidr : nw.fNetworkAddresses) {
-                                if (cidr.GetInternetAddress ().GetAddressFamily () == InternetAddress::AddressFamily::V4) {
+                                if (cidr.GetBaseInternetAddress ().GetAddressFamily () == InternetAddress::AddressFamily::V4) {
                                     scanAddressRange = cidr.GetRange ();
                                     DbgTrace (L"Selecting scanAddressRange=%s", Characters::ToString (scanAddressRange).c_str ());
                                     break;

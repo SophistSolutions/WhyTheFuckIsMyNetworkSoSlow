@@ -68,10 +68,10 @@
                       {{ device.attachedNetworks[attachedNetID].hardwareAddresses.join(", ") }}
                     </td>
                   </tr>
-                  <tr v-if="device.attachedNetworks[attachedNetID].networkAddresses">
+                  <tr v-if="device.attachedNetworks[attachedNetID].localAddresses">
                     <td>Network Address Binding(s)</td>
                     <td class="nowrap">
-                      {{ device.attachedNetworks[attachedNetID].networkAddresses.join(", ") }}
+                      {{ device.attachedNetworks[attachedNetID].localAddresses.join(", ") }}
                     </td>
                   </tr>
                 </table>
@@ -171,7 +171,7 @@ export default class DeviceDetails extends Vue {
   private get localNetworkAddresses(): string[] {
     const addresses: string[] = [];
     Object.entries(this.device.attachedNetworks).forEach((element) => {
-      element[1].networkAddresses.forEach((e: string) => addresses.push(e));
+      element[1].localAddresses.forEach((e: string) => addresses.push(e));
     });
     return addresses.filter((value, index, self) => self.indexOf(value) === index);
   }

@@ -165,7 +165,7 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
             constexpr bool            kIncludeLinkLocalAddresses_{Discovery::kIncludeLinkLocalAddressesInDiscovery};
             constexpr bool            kIncludeMulticastAddreses_{Discovery::kIncludeMulticastAddressesInDiscovery};
             Sequence<InternetAddress> addrs2Report;
-            for (auto i : i.fValue.networkAddresses) {
+            for (auto i : i.fValue.localAddresses) {
                 if (not kIncludeLinkLocalAddresses_ and i.IsLinkLocalAddress ()) {
                     continue;
                 }

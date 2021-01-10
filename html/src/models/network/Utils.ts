@@ -106,20 +106,20 @@ export function FormatAttachedNetworkLocalAddresses(attachedNetworks: {
 }): string {
   let addresses: string[] = [];
   Object.entries(attachedNetworks).forEach((element) => {
-    element[1].networkAddresses.forEach((e: string) => addresses.push(e));
+    element[1].localAddresses.forEach((e: string) => addresses.push(e));
   });
   addresses = addresses.filter((value, index, self) => self.indexOf(value) === index);
   return addresses.join(", ");
 }
 
 export function FormatAttachedNetwork(anw: INetworkAttachmentInfo): string {
-  return anw.networkAddresses.join(", ");
+  return anw.localAddresses.join(", ");
 }
 
 export function GetLocalNetworkAddresses(device: IDevice): string[] {
   const addresses: string[] = [];
   Object.entries(device.attachedNetworks).forEach((element) => {
-    element[1].networkAddresses.forEach((e: string) => addresses.push(e));
+    element[1].localAddresses.forEach((e: string) => addresses.push(e));
   });
   return addresses.filter((value, index, self) => self.indexOf(value) === index);
 }

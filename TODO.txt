@@ -1,6 +1,13 @@
+Network Interaces SB shown in DETAILS page for DEVICE
+(only in that page)
+
+DIsplay JSON for attached interfaces. AND display pretty summary (upper case only in debug builds)
 
 
 
+
+
+-----
 
 update TODO and github issues
 

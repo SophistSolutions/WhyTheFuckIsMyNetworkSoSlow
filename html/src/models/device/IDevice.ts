@@ -3,8 +3,9 @@ import { OperatingSystem } from "@/models/OperatingSystem";
 
 export interface INetworkAttachmentInfo {
   hardwareAddresses: string[];
-  networkAddresses: string[];
+  localAddresses: string[];
 }
+
 export interface IManufacturer {
   shortName?: string;
   fullName?: string;

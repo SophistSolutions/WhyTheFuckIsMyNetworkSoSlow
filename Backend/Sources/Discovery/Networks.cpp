@@ -156,14 +156,14 @@ namespace {
         Require (sActive_);
         Collection<Network> accumResults;
         for (NetworkInterface i : Discovery::NetworkInterfacesMgr::sThe.CollectActiveNetworkInterfaces ()) {
-            if (not i.fBindings.empty ()) {
+            if (not i.fBoundAddressRanges.empty ()) {
                 Network nw;
                 {
                     auto genCIDRsFromBindings = [] (const Iterable<CIDR>& bindings) {
                         Set<CIDR> cidrs;
                         for (CIDR nib : bindings) {
                             if (not kIncludeMulticastAddressesInDiscovery) {
-                                if (nib.GetInternetAddress ().IsMulticastAddress ()) {
+                                if (nib.GetBaseInternetAddress ().IsMulticastAddress ()) {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
                                     DbgTrace (L"CollectActiveNetworks_: interface=%s; ia=%s binding ignored because IsMulticastAddress", Characters::ToString (i.fGUID).c_str (), Characters::ToString (nib.fInternetAddress).c_str ());
 #endif
@@ -171,16 +171,16 @@ namespace {
                                 }
                             }
                             if (not kIncludeLinkLocalAddressesInDiscovery) {
-                                if (nib.GetInternetAddress ().IsLinkLocalAddress ()) {
+                                if (nib.GetBaseInternetAddress ().IsLinkLocalAddress ()) {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
                                     DbgTrace (L"CollectActiveNetworks_: interface=%s; ia=%s binding ignored because IsLinkLocalAddress", Characters::ToString (i.fGUID).c_str (), Characters::ToString (nib.fInternetAddress).c_str ());
 #endif
                                     continue; // skip link-local addresses, they are only used for special purposes like discovery, and aren't part of the network
                                 }
                             }
-                            if (nib.GetInternetAddress ().GetAddressSize ().has_value ()) {
+                            if (nib.GetBaseInternetAddress ().GetAddressSize ().has_value ()) {
                                 // Guess CIDR prefix is max (so one address - bad guess) - if we cannot read from adapter
-                                cidrs += CIDR{nib.GetInternetAddress (), nib.GetNumberOfSignificantBits ()};
+                                cidrs += CIDR{nib.GetBaseInternetAddress (), nib.GetNumberOfSignificantBits ()};
                             }
                         }
                         // You CAN generate two CIDRs, one which subsumes the other. If so, lose any subsumed CIDRs from the list
@@ -197,7 +197,7 @@ namespace {
                         }
                         return cidrs;
                     };
-                    Set<CIDR> cidrs = genCIDRsFromBindings (i.fBindings);
+                    Set<CIDR> cidrs = genCIDRsFromBindings (i.fBoundAddressRanges);
 
                     // See if the network has already been found. VERY TRICKY - cuz ambiguous concept a network. Mostly follow my
                     // intuition - now - that a network CAN comprise multiple CIDRs - like a WIFI card and ETHERNET all with the same V4 and V6 scopes - they

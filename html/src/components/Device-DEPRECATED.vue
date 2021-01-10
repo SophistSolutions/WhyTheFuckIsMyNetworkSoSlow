@@ -49,7 +49,7 @@ import { IDevice, INetworkAttachmentInfo } from "../models/device/IDevice";
         if (result !== "") {
           result += ", ";
         }
-        result += value[1].networkAddresses.join(", ");
+        result += value[1].localAddresses.join(", ");
       }
       return result;
     },

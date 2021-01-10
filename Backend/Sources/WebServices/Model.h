@@ -206,7 +206,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
     struct NetworkAttachmentInfo {
         Set<String>               hardwareAddresses;
-        Sequence<InternetAddress> networkAddresses; // node not socket addresses
+        Sequence<InternetAddress> localAddresses; // bound addresses (this machine @ this address)
 
         nonvirtual String ToString () const;
     };
