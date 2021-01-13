@@ -1,3 +1,13 @@
++ then fix SPEED issue with web service static content (at least measure and see if reasonable)
+  (maybe in stk add flag saying READONLY and implement etags? maybe also support gzip
+  with etags and sendfile special case?)
+  But first - see what the problem is!
+  Could have flag saying assumeFSReadOnly (for filesystem router) and then cache results
+  accordingly.(memory mapped file read?)
++ fix make parallelel issue causes + make -j1 warning and slower build
+  (seems just in building backend)
+
+---
 DEBUG WHY SO SLOW:
 
 time curl http://hercules.local -v
