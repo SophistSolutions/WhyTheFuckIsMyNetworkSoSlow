@@ -42,7 +42,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
         virtual Operations::DNSLookupResults                         Operation_DNS_Lookup (const String& name) const override;
         virtual double                                               Operation_DNS_CalculateScore () const override;
         virtual DataExchange::VariantValue                           Operation_Scan_FullRescan (const String& deviceID) const override;
-        virtual DataExchange::VariantValue                           Operation_Scan_Scan (const String& addr) const = 0;
+        virtual DataExchange::VariantValue                           Operation_Scan_Scan (const String& addr) const override = 0;
     };
 
     void TmpHackAssureStartedMonitoring ();
