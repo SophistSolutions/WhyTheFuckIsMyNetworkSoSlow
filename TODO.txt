@@ -1,3 +1,22 @@
+DEBUG WHY SO SLOW:
+
+time curl http://hercules.local -v
+	1.6 seconds (of course thats debug build but test release build too!)
+
+	>>> SETUP DEBUGGING SYSTEM ON STROIKA-DEV vm
+		PROBABLY USING PORT FORWARD 80->9081, 8080->9082
+	>>>	Need GUI flag saying what port# to use
+
+
+--------------
+
+Why Roku from hercules listed as having so many open
+ports (NOT from windows)
+	(same on rasp pi - all ports appear open - buy with myconnect code.)
+
+
+-----
+
 Network Interaces SB shown in DETAILS page for DEVICE
 (only in that page)
 
