@@ -107,6 +107,13 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
          *  curl  http://localhost:8080/operations/scan/FullRescan?device=ID
          */
         virtual DataExchange::VariantValue Operation_Scan_FullRescan (const String& deviceID) const = 0;
+
+    public:
+        /**
+         *  curl  http://localhost:8080/operations/scan/Scan?addr=addr
+         *  note - addr may be DNS name or ip address.
+         */
+        virtual DataExchange::VariantValue Operation_Scan_Scan (const String& addr) const = 0;
     };
 
 }

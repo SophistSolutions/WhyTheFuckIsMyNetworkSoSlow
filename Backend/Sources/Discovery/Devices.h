@@ -65,7 +65,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
     /**
      */
     struct NetworkAttachmentInfo {
-        Set<String>               hardwareAddresses;
+        Set<String>          hardwareAddresses;
         Set<InternetAddress> localAddresses; // bound addresses (this machine @ this address)
 
 #if __cpp_impl_three_way_comparison < 201711
@@ -214,6 +214,12 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
          * For now - NYI
          */
         nonvirtual void InitiateReScan (const GUID& deviceID);
+
+    public:
+        /**
+         *  Synchronously Scan the given address, and report a human readable report of the results.
+         */
+        nonvirtual DataExchange::VariantValue ScanAndReturnReport (const InternetAddress& addr);
 
     public:
         static DevicesMgr sThe;

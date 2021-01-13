@@ -1521,6 +1521,19 @@ Collection<Discovery::Device> Discovery::DevicesMgr::GetActiveDevices (optional<
     return results;
 }
 
+namespace {
+    auto ICMPPing_ = [] (const InternetAddress& ia) -> bool {
+        Frameworks::NetworkMonitor::Ping::Pinger p{ia};
+        try {
+            auto r = p.RunOnce (); //incomplete
+            return true;
+        }
+        catch (...) {
+            return false;
+        }
+    };
+}
+
 void Discovery::DevicesMgr::InitiateReScan (const GUID& deviceID)
 {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
@@ -1557,20 +1570,10 @@ void Discovery::DevicesMgr::InitiateReScan (const GUID& deviceID)
             AssertNotReached ();
         }
     };
-    auto icmpPing = [] (const InternetAddress& ia) -> bool {
-        Frameworks::NetworkMonitor::Ping::Pinger p{ia};
-        try {
-            auto r = p.RunOnce (); //incomplete
-            return true;
-        }
-        catch (...) {
-            return false;
-        }
-    };
 
     DiscoveryInfo_ initialDeviceInfo = findDeviceInfoAndClearFoundPorts (deviceID);
     for (auto ia : initialDeviceInfo.GetInternetAddresses ()) {
-        if (icmpPing (ia)) {
+        if (ICMPPing_ (ia)) {
             addOpenPort (deviceID, L"icmp:ping"sv);
         }
     }
@@ -1582,4 +1585,20 @@ void Discovery::DevicesMgr::InitiateReScan (const GUID& deviceID)
             addOpenPort (deviceID, p);
         }
     }
+}
+
+VariantValue DevicesMgr::ScanAndReturnReport (const InternetAddress& addr)
+{
+    Mapping<String, VariantValue> result;
+    Set<String>                   ports;
+    if (ICMPPing_ (addr)) {
+        ports += L"icmp:ping"sv;
+    }
+    PortScanResults results = ScanPorts (addr, ScanOptions{ScanOptions::eFull});
+    for (String p : results.fDiscoveredOpenPorts) {
+        ports += p;
+    }
+    result.Add (L"openPorts", VariantValue{
+                                  ports.Select<VariantValue> ([] (String i) { return VariantValue{i}; })});
+    return result;
 }

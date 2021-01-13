@@ -582,3 +582,11 @@ DataExchange::VariantValue WSImpl::Operation_Scan_FullRescan (const String& devi
     Discovery::DevicesMgr::sThe.InitiateReScan (useDeviceID);
     return x;
 }
+
+DataExchange::VariantValue WSImpl::Operation_Scan_Scan (const String& addr) const
+{
+    Debug::TraceContextBumper  ctx{L"WSImpl::Operation_Scan_Scan"};
+    DataExchange::VariantValue x;
+    InternetAddress            useAddr = ClientErrorException::TreatExceptionsAsClientError ([&] () { return IO::Network::DNS::Default ().GetHostAddress (addr); });
+    return Discovery::DevicesMgr::sThe.ScanAndReturnReport (useAddr);
+}

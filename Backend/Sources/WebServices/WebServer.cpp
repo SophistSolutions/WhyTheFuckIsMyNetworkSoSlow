@@ -272,8 +272,19 @@ public:
                       Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
                       ExpectedMethod (m->GetRequestReference (), kOperations_);
                       if (auto rdr = args.Lookup (L"deviceID"sv)) {
-                          String deviceID = rdr->As<String> ();
-                          WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_Scan_FullRescan (deviceID)));
+                          WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_Scan_FullRescan (rdr->As<String> ())));
+                      }
+                      else {
+                          Execution::Throw (ClientErrorException{L"missing deviceID argument"sv});
+                      }
+                  }},
+              Route{
+                  L"operations/scan/Scan"_RegEx,
+                  [=] (Message* m) {
+                      Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
+                      ExpectedMethod (m->GetRequestReference (), kOperations_);
+                      if (auto rdr = args.Lookup (L"addr"sv)) {
+                          WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_Scan_Scan (rdr->As<String> ())));
                       }
                       else {
                           Execution::Throw (ClientErrorException{L"missing deviceID argument"sv});
@@ -372,6 +383,7 @@ const WebServiceMethodDescription WebServer::Rep_::kOperations_{
         L"curl http://localhost:8080/operations/dns/lookup?name=www.youtube.com"sv,
         L"curl http://localhost:8080/operations/dns/calculate-score"sv,
         L"curl http://localhost:8080/operations/scan/FullRescan?device=ID"sv,
+        L"curl http://localhost:8080/operations/scan/Scan?addr=hostOrIPAddr"sv,
     },
     Sequence<String>{
         L"perform a wide variety of operations - mostly for debugging for now but may stay around."sv,
@@ -381,6 +393,7 @@ const WebServiceMethodDescription WebServer::Rep_::kOperations_{
         L"/operations/dns/lookup[&name=string]"sv,
         L"/operations/dns/calculate-score; returns number 0 (worst) to 1.0 (best)"sv,
         L"/operations/scan/FullRescan?device=ID; clears found ports for deviceID, and immediately rescans before returning; returns summary"sv,
+        L"/operations/scan/operations/scan/Scan?addr=hostOrIPAddr; doesnt affect internal strucutres, and just runs scan process on given IP and returns result"sv,
     },
 };
 
