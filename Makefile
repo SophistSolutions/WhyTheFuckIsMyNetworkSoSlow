@@ -82,7 +82,6 @@ build-root:
 list-configurations list-configuration-tags:
 	@$(MAKE) --directory ThirdPartyComponents/Stroika/StroikaRoot --silent CONFIGURATION_TAGS="$(CONFIGURATION_TAGS)" $@
 
-
 clean clobber:
 ifeq ($(CONFIGURATION),)
 	@$(StroikaRoot)ScriptsLib/PrintProgressLine $(MAKE_INDENT_LEVEL) "WhyTheFuckIsMyNetworkSoSlow $(call FUNCTION_CAPITALIZE_WORD,$@):"
@@ -90,8 +89,8 @@ ifeq ($(CONFIGURATION_TAGS),)
 	@if [ "$@"=="clobber" ] ; then \
 		rm -rf IntermediateFiles/* Builds/*;\
 	fi
-	@if [ "$@"=="clean" ] ; then \
-		rm -rf IntermediateFiles/*;\
+	@if [ "$@" = "clean" ] ; then \
+		rm -rf IntermediateFiles/*/WhyTheFuckIsMyNetworkSoSlow*;\
 	fi
 	@$(MAKE) --silent --directory html $@ MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1));
 	@# with no config specified, Backend NYI make clean/clobber (and not needed)
