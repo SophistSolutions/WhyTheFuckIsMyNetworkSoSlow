@@ -107,7 +107,7 @@ namespace {
 Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const optional<DeviceSortParamters>& sort) const
 {
     Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::GetDevices_Recurse", L"sort=%s", Characters::ToString (sort).c_str ())};
-    Debug::TimingTrace        ttrc{L"WSImpl::GetDevices_Recurse", 1};
+    Debug::TimingTrace        ttrc{L"WSImpl::GetDevices_Recurse", .1};
 
     // Compute effective sort Search Terms - filling in optional values
     Sequence<DeviceSortParamters::SearchTerm> searchTerms;
@@ -313,7 +313,7 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
 
 Device WSImpl::GetDevice (const String& id) const
 {
-    Debug::TimingTrace ttrc{L"WSImpl::GetDevice", 0.25};
+    Debug::TimingTrace ttrc{L"WSImpl::GetDevice", 0.1};
     GUID               compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
     // @todo quick hack impl
     for (auto i : GetDevices_Recurse (nullopt)) {
@@ -326,7 +326,7 @@ Device WSImpl::GetDevice (const String& id) const
 
 Sequence<String> WSImpl::GetNetworks () const
 {
-    Debug::TimingTrace ttrc{L"WSImpl::GetNetworks", 0.25};
+    Debug::TimingTrace ttrc{L"WSImpl::GetNetworks", 0.1};
     Sequence<String>   result;
     for (Discovery::Network n : Discovery::NetworksMgr::sThe.CollectActiveNetworks ()) {
         result += Characters::ToString (n.fGUID);
@@ -336,7 +336,7 @@ Sequence<String> WSImpl::GetNetworks () const
 
 Sequence<BackendApp::WebServices::Network> WSImpl::GetNetworks_Recurse () const
 {
-    Debug::TimingTrace                         ttrc{L"WSImpl::GetNetworks_Recurse", 1};
+    Debug::TimingTrace                         ttrc{L"WSImpl::GetNetworks_Recurse", 0.1};
     Sequence<BackendApp::WebServices::Network> result;
 
     // @todo parameterize if we return all or just active networks
@@ -368,7 +368,7 @@ Sequence<BackendApp::WebServices::Network> WSImpl::GetNetworks_Recurse () const
 
 Network WSImpl::GetNetwork (const String& id) const
 {
-    Debug::TimingTrace ttrc{L"WSImpl::GetNetwork", 1};
+    Debug::TimingTrace ttrc{L"WSImpl::GetNetwork", 0.1};
     GUID               compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
     // @todo quick hack impl
     for (auto i : GetNetworks_Recurse ()) {
@@ -381,7 +381,7 @@ Network WSImpl::GetNetwork (const String& id) const
 
 Collection<String> WSImpl::GetNetworkInterfaces (bool filterRunningOnly) const
 {
-    Debug::TimingTrace ttrc{L"WSImpl::GetNetworkInterfaces", 1};
+    Debug::TimingTrace ttrc{L"WSImpl::GetNetworkInterfaces", 0.1};
     Collection<String> result;
 
     for (Discovery::NetworkInterface n : Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ()) {
