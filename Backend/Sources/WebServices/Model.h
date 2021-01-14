@@ -108,7 +108,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
             return not(*this == rhs);
         }
 #else
-        auto operator<=> (const Manufacturer&) const    = default;
+        auto operator<=> (const Manufacturer&) const = default;
 #endif
 
         /**

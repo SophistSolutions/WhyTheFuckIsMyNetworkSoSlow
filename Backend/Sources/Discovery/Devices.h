@@ -180,7 +180,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
             return not(*this == rhs);
         }
 #else
-        auto operator<=> (const Device&) const                = default;
+        auto operator<=> (const Device&) const = default;
 #endif
     };
 
