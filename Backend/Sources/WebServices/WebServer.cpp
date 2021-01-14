@@ -72,6 +72,12 @@ namespace {
     constexpr Activity kContructing_WSAPI_WebServer_{L"constructing WSAPI webserver"sv};
 }
 
+namespace {
+    const unsigned int kMaxWSConsPerUser_{4};  // empirically derived from looking at chrome --LGP 2021-01-14
+    const unsigned int kMaxGUIConsPerUser_{6}; // ''
+    const unsigned int kMaxUsersSupported_{5}; // how many simultaneous users to support?
+}
+
 class WebServer::Rep_ {
 public:
     static const WebServiceMethodDescription kAbout_;
@@ -82,10 +88,10 @@ public:
     static const WebServiceMethodDescription kOperations_;
 
 private:
-    static constexpr unsigned int kMaxWSConcurrentConnections_{25};
-    static constexpr unsigned int kMaxWSThreads_{3 + 5};    // bump by 5 to test
-    static constexpr unsigned int kMaxGUIWebServerConcurrentConnections_{25};
-    static constexpr unsigned int kMaxGUIThreads_{1 + 10}; // bump by 10 to test
+    static constexpr unsigned int kMaxWSConcurrentConnections_{kMaxUsersSupported_ * kMaxWSConsPerUser_};
+    static constexpr unsigned int kMaxWSThreads_{kMaxWSConsPerUser_ + 1}; // one user at a time doing stuff, plus one just in case...
+    static constexpr unsigned int kMaxGUIWebServerConcurrentConnections_{kMaxUsersSupported_ * kMaxGUIConsPerUser_};
+    static constexpr unsigned int kMaxGUIThreads_{kMaxGUIConsPerUser_ + 1}; // handle the BURST quickly of requests at start, but then no need (just reduces startup latency), plus one just in case...
     static const inline String    kServerString_ = L"Why-The-Fuck-Is-My-Network-So-Slow/"sv + AppVersion::kVersion.AsMajorMinorString ();
 
 private:
