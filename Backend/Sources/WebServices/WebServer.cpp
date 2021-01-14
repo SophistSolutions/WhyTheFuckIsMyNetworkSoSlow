@@ -83,9 +83,9 @@ public:
 
 private:
     static constexpr unsigned int kMaxWSConcurrentConnections_{25};
-    static constexpr unsigned int kMaxWSThreads_{3};
+    static constexpr unsigned int kMaxWSThreads_{3 + 5};    // bump by 5 to test
     static constexpr unsigned int kMaxGUIWebServerConcurrentConnections_{25};
-    static constexpr unsigned int kMaxGUIThreads_{1};
+    static constexpr unsigned int kMaxGUIThreads_{1 + 10}; // bump by 10 to test
     static const inline String    kServerString_ = L"Why-The-Fuck-Is-My-Network-So-Slow/"sv + AppVersion::kVersion.AsMajorMinorString ();
 
 private:
