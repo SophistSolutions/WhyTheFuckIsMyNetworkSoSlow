@@ -73,9 +73,9 @@ namespace {
 }
 
 namespace {
-    const unsigned int kMaxWSConsPerUser_{4};  // empirically derived from looking at chrome --LGP 2021-01-14
-    const unsigned int kMaxGUIConsPerUser_{6}; // ''
-    const unsigned int kMaxUsersSupported_{5}; // how many simultaneous users to support?
+    const unsigned int kMaxWSConnectionsPerUser_{4};   // empirically derived from looking at chrome --LGP 2021-01-14
+    const unsigned int kMaxGUIConnectionssPerUser_{6}; // ''
+    const unsigned int kMaxUsersSupported_{5};         // how many simultaneous users to support?
 }
 
 class WebServer::Rep_ {
@@ -88,10 +88,10 @@ public:
     static const WebServiceMethodDescription kOperations_;
 
 private:
-    static constexpr unsigned int kMaxWSConcurrentConnections_{kMaxUsersSupported_ * kMaxWSConsPerUser_};
-    static constexpr unsigned int kMaxWSThreads_{kMaxWSConsPerUser_ + 1}; // one user at a time doing stuff, plus one just in case...
-    static constexpr unsigned int kMaxGUIWebServerConcurrentConnections_{kMaxUsersSupported_ * kMaxGUIConsPerUser_};
-    static constexpr unsigned int kMaxGUIThreads_{kMaxGUIConsPerUser_ + 1}; // handle the BURST quickly of requests at start, but then no need (just reduces startup latency), plus one just in case...
+    static constexpr unsigned int kMaxWSConcurrentConnections_{kMaxUsersSupported_ * kMaxWSConnectionsPerUser_};
+    static constexpr unsigned int kMaxWSThreads_{kMaxWSConnectionsPerUser_ + 1}; // one user at a time doing stuff, plus one just in case...
+    static constexpr unsigned int kMaxGUIWebServerConcurrentConnections_{kMaxUsersSupported_ * kMaxGUIConnectionssPerUser_};
+    static constexpr unsigned int kMaxGUIThreads_{kMaxGUIConnectionssPerUser_ + 1}; // handle the BURST quickly of requests at start, but then no need (just reduces startup latency), plus one just in case...
     static const inline String    kServerString_ = L"Why-The-Fuck-Is-My-Network-So-Slow/"sv + AppVersion::kVersion.AsMajorMinorString ();
 
 private:
