@@ -48,7 +48,7 @@ String OperatingSystem::ToString () const
 {
     Characters::StringBuilder sb;
     sb += L"{";
-    sb += L"fFullVersionedOSName: " + Characters::ToString (fFullVersionedOSName) + L", ";
+    sb += L"fullVersionedOSName: " + Characters::ToString (fFullVersionedOSName) + L", ";
     sb += L"}";
     return sb.str ();
 }

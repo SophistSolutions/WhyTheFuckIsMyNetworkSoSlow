@@ -122,7 +122,6 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
     /**
      *  This roughly mimics the Stroika class IO::Network::Interface, or what you would see 
      *  returned on windows ipconfig/all, or unix "ip link show"
-     * 
      */
     struct NetworkInterface : IO::Network::Interface {
         NetworkInterface ()                            = default;
@@ -354,6 +353,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
         static const DataExchange::ObjectVariantMapper kMapper;
     };
+
 }
 
 /*
