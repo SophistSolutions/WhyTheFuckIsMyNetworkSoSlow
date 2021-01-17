@@ -1,3 +1,15 @@
++ Writeup what I can remember of Johns advice about using / rewriting
+  app to use slices/vuex more...
+
+  (cleanup todo file)
+
+  - tickets for a lot of whats here
+
+  then release---
+
+
+-----
+
 + then fix SPEED issue with web service static content (at least measure and see if reasonable)
   (maybe in stk add flag saying READONLY and implement etags? maybe also support gzip
   with etags and sendfile special case?)
