@@ -20,10 +20,8 @@
 #include "Stroika-Current-Version.h"
 
 #include "../Common/BLOBMgr.h"
-#include "../Common/EthernetMACAddressOUIPrefixes.h"
 #include "../Discovery/Devices.h"
-#include "../Discovery/NetworkInterfaces.h"
-#include "../Discovery/Networks.h"
+#include "../IntegratedModel/Mgr.h"
 
 #include "AppVersion.h"
 
@@ -74,36 +72,6 @@ Sequence<String> WSImpl::GetDevices (const optional<DeviceSortParamters>& sort) 
     return result;
 }
 
-namespace {
-    URI TransformURL2LocalStorage_ (const URI& url)
-    {
-        Debug::TimingTrace ttrc{L"TransformURL2LocalStorage_", 0.1}; // sb very quick cuz we schedule url fetches for background
-
-        // if we are unable to cache the url (say because the url is bad or the device is currently down)
-        // just return the original
-
-        try {
-            // This BLOBMgr code wont block - it will push a request into a Q, and fetch whatever data is has (maybe none)
-            optional<GUID> g = BackendApp::Common::BLOBMgr::sThe.AsyncAddBLOBFromURL (url);
-            // tricky to know right host to supply here - will need some sort of configuration for
-            // this (due to firewalls, NAT etc).
-            // Use relative URL for now, as that should work for most cases
-            if (g) {
-                return URI{nullopt, nullopt, L"/blob/" + g->ToString ()};
-            }
-        }
-        catch (...) {
-            AssertNotReached ();
-        }
-        DbgTrace (L"Failed to cache url (%s) - so returning original", Characters::ToString (url).c_str ());
-        return url;
-    }
-    optional<URI> TransformURL2LocalStorage_ (const optional<URI>& url)
-    {
-        return url ? TransformURL2LocalStorage_ (*url) : optional<URI>{};
-    }
-}
-
 Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const optional<DeviceSortParamters>& sort) const
 {
     Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::GetDevices_Recurse", L"sort=%s", Characters::ToString (sort).c_str ())};
@@ -142,70 +110,13 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
             sortCompareNetwork = Set<CIDR>{CIDR{*sort->fCompareNetwork}}; // OK to throw if invalid
         }
         else {
-            for (Discovery::Network n : Discovery::NetworksMgr::sThe.CollectActiveNetworks ()) {
-                if (n.fGUID == sort->fCompareNetwork) {
-                    sortCompareNetwork = n.fNetworkAddresses;
-                }
+            if (auto n = IntegratedModel::Mgr::sThe.GetNetwork (*sort->fCompareNetwork)) {
+                sortCompareNetwork = n->fNetworkAddresses;
             }
         }
     }
 
-    DISABLE_COMPILER_MSC_WARNING_START (4456)
-    // Fetch (UNSORTED) list of devices
-    Sequence<BackendApp::WebServices::Device> devices = Sequence<BackendApp::WebServices::Device>{Discovery::DevicesMgr::sThe.GetActiveDevices ().Select<BackendApp::WebServices::Device> ([] (const Discovery::Device& d) {
-        BackendApp::WebServices::Device newDev;
-        newDev.fGUID = d.fGUID;
-        newDev.name  = d.name;
-        if (not d.fTypes.empty ()) {
-            newDev.fTypes = d.fTypes; // leave missing if no discovered types
-        }
-        newDev.fLastSeenAt = d.fLastSeenAt;
-        newDev.fOpenPorts  = d.fOpenPorts;
-        for (auto i : d.fAttachedNetworks) {
-            constexpr bool            kIncludeLinkLocalAddresses_{Discovery::kIncludeLinkLocalAddressesInDiscovery};
-            constexpr bool            kIncludeMulticastAddreses_{Discovery::kIncludeMulticastAddressesInDiscovery};
-            Sequence<InternetAddress> addrs2Report;
-            for (auto i : i.fValue.localAddresses) {
-                if (not kIncludeLinkLocalAddresses_ and i.IsLinkLocalAddress ()) {
-                    continue;
-                }
-                if (not kIncludeMulticastAddreses_ and i.IsMulticastAddress ()) {
-                    continue;
-                }
-                addrs2Report += i;
-            }
-            newDev.fAttachedNetworks.Add (i.fKey, NetworkAttachmentInfo{i.fValue.hardwareAddresses, addrs2Report});
-        }
-        newDev.fAttachedNetworkInterfaces = d.fAttachedInterfaces; // @todo must merge += (but only when merging across differnt discoverers/networks)
-        newDev.fPresentationURL           = d.fPresentationURL;
-        newDev.fManufacturer              = d.fManufacturer;
-        newDev.fIcon                      = TransformURL2LocalStorage_ (d.fIcon);
-        newDev.fOperatingSystem           = d.fOperatingSystem;
-#if qDebug
-        if (not d.fDebugProps.empty ()) {
-            newDev.fDebugProps = d.fDebugProps;
-        }
-        {
-            // List OUI names for each hardware address (and explicit missing for those we cannot lookup)
-            using VariantValue = DataExchange::VariantValue;
-            Mapping<String, VariantValue> t;
-            for (auto i : d.fAttachedNetworks) {
-                for (auto hwa : i.fValue.hardwareAddresses) {
-                    auto o = BackendApp::Common::LookupEthernetMACAddressOUIFromPrefix (hwa);
-                    t.Add (hwa, o ? VariantValue{*o} : VariantValue{});
-                }
-            }
-            if (not t.empty ()) {
-                if (not newDev.fDebugProps.has_value ()) {
-                    newDev.fDebugProps = Mapping<String, VariantValue>{};
-                }
-                newDev.fDebugProps->Add (L"MACAddr2OUINames", t);
-            }
-        }
-#endif
-        return newDev;
-    })};
-    DISABLE_COMPILER_MSC_WARNING_END (4456)
+    Sequence<BackendApp::WebServices::Device> devices = IntegratedModel::Mgr::sThe.GetDevices ();
 
     // Sort them
     for (DeviceSortParamters::SearchTerm st : searchTerms) {
@@ -327,43 +238,13 @@ Device WSImpl::GetDevice (const String& id) const
 Sequence<String> WSImpl::GetNetworks () const
 {
     Debug::TimingTrace ttrc{L"WSImpl::GetNetworks", 0.1};
-    Sequence<String>   result;
-    for (Discovery::Network n : Discovery::NetworksMgr::sThe.CollectActiveNetworks ()) {
-        result += Characters::ToString (n.fGUID);
-    }
-    return result;
+    return Sequence<String>{IntegratedModel::Mgr::sThe.GetNetworks ().Select<String> ([] (const auto& n) { return n.fGUID.ToString (); })};
 }
 
 Sequence<BackendApp::WebServices::Network> WSImpl::GetNetworks_Recurse () const
 {
-    Debug::TimingTrace                         ttrc{L"WSImpl::GetNetworks_Recurse", 0.1};
-    Sequence<BackendApp::WebServices::Network> result;
-
-    // @todo parameterize if we return all or just active networks
-    for (Discovery::Network n : Discovery::NetworksMgr::sThe.CollectActiveNetworks ()) {
-        BackendApp::WebServices::Network nw{n.fNetworkAddresses};
-
-        nw.fGUID                    = n.fGUID;
-        nw.fFriendlyName            = n.fFriendlyName;
-        nw.fNetworkAddresses        = n.fNetworkAddresses;
-        nw.fAttachedInterfaces      = n.fAttachedNetworkInterfaces;
-        nw.fDNSServers              = n.fDNSServers;
-        nw.fGateways                = n.fGateways;
-        nw.fExternalAddresses       = n.fExternalAddresses;
-        nw.fGEOLocInformation       = n.fGEOLocInfo;
-        nw.fInternetServiceProvider = n.fISP;
-#if qDebug
-        if (not n.fDebugProps.empty ()) {
-            nw.fDebugProps = n.fDebugProps;
-        }
-#endif
-
-        result += nw;
-    }
-#if USE_NOISY_TRACE_IN_THIS_MODULE_
-    DbgTrace (L"returns: %s", Characters::ToString (result).c_str ());
-#endif
-    return result;
+    Debug::TimingTrace ttrc{L"WSImpl::GetNetworks_Recurse", 0.1};
+    return IntegratedModel::Mgr::sThe.GetNetworks ();
 }
 
 Network WSImpl::GetNetwork (const String& id) const
@@ -381,50 +262,24 @@ Network WSImpl::GetNetwork (const String& id) const
 
 Collection<String> WSImpl::GetNetworkInterfaces (bool filterRunningOnly) const
 {
-    Debug::TimingTrace ttrc{L"WSImpl::GetNetworkInterfaces", 0.1};
-    Collection<String> result;
-
-    for (Discovery::NetworkInterface n : Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ()) {
-        bool passedFilter{true};
-        if (filterRunningOnly) {
-            if (n.fStatus.has_value () and not n.fStatus->Contains (IO::Network::Interface::Status::eConnected)) {
-                passedFilter = false;
-            }
+    Debug::TimingTrace ttrc{L"WSImpl::GetNetworkInterfaces_Recurse", 0.1};
+    return Collection<String>{IntegratedModel::Mgr::sThe.GetNetworkInterfaces ().Select<String> ([=] (const auto& ni) -> optional<String> {
+        if (ni.fStatus.has_value () and not ni.fStatus->Contains (IO::Network::Interface::Status::eConnected)) {
+            return nullopt;
         }
-        if (passedFilter) {
-            result += Characters::ToString (n.fGUID);
-        }
-    }
-    return result;
+        return ni.fGUID.ToString ();
+    })};
 }
 
 Collection<BackendApp::WebServices::NetworkInterface> WSImpl::GetNetworkInterfaces_Recurse (bool filterRunningOnly) const
 {
-    Collection<BackendApp::WebServices::NetworkInterface> result;
-
-    for (Discovery::NetworkInterface n : Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ()) {
-        bool passedFilter{true};
-        if (filterRunningOnly) {
-            if (n.fStatus.has_value () and not n.fStatus->Contains (IO::Network::Interface::Status::eConnected)) {
-                passedFilter = false;
-            }
+    Debug::TimingTrace ttrc{L"WSImpl::GetNetworkInterfaces_Recurse", 0.1};
+    return IntegratedModel::Mgr::sThe.GetNetworkInterfaces ().Select<NetworkInterface> ([=] (const auto& ni) -> optional<NetworkInterface> {
+        if (ni.fStatus.has_value () and not ni.fStatus->Contains (IO::Network::Interface::Status::eConnected)) {
+            return nullopt;
         }
-        if (passedFilter) {
-            BackendApp::WebServices::NetworkInterface nw{n};
-
-            /**
-             */
-            nw.fGUID = n.fGUID;
-#if qDebug
-            if (not n.fDebugProps.empty ()) {
-                nw.fDebugProps = n.fDebugProps;
-            }
-#endif
-
-            result += nw;
-        }
-    }
-    return result;
+        return ni;
+    });
 }
 
 NetworkInterface WSImpl::GetNetworkInterface (const String& id) const

@@ -13,6 +13,9 @@
     <Filter Include="Sources\WebServices">
       <UniqueIdentifier>{a72046d2-aa21-409e-ab63-a3784e9b9456}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Sources\IntegratedModel">
+      <UniqueIdentifier>{3595306b-f243-401f-9f90-4ff97e0cf58d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Makefile" />
@@ -70,6 +73,12 @@
     <None Include="..\..\Sources\Discovery\PortScanner.inl">
       <Filter>Sources\Discovery</Filter>
     </None>
+    <None Include="..\..\Sources\IntegratedModel\Mgr.inl">
+      <Filter>Sources\IntegratedModel</Filter>
+    </None>
+    <None Include="..\..\Sources\IntegratedModel\Makefile">
+      <Filter>Sources\IntegratedModel</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Main.cpp">
@@ -117,6 +126,9 @@
     <ClCompile Include="..\..\Sources\Discovery\PortScanner.cpp">
       <Filter>Sources\Discovery</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\IntegratedModel\Mgr.cpp">
+      <Filter>Sources\IntegratedModel</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Service.h">
@@ -160,6 +172,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Discovery\PortScanner.h">
       <Filter>Sources\Discovery</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\IntegratedModel\Mgr.h">
+      <Filter>Sources\IntegratedModel</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -20,9 +20,10 @@ TARGETEXE				=	$(TARGETEXEDir)WhyTheFuckIsMyNetworkSoSlow-Backend${EXE_SUFFIX}
 
 
 SubDirs=\
-	Common 		\
-	Discovery 	\
-	WebServices \
+	Common 			\
+	Discovery 		\
+	IntegratedModel	\
+	WebServices		\
 
 
 
