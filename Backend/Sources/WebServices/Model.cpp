@@ -53,19 +53,19 @@ String OperatingSystem::ToString () const
     return sb.str ();
 }
 
-DISABLE_COMPILER_MSC_WARNING_START (4573);
-DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
 const ObjectVariantMapper OperatingSystem::kMapper = [] () {
     ObjectVariantMapper mapper;
 
+    DISABLE_COMPILER_MSC_WARNING_START (4573);
+    DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
     mapper.AddClass<OperatingSystem> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
         {L"fullVersionedName", Stroika_Foundation_DataExchange_StructFieldMetaInfo (OperatingSystem, fFullVersionedOSName), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
+    DISABLE_COMPILER_GCC_WARNING_END ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
+    DISABLE_COMPILER_MSC_WARNING_END (4573);
 
     return mapper;
 }();
-DISABLE_COMPILER_GCC_WARNING_END ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
-DISABLE_COMPILER_MSC_WARNING_END (4573);
 
 /*
  ********************************************************************************
@@ -83,9 +83,9 @@ String Model::Manufacturer::ToString () const
     return sb.str ();
 }
 
-DISABLE_COMPILER_MSC_WARNING_START (4573);
-DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
 const ObjectVariantMapper Model::Manufacturer::kMapper = [] () {
+    DISABLE_COMPILER_MSC_WARNING_START (4573);
+    DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
     ObjectVariantMapper mapper;
     mapper.AddCommonType<optional<String>> ();
     mapper.AddCommonType<URI> ();
@@ -95,10 +95,10 @@ const ObjectVariantMapper Model::Manufacturer::kMapper = [] () {
         {L"fullName", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Manufacturer, fFullName), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"webSiteURL", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Manufacturer, fWebSiteURL), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
+    DISABLE_COMPILER_GCC_WARNING_END ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
+    DISABLE_COMPILER_MSC_WARNING_END (4573);
     return mapper;
 }();
-DISABLE_COMPILER_GCC_WARNING_END ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
-DISABLE_COMPILER_MSC_WARNING_END (4573);
 
 /*
  ********************************************************************************
@@ -213,11 +213,11 @@ String NetworkInterface::ToString () const
     return sb.str ();
 }
 
-DISABLE_COMPILER_MSC_WARNING_START (4573);
-DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
 const ObjectVariantMapper NetworkInterface::kMapper = [] () {
     ObjectVariantMapper mapper;
 
+    DISABLE_COMPILER_MSC_WARNING_START (4573);
+    DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
     mapper.AddCommonType<NetworkInterface::Type> ();
     mapper.AddCommonType<optional<NetworkInterface::Type>> ();
     mapper.AddCommonType<InternetAddress> ();
@@ -226,12 +226,7 @@ const ObjectVariantMapper NetworkInterface::kMapper = [] () {
     mapper.AddCommonType<optional<Sequence<InternetAddress>>> ();
 
     using IO::Network::CIDR;
-#if qCompilerAndStdLib_lambda_expand_in_namespace_Buggy
-    mapper.Add (klambda_expand_in_namespace_Buggy_workaround_Mapper_);
-#else
-    mapper.Add<CIDR> ([] ([[maybe_unused]] const ObjectVariantMapper& mapper, const CIDR* obj) -> VariantValue { return obj->ToString (); },
-                      [] ([[maybe_unused]] const ObjectVariantMapper& mapper, const VariantValue& d, CIDR* intoObj) -> void { *intoObj = CIDR{d.As<String> ()}; });
-#endif
+    mapper.AddCommonType<CIDR> ();
     mapper.AddCommonType<Set<CIDR>> ();
     mapper.AddCommonType<Collection<CIDR>> ();
     mapper.AddCommonType<Collection<InternetAddress>> ();
@@ -286,11 +281,11 @@ const ObjectVariantMapper NetworkInterface::kMapper = [] () {
 #endif
     });
     mapper.AddCommonType<Collection<NetworkInterface>> ();
+    DISABLE_COMPILER_GCC_WARNING_END ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
+    DISABLE_COMPILER_MSC_WARNING_END (4573);
 
     return mapper;
 }();
-DISABLE_COMPILER_GCC_WARNING_END ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
-DISABLE_COMPILER_MSC_WARNING_END (4573);
 
 /*
  ********************************************************************************
@@ -380,7 +375,7 @@ Set<InternetAddress> Device::GetInternetAddresses () const
 
 String Device::ToString () const
 {
-    return DataExchange::Variant::JSON::Writer ().WriteAsString (Device::kMapper.FromObject (*this));
+    return DataExchange::Variant::JSON::Writer{}.WriteAsString (Device::kMapper.FromObject (*this));
 }
 
 /*
@@ -417,11 +412,11 @@ String DeviceSortParamters::ToString () const
     return sb.str ();
 }
 
-DISABLE_COMPILER_MSC_WARNING_START (4573);
-DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
 const ObjectVariantMapper DeviceSortParamters::kMapper = [] () {
     ObjectVariantMapper mapper;
 
+    DISABLE_COMPILER_MSC_WARNING_START (4573);
+    DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
     mapper.AddCommonType<DeviceSortParamters::SearchTerm::By> ();
     mapper.AddCommonType<optional<bool>> ();
     mapper.AddCommonType<optional<String>> ();
@@ -434,25 +429,24 @@ const ObjectVariantMapper DeviceSortParamters::kMapper = [] () {
         {L"searchTerms", Stroika_Foundation_DataExchange_StructFieldMetaInfo (DeviceSortParamters, fSearchTerms)},
         {L"compareNetwork", Stroika_Foundation_DataExchange_StructFieldMetaInfo (DeviceSortParamters, fCompareNetwork), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
+    DISABLE_COMPILER_GCC_WARNING_END ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
+    DISABLE_COMPILER_MSC_WARNING_END (4573);
     return mapper;
 }();
-DISABLE_COMPILER_GCC_WARNING_END ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
-DISABLE_COMPILER_MSC_WARNING_END (4573);
 
 /*
  ********************************************************************************
  ********************************** Model::Operations ***************************
  ********************************************************************************
  */
-
-DISABLE_COMPILER_MSC_WARNING_START (4573);
-DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
 #if qCompilerAndStdLib_static_initializer_lambda_funct_init_Buggy
 namespace {
     ObjectVariantMapper mkMapper_ ()
     {
         ObjectVariantMapper mapper;
 
+        DISABLE_COMPILER_MSC_WARNING_START (4573);
+        DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
         mapper.AddCommonType<optional<String>> ();
         mapper.AddCommonType<Sequence<double>> ();
         mapper.AddCommonType<Time::Duration> ();
@@ -468,7 +462,8 @@ namespace {
             {L"result", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Operations::DNSLookupResults, fResult)},
             {L"lookup-time", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Operations::DNSLookupResults, fLookupTime)},
         });
-
+        DISABLE_COMPILER_GCC_WARNING_END ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
+        DISABLE_COMPILER_MSC_WARNING_END (4573);
         return mapper;
     }
 }
@@ -477,6 +472,8 @@ const ObjectVariantMapper Operations::kMapper = mkMapper_ ();
 const ObjectVariantMapper Operations::kMapper = [] () {
     ObjectVariantMapper mapper;
 
+    DISABLE_COMPILER_MSC_WARNING_START (4573);
+    DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
     mapper.AddCommonType<optional<String>> ();
     mapper.AddCommonType<Sequence<double>> ();
     mapper.AddCommonType<Time::Duration> ();
@@ -493,11 +490,11 @@ const ObjectVariantMapper Operations::kMapper = [] () {
         {L"lookup-time", Stroika_Foundation_DataExchange_StructFieldMetaInfo (Operations::DNSLookupResults, fLookupTime)},
     });
 
+    DISABLE_COMPILER_GCC_WARNING_END ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
+    DISABLE_COMPILER_MSC_WARNING_END (4573);
     return mapper;
 }();
 #endif
-DISABLE_COMPILER_GCC_WARNING_END ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
-DISABLE_COMPILER_MSC_WARNING_END (4573);
 
 /*
  ********************************************************************************
@@ -515,13 +512,13 @@ String About::ToString () const
     return sb.str ();
 }
 
-DISABLE_COMPILER_MSC_WARNING_START (4573);
-DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
 const ObjectVariantMapper About::kMapper = [] () {
     ObjectVariantMapper mapper;
 
     mapper += OperatingSystem::kMapper;
 
+    DISABLE_COMPILER_MSC_WARNING_START (4573);
+    DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
     mapper.Add<Configuration::Version> (
         [] ([[maybe_unused]] const ObjectVariantMapper& mapper, const Configuration::Version* obj) -> VariantValue { return obj->AsPrettyVersionString (); },
         [] ([[maybe_unused]] const ObjectVariantMapper& mapper, const VariantValue& d, Configuration::Version* intoObj) -> void { *intoObj = Configuration::Version::FromPrettyVersionString (d.As<String> ()); });
@@ -531,8 +528,8 @@ const ObjectVariantMapper About::kMapper = [] () {
         {L"componentVersions", Stroika_Foundation_DataExchange_StructFieldMetaInfo (About, fComponentVersions)},
         {L"operatingSystem", Stroika_Foundation_DataExchange_StructFieldMetaInfo (About, fOperatingSystem)},
     });
+    DISABLE_COMPILER_GCC_WARNING_END ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
+    DISABLE_COMPILER_MSC_WARNING_END (4573);
 
     return mapper;
 }();
-DISABLE_COMPILER_GCC_WARNING_END ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
-DISABLE_COMPILER_MSC_WARNING_END (4573);
