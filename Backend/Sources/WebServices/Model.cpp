@@ -199,7 +199,7 @@ const ObjectVariantMapper Network::kMapper = [] () {
  ********************************************************************************
  */
 Model::NetworkInterface::NetworkInterface (const IO::Network::Interface& src)
-    : Interface (src)
+    : Interface{src}
 {
 }
 
