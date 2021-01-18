@@ -205,3 +205,13 @@ Collection<IntegratedModel::NetworkInterface> IntegratedModel::Mgr::GetNetworkIn
     }
     return result;
 }
+
+optional<IntegratedModel::NetworkInterface> IntegratedModel::Mgr::GetNetworkInterface (const Common::GUID& id) const
+{
+    for (auto i : GetNetworkInterfaces ()) {
+        if (i.fGUID == id) {
+            return i;
+        }
+    }
+    return nullopt;
+}

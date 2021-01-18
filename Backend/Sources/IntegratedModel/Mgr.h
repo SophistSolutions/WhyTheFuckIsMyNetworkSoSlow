@@ -71,6 +71,11 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel {
         /**
          */
         nonvirtual Collection<NetworkInterface> GetNetworkInterfaces () const;
+
+    public:
+        /**
+         */
+        nonvirtual std::optional<NetworkInterface> GetNetworkInterface (const Common::GUID& id) const;
     };
     inline Mgr Mgr::sThe;
 

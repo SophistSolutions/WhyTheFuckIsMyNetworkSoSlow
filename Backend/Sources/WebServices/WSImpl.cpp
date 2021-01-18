@@ -218,7 +218,6 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
             }
         }
     }
-
     return devices;
 }
 
@@ -226,11 +225,8 @@ Device WSImpl::GetDevice (const String& id) const
 {
     Debug::TimingTrace ttrc{L"WSImpl::GetDevice", 0.1};
     GUID               compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
-    // @todo quick hack impl
-    for (auto i : GetDevices_Recurse (nullopt)) {
-        if (i.fGUID == compareWithID) {
-            return i;
-        }
+    if (auto d = IntegratedModel::Mgr::sThe.GetDevice (compareWithID)) {
+        return *d;
     }
     Execution::Throw (ClientErrorException{L"no such id"sv});
 }
@@ -251,11 +247,8 @@ Network WSImpl::GetNetwork (const String& id) const
 {
     Debug::TimingTrace ttrc{L"WSImpl::GetNetwork", 0.1};
     GUID               compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
-    // @todo quick hack impl
-    for (auto i : GetNetworks_Recurse ()) {
-        if (i.fGUID == compareWithID) {
-            return i;
-        }
+    if (auto d = IntegratedModel::Mgr::sThe.GetNetwork (compareWithID)) {
+        return *d;
     }
     Execution::Throw (ClientErrorException{L"no such id"sv});
 }
@@ -284,13 +277,10 @@ Collection<BackendApp::WebServices::NetworkInterface> WSImpl::GetNetworkInterfac
 
 NetworkInterface WSImpl::GetNetworkInterface (const String& id) const
 {
-    GUID compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
-
-    // @todo quick hack impl
-    for (auto i : GetNetworkInterfaces_Recurse (false)) {
-        if (i.fGUID == compareWithID) {
-            return i;
-        }
+    Debug::TimingTrace ttrc{L"WSImpl::GetNetworkInterface", 0.1};
+    GUID               compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
+    if (auto ni = IntegratedModel::Mgr::sThe.GetNetworkInterface (compareWithID)) {
+        return *ni;
     }
     Execution::Throw (ClientErrorException{L"no such id"sv});
 }
@@ -440,8 +430,7 @@ DataExchange::VariantValue WSImpl::Operation_Scan_FullRescan (const String& devi
 
 DataExchange::VariantValue WSImpl::Operation_Scan_Scan (const String& addr) const
 {
-    Debug::TraceContextBumper  ctx{L"WSImpl::Operation_Scan_Scan"};
-    DataExchange::VariantValue x;
-    InternetAddress            useAddr = ClientErrorException::TreatExceptionsAsClientError ([&] () { return IO::Network::DNS::Default ().GetHostAddress (addr); });
+    Debug::TraceContextBumper ctx{L"WSImpl::Operation_Scan_Scan"};
+    InternetAddress           useAddr = ClientErrorException::TreatExceptionsAsClientError ([&] () { return IO::Network::DNS::Default ().GetHostAddress (addr); });
     return Discovery::DevicesMgr::sThe.ScanAndReturnReport (useAddr);
 }
