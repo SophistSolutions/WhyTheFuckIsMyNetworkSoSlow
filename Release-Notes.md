@@ -6,6 +6,24 @@ High level summary of changes in WhyTheFuckIsMyNetworkSoSlow
 
 ## History
 
+### 1.0d13 {2021-01-17}
+
+#### TLDR
+
+- Fixed bug causing scan to over-report devices, and added GUI/API to allow rescan of a device.
+- Improved performance
+
+#### Change-Details
+
+- new IntegratedModel::Mgr class - placeholder for future expansion (persistence)
+- Makefile 'clean' fix
+- Rescan-Device WSAPI, and GUI
+- Fine tuned WebServer configuration so runs more threads and better performance
+
+- Stroika 2.1b9
+  - [Release Notes](https://github.com/SophistSolutions/Stroika/blob/v2.1b9/Release-Notes.md)
+  - Improves Network Device enumeration to report network addresses and ranges properly.
+
 ---
 
 ### 1.0d12 {2021-01-07}
