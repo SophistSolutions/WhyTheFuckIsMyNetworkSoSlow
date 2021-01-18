@@ -2,7 +2,7 @@
 
 ## About
 
-High level summary of changes in WhyTheFuckIsMyNetworkSoSlow
+High level summary of changes in WhyTheFuckIsMyNetworkSoSlow.
 
 ## History
 
@@ -15,14 +15,14 @@ High level summary of changes in WhyTheFuckIsMyNetworkSoSlow
 
 #### Change-Details
 
-- new IntegratedModel::Mgr class - placeholder for future expansion (persistence)
+- New IntegratedModel::Mgr class - placeholder for future expansion (persistence)
 - Makefile 'clean' fix
 - Rescan-Device WSAPI, and GUI
 - Fine tuned WebServer configuration so runs more threads and better performance
 
 - Stroika 2.1b9
   - [Release Notes](https://github.com/SophistSolutions/Stroika/blob/v2.1b9/Release-Notes.md)
-  - Improves Network Device enumeration to report network addresses and ranges properly.
+  - Improves network device enumeration to report network addresses and ranges properly.
 
 ---
 
