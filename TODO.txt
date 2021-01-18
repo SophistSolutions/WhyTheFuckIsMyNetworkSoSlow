@@ -7,7 +7,6 @@
 
   then release---
 
-
 -----
 
 + then fix SPEED issue with web service static content (at least measure and see if reasonable)
@@ -29,14 +28,6 @@ time curl http://hercules.local -v
 		PROBABLY USING PORT FORWARD 80->9081, 8080->9082
 	>>>	Need GUI flag saying what port# to use
 
-
---------------
-
-Why Roku from hercules listed as having so many open
-ports (NOT from windows)
-	(same on rasp pi - all ports appear open - buy with myconnect code.)
-
-
 -----
 
 Network Interaces SB shown in DETAILS page for DEVICE
@@ -44,29 +35,11 @@ Network Interaces SB shown in DETAILS page for DEVICE
 
 DIsplay JSON for attached interfaces. AND display pretty summary (upper case only in debug builds)
 
-
-
 -----
 
 update TODO and github issues
 
-
 fix readme file (looks bad)
-
----
-
-Hercules (00000000-0000-0000-0000-000000000000)
-	-Name (ID)	192.168.244.0/24 (bae36d95-4e42-8576-2219-b23be1be698a)
-	Hardware Address(es)	
-	Network Address Binding(s)	192.168.244.187
-Hercules (fd34c4fb-f00c-26e1-31ba-3e9703494ed1)
-	-Name (ID)	172.17.0.0/16 (67e209ad-95e4-f760-4f9c-c60985a0d4bf)
-	Hardware Address(es)	02:42:8a:60:ff:4c
-	Network Address Binding(s)	172.17.0.0
-	-Name (ID)	192.168.244.0/24 (bae36d95-4e42-8576-2219-b23be1be698a)
-	Hardware Address(es)	10:7b:44:f2:d4:cb
-	Network Address Binding(s)	192.168.244.0
-
 
 --
 
@@ -85,18 +58,6 @@ we get answer from vuex)
 	   add TICKET for issue that we want the hoever text to include all items
 	   and the elipsis has to operate over all of them.... Need some fancy component 
 	   todo this that agrggesates the text but inside it iterates and shows icons
-
-------------------
-
-for (PIP_ADAPTER_UNICAST_ADDRESS pu = currAddresses->FirstUnicastAddress; pu != nullptr; pu = pu->Next) {
-                    SocketAddress sa{pu->Address};
-                    if (sa.IsInternetAddress ()) {
-                        DbgTrace (L"***sa=%s, linkPrefix=%d", Characters::ToString (sa).c_str (), (int)pu->OnLinkPrefixLength);
-                        newInterface.fBindings.Add (pu->OnLinkPrefixLength == 255 ? sa.GetInternetAddress () : CIDR{sa.GetInternetAddress (), pu->OnLinkPrefixLength});
-                    }
-                }
-***sa=192.168.244.56:0, linkPrefix=24
-when we convert this to CIDR for fBindings, we get 192.168.244.0/24
 
 -----
 
@@ -126,32 +87,6 @@ when we convert this to CIDR for fBindings, we get 192.168.244.0/24
 ---
 	DEBUG INFO SSDP result shows as string not json
 		(mostly fixed but need change to stroika for rest (optional<string> arg to VariantValue))
-----
-THIS SHOULD APPEAR AS DEVICE TYPE NAS:
-	92.168.244.83 (ef8b7040-3c70-ed14-1ee8-977ee9a8383c)
-	Manufacturer	Synology Incorporated
-	Last Seen	3 minutes ago
-	Networks	
-	●	
-	Name (ID)	192.168.244.0/24 (bae36d95-4e42-8576-2219-b23be1be698a)
-	Hardware Address(es)	00:11:32:9b:3a:d0
-	Network Address Binding(s)	192.168.244.83
-	Services	
-		ssh	ssh://192.168.244.83
-		smb	smb://192.168.244.83
-		web	http://192.168.244.83https://192.168.244.83
-
-	&&&& ADD TYPE=eNetworkAttachedStorage
-	to DeviceTypes in C++ and check for synology MFG (and buffalo -- etc - search for pop ones through my map id file) and has 
-	smb support, and give it nettatachedstorage type. THEN fix GUI 
-	to also support
-
-----
-
-test on tablet and fixup device details page
-
-	Device details one item wrap. And a couple columns adjust size. 
-
 ----
 https://apps.apple.com/us/app/pluto-hud/id1544577573?mt=12 
 
