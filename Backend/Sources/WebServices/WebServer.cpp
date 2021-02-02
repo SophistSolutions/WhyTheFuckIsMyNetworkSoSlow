@@ -303,7 +303,7 @@ public:
 #else
     , fWSConnectionMgr_
     {
-        SocketAddresses (InternetAddresses_Any (), 8080), fWSRouter_, ConnectionManager::Options { kMaxWSConcurrentConnections_, kMaxWSThreads_, Socket::BindFlags{true}, kServerString_ }
+        SocketAddresses (InternetAddresses_Any (), 8080), fWSRouter_, ConnectionManager::Options { nullopt, kMaxWSConcurrentConnections_, kMaxWSThreads_, Socket::BindFlags{true}, kServerString_ }
     } // listen and dispatch while this object exists
 #endif
     , fGUIWebRouter_
