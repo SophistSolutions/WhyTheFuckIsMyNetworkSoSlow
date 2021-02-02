@@ -156,7 +156,7 @@ namespace {
         Require (sActive_);
         Collection<Network> accumResults;
         for (NetworkInterface i : Discovery::NetworkInterfacesMgr::sThe.CollectActiveNetworkInterfaces ()) {
-            if (not i.fBoundAddressRanges.empty ()) {
+            if (not i.fBindings.fAddressRanges.empty ()) {
                 Network nw;
                 {
                     auto genCIDRsFromBindings = [] (const Iterable<CIDR>& bindings) {
@@ -197,7 +197,7 @@ namespace {
                         }
                         return cidrs;
                     };
-                    Set<CIDR> cidrs = genCIDRsFromBindings (i.fBoundAddressRanges);
+                    Set<CIDR> cidrs = genCIDRsFromBindings (i.fBindings.fAddressRanges);
 
                     // See if the network has already been found. VERY TRICKY - cuz ambiguous concept a network. Mostly follow my
                     // intuition - now - that a network CAN comprise multiple CIDRs - like a WIFI card and ETHERNET all with the same V4 and V6 scopes - they

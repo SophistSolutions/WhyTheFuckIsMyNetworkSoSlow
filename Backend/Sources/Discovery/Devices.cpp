@@ -803,7 +803,7 @@ namespace {
             SystemInterfacesMgr interfacesMgr;
             for (Interface i : interfacesMgr.GetAll ()) {
                 if (i.fType != Interface::Type::eLoopback and i.fStatus and i.fStatus->Contains (Interface::Status::eRunning)) {
-                    i.fBoundAddresses.Apply ([&] (const InternetAddress& ia) {
+                    i.fBindings.fAddresses.Apply ([&] (const InternetAddress& ia) {
                         newDev.AddIPAddresses_ (ia, i.fHardwareAddress);
                     });
                 }

@@ -119,7 +119,7 @@ public:
                *      o   curl  http://localhost:8080/ -- to see a list of available web-methods
                */
             Route{
-                MethodsRegularExpressions::kOptions,
+                MethodsRegEx::kOptions,
                 RegularExpression::kAny,
                 [] ([[maybe_unused]] Message* m) {}},
 
@@ -140,7 +140,6 @@ public:
                     }},
 
                 Route{
-                    MethodsRegularExpressions::kGet,
                     L"devices(/?)"_RegEx,
                     [=] (Message* m) {
                         constexpr bool                              kDefault_FilterRunningOnly_{true};
@@ -168,14 +167,12 @@ public:
                         }
                     }},
                 Route{
-                    MethodsRegularExpressions::kGet,
                     L"devices/(.+)"_RegEx,
                     [=] (Message* m, const String& id) {
                         WriteResponse (m->PeekResponse (), kDevices_, Device::kMapper.FromObject (fWSAPI_->GetDevice (id)));
                     }},
 
                 Route{
-                    MethodsRegularExpressions::kGet,
                     L"network-interfaces(/?)"_RegEx,
                     [=] (Message* m) {
                         constexpr bool                              kDefault_FilterRunningOnly_{true};
@@ -189,14 +186,12 @@ public:
                         }
                     }},
                 Route{
-                    MethodsRegularExpressions::kGet,
                     L"network-interfaces/(.+)"_RegEx,
                     [=] (Message* m, const String& id) {
                         WriteResponse (m->PeekResponse (), kNetworkInterfaces_, NetworkInterface::kMapper.FromObject (fWSAPI_->GetNetworkInterface (id)));
                     }},
 
                 Route{
-                    MethodsRegularExpressions::kGet,
                     L"networks(/?)"_RegEx,
                     [=] (Message* m) {
                         Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
@@ -208,7 +203,6 @@ public:
                         }
                     }},
                 Route{
-                    MethodsRegularExpressions::kGet,
                     L"networks/(.+)"_RegEx,
                     [=] (Message* m, const String& id) {
                         WriteResponse (m->PeekResponse (), kNetworks_, Network::kMapper.FromObject (fWSAPI_->GetNetwork (id)));
