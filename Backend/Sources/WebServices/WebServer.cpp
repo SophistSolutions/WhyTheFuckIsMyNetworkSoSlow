@@ -4,7 +4,6 @@
 #include "Stroika/Frameworks/StroikaPreComp.h"
 
 #include "Stroika/Foundation/Characters/StringBuilder.h"
-#include "Stroika/Foundation/Characters/String_Constant.h"
 #include "Stroika/Foundation/Characters/ToString.h"
 #include "Stroika/Foundation/Common/EmptyObjectForConstructorSideEffect.h"
 #include "Stroika/Foundation/Containers/Set.h"
@@ -96,11 +95,11 @@ private:
 
 private:
     shared_ptr<IWSAPI>                                             fWSAPI_;
-    const Router                                                   fWSRouter_;
+    const Sequence<Route>                                          fWSRoutes_;
     optional<DeclareActivity<Activity<wstring_view>>>              fEstablishActivity1_{&kContructing_WSAPI_WebServer_};
     ConnectionManager                                              fWSConnectionMgr_;
     [[NO_UNIQUE_ADDRESS_ATTR]] EmptyObjectForConstructorSideEffect fIgnore1_{[this] () { fEstablishActivity1_.reset (); }};
-    const Router                                                   fGUIWebRouter_;
+    const Sequence<Route>                                          fGUIWebRoutes_;
     optional<DeclareActivity<Activity<wstring_view>>>              fEstablishActivity2_{&kContructing_GUI_WebServer_};
     ConnectionManager                                              fGUIWebConnectionMgr_;
     [[NO_UNIQUE_ADDRESS_ATTR]] EmptyObjectForConstructorSideEffect fIgnore2_{[this] () { fEstablishActivity2_.reset (); }};
@@ -108,223 +107,217 @@ private:
 public:
     Rep_ (const shared_ptr<IWSAPI>& wsImpl)
         : fWSAPI_{wsImpl}
-        , fWSRouter_
+        , fWSRoutes_
     {
-        Sequence<Route>
-        {
-            /*
+        /*
                *  To test this example:
                *      o   Run the service (under the debugger if you wish)
                *      o   curl  http://localhost/ -- to see web GUI
                *      o   curl  http://localhost:8080/ -- to see a list of available web-methods
                */
+        Route{
+            MethodsRegEx::kOptions,
+            RegularExpression::kAny,
+            [] ([[maybe_unused]] Message* m) {}},
+
             Route{
-                MethodsRegEx::kOptions,
-                RegularExpression::kAny,
-                [] ([[maybe_unused]] Message* m) {}},
+                L""_RegEx,
+                DefaultPage_},
 
-                Route{
-                    L""_RegEx,
-                    DefaultPage_},
+            Route{
+                L"about"_RegEx,
+                mkRequestHandler (kAbout_, About::kMapper, function<About (void)>{[=] () { return fWSAPI_->GetAbout (); }})},
 
-                Route{
-                    L"about"_RegEx,
-                    mkRequestHandler (kAbout_, About::kMapper, function<About (void)>{[=] () { return fWSAPI_->GetAbout (); }})},
+            Route{
+                L"blob/(.+)"_RegEx,
+                [=] (Message* m, const String& id) {
+                    tuple<Memory::BLOB, DataExchange::InternetMediaType> b = fWSAPI_->GetBLOB (id);
+                    m->PeekResponse ()->SetContentType (get<1> (b));
+                    m->PeekResponse ()->write (get<0> (b));
+                }},
 
-                Route{
-                    L"blob/(.+)"_RegEx,
-                    [=] (Message* m, const String& id) {
-                        tuple<Memory::BLOB, DataExchange::InternetMediaType> b = fWSAPI_->GetBLOB (id);
-                        m->PeekResponse ()->SetContentType (get<1> (b));
-                        m->PeekResponse ()->write (get<0> (b));
-                    }},
+            Route{
+                L"devices(/?)"_RegEx,
+                [=] (Message* m) {
+                    constexpr bool                              kDefault_FilterRunningOnly_{true};
+                    Mapping<String, DataExchange::VariantValue> args              = PickoutParamValues (m->PeekRequest ());
+                    bool                                        filterRunningOnly = args.LookupValue (L"filter-only-running"sv, DataExchange::VariantValue{kDefault_FilterRunningOnly_}).As<bool> ();
+                    optional<DeviceSortParamters>               sort;
+                    if (auto o = args.Lookup (L"sort"sv)) {
+                        ClientErrorException::TreatExceptionsAsClientError ([&] () {
+                            sort = DeviceSortParamters::kMapper.ToObject<DeviceSortParamters> (DataExchange::Variant::JSON::Reader{}.Read (o->As<String> ()));
+                        });
+                    }
+                    if (auto o = args.Lookup (L"sortBy"sv)) {
+                        ClientErrorException::TreatExceptionsAsClientError ([&] () {
+                            sort = sort.value_or (DeviceSortParamters{});
+                            sort->fSearchTerms += DeviceSortParamters::SearchTerm{
+                                Configuration::DefaultNames<DeviceSortParamters::SearchTerm::By>{}.GetValue (o->As<String> ().c_str (), ClientErrorException{
+                                                                                                                                            L"Invalid argument to query string sortBy"sv})};
+                        });
+                    }
+                    if (args.LookupValue (L"recurse"sv, false).As<bool> ()) {
+                        WriteResponse (m->PeekResponse (), kDevices_, Device::kMapper.FromObject (fWSAPI_->GetDevices_Recurse (sort)));
+                    }
+                    else {
+                        WriteResponse (m->PeekResponse (), kDevices_, kBasicsMapper_.FromObject (fWSAPI_->GetDevices (sort)));
+                    }
+                }},
+            Route{
+                L"devices/(.+)"_RegEx,
+                [=] (Message* m, const String& id) {
+                    WriteResponse (m->PeekResponse (), kDevices_, Device::kMapper.FromObject (fWSAPI_->GetDevice (id)));
+                }},
 
-                Route{
-                    L"devices(/?)"_RegEx,
-                    [=] (Message* m) {
-                        constexpr bool                              kDefault_FilterRunningOnly_{true};
-                        Mapping<String, DataExchange::VariantValue> args              = PickoutParamValues (m->PeekRequest ());
-                        bool                                        filterRunningOnly = args.LookupValue (L"filter-only-running"sv, DataExchange::VariantValue{kDefault_FilterRunningOnly_}).As<bool> ();
-                        optional<DeviceSortParamters>               sort;
-                        if (auto o = args.Lookup (L"sort"sv)) {
-                            ClientErrorException::TreatExceptionsAsClientError ([&] () {
-                                sort = DeviceSortParamters::kMapper.ToObject<DeviceSortParamters> (DataExchange::Variant::JSON::Reader{}.Read (o->As<String> ()));
-                            });
-                        }
-                        if (auto o = args.Lookup (L"sortBy"sv)) {
-                            ClientErrorException::TreatExceptionsAsClientError ([&] () {
-                                sort = sort.value_or (DeviceSortParamters{});
-                                sort->fSearchTerms += DeviceSortParamters::SearchTerm{
-                                    Configuration::DefaultNames<DeviceSortParamters::SearchTerm::By>{}.GetValue (o->As<String> ().c_str (), ClientErrorException{
-                                                                                                                                                L"Invalid argument to query string sortBy"sv})};
-                            });
-                        }
-                        if (args.LookupValue (L"recurse"sv, false).As<bool> ()) {
-                            WriteResponse (m->PeekResponse (), kDevices_, Device::kMapper.FromObject (fWSAPI_->GetDevices_Recurse (sort)));
-                        }
-                        else {
-                            WriteResponse (m->PeekResponse (), kDevices_, kBasicsMapper_.FromObject (fWSAPI_->GetDevices (sort)));
-                        }
-                    }},
-                Route{
-                    L"devices/(.+)"_RegEx,
-                    [=] (Message* m, const String& id) {
-                        WriteResponse (m->PeekResponse (), kDevices_, Device::kMapper.FromObject (fWSAPI_->GetDevice (id)));
-                    }},
+            Route{
+                L"network-interfaces(/?)"_RegEx,
+                [=] (Message* m) {
+                    constexpr bool                              kDefault_FilterRunningOnly_{true};
+                    Mapping<String, DataExchange::VariantValue> args              = PickoutParamValues (m->PeekRequest ());
+                    bool                                        filterRunningOnly = args.LookupValue (L"filter-only-running"sv, DataExchange::VariantValue{kDefault_FilterRunningOnly_}).As<bool> ();
+                    if (args.LookupValue (L"recurse"sv, false).As<bool> ()) {
+                        WriteResponse (m->PeekResponse (), kNetworkInterfaces_, NetworkInterface::kMapper.FromObject (fWSAPI_->GetNetworkInterfaces_Recurse (filterRunningOnly)));
+                    }
+                    else {
+                        WriteResponse (m->PeekResponse (), kNetworkInterfaces_, kBasicsMapper_.FromObject (fWSAPI_->GetNetworkInterfaces (filterRunningOnly)));
+                    }
+                }},
+            Route{
+                L"network-interfaces/(.+)"_RegEx,
+                [=] (Message* m, const String& id) {
+                    WriteResponse (m->PeekResponse (), kNetworkInterfaces_, NetworkInterface::kMapper.FromObject (fWSAPI_->GetNetworkInterface (id)));
+                }},
 
-                Route{
-                    L"network-interfaces(/?)"_RegEx,
-                    [=] (Message* m) {
-                        constexpr bool                              kDefault_FilterRunningOnly_{true};
-                        Mapping<String, DataExchange::VariantValue> args              = PickoutParamValues (m->PeekRequest ());
-                        bool                                        filterRunningOnly = args.LookupValue (L"filter-only-running"sv, DataExchange::VariantValue{kDefault_FilterRunningOnly_}).As<bool> ();
-                        if (args.LookupValue (L"recurse"sv, false).As<bool> ()) {
-                            WriteResponse (m->PeekResponse (), kNetworkInterfaces_, NetworkInterface::kMapper.FromObject (fWSAPI_->GetNetworkInterfaces_Recurse (filterRunningOnly)));
-                        }
-                        else {
-                            WriteResponse (m->PeekResponse (), kNetworkInterfaces_, kBasicsMapper_.FromObject (fWSAPI_->GetNetworkInterfaces (filterRunningOnly)));
-                        }
-                    }},
-                Route{
-                    L"network-interfaces/(.+)"_RegEx,
-                    [=] (Message* m, const String& id) {
-                        WriteResponse (m->PeekResponse (), kNetworkInterfaces_, NetworkInterface::kMapper.FromObject (fWSAPI_->GetNetworkInterface (id)));
-                    }},
+            Route{
+                L"networks(/?)"_RegEx,
+                [=] (Message* m) {
+                    Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
+                    if (args.LookupValue (L"recurse"sv, false).As<bool> ()) {
+                        WriteResponse (m->PeekResponse (), kNetworkInterfaces_, Network::kMapper.FromObject (fWSAPI_->GetNetworks_Recurse ()));
+                    }
+                    else {
+                        WriteResponse (m->PeekResponse (), kNetworkInterfaces_, kBasicsMapper_.FromObject (fWSAPI_->GetNetworks ()));
+                    }
+                }},
+            Route{
+                L"networks/(.+)"_RegEx,
+                [=] (Message* m, const String& id) {
+                    WriteResponse (m->PeekResponse (), kNetworks_, Network::kMapper.FromObject (fWSAPI_->GetNetwork (id)));
+                }},
 
-                Route{
-                    L"networks(/?)"_RegEx,
-                    [=] (Message* m) {
-                        Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
-                        if (args.LookupValue (L"recurse"sv, false).As<bool> ()) {
-                            WriteResponse (m->PeekResponse (), kNetworkInterfaces_, Network::kMapper.FromObject (fWSAPI_->GetNetworks_Recurse ()));
-                        }
-                        else {
-                            WriteResponse (m->PeekResponse (), kNetworkInterfaces_, kBasicsMapper_.FromObject (fWSAPI_->GetNetworks ()));
-                        }
-                    }},
-                Route{
-                    L"networks/(.+)"_RegEx,
-                    [=] (Message* m, const String& id) {
-                        WriteResponse (m->PeekResponse (), kNetworks_, Network::kMapper.FromObject (fWSAPI_->GetNetwork (id)));
-                    }},
-
-                Route{
-                    L"operations/ping"_RegEx,
-                    [=] (Message* m) {
-                        Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
-                        if (auto address = args.Lookup (L"target"sv)) {
-                            ExpectedMethod (m->GetRequestReference (), kOperations_);
-                            WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_Ping (address->As<String> ())));
-                        }
-                        else {
-                            Execution::Throw (ClientErrorException{L"missing target argument"sv});
-                        }
-                    }},
-                Route{
-                    L"operations/traceroute"_RegEx,
-                    [=] (Message* m) {
-                        Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
-                        optional<bool>                              reverseDNSResult;
-                        if (auto rdr = args.Lookup (L"reverse-dns-result"sv)) {
-                            reverseDNSResult = rdr->As<bool> ();
-                        }
-                        if (auto address = args.Lookup (L"target"sv)) {
-                            ExpectedMethod (m->GetRequestReference (), kOperations_);
-                            WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_TraceRoute (address->As<String> (), reverseDNSResult)));
-                        }
-                        else {
-                            Execution::Throw (ClientErrorException{L"missing target argument"sv});
-                        }
-                    }},
-                Route{
-                    L"operations/dns/calculate-negative-lookup-time"_RegEx,
-                    [=] (Message* m) {
+            Route{
+                L"operations/ping"_RegEx,
+                [=] (Message* m) {
+                    Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
+                    if (auto address = args.Lookup (L"target"sv)) {
                         ExpectedMethod (m->GetRequestReference (), kOperations_);
-                        optional<unsigned int>                      samples;
-                        Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
-                        if (auto rdr = args.Lookup (L"samples"sv)) {
-                            samples = rdr->As<unsigned int> ();
-                        }
-                        WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_DNS_CalculateNegativeLookupTime (samples)));
-                    }},
-                Route{
-                    L"operations/dns/lookup"_RegEx,
-                    [=] (Message* m) {
+                        WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_Ping (address->As<String> ())));
+                    }
+                    else {
+                        Execution::Throw (ClientErrorException{L"missing target argument"sv});
+                    }
+                }},
+            Route{
+                L"operations/traceroute"_RegEx,
+                [=] (Message* m) {
+                    Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
+                    optional<bool>                              reverseDNSResult;
+                    if (auto rdr = args.Lookup (L"reverse-dns-result"sv)) {
+                        reverseDNSResult = rdr->As<bool> ();
+                    }
+                    if (auto address = args.Lookup (L"target"sv)) {
                         ExpectedMethod (m->GetRequestReference (), kOperations_);
-                        String                                      name;
-                        Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
-                        if (auto rdr = args.Lookup (L"name"sv)) {
-                            name = rdr->As<String> ();
-                        }
-                        else {
-                            Execution::Throw (ClientErrorException{L"missing name argument"sv});
-                        }
-                        WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_DNS_Lookup (name)));
-                    }},
-                Route{
-                    L"operations/dns/calculate-score"_RegEx,
-                    [=] (Message* m) {
-                        ExpectedMethod (m->GetRequestReference (), kOperations_);
-                        WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_DNS_CalculateScore ()));
-                    }},
-                Route{
-                    L"operations/scan/FullRescan"_RegEx,
-                    [=] (Message* m) {
-                        Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
-                        ExpectedMethod (m->GetRequestReference (), kOperations_);
-                        if (auto rdr = args.Lookup (L"deviceID"sv)) {
-                            WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_Scan_FullRescan (rdr->As<String> ())));
-                        }
-                        else {
-                            Execution::Throw (ClientErrorException{L"missing deviceID argument"sv});
-                        }
-                    }},
-                Route{
-                    L"operations/scan/Scan"_RegEx,
-                    [=] (Message* m) {
-                        Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
-                        ExpectedMethod (m->GetRequestReference (), kOperations_);
-                        if (auto rdr = args.Lookup (L"addr"sv)) {
-                            WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_Scan_Scan (rdr->As<String> ())));
-                        }
-                        else {
-                            Execution::Throw (ClientErrorException{L"missing deviceID argument"sv});
-                        }
-                    }},
-        }
+                        WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_TraceRoute (address->As<String> (), reverseDNSResult)));
+                    }
+                    else {
+                        Execution::Throw (ClientErrorException{L"missing target argument"sv});
+                    }
+                }},
+            Route{
+                L"operations/dns/calculate-negative-lookup-time"_RegEx,
+                [=] (Message* m) {
+                    ExpectedMethod (m->GetRequestReference (), kOperations_);
+                    optional<unsigned int>                      samples;
+                    Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
+                    if (auto rdr = args.Lookup (L"samples"sv)) {
+                        samples = rdr->As<unsigned int> ();
+                    }
+                    WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_DNS_CalculateNegativeLookupTime (samples)));
+                }},
+            Route{
+                L"operations/dns/lookup"_RegEx,
+                [=] (Message* m) {
+                    ExpectedMethod (m->GetRequestReference (), kOperations_);
+                    String                                      name;
+                    Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
+                    if (auto rdr = args.Lookup (L"name"sv)) {
+                        name = rdr->As<String> ();
+                    }
+                    else {
+                        Execution::Throw (ClientErrorException{L"missing name argument"sv});
+                    }
+                    WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_DNS_Lookup (name)));
+                }},
+            Route{
+                L"operations/dns/calculate-score"_RegEx,
+                [=] (Message* m) {
+                    ExpectedMethod (m->GetRequestReference (), kOperations_);
+                    WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_DNS_CalculateScore ()));
+                }},
+            Route{
+                L"operations/scan/FullRescan"_RegEx,
+                [=] (Message* m) {
+                    Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
+                    ExpectedMethod (m->GetRequestReference (), kOperations_);
+                    if (auto rdr = args.Lookup (L"deviceID"sv)) {
+                        WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_Scan_FullRescan (rdr->As<String> ())));
+                    }
+                    else {
+                        Execution::Throw (ClientErrorException{L"missing deviceID argument"sv});
+                    }
+                }},
+            Route{
+                L"operations/scan/Scan"_RegEx,
+                [=] (Message* m) {
+                    Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m->PeekRequest ());
+                    ExpectedMethod (m->GetRequestReference (), kOperations_);
+                    if (auto rdr = args.Lookup (L"addr"sv)) {
+                        WriteResponse (m->PeekResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_Scan_Scan (rdr->As<String> ())));
+                    }
+                    else {
+                        Execution::Throw (ClientErrorException{L"missing deviceID argument"sv});
+                    }
+                }},
     }
 #if __cpp_designated_initializers
     , fWSConnectionMgr_
     {
         SocketAddresses (InternetAddresses_Any (), 8080),
-            fWSRouter_,
+            fWSRoutes_,
             ConnectionManager::Options { .fMaxConnections = kMaxWSConcurrentConnections_, .fMaxConcurrentlyHandledConnections = kMaxWSThreads_, .fBindFlags = Socket::BindFlags{true}, .fServerHeader = kServerString_ }
     } // listen and dispatch while this object exists
 #else
     , fWSConnectionMgr_
     {
-        SocketAddresses (InternetAddresses_Any (), 8080), fWSRouter_, ConnectionManager::Options { kMaxWSConcurrentConnections_, kMaxWSThreads_, Socket::BindFlags{true}, kServerString_ }
+        SocketAddresses (InternetAddresses_Any (), 8080), fWSRoutes_, ConnectionManager::Options { kMaxWSConcurrentConnections_, kMaxWSThreads_, Socket::BindFlags{true}, kServerString_ }
     } // listen and dispatch while this object exists
 #endif
-    , fGUIWebRouter_
+    , fGUIWebRoutes_
     {
-        Sequence<Route>
-        {
-            Route{RegularExpression::kAny, FileSystemRouter{Execution::GetEXEDir () / "html", {}, Sequence<String>{L"index.html"sv}}},
-        }
+        Route{RegularExpression::kAny, FileSystemRouter{Execution::GetEXEDir () / "html", {}, Sequence<String>{L"index.html"sv}}},
     }
 #if __cpp_designated_initializers
     , fGUIWebConnectionMgr_
     {
         SocketAddresses (InternetAddresses_Any (), 80),
-            fGUIWebRouter_,
+            fGUIWebRoutes_,
             ConnectionManager::Options { .fMaxConnections = kMaxGUIWebServerConcurrentConnections_, .fMaxConcurrentlyHandledConnections = kMaxGUIThreads_, .fBindFlags = Socket::BindFlags{true}, .fServerHeader = kServerString_ }
     }
 #else
     , fGUIWebConnectionMgr_
     {
         SocketAddresses (InternetAddresses_Any (), 80),
-            fGUIWebRouter_,
+            fGUIWebRoutes_,
             ConnectionManager::Options { kMaxGUIWebServerConcurrentConnections_, kMaxGUIThreads_, Socket::BindFlags{true}, kServerString_ }
     }
 #endif
@@ -347,7 +340,7 @@ public:
 };
 const WebServiceMethodDescription WebServer::Rep_::kAbout_{
     L"about"sv,
-    Set<String>{String_Constant{IO::Network::HTTP::Methods::kGet}},
+    Set<String>{IO::Network::HTTP::Methods::kGet},
     DataExchange::InternetMediaTypes::kJSON,
     L"Data about the WTF application, version etc"sv,
     Sequence<String>{
@@ -357,7 +350,7 @@ const WebServiceMethodDescription WebServer::Rep_::kAbout_{
 };
 const WebServiceMethodDescription WebServer::Rep_::kBlob_{
     L"blob"sv,
-    Set<String>{String_Constant{IO::Network::HTTP::Methods::kGet}},
+    Set<String>{IO::Network::HTTP::Methods::kGet},
     nullopt,
     L"BLOBs (and their associated media type) generally sourced from other computers, but cached here so they will be available when those other computers are not (like icons from SSDP)"sv,
     Sequence<String>{
@@ -367,7 +360,7 @@ const WebServiceMethodDescription WebServer::Rep_::kBlob_{
 };
 const WebServiceMethodDescription WebServer::Rep_::kDevices_{
     L"devices"sv,
-    Set<String>{String_Constant{IO::Network::HTTP::Methods::kGet}},
+    Set<String>{IO::Network::HTTP::Methods::kGet},
     DataExchange::InternetMediaTypes::kJSON,
     {},
     Sequence<String>{
@@ -386,7 +379,7 @@ const WebServiceMethodDescription WebServer::Rep_::kDevices_{
 };
 const WebServiceMethodDescription WebServer::Rep_::kNetworks_{
     L"networks"sv,
-    Set<String>{String_Constant{IO::Network::HTTP::Methods::kGet}},
+    Set<String>{IO::Network::HTTP::Methods::kGet},
     DataExchange::InternetMediaTypes::kJSON,
     {},
     Sequence<String>{L"curl http://localhost:8080/networks"sv, L"curl http://localhost:8080/networks?recurse=true"sv, L"curl http://localhost:8080/networks/{ID}"sv},
@@ -395,7 +388,7 @@ const WebServiceMethodDescription WebServer::Rep_::kNetworks_{
 };
 const WebServiceMethodDescription WebServer::Rep_::kNetworkInterfaces_{
     L"network-interfaces"sv,
-    Set<String>{String_Constant{IO::Network::HTTP::Methods::kGet}},
+    Set<String>{IO::Network::HTTP::Methods::kGet},
     DataExchange::InternetMediaTypes::kJSON,
     {},
     Sequence<String>{L"curl http://localhost:8080/network-interfaces", L"curl http://localhost:8080/network-interfaces?recurse=true"sv, L"curl http://localhost:8080/network-interfaces?filter-only-running=true"sv},
@@ -404,7 +397,7 @@ const WebServiceMethodDescription WebServer::Rep_::kNetworkInterfaces_{
 };
 const WebServiceMethodDescription WebServer::Rep_::kOperations_{
     L"operations"sv,
-    Set<String>{String_Constant{IO::Network::HTTP::Methods::kGet}},
+    Set<String>{IO::Network::HTTP::Methods::kGet},
     DataExchange::InternetMediaTypes::kJSON,
     {},
     Sequence<String>{
@@ -429,6 +422,6 @@ const WebServiceMethodDescription WebServer::Rep_::kOperations_{
 };
 
 WebServer::WebServer (const shared_ptr<IWSAPI>& wsImpl)
-    : fRep_ (make_shared<Rep_> (wsImpl))
+    : fRep_{make_shared<Rep_> (wsImpl)}
 {
 }
