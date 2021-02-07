@@ -1,5 +1,5 @@
 /*
- * Copyright(c) Sophist Solutions, Inc. 1990-2020.  All rights reserved
+ * Copyright(c) Sophist Solutions, Inc. 1990-2021.  All rights reserved
  */
 #ifndef _WhyTheFuckIsMyNetworkSoSlow_BackendApp_Common_InternetServiceProvider_h_
 #define _WhyTheFuckIsMyNetworkSoSlow_BackendApp_Common_InternetServiceProvider_h_ 1
