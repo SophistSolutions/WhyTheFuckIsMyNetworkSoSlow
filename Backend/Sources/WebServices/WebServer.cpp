@@ -110,19 +110,14 @@ public:
         , fWSRoutes_
     {
         /*
-               *  To test this example:
-               *      o   Run the service (under the debugger if you wish)
-               *      o   curl  http://localhost/ -- to see web GUI
-               *      o   curl  http://localhost:8080/ -- to see a list of available web-methods
-               */
+         *  To test this example:
+         *      o   Run the service (under the debugger if you wish)
+         *      o   curl  http://localhost/ -- to see web GUI
+         *      o   curl  http://localhost:8080/ -- to see a list of available web-methods
+         */
         Route{
-            MethodsRegEx::kOptions,
-            RegularExpression::kAny,
-            [] ([[maybe_unused]] Message* m) {}},
-
-            Route{
-                L""_RegEx,
-                DefaultPage_},
+            L""_RegEx,
+            DefaultPage_},
 
             Route{
                 L"about"_RegEx,
@@ -294,7 +289,7 @@ public:
     {
         SocketAddresses (InternetAddresses_Any (), 8080),
             fWSRoutes_,
-            ConnectionManager::Options { .fMaxConnections = kMaxWSConcurrentConnections_, .fMaxConcurrentlyHandledConnections = kMaxWSThreads_, .fBindFlags = Socket::BindFlags{true}, .fServerHeader = kServerString_ }
+            ConnectionManager::Options { .fMaxConnections = kMaxWSConcurrentConnections_, .fMaxConcurrentlyHandledConnections = kMaxWSThreads_, .fBindFlags = Socket::BindFlags{.fSO_REUSEADDR = true}, .fServerHeader = kServerString_ }
     } // listen and dispatch while this object exists
 #else
     , fWSConnectionMgr_
@@ -311,7 +306,7 @@ public:
     {
         SocketAddresses (InternetAddresses_Any (), 80),
             fGUIWebRoutes_,
-            ConnectionManager::Options { .fMaxConnections = kMaxGUIWebServerConcurrentConnections_, .fMaxConcurrentlyHandledConnections = kMaxGUIThreads_, .fBindFlags = Socket::BindFlags{true}, .fServerHeader = kServerString_ }
+            ConnectionManager::Options { .fMaxConnections = kMaxGUIWebServerConcurrentConnections_, .fMaxConcurrentlyHandledConnections = kMaxGUIThreads_, .fBindFlags = Socket::BindFlags{.fSO_REUSEADDR = true}, .fServerHeader = kServerString_ }
     }
 #else
     , fGUIWebConnectionMgr_
