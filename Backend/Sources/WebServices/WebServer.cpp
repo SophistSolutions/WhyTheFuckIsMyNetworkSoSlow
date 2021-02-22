@@ -5,7 +5,7 @@
 
 #include "Stroika/Foundation/Characters/StringBuilder.h"
 #include "Stroika/Foundation/Characters/ToString.h"
-#include "Stroika/Foundation/Common/EmptyObjectForConstructorSideEffect.h"
+#include "Stroika/Foundation/Common/ObjectForSideEffects.h"
 #include "Stroika/Foundation/Containers/Set.h"
 #include "Stroika/Foundation/Cryptography/Digest/Algorithm/MD5.h"
 #include "Stroika/Foundation/Cryptography/Format.h"
@@ -20,9 +20,10 @@
 #include "Stroika/Foundation/IO/Network/HTTP/Headers.h"
 #include "Stroika/Foundation/IO/Network/HTTP/Methods.h"
 #include "Stroika/Foundation/Streams/TextReader.h"
+#include "Stroika/Foundation/Time/Duration.h"
 
 #include "Stroika/Frameworks/WebServer/ConnectionManager.h"
-#include "Stroika/Frameworks/WebServer/FileSystemRouter.h"
+#include "Stroika/Frameworks/WebServer/FileSystemRequestHandler.h"
 #include "Stroika/Frameworks/WebServer/Router.h"
 #include "Stroika/Frameworks/WebService/Server/Basic.h"
 #include "Stroika/Frameworks/WebService/Server/VariantValue.h"
@@ -39,14 +40,18 @@ using namespace Stroika::Foundation::Containers;
 using namespace Stroika::Foundation::Execution;
 using namespace Stroika::Foundation::Memory;
 using namespace Stroika::Foundation::IO::Network;
-using namespace Stroika::Foundation::IO::Network::HTTP;
 
-using Stroika::Foundation::Common::EmptyObjectForConstructorSideEffect;
+using IO::Network::HTTP::ClientErrorException;
+using Stroika::Foundation::Common::EmptyObjectForSideEffects;
+using Stroika::Foundation::Time::Duration;
 
 using namespace Stroika::Frameworks::WebServer;
 using namespace Stroika::Frameworks::WebService;
 using namespace Stroika::Frameworks::WebService::Server;
 using namespace Stroika::Frameworks::WebService::Server::VariantValue;
+
+using Stroika::Frameworks::WebServer::Request;
+using Stroika::Frameworks::WebServer::Response;
 
 using namespace WhyTheFuckIsMyNetworkSoSlow;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp;
@@ -77,6 +82,23 @@ namespace {
     const unsigned int kMaxUsersSupported_{5};         // how many simultaneous users to support?
 }
 
+namespace {
+    FileSystemRequestHandler::Options mkFSOptions_ ()
+    {
+        Sequence<pair<RegularExpression, CacheControl>> kFSCacheControlSettings_
+        {
+#if __cpp_designated_initializers
+            pair<RegularExpression, CacheControl>{RegularExpression{L".*[0-9a-fA-F]+\.(js|css|js\.map)", CompareOptions::eCaseInsensitive}, CacheControl{.fMaxAge = Duration{365 * 24h}.As<double> ()}},
+                pair<RegularExpression, CacheControl>{RegularExpression::kAny, CacheControl{.fMaxAge = Duration{24h}.As<double> ()}},
+#else
+            pair<RegularExpression, CacheControl>{RegularExpression{L".*[0-9a-fA-F]+\.(js|css|js\.map)", CompareOptions::eCaseInsensitive}, CacheControl{nullopt, nullopt, false, nullopt, Duration{365 * 24h}.As<double> ()}},
+                pair<RegularExpression, CacheControl>{RegularExpression::kAny, CacheControl{nullopt, nullopt, false, nullopt, Duration{24h}.As<double> ()}},
+#endif
+        };
+        return FileSystemRequestHandler::Options{nullopt, Sequence<String>{L"index.html"_k}, nullopt, kFSCacheControlSettings_};
+    }
+}
+
 class WebServer::Rep_ {
 public:
     static const WebServiceMethodDescription kAbout_;
@@ -94,15 +116,15 @@ private:
     static const inline String    kServerString_ = L"Why-The-Fuck-Is-My-Network-So-Slow/"sv + AppVersion::kVersion.AsMajorMinorString ();
 
 private:
-    shared_ptr<IWSAPI>                                             fWSAPI_;
-    const Sequence<Route>                                          fWSRoutes_;
-    optional<DeclareActivity<Activity<wstring_view>>>              fEstablishActivity1_{&kContructing_WSAPI_WebServer_};
-    ConnectionManager                                              fWSConnectionMgr_;
-    [[NO_UNIQUE_ADDRESS_ATTR]] EmptyObjectForConstructorSideEffect fIgnore1_{[this] () { fEstablishActivity1_.reset (); }};
-    const Sequence<Route>                                          fGUIWebRoutes_;
-    optional<DeclareActivity<Activity<wstring_view>>>              fEstablishActivity2_{&kContructing_GUI_WebServer_};
-    ConnectionManager                                              fGUIWebConnectionMgr_;
-    [[NO_UNIQUE_ADDRESS_ATTR]] EmptyObjectForConstructorSideEffect fIgnore2_{[this] () { fEstablishActivity2_.reset (); }};
+    shared_ptr<IWSAPI>                                   fWSAPI_;
+    const Sequence<Route>                                fWSRoutes_;
+    optional<DeclareActivity<Activity<wstring_view>>>    fEstablishActivity1_{&kContructing_WSAPI_WebServer_};
+    ConnectionManager                                    fWSConnectionMgr_;
+    [[NO_UNIQUE_ADDRESS_ATTR]] EmptyObjectForSideEffects fIgnore1_{[this] () { fEstablishActivity1_.reset (); }};
+    const Sequence<Route>                                fGUIWebRoutes_;
+    optional<DeclareActivity<Activity<wstring_view>>>    fEstablishActivity2_{&kContructing_GUI_WebServer_};
+    ConnectionManager                                    fGUIWebConnectionMgr_;
+    [[NO_UNIQUE_ADDRESS_ATTR]] EmptyObjectForSideEffects fIgnore2_{[this] () { fEstablishActivity2_.reset (); }};
 
 public:
     Rep_ (const shared_ptr<IWSAPI>& wsImpl)
@@ -127,7 +149,7 @@ public:
                 L"blob/(.+)"_RegEx,
                 [=] (Message* m, const String& id) {
                     tuple<Memory::BLOB, DataExchange::InternetMediaType> b = fWSAPI_->GetBLOB (id);
-                    m->rwResponse ().SetContentType (get<1> (b));
+                    m->rwResponse ().contentType                           = get<1> (b);
                     m->rwResponse ().write (get<0> (b));
                 }},
 
@@ -299,7 +321,7 @@ public:
 #endif
     , fGUIWebRoutes_
     {
-        Route{RegularExpression::kAny, FileSystemRouter{Execution::GetEXEDir () / "html", {}, Sequence<String>{L"index.html"sv}}},
+        Route{RegularExpression::kAny, FileSystemRequestHandler{Execution::GetEXEDir () / "html", mkFSOptions_ ()}},
     }
 #if __cpp_designated_initializers
     , fGUIWebConnectionMgr_
