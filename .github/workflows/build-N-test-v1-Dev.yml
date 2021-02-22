@@ -129,7 +129,9 @@ jobs:
           cat ConfigurationFiles/${{ matrix.config_name }}.xml
       - name: Make ThirdPartyComponents
         # break out this make and clean to reduce disk space usage (running out of space on debug builds)
-        run: make --directory=ThirdPartyComponents all && make --directory=ThirdPartyComponents clean
+        run: |
+          make --directory=ThirdPartyComponents CONFIGURATION=${{ matrix.config_name }} all
+          make --directory=ThirdPartyComponents CONFIGURATION=${{ matrix.config_name }} clean
       - name: Make all
         run: make all
       - name: Archive Build Results
