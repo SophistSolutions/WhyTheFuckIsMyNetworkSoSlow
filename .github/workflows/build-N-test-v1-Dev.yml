@@ -127,6 +127,9 @@ jobs:
         run: |
           cd ThirdPartyComponents/Stroika/StroikaRoot && ./configure ${{ matrix.config_name }} --compiler-driver ${{ matrix.compiler }} ${{ matrix.extra_config_args }} --cppstd-version ${{ matrix.cpp_version }}
           cat ConfigurationFiles/${{ matrix.config_name }}.xml
+      - name: Make ThirdPartyComponents
+        # break out this make and clean to reduce disk space usage (running out of space on debug builds)
+        run: make --directory=ThirdPartyComponents all && make --directory=ThirdPartyComponents clean
       - name: Make all
         run: make all
       - name: Archive Build Results
