@@ -1,3 +1,18 @@
+
+
+
+
+- Debug/Polish CacheControl settings for static website.
+  I think the regexps are wrong and not matching the .js etc files
+  Look carefully at the various names
+  and CacheControl definitions/rules
+
+  and make sure we SET Cache-Control settings appoprirately for 
+  WSAPI (probably some default mechanism).
+  
+
+
+
 + Writeup what I can remember of Johns advice about using / rewriting
   app to use slices/vuex more...
 
