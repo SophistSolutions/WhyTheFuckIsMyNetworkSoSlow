@@ -88,11 +88,11 @@ namespace {
         Sequence<pair<RegularExpression, CacheControl>> kFSCacheControlSettings_
         {
 #if __cpp_designated_initializers
-            pair<RegularExpression, CacheControl>{RegularExpression{L".*[0-9a-fA-F]+\\.(js|css|js\\.map)", CompareOptions::eCaseInsensitive}, CacheControl{.fMaxAge = Duration{365 * 24h}.As<int32_t> ()}},
-                pair<RegularExpression, CacheControl>{RegularExpression::kAny, CacheControl{.fMaxAge = Duration{24h}.As<int32_t> ()}},
+            pair<RegularExpression, CacheControl>{RegularExpression{L".*[0-9a-fA-F]+\\.(js|css|js\\.map)", CompareOptions::eCaseInsensitive}, CacheControl::kImmutable},
+                pair<RegularExpression, CacheControl>{RegularExpression::kAny, CacheControl{.fCacheability = CacheControl::ePublic, .fMaxAge = Duration{24h}.As<int32_t> ()}},
 #else
-            pair<RegularExpression, CacheControl>{RegularExpression{L".*[0-9a-fA-F]+\\.(js|css|js\\.map)", CompareOptions::eCaseInsensitive}, CacheControl{nullopt, nullopt, false, nullopt, Duration{365 * 24h}.As<int32_t> ()}},
-                pair<RegularExpression, CacheControl>{RegularExpression::kAny, CacheControl{nullopt, nullopt, false, nullopt, Duration{24h}.As<int32_t> ()}},
+            pair<RegularExpression, CacheControl>{RegularExpression{L".*[0-9a-fA-F]+\\.(js|css|js\\.map)", CompareOptions::eCaseInsensitive}, CacheControl::kImmutable},
+                pair<RegularExpression, CacheControl>{RegularExpression::kAny, CacheControl{CacheControl::ePublic, Duration{24h}.As<int32_t> ()}},
 #endif
         };
         return FileSystemRequestHandler::Options{nullopt, Sequence<String>{L"index.html"_k}, nullopt, kFSCacheControlSettings_};
