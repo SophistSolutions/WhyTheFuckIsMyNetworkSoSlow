@@ -15,6 +15,7 @@
 #include "Stroika/Foundation/Execution/Activity.h"
 #include "Stroika/Foundation/Execution/Module.h"
 #include "Stroika/Foundation/Execution/Synchronized.h"
+#include "Stroika/Foundation/Execution/VirtualConstant.h"
 #include "Stroika/Foundation/IO/Network/HTTP/ClientErrorException.h"
 #include "Stroika/Foundation/IO/Network/HTTP/Exception.h"
 #include "Stroika/Foundation/IO/Network/HTTP/Headers.h"
@@ -83,8 +84,16 @@ namespace {
 }
 
 namespace {
-    FileSystemRequestHandler::Options mkFSOptions_ ()
-    {
+    const Execution::VirtualConstant<Headers> kDefaultResponseHeaders_{[] () {
+        const String kServerString_ = L"Why-The-Fuck-Is-My-Network-So-Slow/"sv + AppVersion::kVersion.AsMajorMinorString ();
+        Headers      h;
+        h.server = kServerString_;
+        return h;
+    }};
+}
+
+namespace {
+    const Execution::VirtualConstant<FileSystemRequestHandler::Options> kStaticSiteHandlerOptions_{[] () {
         Sequence<pair<RegularExpression, CacheControl>> kFSCacheControlSettings_
         {
 #if __cpp_designated_initializers
@@ -96,7 +105,7 @@ namespace {
 #endif
         };
         return FileSystemRequestHandler::Options{nullopt, Sequence<String>{L"index.html"_k}, nullopt, kFSCacheControlSettings_};
-    }
+    }};
 }
 
 class WebServer::Rep_ {
@@ -113,7 +122,6 @@ private:
     static constexpr unsigned int kMaxWSThreads_{kMaxWSConnectionsPerUser_ + 1}; // one user at a time doing stuff, plus one just in case...
     static constexpr unsigned int kMaxGUIWebServerConcurrentConnections_{kMaxUsersSupported_ * kMaxGUIConnectionssPerUser_};
     static constexpr unsigned int kMaxGUIThreads_{kMaxGUIConnectionssPerUser_ + 1}; // handle the BURST quickly of requests at start, but then no need (just reduces startup latency), plus one just in case...
-    static const inline String    kServerString_ = L"Why-The-Fuck-Is-My-Network-So-Slow/"sv + AppVersion::kVersion.AsMajorMinorString ();
 
 private:
     shared_ptr<IWSAPI>                                   fWSAPI_;
@@ -311,31 +319,31 @@ public:
     {
         SocketAddresses (InternetAddresses_Any (), 8080),
             fWSRoutes_,
-            ConnectionManager::Options { .fMaxConnections = kMaxWSConcurrentConnections_, .fMaxConcurrentlyHandledConnections = kMaxWSThreads_, .fBindFlags = Socket::BindFlags{.fSO_REUSEADDR = true}, .fServerHeader = kServerString_ }
+            ConnectionManager::Options { .fMaxConnections = kMaxWSConcurrentConnections_, .fMaxConcurrentlyHandledConnections = kMaxWSThreads_, .fBindFlags = Socket::BindFlags{.fSO_REUSEADDR = true}, .fDefaultResponseHeaders = kDefaultResponseHeaders_ }
     } // listen and dispatch while this object exists
 #else
     , fWSConnectionMgr_
     {
-        SocketAddresses (InternetAddresses_Any (), 8080), fWSRoutes_, ConnectionManager::Options { kMaxWSConcurrentConnections_, kMaxWSThreads_, Socket::BindFlags{true}, kServerString_ }
+        SocketAddresses (InternetAddresses_Any (), 8080), fWSRoutes_, ConnectionManager::Options { kMaxWSConcurrentConnections_, kMaxWSThreads_, Socket::BindFlags{true}, kDefaultResponseHeaders_ }
     } // listen and dispatch while this object exists
 #endif
     , fGUIWebRoutes_
     {
-        Route{RegularExpression::kAny, FileSystemRequestHandler{Execution::GetEXEDir () / "html", mkFSOptions_ ()}},
+        Route{RegularExpression::kAny, FileSystemRequestHandler{Execution::GetEXEDir () / "html", kStaticSiteHandlerOptions_}},
     }
 #if __cpp_designated_initializers
     , fGUIWebConnectionMgr_
     {
         SocketAddresses (InternetAddresses_Any (), 80),
             fGUIWebRoutes_,
-            ConnectionManager::Options { .fMaxConnections = kMaxGUIWebServerConcurrentConnections_, .fMaxConcurrentlyHandledConnections = kMaxGUIThreads_, .fBindFlags = Socket::BindFlags{.fSO_REUSEADDR = true}, .fServerHeader = kServerString_ }
+            ConnectionManager::Options { .fMaxConnections = kMaxGUIWebServerConcurrentConnections_, .fMaxConcurrentlyHandledConnections = kMaxGUIThreads_, .fBindFlags = Socket::BindFlags{.fSO_REUSEADDR = true}, .fDefaultResponseHeaders = kDefaultResponseHeaders_ }
     }
 #else
     , fGUIWebConnectionMgr_
     {
         SocketAddresses (InternetAddresses_Any (), 80),
             fGUIWebRoutes_,
-            ConnectionManager::Options { kMaxGUIWebServerConcurrentConnections_, kMaxGUIThreads_, Socket::BindFlags{true}, kServerString_ }
+            ConnectionManager::Options { kMaxGUIWebServerConcurrentConnections_, kMaxGUIThreads_, Socket::BindFlags{true}, kDefaultResponseHeaders_ }
     }
 #endif
     {
