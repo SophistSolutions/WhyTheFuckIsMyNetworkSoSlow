@@ -319,12 +319,26 @@ public:
     {
         SocketAddresses (InternetAddresses_Any (), 8080),
             fWSRoutes_,
-            ConnectionManager::Options { .fMaxConnections = kMaxWSConcurrentConnections_, .fMaxConcurrentlyHandledConnections = kMaxWSThreads_, .fBindFlags = Socket::BindFlags{.fSO_REUSEADDR = true}, .fDefaultResponseHeaders = kDefaultResponseHeaders_ }
+            ConnectionManager::Options
+        {
+            .fMaxConnections                    = kMaxWSConcurrentConnections_,
+            .fMaxConcurrentlyHandledConnections = kMaxWSThreads_,
+            .fBindFlags                         = Socket::BindFlags{.fSO_REUSEADDR = true},
+            .fDefaultResponseHeaders            = kDefaultResponseHeaders_
+        }
     } // listen and dispatch while this object exists
 #else
     , fWSConnectionMgr_
     {
-        SocketAddresses (InternetAddresses_Any (), 8080), fWSRoutes_, ConnectionManager::Options { kMaxWSConcurrentConnections_, kMaxWSThreads_, Socket::BindFlags{true}, kDefaultResponseHeaders_ }
+        SocketAddresses (InternetAddresses_Any (), 8080),
+            fWSRoutes_,
+            ConnectionManager::Options
+        {
+            kMaxWSConcurrentConnections_,
+                kMaxWSThreads_,
+                Socket::BindFlags{true},
+                kDefaultResponseHeaders_
+        }
     } // listen and dispatch while this object exists
 #endif
     , fGUIWebRoutes_
