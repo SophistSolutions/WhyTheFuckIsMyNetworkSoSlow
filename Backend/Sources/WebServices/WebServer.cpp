@@ -84,10 +84,18 @@ namespace {
 }
 
 namespace {
-    const Execution::VirtualConstant<Headers> kDefaultResponseHeaders_{[] () {
+    const Execution::VirtualConstant<Headers> kDefaultResponseHeadersStaticSite_{[] () {
         const String kServerString_ = L"Why-The-Fuck-Is-My-Network-So-Slow/"sv + AppVersion::kVersion.AsMajorMinorString ();
         Headers      h;
-        h.server = kServerString_;
+        h.server       = kServerString_;
+        h.cacheControl = HTTP::CacheControl::kMustRevalidatePublic;
+        return h;
+    }};
+    const Execution::VirtualConstant<Headers> kDefaultResponseHeadersWSSite_{[] () {
+        const String kServerString_ = L"Why-The-Fuck-Is-My-Network-So-Slow/"sv + AppVersion::kVersion.AsMajorMinorString ();
+        Headers      h;
+        h.server       = kServerString_;
+        h.cacheControl = HTTP::CacheControl::kMustRevalidatePrivate;
         return h;
     }};
 }
@@ -324,7 +332,7 @@ public:
             .fMaxConnections                    = kMaxWSConcurrentConnections_,
             .fMaxConcurrentlyHandledConnections = kMaxWSThreads_,
             .fBindFlags                         = Socket::BindFlags{.fSO_REUSEADDR = true},
-            .fDefaultResponseHeaders            = kDefaultResponseHeaders_
+            .fDefaultResponseHeaders            = kDefaultResponseHeadersWSSite_
         }
     } // listen and dispatch while this object exists
 #else
@@ -337,7 +345,7 @@ public:
             kMaxWSConcurrentConnections_,
                 kMaxWSThreads_,
                 Socket::BindFlags{true},
-                kDefaultResponseHeaders_
+                kDefaultResponseHeadersWSSite_
         }
     } // listen and dispatch while this object exists
 #endif
@@ -350,14 +358,14 @@ public:
     {
         SocketAddresses (InternetAddresses_Any (), 80),
             fGUIWebRoutes_,
-            ConnectionManager::Options { .fMaxConnections = kMaxGUIWebServerConcurrentConnections_, .fMaxConcurrentlyHandledConnections = kMaxGUIThreads_, .fBindFlags = Socket::BindFlags{.fSO_REUSEADDR = true}, .fDefaultResponseHeaders = kDefaultResponseHeaders_ }
+            ConnectionManager::Options { .fMaxConnections = kMaxGUIWebServerConcurrentConnections_, .fMaxConcurrentlyHandledConnections = kMaxGUIThreads_, .fBindFlags = Socket::BindFlags{.fSO_REUSEADDR = true}, .fDefaultResponseHeaders = kDefaultResponseHeadersStaticSite_ }
     }
 #else
     , fGUIWebConnectionMgr_
     {
         SocketAddresses (InternetAddresses_Any (), 80),
             fGUIWebRoutes_,
-            ConnectionManager::Options { kMaxGUIWebServerConcurrentConnections_, kMaxGUIThreads_, Socket::BindFlags{true}, kDefaultResponseHeaders_ }
+            ConnectionManager::Options { kMaxGUIWebServerConcurrentConnections_, kMaxGUIThreads_, Socket::BindFlags{true}, kDefaultResponseHeadersStaticSite_ }
     }
 #endif
     {
