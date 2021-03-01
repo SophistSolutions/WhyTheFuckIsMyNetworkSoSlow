@@ -254,7 +254,7 @@ namespace {
                     nw.fDebugProps.Add (L"test"sv,
                                         VariantValue{
                                             Mapping<String, VariantValue>{
-                                                pair<String, VariantValue>{L"constructedAt"sv, Time::DateTime::Now ()}}});
+                                                pair<String, VariantValue>{L"updatedAt"sv, Time::DateTime::Now ()}}});
 #endif
 
                     accumResults += nw;
