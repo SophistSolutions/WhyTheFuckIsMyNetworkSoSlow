@@ -375,7 +375,7 @@ Time::Duration WSImpl::Operation_DNS_CalculateNegativeLookupTime (optional<unsig
         Execution::Throw (ClientErrorException{L"samples must be > 0"sv});
     }
     uniform_int_distribution<mt19937::result_type> allUInt16Distribution{0, numeric_limits<uint32_t>::max ()};
-    static mt19937                                 sRng_{std::random_device () ()};
+    static mt19937                                 sRng_{std::random_device{}()};
     Sequence<Time::DurationSecondsType>            measurements;
     for (unsigned int i = 0; i < useSamples; ++i) {
         String                    randomAddress = Characters::Format (L"www.xxxabc%d.com", allUInt16Distribution (sRng_));
