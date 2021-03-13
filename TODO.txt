@@ -1,3 +1,10 @@
+ http://hercules.local:8080/about  MAYBE also add ‘uptime’
+ to the /about information – or add separate /about/system-details api, 
+ to fetch stuff like RAM usage,  and perhaps more, including uptime, 
+ load average? Maybe instead of /about/details /about?include-system-performance?
+   - unsure which would be better
+
+---- 
 
 
 
