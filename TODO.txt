@@ -4,6 +4,13 @@
  load average? Maybe instead of /about/details /about?include-system-performance?
    - unsure which would be better
 
+
+In about page, include 
+	CREDITS, and there point to Stroika version, and 
+	versions of other important libraries used? (not sure which yet?)
+	eventually sqlite? libcurl, openssl. zlib?
+
+
 ---- 
 
 
@@ -42,6 +49,9 @@
 
 ---
 DEBUG WHY SO SLOW:
+
+	>>> TRY THIS FIRST - time curl http://192.168.244.187 -v - this is 90ms
+	I THINK ISSUE IS DNS
 
 time curl http://hercules.local -v
 	1.6 seconds (of course thats debug build but test release build too!)
