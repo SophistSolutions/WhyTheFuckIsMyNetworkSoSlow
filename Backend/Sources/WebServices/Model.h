@@ -345,9 +345,16 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
     }
 
     struct About {
-        Configuration::Version                  fOverallApplicationVersion;
-        Mapping<String, Configuration::Version> fComponentVersions;
-        OperatingSystem                         fOperatingSystem;
+        Configuration::Version fOverallApplicationVersion;
+        struct ComponentInfo {
+            String        fName;
+            String        fVersion;
+            optional<URI> fURL;
+
+            nonvirtual String ToString () const;
+        };
+        Sequence<ComponentInfo> fComponentVersions;
+        OperatingSystem         fOperatingSystem;
 
         nonvirtual String ToString () const;
 

@@ -8,7 +8,7 @@
 In about page, include 
 	CREDITS, and there point to Stroika version, and 
 	versions of other important libraries used? (not sure which yet?)
-	eventually sqlite? libcurl, openssl. zlib?
+	eventually sqlite? libcurl zlib?
 
 
 ---- 

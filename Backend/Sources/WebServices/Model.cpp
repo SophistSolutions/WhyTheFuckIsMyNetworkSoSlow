@@ -501,6 +501,17 @@ const ObjectVariantMapper Operations::kMapper = [] () {
  ********************************* Model::About *********************************
  ********************************************************************************
  */
+String About::ComponentInfo::ToString () const
+{
+    Characters::StringBuilder sb;
+    sb += L"{";
+    sb += L"Name: " + Characters::ToString (fName) + L", ";
+    sb += L"Version: " + Characters::ToString (fVersion) + L", ";
+    sb += L"URL: " + Characters::ToString (fURL) + L", ";
+    sb += L"}";
+    return sb.str ();
+}
+
 String About::ToString () const
 {
     Characters::StringBuilder sb;
@@ -519,10 +530,15 @@ const ObjectVariantMapper About::kMapper = [] () {
 
     DISABLE_COMPILER_MSC_WARNING_START (4573);
     DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
+    mapper.AddClass<About::ComponentInfo> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+        {L"name", Stroika_Foundation_DataExchange_StructFieldMetaInfo (About::ComponentInfo, fName)},
+        {L"version", Stroika_Foundation_DataExchange_StructFieldMetaInfo (About::ComponentInfo, fVersion)},
+        {L"URL", Stroika_Foundation_DataExchange_StructFieldMetaInfo (About::ComponentInfo, fURL), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+    });
     mapper.Add<Configuration::Version> (
         [] ([[maybe_unused]] const ObjectVariantMapper& mapper, const Configuration::Version* obj) -> VariantValue { return obj->AsPrettyVersionString (); },
         [] ([[maybe_unused]] const ObjectVariantMapper& mapper, const VariantValue& d, Configuration::Version* intoObj) -> void { *intoObj = Configuration::Version::FromPrettyVersionString (d.As<String> ()); });
-    mapper.AddCommonType<Mapping<String, Configuration::Version>> ();
+    mapper.AddCommonType<Sequence<About::ComponentInfo>> ();
     mapper.AddClass<About> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
         {L"applicationVersion", Stroika_Foundation_DataExchange_StructFieldMetaInfo (About, fOverallApplicationVersion)},
         {L"componentVersions", Stroika_Foundation_DataExchange_StructFieldMetaInfo (About, fComponentVersions)},

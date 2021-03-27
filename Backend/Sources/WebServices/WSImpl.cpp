@@ -3,6 +3,20 @@
  */
 #include "Stroika/Frameworks/StroikaPreComp.h"
 
+#if qHasFeature_boost
+#include <boost/version.hpp>
+#endif
+#if qHasFeature_LibCurl
+// For CURLCode define
+#include <curl/curl.h>
+#endif
+#if qHasFeature_sqlite
+#include <sqlite/sqlite3.h>
+#endif
+#if qHasFeature_OpenSSL
+#include <openssl/opensslv.h>
+#endif
+
 #include "Stroika/Foundation/Characters/StringBuilder.h"
 #include "Stroika/Foundation/Characters/ToString.h"
 #include "Stroika/Foundation/Configuration/SystemConfiguration.h"
@@ -37,6 +51,7 @@ using namespace Stroika::Foundation::Characters;
 using namespace Stroika::Foundation::Containers;
 using namespace Stroika::Foundation::Execution;
 
+using IO::Network::URI;
 using Stroika::Foundation::Common::GUID;
 using Stroika::Foundation::IO::Network::HTTP::ClientErrorException;
 
@@ -53,7 +68,25 @@ About WSImpl::GetAbout () const
 {
     static const About kAbout_{
         AppVersion::kVersion,
-        Mapping<String, Configuration::Version>{{KeyValuePair<String, Configuration::Version>{L"Stroika"sv, Configuration::Version{kStroika_Version_FullVersion}}}},
+        initializer_list<About::ComponentInfo>{
+            About::ComponentInfo{L"Stroika"sv, Configuration::Version{kStroika_Version_FullVersion}.AsPrettyVersionString (), URI{"https://github.com/SophistSolutions/Stroika"}}
+#if qHasFeature_OpenSSL
+            ,
+            About::ComponentInfo{L"OpenSSL"sv, String::FromASCII (OPENSSL_VERSION_TEXT), URI{"https://www.openssl.org/"}}
+#endif
+#if qHasFeature_LibCurl
+            ,
+            About::ComponentInfo{L"libcurl"sv, String::FromASCII (LIBCURL_VERSION)}
+#endif
+#if qHasFeature_boost && 0 /*NOT USING BOOST AS FAR AS I KNOW*/
+            ,
+            About::ComponentInfo{L"boost"sv, String::FromASCII (BOOST_LIB_VERSION)}
+#endif
+#if qHasFeature_sqlite && 0 /*NOT USING SQLITE YET - BUT EXPECT TO SOON */
+            ,
+            About::ComponentInfo{L"sqlite"sv, String::FromASCII (SQLITE_VERSION)}
+#endif
+        },
         OperatingSystem{Configuration::GetSystemConfiguration_ActualOperatingSystem ().fPrettyNameWithVersionDetails}};
     return kAbout_;
 }
