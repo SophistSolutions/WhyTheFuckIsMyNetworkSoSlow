@@ -39,6 +39,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
     using IO::Network::InternetAddress;
     using IO::Network::URI;
     using Stroika::Foundation::Common::GUID;
+    using Time::Duration;
 
     /**
      */
@@ -330,15 +331,15 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
         struct TraceRouteResults {
             struct Hop {
-                Time::Duration fTime;    // time to that hop
-                String         fAddress; // address of hop - can be InternetAddress or DNS address depending
+                Duration fTime;    // time to that hop
+                String   fAddress; // address of hop - can be InternetAddress or DNS address depending
             };
             Sequence<Hop> fHops;
         };
 
         struct DNSLookupResults {
             optional<String> fResult;     // just print first result - maybe missing if error occured on lookup
-            Time::Duration   fLookupTime; // often misleadingly quick due to caching
+            Duration         fLookupTime; // often misleadingly quick due to caching
         };
 
         extern const DataExchange::ObjectVariantMapper kMapper;
@@ -346,15 +347,42 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
     struct About {
         Configuration::Version fOverallApplicationVersion;
-        struct ComponentInfo {
-            String        fName;
-            String        fVersion;
-            optional<URI> fURL;
+
+        struct APIServerInfo {
+
+            Configuration::Version fVersion;
+            struct ComponentInfo {
+                String        fName;
+                String        fVersion;
+                optional<URI> fURL;
+
+                nonvirtual String ToString () const;
+            };
+            Sequence<ComponentInfo> fComponentVersions;
+
+            struct CurrentMachine {
+                OperatingSystem    fOperatingSystem;
+                optional<Duration> fMachineUptime;
+                optional<double>   fTotalCPUUsage{};
+                optional<double>   fRunQLength{};
+
+                nonvirtual String ToString () const;
+            };
+            CurrentMachine fCurrentMachine;
+
+            struct CurrentProcess {
+                optional<Duration> fProcessUptime;
+                optional<double>   fAverageCPUTimeUsed;
+                optional<uint64_t> fWorkingOrResidentSetSize;
+                optional<double>   fCombinedIOWriteRate;
+
+                nonvirtual String ToString () const;
+            };
+            CurrentProcess fCurrentProcess;
 
             nonvirtual String ToString () const;
         };
-        Sequence<ComponentInfo> fComponentVersions;
-        OperatingSystem         fOperatingSystem;
+        APIServerInfo fAPIServerInfo;
 
         nonvirtual String ToString () const;
 

@@ -1,14 +1,30 @@
+--- ADD STROIKA DOCS OF SIMPLE EXAMPLE USING PROCES STUFF IM USING now 
+--- DID new About strucutre - wtiht cpu and process info
+    BUT @todo updating HTML GUI to display
+	--- AND getting C++ to show the stuff immediately, not just after 30seconds. (Add doesnt update
+	but CTOR based add does - cleanup)
+
+
+
  http://hercules.local:8080/about  MAYBE also add ‘uptime’
  to the /about information – or add separate /about/system-details api, 
  to fetch stuff like RAM usage,  and perhaps more, including uptime, 
  load average? Maybe instead of /about/details /about?include-system-performance?
    - unsure which would be better
 
+api-server {
+	operating-system: ...;
+	current-process: {
+		machine-uptime;
+		process-uptime;
+		RAM usage;
+		load-average;
+		this-process-CPU-Usage;
+	}
+}
 
 In about page, include 
-	CREDITS, and there point to Stroika version, and 
-	versions of other important libraries used? (not sure which yet?)
-	eventually sqlite? libcurl zlib?
+	CREDITS - do simple UI for diplsaying compoentns
 
 
 ---- 

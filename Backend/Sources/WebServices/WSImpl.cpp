@@ -22,14 +22,22 @@
 #include "Stroika/Foundation/Configuration/SystemConfiguration.h"
 #include "Stroika/Foundation/Containers/Set.h"
 #include "Stroika/Foundation/Debug/TimingTrace.h"
+#include "Stroika/Foundation/Execution/Process.h"
 #include "Stroika/Foundation/Execution/Synchronized.h"
 #include "Stroika/Foundation/IO/Network/DNS.h"
 #include "Stroika/Foundation/IO/Network/HTTP/ClientErrorException.h"
 #include "Stroika/Foundation/IO/Network/Interface.h"
 #include "Stroika/Foundation/IO/Network/LinkMonitor.h"
+#include "Stroika/Foundation/Time/DateTime.h"
 
 #include "Stroika/Frameworks/NetworkMonitor/Ping.h"
 #include "Stroika/Frameworks/NetworkMonitor/Traceroute.h"
+
+#include "Stroika/Frameworks/SystemPerformance/Capturer.h"
+#include "Stroika/Frameworks/SystemPerformance/Instruments/CPU.h"
+#include "Stroika/Frameworks/SystemPerformance/Instruments/Memory.h"
+#include "Stroika/Frameworks/SystemPerformance/Instruments/Process.h"
+#include "Stroika/Frameworks/SystemPerformance/Measurement.h"
 
 #include "Stroika-Current-Version.h"
 
@@ -50,6 +58,9 @@ using namespace Stroika::Foundation;
 using namespace Stroika::Foundation::Characters;
 using namespace Stroika::Foundation::Containers;
 using namespace Stroika::Foundation::Execution;
+using namespace Stroika::Foundation::Time;
+
+using namespace Stroika::Frameworks::SystemPerformance;
 
 using IO::Network::URI;
 using Stroika::Foundation::Common::GUID;
@@ -59,6 +70,57 @@ using namespace WhyTheFuckIsMyNetworkSoSlow;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices;
 
+namespace {
+
+#if __cpp_designated_initializers < 201707L
+    Instruments::Process::Options mkProcessInstrumentOptions_ ()
+    {
+        auto o                      = Instruments::Process::Options{};
+        o.fRestrictToPIDs           = Set<pid_t>{Execution::GetCurrentProcessID ()};
+        o.fMinimumAveragingInterval = 60;
+        return o;
+    }
+#endif
+
+    struct MyCapturer_ : Capturer {
+    public:
+        Instrument fCPUInstrument;
+        Instrument fProcessInstrument;
+
+        MyCapturer_ ()
+            : fCPUInstrument
+        {
+            Instruments::CPU::GetInstrument ()
+        }
+#if __cpp_designated_initializers >= 201707L
+        , fProcessInstrument
+        {
+            Instruments::Process::GetInstrument (Instruments::Process::Options{
+                .fMinimumAveragingInterval = 60,
+                .fRestrictToPIDs           = Set<pid_t>{Execution::GetCurrentProcessID ()},
+            })
+        }
+#else
+        , fProcessInstrument
+        {
+            mkProcessInstrumentOptions_ ()
+        }
+#endif
+        {
+            AddCaptureSet (CaptureSet{30s, {fCPUInstrument, fProcessInstrument}});
+        }
+    };
+
+    // @todo STROIKA -  and add this to EXAMPLE text for that class!!!
+    //
+    // GetInstrument () with options rstricing to current process id
+    Synchronized<MyCapturer_>& GetCapturer_ ()
+    {
+        static Synchronized<MyCapturer_> sCapturer_;
+        return sCapturer_;
+    }
+}
+
 /*
  ********************************************************************************
  ************************************* WSImpl ***********************************
@@ -66,29 +128,65 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices;
  */
 About WSImpl::GetAbout () const
 {
-    static const About kAbout_{
-        AppVersion::kVersion,
-        initializer_list<About::ComponentInfo>{
-            About::ComponentInfo{L"Stroika"sv, Configuration::Version{kStroika_Version_FullVersion}.AsPrettyVersionString (), URI{"https://github.com/SophistSolutions/Stroika"}}
+    using APIServerInfo  = About::APIServerInfo;
+    using ComponentInfo  = APIServerInfo::ComponentInfo;
+    using CurrentMachine = APIServerInfo::CurrentMachine;
+    using CurrentProcess = APIServerInfo::CurrentProcess;
+    static const Sequence<ComponentInfo> kAPIServerComponents_{initializer_list<ComponentInfo>{
+        ComponentInfo{L"Stroika"sv, Configuration::Version{kStroika_Version_FullVersion}.AsPrettyVersionString (), URI{"https://github.com/SophistSolutions/Stroika"}}
 #if qHasFeature_OpenSSL
-            ,
-            About::ComponentInfo{L"OpenSSL"sv, String::FromASCII (OPENSSL_VERSION_TEXT), URI{"https://www.openssl.org/"}}
+        ,
+        ComponentInfo{L"OpenSSL"sv, String::FromASCII (OPENSSL_VERSION_TEXT), URI{"https://www.openssl.org/"}}
 #endif
 #if qHasFeature_LibCurl
-            ,
-            About::ComponentInfo{L"libcurl"sv, String::FromASCII (LIBCURL_VERSION)}
+        ,
+        ComponentInfo{L"libcurl"sv, String::FromASCII (LIBCURL_VERSION), URL{"https://curl.se/"}}
 #endif
 #if qHasFeature_boost && 0 /*NOT USING BOOST AS FAR AS I KNOW*/
-            ,
-            About::ComponentInfo{L"boost"sv, String::FromASCII (BOOST_LIB_VERSION)}
+        ,
+        ComponentInfo{L"boost"sv, String::FromASCII (BOOST_LIB_VERSION)}
 #endif
 #if qHasFeature_sqlite && 0 /*NOT USING SQLITE YET - BUT EXPECT TO SOON */
-            ,
-            About::ComponentInfo{L"sqlite"sv, String::FromASCII (SQLITE_VERSION)}
+        ,
+        ComponentInfo{L"sqlite"sv, String::FromASCII (SQLITE_VERSION)}
 #endif
-        },
-        OperatingSystem{Configuration::GetSystemConfiguration_ActualOperatingSystem ().fPrettyNameWithVersionDetails}};
-    return kAbout_;
+    }};
+    auto              now = DateTime::Now ();
+    CurrentMachine    machineInfo;
+    static const auto kOS_       = OperatingSystem{Configuration::GetSystemConfiguration_ActualOperatingSystem ().fPrettyNameWithVersionDetails};
+    machineInfo.fOperatingSystem = kOS_;
+    if (auto o = Configuration::GetSystemConfiguration_BootInformation ().fBootedAt) {
+        machineInfo.fMachineUptime = now - *o;
+    }
+
+    CurrentProcess processInfo;
+
+    {
+        auto& capturer     = GetCapturer_ ();
+        auto  measurements = capturer.rwget ()->GetMostRecentMeasurements ();
+        if (auto om = capturer.rwget ()->fCPUInstrument.MeasurementAs<Instruments::CPU::Info> (measurements)) {
+            machineInfo.fRunQLength    = om->fRunQLength;
+            machineInfo.fTotalCPUUsage = om->fTotalCPUUsage;
+        }
+        if (auto om = capturer.rwget ()->fProcessInstrument.MeasurementAs<Instruments::Process::Info> (measurements)) {
+            Assert (om->GetLength () == 1);
+            Instruments::Process::ProcessType thisProcess = (*om)[Execution::GetCurrentProcessID ()];
+            if (auto o = thisProcess.fProcessStartedAt) {
+                processInfo.fProcessUptime = now - *o;
+            }
+            processInfo.fAverageCPUTimeUsed       = thisProcess.fAverageCPUTimeUsed;
+            processInfo.fWorkingOrResidentSetSize = Memory::NullCoalesce (thisProcess.fWorkingSetSize, thisProcess.fResidentMemorySize);
+            processInfo.fCombinedIOWriteRate      = thisProcess.fCombinedIOWriteRate;
+        }
+    }
+
+    return About{
+        AppVersion::kVersion,
+        APIServerInfo{
+            AppVersion::kVersion,
+            kAPIServerComponents_,
+            machineInfo,
+            processInfo}};
 }
 
 tuple<Memory::BLOB, DataExchange::InternetMediaType> WSImpl::GetBLOB (const GUID& guid) const

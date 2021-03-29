@@ -501,7 +501,7 @@ const ObjectVariantMapper Operations::kMapper = [] () {
  ********************************* Model::About *********************************
  ********************************************************************************
  */
-String About::ComponentInfo::ToString () const
+String About::APIServerInfo::ComponentInfo::ToString () const
 {
     Characters::StringBuilder sb;
     sb += L"{";
@@ -512,13 +512,48 @@ String About::ComponentInfo::ToString () const
     return sb.str ();
 }
 
+String About::APIServerInfo::CurrentMachine::ToString () const
+{
+    Characters::StringBuilder sb;
+    sb += L"{";
+    sb += L"Operating-System: " + Characters::ToString (fOperatingSystem) + L", ";
+    sb += L"Machine-Uptime: " + Characters::ToString (fMachineUptime) + L", ";
+    sb += L"Total-CPU-Usage: " + Characters::ToString (fTotalCPUUsage) + L", ";
+    sb += L"Run-Q-Length: " + Characters::ToString (fRunQLength) + L", ";
+    sb += L"}";
+    return sb.str ();
+}
+
+String About::APIServerInfo::CurrentProcess::ToString () const
+{
+    Characters::StringBuilder sb;
+    sb += L"{";
+    sb += L"fProcessUptime: " + Characters::ToString (fProcessUptime) + L", ";
+    sb += L"fAverageCPUTimeUsed: " + Characters::ToString (fAverageCPUTimeUsed) + L", ";
+    sb += L"fWorkingOrResidentSetSize: " + Characters::ToString (fWorkingOrResidentSetSize) + L", ";
+    sb += L"fCombinedIOWriteRate: " + Characters::ToString (fCombinedIOWriteRate) + L", ";
+    sb += L"}";
+    return sb.str ();
+}
+
+String About::APIServerInfo::ToString () const
+{
+    Characters::StringBuilder sb;
+    sb += L"{";
+    sb += L"Version: " + Characters::ToString (fVersion) + L", ";
+    sb += L"Component-Versions: " + Characters::ToString (fComponentVersions) + L", ";
+    sb += L"Current-Machine: " + Characters::ToString (fCurrentMachine) + L", ";
+    sb += L"Current-Process: " + Characters::ToString (fCurrentProcess) + L", ";
+    sb += L"}";
+    return sb.str ();
+}
+
 String About::ToString () const
 {
     Characters::StringBuilder sb;
     sb += L"{";
     sb += L"Overall-Application-Version: " + Characters::ToString (fOverallApplicationVersion) + L", ";
-    sb += L"Component-Versions: " + Characters::ToString (fComponentVersions) + L", ";
-    sb += L"Operating-System: " + Characters::ToString (fOperatingSystem) + L", ";
+    sb += L"API-Server-Info: " + Characters::ToString (fAPIServerInfo) + L", ";
     sb += L"}";
     return sb.str ();
 }
@@ -528,21 +563,45 @@ const ObjectVariantMapper About::kMapper = [] () {
 
     mapper += OperatingSystem::kMapper;
 
+    mapper.AddCommonType<optional<double>> ();
+
     DISABLE_COMPILER_MSC_WARNING_START (4573);
     DISABLE_COMPILER_GCC_WARNING_START ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
-    mapper.AddClass<About::ComponentInfo> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-        {L"name", Stroika_Foundation_DataExchange_StructFieldMetaInfo (About::ComponentInfo, fName)},
-        {L"version", Stroika_Foundation_DataExchange_StructFieldMetaInfo (About::ComponentInfo, fVersion)},
-        {L"URL", Stroika_Foundation_DataExchange_StructFieldMetaInfo (About::ComponentInfo, fURL), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-    });
     mapper.Add<Configuration::Version> (
         [] ([[maybe_unused]] const ObjectVariantMapper& mapper, const Configuration::Version* obj) -> VariantValue { return obj->AsPrettyVersionString (); },
         [] ([[maybe_unused]] const ObjectVariantMapper& mapper, const VariantValue& d, Configuration::Version* intoObj) -> void { *intoObj = Configuration::Version::FromPrettyVersionString (d.As<String> ()); });
-    mapper.AddCommonType<Sequence<About::ComponentInfo>> ();
+
+    mapper.AddClass<About::APIServerInfo::ComponentInfo> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+        {L"name", Stroika_Foundation_DataExchange_StructFieldMetaInfo (About::APIServerInfo::ComponentInfo, fName)},
+        {L"version", Stroika_Foundation_DataExchange_StructFieldMetaInfo (About::APIServerInfo::ComponentInfo, fVersion)},
+        {L"URL", Stroika_Foundation_DataExchange_StructFieldMetaInfo (About::APIServerInfo::ComponentInfo, fURL), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+    });
+    mapper.AddCommonType<Sequence<About::APIServerInfo::ComponentInfo>> ();
+
+    mapper.AddClass<About::APIServerInfo::CurrentMachine> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+        {L"operatingSystem", Stroika_Foundation_DataExchange_StructFieldMetaInfo (About::APIServerInfo::CurrentMachine, fOperatingSystem)},
+        {L"machineUptime", Stroika_Foundation_DataExchange_StructFieldMetaInfo (About::APIServerInfo::CurrentMachine, fMachineUptime), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"totalCPUUsage", Stroika_Foundation_DataExchange_StructFieldMetaInfo (About::APIServerInfo::CurrentMachine, fTotalCPUUsage), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"runQLength", Stroika_Foundation_DataExchange_StructFieldMetaInfo (About::APIServerInfo::CurrentMachine, fRunQLength), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+    });
+
+    mapper.AddClass<About::APIServerInfo::CurrentProcess> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+        {L"processUptime", Stroika_Foundation_DataExchange_StructFieldMetaInfo (About::APIServerInfo::CurrentProcess, fProcessUptime), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"averageCPUTimeUsed", Stroika_Foundation_DataExchange_StructFieldMetaInfo (About::APIServerInfo::CurrentProcess, fAverageCPUTimeUsed), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"workingOrResidentSetSize", Stroika_Foundation_DataExchange_StructFieldMetaInfo (About::APIServerInfo::CurrentProcess, fWorkingOrResidentSetSize), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"combinedIOWriteRate", Stroika_Foundation_DataExchange_StructFieldMetaInfo (About::APIServerInfo::CurrentProcess, fCombinedIOWriteRate), ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+    });
+
+    mapper.AddClass<About::APIServerInfo> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+        {L"version", Stroika_Foundation_DataExchange_StructFieldMetaInfo (About::APIServerInfo, fVersion)},
+        {L"componentVersions", Stroika_Foundation_DataExchange_StructFieldMetaInfo (About::APIServerInfo, fComponentVersions)},
+        {L"currentMachine", Stroika_Foundation_DataExchange_StructFieldMetaInfo (About::APIServerInfo, fCurrentMachine)},
+        {L"currentProcess", Stroika_Foundation_DataExchange_StructFieldMetaInfo (About::APIServerInfo, fCurrentProcess)},
+    });
+
     mapper.AddClass<About> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
         {L"applicationVersion", Stroika_Foundation_DataExchange_StructFieldMetaInfo (About, fOverallApplicationVersion)},
-        {L"componentVersions", Stroika_Foundation_DataExchange_StructFieldMetaInfo (About, fComponentVersions)},
-        {L"operatingSystem", Stroika_Foundation_DataExchange_StructFieldMetaInfo (About, fOperatingSystem)},
+        {L"serverInfo", Stroika_Foundation_DataExchange_StructFieldMetaInfo (About, fAPIServerInfo)},
     });
     DISABLE_COMPILER_GCC_WARNING_END ("GCC diagnostic ignored \"-Winvalid-offsetof\"");
     DISABLE_COMPILER_MSC_WARNING_END (4573);
