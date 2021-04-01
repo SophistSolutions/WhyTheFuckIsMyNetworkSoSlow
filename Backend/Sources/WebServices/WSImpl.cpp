@@ -151,34 +151,38 @@ About WSImpl::GetAbout () const
         ComponentInfo{L"sqlite"sv, String::FromASCII (SQLITE_VERSION)}
 #endif
     }};
-    auto              now = DateTime::Now ();
-    CurrentMachine    machineInfo;
-    static const auto kOS_       = OperatingSystem{Configuration::GetSystemConfiguration_ActualOperatingSystem ().fPrettyNameWithVersionDetails};
-    machineInfo.fOperatingSystem = kOS_;
-    if (auto o = Configuration::GetSystemConfiguration_BootInformation ().fBootedAt) {
-        machineInfo.fMachineUptime = now - *o;
-    }
+    auto  now          = DateTime::Now ();
+    auto& capturer     = GetCapturer_ ();
+    auto  measurements = capturer.cget ()->GetMostRecentMeasurements (); // capture results on a regular cadence with MyCapturer, and just report the latest stats
 
-    CurrentProcess processInfo;
-
-    {
-        auto& capturer     = GetCapturer_ ();
-        auto  measurements = capturer.rwget ()->GetMostRecentMeasurements ();
-        if (auto om = capturer.rwget ()->fCPUInstrument.MeasurementAs<Instruments::CPU::Info> (measurements)) {
-            machineInfo.fRunQLength    = om->fRunQLength;
-            machineInfo.fTotalCPUUsage = om->fTotalCPUUsage;
+    CurrentMachine machineInfo = [now, &capturer, &measurements] () {
+        CurrentMachine    result;
+        static const auto kOS_  = OperatingSystem{Configuration::GetSystemConfiguration_ActualOperatingSystem ().fPrettyNameWithVersionDetails};
+        result.fOperatingSystem = kOS_;
+        if (auto o = Configuration::GetSystemConfiguration_BootInformation ().fBootedAt) {
+            result.fMachineUptime = now - *o;
         }
-        if (auto om = capturer.rwget ()->fProcessInstrument.MeasurementAs<Instruments::Process::Info> (measurements)) {
+        if (auto om = capturer.cget ()->fCPUInstrument.MeasurementAs<Instruments::CPU::Info> (measurements)) {
+            result.fRunQLength    = om->fRunQLength;
+            result.fTotalCPUUsage = om->fTotalCPUUsage;
+        }
+        return result;
+    }();
+
+    CurrentProcess processInfo = [now, &capturer, &measurements] () {
+        CurrentProcess result;
+        if (auto om = capturer.cget ()->fProcessInstrument.MeasurementAs<Instruments::Process::Info> (measurements)) {
             Assert (om->GetLength () == 1);
             Instruments::Process::ProcessType thisProcess = (*om)[Execution::GetCurrentProcessID ()];
             if (auto o = thisProcess.fProcessStartedAt) {
-                processInfo.fProcessUptime = now - *o;
+                result.fProcessUptime = now - *o;
             }
-            processInfo.fAverageCPUTimeUsed       = thisProcess.fAverageCPUTimeUsed;
-            processInfo.fWorkingOrResidentSetSize = Memory::NullCoalesce (thisProcess.fWorkingSetSize, thisProcess.fResidentMemorySize);
-            processInfo.fCombinedIOWriteRate      = thisProcess.fCombinedIOWriteRate;
+            result.fAverageCPUTimeUsed       = thisProcess.fAverageCPUTimeUsed;
+            result.fWorkingOrResidentSetSize = Memory::NullCoalesce (thisProcess.fWorkingSetSize, thisProcess.fResidentMemorySize);
+            result.fCombinedIOWriteRate      = thisProcess.fCombinedIOWriteRate;
         }
-    }
+        return result;
+    }();
 
     return About{
         AppVersion::kVersion,
