@@ -1,8 +1,7 @@
---- ADD STROIKA DOCS OF SIMPLE EXAMPLE USING PROCES STUFF IM USING now 
---- DID new About strucutre - wtiht cpu and process info
     BUT @todo updating HTML GUI to display
 	--- AND getting C++ to show the stuff immediately, not just after 30seconds. (Add doesnt update
 	but CTOR based add does - cleanup)
+	Maybe fix AddCaptureSet() to FORCE a single quick capture, not waiting duration seconds...
 
 
 
@@ -26,6 +25,10 @@ api-server {
 In about page, include 
 	CREDITS - do simple UI for diplsaying compoentns
 
+---
+maybe next is do PRIMITVE DB support - just writing out network and device ids, and basic info, so we can 
+report on devices no longer found.; Maaybe add DELETE API, so you can DELETE a Network, or other REST object
+(and if they are discovered they will come back) - but wil ldelete the stored/DB parts.
 
 ---- 
 

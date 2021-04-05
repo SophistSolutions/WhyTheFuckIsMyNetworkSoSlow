@@ -75,50 +75,28 @@ namespace {
 #if __cpp_designated_initializers < 201707L
     Instruments::Process::Options mkProcessInstrumentOptions_ ()
     {
-        auto o                      = Instruments::Process::Options{};
-        o.fRestrictToPIDs           = Set<pid_t>{Execution::GetCurrentProcessID ()};
-        o.fMinimumAveragingInterval = 60;
+        auto o            = Instruments::Process::Options{};
+        o.fRestrictToPIDs = Set<pid_t>{Execution::GetCurrentProcessID ()};
         return o;
     }
 #endif
 
     struct MyCapturer_ : Capturer {
     public:
-        Instrument fCPUInstrument;
-        Instrument fProcessInstrument;
-
-        MyCapturer_ ()
-            : fCPUInstrument
+        Instrument fCPUInstrument{Instruments::CPU::GetInstrument ()};
+        Instrument fProcessInstrument
         {
-            Instruments::CPU::GetInstrument ()
-        }
 #if __cpp_designated_initializers >= 201707L
-        , fProcessInstrument
-        {
-            Instruments::Process::GetInstrument (Instruments::Process::Options{
-                .fMinimumAveragingInterval = 60,
-                .fRestrictToPIDs           = Set<pid_t>{Execution::GetCurrentProcessID ()},
-            })
-        }
+            Instruments::Process::GetInstrument (Instruments::Process::Options{.fRestrictToPIDs = Set<pid_t> { Execution::GetCurrentProcessID () }})
 #else
-        , fProcessInstrument
-        {
             mkProcessInstrumentOptions_ ()
-        }
 #endif
+        };
+        MyCapturer_ ()
         {
             AddCaptureSet (CaptureSet{30s, {fCPUInstrument, fProcessInstrument}});
         }
     };
-
-    // @todo STROIKA -  and add this to EXAMPLE text for that class!!!
-    //
-    // GetInstrument () with options rstricing to current process id
-    Synchronized<MyCapturer_>& GetCapturer_ ()
-    {
-        static Synchronized<MyCapturer_> sCapturer_;
-        return sCapturer_;
-    }
 }
 
 /*
@@ -151,27 +129,27 @@ About WSImpl::GetAbout () const
         ComponentInfo{L"sqlite"sv, String::FromASCII (SQLITE_VERSION)}
 #endif
     }};
-    auto  now          = DateTime::Now ();
-    auto& capturer     = GetCapturer_ ();
-    auto  measurements = capturer.cget ()->GetMostRecentMeasurements (); // capture results on a regular cadence with MyCapturer, and just report the latest stats
+    auto               now = DateTime::Now ();
+    static MyCapturer_ sCapturer_;
+    auto               measurements = sCapturer_.GetMostRecentMeasurements (); // capture results on a regular cadence with MyCapturer, and just report the latest stats
 
-    CurrentMachine machineInfo = [now, &capturer, &measurements] () {
+    CurrentMachine machineInfo = [now, &measurements] () {
         CurrentMachine    result;
         static const auto kOS_  = OperatingSystem{Configuration::GetSystemConfiguration_ActualOperatingSystem ().fPrettyNameWithVersionDetails};
         result.fOperatingSystem = kOS_;
         if (auto o = Configuration::GetSystemConfiguration_BootInformation ().fBootedAt) {
             result.fMachineUptime = now - *o;
         }
-        if (auto om = capturer.cget ()->fCPUInstrument.MeasurementAs<Instruments::CPU::Info> (measurements)) {
+        if (auto om = sCapturer_.fCPUInstrument.MeasurementAs<Instruments::CPU::Info> (measurements)) {
             result.fRunQLength    = om->fRunQLength;
             result.fTotalCPUUsage = om->fTotalCPUUsage;
         }
         return result;
     }();
 
-    CurrentProcess processInfo = [now, &capturer, &measurements] () {
+    CurrentProcess processInfo = [now, &measurements] () {
         CurrentProcess result;
-        if (auto om = capturer.cget ()->fProcessInstrument.MeasurementAs<Instruments::Process::Info> (measurements)) {
+        if (auto om = sCapturer_.fProcessInstrument.MeasurementAs<Instruments::Process::Info> (measurements)) {
             Assert (om->GetLength () == 1);
             Instruments::Process::ProcessType thisProcess = (*om)[Execution::GetCurrentProcessID ()];
             if (auto o = thisProcess.fProcessStartedAt) {
