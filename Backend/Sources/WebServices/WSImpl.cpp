@@ -83,11 +83,11 @@ namespace {
 
     struct MyCapturer_ : Capturer {
     public:
-        Instrument fCPUInstrument{Instruments::CPU::GetInstrument ()};
-        Instrument fProcessInstrument
+        Instruments::CPU::Instrument fCPUInstrument{};
+        Instruments::Process::Instrument fProcessInstrument
         {
 #if __cpp_designated_initializers >= 201707L
-            Instruments::Process::GetInstrument (Instruments::Process::Options{.fRestrictToPIDs = Set<pid_t> { Execution::GetCurrentProcessID () }})
+            Instruments::Process::Options{.fRestrictToPIDs = Set<pid_t> { Execution::GetCurrentProcessID () }}
 #else
             mkProcessInstrumentOptions_ ()
 #endif
@@ -131,7 +131,7 @@ About WSImpl::GetAbout () const
     }};
     auto               now = DateTime::Now ();
     static MyCapturer_ sCapturer_;
-    auto               measurements = sCapturer_.GetMostRecentMeasurements (); // capture results on a regular cadence with MyCapturer, and just report the latest stats
+    auto               measurements = sCapturer_.pMostRecentMeasurements (); // capture results on a regular cadence with MyCapturer, and just report the latest stats
 
     CurrentMachine machineInfo = [now, &measurements] () {
         CurrentMachine    result;
