@@ -118,7 +118,7 @@ About WSImpl::GetAbout () const
 #endif
 #if qHasFeature_LibCurl
         ,
-        ComponentInfo{L"libcurl"sv, String::FromASCII (LIBCURL_VERSION), URL{"https://curl.se/"}}
+        ComponentInfo{L"libcurl"sv, String::FromASCII (LIBCURL_VERSION), URI{"https://curl.se/"}}
 #endif
 #if qHasFeature_boost && 0 /*NOT USING BOOST AS FAR AS I KNOW*/
         ,
