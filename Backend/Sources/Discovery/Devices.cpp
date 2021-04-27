@@ -946,13 +946,13 @@ namespace {
                 }
                 di.fSSDPInfo->fAlive = d.fAlive;
 
-                Memory::CopyToIf (deviceIconURL, &di.fIcon);
-                Memory::CopyToIf (manufacturerURL, &di.fSSDPInfo->fManufacturerURI);
+                Memory::CopyToIf (&di.fIcon, deviceIconURL);
+                Memory::CopyToIf (&di.fSSDPInfo->fManufacturerURI, manufacturerURL);
 
                 di.fSSDPInfo->fLocations.Add (d.fLocation);
                 di.fSSDPInfo->fUSNs.Add (d.fUSN);
 
-                Memory::CopyToIf (presentationURL, &di.fSSDPInfo->fPresentationURL); // consider if value already there - warn if changes - should we collect multiple
+                Memory::CopyToIf (&di.fSSDPInfo->fPresentationURL, presentationURL); // consider if value already there - warn if changes - should we collect multiple
 
                 if (di.fSSDPInfo->fServer.has_value () and di.fSSDPInfo->fServer != d.fServer) {
                     DbgTrace (L"Warning: different server IDs for same object");
@@ -965,7 +965,7 @@ namespace {
                 if (deviceType and deviceFriendlyName) {
                     di.fSSDPInfo->fDeviceType2FriendlyNameMap.Add (*deviceType, *deviceFriendlyName);
                 }
-                Memory::CopyToIf (manufactureName, &di.fSSDPInfo->fManufacturer);
+                Memory::CopyToIf (&di.fSSDPInfo->fManufacturer, manufactureName);
 
                 di.fSSDPInfo->fLastSSDPMessageRecievedAt = Time::DateTime::Now (); // update each message, even if already created
                 di.fLastSeenAt                           = di.fSSDPInfo->fLastSSDPMessageRecievedAt;

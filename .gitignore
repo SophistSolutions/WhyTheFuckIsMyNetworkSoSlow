@@ -4,5 +4,6 @@
 *.log
 .vs/
 Builds/
+RELEASES/
 IntermediateFiles/
 ConfigurationFiles/

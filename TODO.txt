@@ -49,11 +49,11 @@ report on devices no longer found.; Maaybe add DELETE API, so you can DELETE a N
 + Writeup what I can remember of Johns advice about using / rewriting
   app to use slices/vuex more...
 
-  (cleanup todo file)
+- (cleanup todo file)
 
-  - tickets for a lot of whats here
+- tickets for a lot of whats here
 
-  then release---
+- then release---
 
 -----
 
