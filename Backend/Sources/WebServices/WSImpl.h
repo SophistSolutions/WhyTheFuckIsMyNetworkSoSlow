@@ -23,7 +23,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
     /**
      *  Implementation of WebService calls.
      */
-    class WSImpl : public IWSAPI {
+    class WSImpl final : public IWSAPI {
     public:
         virtual About                                                GetAbout () const override;
         virtual tuple<Memory::BLOB, DataExchange::InternetMediaType> GetBLOB (const GUID& guid) const override;

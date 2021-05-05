@@ -21,6 +21,7 @@
 #include "Stroika/Foundation/Characters/ToString.h"
 #include "Stroika/Foundation/Configuration/SystemConfiguration.h"
 #include "Stroika/Foundation/Containers/Set.h"
+#include "Stroika/Foundation/Database/SQLite.h"
 #include "Stroika/Foundation/Debug/TimingTrace.h"
 #include "Stroika/Foundation/Execution/Process.h"
 #include "Stroika/Foundation/Execution/Synchronized.h"
@@ -81,13 +82,16 @@ namespace {
     }
 #endif
 
-    struct MyCapturer_ : Capturer {
+    struct MyCapturer_ final : Capturer {
     public:
-        Instruments::CPU::Instrument fCPUInstrument{};
+        Instruments::CPU::Instrument     fCPUInstrument{};
         Instruments::Process::Instrument fProcessInstrument
         {
 #if __cpp_designated_initializers >= 201707L
-            Instruments::Process::Options{.fRestrictToPIDs = Set<pid_t> { Execution::GetCurrentProcessID () }}
+            Instruments::Process::Options
+            {
+                .fRestrictToPIDs = Set<pid_t> { Execution::GetCurrentProcessID () }
+            }
 #else
             mkProcessInstrumentOptions_ ()
 #endif
@@ -124,7 +128,7 @@ About WSImpl::GetAbout () const
         ,
         ComponentInfo{L"boost"sv, String::FromASCII (BOOST_LIB_VERSION)}
 #endif
-#if qHasFeature_sqlite && 0 /*NOT USING SQLITE YET - BUT EXPECT TO SOON */
+#if qHasFeature_sqlite
         ,
         ComponentInfo{L"sqlite"sv, String::FromASCII (SQLITE_VERSION)}
 #endif
