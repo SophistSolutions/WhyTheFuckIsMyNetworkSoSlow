@@ -6,6 +6,7 @@
 #include "Stroika/Foundation/Characters/StringBuilder.h"
 #include "Stroika/Foundation/Characters/ToString.h"
 #include "Stroika/Foundation/Common/ObjectForSideEffects.h"
+#include "Stroika/Foundation/Common/Property.h"
 #include "Stroika/Foundation/Containers/Set.h"
 #include "Stroika/Foundation/Cryptography/Digest/Algorithm/MD5.h"
 #include "Stroika/Foundation/Cryptography/Format.h"
@@ -15,7 +16,6 @@
 #include "Stroika/Foundation/Execution/Activity.h"
 #include "Stroika/Foundation/Execution/Module.h"
 #include "Stroika/Foundation/Execution/Synchronized.h"
-#include "Stroika/Foundation/Execution/VirtualConstant.h"
 #include "Stroika/Foundation/IO/Network/HTTP/ClientErrorException.h"
 #include "Stroika/Foundation/IO/Network/HTTP/Exception.h"
 #include "Stroika/Foundation/IO/Network/HTTP/Headers.h"
@@ -43,6 +43,7 @@ using namespace Stroika::Foundation::Memory;
 using namespace Stroika::Foundation::IO::Network;
 
 using IO::Network::HTTP::ClientErrorException;
+using Stroika::Foundation::Common::ConstantProperty;
 using Stroika::Foundation::Common::EmptyObjectForSideEffects;
 using Stroika::Foundation::Time::Duration;
 
@@ -84,14 +85,14 @@ namespace {
 }
 
 namespace {
-    const Execution::VirtualConstant<Headers> kDefaultResponseHeadersStaticSite_{[] () {
+    const ConstantProperty<Headers> kDefaultResponseHeadersStaticSite_{[] () {
         const String kServerString_ = L"Why-The-Fuck-Is-My-Network-So-Slow/"sv + AppVersion::kVersion.AsMajorMinorString ();
         Headers      h;
         h.server       = kServerString_;
         h.cacheControl = HTTP::CacheControl::kMustRevalidatePublic;
         return h;
     }};
-    const Execution::VirtualConstant<Headers> kDefaultResponseHeadersWSSite_{[] () {
+    const ConstantProperty<Headers> kDefaultResponseHeadersWSSite_{[] () {
         const String kServerString_ = L"Why-The-Fuck-Is-My-Network-So-Slow/"sv + AppVersion::kVersion.AsMajorMinorString ();
         Headers      h;
         h.server       = kServerString_;
@@ -101,7 +102,7 @@ namespace {
 }
 
 namespace {
-    const Execution::VirtualConstant<FileSystemRequestHandler::Options> kStaticSiteHandlerOptions_{[] () {
+    const ConstantProperty<FileSystemRequestHandler::Options> kStaticSiteHandlerOptions_{[] () {
         Sequence<pair<RegularExpression, CacheControl>> kFSCacheControlSettings_
         {
 #if __cpp_designated_initializers
