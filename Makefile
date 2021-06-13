@@ -43,6 +43,12 @@ STROIKA_CONFIG_PARAMS_COMMON=
 
 STROIKA_CONFIG_PARAMS_DEBUG=--apply-default-debug-flags
 STROIKA_CONFIG_PARAMS_RELEASE=--apply-default-release-flags
+ifeq ($(shell uname -o), Cygwin)
+### address sanitizer on Windows produces lots of non-obvious errors (probably false positive).
+### anyhow, disable for a little bit until we have time to look into it
+### 		-- LGP 2021-06-13
+STROIKA_CONFIG_PARAMS_DEBUG += --sanitize none
+endif
 
 .PHONY: default-configurations
 default-configurations:

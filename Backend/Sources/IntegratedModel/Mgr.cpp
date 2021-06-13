@@ -131,7 +131,7 @@ Sequence<IntegratedModel::Device> IntegratedModel::Mgr::GetDevices () const
                 if (not newDev.fDebugProps.has_value ()) {
                     newDev.fDebugProps = Mapping<String, VariantValue>{};
                 }
-                newDev.fDebugProps->Add (L"MACAddr2OUINames", t);
+                newDev.fDebugProps->Add (L"MACAddr2OUINames", VariantValue{t});
             }
         }
 #endif

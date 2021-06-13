@@ -1600,5 +1600,5 @@ VariantValue DevicesMgr::ScanAndReturnReport (const InternetAddress& addr)
     }
     result.Add (L"openPorts", VariantValue{
                                   ports.Select<VariantValue> ([] (String i) { return VariantValue{i}; })});
-    return result;
+    return VariantValue{result};
 }
