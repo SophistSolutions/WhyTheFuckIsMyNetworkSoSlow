@@ -45,7 +45,8 @@ jobs:
             container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804
             cpp_version: c++17
             config_name: Debug
-            extra_config_args: --apply-default-debug-flags --trace2file enable
+            # Turn off debug syms to save space, avoid failed build
+            extra_config_args: --apply-default-debug-flags --trace2file enable --debug-symbols false
             includeInDevBranchBuilds: true
 
           # - displayTargetName: ubuntu-18.04-g++-8
