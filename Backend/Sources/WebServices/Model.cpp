@@ -246,32 +246,51 @@ const ObjectVariantMapper NetworkInterface::kMapper = [] () {
     mapper.AddCommonType<NetworkInterface::Status> ();
     mapper.AddCommonType<Set<NetworkInterface::Status>> ();
     mapper.AddCommonType<optional<Set<NetworkInterface::Status>>> ();
-    mapper.AddClass<NetworkInterface> (initializer_list<ObjectVariantMapper::StructFieldInfo> {
-        {L"platformInterfaceID", StructFieldMetaInfo{&NetworkInterface::fInternalInterfaceID}},
-            {L"id", StructFieldMetaInfo{&NetworkInterface::fGUID}},
-            {L"friendlyName", StructFieldMetaInfo{&NetworkInterface::fFriendlyName}},
-            {L"description", StructFieldMetaInfo{&NetworkInterface::fDescription}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-            // fNetworkGUID INTENTIONALLY OMITTED because doesn't correspond to our network ID, misleading, and unhelpful
-            {L"type", StructFieldMetaInfo{&NetworkInterface::fType}},
-            {L"hardwareAddress", StructFieldMetaInfo{&NetworkInterface::fHardwareAddress}},
-            {L"transmitSpeedBaud", StructFieldMetaInfo{&NetworkInterface::fTransmitSpeedBaud}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-            {L"receiveLinkSpeedBaud", StructFieldMetaInfo{&NetworkInterface::fReceiveLinkSpeedBaud}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-#if 1
-            // @todo find better way for this
-            {L"boundAddressRanges", StructFieldMetaInfo{offsetof (NetworkInterface, fBindings.fAddressRanges), typeid (NetworkInterface::fBindings.fAddressRanges)}},
-            {L"boundAddresses", StructFieldMetaInfo{offsetof (NetworkInterface, fBindings.fAddresses), typeid (NetworkInterface::fBindings.fAddressRanges)}},
-#else
-                {L"boundAddressRanges", StructFieldMetaInfo{&NetworkInterface::fBindings.fAddressRanges}},
-                {L"boundAddresses", StructFieldMetaInfo{&NetworkInterface::fBindings.fAddresses}},
-#endif
-            {L"gateways", StructFieldMetaInfo{&NetworkInterface::fGateways}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-            {L"DNSServers", StructFieldMetaInfo{&NetworkInterface::fDNSServers}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-            {L"wirelessInformation", StructFieldMetaInfo{&NetworkInterface::fWirelessInfo}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-            {L"status", StructFieldMetaInfo{&NetworkInterface::fStatus}},
+
+    {
+        mapper.AddClass<NetworkInterface> (initializer_list<ObjectVariantMapper::StructFieldInfo> {
+            {L"platformInterfaceID", StructFieldMetaInfo{&NetworkInterface::fInternalInterfaceID}},
+                {L"id", StructFieldMetaInfo{&NetworkInterface::fGUID}},
+                {L"friendlyName", StructFieldMetaInfo{&NetworkInterface::fFriendlyName}},
+                {L"description", StructFieldMetaInfo{&NetworkInterface::fDescription}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+                // fNetworkGUID INTENTIONALLY OMITTED because doesn't correspond to our network ID, misleading, and unhelpful
+                {L"type", StructFieldMetaInfo{&NetworkInterface::fType}},
+                {L"hardwareAddress", StructFieldMetaInfo{&NetworkInterface::fHardwareAddress}},
+                {L"transmitSpeedBaud", StructFieldMetaInfo{&NetworkInterface::fTransmitSpeedBaud}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+                {L"receiveLinkSpeedBaud", StructFieldMetaInfo{&NetworkInterface::fReceiveLinkSpeedBaud}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+                //SEE OVERRIDE BELOW {L"boundAddressRanges", StructFieldMetaInfo{&NetworkInterface::fBindings.fAddressRanges}},
+                //SEE OVERRIDE BELOW {L"boundAddresses", StructFieldMetaInfo{&NetworkInterface::fBindings.fAddresses}},
+                {L"gateways", StructFieldMetaInfo{&NetworkInterface::fGateways}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+                {L"DNSServers", StructFieldMetaInfo{&NetworkInterface::fDNSServers}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+                {L"wirelessInformation", StructFieldMetaInfo{&NetworkInterface::fWirelessInfo}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+                {L"status", StructFieldMetaInfo{&NetworkInterface::fStatus}},
 #if qDebug
-            {L"debugProps", StructFieldMetaInfo{&NetworkInterface::fDebugProps}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+                {L"debugProps", StructFieldMetaInfo{&NetworkInterface::fDebugProps}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
 #endif
-    });
+        });
+        // StructFieldMetaInfo{} doesn't work with nested members - https://stackoverflow.com/questions/1929887/is-pointer-to-inner-struct-member-forbidden
+        ObjectVariantMapper::TypeMappingDetails originalTypeMapper = *mapper.GetTypeMappingRegistry ().Lookup (typeid (NetworkInterface));
+        mapper.Add<NetworkInterface> (
+            // Do base mappings, and map
+            //      {L"boundAddressRanges", StructFieldMetaInfo{offsetof (NetworkInterface, fBindings.fAddressRanges), typeid (NetworkInterface::fBindings.fAddressRanges)}},
+            //      {L"boundAddresses", StructFieldMetaInfo{offsetof (NetworkInterface, fBindings.fAddresses), typeid (NetworkInterface::fBindings.fAddressRanges)}},
+            [=] (const ObjectVariantMapper& mapper, const NetworkInterface* obj) -> VariantValue {
+                Mapping<String, VariantValue> resultMap = originalTypeMapper.fFromObjecttMapper (mapper, obj).As<Mapping<String, VariantValue>> ();
+                resultMap.Add (L"boundAddressRanges", mapper.FromObject (obj->fBindings.fAddressRanges));
+                resultMap.Add (L"boundAddresses", mapper.FromObject (obj->fBindings.fAddresses));
+                return VariantValue{resultMap};
+            },
+            [=] (const ObjectVariantMapper& mapper, const VariantValue& d, NetworkInterface* intoObj) -> void {
+                originalTypeMapper.fToObjectMapper (mapper, d, intoObj);
+                Mapping<String, VariantValue> fromMap = d.As<Mapping<String, VariantValue>> ();
+                if (auto o = fromMap.Lookup (L"boundAddressRanges")) {
+                    intoObj->fBindings.fAddressRanges = mapper.ToObject<Containers::Collection<CIDR>> (*o);
+                }
+                if (auto o = fromMap.Lookup (L"boundAddresses")) {
+                    intoObj->fBindings.fAddresses = mapper.ToObject<Containers::Collection<InternetAddress>> (*o);
+                }
+            });
+    }
     mapper.AddCommonType<Collection<NetworkInterface>> ();
     return mapper;
 }();
