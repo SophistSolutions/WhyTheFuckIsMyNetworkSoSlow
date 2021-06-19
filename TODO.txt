@@ -3,7 +3,18 @@
 	but CTOR based add does - cleanup)
 	Maybe fix AddCaptureSet() to FORCE a single quick capture, not waiting duration seconds...
 
+----
+	NEXT IMPRTANT MILESTONE
+		> Collect ping stats to www.google.com from a given device
+		> Show graph of ping time over time on the NETWORKS page for the NETWORK used
+		> Show a list of devices which collected statuistics for that network (typically one)
+		> and select which networks to use stats from, and maybe go from tehre exploreing more 
+		> like differences between devices on same network etc)
 
+
+---
+https://v3.vuejs.org/guide/migration/introduction.html#other-minor-changes
+----
 
  http://hercules.local:8080/about  MAYBE also add ‘uptime’
  to the /about information – or add separate /about/system-details api, 
