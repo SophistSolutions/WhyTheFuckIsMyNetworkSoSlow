@@ -9,9 +9,9 @@
       <v-row>
         <v-col>App</v-col>
         <v-col cols="10">
-          <table>
+          <table id="appDataTable">
             <tr>
-              <td style="width:1in;">Version</td>
+              <td>Version</td>
               <td>{{ about.applicationVersion }}</td>
             </tr>
             <tr>
@@ -27,25 +27,43 @@
                     </td>
                   </tr>
                 </table>
-
-                {{ about.componentVersions }}
               </td>
             </tr>
             <tr>
-              <td>averageCPUTimeUsed</td>
-              <td>{{ about.serverInfo.currentProcess.averageCPUTimeUsed }}</td>
+              <td
+                title="Average over the measurement interval for just this service process;
+Units 1=1 logical core"
+              >
+                CPU-Usage
+              </td>
+              <td>{{ about.serverInfo.currentProcess.averageCPUTimeUsed }} CPUs</td>
+            </tr>
+            <tr
+              v-if="
+                about.serverInfo.currentProcess &&
+                  about.serverInfo.currentProcess.combinedIOReadRate != null &&
+                  about.serverInfo.currentProcess.combinedIOWriteRate != null
+              "
+            >
+              <td title="Combined I/O rate (network+disk)">IO Rate (read; write)</td>
+              <td>
+                {{ about.serverInfo.currentProcess.combinedIOReadRate | prettyBytes }}/sec ;
+                {{ about.serverInfo.currentProcess.combinedIOWriteRate | prettyBytes }}/sec
+              </td>
             </tr>
             <tr>
-              <td>combinedIOWriteRate</td>
-              <td>{{ about.serverInfo.currentProcess.combinedIOWriteRate }}</td>
+              <td title="How long has the service been running">Uptime</td>
+              <td>
+                {{ about.serverInfo.currentProcess.processUptime | duration("humanize") }}
+              </td>
             </tr>
             <tr>
-              <td>processUptime</td>
-              <td>{{ about.serverInfo.currentProcess.processUptime }}</td>
-            </tr>
-            <tr>
-              <td>workingOrResidentSetSize</td>
-              <td>{{ about.serverInfo.currentProcess.workingOrResidentSetSize }}</td>
+              <td
+                title="Working set size, or RSS resident set size (how much RAM is an active use)"
+              >
+                WSS
+              </td>
+              <td>{{ about.serverInfo.currentProcess.workingOrResidentSetSize | prettyBytes }}</td>
             </tr>
           </table>
         </v-col>
@@ -53,22 +71,27 @@
       <v-row>
         <v-col>App Running on</v-col>
         <v-col cols="10">
-          <table>
+          <table id="appRunningOnTable">
             <tr>
-              <td style="width:1in;">OS</td>
+              <td>OS</td>
               <td>{{ about.serverInfo.currentMachine.operatingSystem.fullVersionedName }}</td>
             </tr>
             <tr>
-              <td>Uptime</td>
-              <td>{{ about.serverInfo.currentMachine.machineUptime }}</td>
+              <td title="How long has the machine (hosting the service) been running">Uptime</td>
+              <td>{{ about.serverInfo.currentMachine.machineUptime | duration("humanize") }}</td>
+            </tr>
+            <tr v-if="about.serverInfo.currentMachine.runQLength != null">
+              <td title="'Load Average' - how many threads in the RunQ on average">Run-Q</td>
+              <td>{{ about.serverInfo.currentMachine.runQLength }} threads</td>
             </tr>
             <tr>
-              <td>runQLength</td>
-              <td>{{ about.serverInfo.currentMachine.runQLength }}</td>
-            </tr>
-            <tr>
-              <td>totalCPUUsage</td>
-              <td>{{ about.serverInfo.currentMachine.totalCPUUsage }}</td>
+              <td
+                title="Average over the measurement interval for the entire machine hosting the service.
+Units 1=1 logical core"
+              >
+                CPU-Usage
+              </td>
+              <td>{{ about.serverInfo.currentMachine.totalCPUUsage }} CPUs</td>
             </tr>
           </table>
         </v-col>
@@ -78,17 +101,25 @@
           Written by
         </v-col>
         <v-col cols="10">
-          <ul>
-            <li>
-              Lewis G. Pringle, Jr.
-              <a href="https://www.linkedin.com/in/lewispringle/">LinkedIn</a> |
-              <a href="https://github.com/LewisPringle">GitHub</a>
-            </li>
-            <li>
-              Robert Lemos Pringle
-              <a href="https://github.com/robertpringle">GitHub</a>
-            </li>
-          </ul>
+          <table>
+            <tr>
+              <td>
+                Lewis G. Pringle, Jr.
+              </td>
+              <td>
+                <a href="https://www.linkedin.com/in/lewispringle/" target="_new">LinkedIn</a> |
+                <a href="https://github.com/LewisPringle" target="_new">GitHub</a>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                Robert Lemos Pringle
+              </td>
+              <td>
+                <a href="https://github.com/robertpringle" target="_new">GitHub</a>
+              </td>
+            </tr>
+          </table>
         </v-col>
       </v-row>
       <v-row>
@@ -96,7 +127,9 @@
           Report issues at
         </v-col>
         <v-col cols="10">
-          <a href="https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues"
+          <a
+            href="https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues"
+            target="_new"
             >github issues</a
           >
         </v-col>
@@ -117,12 +150,29 @@ import Component from "vue-class-component";
   },
 })
 export default class About extends Vue {
-  private created() {
-    this.$store.dispatch("fetchAboutInfo");
-  }
+  private polling: undefined | number = undefined;
 
   private get about(): IAbout {
     return this.$store.getters.getAboutInfo;
+  }
+
+  private created() {
+    this.pollData();
+  }
+
+  private beforeDestroy() {
+    clearInterval(this.polling);
+  }
+
+  private pollData() {
+    // first time check quickly, then more gradually
+    this.$store.dispatch("fetchAboutInfo");
+    if (this.polling) {
+      clearInterval(this.polling);
+    }
+    this.polling = setInterval(() => {
+      this.$store.dispatch("fetchAboutInfo");
+    }, 10 * 1000);
   }
 }
 </script>
@@ -130,5 +180,11 @@ export default class About extends Vue {
 <style scoped>
 ul {
   list-style-type: none;
+}
+#appDataTable td {
+  min-width: 2in;
+}
+#appRunningOnTable td {
+  min-width: 1.2in;
 }
 </style>

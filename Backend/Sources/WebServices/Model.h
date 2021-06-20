@@ -374,6 +374,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
                 optional<Duration> fProcessUptime;
                 optional<double>   fAverageCPUTimeUsed;
                 optional<uint64_t> fWorkingOrResidentSetSize;
+                optional<double>   fCombinedIOReadRate;
                 optional<double>   fCombinedIOWriteRate;
 
                 nonvirtual String ToString () const;

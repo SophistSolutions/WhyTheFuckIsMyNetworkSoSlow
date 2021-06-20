@@ -151,8 +151,8 @@ import {
   GetServices,
 } from "@/models/network/Utils";
 import { OperatingSystem } from "@/models/OperatingSystem";
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 import { rescanDevice } from "@/proxy/API";
+import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 
 @Component({
   name: "DeviceDetails",

@@ -1,3 +1,7 @@
+
+----
+
+	review ABOUT usage - capture set etc... not working the way I expected with regular update
     BUT @todo updating HTML GUI to display
 	--- AND getting C++ to show the stuff immediately, not just after 30seconds. (Add doesnt update
 	but CTOR based add does - cleanup)
@@ -16,34 +20,11 @@
 https://v3.vuejs.org/guide/migration/introduction.html#other-minor-changes
 ----
 
- http://hercules.local:8080/about  MAYBE also add ‘uptime’
- to the /about information – or add separate /about/system-details api, 
- to fetch stuff like RAM usage,  and perhaps more, including uptime, 
- load average? Maybe instead of /about/details /about?include-system-performance?
-   - unsure which would be better
-
-api-server {
-	operating-system: ...;
-	current-process: {
-		machine-uptime;
-		process-uptime;
-		RAM usage;
-		load-average;
-		this-process-CPU-Usage;
-	}
-}
-
-In about page, include 
-	CREDITS - do simple UI for diplsaying compoentns
-
----
 maybe next is do PRIMITVE DB support - just writing out network and device ids, and basic info, so we can 
 report on devices no longer found.; Maaybe add DELETE API, so you can DELETE a Network, or other REST object
 (and if they are discovered they will come back) - but wil ldelete the stored/DB parts.
 
 ---- 
-
-
 
 
 - Debug/Polish CacheControl settings for static website.

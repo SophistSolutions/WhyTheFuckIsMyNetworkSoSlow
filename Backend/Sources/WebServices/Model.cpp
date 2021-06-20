@@ -522,6 +522,7 @@ String About::APIServerInfo::CurrentProcess::ToString () const
     sb += L"fProcessUptime: " + Characters::ToString (fProcessUptime) + L", ";
     sb += L"fAverageCPUTimeUsed: " + Characters::ToString (fAverageCPUTimeUsed) + L", ";
     sb += L"fWorkingOrResidentSetSize: " + Characters::ToString (fWorkingOrResidentSetSize) + L", ";
+    sb += L"fCombinedIOReadRate: " + Characters::ToString (fCombinedIOReadRate) + L", ";
     sb += L"fCombinedIOWriteRate: " + Characters::ToString (fCombinedIOWriteRate) + L", ";
     sb += L"}";
     return sb.str ();
@@ -578,6 +579,7 @@ const ObjectVariantMapper About::kMapper = [] () {
         {L"processUptime", StructFieldMetaInfo{&About::APIServerInfo::CurrentProcess::fProcessUptime}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"averageCPUTimeUsed", StructFieldMetaInfo{&About::APIServerInfo::CurrentProcess::fAverageCPUTimeUsed}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"workingOrResidentSetSize", StructFieldMetaInfo{&About::APIServerInfo::CurrentProcess::fWorkingOrResidentSetSize}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"combinedIOReadRate", StructFieldMetaInfo{&About::APIServerInfo::CurrentProcess::fCombinedIOReadRate}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"combinedIOWriteRate", StructFieldMetaInfo{&About::APIServerInfo::CurrentProcess::fCombinedIOWriteRate}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
 

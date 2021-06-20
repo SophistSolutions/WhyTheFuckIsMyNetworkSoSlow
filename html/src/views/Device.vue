@@ -27,16 +27,11 @@ import { Component, Vue, Watch } from "vue-property-decorator";
 export default class Device extends Vue {
   private polling: undefined | number = undefined;
 
-  private fetchAvailableNetworks() {
-    this.$store.dispatch("fetchAvailableNetworks");
-  }
   private get networks(): INetwork[] {
     return this.$store.getters.getAvailableNetworks;
   }
 
   private created() {
-    this.fetchDevices();
-    this.fetchAvailableNetworks();
     this.pollData();
   }
 
@@ -44,17 +39,16 @@ export default class Device extends Vue {
     clearInterval(this.polling);
   }
 
-  private fetchDevices() {
-    this.$store.dispatch("fetchDevices", null);
-  }
-
   private pollData() {
     // first time check quickly, then more gradually
-    this.fetchDevices();
-    this.fetchAvailableNetworks();
+    this.$store.dispatch("fetchDevices", null);
+    this.$store.dispatch("fetchAvailableNetworks");
+    if (this.polling) {
+      clearInterval(this.polling);
+    }
     this.polling = setInterval(() => {
-      this.fetchDevices();
-      this.fetchAvailableNetworks();
+      this.$store.dispatch("fetchDevices", null);
+      this.$store.dispatch("fetchAvailableNetworks");
     }, 15 * 1000);
   }
 

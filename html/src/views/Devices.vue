@@ -321,9 +321,6 @@ export default class Devices extends Vue {
     }
   }
 
-  private fetchAvailableNetworks() {
-    this.$store.dispatch("fetchAvailableNetworks");
-  }
   private get networks(): INetwork[] {
     return this.$store.getters.getAvailableNetworks;
   }
@@ -399,9 +396,6 @@ export default class Devices extends Vue {
       });
       this.selectedNetworkCurrent = s;
     }
-
-    this.fetchDevices();
-    this.fetchAvailableNetworks();
     this.pollData();
   }
 
@@ -409,17 +403,16 @@ export default class Devices extends Vue {
     clearInterval(this.polling);
   }
 
-  private fetchDevices() {
-    this.$store.dispatch("fetchDevices", null);
-  }
-
   private pollData() {
     // first time check quickly, then more gradually
-    this.fetchDevices();
-    this.fetchAvailableNetworks();
+    this.$store.dispatch("fetchDevices", null);
+    this.$store.dispatch("fetchAvailableNetworks");
+    if (this.polling) {
+      clearInterval(this.polling);
+    }
     this.polling = setInterval(() => {
-      this.fetchDevices();
-      this.fetchAvailableNetworks();
+      this.$store.dispatch("fetchDevices", null);
+      this.$store.dispatch("fetchAvailableNetworks");
     }, 15 * 1000);
   }
 
