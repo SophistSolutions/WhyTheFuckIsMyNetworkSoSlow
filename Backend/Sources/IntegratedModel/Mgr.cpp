@@ -3,7 +3,12 @@
  */
 #include "Stroika/Frameworks/StroikaPreComp.h"
 
+#include "Stroika/Foundation/DataExchange/ObjectVariantMapper.h"
+#include "Stroika/Foundation/Database/ORM/Schema.h"
+#include "Stroika/Foundation/Database/SQLite.h"
 #include "Stroika/Foundation/Debug/TimingTrace.h"
+#include "Stroika/Foundation/Execution/Sleep.h"
+#include "Stroika/Foundation/IO/FileSystem/WellKnownLocations.h"
 
 #include "../Common/BLOBMgr.h"
 #include "../Common/EthernetMACAddressOUIPrefixes.h"
@@ -20,6 +25,7 @@ using namespace Stroika::Foundation;
 using namespace Stroika::Foundation::Characters;
 using namespace Stroika::Foundation::Containers;
 using namespace Stroika::Foundation::Common;
+using namespace Stroika::Foundation::Database;
 using namespace Stroika::Foundation::Execution;
 using namespace Stroika::Foundation::Memory;
 using namespace Stroika::Foundation::IO::Network;
@@ -61,6 +67,123 @@ namespace {
     }
 }
 
+namespace {
+    namespace DBAccess_ {
+        using namespace ORM;
+        using namespace SQLite;
+        Execution::Thread::Ptr sDatabaseSyncThread_{};
+
+        const ORM::Schema::Table kDeviceTableSchema_{
+            L"Devices",
+            /*
+             *  use the same names as the ObjectVariantMapper for simpler mapping, or specify an alternate name
+             *  for ID, just as an example.
+             */
+            Collection<ORM::Schema::Field>{
+#if __cpp_designated_initializers
+                /**
+                 *  For ID, generate random GUID (BLOB) automatically in database
+                 */
+                {.fName = L"ID", .fVariantValueFieldName = L"id"sv, .fVariantType = VariantValue::eBLOB, .fIsKeyField = true, .fDefaultExpression = L"randomblob(16)"sv, .fNotNull = true},
+                {.fName = L"name", .fVariantType = VariantValue::eString, .fNotNull = false}
+#else
+                {L"ID", L"id"sv, false, VariantValue::eBLOB, nullopt, true, nullopt, L"randomblob(16)"sv, true},
+                {L"name", nullopt, false, VariantValue::eString, nullopt, nullopt, nullopt, nullopt, false}
+#endif
+            },
+            ORM::Schema::CatchAllField{}};
+        const ORM::Schema::Table kNetworkTableSchema_{
+            L"Networks",
+            /*
+             *  use the same names as the ObjectVariantMapper for simpler mapping, or specify an alternate name
+             *  for ID, just as an example.
+             */
+            Collection<ORM::Schema::Field>{
+#if __cpp_designated_initializers
+                /**
+                 *  For ID, generate random GUID (BLOB) automatically in database
+                 */
+                {.fName = L"ID", .fVariantValueFieldName = L"id"sv, .fVariantType = VariantValue::eBLOB, .fIsKeyField = true, .fDefaultExpression = L"randomblob(16)"sv, .fNotNull = true},
+                {.fName = L"name", .fVariantType = VariantValue::eString, .fNotNull = false}
+#else
+                {L"ID", L"id"sv, false, VariantValue::eBLOB, nullopt, true, nullopt, L"randomblob(16)"sv, true},
+                {L"name", nullopt, false, VariantValue::eString, nullopt, nullopt, nullopt, nullopt, false}
+#endif
+            },
+            ORM::Schema::CatchAllField{}};
+
+        void addDevice (Connection::Ptr conn, const IntegratedModel::Device& d)
+        {
+            Statement addDeviceStatement{conn, Schema::StandardSQLStatements{kDeviceTableSchema_}.Insert ()};
+            addDeviceStatement.Execute (kDeviceTableSchema_.MapToDB (IntegratedModel::Device::kMapper.FromObject (d).As<Mapping<String, VariantValue>> ()));
+        }
+        void addNetwork (Connection::Ptr conn, const IntegratedModel::Network& n)
+        {
+            Statement addDeviceStatement{conn, Schema::StandardSQLStatements{kNetworkTableSchema_}.Insert ()};
+            addDeviceStatement.Execute (kNetworkTableSchema_.MapToDB (IntegratedModel::Network::kMapper.FromObject (n).As<Mapping<String, VariantValue>> ()));
+        }
+
+        Connection::Ptr SetupDB_ ()
+        {
+            auto dbPath = IO::FileSystem::WellKnownLocations::GetApplicationData () / "WTF" / "wtf.db";
+            filesystem::create_directories (dbPath.parent_path ());
+            //auto dbPath = filesystem::current_path () / "wtf.db";
+#if __cpp_designated_initializers
+            auto options = Options{.fDBPath = dbPath, .fThreadingMode = Options::ThreadingMode::eMultiThread};
+#else
+            auto options = Options{dbPath, true, nullopt, nullopt, Options::ThreadingMode::eMultiThread};
+#endif
+            auto initializeDB = [] (const Connection::Ptr& c) {
+                c.Exec (Schema::StandardSQLStatements{kDeviceTableSchema_}.CreateTable ());
+                c.Exec (Schema::StandardSQLStatements{kNetworkTableSchema_}.CreateTable ());
+            };
+            return Connection::New (options, initializeDB);
+        }
+        void BackgroundDatabaseThread_ ()
+        {
+            Connection::Ptr conn;
+            while (true) {
+                try {
+                    if (conn == nullptr) {
+                        conn = SetupDB_ ();
+                    }
+                }
+                catch (const Thread::AbortException&) {
+                    Execution::ReThrow ();
+                }
+                catch (...) {
+                    DbgTrace (L"Ignoring exception in BackgroundDatabaseThread_ loop: %s", Characters::ToString (current_exception ()).c_str ());
+                }
+                Execution::Sleep (30s); // quick hack - write out what we have every 30 seconds
+                try {
+                    // quick hack - use WSAPI to fetch all networsk
+                    for (auto ni : IntegratedModel::Mgr::sThe.GetNetworks ()) {
+                        addNetwork (conn, ni);
+                    }
+                }
+                catch (const Thread::AbortException&) {
+                    Execution::ReThrow ();
+                }
+                catch (...) {
+                    DbgTrace (L"Ignoring exception in BackgroundDatabaseThread_ loop: %s", Characters::ToString (current_exception ()).c_str ());
+                }
+                try {
+                    // quick hack - use WSAPI to fetch all networks
+                    for (auto di : IntegratedModel::Mgr::sThe.GetDevices ()) {
+                        addDevice (conn, di);
+                    }
+                }
+                catch (const Thread::AbortException&) {
+                    Execution::ReThrow ();
+                }
+                catch (...) {
+                    DbgTrace (L"Ignoring exception in BackgroundDatabaseThread_ loop: %s", Characters::ToString (current_exception ()).c_str ());
+                }
+            }
+        }
+    }
+}
+
 /*
  ********************************************************************************
  ************************** IntegratedModel::Mgr::Activator *********************
@@ -68,9 +191,13 @@ namespace {
  */
 IntegratedModel::Mgr::Activator::Activator ()
 {
+    Require (DBAccess_::sDatabaseSyncThread_ == nullptr);
+    DBAccess_::sDatabaseSyncThread_ = Thread::New (DBAccess_::BackgroundDatabaseThread_, Thread::eAutoStart, L"BackgroundDatabaseThread"sv);
 }
+
 IntegratedModel::Mgr::Activator::~Activator ()
 {
+    DBAccess_::sDatabaseSyncThread_.AbortAndWaitForDone ();
 }
 
 /*

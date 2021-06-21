@@ -7,6 +7,10 @@
 	but CTOR based add does - cleanup)
 	Maybe fix AddCaptureSet() to FORCE a single quick capture, not waiting duration seconds...
 
+
+	and review why on windows its shwing runq length=0
+	
+
 ----
 	NEXT IMPRTANT MILESTONE
 		> Collect ping stats to www.google.com from a given device

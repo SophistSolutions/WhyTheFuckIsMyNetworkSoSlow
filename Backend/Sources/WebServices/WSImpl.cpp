@@ -161,7 +161,7 @@ About WSImpl::GetAbout () const
             }
             result.fAverageCPUTimeUsed       = thisProcess.fAverageCPUTimeUsed;
             result.fWorkingOrResidentSetSize = Memory::NullCoalesce (thisProcess.fWorkingSetSize, thisProcess.fResidentMemorySize);
-            result.fCombinedIOReadRate      = thisProcess.fCombinedIOReadRate;
+            result.fCombinedIOReadRate       = thisProcess.fCombinedIOReadRate;
             result.fCombinedIOWriteRate      = thisProcess.fCombinedIOWriteRate;
         }
         return result;

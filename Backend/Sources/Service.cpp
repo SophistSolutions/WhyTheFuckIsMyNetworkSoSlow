@@ -18,6 +18,8 @@
 #include "Discovery/Devices.h"
 #include "Discovery/NetworkInterfaces.h"
 
+#include "IntegratedModel/Mgr.h"
+
 #include "WebServices/WSImpl.h"
 #include "WebServices/WebServer.h"
 
@@ -54,6 +56,7 @@ void WTFAppServiceRep::MainLoop (const std::function<void ()>& startedCB)
     Discovery::NetworkInterfacesMgr::Activator networkInterfacesMgrActivator;
     Discovery::NetworksMgr::Activator          networkMgrActivator;
     Discovery::DevicesMgr::Activator           devicesMgrActivator;
+    IntegratedModel::Mgr::Activator            integratedModelMgrActivator;
     WebServer                                  webServer{make_shared<WSImpl> ()};
     startedCB (); // Notify service control mgr that the service has started
     Logger::Get ().Log (Logger::Priority::eInfo, L"%s (version %s) service started successfully", kServiceDescription_.fPrettyName.c_str (), Characters::ToString (AppVersion::kVersion).c_str ());
