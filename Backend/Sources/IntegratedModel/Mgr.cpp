@@ -125,9 +125,8 @@ namespace {
 
         Connection::Ptr SetupDB_ ()
         {
-            auto dbPath = IO::FileSystem::WellKnownLocations::GetApplicationData () / "WTF" / "wtf.db";
+            auto dbPath = IO::FileSystem::WellKnownLocations::GetApplicationData () / "WhyTheFuckIsMyNetworkSoSlow" / "wtf.db";
             filesystem::create_directories (dbPath.parent_path ());
-            //auto dbPath = filesystem::current_path () / "wtf.db";
 #if __cpp_designated_initializers
             auto options = Options{.fDBPath = dbPath, .fThreadingMode = Options::ThreadingMode::eMultiThread};
 #else
