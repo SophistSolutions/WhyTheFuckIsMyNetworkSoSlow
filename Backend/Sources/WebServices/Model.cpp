@@ -397,7 +397,9 @@ Device Device::Merge (const Device& databaseDevice, const Device& dynamicallyDis
     Memory::CopyToIf (&merged.fPresentationURL, dynamicallyDiscoveredDevice.fPresentationURL);
     Memory::AccumulateIf (&merged.fAttachedNetworkInterfaces, dynamicallyDiscoveredDevice.fAttachedNetworkInterfaces);
     Memory::CopyToIf (&merged.fOperatingSystem, dynamicallyDiscoveredDevice.fOperatingSystem);
+#if qDebug
     Memory::CopyToIf (&merged.fDebugProps, dynamicallyDiscoveredDevice.fDebugProps);
+#endif
 
     return merged;
 }
