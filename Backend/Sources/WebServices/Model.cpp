@@ -9,6 +9,7 @@
 #include "Stroika/Foundation/DataExchange/Variant/JSON/Writer.h"
 #include "Stroika/Foundation/IO/Network/CIDR.h"
 #include "Stroika/Foundation/IO/Network/InternetAddress.h"
+#include "Stroika/Foundation/Memory/Optional.h"
 
 #include "Stroika/Frameworks/UPnP/SSDP/Advertisement.h"
 
@@ -380,6 +381,25 @@ Set<InternetAddress> Device::GetInternetAddresses () const
 String Device::ToString () const
 {
     return DataExchange::Variant::JSON::Writer{}.WriteAsString (Device::kMapper.FromObject (*this));
+}
+
+Device Device::Merge (const Device& databaseDevice, const Device& dynamicallyDiscoveredDevice)
+{
+    Device merged = databaseDevice;
+    Require (databaseDevice.fGUID == dynamicallyDiscoveredDevice.fGUID); // guid same
+    // name from DB takes precedence
+    Memory::AccumulateIf (&merged.fTypes, dynamicallyDiscoveredDevice.fTypes);
+    Memory::CopyToIf (&merged.fIcon, dynamicallyDiscoveredDevice.fIcon);
+    Memory::CopyToIf (&merged.fLastSeenAt, dynamicallyDiscoveredDevice.fLastSeenAt);
+    Memory::CopyToIf (&merged.fManufacturer, dynamicallyDiscoveredDevice.fManufacturer);
+    merged.fAttachedNetworks.AddAll (dynamicallyDiscoveredDevice.fAttachedNetworks); // @todo perhaps should MERGE these details...
+    Memory::AccumulateIf (&merged.fOpenPorts, dynamicallyDiscoveredDevice.fOpenPorts);
+    Memory::CopyToIf (&merged.fPresentationURL, dynamicallyDiscoveredDevice.fPresentationURL);
+    Memory::AccumulateIf (&merged.fAttachedNetworkInterfaces, dynamicallyDiscoveredDevice.fAttachedNetworkInterfaces);
+    Memory::CopyToIf (&merged.fOperatingSystem, dynamicallyDiscoveredDevice.fOperatingSystem);
+    Memory::CopyToIf (&merged.fDebugProps, dynamicallyDiscoveredDevice.fDebugProps);
+
+    return merged;
 }
 
 /*

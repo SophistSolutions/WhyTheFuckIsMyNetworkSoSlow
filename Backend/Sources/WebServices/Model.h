@@ -293,6 +293,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         nonvirtual String ToString () const;
 
         static const DataExchange::ObjectVariantMapper kMapper;
+
+        static Device Merge (const Device& databaseDevice, const Device& dynamicallyDiscoveredDevice);
     };
 
     struct DeviceSortParamters {

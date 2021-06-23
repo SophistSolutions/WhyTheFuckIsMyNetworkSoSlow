@@ -3,6 +3,9 @@
  */
 #include "Stroika/Frameworks/StroikaPreComp.h"
 
+#include "Stroika/Foundation/Common/GUID.h"
+#include "Stroika/Foundation/Common/KeyValuePair.h"
+#include "Stroika/Foundation/Common/Property.h"
 #include "Stroika/Foundation/DataExchange/ObjectVariantMapper.h"
 #include "Stroika/Foundation/Database/ORM/Schema.h"
 #include "Stroika/Foundation/Database/SQLite.h"
@@ -26,6 +29,7 @@ using namespace Stroika::Foundation::Characters;
 using namespace Stroika::Foundation::Containers;
 using namespace Stroika::Foundation::Common;
 using namespace Stroika::Foundation::Database;
+using namespace Stroika::Foundation::DataExchange;
 using namespace Stroika::Foundation::Execution;
 using namespace Stroika::Foundation::Memory;
 using namespace Stroika::Foundation::IO::Network;
@@ -35,6 +39,7 @@ using namespace WhyTheFuckIsMyNetworkSoSlow;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices;
 
+using Stroika::Foundation::Common::ConstantProperty;
 using Stroika::Foundation::Common::GUID;
 
 namespace {
@@ -71,7 +76,26 @@ namespace {
     namespace DBAccess_ {
         using namespace ORM;
         using namespace SQLite;
+
+        constexpr VariantValue::Type kRepresentIDAs_ = VariantValue::Type::eBLOB; // else as string
+
         Execution::Thread::Ptr sDatabaseSyncThread_{};
+
+        /*
+         *  Combined mapper for objects we write to the database. Contains all the objects mappers we need merged together,
+         *  and any touchups on represenation we need (like writing GUID as BLOB rather than string).
+         */
+        const ConstantProperty<ObjectVariantMapper> kDBObjectMapper_{[] () {
+            ObjectVariantMapper mapper;
+
+            mapper += IntegratedModel::Device::kMapper;
+            mapper += IntegratedModel::Network::kMapper;
+
+            // ONLY DO THIS FOR WHEN WRITING TO DB -- store GUIDs as BLOBs - at least for database interactions (cuz more efficient)
+            mapper.AddCommonType<Stroika::Foundation::Common::GUID> (kRepresentIDAs_);
+
+            return mapper;
+        }};
 
         const ORM::Schema::Table kDeviceTableSchema_{
             L"Devices",
@@ -84,10 +108,10 @@ namespace {
                 /**
                  *  For ID, generate random GUID (BLOB) automatically in database
                  */
-                {.fName = L"ID", .fVariantValueFieldName = L"id"sv, .fVariantType = VariantValue::eBLOB, .fIsKeyField = true, .fDefaultExpression = L"randomblob(16)"sv, .fNotNull = true},
+                {.fName = L"ID", .fVariantValueFieldName = L"id"sv, .fVariantType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = L"randomblob(16)"sv, .fNotNull = true},
                 {.fName = L"name", .fVariantType = VariantValue::eString, .fNotNull = false}
 #else
-                {L"ID", L"id"sv, false, VariantValue::eBLOB, nullopt, true, nullopt, L"randomblob(16)"sv, true},
+                {L"ID", L"id"sv, false, kRepresentIDAs_, nullopt, true, nullopt, L"randomblob(16)"sv, true},
                 {L"name", nullopt, false, VariantValue::eString, nullopt, nullopt, nullopt, nullopt, false}
 #endif
             },
@@ -103,29 +127,77 @@ namespace {
                 /**
                  *  For ID, generate random GUID (BLOB) automatically in database
                  */
-                {.fName = L"ID", .fVariantValueFieldName = L"id"sv, .fVariantType = VariantValue::eBLOB, .fIsKeyField = true, .fDefaultExpression = L"randomblob(16)"sv, .fNotNull = true},
+                {.fName = L"ID", .fVariantValueFieldName = L"id"sv, .fVariantType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = L"randomblob(16)"sv, .fNotNull = true},
                 {.fName = L"name", .fVariantType = VariantValue::eString, .fNotNull = false}
 #else
-                {L"ID", L"id"sv, false, VariantValue::eBLOB, nullopt, true, nullopt, L"randomblob(16)"sv, true},
+                {L"ID", L"id"sv, false, kRepresentIDAs_, nullopt, true, nullopt, L"randomblob(16)"sv, true},
                 {L"name", nullopt, false, VariantValue::eString, nullopt, nullopt, nullopt, nullopt, false}
 #endif
             },
             ORM::Schema::CatchAllField{}};
+        static_assert (kRepresentIDAs_ == VariantValue::eBLOB); // @todo to support string, just change '.fDefaultExpression'
 
         void addDevice (Connection::Ptr conn, const IntegratedModel::Device& d)
         {
             Statement addDeviceStatement{conn, Schema::StandardSQLStatements{kDeviceTableSchema_}.Insert ()};
-            addDeviceStatement.Execute (kDeviceTableSchema_.MapToDB (IntegratedModel::Device::kMapper.FromObject (d).As<Mapping<String, VariantValue>> ()));
+            addDeviceStatement.Bind (kDeviceTableSchema_.MapToDB (kDBObjectMapper_->FromObject (d).As<Mapping<String, VariantValue>> ()));
+            DbgTrace (L"sqlorg = %s", addDeviceStatement.GetSQL ().c_str ());
+            DbgTrace (L"sqlorgexpanded = %s", addDeviceStatement.GetSQL (Statement::WhichSQLFlag::eExpanded).c_str ());
+            addDeviceStatement.Execute ();
+        }
+        optional<IntegratedModel::Device> getDeviceByID (Connection::Ptr conn, const GUID& id)
+        {
+            using DataExchange::VariantValue;
+            using IntegratedModel::Device;
+            using Stroika::Foundation::Common::KeyValuePair;
+            Statement getDeviceStatement{conn, Schema::StandardSQLStatements{kDeviceTableSchema_}.GetByID ()};
+            getDeviceStatement.Bind (initializer_list<KeyValuePair<String, VariantValue>>{{kDeviceTableSchema_.GetIDField ()->fName, VariantValue{kDBObjectMapper_->FromObject (id)}}});
+
+            DbgTrace (L"sqlorg = %s", getDeviceStatement.GetSQL ().c_str ());
+            DbgTrace (L"sqlorgexpanded = %s", getDeviceStatement.GetSQL (Statement::WhichSQLFlag::eExpanded).c_str ());
+            auto rows = getDeviceStatement.GetAllRows ()
+                            .Select<Device> ([] (const Statement::Row& r) {
+                                return kDBObjectMapper_->ToObject<Device> (VariantValue{kDeviceTableSchema_.MapFromDB (r)});
+                            });
+            if (rows.empty ()) {
+                return nullopt;
+            }
+            Ensure (rows.size () == 1); // cuz arg sb a key
+            return *rows.First ();
+        }
+        void addOrUpdateDevice (Connection::Ptr conn, const IntegratedModel::Device& d)
+        {
+            Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...addOrUpdateDevice", L"...,d=%s", Characters::ToString (d).c_str ())};
+            using IntegratedModel::Device;
+            if (d.name.StartsWith (L"John")) {
+                int breakhere = 1;
+            }
+            if (auto dbDev = getDeviceByID (conn, d.fGUID)) {
+                Device    merged = Device::Merge (*dbDev, d);
+                Statement updateDeviceStatement{conn, Schema::StandardSQLStatements{kDeviceTableSchema_}.UpdateByID ()};
+                updateDeviceStatement.Execute (kDeviceTableSchema_.MapToDB (kDBObjectMapper_->FromObject (merged).As<Mapping<String, VariantValue>> ()));
+            }
+            else {
+                try {
+                    addDevice (conn, d);
+                }
+                catch (...) {
+
+                    auto dbDevx = getDeviceByID (conn, d.fGUID);
+
+                    throw;
+                }
+            }
         }
         void addNetwork (Connection::Ptr conn, const IntegratedModel::Network& n)
         {
             Statement addDeviceStatement{conn, Schema::StandardSQLStatements{kNetworkTableSchema_}.Insert ()};
-            addDeviceStatement.Execute (kNetworkTableSchema_.MapToDB (IntegratedModel::Network::kMapper.FromObject (n).As<Mapping<String, VariantValue>> ()));
+            addDeviceStatement.Execute (kNetworkTableSchema_.MapToDB (kDBObjectMapper_->FromObject (n).As<Mapping<String, VariantValue>> ()));
         }
 
         Connection::Ptr SetupDB_ ()
         {
-            auto dbPath = IO::FileSystem::WellKnownLocations::GetApplicationData () / "WhyTheFuckIsMyNetworkSoSlow" / "wtf.db";
+            auto dbPath = IO::FileSystem::WellKnownLocations::GetApplicationData () / "WhyTheFuckIsMyNetworkSoSlow" / "db-v1.db";
             filesystem::create_directories (dbPath.parent_path ());
 #if __cpp_designated_initializers
             auto options = Options{.fDBPath = dbPath, .fThreadingMode = Options::ThreadingMode::eMultiThread};
@@ -169,7 +241,7 @@ namespace {
                 try {
                     // quick hack - use WSAPI to fetch all networks
                     for (auto di : IntegratedModel::Mgr::sThe.GetDevices ()) {
-                        addDevice (conn, di);
+                        addOrUpdateDevice (conn, di);
                     }
                 }
                 catch (const Thread::AbortException&) {
