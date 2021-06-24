@@ -7,8 +7,8 @@
 #include "Stroika/Foundation/Common/KeyValuePair.h"
 #include "Stroika/Foundation/Common/Property.h"
 #include "Stroika/Foundation/DataExchange/ObjectVariantMapper.h"
-#include "Stroika/Foundation/Database/ORM/Schema.h"
-#include "Stroika/Foundation/Database/SQLite.h"
+#include "Stroika/Foundation/Database/SQL/ORM/Schema.h"
+#include "Stroika/Foundation/Database/SQL/SQLite.h"
 #include "Stroika/Foundation/Debug/TimingTrace.h"
 #include "Stroika/Foundation/Execution/Sleep.h"
 #include "Stroika/Foundation/IO/FileSystem/WellKnownLocations.h"
@@ -74,8 +74,8 @@ namespace {
 
 namespace {
     namespace DBAccess_ {
-        using namespace ORM;
-        using namespace SQLite;
+        using namespace SQL::ORM;
+        using namespace SQL::SQLite;
 
         constexpr VariantValue::Type kRepresentIDAs_ = VariantValue::Type::eBLOB; // else as string
 
@@ -97,13 +97,13 @@ namespace {
             return mapper;
         }};
 
-        const ORM::Schema::Table kDeviceTableSchema_{
+        const Schema::Table kDeviceTableSchema_{
             L"Devices",
             /*
              *  use the same names as the ObjectVariantMapper for simpler mapping, or specify an alternate name
              *  for ID, just as an example.
              */
-            Collection<ORM::Schema::Field>{
+            Collection<Schema::Field>{
 #if __cpp_designated_initializers
                 /**
                  *  For ID, generate random GUID (BLOB) automatically in database
@@ -115,14 +115,14 @@ namespace {
                 {L"name", nullopt, false, VariantValue::eString, nullopt, nullopt, nullopt, nullopt, false}
 #endif
             },
-            ORM::Schema::CatchAllField{}};
-        const ORM::Schema::Table kNetworkTableSchema_{
+            Schema::CatchAllField{}};
+        const Schema::Table kNetworkTableSchema_{
             L"Networks",
             /*
              *  use the same names as the ObjectVariantMapper for simpler mapping, or specify an alternate name
              *  for ID, just as an example.
              */
-            Collection<ORM::Schema::Field>{
+            Collection<Schema::Field>{
 #if __cpp_designated_initializers
                 /**
                  *  For ID, generate random GUID (BLOB) automatically in database
@@ -134,7 +134,7 @@ namespace {
                 {L"name", nullopt, false, VariantValue::eString, nullopt, nullopt, nullopt, nullopt, false}
 #endif
             },
-            ORM::Schema::CatchAllField{}};
+            Schema::CatchAllField{}};
         static_assert (kRepresentIDAs_ == VariantValue::eBLOB); // @todo to support string, just change '.fDefaultExpression'
 
         void addDevice (Connection::Ptr conn, const IntegratedModel::Device& d)

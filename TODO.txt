@@ -1,4 +1,36 @@
+now WRITE devices to DB properly.
 
+But must refactor stroika DB code so this can be
+much simpler.
+
+THEN - go back and do same for networks,
+
+and then fix logic so DISK list merged with dynamic list.
+
+And make much faster.
+
+And LUCKY we dont have to deal with conflicing
+IDS yet, but need new random ID and automatic guessed
+'merges' based on hw-addr, and then undable merged
+lookups (magic combines/joins).
+
+Since merge intrindically probably costly,
+we can CACHE in memory the 'merged' device list
+(or best if can be done cheaply in sql).
+
+---
+ONCE we have a STORAGE for devices, add command
+to "DELETE DEVICE HISOTRY" and/or network/networinterface.
+
+(maybe delete device history > n days old)
+(maybe 'rollup device history > n days old)
+
++ In About/AppData - include Database
+  size used, and in machine area, say 
+  space left on device where DB resides (or maybe just in one place say both numbers)
+
++ Debug why RunQ number (on windows and
+  UNIX not printing what I expected))
 ----
 
 	review ABOUT usage - capture set etc... not working the way I expected with regular update
