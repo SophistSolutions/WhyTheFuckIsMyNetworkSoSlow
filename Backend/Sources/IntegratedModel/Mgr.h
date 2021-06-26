@@ -14,7 +14,7 @@
 #include "../WebServices/Model.h"
 
 /**
- *
+ *  Wrapper on the discovered devices and networks, as well as persistence.
  */
 namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel {
 
