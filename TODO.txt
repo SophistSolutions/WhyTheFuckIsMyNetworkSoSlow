@@ -1,22 +1,21 @@
-now WRITE devices to DB properly.
+- Fix intrmediatestoreage layer -
+	so now IMMEDIATELY return reads from database + updates from scans.
+	- and then we should be able to see/review old devices/old data
 
-But must refactor stroika DB code so this can be
-much simpler.
+			and then fix logic so DISK list merged with dynamic list.
 
-THEN - go back and do same for networks,
+			And LUCKY we dont have to deal with conflicing
+			IDS yet, but need new random ID and automatic guessed
+			'merges' based on hw-addr, and then undable merged
+			lookups (magic combines/joins).
 
-and then fix logic so DISK list merged with dynamic list.
+			Since merge intrindically probably costly,
+			we can CACHE in memory the 'merged' device list
+			(or best if can be done cheaply in sql).
 
-And make much faster.
 
-And LUCKY we dont have to deal with conflicing
-IDS yet, but need new random ID and automatic guessed
-'merges' based on hw-addr, and then undable merged
-lookups (magic combines/joins).
-
-Since merge intrindically probably costly,
-we can CACHE in memory the 'merged' device list
-(or best if can be done cheaply in sql).
+---
+	> Probably solve (stroika) data schema auto-update / migration problem, so easier as I update data model
 
 ---
 ONCE we have a STORAGE for devices, add command
