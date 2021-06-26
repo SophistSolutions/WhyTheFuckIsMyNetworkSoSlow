@@ -202,6 +202,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         nonvirtual String ToString () const;
 
         static const DataExchange::ObjectVariantMapper kMapper;
+
+        static Network Merge (const Network& databaseNetwork, const Network& dynamicallyDiscoveredNetwork);
     };
 
     struct NetworkAttachmentInfo {

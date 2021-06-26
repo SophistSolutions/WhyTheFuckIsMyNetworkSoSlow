@@ -34,7 +34,7 @@ namespace Stroika::Foundation::DataExchange {
     template <>
     CIDR ObjectVariantMapper::ToObject (const ToObjectMapperType<CIDR>& toObjectMapper, const VariantValue& v) const
     {
-        CIDR tmp{InternetAddress{}, 32};
+        CIDR tmp{InternetAddress{}, 0};
         ToObject (toObjectMapper, v, &tmp);
         return tmp;
     }
@@ -98,6 +98,25 @@ const ObjectVariantMapper Model::Manufacturer::kMapper = [] () {
  ********************************** Model::Network ******************************
  ********************************************************************************
  */
+Network Network::Merge (const Network& databaseNetwork, const Network& dynamicallyDiscoveredNetwork)
+{
+    Network merged = databaseNetwork;
+    Require (databaseNetwork.fGUID == dynamicallyDiscoveredNetwork.fGUID); // guid same
+                                                                           // name from DB takes precedence
+    merged.fNetworkAddresses.AddAll (dynamicallyDiscoveredNetwork.fNetworkAddresses);
+    Memory::CopyToIf (&merged.fFriendlyName, dynamicallyDiscoveredNetwork.fFriendlyName);
+    merged.fAttachedInterfaces.AddAll (dynamicallyDiscoveredNetwork.fAttachedInterfaces);
+    dynamicallyDiscoveredNetwork.fGateways.Apply ([&] (auto inetAddr) {  if (not merged.fGateways.Contains (inetAddr)) {merged.fGateways += inetAddr;} });
+    dynamicallyDiscoveredNetwork.fDNSServers.Apply ([&] (auto inetAddr) {  if (not merged.fGateways.Contains (inetAddr)) {merged.fDNSServers += inetAddr;} });
+    Memory::AccumulateIf (&merged.fExternalAddresses, dynamicallyDiscoveredNetwork.fExternalAddresses);
+    Memory::CopyToIf (&merged.fGEOLocInformation, dynamicallyDiscoveredNetwork.fGEOLocInformation);
+    Memory::CopyToIf (&merged.fInternetServiceProvider, dynamicallyDiscoveredNetwork.fInternetServiceProvider);
+#if qDebug
+    Memory::CopyToIf (&merged.fDebugProps, dynamicallyDiscoveredNetwork.fDebugProps);
+#endif
+    return merged;
+}
+
 String Network::ToString () const
 {
     Characters::StringBuilder sb;

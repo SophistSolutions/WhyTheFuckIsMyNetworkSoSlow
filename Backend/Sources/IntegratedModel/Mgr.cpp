@@ -8,6 +8,7 @@
 #include "Stroika/Foundation/Common/Property.h"
 #include "Stroika/Foundation/DataExchange/ObjectVariantMapper.h"
 #include "Stroika/Foundation/Database/SQL/ORM/Schema.h"
+#include "Stroika/Foundation/Database/SQL/ORM/TableConnection.h"
 #include "Stroika/Foundation/Database/SQL/SQLite.h"
 #include "Stroika/Foundation/Debug/TimingTrace.h"
 #include "Stroika/Foundation/Execution/Sleep.h"
@@ -137,64 +138,17 @@ namespace {
             Schema::CatchAllField{}};
         static_assert (kRepresentIDAs_ == VariantValue::eBLOB); // @todo to support string, just change '.fDefaultExpression'
 
-        void addDevice (Connection::Ptr conn, const IntegratedModel::Device& d)
+        template <typename T>
+        void addOrUpdate (SQL::ORM::TableConnection<T>* dbConnTable, const T& d)
         {
-            Statement addDeviceStatement{conn, Schema::StandardSQLStatements{kDeviceTableSchema_}.Insert ()};
-            addDeviceStatement.Bind (kDeviceTableSchema_.MapToDB (kDBObjectMapper_->FromObject (d).As<Mapping<String, VariantValue>> ()));
-            DbgTrace (L"sqlorg = %s", addDeviceStatement.GetSQL ().c_str ());
-            DbgTrace (L"sqlorgexpanded = %s", addDeviceStatement.GetSQL (Statement::WhichSQLFlag::eExpanded).c_str ());
-            addDeviceStatement.Execute ();
-        }
-        optional<IntegratedModel::Device> getDeviceByID (Connection::Ptr conn, const GUID& id)
-        {
-            using DataExchange::VariantValue;
-            using IntegratedModel::Device;
-            using Stroika::Foundation::Common::KeyValuePair;
-            Statement getDeviceStatement{conn, Schema::StandardSQLStatements{kDeviceTableSchema_}.GetByID ()};
-            getDeviceStatement.Bind (initializer_list<KeyValuePair<String, VariantValue>>{{kDeviceTableSchema_.GetIDField ()->fName, VariantValue{kDBObjectMapper_->FromObject (id)}}});
-
-            DbgTrace (L"sqlorg = %s", getDeviceStatement.GetSQL ().c_str ());
-            DbgTrace (L"sqlorgexpanded = %s", getDeviceStatement.GetSQL (Statement::WhichSQLFlag::eExpanded).c_str ());
-            auto rows = getDeviceStatement.GetAllRows ()
-                            .Select<Device> ([] (const Statement::Row& r) {
-                                return kDBObjectMapper_->ToObject<Device> (VariantValue{kDeviceTableSchema_.MapFromDB (r)});
-                            });
-            if (rows.empty ()) {
-                return nullopt;
-            }
-            Ensure (rows.size () == 1); // cuz arg sb a key
-            return *rows.First ();
-        }
-        void addOrUpdateDevice (Connection::Ptr conn, const IntegratedModel::Device& d)
-        {
-            Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...addOrUpdateDevice", L"...,d=%s", Characters::ToString (d).c_str ())};
-            using IntegratedModel::Device;
-            if (d.name.StartsWith (L"John")) {
-                int breakhere = 1;
-            }
-            if (auto dbDev = getDeviceByID (conn, d.fGUID)) {
-                Device    merged = Device::Merge (*dbDev, d);
-                Statement updateDeviceStatement{conn, Schema::StandardSQLStatements{kDeviceTableSchema_}.UpdateByID ()};
-                updateDeviceStatement.Execute (kDeviceTableSchema_.MapToDB (kDBObjectMapper_->FromObject (merged).As<Mapping<String, VariantValue>> ()));
+            Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...addOrUpdate", L"...,d=%s", Characters::ToString (d).c_str ())};
+            if (auto dbObj = dbConnTable->GetByID (d.fGUID)) {
+                dbConnTable->Update (T::Merge (*dbObj, d));
             }
             else {
-                try {
-                    addDevice (conn, d);
-                }
-                catch (...) {
-
-                    auto dbDevx = getDeviceByID (conn, d.fGUID);
-
-                    throw;
-                }
+                dbConnTable->AddNew (d);
             }
         }
-        void addNetwork (Connection::Ptr conn, const IntegratedModel::Network& n)
-        {
-            Statement addDeviceStatement{conn, Schema::StandardSQLStatements{kNetworkTableSchema_}.Insert ()};
-            addDeviceStatement.Execute (kNetworkTableSchema_.MapToDB (kDBObjectMapper_->FromObject (n).As<Mapping<String, VariantValue>> ()));
-        }
-
         Connection::Ptr SetupDB_ ()
         {
             auto dbPath = IO::FileSystem::WellKnownLocations::GetApplicationData () / "WhyTheFuckIsMyNetworkSoSlow" / "db-v1.db";
@@ -212,11 +166,23 @@ namespace {
         }
         void BackgroundDatabaseThread_ ()
         {
-            Connection::Ptr conn;
+            Connection::Ptr                                                 conn;
+            unique_ptr<SQL::ORM::TableConnection<IntegratedModel::Device>>  deviceTableConnection;
+            unique_ptr<SQL::ORM::TableConnection<IntegratedModel::Network>> networkTableConnection;
             while (true) {
                 try {
                     if (conn == nullptr) {
-                        conn = SetupDB_ ();
+                        conn                   = SetupDB_ ();
+                        deviceTableConnection  = make_unique<SQL::ORM::TableConnection<IntegratedModel::Device>> (SQL::ORM::TableConnection<IntegratedModel::Device>{conn, kDeviceTableSchema_, kDBObjectMapper_ ()});
+                        networkTableConnection = make_unique<SQL::ORM::TableConnection<IntegratedModel::Network>> (SQL::ORM::TableConnection<IntegratedModel::Network>{conn, kNetworkTableSchema_, kDBObjectMapper_ ()});
+                    }
+                    // quick hack - use WSAPI to fetch all networsk
+                    // quick hack - use WSAPI to fetch all networks
+                    for (auto ni : IntegratedModel::Mgr::sThe.GetNetworks ()) {
+                        addOrUpdate (networkTableConnection.get (), ni);
+                    }
+                    for (auto di : IntegratedModel::Mgr::sThe.GetDevices ()) {
+                        addOrUpdate (deviceTableConnection.get (), di);
                     }
                 }
                 catch (const Thread::AbortException&) {
@@ -226,30 +192,6 @@ namespace {
                     DbgTrace (L"Ignoring exception in BackgroundDatabaseThread_ loop: %s", Characters::ToString (current_exception ()).c_str ());
                 }
                 Execution::Sleep (30s); // quick hack - write out what we have every 30 seconds
-                try {
-                    // quick hack - use WSAPI to fetch all networsk
-                    for (auto ni : IntegratedModel::Mgr::sThe.GetNetworks ()) {
-                        addNetwork (conn, ni);
-                    }
-                }
-                catch (const Thread::AbortException&) {
-                    Execution::ReThrow ();
-                }
-                catch (...) {
-                    DbgTrace (L"Ignoring exception in BackgroundDatabaseThread_ loop: %s", Characters::ToString (current_exception ()).c_str ());
-                }
-                try {
-                    // quick hack - use WSAPI to fetch all networks
-                    for (auto di : IntegratedModel::Mgr::sThe.GetDevices ()) {
-                        addOrUpdateDevice (conn, di);
-                    }
-                }
-                catch (const Thread::AbortException&) {
-                    Execution::ReThrow ();
-                }
-                catch (...) {
-                    DbgTrace (L"Ignoring exception in BackgroundDatabaseThread_ loop: %s", Characters::ToString (current_exception ()).c_str ());
-                }
             }
         }
     }
