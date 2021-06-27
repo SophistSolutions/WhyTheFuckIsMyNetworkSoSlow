@@ -139,9 +139,9 @@ namespace {
         static_assert (kRepresentIDAs_ == VariantValue::eBLOB); // @todo to support string, just change '.fDefaultExpression'
 
         template <typename T>
-        void addOrUpdate (SQL::ORM::TableConnection<T>* dbConnTable, const T& d)
+        void AddOrMergeUpdate_ (SQL::ORM::TableConnection<T>* dbConnTable, const T& d)
         {
-            Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...addOrUpdate", L"...,d=%s", Characters::ToString (d).c_str ())};
+            Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...AddOrMergeUpdate_", L"...,d=%s", Characters::ToString (d).c_str ())};
             if (auto dbObj = dbConnTable->GetByID (d.fGUID)) {
                 dbConnTable->Update (T::Merge (*dbObj, d));
             }
@@ -173,16 +173,15 @@ namespace {
                 try {
                     if (conn == nullptr) {
                         conn                   = SetupDB_ ();
-                        deviceTableConnection  = make_unique<SQL::ORM::TableConnection<IntegratedModel::Device>> (SQL::ORM::TableConnection<IntegratedModel::Device>{conn, kDeviceTableSchema_, kDBObjectMapper_ ()});
-                        networkTableConnection = make_unique<SQL::ORM::TableConnection<IntegratedModel::Network>> (SQL::ORM::TableConnection<IntegratedModel::Network>{conn, kNetworkTableSchema_, kDBObjectMapper_ ()});
+                        deviceTableConnection  = make_unique<SQL::ORM::TableConnection<IntegratedModel::Device>> (conn, kDeviceTableSchema_, kDBObjectMapper_);
+                        networkTableConnection = make_unique<SQL::ORM::TableConnection<IntegratedModel::Network>> (conn, kNetworkTableSchema_, kDBObjectMapper_);
                     }
-                    // quick hack - use WSAPI to fetch all networsk
-                    // quick hack - use WSAPI to fetch all networks
+                    // quick hack - use WSAPI to fetch all networks/devices
                     for (auto ni : IntegratedModel::Mgr::sThe.GetNetworks ()) {
-                        addOrUpdate (networkTableConnection.get (), ni);
+                        AddOrMergeUpdate_ (networkTableConnection.get (), ni);
                     }
                     for (auto di : IntegratedModel::Mgr::sThe.GetDevices ()) {
-                        addOrUpdate (deviceTableConnection.get (), di);
+                        AddOrMergeUpdate_ (deviceTableConnection.get (), di);
                     }
                 }
                 catch (const Thread::AbortException&) {
