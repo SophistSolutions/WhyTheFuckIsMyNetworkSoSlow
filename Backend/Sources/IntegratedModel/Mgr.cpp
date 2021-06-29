@@ -292,6 +292,9 @@ namespace {
                     for (auto di : DiscoveryWrapper_::GetDevices_ ()) {
                         AddOrMergeUpdate_ (deviceTableConnection.get (), di);
                     }
+
+                    // only update periodically
+                    Execution::Sleep (30s);
                 }
                 catch (const Thread::AbortException&) {
                     Execution::ReThrow ();
