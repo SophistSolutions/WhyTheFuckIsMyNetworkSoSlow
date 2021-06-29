@@ -284,7 +284,7 @@ namespace {
                         sDBNetworks_.store (networkTableConnection->GetAll ());
                     }
 
-                    // @todo UPDATE sDBNetworks_ on each one
+                    // @todo UPDATE sDBDevices_/sDBNetworks_ to reflect reflect these merges (but maybe not useful)
                     for (auto ni : DiscoveryWrapper_::GetNetworks_ ()) {
                         AddOrMergeUpdate_ (networkTableConnection.get (), ni);
                     }
