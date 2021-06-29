@@ -12,6 +12,7 @@
 #include "Stroika/Foundation/Database/SQL/SQLite.h"
 #include "Stroika/Foundation/Debug/TimingTrace.h"
 #include "Stroika/Foundation/Execution/Sleep.h"
+#include "Stroika/Foundation/Execution/Synchronized.h"
 #include "Stroika/Foundation/IO/FileSystem/WellKnownLocations.h"
 
 #include "../Common/BLOBMgr.h"
@@ -74,6 +75,104 @@ namespace {
 }
 
 namespace {
+    /**
+     *  Wrappers on the device manager APIs, that just fetch the discovered devices and convert to common
+     *  integrated model (no datebase awareness)
+     */
+    namespace DiscoveryWrapper_ {
+        using IntegratedModel::Device;
+        using IntegratedModel::Network;
+        using IntegratedModel::NetworkAttachmentInfo;
+        Sequence<Network> GetNetworks_ ()
+        {
+            Debug::TimingTrace ttrc{L"DiscoveryWrapper_::GetNetworks_", 0.1};
+            Sequence<Network>  result;
+            for (Discovery::Network n : Discovery::NetworksMgr::sThe.CollectActiveNetworks ()) {
+                Network nw{n.fNetworkAddresses};
+                nw.fGUID                    = n.fGUID;
+                nw.fFriendlyName            = n.fFriendlyName;
+                nw.fNetworkAddresses        = n.fNetworkAddresses;
+                nw.fAttachedInterfaces      = n.fAttachedNetworkInterfaces;
+                nw.fDNSServers              = n.fDNSServers;
+                nw.fGateways                = n.fGateways;
+                nw.fExternalAddresses       = n.fExternalAddresses;
+                nw.fGEOLocInformation       = n.fGEOLocInfo;
+                nw.fInternetServiceProvider = n.fISP;
+#if qDebug
+                if (not n.fDebugProps.empty ()) {
+                    nw.fDebugProps = n.fDebugProps;
+                }
+#endif
+                result += nw;
+            }
+#if USE_NOISY_TRACE_IN_THIS_MODULE_
+            DbgTrace (L"returns: %s", Characters::ToString (result).c_str ());
+#endif
+            return result;
+        }
+        Sequence<Device> GetDevices_ ()
+        {
+            Debug::TimingTrace        ttrc{L"DiscoveryWrapper_::GetDevices_", .1};
+            // Fetch (UNSORTED) list of devices
+            return Sequence<Device>{Discovery::DevicesMgr::sThe.GetActiveDevices ().Select<Device> ([] (const Discovery::Device& d) {
+                Device newDev;
+                newDev.fGUID = d.fGUID;
+                newDev.name  = d.name;
+                if (not d.fTypes.empty ()) {
+                    newDev.fTypes = d.fTypes; // leave missing if no discovered types
+                }
+                newDev.fLastSeenAt = d.fLastSeenAt;
+                newDev.fOpenPorts  = d.fOpenPorts;
+                for (auto i : d.fAttachedNetworks) {
+                    constexpr bool            kIncludeLinkLocalAddresses_{Discovery::kIncludeLinkLocalAddressesInDiscovery};
+                    constexpr bool            kIncludeMulticastAddreses_{Discovery::kIncludeMulticastAddressesInDiscovery};
+                    Sequence<InternetAddress> addrs2Report;
+                    for (auto li : i.fValue.localAddresses) {
+                        if (not kIncludeLinkLocalAddresses_ and li.IsLinkLocalAddress ()) {
+                            continue;
+                        }
+                        if (not kIncludeMulticastAddreses_ and li.IsMulticastAddress ()) {
+                            continue;
+                        }
+                        addrs2Report += li;
+                    }
+                    newDev.fAttachedNetworks.Add (i.fKey, NetworkAttachmentInfo{i.fValue.hardwareAddresses, addrs2Report});
+                }
+                newDev.fAttachedNetworkInterfaces = d.fAttachedInterfaces; // @todo must merge += (but only when merging across differnt discoverers/networks)
+                newDev.fPresentationURL           = d.fPresentationURL;
+                newDev.fManufacturer              = d.fManufacturer;
+                newDev.fIcon                      = TransformURL2LocalStorage_ (d.fIcon);
+                newDev.fOperatingSystem           = d.fOperatingSystem;
+#if qDebug
+                if (not d.fDebugProps.empty ()) {
+                    newDev.fDebugProps = d.fDebugProps;
+                }
+                {
+                    // List OUI names for each hardware address (and explicit missing for those we cannot lookup)
+                    using VariantValue = DataExchange::VariantValue;
+                    Mapping<String, VariantValue> t;
+                    for (auto i : d.fAttachedNetworks) {
+                        for (auto hwa : i.fValue.hardwareAddresses) {
+                            auto o = BackendApp::Common::LookupEthernetMACAddressOUIFromPrefix (hwa);
+                            t.Add (hwa, o ? VariantValue{*o} : VariantValue{});
+                        }
+                    }
+                    if (not t.empty ()) {
+                        if (not newDev.fDebugProps.has_value ()) {
+                            newDev.fDebugProps = Mapping<String, VariantValue>{};
+                        }
+                        newDev.fDebugProps->Add (L"MACAddr2OUINames", VariantValue{t});
+                    }
+                }
+#endif
+                return newDev;
+            })};
+        }
+
+    }
+}
+
+namespace {
     namespace DBAccess_ {
         using namespace SQL::ORM;
         using namespace SQL::SQLite;
@@ -81,6 +180,11 @@ namespace {
         constexpr VariantValue::Type kRepresentIDAs_ = VariantValue::Type::eBLOB; // else as string
 
         Execution::Thread::Ptr sDatabaseSyncThread_{};
+
+        // the latest copy of what is in the DB
+        Synchronized<Sequence<IntegratedModel::Device>> sDBDevices_;
+        // the latest copy of what is in the DB
+        Synchronized<Sequence<IntegratedModel::Network>> sDBNetworks_;
 
         /*
          *  Combined mapper for objects we write to the database. Contains all the objects mappers we need merged together,
@@ -175,12 +279,17 @@ namespace {
                         conn                   = SetupDB_ ();
                         deviceTableConnection  = make_unique<SQL::ORM::TableConnection<IntegratedModel::Device>> (conn, kDeviceTableSchema_, kDBObjectMapper_);
                         networkTableConnection = make_unique<SQL::ORM::TableConnection<IntegratedModel::Network>> (conn, kNetworkTableSchema_, kDBObjectMapper_);
+ // @todo any expcetion in here, retry whole thing
+                        sDBDevices_.store (deviceTableConnection->GetAll ());
+                        sDBNetworks_.store (networkTableConnection->GetAll ());
                     }
-                    // quick hack - use WSAPI to fetch all networks/devices
-                    for (auto ni : IntegratedModel::Mgr::sThe.GetNetworks ()) {
+
+                    // @todo UPDATE sDBNetworks_ on each one
+                    for (auto ni : DiscoveryWrapper_::GetNetworks_ ()) {
                         AddOrMergeUpdate_ (networkTableConnection.get (), ni);
                     }
-                    for (auto di : IntegratedModel::Mgr::sThe.GetDevices ()) {
+                    // @todo UPDATE sDBDevices_ on each one
+                    for (auto di : DiscoveryWrapper_::GetDevices_ ()) {
                         AddOrMergeUpdate_ (deviceTableConnection.get (), di);
                     }
                 }
@@ -190,7 +299,7 @@ namespace {
                 catch (...) {
                     DbgTrace (L"Ignoring exception in BackgroundDatabaseThread_ loop: %s", Characters::ToString (current_exception ()).c_str ());
                 }
-                Execution::Sleep (30s); // quick hack - write out what we have every 30 seconds
+                // periodically write the latest discovered data to the database
             }
         }
     }
@@ -221,62 +330,18 @@ Sequence<IntegratedModel::Device> IntegratedModel::Mgr::GetDevices () const
 {
     Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"IntegratedModel::Mgr::GetDevices")};
     Debug::TimingTrace        ttrc{L"IntegratedModel::Mgr::GetDevices", .1};
-
-    // Fetch (UNSORTED) list of devices
-    Sequence<Device> devices = Sequence<Device>{Discovery::DevicesMgr::sThe.GetActiveDevices ().Select<Device> ([] (const Discovery::Device& d) {
-        Device newDev;
-        newDev.fGUID = d.fGUID;
-        newDev.name  = d.name;
-        if (not d.fTypes.empty ()) {
-            newDev.fTypes = d.fTypes; // leave missing if no discovered types
+    using IntegratedModel::Device;
+    Mapping<GUID, Device> devices;  // @todo use KeyedCollection when available feature in Stroika
+    DBAccess_::sDBDevices_->Apply ([&devices] (auto d) { devices.Add (d.fGUID, d); });
+    for (Device d : DiscoveryWrapper_::GetDevices_ ()) {
+        if (auto dbDevice = devices.Lookup (d.fGUID)) {
+            devices.Add (d.fGUID, Device::Merge (*dbDevice, d));
         }
-        newDev.fLastSeenAt = d.fLastSeenAt;
-        newDev.fOpenPorts  = d.fOpenPorts;
-        for (auto i : d.fAttachedNetworks) {
-            constexpr bool            kIncludeLinkLocalAddresses_{Discovery::kIncludeLinkLocalAddressesInDiscovery};
-            constexpr bool            kIncludeMulticastAddreses_{Discovery::kIncludeMulticastAddressesInDiscovery};
-            Sequence<InternetAddress> addrs2Report;
-            for (auto li : i.fValue.localAddresses) {
-                if (not kIncludeLinkLocalAddresses_ and li.IsLinkLocalAddress ()) {
-                    continue;
-                }
-                if (not kIncludeMulticastAddreses_ and li.IsMulticastAddress ()) {
-                    continue;
-                }
-                addrs2Report += li;
-            }
-            newDev.fAttachedNetworks.Add (i.fKey, NetworkAttachmentInfo{i.fValue.hardwareAddresses, addrs2Report});
+        else {
+            devices.Add (d.fGUID, d);
         }
-        newDev.fAttachedNetworkInterfaces = d.fAttachedInterfaces; // @todo must merge += (but only when merging across differnt discoverers/networks)
-        newDev.fPresentationURL           = d.fPresentationURL;
-        newDev.fManufacturer              = d.fManufacturer;
-        newDev.fIcon                      = TransformURL2LocalStorage_ (d.fIcon);
-        newDev.fOperatingSystem           = d.fOperatingSystem;
-#if qDebug
-        if (not d.fDebugProps.empty ()) {
-            newDev.fDebugProps = d.fDebugProps;
-        }
-        {
-            // List OUI names for each hardware address (and explicit missing for those we cannot lookup)
-            using VariantValue = DataExchange::VariantValue;
-            Mapping<String, VariantValue> t;
-            for (auto i : d.fAttachedNetworks) {
-                for (auto hwa : i.fValue.hardwareAddresses) {
-                    auto o = BackendApp::Common::LookupEthernetMACAddressOUIFromPrefix (hwa);
-                    t.Add (hwa, o ? VariantValue{*o} : VariantValue{});
-                }
-            }
-            if (not t.empty ()) {
-                if (not newDev.fDebugProps.has_value ()) {
-                    newDev.fDebugProps = Mapping<String, VariantValue>{};
-                }
-                newDev.fDebugProps->Add (L"MACAddr2OUINames", VariantValue{t});
-            }
-        }
-#endif
-        return newDev;
-    })};
-    return devices;
+    }
+    return Sequence<Device>{devices.MappedValues ()};
 }
 
 std::optional<IntegratedModel::Device> IntegratedModel::Mgr::GetDevice (const Common::GUID& id) const
@@ -293,28 +358,7 @@ std::optional<IntegratedModel::Device> IntegratedModel::Mgr::GetDevice (const Co
 Sequence<IntegratedModel::Network> IntegratedModel::Mgr::GetNetworks () const
 {
     Debug::TimingTrace ttrc{L"IntegratedModel::Mgr::GetNetworks", 0.1};
-    Sequence<Network>  result;
-    for (Discovery::Network n : Discovery::NetworksMgr::sThe.CollectActiveNetworks ()) {
-        Network nw{n.fNetworkAddresses};
-        nw.fGUID                    = n.fGUID;
-        nw.fFriendlyName            = n.fFriendlyName;
-        nw.fNetworkAddresses        = n.fNetworkAddresses;
-        nw.fAttachedInterfaces      = n.fAttachedNetworkInterfaces;
-        nw.fDNSServers              = n.fDNSServers;
-        nw.fGateways                = n.fGateways;
-        nw.fExternalAddresses       = n.fExternalAddresses;
-        nw.fGEOLocInformation       = n.fGEOLocInfo;
-        nw.fInternetServiceProvider = n.fISP;
-#if qDebug
-        if (not n.fDebugProps.empty ()) {
-            nw.fDebugProps = n.fDebugProps;
-        }
-#endif
-        result += nw;
-    }
-#if USE_NOISY_TRACE_IN_THIS_MODULE_
-    DbgTrace (L"returns: %s", Characters::ToString (result).c_str ());
-#endif
+    Sequence<Network>  result = DiscoveryWrapper_::GetNetworks_ ();
     return result;
 }
 

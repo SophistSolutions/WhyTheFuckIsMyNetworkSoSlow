@@ -687,11 +687,14 @@ namespace {
     optional<DiscoveryInfo_> FindMatchingDevice_ (decltype (sDiscoveredDevices_)::ReadableReference& rr, const DiscoveryInfo_& d)
     {
         for (const auto& di : rr->MappedValues ()) {
-            if (not(d.GetInternetAddresses () ^ di.GetInternetAddresses ()).empty ()) {
+            if (d.GetHardwareAddresses ().Intersects (di.GetHardwareAddresses ())) {
+                return di;
+            }
+            if (d.GetInternetAddresses ().Intersects (di.GetInternetAddresses ())) {
                 return di;
             }
         }
-        return {};
+        return nullopt;
     }
 }
 
