@@ -217,7 +217,7 @@ namespace {
                 {.fName = L"name", .fVariantType = VariantValue::eString, .fNotNull = false}
 #else
                 {L"ID", L"id"sv, false, kRepresentIDAs_, nullopt, true, nullopt, L"randomblob(16)"sv, true},
-                {L"name", nullopt, false, VariantValue::eString, nullopt, nullopt, nullopt, nullopt, false}
+                {L"name", nullopt, false, VariantValue::eString}
 #endif
             },
             Schema::CatchAllField{}};
@@ -236,7 +236,7 @@ namespace {
                 {.fName = L"name", .fVariantType = VariantValue::eString, .fNotNull = false}
 #else
                 {L"ID", L"id"sv, false, kRepresentIDAs_, nullopt, true, nullopt, L"randomblob(16)"sv, true},
-                {L"name", nullopt, false, VariantValue::eString, nullopt, nullopt, nullopt, nullopt, false}
+                {L"name", nullopt, false, VariantValue::eString}
 #endif
             },
             Schema::CatchAllField{}};
