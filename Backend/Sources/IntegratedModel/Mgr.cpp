@@ -233,10 +233,10 @@ namespace {
                  *  For ID, generate random GUID (BLOB) automatically in database
                  */
                 {.fName = L"ID", .fVariantValueFieldName = L"id"sv, .fVariantType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = L"randomblob(16)"sv, .fNotNull = true},
-                {.fName = L"name", .fVariantType = VariantValue::eString, .fNotNull = false}
+                {.fName = L"friendlyName", .fVariantType = VariantValue::eString, .fNotNull = false}
 #else
                 {L"ID", L"id"sv, false, kRepresentIDAs_, nullopt, true, nullopt, L"randomblob(16)"sv, true},
-                {L"name", nullopt, false, VariantValue::eString}
+                {L"friendlyName", nullopt, false, VariantValue::eString}
 #endif
             },
             Schema::CatchAllField{}};
@@ -258,7 +258,7 @@ namespace {
         }
         Connection::Ptr SetupDB_ ()
         {
-            auto dbPath = IO::FileSystem::WellKnownLocations::GetApplicationData () / "WhyTheFuckIsMyNetworkSoSlow" / "db-v1.db";
+            auto dbPath = IO::FileSystem::WellKnownLocations::GetApplicationData () / "WhyTheFuckIsMyNetworkSoSlow" / "db-v2.db";
             filesystem::create_directories (dbPath.parent_path ());
 #if __cpp_designated_initializers
             auto options = Options{.fDBPath = dbPath, .fThreadingMode = Options::ThreadingMode::eMultiThread};
