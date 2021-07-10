@@ -1,8 +1,7 @@
 - Fix intrmediatestoreage layer -
 
-> TableConnection object needs GetDBConnection method/property.
-> then use to create transaction around get & update method
-> (inside transaction object, but a debug timer guy which prints a log message when transactions take too long- 1 second)
+> (inside transaction object, but a debug timer guy which prints a log message when
+ transactions take too long- 1 second)
 
 
 
