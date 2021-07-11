@@ -1,3 +1,11 @@
+
+
+- UI - networks  
+   name - DEFAULTS to some combo of friendlyname and network addrs, but is editable
+
+
+
+
 - Fix intrmediatestoreage layer -
 
 > (inside transaction object, but a debug timer guy which prints a log message when
