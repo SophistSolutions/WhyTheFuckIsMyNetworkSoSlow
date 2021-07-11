@@ -86,6 +86,7 @@ namespace {
         Sequence<Network> GetNetworks_ ()
         {
             Debug::TimingTrace ttrc{L"DiscoveryWrapper_::GetNetworks_", 0.1};
+            DateTime           now = DateTime::Now ();
             Sequence<Network>  result;
             for (Discovery::Network n : Discovery::NetworksMgr::sThe.CollectActiveNetworks ()) {
                 Network nw{n.fNetworkAddresses};
@@ -98,6 +99,7 @@ namespace {
                 nw.fExternalAddresses       = n.fExternalAddresses;
                 nw.fGEOLocInformation       = n.fGEOLocInfo;
                 nw.fInternetServiceProvider = n.fISP;
+                nw.fLastSeenAt              = now; // if we are discovering it now, the network is there now...
 #if qDebug
                 if (not n.fDebugProps.empty ()) {
                     nw.fDebugProps = n.fDebugProps;

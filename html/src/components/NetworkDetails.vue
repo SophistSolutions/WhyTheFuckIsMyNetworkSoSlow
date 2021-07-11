@@ -13,6 +13,10 @@
         <td>Friendly Name</td>
         <td>{{ network.friendlyName }}</td>
       </tr>
+      <tr v-if="network.lastSeenAt">
+        <td>Last Seen</td>
+        <td>{{ network.lastSeenAt | moment("from", "now") }}</td>
+      </tr>
       <tr>
         <td>Networks</td>
         <td>{{ GetNetworkCIDRs(network) }}</td>

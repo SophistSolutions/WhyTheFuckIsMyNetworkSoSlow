@@ -225,16 +225,22 @@ export default class Networks extends Vue {
   private get filteredNetworks(): object[] {
     const result: object[] = [];
     this.networks.forEach((i) => {
+      var lastSeenStr = this.$moment(i.lastSeenAt).fromNow();
+      var status = "?";
+      if (lastSeenStr.includes("few seconds ago")) {
+        lastSeenStr = "active";
+        status = "healthy"; //tmphack
+      }
       const r: any = {
         ...i,
         name: GetNetworkName(i),
         CIDRs: GetNetworkCIDRs(i),
-        active: "true",
+        active: lastSeenStr,
         internetInfo:
           (i.gateways == null ? "" : i.gateways.join(", ")) +
           (i.internetServiceProvider == null ? " " : " (" + i.internetServiceProvider.name + ")"),
         devices: GetDeviceIDsInNetwork(i, this.devices).length,
-        status: "healthy",
+        status: status,
         location: FormatLocation(i.geographicLocation),
       };
       if (

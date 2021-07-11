@@ -111,6 +111,7 @@ Network Network::Merge (const Network& databaseNetwork, const Network& dynamical
     Memory::AccumulateIf (&merged.fExternalAddresses, dynamicallyDiscoveredNetwork.fExternalAddresses);
     Memory::CopyToIf (&merged.fGEOLocInformation, dynamicallyDiscoveredNetwork.fGEOLocInformation);
     Memory::CopyToIf (&merged.fInternetServiceProvider, dynamicallyDiscoveredNetwork.fInternetServiceProvider);
+    Memory::CopyToIf (&merged.fLastSeenAt, dynamicallyDiscoveredNetwork.fLastSeenAt);
 #if qDebug
     Memory::CopyToIf (&merged.fDebugProps, dynamicallyDiscoveredNetwork.fDebugProps);
 #endif
@@ -192,6 +193,7 @@ const ObjectVariantMapper Network::kMapper = [] () {
             {L"geographicLocation"sv, StructFieldMetaInfo{&Network::fGEOLocInformation}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"internetServiceProvider"sv, StructFieldMetaInfo{&Network::fInternetServiceProvider}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"id"sv, StructFieldMetaInfo{&Network::fGUID}},
+            {L"lastSeenAt"sv, StructFieldMetaInfo{&Network::fLastSeenAt}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
 #if qDebug
             {L"debugProps", StructFieldMetaInfo{&Network::fDebugProps}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
 #endif

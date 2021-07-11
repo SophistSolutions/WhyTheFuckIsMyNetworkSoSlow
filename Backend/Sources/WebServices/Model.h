@@ -191,6 +191,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
         optional<Common::InternetServiceProvider> fInternetServiceProvider;
 
+        /**
+         */
+        optional<Time::DateTime> fLastSeenAt;
+
 #if qDebug
         optional<Mapping<String, DataExchange::VariantValue>> fDebugProps;
 #endif
