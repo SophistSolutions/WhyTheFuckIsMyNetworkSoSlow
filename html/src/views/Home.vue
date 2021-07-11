@@ -13,7 +13,7 @@
         <router-link to="/networks">Networks</router-link> (active + favorites)
         <ul>
           <li v-for="network in networksAsDisplayed" :key="network.id">
-            {{ network.name }}
+            <ReadOnlyTextWithHover :message="network.name" :link="network.link" />
             <div>
               : {{ GetDeviceIDsInNetwork(network, devices).length }}
               <router-link to="/devices">devices</router-link>, operating normally
@@ -28,7 +28,12 @@
 <script lang="ts">
 import { IDevice, INetworkAttachmentInfo } from "@/models/device/IDevice";
 import { INetwork } from "@/models/network/INetwork";
-import { FormatLocation, GetDeviceIDsInNetwork, GetNetworkName } from "@/models/network/Utils";
+import {
+  FormatLocation,
+  GetDeviceIDsInNetwork,
+  GetNetworkLink,
+  GetNetworkName,
+} from "@/models/network/Utils";
 import Vue from "vue";
 import { Component, Watch } from "vue-property-decorator";
 
@@ -36,12 +41,15 @@ import { Component, Watch } from "vue-property-decorator";
   name: "Home",
   components: {
     AppBar: () => import("@/components/AppBar.vue"),
+    ReadOnlyTextWithHover: () => import("@/components/ReadOnlyTextWithHover.vue"),
   },
 })
 export default class Home extends Vue {
   private polling: undefined | number = undefined;
 
   private GetDeviceIDsInNetwork = GetDeviceIDsInNetwork;
+  private GetNetworkLink = GetNetworkLink;
+  private GetNetworkName = GetNetworkName;
 
   private created() {
     this.$store.dispatch("fetchDevices", null);
@@ -77,6 +85,7 @@ export default class Home extends Vue {
       result.push({
         id: i.id,
         name: GetNetworkName(i),
+        link: GetNetworkLink(i),
         active: "true",
         internetInfo:
           (i.gateways == null ? "" : i.gateways.join(", ")) +
