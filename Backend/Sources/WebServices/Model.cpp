@@ -107,7 +107,7 @@ Network Network::Merge (const Network& databaseNetwork, const Network& dynamical
     Memory::CopyToIf (&merged.fFriendlyName, dynamicallyDiscoveredNetwork.fFriendlyName);
     merged.fAttachedInterfaces.AddAll (dynamicallyDiscoveredNetwork.fAttachedInterfaces);
     dynamicallyDiscoveredNetwork.fGateways.Apply ([&] (auto inetAddr) {  if (not merged.fGateways.Contains (inetAddr)) {merged.fGateways += inetAddr;} });
-    dynamicallyDiscoveredNetwork.fDNSServers.Apply ([&] (auto inetAddr) {  if (not merged.fGateways.Contains (inetAddr)) {merged.fDNSServers += inetAddr;} });
+    dynamicallyDiscoveredNetwork.fDNSServers.Apply ([&] (auto inetAddr) {  if (not merged.fDNSServers.Contains (inetAddr)) {merged.fDNSServers += inetAddr;} });
     Memory::AccumulateIf (&merged.fExternalAddresses, dynamicallyDiscoveredNetwork.fExternalAddresses);
     Memory::CopyToIf (&merged.fGEOLocInformation, dynamicallyDiscoveredNetwork.fGEOLocInformation);
     Memory::CopyToIf (&merged.fInternetServiceProvider, dynamicallyDiscoveredNetwork.fInternetServiceProvider);
@@ -335,7 +335,6 @@ String NetworkAttachmentInfo::ToString () const
  ********************************* Model::Device ********************************
  ********************************************************************************
  */
-
 const ObjectVariantMapper Device::kMapper = [] () {
     ObjectVariantMapper mapper;
 
@@ -477,7 +476,7 @@ const ObjectVariantMapper DeviceSortParamters::kMapper = [] () {
 
 /*
  ********************************************************************************
- ********************************** Model::Operations ***************************
+ ****************************** Model::Operations *******************************
  ********************************************************************************
  */
 #if qCompilerAndStdLib_static_initializer_lambda_funct_init_Buggy
