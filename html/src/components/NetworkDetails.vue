@@ -2,8 +2,20 @@
   <div>
     <table class="detailsTable" v-bind:key="network.id">
       <tr>
-        <td>Name (ID)</td>
-        <td>{{ GetNetworkName(network) }} ({{ network.id }})</td>
+        <td>Name</td>
+        <td>{{ GetNetworkName(network) }}</td>
+      </tr>
+      <tr>
+        <td>ID</td>
+        <td>{{ network.id }}</td>
+      </tr>
+      <tr>
+        <td>Friendly Name</td>
+        <td>{{ network.friendlyName }}</td>
+      </tr>
+      <tr>
+        <td>Networks</td>
+        <td>{{ GetNetworkCIDRs(network) }}</td>
       </tr>
       <tr v-if="network.DNSServers && network.DNSServers.length">
         <td>DNS Servers</td>
@@ -55,6 +67,7 @@ import {
   FormatLocation,
   GetDeviceIDsInNetwork,
   GetDevicesForNetworkLink,
+  GetNetworkCIDRs,
   GetNetworkName,
 } from "@/models/network/Utils";
 import { OperatingSystem } from "@/models/OperatingSystem";
@@ -77,6 +90,7 @@ export default class NetworkDetails extends Vue {
   public devices!: IDevice[];
 
   private GetNetworkName = GetNetworkName;
+  private GetNetworkCIDRs = GetNetworkCIDRs;
   private FormatLocation = FormatLocation;
   private GetDeviceIDsInNetwork = GetDeviceIDsInNetwork;
   private GetDevicesForNetworkLink = GetDevicesForNetworkLink;

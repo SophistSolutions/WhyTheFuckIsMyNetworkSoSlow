@@ -10,4 +10,5 @@ export interface INetwork {
   geographicLocation?: IGeographicLocation;
   internetServiceProvider: IInternetServiceProvider;
   networkAddresses: string[];
+  friendlyName?: string;
 }

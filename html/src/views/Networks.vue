@@ -79,6 +79,7 @@ import {
   FormatLocation,
   GetDeviceIDsInNetwork,
   GetDevicesForNetworkLink,
+  GetNetworkCIDRs,
   GetNetworkLink,
   GetNetworkName,
 } from "@/models/network/Utils";
@@ -166,6 +167,13 @@ export default class Networks extends Vue {
         width: "20%",
       },
       {
+        text: "CIDRs",
+        align: "start",
+        value: "CIDRs",
+        cellClass: "nowrap",
+        width: "10%",
+      },
+      {
         text: "Active",
         value: "active",
         cellClass: "nowrap",
@@ -220,6 +228,7 @@ export default class Networks extends Vue {
       const r: any = {
         ...i,
         name: GetNetworkName(i),
+        CIDRs: GetNetworkCIDRs(i),
         active: "true",
         internetInfo:
           (i.gateways == null ? "" : i.gateways.join(", ")) +

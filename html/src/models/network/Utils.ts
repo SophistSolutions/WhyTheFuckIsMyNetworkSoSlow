@@ -8,6 +8,12 @@ import { OperatingSystem } from "@/models/OperatingSystem";
  *  \req n != null
  */
 export function GetNetworkName(n: INetwork): string {
+  // @todo this should probably sometimes be shortened and be more careful if no
+  // freindlyname/networkaddresses, and maybe include reference to location (sudbury etc)
+  return n.friendlyName + " {" + n.networkAddresses.join(", ") + "}";
+}
+
+export function GetNetworkCIDRs(n: INetwork): string {
   return n.networkAddresses.join(", ");
 }
 
