@@ -247,7 +247,7 @@ namespace {
         {
             Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...AddOrMergeUpdate_", L"...,d=%s", Characters::ToString (d).c_str ())};
             RequireNotNull (dbConnTable);
-            SQL::Transaction          t{dbConnTable->pConnection ()->mkTransaction ()};
+            SQL::Transaction t{dbConnTable->pConnection ()->mkTransaction ()};
             if (auto dbObj = dbConnTable->GetByID (d.fGUID)) {
                 dbConnTable->Update (T::Merge (*dbObj, d));
             }
@@ -279,10 +279,10 @@ namespace {
             while (true) {
                 try {
                     if (conn == nullptr) {
-                        conn                   = SetupDB_ ();
+                        conn = SetupDB_ ();
                     }
                     if (deviceTableConnection == nullptr) {
-                        deviceTableConnection  = make_unique<SQL::ORM::TableConnection<IntegratedModel::Device>> (conn, kDeviceTableSchema_, kDBObjectMapper_);
+                        deviceTableConnection = make_unique<SQL::ORM::TableConnection<IntegratedModel::Device>> (conn, kDeviceTableSchema_, kDBObjectMapper_);
                         sDBDevices_.store (deviceTableConnection->GetAll ());
                     }
                     if (networkTableConnection == nullptr) {

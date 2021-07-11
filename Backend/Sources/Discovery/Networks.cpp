@@ -249,7 +249,6 @@ namespace {
                     // -- LGP 2018-12-16
                     nw.fGUID = ComputeGUIDForNetwork_ (nw);
 
-
                     nw.fFriendlyName = i.fFriendlyName; // if multiple, pick arbitrarily
 
 #if qDebug
