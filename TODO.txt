@@ -1,9 +1,30 @@
 
+- 
 
 - UI - networks  
    name - DEFAULTS to some combo of friendlyname and network addrs, but is editable
 
+   + allow PATCH ui on Network/ID/ ... name=new-name...
 
+ + on home page - link to particular network
+
+ + PATCH support for DEVICES  
+    - allow sepecify name and notes
+	- and display notes in addition to name
+
+-- THINK about the whole ID / MERGE problem 
+   (I THINK maybe one kind or two kinds of IDS, and in Mgr merge
+   look code - we map DISCOVERED IDS to MERGED IDs
+   List with MERGED Device (and network etc) IDs
+   )
+
+---
+
+- add lastSeenAt to Network API and
+  use that for 'active' flag in UI
+  for networks
+
+----
 
 
 - Fix intrmediatestoreage layer -
