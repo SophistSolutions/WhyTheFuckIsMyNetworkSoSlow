@@ -151,11 +151,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
      */
     struct Network {
 
+        /**
+         */
         Network () = default;
-        Network (const Set<CIDR>& nas)
-            : fNetworkAddresses{nas}
-        {
-        }
+        Network (const Set<CIDR>& nas);
 
         /*
          * This list of addresses will typically have one IPV4 and one IPV6 address
@@ -164,7 +163,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
         optional<String> fFriendlyName; //tmphack - list of interfaces attached to network
 
-        // Todo - WTF allocated ID - and one inherited from network interface (windows only) - CLARIFY - probably call OURs just fID (and change others in this module to match)
+        // @todo - WTF allocated ID - and one inherited from network interface (windows only) - CLARIFY - probably call OURs just fID (and change others in this module to match)
         GUID fGUID;
 
         Set<GUID> fAttachedInterfaces;
@@ -206,6 +205,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         static Network Merge (const Network& databaseNetwork, const Network& dynamicallyDiscoveredNetwork);
     };
 
+    /**
+     */
     struct NetworkAttachmentInfo {
         Set<String>               hardwareAddresses;
         Sequence<InternetAddress> localAddresses; // bound addresses (this machine @ this address)
@@ -299,6 +300,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         static Device Merge (const Device& databaseDevice, const Device& dynamicallyDiscoveredDevice);
     };
 
+    /**
+     */
     struct DeviceSortParamters {
 
         /**

@@ -11,6 +11,17 @@
 */
 
 namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
+
+    /*
+     ********************************************************************************
+     ************************ WebServices::Model::Network ***************************
+     ********************************************************************************
+     */
+    inline Network::Network (const Set<CIDR>& nas)
+        : fNetworkAddresses{nas}
+    {
+    }
+
 }
 
 namespace Stroika::Foundation::Configuration {
@@ -42,7 +53,6 @@ namespace Stroika::Foundation::Configuration {
             {WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::DeviceSortParamters::SearchTerm::By::eName, L"Name"},
             {WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::DeviceSortParamters::SearchTerm::By::eType, L"Type"},
         }}};
-
 }
 
 #endif /*_WhyTheFuckIsMyNetworkSoSlow_BackendApp_WebServices_Model_inl_*/
