@@ -216,10 +216,12 @@ namespace {
                  *  For ID, generate random GUID (BLOB) automatically in database
                  */
                 {.fName = L"ID", .fVariantValueFieldName = L"id"sv, .fVariantType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = L"randomblob(16)"sv, .fNotNull = true},
-                {.fName = L"name", .fVariantType = VariantValue::eString, .fNotNull = false}
+                {.fName = L"name", .fVariantType = VariantValue::eString, .fNotNull = false},
+                {.fName = L"lastSeenAt", .fVariantType = VariantValue::eString, .fNotNull = true},
 #else
                 {L"ID", L"id"sv, false, kRepresentIDAs_, nullopt, true, nullopt, L"randomblob(16)"sv, true},
-                {L"name", nullopt, false, VariantValue::eString}
+                {L"name", nullopt, false, VariantValue::eString},
+                {L"lastSeenAt", nullopt, false, VariantValue::eString, false, nullopt, nullopt, true},
 #endif
             },
             Schema::CatchAllField{}};
@@ -235,10 +237,12 @@ namespace {
                  *  For ID, generate random GUID (BLOB) automatically in database
                  */
                 {.fName = L"ID", .fVariantValueFieldName = L"id"sv, .fVariantType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = L"randomblob(16)"sv, .fNotNull = true},
-                {.fName = L"friendlyName", .fVariantType = VariantValue::eString, .fNotNull = false}
+                {.fName = L"friendlyName", .fVariantType = VariantValue::eString, .fNotNull = false},
+                {.fName = L"lastSeenAt", .fVariantType = VariantValue::eString, .fNotNull = true},
 #else
                 {L"ID", L"id"sv, false, kRepresentIDAs_, nullopt, true, nullopt, L"randomblob(16)"sv, true},
-                {L"friendlyName", nullopt, false, VariantValue::eString}
+                {L"friendlyName", nullopt, false, VariantValue::eString},
+                {L"lastSeenAt", nullopt, false, VariantValue::eString, false, nullopt, nullopt, true},
 #endif
             },
             Schema::CatchAllField{}};
@@ -260,7 +264,7 @@ namespace {
         }
         Connection::Ptr SetupDB_ ()
         {
-            auto dbPath = IO::FileSystem::WellKnownLocations::GetApplicationData () / "WhyTheFuckIsMyNetworkSoSlow" / "db-v3.db";
+            auto dbPath = IO::FileSystem::WellKnownLocations::GetApplicationData () / "WhyTheFuckIsMyNetworkSoSlow" / "db-v4.db";
             filesystem::create_directories (dbPath.parent_path ());
 #if __cpp_designated_initializers
             auto options = Options{.fDBPath = dbPath, .fThreadingMode = Options::ThreadingMode::eMultiThread};
@@ -368,9 +372,20 @@ std::optional<IntegratedModel::Device> IntegratedModel::Mgr::GetDevice (const Co
 
 Sequence<IntegratedModel::Network> IntegratedModel::Mgr::GetNetworks () const
 {
-    Debug::TimingTrace ttrc{L"IntegratedModel::Mgr::GetNetworks", 0.1};
-    Sequence<Network>  result = DiscoveryWrapper_::GetNetworks_ ();
-    return result;
+    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"IntegratedModel::Mgr::GetNetworks")};
+    Debug::TimingTrace        ttrc{L"IntegratedModel::Mgr::GetNetworks", 0.1};
+    using IntegratedModel::Network;
+    Mapping<GUID, Network> networks; // @todo use KeyedCollection when available feature in Stroika
+    DBAccess_::sDBNetworks_->Apply ([&networks] (auto n) { networks.Add (n.fGUID, n); });
+    for (Network n : DiscoveryWrapper_::GetNetworks_ ()) {
+        if (auto dbNetwork = networks.Lookup (n.fGUID)) {
+            networks.Add (n.fGUID, Network::Merge (*dbNetwork, n));
+        }
+        else {
+            networks.Add (n.fGUID, n);
+        }
+    }
+    return Sequence<Network>{networks.MappedValues ()};
 }
 
 std::optional<IntegratedModel::Network> IntegratedModel::Mgr::GetNetwork (const Common::GUID& id) const

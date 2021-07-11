@@ -1,10 +1,9 @@
 ---
 
-- add lastSeenAt to Network API and
-  use that for 'active' flag in UI
-  for networks
 
----
+- debug why networks list shows very old lastusedtime 
+  when you disable WIFI network (seems like not updating record being written)
+
 
 - UI - networks  
    name - DEFAULTS to some combo of friendlyname and network addrs, but is editable
@@ -21,33 +20,24 @@
    List with MERGED Device (and network etc) IDs
    )
 
-
  + FIx Network page to show Aggregated Network-Interfaces - not just network interface ids
 
- 
+
 ----
 
 
 - Fix intrmediatestoreage layer -
 
-> (inside transaction object, but a debug timer guy which prints a log message when
- transactions take too long- 1 second)
+	deal with conflicing
+		IDS yet, but need new random ID and automatic guessed
+		'merges' based on hw-addr, and then undable merged
+		lookups (magic combines/joins).
 
+		Since merge intrindically probably costly,
+		we can CACHE in memory the 'merged' device list
+		(or best if can be done cheaply in sql).
 
-
-	so now IMMEDIATELY return reads from database + updates from scans.
-	- and then we should be able to see/review old devices/old data
-
-			and then fix logic so DISK list merged with dynamic list.
-
-			And LUCKY we dont have to deal with conflicing
-			IDS yet, but need new random ID and automatic guessed
-			'merges' based on hw-addr, and then undable merged
-			lookups (magic combines/joins).
-
-			Since merge intrindically probably costly,
-			we can CACHE in memory the 'merged' device list
-			(or best if can be done cheaply in sql).
+	{{{ MAYBE COULD RELEASE TEST WITHOUT THAT FIX?}}}
 
 
 ---
