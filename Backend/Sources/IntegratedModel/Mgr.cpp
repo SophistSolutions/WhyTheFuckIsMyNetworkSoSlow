@@ -221,7 +221,7 @@ namespace {
 #else
                 {L"ID", L"id"sv, false, kRepresentIDAs_, nullopt, true, nullopt, L"randomblob(16)"sv, true},
                 {L"name", nullopt, false, VariantValue::eString},
-                {L"lastSeenAt", nullopt, false, VariantValue::eString, false, nullopt, nullopt, true},
+                {L"lastSeenAt", nullopt, false, VariantValue::eString, nullopt, false, nullopt, nullopt, true},
 #endif
             },
             Schema::CatchAllField{}};
@@ -242,7 +242,7 @@ namespace {
 #else
                 {L"ID", L"id"sv, false, kRepresentIDAs_, nullopt, true, nullopt, L"randomblob(16)"sv, true},
                 {L"friendlyName", nullopt, false, VariantValue::eString},
-                {L"lastSeenAt", nullopt, false, VariantValue::eString, false, nullopt, nullopt, true},
+                {L"lastSeenAt", nullopt, false, VariantValue::eString, nullopt, false, nullopt, nullopt, true},
 #endif
             },
             Schema::CatchAllField{}};
@@ -379,11 +379,11 @@ Sequence<IntegratedModel::Network> IntegratedModel::Mgr::GetNetworks () const
     using IntegratedModel::Network;
     Mapping<GUID, Network> networks; // @todo use KeyedCollection when available feature in Stroika
     DBAccess_::sDBNetworks_->Apply ([&networks] (auto n) { networks.Add (n.fGUID, n); });
-    #if 0
+#if 0
     for (auto i : networks) {
         DbgTrace (L"***i=%s", Characters::ToString (i).c_str ());
     }
-    #endif
+#endif
     for (Network n : DiscoveryWrapper_::GetNetworks_ ()) {
         if (auto dbNetwork = networks.Lookup (n.fGUID)) {
             //DbgTrace (L"***mergedI=%s", Characters::ToString (Network::Merge (*dbNetwork, n)).c_str ());
