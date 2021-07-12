@@ -1,9 +1,62 @@
 ---
 
 
+-  FIx Network page to show Aggregated Network-Interfaces - not just network interface ids
+
+-  THINK about the whole ID / MERGE problem 
+   (I THINK maybe one kind or two kinds of IDS, and in Mgr merge
+   look code - we map DISCOVERED IDS to MERGED IDs
+   List with MERGED Device (and network etc) IDs
+   )
+   = much worse - I think - if you start server in WIFI disconnected mode and stop server quickly so Ids writtento db based on not connected.
+   - we sometimes (maybe this above) get dup network ids and device ids for a given device/network.
+   REALLY need this smarter merge strategy.
+
+
+   - MAYBE design  
+     - rename existing Device (and networks) table to Devices-Raw, and create new 
+	   subclass Table Devices-Aggregated. Suclass same as base, but adds 'aggregates'
+	   list of other IDs.
+
+	 - Code in background loop MANUALLY constructs the table of Devices-Aggregated from
+	   Devices-Raw by matching hardware ids (flexible may evolve). 
+	     - AND add separate JOINISH tables - forced-merge and forced-break which lists extra rules  
+		   to force how aggregation process works
+
+	- CAN re-aggreate from scratch if needed. But generally can use existing aggregation and just
+	  layer on the latest live discovered info.
+
+	- NOTE - this same basic design works for
+	  - Merging differnet source from different machines (they just go into the RAW table).
+	  - Expire old data (take 2 entries - OLD - from the RAW table, and construct a new 'Raw'
+	   entry based on the other two and delete the two old rolledup values.)
+
+	- WebServices (initially) dont need to change except for LISITNG all the sub-devices, and 
+	  allow lookup by ID to work even if not in rolled up so lookup by ID can take rolledup id or 
+	  individvual RAW ids)
+
+	- THEN - in UI - can POP OPEN view in separate window of 'rolled up' data with little
+	  code change.
+
+	- Maybe add APIs for
+	  - LIST FORCEDMERGE/BREAKUP table, and add/delete
+	  - Force-Re-Run aggregation process (just to debug - shoulnt really ever be needed).
+	  - Forced-Expire (forced rollup of a set of devices - either by ids or date older than range).
+	  - DElete raw data (which causes re-rollup automatically) - either by ID or by date range.
+
+
+    - Longer term
+	  - API to MergeFrom - which takes URL of other device, and grabs all its
+	    raw data and incorporates it into local database (even longer term have
+		this run in background as convfigured set of devices)
+
+
+- Search for TV on hercules.local and not found but TYPE TV is there. Search should match on TYPE
+  records
+
 - debug why networks list shows very old lastusedtime 
   when you disable WIFI network (seems like not updating record being written)
-
+  (MAYBE FIXED BUT RETEST)
 
 - UI - networks  
    name - DEFAULTS to some combo of friendlyname and network addrs, but is editable
@@ -13,14 +66,6 @@
  + PATCH support for DEVICES  
     - allow sepecify name and notes
 	- and display notes in addition to name
-
--- THINK about the whole ID / MERGE problem 
-   (I THINK maybe one kind or two kinds of IDS, and in Mgr merge
-   look code - we map DISCOVERED IDS to MERGED IDs
-   List with MERGED Device (and network etc) IDs
-   )
-
- + FIx Network page to show Aggregated Network-Interfaces - not just network interface ids
 
 
 ----
