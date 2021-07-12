@@ -128,6 +128,7 @@ String Network::ToString () const
     sb += L"Attached-Interfaces: " + Characters::ToString (fAttachedInterfaces) + L", ";
     sb += L"Gateways: " + Characters::ToString (fGateways) + L", ";
     sb += L"DNS-Servers: " + Characters::ToString (fDNSServers) + L", ";
+    sb += L"LastSeenAt: " + Characters::ToString (fLastSeenAt) + L", ";
     sb += L"}";
     return sb.str ();
 }

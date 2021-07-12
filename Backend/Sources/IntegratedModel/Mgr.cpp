@@ -296,14 +296,16 @@ namespace {
                         sDBNetworks_.store (networkTableConnection->GetAll ());
                     }
 
-                    // @todo UPDATE sDBDevices_/sDBNetworks_ to reflect reflect these merges (but maybe not useful)
+                    // @todo UPDATE sDBDevices_/sDBNetworks_ to reflect reflect these merges (but maybe not useful)(instead of re-reading whole table)
                     for (auto ni : DiscoveryWrapper_::GetNetworks_ ()) {
                         AddOrMergeUpdate_ (networkTableConnection.get (), ni);
                     }
-                    // @todo UPDATE sDBDevices_ on each one
+                    sDBDevices_.store (deviceTableConnection->GetAll ());
+                    // @todo UPDATE sDBNetworks_ on each one (instead of re-reading whole table)
                     for (auto di : DiscoveryWrapper_::GetDevices_ ()) {
                         AddOrMergeUpdate_ (deviceTableConnection.get (), di);
                     }
+                    sDBNetworks_.store (networkTableConnection->GetAll ());
 
                     // only update periodically
                     Execution::Sleep (30s);
@@ -377,8 +379,14 @@ Sequence<IntegratedModel::Network> IntegratedModel::Mgr::GetNetworks () const
     using IntegratedModel::Network;
     Mapping<GUID, Network> networks; // @todo use KeyedCollection when available feature in Stroika
     DBAccess_::sDBNetworks_->Apply ([&networks] (auto n) { networks.Add (n.fGUID, n); });
+    #if 0
+    for (auto i : networks) {
+        DbgTrace (L"***i=%s", Characters::ToString (i).c_str ());
+    }
+    #endif
     for (Network n : DiscoveryWrapper_::GetNetworks_ ()) {
         if (auto dbNetwork = networks.Lookup (n.fGUID)) {
+            //DbgTrace (L"***mergedI=%s", Characters::ToString (Network::Merge (*dbNetwork, n)).c_str ());
             networks.Add (n.fGUID, Network::Merge (*dbNetwork, n));
         }
         else {
