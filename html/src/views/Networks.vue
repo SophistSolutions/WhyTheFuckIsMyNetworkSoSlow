@@ -225,11 +225,11 @@ export default class Networks extends Vue {
   private get filteredNetworks(): object[] {
     const result: object[] = [];
     this.networks.forEach((i) => {
-      var lastSeenStr = this.$moment(i.lastSeenAt).fromNow();
-      var status = "?";
-      if (lastSeenStr.includes("few seconds ago")) {
+      let lastSeenStr = this.$moment(i.lastSeenAt).fromNow();
+      let status = "?";
+      if (i.lastSeenAt != null && this.$moment().diff(this.$moment(i.lastSeenAt), "seconds") < 60) {
         lastSeenStr = "active";
-        status = "healthy"; //tmphack
+        status = "healthy"; // tmphack
       }
       const r: any = {
         ...i,

@@ -1,6 +1,9 @@
 ---
 
 
+- For Device and Network page, dont include ID in title, 
+  but instead as separate line (with aggregated sub-ids and a next item - right now I think label will be "Aggregates" for subitems - cuz could come from history or other machines))
+
 -  FIx Network page to show Aggregated Network-Interfaces - not just network interface ids
 
 -  THINK about the whole ID / MERGE problem 
@@ -14,8 +17,8 @@
 
 
    - MAYBE design  
-     - rename existing Device (and networks) table to Devices-Raw, and create new 
-	   subclass Table Devices-Aggregated. Suclass same as base, but adds 'aggregates'
+     - rename existing Device (and networks) table to Devices-Raw (maybe Devices-Snapshots or Devices-Instances), and create new 
+	   subclass Table Devices-Aggregated (or maybe better Devices-Summarized). Suclass same as base, but adds 'aggregates'
 	   list of other IDs.
 
 	 - Code in background loop MANUALLY constructs the table of Devices-Aggregated from
