@@ -226,10 +226,10 @@ export default class Networks extends Vue {
     const result: object[] = [];
     this.networks.forEach((i) => {
       let lastSeenStr = this.$moment(i.lastSeenAt).fromNow();
-      let status = "?";
+      let statusStr = "?";
       if (i.lastSeenAt != null && this.$moment().diff(this.$moment(i.lastSeenAt), "seconds") < 60) {
         lastSeenStr = "active";
-        status = "healthy"; // tmphack
+        statusStr = "healthy"; // tmphack
       }
       const r: any = {
         ...i,
@@ -240,7 +240,7 @@ export default class Networks extends Vue {
           (i.gateways == null ? "" : i.gateways.join(", ")) +
           (i.internetServiceProvider == null ? " " : " (" + i.internetServiceProvider.name + ")"),
         devices: GetDeviceIDsInNetwork(i, this.devices).length,
-        status: status,
+        status: statusStr,
         location: FormatLocation(i.geographicLocation),
       };
       if (
