@@ -2,8 +2,12 @@
   <div>
     <table class="detailsTable" v-bind:key="device.id">
       <tr>
-        <td class="labelColumn">Name (ID)</td>
-        <td>{{ device.name }} ({{ device.id }})</td>
+        <td class="labelColumn">Name</td>
+        <td>{{ device.name }}</td>
+      </tr>
+      <tr>
+        <td class="labelColumn">ID</td>
+        <td>{{ device.id }}</td>
       </tr>
       <tr v-if="device.type">
         <td class="labelColumn">Types</td>

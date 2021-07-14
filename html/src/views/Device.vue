@@ -3,7 +3,7 @@
     <app-bar />
     <v-card class="deviceListCard">
       <v-card-title>
-        Device "{{ device.name }}" ({{ $route.params.id }})
+        Device "{{ device.name }}"
         <v-spacer></v-spacer>
       </v-card-title>
       <DeviceDetails class="detailsSection" :device="device" :networks="networks"></DeviceDetails>

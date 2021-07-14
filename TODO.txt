@@ -1,8 +1,12 @@
 ---
 
 
-- For Device and Network page, dont include ID in title, 
-  but instead as separate line (with aggregated sub-ids and a next item - right now I think label will be "Aggregates" for subitems - cuz could come from history or other machines))
+- For Device and Network page
+  add field "Aggregates" for subitems - cuz could come from history or other machines))
+  BOTH in the data model, and in the UI.
+
+----
+
 
 -  FIx Network page to show Aggregated Network-Interfaces - not just network interface ids
 

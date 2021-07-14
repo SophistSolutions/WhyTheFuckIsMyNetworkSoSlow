@@ -3,7 +3,7 @@
     <app-bar />
     <v-card>
       <v-card-title>
-        Network "{{ GetNetworkName(network) }}" ({{ $route.params.id }})
+        Network "{{ GetNetworkName(network) }}"
         <v-spacer></v-spacer>
       </v-card-title>
       <NetworkDetails class="detailsSection" :network="network" :devices="devices" />
