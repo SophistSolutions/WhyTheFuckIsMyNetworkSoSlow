@@ -9,9 +9,10 @@
 #include "Stroika/Foundation/Cache/SynchronizedCallerStalenessCache.h"
 #include "Stroika/Foundation/Characters/StringBuilder.h"
 #include "Stroika/Foundation/Characters/ToString.h"
-#include "Stroika/Foundation/Cryptography/Digest/Algorithm/MD5.h"
-#include "Stroika/Foundation/Cryptography/Digest/Hash.h"
+//#include "Stroika/Foundation/Cryptography/Digest/Algorithm/MD5.h"
+//#include "Stroika/Foundation/Cryptography/Digest/Hash.h"
 #include "Stroika/Foundation/Cryptography/Format.h"
+#include "Stroika/Foundation/Execution/Synchronized.h"
 #include "Stroika/Foundation/IO/Network/Interface.h"
 #include "Stroika/Foundation/IO/Network/LinkMonitor.h"
 
@@ -65,6 +66,46 @@ Discovery::NetworkInterfacesMgr::Activator::~Activator ()
     // @todo must shutdown any background threads
 }
 
+
+namespace {
+    /*
+     *  Generate a UNIQUE ID for each local interface (so unique for lifetime of this process). Will use IntegratedModel::Mgr
+     *  to generate/map to longer-lived IDs.
+     */
+#if 0
+OLD
+     *  For now, always hash the InternalInterfaceID into a new ID. But later will want to somehow match
+     *  against data in a database to assure we are always appropriately re-using interface ids (by making them
+     *  relative to some host id perhaps).
+     *
+     *  We used to just re-use the GUID if it happened to be already in the form of a GUID (generally true on windows)
+     *  but appears no guarantee even there, and if we want to track connection to that low level id, we should capture it
+     *  as a separate datum.
+#endif
+    Common::GUID MapCurrentProcessInternalInterfaceIDToReportedProcessLifetimeGUID_ (const String& internalInterfaceID)
+    {
+        #if 1
+        static Execution::Synchronized<Mapping<String, Common::GUID>> sCacheOfAllGUIDs_;
+        auto l                                                          = sCacheOfAllGUIDs_.rwget ();
+        if (auto o = l->Lookup (internalInterfaceID)) {
+            return *o;
+        }
+        else {
+            auto result = Common::GUID::GenerateNew ();
+            l->Add (internalInterfaceID, result);
+            return result;
+        }
+#else
+        using namespace Stroika::Foundation::Cryptography::Digest;
+        // @todo must try to re-use IDs (during run session) but not this strongly - so keep cache of map
+        // and add new random GUID when internalInterface not found.
+        // So keep list of all iterface IDs EVER seen (during this process run)
+        return Hash<String, Digester<Algorithm::MD5>, Common::GUID>{}(internalInterfaceID);
+#endif
+    }
+}
+
+
 namespace {
     Collection<NetworkInterface> CollectAllNetworkInterfaces_ ()
     {
@@ -76,24 +117,14 @@ namespace {
         vector<NetworkInterface> results;
         for (Interface i : sysNetInterfaces.GetAll ()) {
             NetworkInterface ni{i};
-            /*
-             *  For now, always hash the InternalInterfaceID into a new ID. But later will want to somehow match
-             *  against data in a database to assure we are always appropriately re-using interface ids (by making them
-             *  relative to some host id perhaps).
-             *
-             *  We used to just re-use the GUID if it happened to be already in the form of a GUID (generally true on windows)
-             *  but appears no guarantee even there, and if we want to track connection to that low level id, we should capture it
-             *  as a separate datum.
-             */
             {
-                using namespace Stroika::Foundation::Cryptography::Digest;
-                ni.fGUID = Hash<String, Digester<Algorithm::MD5>, Common::GUID>{}(i.fInternalInterfaceID);
+                ni.fGUID = MapCurrentProcessInternalInterfaceIDToReportedProcessLifetimeGUID_ (i.fInternalInterfaceID);
 #if qDebug
                 // nothing useful to add yet
                 ni.fDebugProps.Add (L"test"sv,
                                     VariantValue{
                                         Mapping<String, VariantValue>{
-                                            pair<String, VariantValue>{L"constructedAt"sv, Time::DateTime::Now ()}}});
+                                            pair<String, VariantValue>{L"updatedAt"sv, Time::DateTime::Now ()}}});
 #endif
             }
             results.push_back (ni);

@@ -44,6 +44,14 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices;
 using Stroika::Foundation::Common::ConstantProperty;
 using Stroika::Foundation::Common::GUID;
 
+
+namespace {
+    // For now (as of 2021-07-18) NYI
+    // so dont write out, and dont merge from DB - only show current ones
+    constexpr bool kSupportPersistedNetworkInterfaces_{false};
+}
+
+
 namespace {
     URI TransformURL2LocalStorage_ (const URI& url)
     {
@@ -264,7 +272,7 @@ namespace {
         }
         Connection::Ptr SetupDB_ ()
         {
-            auto dbPath = IO::FileSystem::WellKnownLocations::GetApplicationData () / "WhyTheFuckIsMyNetworkSoSlow" / "db-v4.db";
+            auto dbPath = IO::FileSystem::WellKnownLocations::GetApplicationData () / "WhyTheFuckIsMyNetworkSoSlow" / "db-v5.db";
             filesystem::create_directories (dbPath.parent_path ());
 #if __cpp_designated_initializers
             auto options = Options{.fDBPath = dbPath, .fThreadingMode = Options::ThreadingMode::eMultiThread};
@@ -298,11 +306,17 @@ namespace {
 
                     // @todo UPDATE sDBDevices_/sDBNetworks_ to reflect reflect these merges (but maybe not useful)(instead of re-reading whole table)
                     for (auto ni : DiscoveryWrapper_::GetNetworks_ ()) {
+                        if (not kSupportPersistedNetworkInterfaces_) {
+                            ni.fAttachedInterfaces.clear ();
+                        }
                         AddOrMergeUpdate_ (networkTableConnection.get (), ni);
                     }
                     sDBDevices_.store (deviceTableConnection->GetAll ());
                     // @todo UPDATE sDBNetworks_ on each one (instead of re-reading whole table)
                     for (auto di : DiscoveryWrapper_::GetDevices_ ()) {
+                        if (not kSupportPersistedNetworkInterfaces_) {
+                            di.fAttachedNetworkInterfaces = nullopt;
+                        }
                         AddOrMergeUpdate_ (deviceTableConnection.get (), di);
                     }
                     sDBNetworks_.store (networkTableConnection->GetAll ());
