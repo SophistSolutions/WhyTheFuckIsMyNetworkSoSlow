@@ -2,13 +2,12 @@ import Vue from "vue";
 import Vuex from "vuex";
 
 import { INetwork } from "@/models/network/INetwork";
-
-import * as mutations from "./mutations";
+import { INetworkInterface } from "@/models/network/INetworkInterface";
 
 import { IDevice } from "@/models/device/IDevice";
 import { ISortBy } from "@/models/device/SearchSpecification";
 import { IAbout } from "@/models/IAbout";
-import { fetchAboutInfo, fetchDevices, fetchNetworks } from "@/proxy/API";
+import { fetchAboutInfo, fetchDevices, fetchNetworkInterfaces, fetchNetworks } from "@/proxy/API";
 
 Vue.use(Vuex);
 
@@ -19,27 +18,33 @@ export default new Vuex.Store({
   state: {
     about: undefined as IAbout | undefined,
     availableNetworks: [] as INetwork[],
+    networkInterfaces: [] as INetworkInterface[],
     selectedNetworkId: {} as string,
     devices: [] as IDevice[],
   },
   mutations: {
     setAvailableNetworks(state, networks: INetwork[]) {
-      Vue.set(state, mutations.ROOT_SET_AVAILABLE_NETWORKS, networks);
-      // state[mutations.ROOT_SET_AVAILABLE_NETWORK] = networks;
+      state.availableNetworks = networks;
+    },
+    setNetworkInterfaces(state, networkInterfaces: INetworkInterface[]) {
+      state.networkInterfaces = networkInterfaces;
     },
     setDevices(state, devices: IDevice[]) {
-      Vue.set(state, mutations.ROOT_SET_DEVICES, devices);
+      state.devices = devices;
     },
     setSelectedNetwork(state, networkId: string) {
-      Vue.set(state, mutations.ROOT_SET_SELECTED_NETWORK_ID, networkId);
+      state.selectedNetworkId = networkId;
     },
     setAboutInfo(state, aboutInfo: IAbout) {
-      Vue.set(state, mutations.ROOT_SET_ABOUT_INFO, aboutInfo);
+      state.about = aboutInfo;
     },
   },
   actions: {
     async fetchAvailableNetworks({ commit }) {
       commit("setAvailableNetworks", await fetchNetworks());
+    },
+    async fetchNetworkInterfaces({ commit }) {
+      commit("setNetworkInterfaces", await fetchNetworkInterfaces());
     },
     async fetchAboutInfo({ commit }) {
       commit("setAboutInfo", await fetchAboutInfo());
@@ -54,6 +59,9 @@ export default new Vuex.Store({
   getters: {
     getAvailableNetworks: (state) => {
       return state.availableNetworks;
+    },
+    getNetworkInterfaces: (state) => {
+      return state.networkInterfaces;
     },
     getDevices: (state) => {
       return state.devices;

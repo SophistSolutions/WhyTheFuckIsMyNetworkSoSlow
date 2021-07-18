@@ -50,7 +50,7 @@
       <tr v-if="network.attachedInterfaces">
         <td>ATTACHED INTERFACES</td>
         <td>
-          <json-viewer :value="network.attachedInterfaces" :expand-depth="0" copyable sort />
+          <json-viewer :value="thisNetworksInterfaces" :expand-depth="0" copyable sort />
         </td>
       </tr>
       <tr v-if="network.debugProps">
@@ -67,6 +67,7 @@
 import { IDevice, INetworkAttachmentInfo } from "@/models/device/IDevice";
 import { IGeographicLocation } from "@/models/network/IGeographicLocation";
 import { INetwork } from "@/models/network/INetwork";
+import { INetworkInterface } from "@/models/network/INetworkInterface";
 import {
   FormatLocation,
   GetDeviceIDsInNetwork,
@@ -91,6 +92,12 @@ export default class NetworkDetails extends Vue {
     required: true,
     default: null,
   })
+  public networkInterfaces!: INetworkInterface[];
+
+  @Prop({
+    required: true,
+    default: null,
+  })
   public devices!: IDevice[];
 
   private GetNetworkName = GetNetworkName;
@@ -98,6 +105,20 @@ export default class NetworkDetails extends Vue {
   private FormatLocation = FormatLocation;
   private GetDeviceIDsInNetwork = GetDeviceIDsInNetwork;
   private GetDevicesForNetworkLink = GetDevicesForNetworkLink;
+
+  private get thisNetworksInterfaces(): INetworkInterface[] {
+    const result: INetworkInterface[] = [];
+    this.network.attachedInterfaces.forEach((e) => {
+      let answer: INetworkInterface = { id: e };
+      this.networkInterfaces.forEach((ni) => {
+        if (e === ni.id) {
+          answer = ni;
+        }
+      });
+      result.push(answer);
+    });
+    return result;
+  }
 }
 </script>
 

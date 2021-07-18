@@ -64,6 +64,7 @@
               class="detailsSection"
               :network="networkFromID_(item.id)"
               :devices="devices"
+              :networkInterfaces="[]"
             ></NetworkDetails>
           </td>
         </template>

@@ -2,6 +2,7 @@ import { IDevice } from "@/models/device/IDevice";
 import { ISortBy, SearchSpecification, SortFieldEnum } from "@/models/device/SearchSpecification";
 import { IAbout } from "@/models/IAbout";
 import { INetwork } from "@/models/network/INetwork";
+import { INetworkInterface } from "@/models/network/INetworkInterface";
 
 import { API_ROOT } from "@/config";
 
@@ -9,6 +10,15 @@ import { Logger } from "@/utils/Logger.ts";
 
 export async function fetchNetworks(): Promise<INetwork[]> {
   return fetch(API_ROOT + `/networks?recurse=true`)
+    .then((response) => response.json())
+    .then((data) => {
+      return data;
+    })
+    .catch((error) => Logger.error(error));
+}
+
+export async function fetchNetworkInterfaces(): Promise<INetworkInterface[]> {
+  return fetch(API_ROOT + `/network-interfaces?recurse=true`)
     .then((response) => response.json())
     .then((data) => {
       return data;

@@ -1,14 +1,10 @@
 ---
 
-
 - For Device and Network page
   add field "Aggregates" for subitems - cuz could come from history or other machines))
   BOTH in the data model, and in the UI.
 
 ----
-
-
--  FIx Network page to show Aggregated Network-Interfaces - not just network interface ids
 
 -  THINK about the whole ID / MERGE problem 
    (I THINK maybe one kind or two kinds of IDS, and in Mgr merge
