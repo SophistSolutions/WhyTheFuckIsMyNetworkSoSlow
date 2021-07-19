@@ -1,5 +1,10 @@
 ---
 
+- get building working on 1804 so can target raspberrypi
+
+
+---
+
 - For Device and Network page
   add field "Aggregates" for subitems - cuz could come from history or other machines))
   BOTH in the data model, and in the UI.
