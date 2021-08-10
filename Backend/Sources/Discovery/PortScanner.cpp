@@ -12,6 +12,8 @@
 #include "Stroika/Foundation/IO/Network/ConnectionOrientedStreamSocket.h"
 #include "Stroika/Foundation/IO/Network/Port.h"
 
+#include "Stroika/Frameworks/NetworkMonitor/Ping.h"
+
 #include "NetworkInterfaces.h"
 
 #include "PortScanner.h"
@@ -54,6 +56,24 @@ namespace {
             // Ignored - we typically we get connection failures
         }
     }
+    void ICMPPingScan_ (const InternetAddress& ia, PortScanResults* results)
+    {
+#if SUPPRESS_NOISY_TRACE_IN_THIS_MODULE_
+        Debug::TraceContextSuppressor traceSuppress;
+#endif
+        // also add check for ICMP PING
+        Frameworks::NetworkMonitor::Ping::Pinger p{ia};
+        try {
+            auto r = p.RunOnce (); //incomplete
+            results->fDiscoveredOpenPorts.Add (L"icmp:ping"sv);
+        }
+        catch (const Network::InternetProtocol::ICMP::V4::DestinationUnreachableException&) {
+            DbgTrace (L"ICMPPingScan_(ia=%s): Dest Unreachable: Typically means router blocking", Characters::ToString (ia).c_str ());
+        }
+        catch (...) {
+            DbgTrace (L"ICMPPingScan_ (addr %s): Ignoring exception: %s", Characters::ToString (ia).c_str (), Characters::ToString (current_exception ()).c_str ());
+        }
+    }
 }
 
 PortScanResults Discovery::ScanPorts (const InternetAddress& ia, const optional<ScanOptions>& options)
@@ -61,6 +81,7 @@ PortScanResults Discovery::ScanPorts (const InternetAddress& ia, const optional<
     PortScanResults results{};
 
     if (options and options->fStyle == ScanOptions::eQuick) {
+        ICMPPingScan_ (ia, &results);
         DoTCPScan_ (ia, WellKnownPorts::TCP::kSSH, true, &results);
         return results;
     }
@@ -80,11 +101,17 @@ PortScanResults Discovery::ScanPorts (const InternetAddress& ia, const optional<
     };
     if (options and options->fStyle == ScanOptions::eRandomBasicOne) {
         static mt19937 sRng_{std::random_device{}()};
-        size_t         selected = uniform_int_distribution<size_t>{0, kBasicPorts_.size () - 1}(sRng_);
-        DoTCPScan_ (ia, kBasicPorts_[selected], true, &results);
+        size_t         selected = uniform_int_distribution<size_t>{0, kBasicPorts_.size ()}(sRng_);
+        if (selected == kBasicPorts_.size ()) {
+            ICMPPingScan_ (ia, &results);
+        }
+        else {
+            DoTCPScan_ (ia, kBasicPorts_[selected], true, &results);
+        }
         return results;
     }
 
+    ICMPPingScan_ (ia, &results);
     for (auto port : kBasicPorts_) {
         DoTCPScan_ (ia, port, true, &results);
     }

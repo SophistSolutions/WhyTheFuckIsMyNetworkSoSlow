@@ -66,7 +66,6 @@ Discovery::NetworkInterfacesMgr::Activator::~Activator ()
     // @todo must shutdown any background threads
 }
 
-
 namespace {
     /*
      *  Generate a UNIQUE ID for each local interface (so unique for lifetime of this process). Will use IntegratedModel::Mgr
@@ -84,9 +83,9 @@ OLD
 #endif
     Common::GUID MapCurrentProcessInternalInterfaceIDToReportedProcessLifetimeGUID_ (const String& internalInterfaceID)
     {
-        #if 1
+#if 1
         static Execution::Synchronized<Mapping<String, Common::GUID>> sCacheOfAllGUIDs_;
-        auto l                                                          = sCacheOfAllGUIDs_.rwget ();
+        auto                                                          l = sCacheOfAllGUIDs_.rwget ();
         if (auto o = l->Lookup (internalInterfaceID)) {
             return *o;
         }
@@ -104,7 +103,6 @@ OLD
 #endif
     }
 }
-
 
 namespace {
     Collection<NetworkInterface> CollectAllNetworkInterfaces_ ()

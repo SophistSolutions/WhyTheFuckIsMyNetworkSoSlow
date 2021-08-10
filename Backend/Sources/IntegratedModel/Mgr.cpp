@@ -9,6 +9,7 @@
 #include "Stroika/Foundation/DataExchange/ObjectVariantMapper.h"
 #include "Stroika/Foundation/Database/SQL/ORM/Schema.h"
 #include "Stroika/Foundation/Database/SQL/ORM/TableConnection.h"
+#include "Stroika/Foundation/Database/SQL/ORM/Versioning.h"
 #include "Stroika/Foundation/Database/SQL/SQLite.h"
 #include "Stroika/Foundation/Debug/TimingTrace.h"
 #include "Stroika/Foundation/Execution/Sleep.h"
@@ -21,6 +22,8 @@
 #include "../Discovery/Devices.h"
 #include "../Discovery/NetworkInterfaces.h"
 #include "../Discovery/Networks.h"
+
+#include "AppVersion.h"
 
 #include "Mgr.h"
 
@@ -44,13 +47,11 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices;
 using Stroika::Foundation::Common::ConstantProperty;
 using Stroika::Foundation::Common::GUID;
 
-
 namespace {
     // For now (as of 2021-07-18) NYI
     // so dont write out, and dont merge from DB - only show current ones
     constexpr bool kSupportPersistedNetworkInterfaces_{false};
 }
-
 
 namespace {
     URI TransformURL2LocalStorage_ (const URI& url)
@@ -223,13 +224,13 @@ namespace {
                 /**
                  *  For ID, generate random GUID (BLOB) automatically in database
                  */
-                {.fName = L"ID", .fVariantValueFieldName = L"id"sv, .fVariantType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = L"randomblob(16)"sv, .fNotNull = true},
-                {.fName = L"name", .fVariantType = VariantValue::eString, .fNotNull = false},
-                {.fName = L"lastSeenAt", .fVariantType = VariantValue::eString, .fNotNull = true},
+                {.fName = L"ID", .fVariantValueFieldName = L"id"sv, .fRequired = true, .fVariantType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = L"randomblob(16)"sv},
+                {.fName = L"name", .fVariantType = VariantValue::eString},
+                {.fName = L"lastSeenAt", .fVariantType = VariantValue::eString},
 #else
-                {L"ID", L"id"sv, false, kRepresentIDAs_, nullopt, true, nullopt, L"randomblob(16)"sv, true},
+                {L"ID", L"id"sv, true, kRepresentIDAs_, nullopt, true, nullopt, L"randomblob(16)"sv},
                 {L"name", nullopt, false, VariantValue::eString},
-                {L"lastSeenAt", nullopt, false, VariantValue::eString, nullopt, false, nullopt, nullopt, true},
+                {L"lastSeenAt", nullopt, false, VariantValue::eString},
 #endif
             },
             Schema::CatchAllField{}};
@@ -244,13 +245,13 @@ namespace {
                 /**
                  *  For ID, generate random GUID (BLOB) automatically in database
                  */
-                {.fName = L"ID", .fVariantValueFieldName = L"id"sv, .fVariantType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = L"randomblob(16)"sv, .fNotNull = true},
-                {.fName = L"friendlyName", .fVariantType = VariantValue::eString, .fNotNull = false},
-                {.fName = L"lastSeenAt", .fVariantType = VariantValue::eString, .fNotNull = true},
+                {.fName = L"ID", .fVariantValueFieldName = L"id"sv, .fRequired = true, .fVariantType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = L"randomblob(16)"sv},
+                {.fName = L"friendlyName", .fVariantType = VariantValue::eString},
+                {.fName = L"lastSeenAt", .fVariantType = VariantValue::eString},
 #else
-                {L"ID", L"id"sv, false, kRepresentIDAs_, nullopt, true, nullopt, L"randomblob(16)"sv, true},
+                {L"ID", L"id"sv, true, kRepresentIDAs_, nullopt, true, nullopt, L"randomblob(16)"sv},
                 {L"friendlyName", nullopt, false, VariantValue::eString},
-                {L"lastSeenAt", nullopt, false, VariantValue::eString, nullopt, false, nullopt, nullopt, true},
+                {L"lastSeenAt", nullopt, false, VariantValue::eString},
 #endif
             },
             Schema::CatchAllField{}};
@@ -272,21 +273,27 @@ namespace {
         }
         Connection::Ptr SetupDB_ ()
         {
-            auto dbPath = IO::FileSystem::WellKnownLocations::GetApplicationData () / "WhyTheFuckIsMyNetworkSoSlow" / "db-v5.db";
+            auto dbPath = IO::FileSystem::WellKnownLocations::GetApplicationData () / "WhyTheFuckIsMyNetworkSoSlow" / "db-v6.db";
             filesystem::create_directories (dbPath.parent_path ());
 #if __cpp_designated_initializers
             auto options = Options{.fDBPath = dbPath, .fThreadingMode = Options::ThreadingMode::eMultiThread};
 #else
             auto options = Options{dbPath, true, nullopt, nullopt, Options::ThreadingMode::eMultiThread};
 #endif
-            auto initializeDB = [] (const Connection::Ptr& c) {
-                c.Exec (Schema::StandardSQLStatements{kDeviceTableSchema_}.CreateTable ());
-                c.Exec (Schema::StandardSQLStatements{kNetworkTableSchema_}.CreateTable ());
-            };
-            return Connection::New (options, initializeDB);
+            auto conn = Connection::New (options);
+
+            // @todo use AppVersion? probably not not clearly. SHOULD MATCH but dont auto-update
+            // verison just cuz code version goes up - maybe write both verisons
+            constexpr Configuration::Version kCurrentVersion_ = Configuration::Version{1, 0, Configuration::VersionStage::Alpha, 0};
+            Database::SQL::ORM::ProvisionForVersion (conn,
+                                                     kCurrentVersion_,
+                                                     Traversal::Iterable<Database::SQL::ORM::Schema::Table>{kDeviceTableSchema_, kNetworkTableSchema_});
+
+            return conn;
         }
         void BackgroundDatabaseThread_ ()
         {
+            Debug::TraceContextBumper                                       ctx{L"BackgroundDatabaseThread_ loop"};
             Connection::Ptr                                                 conn;
             unique_ptr<SQL::ORM::TableConnection<IntegratedModel::Device>>  deviceTableConnection;
             unique_ptr<SQL::ORM::TableConnection<IntegratedModel::Network>> networkTableConnection;
@@ -297,29 +304,42 @@ namespace {
                     }
                     if (deviceTableConnection == nullptr) {
                         deviceTableConnection = make_unique<SQL::ORM::TableConnection<IntegratedModel::Device>> (conn, kDeviceTableSchema_, kDBObjectMapper_);
-                        sDBDevices_.store (deviceTableConnection->GetAll ());
+                        try {
+                            sDBDevices_.store (deviceTableConnection->GetAll ()); // pre-load in memory copy with whatever we had stored in the database
+                        }
+                        catch (...) {
+                            deviceTableConnection = nullptr; // so we re-fetch
+                            Execution::ReThrow ();
+                        }
                     }
                     if (networkTableConnection == nullptr) {
                         networkTableConnection = make_unique<SQL::ORM::TableConnection<IntegratedModel::Network>> (conn, kNetworkTableSchema_, kDBObjectMapper_);
-                        sDBNetworks_.store (networkTableConnection->GetAll ());
+                        try {
+                            sDBNetworks_.store (networkTableConnection->GetAll ());
+                        }
+                        catch (...) {
+                            networkTableConnection = nullptr; // so we re-fetch
+                            Execution::ReThrow ();
+                        }
                     }
 
-                    // @todo UPDATE sDBDevices_/sDBNetworks_ to reflect reflect these merges (but maybe not useful)(instead of re-reading whole table)
+                    // @todo UPDATE sDBNetworks_ INCREMENTALLY to reflect reflect these merges (but maybe not useful)(instead of re-reading whole table)
                     for (auto ni : DiscoveryWrapper_::GetNetworks_ ()) {
                         if (not kSupportPersistedNetworkInterfaces_) {
                             ni.fAttachedInterfaces.clear ();
                         }
                         AddOrMergeUpdate_ (networkTableConnection.get (), ni);
                     }
-                    sDBDevices_.store (deviceTableConnection->GetAll ());
-                    // @todo UPDATE sDBNetworks_ on each one (instead of re-reading whole table)
+                    sDBNetworks_.store (networkTableConnection->GetAll ());
+
+                    // @todo UPDATE sDBDevices_ on each one (instead of re-reading whole table)
                     for (auto di : DiscoveryWrapper_::GetDevices_ ()) {
                         if (not kSupportPersistedNetworkInterfaces_) {
                             di.fAttachedNetworkInterfaces = nullopt;
                         }
                         AddOrMergeUpdate_ (deviceTableConnection.get (), di);
                     }
-                    sDBNetworks_.store (networkTableConnection->GetAll ());
+                    sDBDevices_.store (deviceTableConnection->GetAll ());
 
                     // only update periodically
                     Execution::Sleep (30s);

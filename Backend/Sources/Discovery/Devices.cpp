@@ -1575,11 +1575,6 @@ void Discovery::DevicesMgr::InitiateReScan (const GUID& deviceID)
     };
 
     DiscoveryInfo_ initialDeviceInfo = findDeviceInfoAndClearFoundPorts (deviceID);
-    for (auto ia : initialDeviceInfo.GetInternetAddresses ()) {
-        if (ICMPPing_ (ia)) {
-            addOpenPort (deviceID, L"icmp:ping"sv);
-        }
-    }
     // now now just run scan using limited portscan API
     // but redo scanning one at a time so I can SHOW results immediately, as they appear
     for (auto ia : initialDeviceInfo.GetInternetAddresses ()) {
@@ -1594,10 +1589,7 @@ VariantValue DevicesMgr::ScanAndReturnReport (const InternetAddress& addr)
 {
     Mapping<String, VariantValue> result;
     Set<String>                   ports;
-    if (ICMPPing_ (addr)) {
-        ports += L"icmp:ping"sv;
-    }
-    PortScanResults results = ScanPorts (addr, ScanOptions{ScanOptions::eFull});
+    PortScanResults               results = ScanPorts (addr, ScanOptions{ScanOptions::eFull});
     for (String p : results.fDiscoveredOpenPorts) {
         ports += p;
     }

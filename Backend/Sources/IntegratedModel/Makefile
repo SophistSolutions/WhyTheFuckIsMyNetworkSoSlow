@@ -14,6 +14,9 @@ include $(StroikaRoot)ScriptsLib/SharedMakeVariables-Default.mk
 
 vpath %cpp $(SrcDir)
 
+CXXFLAGS += -I"$(call FUNCTION_CONVERT_FILEPATH_TO_COMPILER_NATIVE,$(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow/)"
+
+
 Objs	=	\
 	$(ObjDir)Mgr${OBJ_SUFFIX}\
 

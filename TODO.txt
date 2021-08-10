@@ -1,4 +1,24 @@
----
+ sDBDevices_.store (deviceTableConnection->GetAll ());
+ 
+ seems slow so avoid it, and incrmenetally update (much more reasonable)
+ esp as # devices gets large.
+ 
+ 
+ --- 
+ add ICMP ping scan (use for discovery)
+ 
+ 
+ ---
+lewis@Plato $ ./Builds/Release/ThirdPartyComponents/bin/sqlite.exe c:/ProgramData/WhyTheFuckIsMyNetworkSoSlow/db-v5.db
+SQLite version 3.35.5 2021-04-19 18:32:05
+Enter ".help" for usage hints.
+sqlite> select * from Devices;
+Error: database is locked
+sqlite> select * from Devices;
+  ... dont keep DB locked so can review while running...
+  maybe related - when I kill process, i see no Device records written...
+  
+ ----
 
 - get building working on 1804 so can target raspberrypi
 
