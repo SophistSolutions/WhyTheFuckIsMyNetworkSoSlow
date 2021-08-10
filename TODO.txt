@@ -3,7 +3,12 @@
  seems slow so avoid it, and incrmenetally update (much more reasonable)
  esp as # devices gets large.
  
- 
+ ----
+
+maybe still bug writing wtih transactions
+to db. Why no entries in DB
+with empty lastSeenAt?
+
  --- 
  add ICMP ping scan (use for discovery)
  

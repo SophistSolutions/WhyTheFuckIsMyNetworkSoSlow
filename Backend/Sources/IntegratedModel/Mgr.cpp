@@ -224,9 +224,9 @@ namespace {
                 /**
                  *  For ID, generate random GUID (BLOB) automatically in database
                  */
-                {.fName = L"ID", .fVariantValueFieldName = L"id"sv, .fRequired = true, .fVariantType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = L"randomblob(16)"sv},
-                {.fName = L"name", .fVariantType = VariantValue::eString},
-                {.fName = L"lastSeenAt", .fVariantType = VariantValue::eString},
+                {.fName = L"ID", .fVariantValueFieldName = L"id"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = L"randomblob(16)"sv},
+                {.fName = L"name", .fVariantValueType = VariantValue::eString},
+                {.fName = L"lastSeenAt", .fVariantValueType = VariantValue::eString},
 #else
                 {L"ID", L"id"sv, true, kRepresentIDAs_, nullopt, true, nullopt, L"randomblob(16)"sv},
                 {L"name", nullopt, false, VariantValue::eString},
@@ -245,9 +245,9 @@ namespace {
                 /**
                  *  For ID, generate random GUID (BLOB) automatically in database
                  */
-                {.fName = L"ID", .fVariantValueFieldName = L"id"sv, .fRequired = true, .fVariantType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = L"randomblob(16)"sv},
-                {.fName = L"friendlyName", .fVariantType = VariantValue::eString},
-                {.fName = L"lastSeenAt", .fVariantType = VariantValue::eString},
+                {.fName = L"ID", .fVariantValueFieldName = L"id"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = L"randomblob(16)"sv},
+                {.fName = L"friendlyName", .fVariantValueType = VariantValue::eString},
+                {.fName = L"lastSeenAt", .fVariantValueType = VariantValue::eString},
 #else
                 {L"ID", L"id"sv, true, kRepresentIDAs_, nullopt, true, nullopt, L"randomblob(16)"sv},
                 {L"friendlyName", nullopt, false, VariantValue::eString},
