@@ -224,7 +224,7 @@ namespace {
                 /**
                  *  For ID, generate random GUID (BLOB) automatically in database
                  */
-                {.fName = L"ID", .fVariantValueFieldName = L"id"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = L"randomblob(16)"sv},
+                {.fName = L"ID", .fVariantValueName = L"id"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = L"randomblob(16)"sv},
                 {.fName = L"name", .fVariantValueType = VariantValue::eString},
                 {.fName = L"lastSeenAt", .fVariantValueType = VariantValue::eString},
 #else
@@ -245,7 +245,7 @@ namespace {
                 /**
                  *  For ID, generate random GUID (BLOB) automatically in database
                  */
-                {.fName = L"ID", .fVariantValueFieldName = L"id"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = L"randomblob(16)"sv},
+                {.fName = L"ID", .fVariantValueName = L"id"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = L"randomblob(16)"sv},
                 {.fName = L"friendlyName", .fVariantValueType = VariantValue::eString},
                 {.fName = L"lastSeenAt", .fVariantValueType = VariantValue::eString},
 #else
