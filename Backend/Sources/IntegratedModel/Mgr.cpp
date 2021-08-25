@@ -192,10 +192,25 @@ namespace {
 
         Execution::Thread::Ptr sDatabaseSyncThread_{};
 
-        // the latest copy of what is in the DB
-        Synchronized<Sequence<IntegratedModel::Device>> sDBDevices_;
-        // the latest copy of what is in the DB
-        Synchronized<Sequence<IntegratedModel::Network>> sDBNetworks_;
+        // the latest copy of what is in the DB (manually kept up to date) - @todo use KeyedCollection<> when supported
+        Synchronized<Mapping<GUID, IntegratedModel::Device>>  sDBDevices_;
+        Synchronized<Mapping<GUID, IntegratedModel::Network>> sDBNetworks_;
+
+        // Workaround lack of KeyedCollection support
+        Mapping<GUID, IntegratedModel::Device> ToKeyedCollectionStore_ (const Traversal::Iterable<IntegratedModel::Device>& ds)
+        {
+            using IntegratedModel::Device;
+            Mapping<GUID, Device> devices; // @todo use KeyedCollection when available feature in Stroika
+            ds.Apply ([&devices] (auto n) { devices.Add (n.fGUID, n); });
+            return devices;
+        }
+        Mapping<GUID, IntegratedModel::Network> ToKeyedCollectionStore_ (const Traversal::Iterable<IntegratedModel::Network>& nets)
+        {
+            using IntegratedModel::Network;
+            Mapping<GUID, Network> networks; // @todo use KeyedCollection when available feature in Stroika
+            nets.Apply ([&networks] (auto n) { networks.Add (n.fGUID, n); });
+            return networks;
+        }
 
         /*
          *  Combined mapper for objects we write to the database. Contains all the objects mappers we need merged together,
@@ -258,18 +273,23 @@ namespace {
         static_assert (kRepresentIDAs_ == VariantValue::eBLOB); // @todo to support string, just change '.fDefaultExpression'
 
         template <typename T>
-        void AddOrMergeUpdate_ (SQL::ORM::TableConnection<T>* dbConnTable, const T& d)
+        T AddOrMergeUpdate_ (SQL::ORM::TableConnection<T>* dbConnTable, const T& d)
         {
             Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...AddOrMergeUpdate_", L"...,d=%s", Characters::ToString (d).c_str ())};
             RequireNotNull (dbConnTable);
             SQL::Transaction t{dbConnTable->pConnection ()->mkTransaction ()};
+            optional<T>      result;
             if (auto dbObj = dbConnTable->GetByID (d.fGUID)) {
-                dbConnTable->Update (T::Merge (*dbObj, d));
+                result = T::Merge (*dbObj, d);
+                dbConnTable->Update (*result);
             }
             else {
+                result = d;
                 dbConnTable->AddNew (d);
             }
             t.Commit ();
+            Ensure (result.has_value ());
+            return *result;
         }
         Connection::Ptr SetupDB_ ()
         {
@@ -305,7 +325,7 @@ namespace {
                     if (deviceTableConnection == nullptr) {
                         deviceTableConnection = make_unique<SQL::ORM::TableConnection<IntegratedModel::Device>> (conn, kDeviceTableSchema_, kDBObjectMapper_);
                         try {
-                            sDBDevices_.store (deviceTableConnection->GetAll ()); // pre-load in memory copy with whatever we had stored in the database
+                            sDBDevices_.store (ToKeyedCollectionStore_ (deviceTableConnection->GetAll ())); // pre-load in memory copy with whatever we had stored in the database
                         }
                         catch (...) {
                             deviceTableConnection = nullptr; // so we re-fetch
@@ -315,7 +335,7 @@ namespace {
                     if (networkTableConnection == nullptr) {
                         networkTableConnection = make_unique<SQL::ORM::TableConnection<IntegratedModel::Network>> (conn, kNetworkTableSchema_, kDBObjectMapper_);
                         try {
-                            sDBNetworks_.store (networkTableConnection->GetAll ());
+                            sDBNetworks_.store (ToKeyedCollectionStore_ (networkTableConnection->GetAll ()));
                         }
                         catch (...) {
                             networkTableConnection = nullptr; // so we re-fetch
@@ -328,18 +348,20 @@ namespace {
                         if (not kSupportPersistedNetworkInterfaces_) {
                             ni.fAttachedInterfaces.clear ();
                         }
-                        AddOrMergeUpdate_ (networkTableConnection.get (), ni);
+                        auto rec2Update = AddOrMergeUpdate_ (networkTableConnection.get (), ni);
+                        sDBNetworks_.rwget ()->Add (rec2Update.fGUID, rec2Update);
                     }
-                    sDBNetworks_.store (networkTableConnection->GetAll ());
+                    //sDBNetworks_.store (networkTableConnection->GetAll ());
 
                     // @todo UPDATE sDBDevices_ on each one (instead of re-reading whole table)
                     for (auto di : DiscoveryWrapper_::GetDevices_ ()) {
                         if (not kSupportPersistedNetworkInterfaces_) {
                             di.fAttachedNetworkInterfaces = nullopt;
                         }
-                        AddOrMergeUpdate_ (deviceTableConnection.get (), di);
+                        auto rec2Update = AddOrMergeUpdate_ (deviceTableConnection.get (), di);
+                        sDBDevices_.rwget ()->Add (rec2Update.fGUID, rec2Update);
                     }
-                    sDBDevices_.store (deviceTableConnection->GetAll ());
+                    // sDBDevices_.store (deviceTableConnection->GetAll ());
 
                     // only update periodically
                     Execution::Sleep (30s);
@@ -382,8 +404,7 @@ Sequence<IntegratedModel::Device> IntegratedModel::Mgr::GetDevices () const
     Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"IntegratedModel::Mgr::GetDevices")};
     Debug::TimingTrace        ttrc{L"IntegratedModel::Mgr::GetDevices", .1};
     using IntegratedModel::Device;
-    Mapping<GUID, Device> devices; // @todo use KeyedCollection when available feature in Stroika
-    DBAccess_::sDBDevices_->Apply ([&devices] (auto d) { devices.Add (d.fGUID, d); });
+    Mapping<GUID, Device> devices = DBAccess_::sDBDevices_.load (); // @todo use KeyedCollection when available feature in Stroika
     for (Device d : DiscoveryWrapper_::GetDevices_ ()) {
         if (auto dbDevice = devices.Lookup (d.fGUID)) {
             devices.Add (d.fGUID, Device::Merge (*dbDevice, d));
@@ -411,8 +432,7 @@ Sequence<IntegratedModel::Network> IntegratedModel::Mgr::GetNetworks () const
     Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"IntegratedModel::Mgr::GetNetworks")};
     Debug::TimingTrace        ttrc{L"IntegratedModel::Mgr::GetNetworks", 0.1};
     using IntegratedModel::Network;
-    Mapping<GUID, Network> networks; // @todo use KeyedCollection when available feature in Stroika
-    DBAccess_::sDBNetworks_->Apply ([&networks] (auto n) { networks.Add (n.fGUID, n); });
+    Mapping<GUID, Network> networks = DBAccess_::sDBNetworks_.load (); // @todo use KeyedCollection when available feature in Stroika
 #if 0
     for (auto i : networks) {
         DbgTrace (L"***i=%s", Characters::ToString (i).c_str ());
