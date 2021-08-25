@@ -5,7 +5,11 @@ with empty lastSeenAt?
  --- 
  add ICMP ping scan (use for discovery)
  
- 
+ ---
+
+   >> SOON do smart merge logic - writing sepeate IDs (uniqie gen in dscovery code) and map to merged common ID
+   >> in backgorund thread (and updatable) -- see AGGREATGES commetns below
+
  ---
 lewis@Plato $ ./Builds/Release/ThirdPartyComponents/bin/sqlite.exe c:/ProgramData/WhyTheFuckIsMyNetworkSoSlow/db-v5.db
 SQLite version 3.35.5 2021-04-19 18:32:05

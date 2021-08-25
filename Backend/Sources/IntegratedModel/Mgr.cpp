@@ -343,7 +343,9 @@ namespace {
                         }
                     }
 
-                    // @todo UPDATE sDBNetworks_ INCREMENTALLY to reflect reflect these merges (but maybe not useful)(instead of re-reading whole table)
+                    // periodically write the latest discovered data to the database
+    
+                    // UPDATE sDBNetworks_ INCREMENTALLY to reflect reflect these merges
                     for (auto ni : DiscoveryWrapper_::GetNetworks_ ()) {
                         if (not kSupportPersistedNetworkInterfaces_) {
                             ni.fAttachedInterfaces.clear ();
@@ -351,9 +353,8 @@ namespace {
                         auto rec2Update = AddOrMergeUpdate_ (networkTableConnection.get (), ni);
                         sDBNetworks_.rwget ()->Add (rec2Update.fGUID, rec2Update);
                     }
-                    //sDBNetworks_.store (networkTableConnection->GetAll ());
 
-                    // @todo UPDATE sDBDevices_ on each one (instead of re-reading whole table)
+                    // UPDATE sDBDevices_ INCREMENTALLY to reflect reflect these merges
                     for (auto di : DiscoveryWrapper_::GetDevices_ ()) {
                         if (not kSupportPersistedNetworkInterfaces_) {
                             di.fAttachedNetworkInterfaces = nullopt;
@@ -361,7 +362,6 @@ namespace {
                         auto rec2Update = AddOrMergeUpdate_ (deviceTableConnection.get (), di);
                         sDBDevices_.rwget ()->Add (rec2Update.fGUID, rec2Update);
                     }
-                    // sDBDevices_.store (deviceTableConnection->GetAll ());
 
                     // only update periodically
                     Execution::Sleep (30s);
@@ -370,9 +370,9 @@ namespace {
                     Execution::ReThrow ();
                 }
                 catch (...) {
-                    DbgTrace (L"Ignoring exception in BackgroundDatabaseThread_ loop: %s", Characters::ToString (current_exception ()).c_str ());
+                    DbgTrace (L"Ignoring (will retry in 30 seconds) exception in BackgroundDatabaseThread_ loop: %s", Characters::ToString (current_exception ()).c_str ());
+                    Execution::Sleep (30s);
                 }
-                // periodically write the latest discovered data to the database
             }
         }
     }
@@ -404,7 +404,7 @@ Sequence<IntegratedModel::Device> IntegratedModel::Mgr::GetDevices () const
     Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"IntegratedModel::Mgr::GetDevices")};
     Debug::TimingTrace        ttrc{L"IntegratedModel::Mgr::GetDevices", .1};
     using IntegratedModel::Device;
-    Mapping<GUID, Device> devices = DBAccess_::sDBDevices_.load (); // @todo use KeyedCollection when available feature in Stroika
+    Mapping<GUID, Device> devices = DBAccess_::sDBDevices_.load (); // @todo redo using KeyedCollection when available
     for (Device d : DiscoveryWrapper_::GetDevices_ ()) {
         if (auto dbDevice = devices.Lookup (d.fGUID)) {
             devices.Add (d.fGUID, Device::Merge (*dbDevice, d));
@@ -418,13 +418,21 @@ Sequence<IntegratedModel::Device> IntegratedModel::Mgr::GetDevices () const
 
 std::optional<IntegratedModel::Device> IntegratedModel::Mgr::GetDevice (const Common::GUID& id) const
 {
-    // @todo can make much faster
-    for (auto i : GetDevices ()) {
-        if (i.fGUID == id) {
-            return i;
+    auto result = DBAccess_::sDBDevices_.load ().Lookup (id);
+    // apply any updates from DiscoveryWrapper_
+    for (Device d : DiscoveryWrapper_::GetDevices_ ()) {
+        if (d.fGUID == id) {
+            //DbgTrace (L"***mergedI=%s", Characters::ToString (Device::Merge (*result, d)).c_str ());
+            if (result) {
+                result = Device::Merge (*result, d);
+            }
+            else {
+                result = d;
+            }
+            break;
         }
     }
-    return nullopt;
+    return result;
 }
 
 Sequence<IntegratedModel::Network> IntegratedModel::Mgr::GetNetworks () const
@@ -452,13 +460,21 @@ Sequence<IntegratedModel::Network> IntegratedModel::Mgr::GetNetworks () const
 
 std::optional<IntegratedModel::Network> IntegratedModel::Mgr::GetNetwork (const Common::GUID& id) const
 {
-    // @todo can make much faster
-    for (auto i : GetNetworks ()) {
-        if (i.fGUID == id) {
-            return i;
+    auto result = DBAccess_::sDBNetworks_.load ().Lookup (id);
+    // apply any updates from DiscoveryWrapper_
+    for (Network n : DiscoveryWrapper_::GetNetworks_ ()) {
+        if (n.fGUID == id) {
+            //DbgTrace (L"***mergedI=%s", Characters::ToString (Network::Merge (*dbNetwork, n)).c_str ());
+            if (result) {
+                 result = Network::Merge (*result, n);
+            }
+            else {
+                result = n;
+            }
+            break;
         }
     }
-    return nullopt;
+    return result;
 }
 
 Collection<IntegratedModel::NetworkInterface> IntegratedModel::Mgr::GetNetworkInterfaces () const
