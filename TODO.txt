@@ -3,6 +3,40 @@
    >> SOON do smart merge logic - writing sepeate IDs (uniqie gen in dscovery code) and map to merged common ID
    >> in backgorund thread (and updatable) -- see AGGREATGES commetns below
 
+
+		-- begining design
+		What we write to database is mainly RAW data(aggegeagtes nothing but it CAN).
+
+		Compute on the fly, AGGREGATED data. Sum up everything from the database (unclear about ongoing).
+		then keep track of prev version of discovered and then incrementally update composites based on new/old discovered.
+
+
+
+		Simple one pass thought experiement - given a set of historical raw devices.
+
+		Walk that list (constists of new and old raw).
+		each time needed add a new compositie device (with a randomly generated new GUID).
+
+		ecach is compbo of prev (for what I have now basically same - bit maybe latet openports not historical).
+		And would merge history measurement data if there was any.
+
+		maybe keep TWO COMPOSITE lists: one NOT including those in 'discovered' (so just whats in teh database).
+		and one that I actually report (cuz it includes discovered). Maybe no problem merging - cuz our merge is bascailly
+		to take latest data, and nothing else gets summed or compbined.
+
+
+	   User settings also done by rollup of 'aggreages'. Maybe have multiple DEvices tables (or extra column to say whcih
+	   Devices-Raw, Devices-UserEdit, and could someday have DEvices-RolledUp-?ASOF); same for networks and probably network interfaces
+	   
+
+	All based on algorithm AreTheseTwoDEvices_ORNETS_TheSame (device1, device2) (can use database lookup for override rules).
+	But basically checks if macaddrs equal.44
+
+	GetByID (can take either databaseid or composite IDs).
+	CompositesIds never written to database.
+
+
+
  ----
 
 - get building working on 1804 so can target raspberrypi

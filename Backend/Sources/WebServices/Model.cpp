@@ -112,6 +112,7 @@ Network Network::Merge (const Network& databaseNetwork, const Network& dynamical
     Memory::CopyToIf (&merged.fGEOLocInformation, dynamicallyDiscoveredNetwork.fGEOLocInformation);
     Memory::CopyToIf (&merged.fInternetServiceProvider, dynamicallyDiscoveredNetwork.fInternetServiceProvider);
     Memory::CopyToIf (&merged.fLastSeenAt, dynamicallyDiscoveredNetwork.fLastSeenAt);
+    Memory::AccumulateIf (&merged.fAggregates, dynamicallyDiscoveredNetwork.fAggregates);   // @todo consider if this is right way to combine
 #if qDebug
     Memory::CopyToIf (&merged.fDebugProps, dynamicallyDiscoveredNetwork.fDebugProps);
 #endif
@@ -129,6 +130,7 @@ String Network::ToString () const
     sb += L"Gateways: " + Characters::ToString (fGateways) + L", ";
     sb += L"DNS-Servers: " + Characters::ToString (fDNSServers) + L", ";
     sb += L"LastSeenAt: " + Characters::ToString (fLastSeenAt) + L", ";
+    sb += L"Aggregates: " + Characters::ToString (fAggregates) + L", ";
     sb += L"}";
     return sb.str ();
 }
@@ -149,6 +151,7 @@ const ObjectVariantMapper Network::kMapper = [] () {
     mapper.AddCommonType<optional<Sequence<InternetAddress>>> ();
     mapper.AddCommonType<optional<Set<InternetAddress>>> ();
     mapper.AddCommonType<Set<GUID>> ();
+    mapper.AddCommonType<optional<Set<GUID>>> ();
 
     if (true) {
         // looks better as an object, than as an array
@@ -195,6 +198,7 @@ const ObjectVariantMapper Network::kMapper = [] () {
             {L"internetServiceProvider"sv, StructFieldMetaInfo{&Network::fInternetServiceProvider}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"id"sv, StructFieldMetaInfo{&Network::fGUID}},
             {L"lastSeenAt"sv, StructFieldMetaInfo{&Network::fLastSeenAt}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+            {L"aggregates"sv, StructFieldMetaInfo{&Network::fAggregates}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
 #if qDebug
             {L"debugProps", StructFieldMetaInfo{&Network::fDebugProps}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
 #endif
@@ -365,6 +369,8 @@ const ObjectVariantMapper Device::kMapper = [] () {
     mapper.AddCommonType<optional<Set<String>>> ();
     mapper.AddCommonType<URI> ();
     mapper.AddCommonType<optional<URI>> ();
+    mapper.AddCommonType<Set<GUID>> ();
+    mapper.AddCommonType<optional<Set<GUID>>> ();
     mapper.AddClass<NetworkAttachmentInfo> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
         {L"hardwareAddresses", StructFieldMetaInfo{&NetworkAttachmentInfo::hardwareAddresses}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"localAddresses", StructFieldMetaInfo{&NetworkAttachmentInfo::localAddresses}},
@@ -382,6 +388,7 @@ const ObjectVariantMapper Device::kMapper = [] () {
             {L"attachedNetworkInterfaces", StructFieldMetaInfo{&Device::fAttachedNetworkInterfaces}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"presentationURL", StructFieldMetaInfo{&Device::fPresentationURL}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"operatingSystem", StructFieldMetaInfo{&Device::fOperatingSystem}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+            {L"aggregates", StructFieldMetaInfo{&Device::fAggregates}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
 #if qDebug
             {L"debugProps", StructFieldMetaInfo{&Device::fDebugProps}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
 #endif
@@ -418,6 +425,7 @@ Device Device::Merge (const Device& databaseDevice, const Device& dynamicallyDis
     Memory::CopyToIf (&merged.fPresentationURL, dynamicallyDiscoveredDevice.fPresentationURL);
     Memory::AccumulateIf (&merged.fAttachedNetworkInterfaces, dynamicallyDiscoveredDevice.fAttachedNetworkInterfaces);
     Memory::CopyToIf (&merged.fOperatingSystem, dynamicallyDiscoveredDevice.fOperatingSystem);
+    Memory::AccumulateIf (&merged.fAggregates, dynamicallyDiscoveredDevice.fAggregates);    // @todo UNSURE if this is right
 #if qDebug
     Memory::CopyToIf (&merged.fDebugProps, dynamicallyDiscoveredDevice.fDebugProps);
 #endif

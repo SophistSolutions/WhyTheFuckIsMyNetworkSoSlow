@@ -195,6 +195,11 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
          */
         optional<Time::DateTime> fLastSeenAt;
 
+        /**
+         * This network summary represents an aggregation of the following network objects.
+         */
+        optional<Set<GUID>> fAggregates;
+
 #if qDebug
         optional<Mapping<String, DataExchange::VariantValue>> fDebugProps;
 #endif
@@ -287,6 +292,11 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         optional<Set<GUID>> fAttachedNetworkInterfaces;
 
         optional<OperatingSystem> fOperatingSystem;
+
+        /**
+         * This device summary represents an aggregation of the following device objects.
+         */
+        optional<Set<GUID>> fAggregates;
 
 #if qDebug
         optional<Mapping<String, DataExchange::VariantValue>> fDebugProps;
