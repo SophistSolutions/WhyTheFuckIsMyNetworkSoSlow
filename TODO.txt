@@ -1,5 +1,62 @@
 
 
+an issue with UI - is it looks up NETWORKS in the results from get networks?recurse
+which WOUDL work if we mapped networks (maybe do that step so working again).
+
+BUT ALSO - must fix fetcher logic to exend set of things we look for if not in store already, and aux store for devices by instance (short term) id
+and networks too.
+
+
+
+- WRITEUP DESIGN DOC FOR OBJECT IDS
+  fGUID on discovered db (and stored db).
+
+  fAggregates
+
+  when something is rolled up - KEY is that its rolled up UNIQUELY into one object
+
+  Rollup IDs are TRANSIENT. So need to mark objects as 'transient' or not (just advisory, may not always be useful)
+  And even non-transient objects may 'go away' (but when they do they generally get rolled up). Transient object ids should
+  not be cached or re-used across sessions.
+
+
+maybe flag to say 'disaggreatable' or rollup-undoable, or just list LIKE aggreates 'directly-aggregating' ... the items that can be
+diaggreated. Maybe 'temporarily-aggregating' is a better word for this.
+
+
+
+
+
+
+
+
+
+
+
+
+REPLACE
+Network::Merge with Network::Rollup () or rollup method
+almost same as merge except handling of aggregates field, which must be NOT rolled up the same...(at least add new top and unclear if thats only diff)
+
+
+---
+
+display aggreates in netwowkr and devices 
+
+
+----------
+
+when we add
+                                tmp.fDebugProps.Add (L"Found-Through-Network-SYN-Scan", true);
+
+still should be able to capture MACADDRESS (but arent sometimes)
+
+
+--get rolled up devices counts on backgorund db process to update sDB... devices - but should also grab/merge from dynamic stuff direcly?
+maye do with ifdef (?)
+
+
+
    >> SOON do smart merge logic - writing sepeate IDs (uniqie gen in dscovery code) and map to merged common ID
    >> in backgorund thread (and updatable) -- see AGGREATGES commetns below
 

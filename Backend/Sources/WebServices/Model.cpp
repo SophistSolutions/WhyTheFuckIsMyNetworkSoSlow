@@ -111,11 +111,23 @@ Network Network::Merge (const Network& databaseNetwork, const Network& dynamical
     Memory::CopyToIf (&merged.fGEOLocInformation, dynamicallyDiscoveredNetwork.fGEOLocInformation);
     Memory::CopyToIf (&merged.fInternetServiceProvider, dynamicallyDiscoveredNetwork.fInternetServiceProvider);
     Memory::CopyToIf (&merged.fLastSeenAt, dynamicallyDiscoveredNetwork.fLastSeenAt);
-    Memory::AccumulateIf (&merged.fAggregates, dynamicallyDiscoveredNetwork.fAggregates);   // @todo consider if this is right way to combine
+    Memory::AccumulateIf (&merged.fAggregates, dynamicallyDiscoveredNetwork.fAggregates); // @todo consider if this is right way to combine
 #if qDebug
     Memory::CopyToIf (&merged.fDebugProps, dynamicallyDiscoveredNetwork.fDebugProps);
 #endif
     return merged;
+}
+
+Network Network::Rollup (const Network& rollupNetwork, const Network& instanceNetwork2Add)
+{
+    Network n = Merge (rollupNetwork, instanceNetwork2Add);
+    if (n.fAggregates.has_value ()) {
+        n.fAggregates->Add (instanceNetwork2Add.fGUID);
+    }
+    else {
+        n.fAggregates = Set<GUID>{instanceNetwork2Add.fGUID};
+    }
+    return n;
 }
 
 String Network::ToString () const
@@ -432,11 +444,23 @@ Device Device::Merge (const Device& databaseDevice, const Device& dynamicallyDis
     Memory::CopyToIf (&merged.fPresentationURL, dynamicallyDiscoveredDevice.fPresentationURL);
     Memory::AccumulateIf (&merged.fAttachedNetworkInterfaces, dynamicallyDiscoveredDevice.fAttachedNetworkInterfaces);
     Memory::CopyToIf (&merged.fOperatingSystem, dynamicallyDiscoveredDevice.fOperatingSystem);
-    Memory::AccumulateIf (&merged.fAggregates, dynamicallyDiscoveredDevice.fAggregates);    // @todo UNSURE if this is right
+    Memory::AccumulateIf (&merged.fAggregates, dynamicallyDiscoveredDevice.fAggregates); // @todo UNSURE if this is right
 #if qDebug
     Memory::CopyToIf (&merged.fDebugProps, dynamicallyDiscoveredDevice.fDebugProps);
 #endif
     return merged;
+}
+
+Device Device::Rollup (const Device& rollupDevice, const Device& instanceDevice2Add)
+{
+    Device d = Merge (rollupDevice, instanceDevice2Add);
+    if (d.fAggregates.has_value ()) {
+        d.fAggregates->Add (instanceDevice2Add.fGUID);
+    }
+    else {
+        d.fAggregates = Set<GUID>{instanceDevice2Add.fGUID};
+    }
+    return d;
 }
 
 /*

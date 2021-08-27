@@ -73,35 +73,6 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery;
 //#define qLOCK_DEBUGGING_ 1
 
 namespace {
-    // @todo LIKE WITH NETWORK IDS - probably maintain a persistence cache mapping info - mostly HARDWARE ADDRESS - to a uniuque nummber (guidgen maybe).
-    // THEN we will always identify a device as the sam thing even if it appears with diferent IP address on different network
-    //
-    // must be careful about virtual devices (like VMs) which use fake hardware addresses, so need some way to tell differnt devices (and then one from another?)
-    //
-    //tmphack -- MAYBE USE GUID-GEN UNTIL I HAVE DISK PERSISTENCE FOR THIS STUFF?
-    GUID LookupPersistentDeviceID_ (const Discovery::Device& d)
-    {
-        using IO::Network::InternetAddress;
-        StringBuilder sb;
-        {
-            // try using hardware addresses
-            for (auto i : SortedSet<String>{d.GetHardwareAddresses ()}) {
-                sb += i;
-            }
-        }
-        if (sb.empty ()) {
-            SortedSet<InternetAddress> x{d.GetInternetAddresses ()};
-            if (not x.empty ()) {
-                sb += x.Nth (0).As<String> ();
-            }
-        }
-        sb += d.name;
-        using namespace Stroika::Foundation::Cryptography::Digest;
-        return Hash<String, Digester<Algorithm::MD5>, GUID>{}(sb.str ());
-    }
-}
-
-namespace {
     // derived based on experimentation on my network - need standards/referecnes! -- LGP 2019-02-20
     const String kDeviceType_SpeakerGroup_{L"urn:smartspeaker-audio:device:SpeakerGroup:1"sv};
     const String kDeviceType_ZonePlayer_{L"urn:schemas-upnp-org:device:ZonePlayer:1"sv};
@@ -737,8 +708,7 @@ namespace {
                                 return tmp;
                             }
                             else {
-                                // Generate GUID - based on ipaddrs
-                                tmp.fGUID = LookupPersistentDeviceID_ (tmp);
+                                tmp.fGUID = GUID::GenerateNew ();
                                 return tmp;
                             }
                         }();
@@ -812,7 +782,7 @@ namespace {
                 }
             }
             newDev.fAttachedInterfaces = Set<GUID>{Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ().Select<GUID> ([] (auto iFace) { return iFace.fGUID; })};
-            newDev.fGUID               = LookupPersistentDeviceID_ (newDev);
+            newDev.fGUID               = GUID::GenerateNew ();
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
             DbgTrace (L"returning: %s", Characters::ToString (newDev).c_str ());
 #endif
@@ -937,8 +907,7 @@ namespace {
                         return tmp;
                     }
                     else {
-                        // Generate GUID - based on ipaddrs
-                        tmp.fGUID = LookupPersistentDeviceID_ (tmp);
+                        tmp.fGUID = GUID::GenerateNew ();
                         return tmp;
                     }
                 }();
@@ -1069,8 +1038,7 @@ namespace {
                                 return tmp;
                             }
                             else {
-                                // Generate GUID - based on ipaddrs
-                                tmp.fGUID = LookupPersistentDeviceID_ (tmp);
+                                tmp.fGUID = GUID::GenerateNew ();
                                 return tmp;
                             }
                         }();
@@ -1255,7 +1223,7 @@ namespace {
                                 DbgTrace (L"Updated device %s for fKnownOpenPorts: %s", Characters::ToString (tmp.fGUID).c_str (), Characters::ToString (scanResults.fDiscoveredOpenPorts).c_str ());
                             }
                             else {
-                                tmp.fGUID = LookupPersistentDeviceID_ (tmp);
+                                tmp.fGUID = GUID::GenerateNew ();
                                 // only CREATE an entry for addresses where we found a port
                                 tmp.fOpenPorts  = scanResults.fDiscoveredOpenPorts;
                                 tmp.fLastSeenAt = DateTime::Now ();

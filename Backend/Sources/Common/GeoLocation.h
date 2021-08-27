@@ -59,7 +59,6 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
 #else
         auto operator<=> (const GEOLocationInformation&) const = default;
 #endif
-
     };
 
     optional<GEOLocationInformation> LookupGEOLocation (InternetAddress ia);

@@ -212,9 +212,11 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         static const DataExchange::ObjectVariantMapper kMapper;
 
         static Network Merge (const Network& databaseNetwork, const Network& dynamicallyDiscoveredNetwork);
+        static Network Rollup (const Network& rollupNetwork, const Network& instanceNetwork2Add);
     };
 
     /**
+     * Subset of (interesting) intformation about a Network (wrt its attachment to a device)
      */
     struct NetworkAttachmentInfo {
         Set<String>               hardwareAddresses;
@@ -317,6 +319,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         static const DataExchange::ObjectVariantMapper kMapper;
 
         static Device Merge (const Device& databaseDevice, const Device& dynamicallyDiscoveredDevice);
+        static Device Rollup (const Device& rollupDevice, const Device& instanceDevice2Add);
     };
 
     /**

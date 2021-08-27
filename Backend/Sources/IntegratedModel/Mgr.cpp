@@ -184,6 +184,39 @@ namespace {
 }
 
 namespace {
+    namespace RollupCommon_ {
+        using IntegratedModel::Device;
+        using IntegratedModel::Network;
+        using IntegratedModel::NetworkAttachmentInfo;
+        bool ShouldRollup_ (const Device& d1, const Device& d2)
+        {
+            // very rough first draft. Later add database stored 'exceptions' and/or rules tables to augment this logic
+            auto hw1 = d1.GetHardwareAddresses ();
+            auto hw2 = d2.GetHardwareAddresses ();
+            if (Set<String>::Intersects (hw1, hw2)) {
+                return true;
+            }
+            if (hw1.empty () and hw2.empty ()) {
+                // then fold togehter if they have the same IP Addresses
+                return d1.GetInternetAddresses () == d2.GetInternetAddresses ();
+            }
+            return false;
+        }
+        bool ShouldRollup_ (const Network& n1, const Network& n2)
+        {
+            // wag for now how to roll networks together
+            if (n1.fNetworkAddresses != n2.fNetworkAddresses) {
+                return false;
+            }
+            if (n1.fGEOLocInformation != n2.fGEOLocInformation) {
+                return false;
+            }
+            return true;
+        }
+    }
+}
+
+namespace {
     namespace DBAccess_ {
         using namespace SQL::ORM;
         using namespace SQL::SQLite;
@@ -344,7 +377,7 @@ namespace {
                     }
 
                     // periodically write the latest discovered data to the database
-    
+
                     // UPDATE sDBNetworks_ INCREMENTALLY to reflect reflect these merges
                     for (auto ni : DiscoveryWrapper_::GetNetworks_ ()) {
                         if (not kSupportPersistedNetworkInterfaces_) {
@@ -378,6 +411,110 @@ namespace {
     }
 }
 
+namespace {
+    namespace RollupSummary_ {
+        using namespace RollupCommon_;
+
+        Synchronized<Mapping<GUID, Device>> sRolledUpDevices_;
+
+        Mapping<GUID, Network> GetRolledUpNetworks ();
+
+        // primitive draft
+        Mapping<GUID, Device> GetRolledUpDevies ()
+        {
+            auto rolledUpNetworks = GetRolledUpNetworks ();
+            
+            //tmphack slow impl - instead build mapping table when constructing rollup
+            // of networkinfo
+            // @todo define struct for NetworksRollup (and devices) that has above map, and the REVERSE ID map
+            // (individual 2 rollup), and then provide funciton to map a set of IDs to their rolled up IDs
+            // AND DOCUMENT WHY GUARNATEED UNIQUE - IF AS I THINK IT IS - CUZ each item goes in one rollup)
+            auto mapAggregatedNetID2ItsRollupID = [&] (GUID netID) -> GUID {
+                for (auto i : rolledUpNetworks) {
+                    if (i.fValue.fAggregates and i.fValue.fAggregates->Contains (netID)) {
+                        return i.fKey;
+                    }
+                }
+                WeakAsserteNotReached ();
+                //AssertNotReached ();    // because we guarantee each item rolled up exactly once
+                return netID;
+            };
+            auto reverseRollup = [&] (Mapping<GUID, NetworkAttachmentInfo> nats) -> Mapping<GUID, NetworkAttachmentInfo> {
+                Mapping<GUID, NetworkAttachmentInfo> result;
+                for (auto ni : nats) {
+                    result.Add (mapAggregatedNetID2ItsRollupID (ni.fKey), ni.fValue);
+                }
+                return result;
+            };
+
+            // Start with the existing rolled up devices
+            // and then add in (should be done just once) the values from the database,
+            // and then keep adding any more recent discovery changes
+            Mapping<GUID, Device> result               = sRolledUpDevices_.load ();
+            auto                  doMergeOneIntoRollup = [&result, &reverseRollup] (const Device& d2MergeIn) {
+                // @todo slow/quadradic - may need to tweak
+                if (auto i = result.FindFirstThat ([&d2MergeIn] (auto kvpDevice) { return ShouldRollup_ (kvpDevice.fValue, d2MergeIn); })) {
+                    // then merge this into that item
+                    // @todo think out order of params and better document order of params!
+                    auto tmp = Device::Rollup (i->fValue, d2MergeIn);
+                    tmp.fAttachedNetworks = reverseRollup (tmp.fAttachedNetworks);
+                    result.Add (i->fKey, tmp);
+                    Assert (result[i->fKey].fGUID == i->fKey); // sb using new KeyedCollection!
+                }
+                else {
+                    Device newRolledUpDevice      = d2MergeIn;
+                    newRolledUpDevice.fAggregates = Set<GUID>{d2MergeIn.fGUID};
+                    newRolledUpDevice.fGUID       = GUID::GenerateNew ();
+                    result.Add (newRolledUpDevice.fGUID, newRolledUpDevice);
+                    Assert (result[newRolledUpDevice.fGUID].fGUID == newRolledUpDevice.fGUID); // sb using new KeyedCollection!
+                }
+            };
+            for (auto rdi : DBAccess_::sDBDevices_.load ().MappedValues ()) {
+                doMergeOneIntoRollup (rdi);
+            }
+            for (Device d : DiscoveryWrapper_::GetDevices_ ()) {
+                doMergeOneIntoRollup (d);
+            }
+            sRolledUpDevices_.store (result);
+            return result;
+        }
+
+        Synchronized<Mapping<GUID, Network>> sRolledUpNetworks_;
+
+        // primitive draft
+        Mapping<GUID, Network> GetRolledUpNetworks ()
+        {
+            // Start with the existing rolled up devices
+            // and then add in (should be done just once) the values from the database,
+            // and then keep adding any more recent discovery changes
+            Mapping<GUID, Network> result               = sRolledUpNetworks_.load ();
+            auto                   doMergeOneIntoRollup = [&result] (const Network& d2MergeIn) {
+                // @todo slow/quadradic - may need to tweak
+                if (auto i = result.FindFirstThat ([&d2MergeIn] (auto kvpDevice) { return ShouldRollup_ (kvpDevice.fValue, d2MergeIn); })) {
+                    // then merge this into that item
+                    // @todo think out order of params and better document order of params!
+                    result.Add (i->fKey, Network::Rollup (i->fValue, d2MergeIn));
+                }
+                else {
+                    Network newRolledUpDevice     = d2MergeIn;
+                    newRolledUpDevice.fAggregates = Set<GUID>{d2MergeIn.fGUID};
+                    newRolledUpDevice.fGUID       = GUID::GenerateNew ();
+                    result.Add (newRolledUpDevice.fGUID, newRolledUpDevice);
+                }
+            };
+            for (auto rdi : DBAccess_::sDBNetworks_.load ().MappedValues ()) {
+                doMergeOneIntoRollup (rdi);
+            }
+            for (Network d : DiscoveryWrapper_::GetNetworks_ ()) {
+                doMergeOneIntoRollup (d);
+            }
+            sRolledUpNetworks_.store (result);
+            return result;
+        }
+
+    }
+}
+
 /*
  ********************************************************************************
  ************************** IntegratedModel::Mgr::Activator *********************
@@ -404,33 +541,15 @@ Sequence<IntegratedModel::Device> IntegratedModel::Mgr::GetDevices () const
     Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"IntegratedModel::Mgr::GetDevices")};
     Debug::TimingTrace        ttrc{L"IntegratedModel::Mgr::GetDevices", .1};
     using IntegratedModel::Device;
-    Mapping<GUID, Device> devices = DBAccess_::sDBDevices_.load (); // @todo redo using KeyedCollection when available
-    for (Device d : DiscoveryWrapper_::GetDevices_ ()) {
-        if (auto dbDevice = devices.Lookup (d.fGUID)) {
-            devices.Add (d.fGUID, Device::Merge (*dbDevice, d));
-        }
-        else {
-            devices.Add (d.fGUID, d);
-        }
-    }
-    return Sequence<Device>{devices.MappedValues ()};
+    return Sequence<Device>{RollupSummary_::GetRolledUpDevies ().MappedValues ()};
 }
 
-std::optional<IntegratedModel::Device> IntegratedModel::Mgr::GetDevice (const Common::GUID& id) const
+optional<IntegratedModel::Device> IntegratedModel::Mgr::GetDevice (const Common::GUID& id) const
 {
-    auto result = DBAccess_::sDBDevices_.load ().Lookup (id);
-    // apply any updates from DiscoveryWrapper_
-    for (Device d : DiscoveryWrapper_::GetDevices_ ()) {
-        if (d.fGUID == id) {
-            //DbgTrace (L"***mergedI=%s", Characters::ToString (Device::Merge (*result, d)).c_str ());
-            if (result) {
-                result = Device::Merge (*result, d);
-            }
-            else {
-                result = d;
-            }
-            break;
-        }
+    // first check rolled up networks, and then raw/unrolled up networks
+    auto result = RollupSummary_::GetRolledUpDevies ().Lookup (id);
+    if (not result.has_value ()) {
+        result = DBAccess_::sDBDevices_.load ().Lookup (id);
     }
     return result;
 }
@@ -440,39 +559,15 @@ Sequence<IntegratedModel::Network> IntegratedModel::Mgr::GetNetworks () const
     Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"IntegratedModel::Mgr::GetNetworks")};
     Debug::TimingTrace        ttrc{L"IntegratedModel::Mgr::GetNetworks", 0.1};
     using IntegratedModel::Network;
-    Mapping<GUID, Network> networks = DBAccess_::sDBNetworks_.load (); // @todo use KeyedCollection when available feature in Stroika
-#if 0
-    for (auto i : networks) {
-        DbgTrace (L"***i=%s", Characters::ToString (i).c_str ());
-    }
-#endif
-    for (Network n : DiscoveryWrapper_::GetNetworks_ ()) {
-        if (auto dbNetwork = networks.Lookup (n.fGUID)) {
-            //DbgTrace (L"***mergedI=%s", Characters::ToString (Network::Merge (*dbNetwork, n)).c_str ());
-            networks.Add (n.fGUID, Network::Merge (*dbNetwork, n));
-        }
-        else {
-            networks.Add (n.fGUID, n);
-        }
-    }
-    return Sequence<Network>{networks.MappedValues ()};
+    return Sequence<Network>{RollupSummary_::GetRolledUpNetworks ().MappedValues ()};
 }
 
-std::optional<IntegratedModel::Network> IntegratedModel::Mgr::GetNetwork (const Common::GUID& id) const
+optional<IntegratedModel::Network> IntegratedModel::Mgr::GetNetwork (const Common::GUID& id) const
 {
-    auto result = DBAccess_::sDBNetworks_.load ().Lookup (id);
-    // apply any updates from DiscoveryWrapper_
-    for (Network n : DiscoveryWrapper_::GetNetworks_ ()) {
-        if (n.fGUID == id) {
-            //DbgTrace (L"***mergedI=%s", Characters::ToString (Network::Merge (*dbNetwork, n)).c_str ());
-            if (result) {
-                 result = Network::Merge (*result, n);
-            }
-            else {
-                result = n;
-            }
-            break;
-        }
+    // first check rolled up networks, and then raw/unrolled up networks
+    auto result = RollupSummary_::GetRolledUpNetworks ().Lookup (id);
+    if (not result.has_value ()) {
+        result = DBAccess_::sDBNetworks_.load ().Lookup (id);
     }
     return result;
 }
