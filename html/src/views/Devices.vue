@@ -259,7 +259,7 @@ export default class Devices extends Vue {
       },
       {
         text: "Last Few Minutes",
-        value: "PT2M",
+        value: "PT3.9M",
       },
       {
         text: "Last Hour",
