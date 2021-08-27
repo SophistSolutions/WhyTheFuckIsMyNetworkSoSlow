@@ -18,6 +18,7 @@ export interface IDevice {
   name: string;
   lastSeenAt?: Date;
   openPorts?: string[];
+  aggregates?: string[];
   icon?: string;
   manufacturer?: IManufacturer;
   type: Array<DeviceTypeEnum | string>;

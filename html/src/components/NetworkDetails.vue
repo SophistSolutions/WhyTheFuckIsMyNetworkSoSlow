@@ -39,6 +39,10 @@
         <td>Internet Service Provider</td>
         <td>{{ network.internetServiceProvider.name }}</td>
       </tr>
+      <tr v-if="network.aggregates && network.aggregates.length">
+        <td>aggregates</td>
+        <td>{{ network.aggregates.join(", ") }}</td>
+      </tr>
       <tr>
         <td>Devices</td>
         <td>
