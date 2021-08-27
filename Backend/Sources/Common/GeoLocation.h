@@ -31,6 +31,35 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         optional<tuple<float, float>> fLatitudeAndLongitude; // Latitude/longitude
 
         nonvirtual String ToString () const;
+
+#if __cpp_impl_three_way_comparison < 201711
+        bool operator== (const GEOLocationInformation& rhs) const
+        {
+            if (fCountryCode != rhs.fCountryCode) {
+                return false;
+            }
+            if (fCity != rhs.fCity) {
+                return false;
+            }
+            if (fRegionCode != rhs.fRegionCode) {
+                return false;
+            }
+            if (fPostalCode != rhs.fPostalCode) {
+                return false;
+            }
+            if (fLatitudeAndLongitude != rhs.fLatitudeAndLongitude) {
+                return false;
+            }
+            return true;
+        }
+        bool operator!= (const GEOLocationInformation& rhs) const
+        {
+            return not(*this == rhs);
+        }
+#else
+        auto operator<=> (const GEOLocationInformation&) const = default;
+#endif
+
     };
 
     optional<GEOLocationInformation> LookupGEOLocation (InternetAddress ia);
