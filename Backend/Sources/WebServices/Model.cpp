@@ -101,8 +101,7 @@ const ObjectVariantMapper Model::Manufacturer::kMapper = [] () {
 Network Network::Merge (const Network& databaseNetwork, const Network& dynamicallyDiscoveredNetwork)
 {
     Network merged = databaseNetwork;
-    Require (databaseNetwork.fGUID == dynamicallyDiscoveredNetwork.fGUID); // guid same
-                                                                           // name from DB takes precedence
+    // name from DB takes precedence
     merged.fNetworkAddresses.AddAll (dynamicallyDiscoveredNetwork.fNetworkAddresses);
     Memory::CopyToIf (&merged.fFriendlyName, dynamicallyDiscoveredNetwork.fFriendlyName);
     merged.fAttachedInterfaces.AddAll (dynamicallyDiscoveredNetwork.fAttachedInterfaces);
@@ -397,6 +396,15 @@ const ObjectVariantMapper Device::kMapper = [] () {
     return mapper;
 }();
 
+Set<String> Device::GetHardwareAddresses () const
+{
+    Set<String> result;
+    for (auto iNet : fAttachedNetworks) {
+        result += iNet.fValue.hardwareAddresses;
+    }
+    return result;
+}
+
 Set<InternetAddress> Device::GetInternetAddresses () const
 {
     Set<InternetAddress> result;
@@ -414,7 +422,6 @@ String Device::ToString () const
 Device Device::Merge (const Device& databaseDevice, const Device& dynamicallyDiscoveredDevice)
 {
     Device merged = databaseDevice;
-    Require (databaseDevice.fGUID == dynamicallyDiscoveredDevice.fGUID); // guid same
     // name from DB takes precedence
     Memory::AccumulateIf (&merged.fTypes, dynamicallyDiscoveredDevice.fTypes);
     Memory::CopyToIf (&merged.fIcon, dynamicallyDiscoveredDevice.fIcon);
@@ -429,7 +436,6 @@ Device Device::Merge (const Device& databaseDevice, const Device& dynamicallyDis
 #if qDebug
     Memory::CopyToIf (&merged.fDebugProps, dynamicallyDiscoveredDevice.fDebugProps);
 #endif
-
     return merged;
 }
 

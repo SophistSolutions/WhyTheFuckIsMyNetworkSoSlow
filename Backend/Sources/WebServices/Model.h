@@ -305,6 +305,11 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         /**
          *  Combine from all network interfaces.
          */
+        nonvirtual Set<String> GetHardwareAddresses () const;
+
+        /**
+         *  Combine from all network interfaces.
+         */
         nonvirtual Set<InternetAddress> GetInternetAddresses () const;
 
         nonvirtual String ToString () const;
