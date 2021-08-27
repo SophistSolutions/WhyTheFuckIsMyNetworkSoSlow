@@ -423,7 +423,7 @@ namespace {
         Mapping<GUID, Device> GetRolledUpDevies ()
         {
             auto rolledUpNetworks = GetRolledUpNetworks ();
-            
+
             //tmphack slow impl - instead build mapping table when constructing rollup
             // of networkinfo
             // @todo define struct for NetworksRollup (and devices) that has above map, and the REVERSE ID map
@@ -456,7 +456,7 @@ namespace {
                 if (auto i = result.FindFirstThat ([&d2MergeIn] (auto kvpDevice) { return ShouldRollup_ (kvpDevice.fValue, d2MergeIn); })) {
                     // then merge this into that item
                     // @todo think out order of params and better document order of params!
-                    auto tmp = Device::Rollup (i->fValue, d2MergeIn);
+                    auto tmp              = Device::Rollup (i->fValue, d2MergeIn);
                     tmp.fAttachedNetworks = reverseRollup (tmp.fAttachedNetworks);
                     result.Add (i->fKey, tmp);
                     Assert (result[i->fKey].fGUID == i->fKey); // sb using new KeyedCollection!
