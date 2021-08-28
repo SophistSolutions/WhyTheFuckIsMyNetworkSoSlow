@@ -1,4 +1,37 @@
 
+AddNetworkAddresses_
+frequently called with no hardware address so make check for merge slightly less agrresive
+or at least document we may not always get hardware address
+
+
+
+---
+
+
+shuld roolup if set of hw addresses intersect
+
+
+---
+
+
+https://stackoverflow.com/questions/54116410/vuex-reactive-mapgetters-with-arguments-passed-through
+
+understand mapgetters - thats the problem I think with the 
+
+
+
+---
+redo DEVICEDETAILS page so it fetches network interfaces itself.
+
+----
+
+middle of wtiching DEVICE viewer page to using new GetDevice(id) getter
+and fetcher to fetch its stuff...
+
+so works without getching all devices and fetches historical isntances
+
+
+----
 
 an issue with UI - is it looks up NETWORKS in the results from get networks?recurse
 which WOUDL work if we mapped networks (maybe do that step so working again).
@@ -25,6 +58,7 @@ diaggreated. Maybe 'temporarily-aggregating' is a better word for this.
 
 
 
+- Might be useful to add firstSeenAt (like lastSeenAt) for devices and networks. MAYBE replace lastSeenAt with seen (range)
 
 
 
