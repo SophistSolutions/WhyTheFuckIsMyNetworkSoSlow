@@ -1,8 +1,4 @@
 
-do same rework of networkdetais.vue and callers I did for device to network stuff
-
-
----
 
 in JSON for devices and networks, when I return object say if is 'historicalInstance' or composite-rollup object, and
 display specially in details (maybe something minor, like light text on ID LINE  'composite' or RED/ORANGE 'snapshot-data'
