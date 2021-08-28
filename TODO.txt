@@ -1,10 +1,39 @@
 
+do same rework of networkdetais.vue and callers I did for device to network stuff
+
 
 ---
 
-in XML for devices and networks, when I return object say if is 'historicalInstance' or composite-rollup object, and
+in JSON for devices and networks, when I return object say if is 'historicalInstance' or composite-rollup object, and
 display specially in details (maybe something minor, like light text on ID LINE  'composite' or RED/ORANGE 'snapshot-data'
 
+
+	>questions/properties 
+	  - is it a rollup or a raw-single-continuous-session obserervation?
+	    - maybe remove stuff from the discovery list if its been gone for a bit(?)
+	  - is it composed of parts (and what are those parts so I can submit new rollup rules)
+	  - is its ID more or less permanent
+
+	  maybe capture with properties:
+	    - aggregates-irreversably:
+		- aggregates-reversably:
+		- id-is-persistent: true/false
+
+	then show 'historical-snapshot' flag if any members of aggregates-reversably
+
+---
+
+dont incoprorate ipv6 addresses in 'name' for network UNLESS there is no ipv4 address
+
+----
+
+- Might be useful to add firstSeenAt (like lastSeenAt) for devices and networks. MAYBE replace lastSeenAt with seen (range)
+
+	(when you hover over first seen/last seen, show full datetime (not summary 2 minutes ago)) in details page
+
+---
+
+display aggreates in netwowkr pages(maybe done but test when I have firstseenatat/lastseenat data range stuff) 
 ----
 AddNetworkAddresses_
 frequently called with no hardware address so make check for merge slightly less agrresive
@@ -19,15 +48,6 @@ revisit rollup code once UI works better to explore
 
 
 ----
-
-an issue with UI - is it looks up NETWORKS in the results from get networks?recurse
-which WOUDL work if we mapped networks (maybe do that step so working again).
-
-BUT ALSO - must fix fetcher logic to exend set of things we look for if not in store already, and aux store for devices by instance (short term) id
-and networks too.
-
-
-
 - WRITEUP DESIGN DOC FOR OBJECT IDS
   fGUID on discovered db (and stored db).
 
@@ -39,31 +59,8 @@ and networks too.
   And even non-transient objects may 'go away' (but when they do they generally get rolled up). Transient object ids should
   not be cached or re-used across sessions.
 
-
 maybe flag to say 'disaggreatable' or rollup-undoable, or just list LIKE aggreates 'directly-aggregating' ... the items that can be
 diaggreated. Maybe 'temporarily-aggregating' is a better word for this.
-
-
-
-- Might be useful to add firstSeenAt (like lastSeenAt) for devices and networks. MAYBE replace lastSeenAt with seen (range)
-
-
-
-
-
-
-
-
-
-REPLACE
-Network::Merge with Network::Rollup () or rollup method
-almost same as merge except handling of aggregates field, which must be NOT rolled up the same...(at least add new top and unclear if thats only diff)
-
-
----
-
-display aggreates in netwowkr and devices 
-
 
 ----------
 

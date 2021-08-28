@@ -437,7 +437,7 @@ namespace {
                         return i.fKey;
                     }
                 }
-                WeakAsserteNotReached ();
+                // address- but not yet, as we get this too often, and too noisy in logs - WeakAsserteNotReached ();
                 //AssertNotReached ();    // because we guarantee each item rolled up exactly once
                 return netID;
             };
