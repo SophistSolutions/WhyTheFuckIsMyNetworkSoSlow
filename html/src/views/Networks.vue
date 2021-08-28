@@ -60,12 +60,7 @@
         <template v-slot:expanded-item="{ item }">
           <td colspan="100">
             <Link2DetailsPage :link="'/#/network/' + item.id" />
-            <NetworkDetails
-              class="detailsSection"
-              :network="networkFromID_(item.id)"
-              :devices="devices"
-              :networkInterfaces="[]"
-            ></NetworkDetails>
+            <NetworkDetails class="detailsSection" :networkId="item.id" />
           </td>
         </template>
       </v-data-table>
@@ -111,19 +106,6 @@ export default class Networks extends Vue {
   private sortBy: any = [];
   private sortDesc: any = [];
   private expanded: any[] = [];
-
-  // terrible inefficient approach - maybe create map object dervied from devices array
-  private networkFromID_(id: string): INetwork | null {
-    let result: INetwork | null = null;
-    this.networks.every((d) => {
-      if (d.id === id) {
-        result = d;
-        return false;
-      }
-      return true;
-    });
-    return result;
-  }
 
   private rowClicked(row: any) {
     // @todo Try this again with vue3 - https://github.com/vuetifyjs/vuetify/issues/9720

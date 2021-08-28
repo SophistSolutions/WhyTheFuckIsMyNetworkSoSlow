@@ -1,6 +1,6 @@
 <template>
   <div>
-    <table class="detailsTable" v-bind:key="network.id">
+    <table class="detailsTable" v-bind:key="network.id" v-if="network">
       <tr>
         <td>Name</td>
         <td>{{ GetNetworkName(network) }}</td>
@@ -18,7 +18,7 @@
         <td>{{ network.lastSeenAt | moment("from", "now") }}</td>
       </tr>
       <tr>
-        <td>Networks</td>
+        <td>CIDRs</td>
         <td>{{ GetNetworkCIDRs(network) }}</td>
       </tr>
       <tr v-if="network.DNSServers && network.DNSServers.length">
@@ -31,17 +31,19 @@
       </tr>
       <tr v-if="network.geographicLocation">
         <td>Geographic Location</td>
-        <td>
-          {{ FormatLocation(network.geographicLocation) }}
-        </td>
+        <td>{{ FormatLocation(network.geographicLocation) }}</td>
       </tr>
       <tr v-if="network.internetServiceProvider">
         <td>Internet Service Provider</td>
         <td>{{ network.internetServiceProvider.name }}</td>
       </tr>
       <tr v-if="network.aggregates && network.aggregates.length">
-        <td>aggregates</td>
-        <td>{{ network.aggregates.join(", ") }}</td>
+        <td>Aggregates</td>
+        <td>
+          <span v-for="aggregate in network.aggregates" v-bind:key="aggregate">
+            <ReadOnlyTextWithHover :message="aggregate" :link="'/#/network/' + aggregate" />;
+          </span>
+        </td>
       </tr>
       <tr>
         <td>Devices</td>
@@ -84,25 +86,18 @@ import { Component, Prop, Vue, Watch } from "vue-property-decorator";
 
 @Component({
   name: "NetworkDetails",
+  components: {
+    ReadOnlyTextWithHover: () => import("@/components/ReadOnlyTextWithHover.vue"),
+  },
 })
 export default class NetworkDetails extends Vue {
   @Prop({
     required: true,
     default: null,
   })
-  public network!: INetwork;
+  public networkId!: string;
 
-  @Prop({
-    required: true,
-    default: null,
-  })
-  public networkInterfaces!: INetworkInterface[];
-
-  @Prop({
-    required: true,
-    default: null,
-  })
-  public devices!: IDevice[];
+  private polling: undefined | number = undefined;
 
   private GetNetworkName = GetNetworkName;
   private GetNetworkCIDRs = GetNetworkCIDRs;
@@ -112,24 +107,65 @@ export default class NetworkDetails extends Vue {
 
   private get thisNetworksInterfaces(): INetworkInterface[] {
     const result: INetworkInterface[] = [];
-    this.network.attachedInterfaces.forEach((e) => {
-      let answer: INetworkInterface = { id: e };
-      this.networkInterfaces.forEach((ni) => {
-        if (e === ni.id) {
-          answer = ni;
-        }
+    if (this.network) {
+      this.network.attachedInterfaces.forEach((e) => {
+        let answer: INetworkInterface = {
+          id: e,
+        };
+        this.networkInterfaces.forEach((ni) => {
+          if (e === ni.id) {
+            answer = ni;
+          }
+        });
+        result.push(answer);
       });
-      result.push(answer);
-    });
+    }
     return result;
+  }
+
+  private get networkInterfaces(): INetworkInterface[] {
+    return this.$store.getters.getNetworkInterfaces;
+  }
+
+  private created() {
+    this.pollData();
+  }
+
+  private beforeDestroy() {
+    clearInterval(this.polling);
+  }
+
+  private pollData() {
+    // first time check quickly, then more gradually
+    this.$store.dispatch("fetchDevices");
+    this.$store.dispatch("fetchNetwork", this.networkId);
+    this.$store.dispatch("fetchNetworkInterfaces");
+    if (this.polling) {
+      clearInterval(this.polling);
+    }
+    this.polling = setInterval(() => {
+      this.$store.dispatch("fetchDevices");
+      this.$store.dispatch("fetchNetwork", this.networkId);
+      this.$store.dispatch("fetchNetworkInterfaces");
+    }, 15 * 1000);
+  }
+
+  private get network(): INetwork | undefined {
+    return this.$store.getters.getNetwork(this.networkId);
+  }
+
+  // @todo should fix so fetching just devices on this network!!!
+  private get devices(): IDevice[] {
+    return this.$store.getters.getDevices;
   }
 }
 </script>
 
-<style scoped lang="scss">
+<style lang="scss" scoped>
 .detailsTable {
   table-layout: fixed;
 }
+
 .detailsTable td {
   padding-left: 5px;
   padding-right: 10px;
