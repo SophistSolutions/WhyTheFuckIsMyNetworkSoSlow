@@ -57,7 +57,7 @@
                     <td class="nowrap">
                       <ReadOnlyTextWithHover
                         :message="
-                          GetNetworkName(GetNetworkByID(attachedNetID, networks)) +
+                          deviceDetails.attachedNetworks[attachedNetID].name +
                             ' (' +
                             attachedNetID +
                             ')'
@@ -157,7 +157,7 @@ import {
 } from "@/models/device/Utils";
 import { INetwork } from "@/models/network/INetwork";
 import {
-  GetNetworkByID,
+  GetNetworkByIDQuietly,
   GetNetworkLink,
   GetNetworkName,
   GetServices,
@@ -179,17 +179,11 @@ export default class DeviceDetails extends Vue {
   })
   public device!: IDevice;
 
-  @Prop({
-    required: true,
-    default: null,
-  })
-  public networks!: INetwork[];
-
+  private polling: undefined | number = undefined;
   private isRescanning: boolean = false;
 
   private GetNetworkName = GetNetworkName;
   private GetNetworkLink = GetNetworkLink;
-  private GetNetworkByID = GetNetworkByID;
   private GetServices = GetServices;
   private ComputeServiceTypeIconURL = ComputeServiceTypeIconURL;
 
@@ -201,25 +195,61 @@ export default class DeviceDetails extends Vue {
     return addresses.filter((value, index, self) => self.indexOf(value) === index);
   }
 
+  private created() {
+    this.pollData();
+  }
+
+  private beforeDestroy() {
+    clearInterval(this.polling);
+  }
+
+  private get networks(): INetwork[] {
+    // @todo fix to not use getavailabletnetwks but fetch just the right ones
+    return this.$store.getters.getAvailableNetworks;
+  }
+
   private async rescanDevice() {
     this.isRescanning = true;
     try {
-      this.$store.dispatch("fetchDevices", null);
       await rescanDevice(this.device.id);
-      this.$store.dispatch("fetchDevices", null);
+      this.$store.dispatch("fetchDevice", this.device.id);
     } finally {
       this.isRescanning = false;
     }
   }
 
+  private pollData() {
+    // first time check quickly, then more gradually
+    this.$store.dispatch("fetchDevice", this.device.id);
+    this.$store.dispatch("fetchAvailableNetworks"); // todoo fix WRONG @ - fetch just the right nets from the device (AND BELOW)
+    if (this.polling) {
+      clearInterval(this.polling);
+    }
+    this.polling = setInterval(() => {
+      this.$store.dispatch("fetchDevice", this.device.id);
+      this.$store.dispatch("fetchAvailableNetworks");
+    }, 15 * 1000);
+  }
+
   private get deviceDetails(): object {
     const d = this.device;
+    const attachedNetworkInfo = {} as { [key: string]: object };
+    Object.keys(d.attachedNetworks).forEach((element: any) => {
+      const thisNWI = d.attachedNetworks[element] as INetworkAttachmentInfo;
+      let netName = "?";
+      const thisNetObj = GetNetworkByIDQuietly(element, this.networks);
+      if (thisNetObj != null) {
+        netName = GetNetworkName(thisNetObj);
+      }
+      attachedNetworkInfo[element] = { ...thisNWI, name: netName };
+    });
     return {
       ...d,
       ...{
         localAddresses: this.localNetworkAddresses.join(", "),
         manufacturerSummary:
           d.manufacturer == null ? "" : d.manufacturer.fullName || d.manufacturer.shortName,
+        attachedNetworks: attachedNetworkInfo,
       },
     };
   }

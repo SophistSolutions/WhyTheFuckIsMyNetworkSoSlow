@@ -7,7 +7,14 @@ import { INetworkInterface } from "@/models/network/INetworkInterface";
 import { IDevice } from "@/models/device/IDevice";
 import { ISortBy } from "@/models/device/SearchSpecification";
 import { IAbout } from "@/models/IAbout";
-import { fetchAboutInfo, fetchDevices, fetchNetworkInterfaces, fetchNetworks } from "@/proxy/API";
+import {
+  fetchAboutInfo,
+  fetchDevice,
+  fetchDevices,
+  fetchNetwork,
+  fetchNetworkInterfaces,
+  fetchNetworks,
+} from "@/proxy/API";
 
 Vue.use(Vuex);
 
@@ -17,20 +24,36 @@ const debug = process.env.NODE_ENV !== "production";
 export default new Vuex.Store({
   state: {
     about: undefined as IAbout | undefined,
-    availableNetworks: [] as INetwork[],
+    rolledUpAvailableNetworkIDs: [] as string[],
+    // cache of objects, some of which maybe primary networks (rollups) and some maybe details
+    networkDetails: {} as { [key: string]: INetwork },
     networkInterfaces: [] as INetworkInterface[],
     selectedNetworkId: {} as string,
-    devices: [] as IDevice[],
+    rolledUpDeviceIDs: [] as string[],
+    // cache of objects, some of which maybe primary devices (rollups) and some maybe details
+    deviceDetails: {} as { [key: string]: IDevice },
   },
   mutations: {
     setAvailableNetworks(state, networks: INetwork[]) {
-      state.availableNetworks = networks;
+      state.rolledUpAvailableNetworkIDs = networks.map((x) => x.id);
+      //networks.forEach((x) => (state.networkDetails[x.id] = x)); --ok in vue3
+      networks.forEach((x) => Vue.set(state.networkDetails, x.id, x));
+    },
+    setNetworkDetails(state, network: INetwork) {
+      //state.networkDetails[network.id] = network; ok in vue3
+      Vue.set(state.networkDetails, network.id, network);
     },
     setNetworkInterfaces(state, networkInterfaces: INetworkInterface[]) {
       state.networkInterfaces = networkInterfaces;
     },
     setDevices(state, devices: IDevice[]) {
-      state.devices = devices;
+      state.rolledUpDeviceIDs = devices.map((x) => x.id);
+      //      devices.forEach((x) => (state.deviceDetails[x.id] = x));
+      devices.forEach((x) => Vue.set(state.deviceDetails, x.id, x));
+    },
+    setDeviceDetails(state, device: IDevice) {
+      // state.deviceDetails[device.id] = device;
+      Vue.set(state.deviceDetails, device.id, device);
     },
     setSelectedNetwork(state, networkId: string) {
       state.selectedNetworkId = networkId;
@@ -46,11 +69,20 @@ export default new Vuex.Store({
     async fetchNetworkInterfaces({ commit }) {
       commit("setNetworkInterfaces", await fetchNetworkInterfaces());
     },
+    async fetchNetwork({ commit }, id: string) {
+      commit("setNetworkDetails", await fetchNetwork(id));
+    },
+    async fetchNetworks({ commit }, ids: string[]) {
+      ids.forEach(async (id) => commit("setNetworkDetails", await fetchNetwork(id)));
+    },
     async fetchAboutInfo({ commit }) {
       commit("setAboutInfo", await fetchAboutInfo());
     },
     async fetchDevices({ commit }, searchSpecs: ISortBy) {
       commit("setDevices", await fetchDevices(searchSpecs));
+    },
+    async fetchDevice({ commit }, id: string) {
+      commit("setDeviceDetails", await fetchDevice(id));
     },
     setSelectedNetwork({ commit }, networkId: string) {
       commit("setSelectedNetwork", networkId);
@@ -58,13 +90,16 @@ export default new Vuex.Store({
   },
   getters: {
     getAvailableNetworks: (state) => {
-      return state.availableNetworks;
+      return state.rolledUpAvailableNetworkIDs.map((di) => state.networkDetails[di]);
     },
     getNetworkInterfaces: (state) => {
       return state.networkInterfaces;
     },
     getDevices: (state) => {
-      return state.devices;
+      return state.rolledUpDeviceIDs.map((di) => state.deviceDetails[di]);
+    },
+    getDevice: (state) => {
+      return (id: string) => state.deviceDetails[id];
     },
     getSelectedNetworkId: (state) => {
       return state.selectedNetworkId;
@@ -73,7 +108,9 @@ export default new Vuex.Store({
       return state.about;
     },
     getSelectedNetworkObject: (state) => {
-      return state.availableNetworks.find((network) => network.id === state.selectedNetworkId);
+      return state.rolledUpAvailableNetworkIDs.find(
+        (network) => network === state.selectedNetworkId
+      );
     },
   },
   strict: debug,

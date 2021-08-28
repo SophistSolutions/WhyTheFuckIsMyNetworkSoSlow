@@ -17,6 +17,15 @@ export async function fetchNetworks(): Promise<INetwork[]> {
     .catch((error) => Logger.error(error));
 }
 
+export async function fetchNetwork(id: string): Promise<INetwork> {
+  return fetch(API_ROOT + `/networks/${id}`)
+    .then((response) => response.json())
+    .then((data) => {
+      return data;
+    })
+    .catch((error) => Logger.error(error));
+}
+
 export async function fetchNetworkInterfaces(): Promise<INetworkInterface[]> {
   return fetch(API_ROOT + `/network-interfaces?recurse=true`)
     .then((response) => response.json())
@@ -62,6 +71,22 @@ export async function fetchDevices(searchCriteria?: ISortBy): Promise<IDevice[]>
           d.icon = new URL(d.icon, API_ROOT);
         }
       });
+      return data;
+    })
+    .then((data) => {
+      return data;
+    })
+    .catch((error) => Logger.error(error));
+}
+
+export async function fetchDevice(id: string): Promise<IDevice> {
+  return fetch(API_ROOT + `/devices/${id}`)
+    .then((response) => response.json())
+    .then((data) => {
+      // fixup urls that are relative to be relative to the WSAPI
+      if (data.icon) {
+        data.icon = new URL(data.icon, API_ROOT);
+      }
       return data;
     })
     .then((data) => {

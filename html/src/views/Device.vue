@@ -3,10 +3,10 @@
     <app-bar />
     <v-card class="deviceListCard">
       <v-card-title>
-        Device "{{ device.name }}"
+        Device {{ device == null ? "loading..." : '"' + device.name + '"' }}
         <v-spacer></v-spacer>
       </v-card-title>
-      <DeviceDetails class="detailsSection" :device="device" :networks="networks"></DeviceDetails>
+      <DeviceDetails v-if="device" class="detailsSection" :device="device"></DeviceDetails>
     </v-card>
   </v-container>
 </template>
@@ -27,10 +27,6 @@ import { Component, Vue, Watch } from "vue-property-decorator";
 export default class Device extends Vue {
   private polling: undefined | number = undefined;
 
-  private get networks(): INetwork[] {
-    return this.$store.getters.getAvailableNetworks;
-  }
-
   private created() {
     this.pollData();
   }
@@ -41,33 +37,22 @@ export default class Device extends Vue {
 
   private pollData() {
     // first time check quickly, then more gradually
-    this.$store.dispatch("fetchDevices", null);
-    this.$store.dispatch("fetchAvailableNetworks");
+    this.$store.dispatch("fetchDevice", this.$route.params.id);
     if (this.polling) {
       clearInterval(this.polling);
     }
     this.polling = setInterval(() => {
-      this.$store.dispatch("fetchDevices", null);
-      this.$store.dispatch("fetchAvailableNetworks");
+      this.$store.dispatch("fetchDevice", this.$route.params.id);
     }, 15 * 1000);
   }
 
   private get device(): IDevice {
-    let r = null;
-    this.devices.forEach((i) => {
-      // console.log("i=", i);
-      if (i.id === this.$route.params.id) {
-        r = i;
-      }
-    });
-    if (r === null) {
+    let r = this.$store.getters.getDevice(this.$route.params.id);
+    return r;
+    if (r == null) {
       r = { id: "INVALID", attachedNetworks: {}, name: "INVALID", type: null as any };
     }
     return r;
-  }
-
-  private get devices(): IDevice[] {
-    return this.$store.getters.getDevices;
   }
 }
 </script>
