@@ -198,8 +198,10 @@ namespace {
             }
             if (hw1.empty () and hw2.empty ()) {
                 // then fold togehter if they have the same IP Addresses
-                return d1.GetInternetAddresses () == d2.GetInternetAddresses ();
+               // return d1.GetInternetAddresses () == d2.GetInternetAddresses ();
+                return Set<InternetAddress>::Intersects (d1.GetInternetAddresses (), d2.GetInternetAddresses ());
             }
+            // unclear if above test should be if EITHER set is empty, maybe then do if timeframes very close?
             return false;
         }
         bool ShouldRollup_ (const Network& n1, const Network& n2)
