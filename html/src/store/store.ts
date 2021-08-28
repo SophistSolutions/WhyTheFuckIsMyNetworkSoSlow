@@ -20,7 +20,7 @@ Vue.use(Vuex);
 
 const debug = process.env.NODE_ENV !== "production";
 
-// TODO make this the root store - have other stores be props of state. Seperate by logical groups
+// @TODO make this the root store - have other stores be props of state. Seperate by logical groups
 export default new Vuex.Store({
   state: {
     about: undefined as IAbout | undefined,
@@ -91,6 +91,9 @@ export default new Vuex.Store({
   getters: {
     getAvailableNetworks: (state) => {
       return state.rolledUpAvailableNetworkIDs.map((di) => state.networkDetails[di]);
+    },
+    getNetwork: (state) => {
+      return (id: string) => state.networkDetails[id];
     },
     getNetworkInterfaces: (state) => {
       return state.networkInterfaces;

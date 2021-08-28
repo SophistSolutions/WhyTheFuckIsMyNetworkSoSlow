@@ -149,7 +149,7 @@
         <template v-slot:expanded-item="{ item }">
           <td colspan="100">
             <Link2DetailsPage :link="'/#/device/' + item.id" />
-            <DeviceDetails class="detailsSection" :device="item" />
+            <DeviceDetails class="detailsSection" :deviceId="item.id" />
           </td>
         </template>
       </v-data-table>

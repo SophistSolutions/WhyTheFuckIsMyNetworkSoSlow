@@ -6,7 +6,7 @@
         Device {{ device == null ? "loading..." : '"' + device.name + '"' }}
         <v-spacer></v-spacer>
       </v-card-title>
-      <DeviceDetails v-if="device" class="detailsSection" :device="device"></DeviceDetails>
+      <DeviceDetails v-if="device" class="detailsSection" :deviceId="device.id"></DeviceDetails>
     </v-card>
   </v-container>
 </template>

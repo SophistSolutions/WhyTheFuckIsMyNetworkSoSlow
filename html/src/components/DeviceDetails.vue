@@ -18,9 +18,7 @@
         <td><img :src="device.icon" width="24" height="24" /></td>
       </tr>
       <tr v-if="device.manufacturer">
-        <td class="labelColumn">
-          Manufacturer
-        </td>
+        <td class="labelColumn">Manufacturer</td>
         <td>
           <span v-if="device.manufacturer.shortName || device.manufacturer.fullName">{{
             device.manufacturer.shortName || device.manufacturer.fullName
@@ -48,7 +46,10 @@
         <td class="labelColumn">Networks</td>
         <td>
           <table>
-            <tr v-for="attachedNetID in Object.keys(device.attachedNetworks)">
+            <tr
+              v-for="attachedNetID in Object.keys(device.attachedNetworks)"
+              v-bind:key="attachedNetID"
+            >
               <td valign="top">&#x25cf;</td>
               <td>
                 <table>
@@ -156,12 +157,7 @@ import {
   ComputeServiceTypeIconURL,
 } from "@/models/device/Utils";
 import { INetwork } from "@/models/network/INetwork";
-import {
-  GetNetworkByIDQuietly,
-  GetNetworkLink,
-  GetNetworkName,
-  GetServices,
-} from "@/models/network/Utils";
+import { GetNetworkLink, GetNetworkName, GetServices } from "@/models/network/Utils";
 import { OperatingSystem } from "@/models/OperatingSystem";
 import { rescanDevice } from "@/proxy/API";
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
@@ -177,7 +173,7 @@ export default class DeviceDetails extends Vue {
     required: true,
     default: null,
   })
-  public device!: IDevice;
+  public deviceId!: string;
 
   private polling: undefined | number = undefined;
   private isRescanning: boolean = false;
@@ -189,9 +185,11 @@ export default class DeviceDetails extends Vue {
 
   private get localNetworkAddresses(): string[] {
     const addresses: string[] = [];
-    Object.entries(this.device.attachedNetworks).forEach((element) => {
-      element[1].localAddresses.forEach((e: string) => addresses.push(e));
-    });
+    if (this.device) {
+      Object.entries(this.device.attachedNetworks).forEach((element) => {
+        element[1].localAddresses.forEach((e: string) => addresses.push(e));
+      });
+    }
     return addresses.filter((value, index, self) => self.indexOf(value) === index);
   }
 
@@ -211,47 +209,58 @@ export default class DeviceDetails extends Vue {
   private async rescanDevice() {
     this.isRescanning = true;
     try {
-      await rescanDevice(this.device.id);
-      this.$store.dispatch("fetchDevice", this.device.id);
+      await rescanDevice(this.deviceId);
+      this.$store.dispatch("fetchDevice", this.deviceId);
     } finally {
       this.isRescanning = false;
     }
   }
 
   private pollData() {
-    // first time check quickly, then more gradually
-    this.$store.dispatch("fetchDevice", this.device.id);
-    this.$store.dispatch("fetchAvailableNetworks"); // todoo fix WRONG @ - fetch just the right nets from the device (AND BELOW)
+    // first time check immediately, then more gradually for updates
+    this.$store.dispatch("fetchDevice", this.deviceId);
+    if (this.device) {
+      this.$store.dispatch("fetchNetworks", Object.keys(this.device.attachedNetworks));
+    } else {
+      this.$store.dispatch("fetchAvailableNetworks");
+    }
     if (this.polling) {
       clearInterval(this.polling);
     }
     this.polling = setInterval(() => {
-      this.$store.dispatch("fetchDevice", this.device.id);
-      this.$store.dispatch("fetchAvailableNetworks");
+      this.$store.dispatch("fetchDevice", this.deviceId);
+      if (this.device) {
+        this.$store.dispatch("fetchNetworks", Object.keys(this.device.attachedNetworks));
+      }
     }, 15 * 1000);
   }
 
-  private get deviceDetails(): object {
+  private get device(): IDevice | undefined {
+    return this.$store.getters.getDevice(this.deviceId);
+  }
+
+  private get deviceDetails(): object | undefined {
     const d = this.device;
-    const attachedNetworkInfo = {} as { [key: string]: object };
-    Object.keys(d.attachedNetworks).forEach((element: any) => {
-      const thisNWI = d.attachedNetworks[element] as INetworkAttachmentInfo;
-      let netName = "?";
-      const thisNetObj = GetNetworkByIDQuietly(element, this.networks);
-      if (thisNetObj != null) {
-        netName = GetNetworkName(thisNetObj);
-      }
-      attachedNetworkInfo[element] = { ...thisNWI, name: netName };
-    });
-    return {
-      ...d,
-      ...{
-        localAddresses: this.localNetworkAddresses.join(", "),
-        manufacturerSummary:
-          d.manufacturer == null ? "" : d.manufacturer.fullName || d.manufacturer.shortName,
-        attachedNetworks: attachedNetworkInfo,
-      },
-    };
+    if (d) {
+      const attachedNetworkInfo = {} as { [key: string]: object };
+      Object.keys(d.attachedNetworks).forEach((element: any) => {
+        const thisNWI = d.attachedNetworks[element] as INetworkAttachmentInfo;
+        let netName = "?";
+        const thisNetObj = this.$store.getters.getNetwork(element);
+        if (thisNetObj) {
+          netName = GetNetworkName(thisNetObj);
+        }
+        attachedNetworkInfo[element] = { ...thisNWI, name: netName };
+      });
+      return {
+        ...d,
+        ...{
+          localAddresses: this.localNetworkAddresses.join(", "),
+          attachedNetworks: attachedNetworkInfo,
+        },
+      };
+    }
+    return undefined;
   }
 }
 </script>

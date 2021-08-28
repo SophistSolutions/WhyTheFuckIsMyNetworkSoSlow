@@ -1,14 +1,9 @@
 
-middle of wtiching DEVICE viewer page to using new GetDevice(id) getter
-and fetcher to fetch its stuff...
 
-so works without getching all devices and fetches historical isntances
+---
 
-
-redo DEVICEDETAILS page so it fetches network interfaces itself.
-
-
-
+in XML for devices and networks, when I return object say if is 'historicalInstance' or composite-rollup object, and
+display specially in details (maybe something minor, like light text on ID LINE  'composite' or RED/ORANGE 'snapshot-data'
 
 ----
 AddNetworkAddresses_
