@@ -367,12 +367,12 @@ namespace {
         };
         optional<SSDPInfo> fSSDPInfo;
 
-        void AddIPAddresses_ (const InternetAddress& addr, const optional<String>& hwAddr = nullopt)
+        void AddNetworkAddresses_ (const InternetAddress& addr, const optional<String>& hwAddr = nullopt)
         {
             // merge the addrs into each matching network interface
-            AddIPAddresses_ (Iterable<InternetAddress>{addr}, hwAddr);
+            AddNetworkAddresses_ (Iterable<InternetAddress>{addr}, hwAddr);
         }
-        void AddIPAddresses_ (const Iterable<InternetAddress>& addrs, const optional<String>& hwAddr = nullopt)
+        void AddNetworkAddresses_ (const Iterable<InternetAddress>& addrs, const optional<String>& hwAddr = nullopt)
         {
             // merge the addrs into each matching network interface
             unsigned int totalAddrs{};
@@ -401,7 +401,7 @@ namespace {
                 }
             }
             if (totalAdds == 0 and totalAddrsSuppressedQuietly < totalAddrs) {
-                DbgTrace (L"AddIPAddresses_(%s) called, but no matching interfaces found", Characters::ToString (addrs).c_str ());
+                DbgTrace (L"AddNetworkAddresses_(%s) called, but no matching interfaces found", Characters::ToString (addrs).c_str ());
             }
         }
 
@@ -777,7 +777,7 @@ namespace {
             for (Interface i : interfacesMgr.GetAll ()) {
                 if (i.fType != Interface::Type::eLoopback and i.fStatus and i.fStatus->Contains (Interface::Status::eRunning)) {
                     i.fBindings.fAddresses.Apply ([&] (const InternetAddress& ia) {
-                        newDev.AddIPAddresses_ (ia, i.fHardwareAddress);
+                        newDev.AddNetworkAddresses_ (ia, i.fHardwareAddress);
                     });
                 }
             }
@@ -900,13 +900,17 @@ namespace {
                 auto           l  = sDiscoveredDevices_.cget ();
                 DiscoveryInfo_ di = [&] () {
                     DiscoveryInfo_ tmp{};
-                    tmp.AddIPAddresses_ (locAddrs);
+                    tmp.AddNetworkAddresses_ (locAddrs);
+                    // Note - we don't generally get hardware address from IPAddress
                     if (optional<DiscoveryInfo_> o = FindMatchingDevice_ (l, tmp)) {
                         tmp = *o; // then merge in possible additions
-                        tmp.AddIPAddresses_ (locAddrs);
+                        tmp.AddNetworkAddresses_ (locAddrs);
                         return tmp;
                     }
                     else {
+#if qDebug
+                        tmp.fDebugProps.Add (L"Found-From-SSDP-broadcast", true);
+#endif
                         tmp.fGUID = GUID::GenerateNew ();
                         return tmp;
                     }
@@ -932,7 +936,7 @@ namespace {
                 di.fSSDPInfo->fServer = d.fServer;
 
                 // @todo verify - but I think already done
-                //di.AddIPAddresses_ (locAddrs);
+                //di.AddNetworkAddresses_ (locAddrs);
 
                 if (deviceType and deviceFriendlyName) {
                     di.fSSDPInfo->fDeviceType2FriendlyNameMap.Add (*deviceType, *deviceFriendlyName);
@@ -1031,10 +1035,10 @@ namespace {
                         auto           l  = sDiscoveredDevices_.cget ();
                         DiscoveryInfo_ di = [&] () {
                             DiscoveryInfo_ tmp{};
-                            tmp.AddIPAddresses_ (i.fInternetAddress, i.fHardwareAddress);
+                            tmp.AddNetworkAddresses_ (i.fInternetAddress, i.fHardwareAddress);
                             if (optional<DiscoveryInfo_> o = FindMatchingDevice_ (l, tmp)) {
                                 tmp = *o;
-                                tmp.AddIPAddresses_ (i.fInternetAddress, i.fHardwareAddress); // merge in additions
+                                tmp.AddNetworkAddresses_ (i.fInternetAddress, i.fHardwareAddress); // merge in additions
                                 return tmp;
                             }
                             else {
@@ -1206,7 +1210,7 @@ namespace {
                         }
                         else {
                             DiscoveryInfo_ tmp{};
-                            tmp.AddIPAddresses_ (ia);
+                            tmp.AddNetworkAddresses_ (ia);
 
                             auto l = sDiscoveredDevices_.rwget (); // grab write lock because almost assured of making changes (at least last seen)
                             // @todo RECONSIDER - MAYBE DO READ AND UPGRADE CUZ OF CASE WHERE NO SCAN RESULTS - WANT TO NOT BOTHER LOCKING
@@ -1250,7 +1254,7 @@ namespace {
                         {
                             auto           l = sDiscoveredDevices_.cget (); // grab write lock because almost assured of making changes (at least last seen)
                             DiscoveryInfo_ tmp{};
-                            tmp.AddIPAddresses_ (ia);
+                            tmp.AddNetworkAddresses_ (ia);
                             if (optional<DiscoveryInfo_> oo = FindMatchingDevice_ (l, tmp)) {
                                 need2CheckAddr = false;
                             }
@@ -1341,7 +1345,7 @@ namespace {
                         if (not scanResults.fDiscoveredOpenPorts.empty ()) {
                             auto           l = sDiscoveredDevices_.rwget ();
                             DiscoveryInfo_ tmp{};
-                            tmp.AddIPAddresses_ (ia);
+                            tmp.AddNetworkAddresses_ (ia);
                             if (optional<DiscoveryInfo_> oo = l.cref ().Lookup (deviceID)) {
                                 // if found, update to say what ports we found
                                 tmp = *oo;
