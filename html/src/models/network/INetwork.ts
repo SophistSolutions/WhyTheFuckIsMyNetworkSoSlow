@@ -3,7 +3,7 @@ import { IInternetServiceProvider } from "@/models/network/IInternetServiceProvi
 
 export interface INetwork {
   id: string;
-  aggregates?: string[];
+  aggregatesReversibly?: string[];
   DNSServers: string[];
   attachedInterfaces: string[]; // MOSTLY IGNORED - but keep around cuz maybe handy in debugging
   externalAddresses: string[];

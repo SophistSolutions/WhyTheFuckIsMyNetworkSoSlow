@@ -37,10 +37,10 @@
         <td>Internet Service Provider</td>
         <td>{{ network.internetServiceProvider.name }}</td>
       </tr>
-      <tr v-if="network.aggregates && network.aggregates.length">
-        <td>Aggregates</td>
+      <tr v-if="network.aggregatesReversibly && network.aggregatesReversibly.length">
+        <td>Aggregates Reversibly</td>
         <td>
-          <span v-for="aggregate in network.aggregates" v-bind:key="aggregate">
+          <span v-for="aggregate in network.aggregatesReversibly" v-bind:key="aggregate">
             <ReadOnlyTextWithHover :message="aggregate" :link="'/#/network/' + aggregate" />;
           </span>
         </td>

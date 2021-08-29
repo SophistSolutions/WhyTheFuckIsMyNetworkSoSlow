@@ -433,7 +433,7 @@ namespace {
             // AND DOCUMENT WHY GUARNATEED UNIQUE - IF AS I THINK IT IS - CUZ each item goes in one rollup)
             auto mapAggregatedNetID2ItsRollupID = [&] (GUID netID) -> GUID {
                 for (auto i : rolledUpNetworks) {
-                    if (i.fValue.fAggregates and i.fValue.fAggregates->Contains (netID)) {
+                    if (i.fValue.fAggregatesReversibly and i.fValue.fAggregatesReversibly->Contains (netID)) {
                         return i.fKey;
                     }
                 }
@@ -465,7 +465,7 @@ namespace {
                 }
                 else {
                     Device newRolledUpDevice      = d2MergeIn;
-                    newRolledUpDevice.fAggregates = Set<GUID>{d2MergeIn.fGUID};
+                    newRolledUpDevice.fAggregatesReversibly = Set<GUID>{d2MergeIn.fGUID};
                     newRolledUpDevice.fGUID       = GUID::GenerateNew ();
                     result.Add (newRolledUpDevice.fGUID, newRolledUpDevice);
                     Assert (result[newRolledUpDevice.fGUID].fGUID == newRolledUpDevice.fGUID); // sb using new KeyedCollection!
@@ -499,7 +499,7 @@ namespace {
                 }
                 else {
                     Network newRolledUpDevice     = d2MergeIn;
-                    newRolledUpDevice.fAggregates = Set<GUID>{d2MergeIn.fGUID};
+                    newRolledUpDevice.fAggregatesReversibly = Set<GUID>{d2MergeIn.fGUID};
                     newRolledUpDevice.fGUID       = GUID::GenerateNew ();
                     result.Add (newRolledUpDevice.fGUID, newRolledUpDevice);
                 }

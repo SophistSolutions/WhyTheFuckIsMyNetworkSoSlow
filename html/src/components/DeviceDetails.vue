@@ -131,10 +131,10 @@
           <json-viewer :value="device.attachedNetworkInterfaces" :expand-depth="0" copyable sort />
         </td>
       </tr>
-      <tr v-if="device.aggregates && device.aggregates.length">
-        <td>Aggregates</td>
+      <tr v-if="device.aggregatesReversibly && device.aggregatesReversibly.length">
+        <td>Aggregates Reversibly</td>
         <td>
-          <span v-for="aggregate in device.aggregates" v-bind:key="aggregate">
+          <span v-for="aggregate in device.aggregatesReversibly" v-bind:key="aggregate">
             <ReadOnlyTextWithHover :message="aggregate" :link="'/#/device/' + aggregate" />;
           </span>
         </td>
