@@ -112,6 +112,9 @@ Network Network::Merge (const Network& databaseNetwork, const Network& dynamical
     Memory::CopyToIf (&merged.fInternetServiceProvider, dynamicallyDiscoveredNetwork.fInternetServiceProvider);
     Memory::CopyToIf (&merged.fLastSeenAt, dynamicallyDiscoveredNetwork.fLastSeenAt);
     Memory::AccumulateIf (&merged.fAggregatesReversibly, dynamicallyDiscoveredNetwork.fAggregatesReversibly); // @todo consider if this is right way to combine
+    Memory::AccumulateIf (&merged.fAggregatesIrreversibly, dynamicallyDiscoveredNetwork.fAggregatesIrreversibly);
+    Memory::CopyToIf (&merged.fIDPersistent, dynamicallyDiscoveredNetwork.fIDPersistent);
+    Memory::CopyToIf (&merged.fHistoricalSnapshot, dynamicallyDiscoveredNetwork.fHistoricalSnapshot);
 #if qDebug
     Memory::CopyToIf (&merged.fDebugProps, dynamicallyDiscoveredNetwork.fDebugProps);
 #endif
@@ -127,6 +130,9 @@ Network Network::Rollup (const Network& rollupNetwork, const Network& instanceNe
     else {
         n.fAggregatesReversibly = Set<GUID>{instanceNetwork2Add.fGUID};
     }
+    n.fAggregatesIrreversibly = nullopt;
+    n.fIDPersistent           = false;
+    n.fHistoricalSnapshot     = false;
     return n;
 }
 
@@ -141,7 +147,10 @@ String Network::ToString () const
     sb += L"Gateways: " + Characters::ToString (fGateways) + L", ";
     sb += L"DNS-Servers: " + Characters::ToString (fDNSServers) + L", ";
     sb += L"LastSeenAt: " + Characters::ToString (fLastSeenAt) + L", ";
-    sb += L"Aggregates: " + Characters::ToString (fAggregatesReversibly) + L", ";
+    sb += L"Aggregates-Reversibly: " + Characters::ToString (fAggregatesReversibly) + L", ";
+    sb += L"Aggregates-Irreverisbly: " + Characters::ToString (fAggregatesIrreversibly) + L", ";
+    sb += L"IDPersistent: " + Characters::ToString (fIDPersistent) + L", ";
+    sb += L"HistoricalSnapshot: " + Characters::ToString (fHistoricalSnapshot) + L", ";
     sb += L"}";
     return sb.str ();
 }
@@ -210,6 +219,9 @@ const ObjectVariantMapper Network::kMapper = [] () {
             {L"id"sv, StructFieldMetaInfo{&Network::fGUID}},
             {L"lastSeenAt"sv, StructFieldMetaInfo{&Network::fLastSeenAt}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"aggregatesReversibly"sv, StructFieldMetaInfo{&Network::fAggregatesReversibly}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+            {L"aggregatesIrreversibly"sv, StructFieldMetaInfo{&Network::fAggregatesIrreversibly}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+            {L"idIsPersistent"sv, StructFieldMetaInfo{&Network::fIDPersistent}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+            {L"historicalSnapshot"sv, StructFieldMetaInfo{&Network::fHistoricalSnapshot}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
 #if qDebug
             {L"debugProps", StructFieldMetaInfo{&Network::fDebugProps}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
 #endif
@@ -400,6 +412,9 @@ const ObjectVariantMapper Device::kMapper = [] () {
             {L"presentationURL", StructFieldMetaInfo{&Device::fPresentationURL}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"operatingSystem", StructFieldMetaInfo{&Device::fOperatingSystem}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"aggregatesReversibly", StructFieldMetaInfo{&Device::fAggregatesReversibly}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+            {L"aggregatesIrreversibly"sv, StructFieldMetaInfo{&Device::fAggregatesIrreversibly}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+            {L"idIsPersistent"sv, StructFieldMetaInfo{&Device::fIDPersistent}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+            {L"historicalSnapshot"sv, StructFieldMetaInfo{&Device::fHistoricalSnapshot}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
 #if qDebug
             {L"debugProps", StructFieldMetaInfo{&Device::fDebugProps}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
 #endif
@@ -445,6 +460,9 @@ Device Device::Merge (const Device& databaseDevice, const Device& dynamicallyDis
     Memory::AccumulateIf (&merged.fAttachedNetworkInterfaces, dynamicallyDiscoveredDevice.fAttachedNetworkInterfaces);
     Memory::CopyToIf (&merged.fOperatingSystem, dynamicallyDiscoveredDevice.fOperatingSystem);
     Memory::AccumulateIf (&merged.fAggregatesReversibly, dynamicallyDiscoveredDevice.fAggregatesReversibly); // @todo UNSURE if this is right
+    Memory::AccumulateIf (&merged.fAggregatesIrreversibly, dynamicallyDiscoveredDevice.fAggregatesIrreversibly);
+    Memory::CopyToIf (&merged.fIDPersistent, dynamicallyDiscoveredDevice.fIDPersistent);
+    Memory::CopyToIf (&merged.fHistoricalSnapshot, dynamicallyDiscoveredDevice.fHistoricalSnapshot);
 #if qDebug
     Memory::CopyToIf (&merged.fDebugProps, dynamicallyDiscoveredDevice.fDebugProps);
 #endif
@@ -460,6 +478,9 @@ Device Device::Rollup (const Device& rollupDevice, const Device& instanceDevice2
     else {
         d.fAggregatesReversibly = Set<GUID>{instanceDevice2Add.fGUID};
     }
+    d.fAggregatesIrreversibly = nullopt;
+    d.fIDPersistent           = false;
+    d.fHistoricalSnapshot     = false;
     return d;
 }
 

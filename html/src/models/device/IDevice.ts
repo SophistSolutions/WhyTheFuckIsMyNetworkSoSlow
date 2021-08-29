@@ -14,11 +14,14 @@ export interface IManufacturer {
 
 export interface IDevice {
   id: string;
+  aggregatesReversibly?: string[];
+  aggregatesIrreversibly?: string[];
+  idIsPersistent?: boolean;
+  historicalSnapshot?: boolean;
   attachedNetworks: { [key: string]: INetworkAttachmentInfo };
   name: string;
   lastSeenAt?: Date;
   openPorts?: string[];
-  aggregatesReversibly?: string[];
   icon?: string;
   manufacturer?: IManufacturer;
   type: Array<DeviceTypeEnum | string>;

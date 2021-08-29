@@ -7,7 +7,10 @@
       </tr>
       <tr>
         <td>ID</td>
-        <td>{{ network.id }}</td>
+        <td>
+          {{ network.id }}
+          <span class="snapshot" v-if="network.historicalSnapshot == true">{snapshot}</span>
+        </td>
       </tr>
       <tr>
         <td>Friendly Name</td>
@@ -42,6 +45,14 @@
         <td>
           <span v-for="aggregate in network.aggregatesReversibly" v-bind:key="aggregate">
             <ReadOnlyTextWithHover :message="aggregate" :link="'/#/network/' + aggregate" />;
+          </span>
+        </td>
+      </tr>
+      <tr v-if="network.aggregatesIrreversibly && network.aggregatesIrreversibly.length">
+        <td>Aggregates Irreversibly</td>
+        <td>
+          <span v-for="aggregate in network.aggregatesIrreversibly" v-bind:key="aggregate">
+            <ReadOnlyTextWithHover :message="aggregate" />;
           </span>
         </td>
       </tr>
@@ -169,5 +180,8 @@ export default class NetworkDetails extends Vue {
 .detailsTable td {
   padding-left: 5px;
   padding-right: 10px;
+}
+.snapshot {
+  font-weight: bold;
 }
 </style>

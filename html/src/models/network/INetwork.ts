@@ -4,6 +4,9 @@ import { IInternetServiceProvider } from "@/models/network/IInternetServiceProvi
 export interface INetwork {
   id: string;
   aggregatesReversibly?: string[];
+  aggregatesIrreversibly?: string[];
+  idIsPersistent?: boolean;
+  historicalSnapshot?: boolean;
   DNSServers: string[];
   attachedInterfaces: string[]; // MOSTLY IGNORED - but keep around cuz maybe handy in debugging
   externalAddresses: string[];

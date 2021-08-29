@@ -7,7 +7,10 @@
       </tr>
       <tr>
         <td class="labelColumn">ID</td>
-        <td>{{ device.id }}</td>
+        <td>
+          {{ device.id }}
+          <span class="snapshot" v-if="device.historicalSnapshot == true">{snapshot}</span>
+        </td>
       </tr>
       <tr v-if="device.type">
         <td class="labelColumn">Types</td>
@@ -136,6 +139,14 @@
         <td>
           <span v-for="aggregate in device.aggregatesReversibly" v-bind:key="aggregate">
             <ReadOnlyTextWithHover :message="aggregate" :link="'/#/device/' + aggregate" />;
+          </span>
+        </td>
+      </tr>
+      <tr v-if="device.aggregatesIrreversibly && device.aggregatesIrreversibly.length">
+        <td>Aggregates Irreversibly</td>
+        <td>
+          <span v-for="aggregate in device.aggregatesIrreversibly" v-bind:key="aggregate">
+            <ReadOnlyTextWithHover :message="aggregate" />;
           </span>
         </td>
       </tr>
@@ -287,5 +298,8 @@ td.labelColumn {
 .smallBtnMargin {
   margin-left: 1em;
   margin-right: 1em;
+}
+.snapshot {
+  font-weight: bold;
 }
 </style>

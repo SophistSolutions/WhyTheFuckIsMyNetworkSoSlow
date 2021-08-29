@@ -200,6 +200,21 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
          */
         optional<Set<GUID>> fAggregatesReversibly;
 
+        /**
+         *  So far NYI, but idea is we automatically rollup some old stuff and store that as a new record in the DB.
+         */
+        optional<Set<GUID>> fAggregatesIrreversibly;
+
+        /**
+         *  this ID is stored in the database
+         */
+        optional<bool> fIDPersistent;
+
+        /**
+         *  this data is a historical (database) snapshot, vs a dynamic rollup
+         */
+        optional<bool> fHistoricalSnapshot;
+
 #if qDebug
         optional<Mapping<String, DataExchange::VariantValue>> fDebugProps;
 #endif
@@ -299,6 +314,21 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
          * This device summary represents an aggregation of the following device objects.
          */
         optional<Set<GUID>> fAggregatesReversibly;
+
+        /**
+         *  So far NYI, but idea is we automatically rollup some old stuff and store that as a new record in the DB.
+         */
+        optional<Set<GUID>> fAggregatesIrreversibly;
+
+        /**
+         *  this ID is stored in the database
+         */
+        optional<bool> fIDPersistent;
+
+        /**
+         *  this data is a historical (database) snapshot, vs a dynamic rollup
+         */
+        optional<bool> fHistoricalSnapshot;
 
 #if qDebug
         optional<Mapping<String, DataExchange::VariantValue>> fDebugProps;

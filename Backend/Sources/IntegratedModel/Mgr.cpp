@@ -198,7 +198,7 @@ namespace {
             }
             if (hw1.empty () and hw2.empty ()) {
                 // then fold togehter if they have the same IP Addresses
-               // return d1.GetInternetAddresses () == d2.GetInternetAddresses ();
+                // return d1.GetInternetAddresses () == d2.GetInternetAddresses ();
                 return Set<InternetAddress>::Intersects (d1.GetInternetAddresses (), d2.GetInternetAddresses ());
             }
             // unclear if above test should be if EITHER set is empty, maybe then do if timeframes very close?
@@ -464,9 +464,9 @@ namespace {
                     Assert (result[i->fKey].fGUID == i->fKey); // sb using new KeyedCollection!
                 }
                 else {
-                    Device newRolledUpDevice      = d2MergeIn;
+                    Device newRolledUpDevice                = d2MergeIn;
                     newRolledUpDevice.fAggregatesReversibly = Set<GUID>{d2MergeIn.fGUID};
-                    newRolledUpDevice.fGUID       = GUID::GenerateNew ();
+                    newRolledUpDevice.fGUID                 = GUID::GenerateNew ();
                     result.Add (newRolledUpDevice.fGUID, newRolledUpDevice);
                     Assert (result[newRolledUpDevice.fGUID].fGUID == newRolledUpDevice.fGUID); // sb using new KeyedCollection!
                 }
@@ -498,9 +498,9 @@ namespace {
                     result.Add (i->fKey, Network::Rollup (i->fValue, d2MergeIn));
                 }
                 else {
-                    Network newRolledUpDevice     = d2MergeIn;
+                    Network newRolledUpDevice               = d2MergeIn;
                     newRolledUpDevice.fAggregatesReversibly = Set<GUID>{d2MergeIn.fGUID};
-                    newRolledUpDevice.fGUID       = GUID::GenerateNew ();
+                    newRolledUpDevice.fGUID                 = GUID::GenerateNew ();
                     result.Add (newRolledUpDevice.fGUID, newRolledUpDevice);
                 }
             };
@@ -552,6 +552,10 @@ optional<IntegratedModel::Device> IntegratedModel::Mgr::GetDevice (const Common:
     auto result = RollupSummary_::GetRolledUpDevies ().Lookup (id);
     if (not result.has_value ()) {
         result = DBAccess_::sDBDevices_.load ().Lookup (id);
+        if (result) {
+            result->fIDPersistent       = true;
+            result->fHistoricalSnapshot = true;
+        }
     }
     return result;
 }
@@ -570,6 +574,10 @@ optional<IntegratedModel::Network> IntegratedModel::Mgr::GetNetwork (const Commo
     auto result = RollupSummary_::GetRolledUpNetworks ().Lookup (id);
     if (not result.has_value ()) {
         result = DBAccess_::sDBNetworks_.load ().Lookup (id);
+        if (result) {
+            result->fIDPersistent       = true;
+            result->fHistoricalSnapshot = true;
+        }
     }
     return result;
 }
