@@ -1,7 +1,4 @@
 
-dont incoprorate ipv6 addresses in 'name' for network UNLESS there is no ipv4 address
-
-----
 
 - Might be useful to add firstSeenAt (like lastSeenAt) for devices and networks. MAYBE replace lastSeenAt with seen (range)
 

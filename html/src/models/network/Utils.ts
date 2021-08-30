@@ -10,7 +10,11 @@ import { OperatingSystem } from "@/models/OperatingSystem";
 export function GetNetworkName(n: INetwork): string {
   // @todo this should probably sometimes be shortened and be more careful if no
   // freindlyname/networkaddresses, and maybe include reference to location (sudbury etc)
-  return n.friendlyName + " {" + n.networkAddresses.join(", ") + "}";
+  let addresses = n.networkAddresses.filter((nn) => nn.includes("."));
+  if (addresses.length === 0) {
+    addresses = n.networkAddresses;
+  }
+  return n.friendlyName + " {" + addresses.join(", ") + "}";
 }
 
 export function GetNetworkCIDRs(n: INetwork): string {
