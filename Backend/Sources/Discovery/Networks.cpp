@@ -42,18 +42,6 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery;
 //#define USE_NOISY_TRACE_IN_THIS_MODULE_ 1
 
 namespace {
-    // for now, use the CIDR, @todo - but this needs TONS OF WORK - and probably persistence
-    GUID ComputeGUIDForNetwork_ (const Discovery::Network& nw)
-    {
-        StringBuilder sb;
-        sb += Characters::ToString (nw.fGateways);         // NO WHERE NEAR GOOD ENUF - take into account public IP ADDR and hardware address of router - but still ALLOW for any of these to float
-        sb += Characters::ToString (nw.fNetworkAddresses); // ""
-        using namespace Stroika::Foundation::Cryptography::Digest;
-        return Hash<String, Digester<Algorithm::MD5>, GUID>{}(sb.str ());
-    }
-}
-
-namespace {
     optional<InternetAddress> LookupExternalInternetAddress_ (optional<Time::DurationSecondsType> allowedStaleness = {})
     {
         using Cache::SynchronizedCallerStalenessCache;
@@ -247,7 +235,7 @@ namespace {
                     // and doesn't appear to vary interestingly (maybe didnt test enough) - like my virtual adapters and localhost adapter alll have same network as
                     // the real ethernet adapter).
                     // -- LGP 2018-12-16
-                    nw.fGUID = ComputeGUIDForNetwork_ (nw);
+                    nw.fGUID = GUID::GenerateNew ();
 
                     nw.fFriendlyName = i.fFriendlyName; // if multiple, pick arbitrarily
 

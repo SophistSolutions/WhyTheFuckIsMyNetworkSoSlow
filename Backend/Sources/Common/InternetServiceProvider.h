@@ -27,6 +27,22 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         optional<String> name;
 
         nonvirtual String ToString () const;
+
+#if __cpp_impl_three_way_comparison < 201711
+        bool operator== (const InternetServiceProvider& rhs) const
+        {
+            if (name != rhs.name) {
+                return false;
+            }
+            return true;
+        }
+        bool operator!= (const InternetServiceProvider& rhs) const
+        {
+            return not(*this == rhs);
+        }
+#else
+        auto operator<=> (const InternetServiceProvider&) const = default;
+#endif
     };
 
     /**

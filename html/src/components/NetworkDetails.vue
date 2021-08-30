@@ -182,6 +182,6 @@ export default class NetworkDetails extends Vue {
   padding-right: 10px;
 }
 .snapshot {
-  font-weight: bold;
+  font-style: italic;
 }
 </style>

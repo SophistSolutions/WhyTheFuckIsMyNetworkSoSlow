@@ -6,6 +6,7 @@
 #include "Stroika/Foundation/Common/GUID.h"
 #include "Stroika/Foundation/Common/KeyValuePair.h"
 #include "Stroika/Foundation/Common/Property.h"
+#include "Stroika/Foundation/Containers/Set.h"
 #include "Stroika/Foundation/DataExchange/ObjectVariantMapper.h"
 #include "Stroika/Foundation/Database/SQL/ORM/Schema.h"
 #include "Stroika/Foundation/Database/SQL/ORM/TableConnection.h"
@@ -81,6 +82,10 @@ namespace {
     {
         return url ? TransformURL2LocalStorage_ (*url) : optional<URI>{};
     }
+}
+
+namespace {
+    static const BackendApp::Common::InternetServiceProvider kHughsNet_ISP_{L"Hughes Network Systems"sv};
 }
 
 namespace {
@@ -206,12 +211,53 @@ namespace {
         }
         bool ShouldRollup_ (const Network& n1, const Network& n2)
         {
-            // wag for now how to roll networks together
-            if (n1.fNetworkAddresses != n2.fNetworkAddresses) {
+            /*
+             *  A network is not a super-well defined concept, so deciding if two instances of a network refer to the same
+             *  network is a bit of a judgement call.
+             * 
+             *  BUt a few key things probably make sense:
+             *      >   Same ISP
+             *      >   Same GeoLoc
+             *      >   Same IPv4 CIDR
+             *      >   Same Gateway addresses
+             * 
+             *  Things we allow to differ:
+             *      >   details of any IP-v6 network addresses (if there were IPV4 CIDRs agreed upon).
+             * 
+             *  At least thats by best guess to start as of 2021-08-29
+             */
+            if (n1.fInternetServiceProvider != n2.fInternetServiceProvider) {
                 return false;
             }
-            if (n1.fGEOLocInformation != n2.fGEOLocInformation) {
-                return false;
+            if (n1.fInternetServiceProvider != kHughsNet_ISP_) {
+                // Hughsnet makes geoloc information comparison ineffective (frequently generates many different locations depending on when you try)
+                if (n1.fGEOLocInformation != n2.fGEOLocInformation) {
+                    return false;
+                }
+            }
+            if (n1.fGateways != n2.fGateways) {
+                // for some reason, gateway list sometimes contains IPv4 only, and sometimes IPv4 and IPv6 addresses
+                // treat the list the same if the gateway list ipv4s at least are the same (and non-empty)
+                // if IPv4 CIDRs same (and non-empty), then ignore differences in IPv4 addressses
+                Set<InternetAddress> ipv4s1{n1.fGateways.Where ([] (InternetAddress i) { return i.GetAddressFamily () == InternetAddress::AddressFamily::V4; })};
+                Set<InternetAddress> ipv4s2{n2.fGateways.Where ([] (InternetAddress i) { return i.GetAddressFamily () == InternetAddress::AddressFamily::V4; })};
+                if (ipv4s1 != ipv4s2) {
+                    return false;
+                }
+                // If we got here, they differ in IPv6 (or other) address. If they matched on IPV4 (not trivially - because there were none)
+                // ignore the (ipv6) differences
+                return not ipv4s1.empty ();
+            }
+            if (n1.fNetworkAddresses != n2.fNetworkAddresses) {
+                // if IPv4 CIDRs same (and non-empty), then ignore differences in IPv4 addressses
+                Set<CIDR> ipv4s1{n1.fNetworkAddresses.Where ([] (auto i) { return i.GetBaseInternetAddress ().GetAddressFamily () == InternetAddress::AddressFamily::V4; })};
+                Set<CIDR> ipv4s2{n2.fNetworkAddresses.Where ([] (auto i) { return i.GetBaseInternetAddress ().GetAddressFamily () == InternetAddress::AddressFamily::V4; })};
+                if (ipv4s1 != ipv4s2) {
+                    return false;
+                }
+                // If we got here, they differ in IPv6 (or other) address. If they matched on IPV4 (not trivially - because there were none)
+                // ignore the (ipv6) differences
+                return not ipv4s1.empty ();
             }
             return true;
         }

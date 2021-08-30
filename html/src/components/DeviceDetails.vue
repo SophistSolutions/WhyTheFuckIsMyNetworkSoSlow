@@ -300,6 +300,6 @@ td.labelColumn {
   margin-right: 1em;
 }
 .snapshot {
-  font-weight: bold;
+  font-style: italic;
 }
 </style>
