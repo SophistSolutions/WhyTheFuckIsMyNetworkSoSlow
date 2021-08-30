@@ -1,4 +1,8 @@
 
+tmphack slow impl - instead build mapping table when constructing rollup
+
+----
+
 
 - Might be useful to add firstSeenAt (like lastSeenAt) for devices and networks. MAYBE replace lastSeenAt with seen (range)
 
