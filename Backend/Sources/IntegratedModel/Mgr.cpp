@@ -475,20 +475,28 @@ namespace {
     namespace RollupSummary_ {
         using namespace RollupCommon_;
 
-        Mapping<GUID, Network> GetRolledUpNetworks (Time::DurationSecondsType allowedStaleness = 5.0);
+        struct RolledUpNetworks {
+            // @todo add much more here - different useful summaries of same info
+            Mapping<GUID, Network> fGUID2Networks;
+        };
+        RolledUpNetworks GetRolledUpNetworks (Time::DurationSecondsType allowedStaleness = 5.0);
 
-        Mapping<GUID, Device> GetRolledUpDevies (Time::DurationSecondsType allowedStaleness = 10.0)
+        struct RolledUpDevices {
+            // @todo add much more here - different useful summaries of same info
+            Mapping<GUID, Device> fGUID2Devices;
+        };
+        RolledUpDevices GetRolledUpDevies (Time::DurationSecondsType allowedStaleness = 10.0)
         {
             Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...GetRolledUpDevies")};
             Debug::TimingTrace        ttrc{L"GetRolledUpDevies", 1};
             // SynchronizedCallerStalenessCache object just assures one rollup RUNS internally at a time, and
             // that two calls in rapid succession, the second call re-uses the previous value
-            static Cache::SynchronizedCallerStalenessCache<void, Mapping<GUID, Device>> sCache_;
+            static Cache::SynchronizedCallerStalenessCache<void, RolledUpDevices> sCache_;
             sCache_.fHoldWriteLockDuringCacheFill = true; // so only one call to filler lambda at a time
-            return sCache_.LookupValue (sCache_.Ago (allowedStaleness), [=] () -> Mapping<GUID, Device> {
+            return sCache_.LookupValue (sCache_.Ago (allowedStaleness), [=] () -> RolledUpDevices {
                 Debug::TraceContextBumper    ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...GetRolledUpDevies...cachefiller")};
                 Debug::TimingTrace           ttrc{L"GetRolledUpDevies...cachefiller", 1};
-                static Mapping<GUID, Device> sRolledUpDevices_; // keep always across runs so we have consisent IDs
+                static RolledUpDevices       sRolledUpDevices_; // keep always across runs so we have consisent IDs
 
                 auto rolledUpNetworks = GetRolledUpNetworks (allowedStaleness * 10.0); // longer allowedStaleness cuz we dont care much about this and the parts
                                                                                        // we look at really dont change
@@ -499,7 +507,7 @@ namespace {
                 // (individual 2 rollup), and then provide funciton to map a set of IDs to their rolled up IDs
                 // AND DOCUMENT WHY GUARNATEED UNIQUE - IF AS I THINK IT IS - CUZ each item goes in one rollup)
                 auto mapAggregatedNetID2ItsRollupID = [&] (const GUID& netID) -> GUID {
-                    for (auto i : rolledUpNetworks) {
+                    for (auto i : rolledUpNetworks.fGUID2Networks) {
                         if (i.fValue.fAggregatesReversibly and i.fValue.fAggregatesReversibly->Contains (netID)) {
                             return i.fKey;
                         }
@@ -519,23 +527,23 @@ namespace {
                 // Start with the existing rolled up devices
                 // and then add in (should be done just once) the values from the database,
                 // and then keep adding any more recent discovery changes
-                Mapping<GUID, Device> result               = sRolledUpDevices_;
+                RolledUpDevices result               = sRolledUpDevices_;
                 auto                  doMergeOneIntoRollup = [&result, &reverseRollup] (const Device& d2MergeIn) {
                     // @todo slow/quadradic - may need to tweak
-                    if (auto i = result.FindFirstThat ([&d2MergeIn] (auto kvpDevice) { return ShouldRollup_ (kvpDevice.fValue, d2MergeIn); })) {
+                    if (auto i = result.fGUID2Devices.FindFirstThat ([&d2MergeIn] (auto kvpDevice) { return ShouldRollup_ (kvpDevice.fValue, d2MergeIn); })) {
                         // then merge this into that item
                         // @todo think out order of params and better document order of params!
                         auto tmp              = Device::Rollup (i->fValue, d2MergeIn);
                         tmp.fAttachedNetworks = reverseRollup (tmp.fAttachedNetworks);
-                        result.Add (i->fKey, tmp);
-                        Assert (result[i->fKey].fGUID == i->fKey); // sb using new KeyedCollection!
+                        result.fGUID2Devices.Add (i->fKey, tmp);
+                        Assert (result.fGUID2Devices[i->fKey].fGUID == i->fKey); // sb using new KeyedCollection!
                     }
                     else {
                         Device newRolledUpDevice                = d2MergeIn;
                         newRolledUpDevice.fAggregatesReversibly = Set<GUID>{d2MergeIn.fGUID};
                         newRolledUpDevice.fGUID                 = GUID::GenerateNew ();
-                        result.Add (newRolledUpDevice.fGUID, newRolledUpDevice);
-                        Assert (result[newRolledUpDevice.fGUID].fGUID == newRolledUpDevice.fGUID); // sb using new KeyedCollection!
+                        result.fGUID2Devices.Add (newRolledUpDevice.fGUID, newRolledUpDevice);
+                        Assert (result.fGUID2Devices[newRolledUpDevice.fGUID].fGUID == newRolledUpDevice.fGUID); // sb using new KeyedCollection!
                     }
                 };
                 static bool sDidMergeFromDatabase_ = false; // no need to roll these up more than once
@@ -553,35 +561,35 @@ namespace {
             });
         }
 
-        Mapping<GUID, Network> GetRolledUpNetworks (Time::DurationSecondsType allowedStaleness)
+        RolledUpNetworks GetRolledUpNetworks (Time::DurationSecondsType allowedStaleness)
         {
             Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...GetRolledUpNetworks")};
             Debug::TimingTrace        ttrc{L"GetRolledUpNetworks", 1};
             // SynchronizedCallerStalenessCache object just assures one rollup RUNS internally at a time, and
             // that two calls in rapid succession, the second call re-uses the previous value
-            static Cache::SynchronizedCallerStalenessCache<void, Mapping<GUID, Network>> sCache_;
+            static Cache::SynchronizedCallerStalenessCache<void, RolledUpNetworks> sCache_;
             sCache_.fHoldWriteLockDuringCacheFill = true; // so only one call to filler lambda at a time
-            return sCache_.LookupValue (sCache_.Ago (allowedStaleness), [] () -> Mapping<GUID, Network> {
+            return sCache_.LookupValue (sCache_.Ago (allowedStaleness), [] () -> RolledUpNetworks {
                 Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...GetRolledUpNetworks...cachefiller")};
                 Debug::TimingTrace        ttrc{L"GetRolledUpNetworks...cachefiller", 1};
 
-                static Mapping<GUID, Network> sRolledUpNetworks_;
+                static RolledUpNetworks sRolledUpNetworks_;
                 // Start with the existing rolled up devices
                 // and then add in (should be done just once) the values from the database,
                 // and then keep adding any more recent discovery changes
-                Mapping<GUID, Network> result               = sRolledUpNetworks_;
+                RolledUpNetworks result               = sRolledUpNetworks_;
                 auto                   doMergeOneIntoRollup = [&result] (const Network& d2MergeIn) {
                     // @todo slow/quadradic - may need to tweak
-                    if (auto i = result.FindFirstThat ([&d2MergeIn] (auto kvpDevice) { return ShouldRollup_ (kvpDevice.fValue, d2MergeIn); })) {
+                    if (auto i = result.fGUID2Networks.FindFirstThat ([&d2MergeIn] (auto kvpDevice) { return ShouldRollup_ (kvpDevice.fValue, d2MergeIn); })) {
                         // then merge this into that item
                         // @todo think out order of params and better document order of params!
-                        result.Add (i->fKey, Network::Rollup (i->fValue, d2MergeIn));
+                        result.fGUID2Networks.Add (i->fKey, Network::Rollup (i->fValue, d2MergeIn));
                     }
                     else {
                         Network newRolledUpDevice               = d2MergeIn;
                         newRolledUpDevice.fAggregatesReversibly = Set<GUID>{d2MergeIn.fGUID};
                         newRolledUpDevice.fGUID                 = GUID::GenerateNew ();
-                        result.Add (newRolledUpDevice.fGUID, newRolledUpDevice);
+                        result.fGUID2Networks.Add (newRolledUpDevice.fGUID, newRolledUpDevice);
                     }
                 };
                 static bool sDidMergeFromDatabase_ = false; // no need to roll these up more than once
@@ -627,13 +635,13 @@ Sequence<IntegratedModel::Device> IntegratedModel::Mgr::GetDevices () const
 {
     Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"IntegratedModel::Mgr::GetDevices")};
     Debug::TimingTrace        ttrc{L"IntegratedModel::Mgr::GetDevices", .1};
-    return Sequence<IntegratedModel::Device>{RollupSummary_::GetRolledUpDevies ().MappedValues ()};
+    return Sequence<IntegratedModel::Device>{RollupSummary_::GetRolledUpDevies ().fGUID2Devices.MappedValues ()};
 }
 
 optional<IntegratedModel::Device> IntegratedModel::Mgr::GetDevice (const Common::GUID& id) const
 {
     // first check rolled up networks, and then raw/unrolled up networks
-    auto result = RollupSummary_::GetRolledUpDevies ().Lookup (id);
+    auto result = RollupSummary_::GetRolledUpDevies ().fGUID2Devices.Lookup (id);
     if (not result.has_value ()) {
         result = DBAccess_::sDBDevices_.load ().Lookup (id);
         if (result) {
@@ -648,13 +656,13 @@ Sequence<IntegratedModel::Network> IntegratedModel::Mgr::GetNetworks () const
 {
     Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"IntegratedModel::Mgr::GetNetworks")};
     Debug::TimingTrace        ttrc{L"IntegratedModel::Mgr::GetNetworks", 0.1};
-    return Sequence<IntegratedModel::Network>{RollupSummary_::GetRolledUpNetworks ().MappedValues ()};
+    return Sequence<IntegratedModel::Network>{RollupSummary_::GetRolledUpNetworks ().fGUID2Networks.MappedValues ()};
 }
 
 optional<IntegratedModel::Network> IntegratedModel::Mgr::GetNetwork (const Common::GUID& id) const
 {
     // first check rolled up networks, and then raw/unrolled up networks
-    auto result = RollupSummary_::GetRolledUpNetworks ().Lookup (id);
+    auto result = RollupSummary_::GetRolledUpNetworks ().fGUID2Networks.Lookup (id);
     if (not result.has_value ()) {
         result = DBAccess_::sDBNetworks_.load ().Lookup (id);
         if (result) {
