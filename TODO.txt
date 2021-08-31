@@ -8,7 +8,15 @@ So when making a run through - what a device rolls up to can change. SO - we mus
 track what each device ID used to roll up to and if it can roll up to two dynamic devices
 then merge those two together.
 
-
+   --- SERVERAL BUGS here
+       - Must have rollup stuff return object with more info so we can quickly do other things
+	   - one is REMOVING things from previous runs of rollup when an object moved (so table mapping
+	   discoered ids to rollup ids and see if mapping changes)
+	   - one is debug why some devices appear quickly without hardware address (e..g)
+	   Found-Through-Network-SYN-Scan:true - we should be able to find its hardware address at
+	   the same time - we have the nifo - its just a matter of digging it up) - and risky to wait
+	   cuz we could shutdown and or write to DB at any time without it making it plausible in the future
+	   to have teh device record with no hw address. Not fatal, but best if we can correct.
 
 ---
 

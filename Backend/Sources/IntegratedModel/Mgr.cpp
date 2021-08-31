@@ -475,23 +475,23 @@ namespace {
     namespace RollupSummary_ {
         using namespace RollupCommon_;
 
-        Mapping<GUID, Network> GetRolledUpNetworks ();
+        Mapping<GUID, Network> GetRolledUpNetworks (Time::DurationSecondsType allowedStaleness = 5.0);
 
-        Mapping<GUID, Device> GetRolledUpDevies ()
+        Mapping<GUID, Device> GetRolledUpDevies (Time::DurationSecondsType allowedStaleness = 10.0)
         {
             Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...GetRolledUpDevies")};
             Debug::TimingTrace        ttrc{L"GetRolledUpDevies", 1};
-            constexpr auto            kAllowedStaleness_ = 10.0;
             // SynchronizedCallerStalenessCache object just assures one rollup RUNS internally at a time, and
             // that two calls in rapid succession, the second call re-uses the previous value
             static Cache::SynchronizedCallerStalenessCache<void, Mapping<GUID, Device>> sCache_;
             sCache_.fHoldWriteLockDuringCacheFill = true; // so only one call to filler lambda at a time
-            return sCache_.LookupValue (sCache_.Ago (kAllowedStaleness_), [] () -> Mapping<GUID, Device> {
+            return sCache_.LookupValue (sCache_.Ago (allowedStaleness), [=] () -> Mapping<GUID, Device> {
                 Debug::TraceContextBumper    ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...GetRolledUpDevies...cachefiller")};
                 Debug::TimingTrace           ttrc{L"GetRolledUpDevies...cachefiller", 1};
                 static Mapping<GUID, Device> sRolledUpDevices_; // keep always across runs so we have consisent IDs
 
-                auto rolledUpNetworks = GetRolledUpNetworks ();
+                auto rolledUpNetworks = GetRolledUpNetworks (allowedStaleness * 10.0); // longer allowedStaleness cuz we dont care much about this and the parts
+                                                                                       // we look at really dont change
 
                 //tmphack slow impl - instead build mapping table when constructing rollup
                 // of networkinfo
@@ -553,16 +553,15 @@ namespace {
             });
         }
 
-        Mapping<GUID, Network> GetRolledUpNetworks ()
+        Mapping<GUID, Network> GetRolledUpNetworks (Time::DurationSecondsType allowedStaleness)
         {
             Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...GetRolledUpNetworks")};
             Debug::TimingTrace        ttrc{L"GetRolledUpNetworks", 1};
-            constexpr auto            kAllowedStaleness_ = 5.0;
             // SynchronizedCallerStalenessCache object just assures one rollup RUNS internally at a time, and
             // that two calls in rapid succession, the second call re-uses the previous value
             static Cache::SynchronizedCallerStalenessCache<void, Mapping<GUID, Network>> sCache_;
             sCache_.fHoldWriteLockDuringCacheFill = true; // so only one call to filler lambda at a time
-            return sCache_.LookupValue (sCache_.Ago (kAllowedStaleness_), [] () -> Mapping<GUID, Network> {
+            return sCache_.LookupValue (sCache_.Ago (allowedStaleness), [] () -> Mapping<GUID, Network> {
                 Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...GetRolledUpNetworks...cachefiller")};
                 Debug::TimingTrace        ttrc{L"GetRolledUpNetworks...cachefiller", 1};
 
