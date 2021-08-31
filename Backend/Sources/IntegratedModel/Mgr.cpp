@@ -399,24 +399,19 @@ namespace {
             Connection::Ptr                                                 conn;
             unique_ptr<SQL::ORM::TableConnection<IntegratedModel::Device>>  deviceTableConnection;
             unique_ptr<SQL::ORM::TableConnection<IntegratedModel::Network>> networkTableConnection;
+#if qDefaultTracingOn
+            bool madeItToEndOfLoadDBCode = false;
+#endif
             while (true) {
                 try {
                     if (conn == nullptr) {
                         conn = SetupDB_ ();
                     }
-                    if (deviceTableConnection == nullptr) {
-                        deviceTableConnection = make_unique<SQL::ORM::TableConnection<IntegratedModel::Device>> (conn, kDeviceTableSchema_, kDBObjectMapper_);
-                        try {
-                            sDBDevices_.store (ToKeyedCollectionStore_ (deviceTableConnection->GetAll ())); // pre-load in memory copy with whatever we had stored in the database
-                        }
-                        catch (...) {
-                            deviceTableConnection = nullptr; // so we re-fetch
-                            Execution::ReThrow ();
-                        }
-                    }
+                    // load networks before devices because devices depend on networks but not the reverse
                     if (networkTableConnection == nullptr) {
                         networkTableConnection = make_unique<SQL::ORM::TableConnection<IntegratedModel::Network>> (conn, kNetworkTableSchema_, kDBObjectMapper_);
                         try {
+                            Debug::TimingTrace ttrc{L"...initial load of sDBNetworks_ from database ", 1};
                             sDBNetworks_.store (ToKeyedCollectionStore_ (networkTableConnection->GetAll ()));
                         }
                         catch (...) {
@@ -424,7 +419,23 @@ namespace {
                             Execution::ReThrow ();
                         }
                     }
-
+                    if (deviceTableConnection == nullptr) {
+                        deviceTableConnection = make_unique<SQL::ORM::TableConnection<IntegratedModel::Device>> (conn, kDeviceTableSchema_, kDBObjectMapper_);
+                        try {
+                            Debug::TimingTrace ttrc{L"...initial load of sDBDevices_ from database ", 1};
+                            sDBDevices_.store (ToKeyedCollectionStore_ (deviceTableConnection->GetAll ())); // pre-load in memory copy with whatever we had stored in the database
+                        }
+                        catch (...) {
+                            deviceTableConnection = nullptr; // so we re-fetch
+                            Execution::ReThrow ();
+                        }
+                    }
+#if qDefaultTracingOn
+                    if (not madeItToEndOfLoadDBCode) {
+                        DbgTrace (L"Completed initial database load of sDBDevices_ and sDBNetworks_");
+                        madeItToEndOfLoadDBCode = true;
+                    }
+#endif
                     // periodically write the latest discovered data to the database
 
                     // UPDATE sDBNetworks_ INCREMENTALLY to reflect reflect these merges
@@ -468,15 +479,19 @@ namespace {
 
         Mapping<GUID, Device> GetRolledUpDevies ()
         {
-            constexpr auto kAllowedStaleness_ = 5.0;
+            Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...GetRolledUpDevies")};
+            Debug::TimingTrace        ttrc{L"GetRolledUpDevies", 1};
+            constexpr auto            kAllowedStaleness_ = 10.0;
             // SynchronizedCallerStalenessCache object just assures one rollup RUNS internally at a time, and
             // that two calls in rapid succession, the second call re-uses the previous value
             static Cache::SynchronizedCallerStalenessCache<void, Mapping<GUID, Device>> sCache_;
-            sCache_.fHoldWriteLockDuringCacheFill = true;   // so only one call to filler lambda at a time
+            sCache_.fHoldWriteLockDuringCacheFill = true; // so only one call to filler lambda at a time
             return sCache_.LookupValue (sCache_.Ago (kAllowedStaleness_), [] () -> Mapping<GUID, Device> {
+                Debug::TraceContextBumper    ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...GetRolledUpDevies...cachefiller")};
+                Debug::TimingTrace           ttrc{L"GetRolledUpDevies...cachefiller", 1};
                 static Mapping<GUID, Device> sRolledUpDevices_; // keep always across runs so we have consisent IDs
 
-                auto                         rolledUpNetworks = GetRolledUpNetworks ();
+                auto rolledUpNetworks = GetRolledUpNetworks ();
 
                 //tmphack slow impl - instead build mapping table when constructing rollup
                 // of networkinfo
@@ -523,8 +538,12 @@ namespace {
                         Assert (result[newRolledUpDevice.fGUID].fGUID == newRolledUpDevice.fGUID); // sb using new KeyedCollection!
                     }
                 };
-                for (auto rdi : DBAccess_::sDBDevices_.load ().MappedValues ()) {
-                    doMergeOneIntoRollup (rdi);
+                static bool sDidMergeFromDatabase_ = false; // no need to roll these up more than once
+                if (not sDidMergeFromDatabase_) {
+                    for (auto rdi : DBAccess_::sDBDevices_.load ().MappedValues ()) {
+                        doMergeOneIntoRollup (rdi);
+                        sDidMergeFromDatabase_ = true;
+                    }
                 }
                 for (Device d : DiscoveryWrapper_::GetDevices_ ()) {
                     doMergeOneIntoRollup (d);
@@ -534,20 +553,24 @@ namespace {
             });
         }
 
-
         Mapping<GUID, Network> GetRolledUpNetworks ()
         {
-            constexpr auto kAllowedStaleness_ = 5.0;
+            Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...GetRolledUpNetworks")};
+            Debug::TimingTrace        ttrc{L"GetRolledUpNetworks", 1};
+            constexpr auto            kAllowedStaleness_ = 5.0;
             // SynchronizedCallerStalenessCache object just assures one rollup RUNS internally at a time, and
             // that two calls in rapid succession, the second call re-uses the previous value
             static Cache::SynchronizedCallerStalenessCache<void, Mapping<GUID, Network>> sCache_;
             sCache_.fHoldWriteLockDuringCacheFill = true; // so only one call to filler lambda at a time
             return sCache_.LookupValue (sCache_.Ago (kAllowedStaleness_), [] () -> Mapping<GUID, Network> {
-                Synchronized<Mapping<GUID, Network>> sRolledUpNetworks_;
+                Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...GetRolledUpNetworks...cachefiller")};
+                Debug::TimingTrace        ttrc{L"GetRolledUpNetworks...cachefiller", 1};
+
+                static Mapping<GUID, Network> sRolledUpNetworks_;
                 // Start with the existing rolled up devices
                 // and then add in (should be done just once) the values from the database,
                 // and then keep adding any more recent discovery changes
-                Mapping<GUID, Network> result               = sRolledUpNetworks_.load ();
+                Mapping<GUID, Network> result               = sRolledUpNetworks_;
                 auto                   doMergeOneIntoRollup = [&result] (const Network& d2MergeIn) {
                     // @todo slow/quadradic - may need to tweak
                     if (auto i = result.FindFirstThat ([&d2MergeIn] (auto kvpDevice) { return ShouldRollup_ (kvpDevice.fValue, d2MergeIn); })) {
@@ -562,13 +585,17 @@ namespace {
                         result.Add (newRolledUpDevice.fGUID, newRolledUpDevice);
                     }
                 };
-                for (auto rdi : DBAccess_::sDBNetworks_.load ().MappedValues ()) {
-                    doMergeOneIntoRollup (rdi);
+                static bool sDidMergeFromDatabase_ = false; // no need to roll these up more than once
+                if (not sDidMergeFromDatabase_) {
+                    for (auto rdi : DBAccess_::sDBNetworks_.load ().MappedValues ()) {
+                        doMergeOneIntoRollup (rdi);
+                        sDidMergeFromDatabase_ = true;
+                    }
                 }
                 for (Network d : DiscoveryWrapper_::GetNetworks_ ()) {
                     doMergeOneIntoRollup (d);
                 }
-                sRolledUpNetworks_.store (result);
+                sRolledUpNetworks_ = result;
                 return result;
             });
         }

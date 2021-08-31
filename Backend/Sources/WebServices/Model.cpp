@@ -449,7 +449,7 @@ String Device::ToString () const
 Device Device::Merge (const Device& databaseDevice, const Device& dynamicallyDiscoveredDevice)
 {
     Device merged = databaseDevice;
-    // name from DB takes precedence
+    // name from databaseDevice takes precedence
     Memory::AccumulateIf (&merged.fTypes, dynamicallyDiscoveredDevice.fTypes);
     Memory::CopyToIf (&merged.fIcon, dynamicallyDiscoveredDevice.fIcon);
     Memory::CopyToIf (&merged.fLastSeenAt, dynamicallyDiscoveredDevice.fLastSeenAt);
@@ -481,6 +481,10 @@ Device Device::Rollup (const Device& rollupDevice, const Device& instanceDevice2
     d.fAggregatesIrreversibly = nullopt;
     d.fIDPersistent           = false;
     d.fHistoricalSnapshot     = false;
+    // for rollup, names can come in any order, and dont pick last, pick best; fix so smarter!!! @todo --LGP 2021-08-30
+    if (not instanceDevice2Add.name.empty () and instanceDevice2Add.name[0].IsAlphabetic ()) {
+        d.name = instanceDevice2Add.name;
+    }
     return d;
 }
 

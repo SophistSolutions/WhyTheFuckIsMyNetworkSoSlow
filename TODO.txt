@@ -1,3 +1,33 @@
+test lookup cache working right at least sometimes returning cached value when guys backup one after the other.
+(put timer in getdevices and see its longest for one then 5 seconds shorter or more for a bunch of others)
+
+
+---
+
+debug why I have thousdands of networks?
+My dnaimic code must map a given ??? somhow I regenteate networks that are discovered
+and must remember them so they dont get regenerated each time.
+
+---
+
+http://localhost:8088/#/device/71c59b3c-db88-97fb-e70b-02cd6cf59100 and
+http://localhost:8088/#/device/6fd4fc40-9e43-5b61-cbaa-050d1272f5ff
+
+
+both rollup to two guys (maybe if we go fast enuf - can happen).
+So when making a run through - what a device rolls up to can change. SO - we must
+track what each device ID used to roll up to and if it can roll up to two dynamic devices
+then merge those two together.
+
+
+
+---
+
+	>> The order in which we merge devices (and networks) in rollup is essentially arbitrary.
+	For some things thats OK (those that accumulate) but those that replace
+	we need to be smarter (like name)
+
+---
 
 tmphack slow impl - instead build mapping table when constructing rollup
 
