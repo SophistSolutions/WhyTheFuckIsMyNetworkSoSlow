@@ -1,14 +1,3 @@
-test lookup cache working right at least sometimes returning cached value when guys backup one after the other.
-(put timer in getdevices and see its longest for one then 5 seconds shorter or more for a bunch of others)
-
-
----
-
-debug why I have thousdands of networks?
-My dnaimic code must map a given ??? somhow I regenteate networks that are discovered
-and must remember them so they dont get regenerated each time.
-
----
 
 http://localhost:8088/#/device/71c59b3c-db88-97fb-e70b-02cd6cf59100 and
 http://localhost:8088/#/device/6fd4fc40-9e43-5b61-cbaa-050d1272f5ff
@@ -30,6 +19,8 @@ then merge those two together.
 ---
 
 tmphack slow impl - instead build mapping table when constructing rollup
+	.... I thin kthis can be used to fix issue with merging devices/networks too when new info allows them to be merged(new info like getting the
+	deviceid))
 
 ----
 

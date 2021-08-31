@@ -142,6 +142,23 @@ namespace {
         Debug::TraceContextBumper ctx{L"Discovery::CollectActiveNetworks"};
 #endif
         Require (sActive_);
+
+        auto genProperNetworkID = [] (Network* nw) {
+            static Execution::Synchronized<Collection<Network>> sExistingNetworks_;
+            RequireNotNull (nw);
+            Require (nw->fGUID == GUID{});
+            auto existingNWsLock = sExistingNetworks_.rwget ();
+            for (Network nwi : existingNWsLock.load ()) {
+                if (nwi.fGateways.SetEquals (nw->fGateways) and nwi.fNetworkAddresses.SetEquals (nw->fNetworkAddresses)) {
+                    nw->fGUID = nwi.fGUID;
+                    return;
+                }
+            }
+            nw->fGUID = GUID::GenerateNew ();
+            existingNWsLock->Add (*nw);
+        };
+
+
         Collection<Network> accumResults;
         for (NetworkInterface i : Discovery::NetworkInterfacesMgr::sThe.CollectActiveNetworkInterfaces ()) {
             if (not i.fBindings.fAddressRanges.empty ()) {
@@ -235,7 +252,7 @@ namespace {
                     // and doesn't appear to vary interestingly (maybe didnt test enough) - like my virtual adapters and localhost adapter alll have same network as
                     // the real ethernet adapter).
                     // -- LGP 2018-12-16
-                    nw.fGUID = GUID::GenerateNew ();
+                    genProperNetworkID (&nw);
 
                     nw.fFriendlyName = i.fFriendlyName; // if multiple, pick arbitrarily
 
@@ -255,21 +272,8 @@ namespace {
             }
         }
 
-        // Assure all networks have an ID
-        for (auto i = accumResults.begin (); i != accumResults.end (); ++i) {
-            if (i->fGUID == GUID{}) {
-                StringBuilder sb;
-                sb += Characters::ToString (i->fGateways);         // NO WHERE NEAR GOOD ENUF - take into account public IP ADDR and hardware address of router - but still ALLOW for any of these to float
-                sb += Characters::ToString (i->fNetworkAddresses); // ""
-                auto v = *i;
-                using namespace Stroika::Foundation::Cryptography::Digest;
-                v.fGUID = Hash<String, Digester<Algorithm::MD5>, GUID>{}(sb.str ());
-                accumResults.Update (i, v);
-            }
-        }
-
         // Score guess best network
-        Mapping<GUID, float> netScores; // primitive attempt to find best interface to display
+        Mapping<GUID, float> netScores; // primitive attempt to find best network to display
         for (auto i = accumResults.begin (); i != accumResults.end (); ++i) {
             float score{};
             if (not i->fGateways.empty ()) {
@@ -292,7 +296,6 @@ namespace {
 #endif
             netScores.Add (i->fGUID, score);
         }
-
         Sequence<Network> results = Sequence<Network>{accumResults.OrderBy ([&] (const Network& l, const Network& r) {
             return netScores.Lookup (l.fGUID) > netScores.Lookup (r.fGUID);
         })};
