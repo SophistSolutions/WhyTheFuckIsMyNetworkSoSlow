@@ -25,5 +25,6 @@ ADD Shared-Files/Getting-Started.md /
 CMD /bin/bash
 
 ### NOTE TO RUN
-###     docker run -v /Sandbox:/Sandbox -it sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19
-###     docker run -it sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19
+###     docker run -v /Sandbox:/Sandbox -it sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804
+###     docker run -it sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804
+
