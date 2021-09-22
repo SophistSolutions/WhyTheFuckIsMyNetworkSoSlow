@@ -7,6 +7,7 @@
 #include "Stroika/Foundation/Common/GUID.h"
 #include "Stroika/Foundation/Common/KeyValuePair.h"
 #include "Stroika/Foundation/Common/Property.h"
+#include "Stroika/Foundation/Containers/KeyedCollection.h"
 #include "Stroika/Foundation/Containers/Set.h"
 #include "Stroika/Foundation/DataExchange/ObjectVariantMapper.h"
 #include "Stroika/Foundation/Database/SQL/ORM/Schema.h"
@@ -274,25 +275,20 @@ namespace {
 
         Execution::Thread::Ptr sDatabaseSyncThread_{};
 
-        // the latest copy of what is in the DB (manually kept up to date) - @todo use KeyedCollection<> when supported
-        Synchronized<Mapping<GUID, IntegratedModel::Device>>  sDBDevices_;
-        Synchronized<Mapping<GUID, IntegratedModel::Network>> sDBNetworks_;
 
-        // Workaround lack of KeyedCollection support
-        Mapping<GUID, IntegratedModel::Device> ToKeyedCollectionStore_ (const Traversal::Iterable<IntegratedModel::Device>& ds)
-        {
-            using IntegratedModel::Device;
-            Mapping<GUID, Device> devices; // @todo use KeyedCollection when available feature in Stroika
-            ds.Apply ([&devices] (auto n) { devices.Add (n.fGUID, n); });
-            return devices;
-        }
-        Mapping<GUID, IntegratedModel::Network> ToKeyedCollectionStore_ (const Traversal::Iterable<IntegratedModel::Network>& nets)
-        {
-            using IntegratedModel::Network;
-            Mapping<GUID, Network> networks; // @todo use KeyedCollection when available feature in Stroika
-            nets.Apply ([&networks] (auto n) { networks.Add (n.fGUID, n); });
-            return networks;
-        }
+        struct Device_Key_Extractor_ {
+            GUID operator() (const IntegratedModel::Device& t) const { return t.fGUID; };
+        };
+        using DeviceCollection_ = KeyedCollection<IntegratedModel::Device, GUID, KeyedCollection_DefaultTraits<IntegratedModel::Device, GUID, equal_to<GUID>, Device_Key_Extractor_>>;
+
+        struct Network_Key_Extractor_ {
+            GUID operator() (const IntegratedModel::Network& t) const { return t.fGUID; };
+        };
+        using NetworkCollection_ = KeyedCollection<IntegratedModel::Network, GUID, KeyedCollection_DefaultTraits<IntegratedModel::Network, GUID, equal_to<GUID>, Network_Key_Extractor_>>;
+
+        // the latest copy of what is in the DB (manually kept up to date) - @todo use KeyedCollection<> when supported
+        Synchronized<DeviceCollection_>                       sDBDevices_;
+        Synchronized<NetworkCollection_>                      sDBNetworks_;
 
         /*
          *  Combined mapper for objects we write to the database. Contains all the objects mappers we need merged together,
@@ -412,7 +408,7 @@ namespace {
                         networkTableConnection = make_unique<SQL::ORM::TableConnection<IntegratedModel::Network>> (conn, kNetworkTableSchema_, kDBObjectMapper_);
                         try {
                             Debug::TimingTrace ttrc{L"...initial load of sDBNetworks_ from database ", 1};
-                            sDBNetworks_.store (ToKeyedCollectionStore_ (networkTableConnection->GetAll ()));
+                            sDBNetworks_.store (NetworkCollection_{networkTableConnection->GetAll ()});
                         }
                         catch (...) {
                             networkTableConnection = nullptr; // so we re-fetch
@@ -423,7 +419,7 @@ namespace {
                         deviceTableConnection = make_unique<SQL::ORM::TableConnection<IntegratedModel::Device>> (conn, kDeviceTableSchema_, kDBObjectMapper_);
                         try {
                             Debug::TimingTrace ttrc{L"...initial load of sDBDevices_ from database ", 1};
-                            sDBDevices_.store (ToKeyedCollectionStore_ (deviceTableConnection->GetAll ())); // pre-load in memory copy with whatever we had stored in the database
+                            sDBDevices_.store (DeviceCollection_{deviceTableConnection->GetAll ()}); // pre-load in memory copy with whatever we had stored in the database
                         }
                         catch (...) {
                             deviceTableConnection = nullptr; // so we re-fetch
@@ -444,7 +440,7 @@ namespace {
                             ni.fAttachedInterfaces.clear ();
                         }
                         auto rec2Update = AddOrMergeUpdate_ (networkTableConnection.get (), ni);
-                        sDBNetworks_.rwget ()->Add (rec2Update.fGUID, rec2Update);
+                        sDBNetworks_.rwget ()->Add (rec2Update);
                     }
 
                     // UPDATE sDBDevices_ INCREMENTALLY to reflect reflect these merges
@@ -453,7 +449,7 @@ namespace {
                             di.fAttachedNetworkInterfaces = nullopt;
                         }
                         auto rec2Update = AddOrMergeUpdate_ (deviceTableConnection.get (), di);
-                        sDBDevices_.rwget ()->Add (rec2Update.fGUID, rec2Update);
+                        sDBDevices_.rwget ()->Add (rec2Update);
                     }
 
                     // only update periodically
@@ -548,7 +544,7 @@ namespace {
                 };
                 static bool sDidMergeFromDatabase_ = false; // no need to roll these up more than once
                 if (not sDidMergeFromDatabase_) {
-                    for (auto rdi : DBAccess_::sDBDevices_.load ().MappedValues ()) {
+                    for (auto rdi : DBAccess_::sDBDevices_.load ()) {
                         doMergeOneIntoRollup (rdi);
                         sDidMergeFromDatabase_ = true;
                     }
@@ -594,7 +590,7 @@ namespace {
                 };
                 static bool sDidMergeFromDatabase_ = false; // no need to roll these up more than once
                 if (not sDidMergeFromDatabase_) {
-                    for (auto rdi : DBAccess_::sDBNetworks_.load ().MappedValues ()) {
+                    for (auto rdi : DBAccess_::sDBNetworks_.load ()) {
                         doMergeOneIntoRollup (rdi);
                         sDidMergeFromDatabase_ = true;
                     }

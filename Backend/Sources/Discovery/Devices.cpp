@@ -13,6 +13,7 @@
 #include "Stroika/Foundation/Characters/StringBuilder.h"
 #include "Stroika/Foundation/Characters/ToString.h"
 #include "Stroika/Foundation/Configuration/SystemConfiguration.h"
+#include "Stroika/Foundation/Containers/KeyedCollection.h"
 #include "Stroika/Foundation/Containers/Set.h"
 #include "Stroika/Foundation/Cryptography/Digest/Algorithm/MD5.h"
 #include "Stroika/Foundation/Cryptography/Digest/Hash.h"
@@ -637,13 +638,21 @@ namespace {
             return sb.str ();
         }
     };
+
+    struct Device_Key_Extractor_ {
+        GUID operator() (const DiscoveryInfo_& t) const { return t.fGUID; };
+    };
+    using DiscoveryDeviceCollection_ = KeyedCollection<DiscoveryInfo_, GUID, KeyedCollection_DefaultTraits<DiscoveryInfo_, GUID, equal_to<GUID>, Device_Key_Extractor_>>;
+
     // NB: RWSynchronized because most accesses will be to read/lookup in this list; use Mapping<> because KeyedCollection NYI
     // Note, when we first start, there will be more contention, so we'll get conflicts (and we dbgtrace log them to be sure
     // not too many).
 #if qLOCK_DEBUGGING_
-    Synchronized<Mapping<GUID, DiscoveryInfo_>, Tracing_Synchronized_Traits<shared_timed_mutex>> sDiscoveredDevices_;
+    //Synchronized<Mapping<GUID, DiscoveryInfo_>, Tracing_Synchronized_Traits<shared_timed_mutex>> sDiscoveredDevices_;
+    Synchronized<DiscoveryDeviceCollection_, Tracing_Synchronized_Traits<shared_timed_mutex>> sDiscoveredDevices_;
 #else
-    RWSynchronized<Mapping<GUID, DiscoveryInfo_>> sDiscoveredDevices_;
+    //RWSynchronized<Mapping<GUID, DiscoveryInfo_>> sDiscoveredDevices_;
+    RWSynchronized<DiscoveryDeviceCollection_> sDiscoveredDevices_;
 #endif
 
 // turn on tracking of locks on sDiscoveredDevices_
@@ -657,7 +666,7 @@ namespace {
     // Look through all the existing devices, and if one appears to match, return it.
     optional<DiscoveryInfo_> FindMatchingDevice_ (decltype (sDiscoveredDevices_)::ReadableReference& rr, const DiscoveryInfo_& d)
     {
-        for (const auto& di : rr->MappedValues ()) {
+        for (const auto& di : rr.load ()) {
             if (d.GetHardwareAddresses ().Intersects (di.GetHardwareAddresses ())) {
                 return di;
             }
@@ -736,7 +745,7 @@ namespace {
                         Assert (di.fGUID != GUID{});
                         if (not sDiscoveredDevices_.UpgradeLockNonAtomicallyQuietly (
                                 &l, [&] (auto&& writeLock) {
-                                    writeLock.rwref ().Add (di.fGUID, di);
+                                    writeLock.rwref ().Add (di);
 #if qLOCK_DEBUGGING_
                                     DbgTrace (L"!!! succeeded  updating writelock ***MyDeviceDiscoverer_");
 #endif
@@ -962,7 +971,7 @@ namespace {
                 Assert (di.fGUID != GUID{});
                 if (not sDiscoveredDevices_.UpgradeLockNonAtomicallyQuietly (
                         &l, [&] (auto&& writeLock) {
-                            writeLock.rwref ().Add (di.fGUID, di);
+                            writeLock.rwref ().Add (di);
 #if qLOCK_DEBUGGING_
                             DbgTrace (L"!!! succeeded  updating writelock ***RecieveSSDPAdvertisement_");
 #endif
@@ -1066,7 +1075,7 @@ namespace {
                         Assert (di.fGUID != GUID{});
                         if (not sDiscoveredDevices_.UpgradeLockNonAtomicallyQuietly (
                                 &l, [&] (auto&& writeLock) {
-                                    writeLock.rwref ().Add (di.fGUID, di);
+                                    writeLock.rwref ().Add (di);
 #if qLOCK_DEBUGGING_
                                     DbgTrace (L"!!! succeeded  updating with writelock ***MyNeighborDiscoverer_");
 #endif
@@ -1223,7 +1232,7 @@ namespace {
                                 tmp.fLastSeenAt = DateTime::Now ();
                                 tmp.PatchDerivedFields ();
                                 Assert (tmp.fGUID != GUID{});
-                                l.rwref ().Add (tmp.fGUID, tmp);
+                                l.rwref ().Add (tmp);
                                 DbgTrace (L"Updated device %s for fKnownOpenPorts: %s", Characters::ToString (tmp.fGUID).c_str (), Characters::ToString (scanResults.fDiscoveredOpenPorts).c_str ());
                             }
                             else {
@@ -1236,7 +1245,7 @@ namespace {
                                 tmp.fDebugProps.Add (L"Found-Through-Network-SYN-Scan", true);
 #endif
                                 Assert (tmp.fGUID != GUID{});
-                                l.rwref ().Add (tmp.fGUID, tmp);
+                                l.rwref ().Add (tmp);
                                 DbgTrace (L"Added device %s for fKnownOpenPorts: %s", Characters::ToString (tmp.fGUID).c_str (), Characters::ToString (scanResults.fDiscoveredOpenPorts).c_str ());
                             }
                         }
@@ -1353,7 +1362,7 @@ namespace {
                                 tmp.fLastSeenAt = DateTime::Now ();
                                 tmp.PatchDerivedFields ();
                                 Assert (tmp.fGUID != GUID{});
-                                l.rwref ().Add (tmp.fGUID, tmp);
+                                l.rwref ().Add (tmp);
                                 DbgTrace (L"Updated device %s for fKnownOpenPorts: %s", Characters::ToString (tmp.fGUID).c_str (), Characters::ToString (scanResults.fDiscoveredOpenPorts).c_str ());
                             }
                             else {
@@ -1488,7 +1497,7 @@ Collection<Discovery::Device> Discovery::DevicesMgr::GetActiveDevices (optional<
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
         DbgTrace (L"sDiscoveredDevices_: %s", Characters::ToString (sDiscoveredDevices_.cget ()->MappedValues ()).c_str ());
 #endif
-        return sDiscoveredDevices_.cget ()->MappedValues (); // intentionally object-spice
+        return sDiscoveredDevices_.load (); // intentionally object-spice
     });
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
     DbgTrace (L"returns: %s", Characters::ToString (results).c_str ());
@@ -1525,7 +1534,7 @@ void Discovery::DevicesMgr::InitiateReScan (const GUID& deviceID)
             tmp.PatchDerivedFields ();
             Assert (tmp.fGUID != GUID{});
             tmp.fOpenPorts = nullopt;
-            l.rwref ().Add (tmp.fGUID, tmp);
+            l.rwref ().Add (tmp);
             return tmp;
         }
         Execution::Throw (IO::Network::HTTP::ClientErrorException{L"deviceID not recognized"});
@@ -1538,7 +1547,7 @@ void Discovery::DevicesMgr::InitiateReScan (const GUID& deviceID)
             tmp.fLastSeenAt = DateTime::Now ();
             tmp.PatchDerivedFields ();
             Assert (tmp.fGUID != GUID{});
-            l.rwref ().Add (tmp.fGUID, tmp);
+            l.rwref ().Add (tmp);
             DbgTrace (L"Updated device %s for fKnownOpenPorts: %s", Characters::ToString (tmp.fGUID).c_str (), Characters::ToString (openPort).c_str ());
         }
         else {
