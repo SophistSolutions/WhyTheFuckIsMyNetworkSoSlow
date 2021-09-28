@@ -642,7 +642,7 @@ namespace {
     struct Device_Key_Extractor_ {
         GUID operator() (const DiscoveryInfo_& t) const { return t.fGUID; };
     };
-    using DiscoveryDeviceCollection_ = KeyedCollection<DiscoveryInfo_, GUID, KeyedCollection_DefaultTraits<DiscoveryInfo_, GUID, equal_to<GUID>, Device_Key_Extractor_>>;
+    using DiscoveryDeviceCollection_ = KeyedCollection<DiscoveryInfo_, GUID, KeyedCollection_DefaultTraits<DiscoveryInfo_, GUID, Device_Key_Extractor_>>;
 
     // NB: RWSynchronized because most accesses will be to read/lookup in this list; use Mapping<> because KeyedCollection NYI
     // Note, when we first start, there will be more contention, so we'll get conflicts (and we dbgtrace log them to be sure

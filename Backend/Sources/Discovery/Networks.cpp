@@ -164,7 +164,7 @@ namespace {
             if (not i.fBindings.fAddressRanges.empty ()) {
                 Network nw;
                 {
-                    auto genCIDRsFromBindings = [] (const Iterable<CIDR>& bindings) {
+                    auto genCIDRsFromBindings = [] (const Iterable<CIDR>& bindings) -> Set<CIDR> {
                         Set<CIDR> cidrs;
                         for (CIDR nib : bindings) {
                             if (not kIncludeMulticastAddressesInDiscovery) {
@@ -252,7 +252,9 @@ namespace {
                     // and doesn't appear to vary interestingly (maybe didnt test enough) - like my virtual adapters and localhost adapter alll have same network as
                     // the real ethernet adapter).
                     // -- LGP 2018-12-16
-                    genProperNetworkID (&nw);
+                    if (nw.fGUID == GUID{}) {
+                        genProperNetworkID (&nw);
+                    }
 
                     nw.fFriendlyName = i.fFriendlyName; // if multiple, pick arbitrarily
 

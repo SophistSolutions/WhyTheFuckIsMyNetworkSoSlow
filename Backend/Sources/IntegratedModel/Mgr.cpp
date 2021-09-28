@@ -279,12 +279,12 @@ namespace {
         struct Device_Key_Extractor_ {
             GUID operator() (const IntegratedModel::Device& t) const { return t.fGUID; };
         };
-        using DeviceCollection_ = KeyedCollection<IntegratedModel::Device, GUID, KeyedCollection_DefaultTraits<IntegratedModel::Device, GUID, equal_to<GUID>, Device_Key_Extractor_>>;
+        using DeviceCollection_ = KeyedCollection<IntegratedModel::Device, GUID, KeyedCollection_DefaultTraits<IntegratedModel::Device, GUID, Device_Key_Extractor_>>;
 
         struct Network_Key_Extractor_ {
             GUID operator() (const IntegratedModel::Network& t) const { return t.fGUID; };
         };
-        using NetworkCollection_ = KeyedCollection<IntegratedModel::Network, GUID, KeyedCollection_DefaultTraits<IntegratedModel::Network, GUID, equal_to<GUID>, Network_Key_Extractor_>>;
+        using NetworkCollection_ = KeyedCollection<IntegratedModel::Network, GUID, KeyedCollection_DefaultTraits<IntegratedModel::Network, GUID, Network_Key_Extractor_>>;
 
         // the latest copy of what is in the DB (manually kept up to date) - @todo use KeyedCollection<> when supported
         Synchronized<DeviceCollection_>                       sDBDevices_;
