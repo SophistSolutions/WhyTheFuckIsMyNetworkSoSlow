@@ -87,7 +87,7 @@ namespace {
 }
 
 namespace {
-    static const BackendApp::Common::InternetServiceProvider kHughsNet_ISP_{L"Hughes Network Systems"sv};
+    const BackendApp::Common::InternetServiceProvider kHughsNet_ISP_{L"Hughes Network Systems"sv};
 }
 
 namespace {

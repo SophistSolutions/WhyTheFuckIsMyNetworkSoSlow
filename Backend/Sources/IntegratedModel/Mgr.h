@@ -27,8 +27,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel {
     using WebServices::Model::NetworkInterface;
 
     /**
-     *  For now - this is a simple wrapper on the discovered devices and networks. But soon it will add persistence, and
-     *  its own IDs, separate from discovered ids (and map them and provide apis to adjust mapping). --LGP 2021-01-17
+     *  Wrapper on the discovered devices and networks, as well as persistence. It adds its own IDs, separate
+     *  from discovered ids (and map them and provide apis to adjust mapping).
      */
     class Mgr {
     private:
