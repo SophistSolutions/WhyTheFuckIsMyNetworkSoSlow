@@ -1,6 +1,14 @@
+- Adjust ajax refrsh pattern so doesn't automatically
+  refetch so quickly if already slow getting responses.
 
+  (coild track total number of outstanding calls maybe)
+  in a global or vuex variable. And then use that 
+  - or better to create a vuex variable wihcih is
+  average response time for last 5 or 10 calls, and use 
+  that as a threshold to tweak rates of refresh in app
+  calls to vueex
 
-
+-----
 
 --- RACE CONDITION/BUG IN STROIKA CONTAINERS
 
