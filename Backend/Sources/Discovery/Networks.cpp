@@ -158,7 +158,6 @@ namespace {
             existingNWsLock->Add (*nw);
         };
 
-
         Collection<Network> accumResults;
         for (NetworkInterface i : Discovery::NetworkInterfacesMgr::sThe.CollectActiveNetworkInterfaces ()) {
             if (not i.fBindings.fAddressRanges.empty ()) {

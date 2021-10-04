@@ -275,7 +275,6 @@ namespace {
 
         Execution::Thread::Ptr sDatabaseSyncThread_{};
 
-
         struct Device_Key_Extractor_ {
             GUID operator() (const IntegratedModel::Device& t) const { return t.fGUID; };
         };
@@ -287,8 +286,8 @@ namespace {
         using NetworkCollection_ = KeyedCollection<IntegratedModel::Network, GUID, KeyedCollection_DefaultTraits<IntegratedModel::Network, GUID, Network_Key_Extractor_>>;
 
         // the latest copy of what is in the DB (manually kept up to date) - @todo use KeyedCollection<> when supported
-        Synchronized<DeviceCollection_>                       sDBDevices_;
-        Synchronized<NetworkCollection_>                      sDBNetworks_;
+        Synchronized<DeviceCollection_>  sDBDevices_;
+        Synchronized<NetworkCollection_> sDBNetworks_;
 
         /*
          *  Combined mapper for objects we write to the database. Contains all the objects mappers we need merged together,
@@ -317,9 +316,9 @@ namespace {
                 /**
                  *  For ID, generate random GUID (BLOB) automatically in database
                  */
-                {.fName = L"ID", .fVariantValueName = L"id"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = L"randomblob(16)"sv},
-                {.fName = L"name", .fVariantValueType = VariantValue::eString},
-                {.fName = L"lastSeenAt", .fVariantValueType = VariantValue::eString},
+                {.fName = L"ID"sv, .fVariantValueName = L"id"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = L"randomblob(16)"sv},
+                {.fName = L"name"sv, .fVariantValueType = VariantValue::eString},
+                {.fName = L"lastSeenAt"sv, .fVariantValueType = VariantValue::eString},
 #else
                 {L"ID", L"id"sv, true, kRepresentIDAs_, nullopt, true, nullopt, L"randomblob(16)"sv},
                 {L"name", nullopt, false, VariantValue::eString},
@@ -338,9 +337,9 @@ namespace {
                 /**
                  *  For ID, generate random GUID (BLOB) automatically in database
                  */
-                {.fName = L"ID", .fVariantValueName = L"id"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = L"randomblob(16)"sv},
-                {.fName = L"friendlyName", .fVariantValueType = VariantValue::eString},
-                {.fName = L"lastSeenAt", .fVariantValueType = VariantValue::eString},
+                {.fName = L"ID"sv, .fVariantValueName = L"id"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = L"randomblob(16)"sv},
+                {.fName = L"friendlyName"sv, .fVariantValueType = VariantValue::eString},
+                {.fName = L"lastSeenAt"sv, .fVariantValueType = VariantValue::eString},
 #else
                 {L"ID", L"id"sv, true, kRepresentIDAs_, nullopt, true, nullopt, L"randomblob(16)"sv},
                 {L"friendlyName", nullopt, false, VariantValue::eString},
@@ -490,9 +489,9 @@ namespace {
             static Cache::SynchronizedCallerStalenessCache<void, RolledUpDevices> sCache_;
             sCache_.fHoldWriteLockDuringCacheFill = true; // so only one call to filler lambda at a time
             return sCache_.LookupValue (sCache_.Ago (allowedStaleness), [=] () -> RolledUpDevices {
-                Debug::TraceContextBumper    ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...GetRolledUpDevies...cachefiller")};
-                Debug::TimingTrace           ttrc{L"GetRolledUpDevies...cachefiller", 1};
-                static RolledUpDevices       sRolledUpDevices_; // keep always across runs so we have consisent IDs
+                Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...GetRolledUpDevies...cachefiller")};
+                Debug::TimingTrace        ttrc{L"GetRolledUpDevies...cachefiller", 1};
+                static RolledUpDevices    sRolledUpDevices_; // keep always across runs so we have consisent IDs
 
                 auto rolledUpNetworks = GetRolledUpNetworks (allowedStaleness * 10.0); // longer allowedStaleness cuz we dont care much about this and the parts
                                                                                        // we look at really dont change
@@ -524,7 +523,7 @@ namespace {
                 // and then add in (should be done just once) the values from the database,
                 // and then keep adding any more recent discovery changes
                 RolledUpDevices result               = sRolledUpDevices_;
-                auto                  doMergeOneIntoRollup = [&result, &reverseRollup] (const Device& d2MergeIn) {
+                auto            doMergeOneIntoRollup = [&result, &reverseRollup] (const Device& d2MergeIn) {
                     // @todo slow/quadradic - may need to tweak
                     if (auto i = result.fGUID2Devices.FindFirstThat ([&d2MergeIn] (auto kvpDevice) { return ShouldRollup_ (kvpDevice.fValue, d2MergeIn); })) {
                         // then merge this into that item
@@ -574,7 +573,7 @@ namespace {
                 // and then add in (should be done just once) the values from the database,
                 // and then keep adding any more recent discovery changes
                 RolledUpNetworks result               = sRolledUpNetworks_;
-                auto                   doMergeOneIntoRollup = [&result] (const Network& d2MergeIn) {
+                auto             doMergeOneIntoRollup = [&result] (const Network& d2MergeIn) {
                     // @todo slow/quadradic - may need to tweak
                     if (auto i = result.fGUID2Networks.FindFirstThat ([&d2MergeIn] (auto kvpDevice) { return ShouldRollup_ (kvpDevice.fValue, d2MergeIn); })) {
                         // then merge this into that item
