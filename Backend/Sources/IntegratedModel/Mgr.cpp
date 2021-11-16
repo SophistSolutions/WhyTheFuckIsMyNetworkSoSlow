@@ -530,8 +530,9 @@ namespace {
                         // @todo think out order of params and better document order of params!
                         auto tmp              = Device::Rollup (i->fValue, d2MergeIn);
                         tmp.fAttachedNetworks = reverseRollup (tmp.fAttachedNetworks);
-                        result.fGUID2Devices.Add (i->fKey, tmp);
-                        Assert (result.fGUID2Devices[i->fKey].fGUID == i->fKey); // sb using new KeyedCollection!
+                        auto key              = i->fKey;
+                        result.fGUID2Devices.Add (key, tmp);
+                        Assert (result.fGUID2Devices[key].fGUID == key); // sb using new KeyedCollection!
                     }
                     else {
                         Device newRolledUpDevice                = d2MergeIn;
