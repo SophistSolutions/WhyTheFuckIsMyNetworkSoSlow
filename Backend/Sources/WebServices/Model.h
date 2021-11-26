@@ -243,6 +243,13 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
     /**
      */
     struct Device {
+
+        Device () = default;
+        Device (const Device&) = default;
+        Device (Device&&)      = default;
+        Device& operator= (const Device&) = default;
+        Device& operator= (Device&&) = default;
+
         GUID fGUID;
 
         String name;

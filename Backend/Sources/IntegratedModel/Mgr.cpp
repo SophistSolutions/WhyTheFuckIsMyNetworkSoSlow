@@ -241,8 +241,8 @@ namespace {
                 // for some reason, gateway list sometimes contains IPv4 only, and sometimes IPv4 and IPv6 addresses
                 // treat the list the same if the gateway list ipv4s at least are the same (and non-empty)
                 // if IPv4 CIDRs same (and non-empty), then ignore differences in IPv4 addressses
-                Set<InternetAddress> ipv4s1{n1.fGateways.Where ([] (InternetAddress i) { return i.GetAddressFamily () == InternetAddress::AddressFamily::V4; })};
-                Set<InternetAddress> ipv4s2{n2.fGateways.Where ([] (InternetAddress i) { return i.GetAddressFamily () == InternetAddress::AddressFamily::V4; })};
+                Set<InternetAddress> ipv4s1{n1.fGateways.Where ([] (const InternetAddress& i) { return i.GetAddressFamily () == InternetAddress::AddressFamily::V4; })};
+                Set<InternetAddress> ipv4s2{n2.fGateways.Where ([] (const InternetAddress& i) { return i.GetAddressFamily () == InternetAddress::AddressFamily::V4; })};
                 if (ipv4s1 != ipv4s2) {
                     return false;
                 }
@@ -252,8 +252,8 @@ namespace {
             }
             if (n1.fNetworkAddresses != n2.fNetworkAddresses) {
                 // if IPv4 CIDRs same (and non-empty), then ignore differences in IPv4 addressses
-                Set<CIDR> ipv4s1{n1.fNetworkAddresses.Where ([] (auto i) { return i.GetBaseInternetAddress ().GetAddressFamily () == InternetAddress::AddressFamily::V4; })};
-                Set<CIDR> ipv4s2{n2.fNetworkAddresses.Where ([] (auto i) { return i.GetBaseInternetAddress ().GetAddressFamily () == InternetAddress::AddressFamily::V4; })};
+                Set<CIDR> ipv4s1{n1.fNetworkAddresses.Where ([] (const auto& i) { return i.GetBaseInternetAddress ().GetAddressFamily () == InternetAddress::AddressFamily::V4; })};
+                Set<CIDR> ipv4s2{n2.fNetworkAddresses.Where ([] (const auto& i) { return i.GetBaseInternetAddress ().GetAddressFamily () == InternetAddress::AddressFamily::V4; })};
                 if (ipv4s1 != ipv4s2) {
                     return false;
                 }
@@ -525,7 +525,7 @@ namespace {
                 RolledUpDevices result               = sRolledUpDevices_;
                 auto            doMergeOneIntoRollup = [&result, &reverseRollup] (const Device& d2MergeIn) {
                     // @todo slow/quadradic - may need to tweak
-                    if (auto i = result.fGUID2Devices.FindFirstThat ([&d2MergeIn] (auto kvpDevice) { return ShouldRollup_ (kvpDevice.fValue, d2MergeIn); })) {
+                    if (auto i = result.fGUID2Devices.Find ([&d2MergeIn] (auto const& kvpDevice) { return ShouldRollup_ (kvpDevice.fValue, d2MergeIn); })) {
                         // then merge this into that item
                         // @todo think out order of params and better document order of params!
                         auto tmp              = Device::Rollup (i->fValue, d2MergeIn);
@@ -576,7 +576,7 @@ namespace {
                 RolledUpNetworks result               = sRolledUpNetworks_;
                 auto             doMergeOneIntoRollup = [&result] (const Network& d2MergeIn) {
                     // @todo slow/quadradic - may need to tweak
-                    if (auto i = result.fGUID2Networks.FindFirstThat ([&d2MergeIn] (auto kvpDevice) { return ShouldRollup_ (kvpDevice.fValue, d2MergeIn); })) {
+                    if (auto i = result.fGUID2Networks.Find ([&d2MergeIn] (auto const& kvpDevice) { return ShouldRollup_ (kvpDevice.fValue, d2MergeIn); })) {
                         // then merge this into that item
                         // @todo think out order of params and better document order of params!
                         result.fGUID2Networks.Add (i->fKey, Network::Rollup (i->fValue, d2MergeIn));
