@@ -1095,7 +1095,7 @@ namespace {
                 catch (...) {
                     Execution::Logger::Get ().LogIfNew (Execution::Logger::Priority::eError, 5min, L"%s", Characters::ToString (current_exception ()).c_str ());
                 }
-                Execution::Sleep (1min); // unsure of right interval - maybe able to epoll or something so no actual polling needed
+                Execution::Sleep (1min); // unsure of right interval - maybe able to epoll or something so no actual polling needed - note no lock held here
             }
         }
         Thread::CleanupPtr fMyThread_;
@@ -1148,7 +1148,7 @@ namespace {
                         Sequence<Discovery::Network> activeNetworks = Discovery::NetworksMgr::sThe.CollectActiveNetworks (kAllowedNetworkStaleness_);
                         if (activeNetworks.empty ()) {
                             DbgTrace (L"No active network, so postponing random device address scan");
-                            Execution::Sleep (30s);
+                            Execution::Sleep (30s); // importan no locks held here
                             continue;
                         }
                         // Scanning really only works for IPv4 since too large a range otherwise
@@ -1308,7 +1308,7 @@ namespace {
             static constexpr auto kMinTimeBetweenScans_{5s};
 
             //constexpr auto               kAllowedNetworkStaleness_ = 1min;
-            constexpr Time::DurationSecondsType kAllowedNetworkStaleness_ = 60;
+            //constexpr Time::DurationSecondsType kAllowedNetworkStaleness_ = 60;
 
             Sequence<GUID>           devices2Check;
             optional<Iterator<GUID>> devices2CheckIterator;
