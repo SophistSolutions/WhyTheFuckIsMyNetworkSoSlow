@@ -203,7 +203,8 @@ namespace {
             if (Set<String>::Intersects (hw1, hw2)) {
                 return true;
             }
-            if (hw1.empty () and hw2.empty ()) {
+            // If EITHER device has no hardware addresses, there is little to identify it, so roll it up with anything with the same IP address, by default
+            if (hw1.empty () or hw2.empty ()) {
                 // then fold togehter if they have the same IP Addresses
                 // return d1.GetInternetAddresses () == d2.GetInternetAddresses ();
                 return Set<InternetAddress>::Intersects (d1.GetInternetAddresses (), d2.GetInternetAddresses ());
@@ -478,6 +479,8 @@ namespace {
 
         struct RolledUpDevices {
             // @todo add much more here - different useful summaries of same info
+
+            // @TODO THIS SHOULD USE KEYEDCOLLECTION
             Mapping<GUID, Device> fGUID2Devices;
         };
         RolledUpDevices GetRolledUpDevies (Time::DurationSecondsType allowedStaleness = 10.0)
