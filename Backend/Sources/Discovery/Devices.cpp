@@ -702,9 +702,7 @@ namespace {
                     DeclareActivity da{&kDiscovering_This_Device_};
                     if (optional<DiscoveryInfo_> o = GetMyDevice_ ()) {
                     again:
-                        if (retriedLockCount > 0) {
-                            Execution::Sleep (1s); // sleep before retrying read-lock so readlock not held so long nobody can update
-                        }
+                        Execution::Sleep (retriedLockCount * 1s); // sleep before retrying read-lock so readlock not held so long nobody can update
                         auto           l  = sDiscoveredDevices_.cget ();
                         DiscoveryInfo_ di = [&] () {
                             DiscoveryInfo_ tmp{};
@@ -903,9 +901,7 @@ namespace {
             if (not locAddrs.empty ()) {
             // merge in data
             again:
-                if (retriedLockCount > 0) {
-                    Execution::Sleep (1s); // sleep without the lock, but not first time processing message - just on retries
-                }
+                Execution::Sleep (retriedLockCount * 1s); // sleep without the lock, but not first time processing message - just on retries
                 auto           l  = sDiscoveredDevices_.cget ();
                 DiscoveryInfo_ di = [&] () {
                     DiscoveryInfo_ tmp{};
@@ -1033,9 +1029,7 @@ namespace {
 
                         unsigned int retriedLockCount = 0;
                     again:
-                        if (retriedLockCount > 0) {
-                            Execution::Sleep (1s); // sleep without the lock, but not first time processing message - just on retries
-                        }
+                        Execution::Sleep (retriedLockCount * 1s); // sleep without the lock, but not first time processing message - just on retries
 #if qLOCK_DEBUGGING_
                         Debug::TraceContextBumper ctxLock1{L"sDiscoveredDevices_ - discovering this network neighbors "};
 #endif
