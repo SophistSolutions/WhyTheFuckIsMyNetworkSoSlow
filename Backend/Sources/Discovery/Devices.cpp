@@ -1226,6 +1226,9 @@ namespace {
                                 tmp.fLastSeenAt = DateTime::Now ();
                                 tmp.PatchDerivedFields ();
                                 Assert (tmp.fGUID != GUID{});
+#if qDebug
+                                tmp.fDebugProps.Add (L"Found-Through-runPingCheck", true);
+#endif
                                 l.rwref ().Add (tmp);
                                 DbgTrace (L"Updated device %s for fKnownOpenPorts: %s", Characters::ToString (tmp.fGUID).c_str (), Characters::ToString (scanResults.fDiscoveredOpenPorts).c_str ());
                             }
@@ -1236,7 +1239,8 @@ namespace {
                                 tmp.fLastSeenAt = DateTime::Now ();
                                 tmp.PatchDerivedFields ();
 #if qDebug
-                                tmp.fDebugProps.Add (L"Found-Through-Network-SYN-Scan", true);
+                                tmp.fDebugProps.Add (L"Found-Through-runPingCheck", true);
+                                tmp.fDebugProps.Add (L"First-Found-Through-runPingCheck", true);
 #endif
                                 Assert (tmp.fGUID != GUID{});
                                 l.rwref ().Add (tmp);
