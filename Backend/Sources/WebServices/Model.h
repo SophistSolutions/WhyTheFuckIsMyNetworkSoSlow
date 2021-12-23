@@ -244,7 +244,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
      */
     struct Device {
 
-        Device () = default;
+        Device ()              = default;
         Device (const Device&) = default;
         Device (Device&&)      = default;
         Device& operator= (const Device&) = default;
