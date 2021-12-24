@@ -920,7 +920,11 @@ namespace {
                         return tmp;
                     }
                 }();
-                WeakAssert (not di.GetInternetAddresses ().empty ()); // can happen if we find address in tmp.AddIPAddress_() thats not bound to any adapter (but that shouldnt happen so investigate but is for now so ignore breifly)
+                if (di.fAttachedNetworks.empty ()) {
+                    DbgTrace (L"Ignorning SSDP message for device on no network (possibly because of kIncludeLinkLocalAddressesInDiscovery etc suppression): %s", Characters::ToString (di).c_str ());
+                    return;
+                }
+                Assert (not di.GetInternetAddresses ().empty ()); // can happen if we find address in tmp.AddIPAddress_() thats not bound to any adapter (but that shouldnt happen so investigate but is for now so ignore breifly)
 
                 if (not di.fSSDPInfo) {
                     di.fSSDPInfo = DiscoveryInfo_::SSDPInfo{};
@@ -939,9 +943,6 @@ namespace {
                     DbgTrace (L"Warning: different server IDs for same object");
                 }
                 di.fSSDPInfo->fServer = d.fServer;
-
-                // @todo verify - but I think already done
-                //di.AddNetworkAddresses_ (locAddrs);
 
                 if (deviceType and deviceFriendlyName) {
                     di.fSSDPInfo->fDeviceType2FriendlyNameMap.Add (*deviceType, *deviceFriendlyName);
@@ -1491,12 +1492,13 @@ Collection<Discovery::Device> Discovery::DevicesMgr::GetActiveDevices (optional<
     Collection<Discovery::Device> results;
     using Cache::SynchronizedCallerStalenessCache;
     static SynchronizedCallerStalenessCache<void, Collection<Discovery::Device>> sCache_;
-    results = sCache_.LookupValue (sCache_.Ago (allowedStaleness.value_or (kDefaultItemCacheLifetime_)), [] () {
+    results = sCache_.LookupValue (sCache_.Ago (allowedStaleness.value_or (kDefaultItemCacheLifetime_)),
+                                   [] () {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
-        DbgTrace (L"sDiscoveredDevices_: %s", Characters::ToString (sDiscoveredDevices_.cget ()->MappedValues ()).c_str ());
+                                       DbgTrace (L"sDiscoveredDevices_: %s", Characters::ToString (sDiscoveredDevices_.cget ()->MappedValues ()).c_str ());
 #endif
-        return sDiscoveredDevices_.load (); // intentionally object-spice
-    });
+                                       return sDiscoveredDevices_.load (); // intentionally object-spice
+                                   });
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
     DbgTrace (L"returns: %s", Characters::ToString (results).c_str ());
 #endif

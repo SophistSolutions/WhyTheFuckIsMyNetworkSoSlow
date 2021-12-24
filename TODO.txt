@@ -1,3 +1,11 @@
+- We currently get TONS of SSDP notifications for 'private network localhost' devices, and these
+  somehow should be suppressed. THat now seem to have no metwork object, maybe suppress 
+  those (but that could just be a bug in my rollup code).
+
+- first fix the rollup code, and then probably find a way to lose those.
+
+
+
 - RandomWalkThroughSubnetDiscoverer_ doesnt seem to ever write down addresses found. MAYBE OK due to arp scanning but probably should
   record and definitely should document if counting on ARP stuff...
 
