@@ -15,9 +15,9 @@ RUN apt-get install -y nodejs npm
 
 # Because Ubuntu1804 node version not working
 RUN apt-get install -y curl
-RUN curl -sL https://deb.nodesource.com/setup_10.x -o nodesource_setup.sh
-RUN bash nodesource_setup.sh
-RUN apt-get install -y nodejs
+# RUN curl -sL https://deb.nodesource.com/setup_10.x -o nodesource_setup.sh
+# RUN bash nodesource_setup.sh
+# RUN apt-get install -y nodejs
 
 RUN rm -f /Getting-Started-With-Stroika.md
 ADD Shared-Files/Getting-Started.md /
