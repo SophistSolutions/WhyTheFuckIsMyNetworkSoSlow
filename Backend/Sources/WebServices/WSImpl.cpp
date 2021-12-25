@@ -154,7 +154,7 @@ About WSImpl::GetAbout () const
     CurrentProcess processInfo = [now, &measurements] () {
         CurrentProcess result;
         if (auto om = sCapturer_.fProcessInstrument.MeasurementAs<Instruments::Process::Info> (measurements)) {
-            Assert (om->GetLength () == 1);
+            Assert (om->size () == 1);
             Instruments::Process::ProcessType thisProcess = (*om)[Execution::GetCurrentProcessID ()];
             if (auto o = thisProcess.fProcessStartedAt) {
                 result.fProcessUptime = now - *o;
