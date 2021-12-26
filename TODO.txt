@@ -1,13 +1,3 @@
-- review and make sure Im building with WTF build docker CONTAINER
-  and make sure it has the right npm
-
-
-  ...
-  
-
-
-- RandomWalkThroughSubnetDiscoverer_ doesnt seem to ever write down addresses found. MAYBE OK due to arp scanning but probably should
-  record and definitely should document if counting on ARP stuff...
 
 - Adjust ajax refrsh pattern so doesn't automatically
   refetch so quickly if already slow getting responses.
@@ -19,37 +9,7 @@
   that as a threshold to tweak rates of refresh in app
   calls to vueex
 
------
-
---- RACE CONDITION/BUG IN STROIKA CONTAINERS
-
-	(((RETHINK WHOLE ITERATOROWNER thing - and logic of how we do threadsafe sharing; I now understand it
-	better than I did when I wrote that code)))
-
-
-MyNeigherDeiscoverer thread 
-
-operating on a DiscoveryInfo_ tmp object copied from sDiscoveredDevices_
-                    fAttachedNetworks.Add (nw, nwAttachmentInfo);
-
-... calls to
-    void STLContainerWrapper<STL_CONTAINER_OF_T>::ForwardIterator::_Invariant () const
-    {
-        AssertNotNull (this->fData);
-        // apparently pointless test is just to force triggering any check code in iterator classes for valid iterators
-     THIS SOMEHOW FAILS   Assert (this->fStdIterator == this->fData->end () or this->fStdIterator != this->fData->end ());
-        // Find some way to check iterator traits to see if random access and do this test if possible
-        //Assert ((fCurrent >= fStart) and (fCurrent <= fEnd));   // ANSI C requires this is always TRUE
-    }
-
-
-While at same time BackgroundDatabaseThread is destroying a copy of another Device object (whihc may have copied same unerlying mapping since
-COW).
-
-
-
 --------------
-
 
 http://localhost:8088/#/device/71c59b3c-db88-97fb-e70b-02cd6cf59100 and
 http://localhost:8088/#/device/6fd4fc40-9e43-5b61-cbaa-050d1272f5ff
@@ -83,7 +43,6 @@ tmphack slow impl - instead build mapping table when constructing rollup
 	deviceid))
 
 ----
-
 
 - Might be useful to add firstSeenAt (like lastSeenAt) for devices and networks. MAYBE replace lastSeenAt with seen (range)
 

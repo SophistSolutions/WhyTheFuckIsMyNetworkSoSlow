@@ -512,8 +512,7 @@ namespace {
                 //fTypes.Add (Discovery::DeviceType::eTV);
             }
 
-            if (fSSDPInfo.has_value () and
-                (fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_DIALReceiver_))) {
+            if (fSSDPInfo.has_value () and fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_DIALReceiver_)) {
                 //fTypes.Add (Discovery::DeviceType::eMediaPlayer);
                 fTypes.Add (Discovery::DeviceType::eTV);
             }
@@ -524,7 +523,7 @@ namespace {
                 for (GUID netGUID : fAttachedNetworks.Keys ()) {
                     IgnoreExceptionsExceptThreadAbortForCall (gateways += NetworksMgr::sThe.GetNetworkByID (netGUID).fGateways); // if network disappears dont fail to patch
                 }
-                if (not(gateways ^ GetInternetAddresses ()).empty ()) {
+                if (not (gateways ^ GetInternetAddresses ()).empty ()) {
                     fTypes.Add (Discovery::DeviceType::eRouter);
                 }
             }
@@ -546,7 +545,7 @@ namespace {
                         if (not fManufacturer) {
                             fManufacturer = Manufacturer{};
                         }
-                        bool longName = o->Contains (L" "); //  primitive guess
+                        bool longName = o->Contains (L" "sv); //  primitive guess
                         if (longName) {
                             if (not fManufacturer->fFullName) {
                                 fManufacturer->fFullName = *o;
@@ -1107,8 +1106,7 @@ namespace {
      */
     struct RandomWalkThroughSubnetDiscoverer_ {
         RandomWalkThroughSubnetDiscoverer_ ()
-            : fMyThread_ (
-                  Thread::CleanupPtr::eAbortBeforeWaiting, Thread::New (Checker_, Thread::eAutoStart, L"RandomWalkThroughSubnetDiscoverer"))
+            : fMyThread_{Thread::CleanupPtr::eAbortBeforeWaiting, Thread::New (Checker_, Thread::eAutoStart, L"RandomWalkThroughSubnetDiscoverer")}
         {
         }
 
@@ -1143,7 +1141,7 @@ namespace {
                         Sequence<Discovery::Network> activeNetworks = Discovery::NetworksMgr::sThe.CollectActiveNetworks (kAllowedNetworkStaleness_);
                         if (activeNetworks.empty ()) {
                             DbgTrace (L"No active network, so postponing random device address scan");
-                            Execution::Sleep (30s); // importan no locks held here
+                            Execution::Sleep (30s); // importanT no locks held here
                             continue;
                         }
                         // Scanning really only works for IPv4 since too large a range otherwise
@@ -1574,7 +1572,6 @@ VariantValue DevicesMgr::ScanAndReturnReport (const InternetAddress& addr)
     for (String p : results.fDiscoveredOpenPorts) {
         ports += p;
     }
-    result.Add (L"openPorts", VariantValue{
-                                  ports.Select<VariantValue> ([] (String i) { return VariantValue{i}; })});
+    result.Add (L"openPorts", VariantValue{ports.Select<VariantValue> ([] (String i) { return VariantValue{i}; })});
     return VariantValue{result};
 }
