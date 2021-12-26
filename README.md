@@ -24,14 +24,6 @@ diagnose their own personal networks, to indicate network issues and to provide 
 
 ## CI System Integration
 
-- CircleCI
-
-  - Only Release builds due to cost issues
-
-  | [Branches](https://app.circleci.com/pipelines/github/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow) |                                                                                                 Status                                                                                                 | [.circleci/config.yml](.circleci/config.yml) |
-  | :------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :------------------------------------------- |
-  | **v1-Release**                                                                                     | [![Link](https://circleci.com/gh/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/tree/v1-Release.svg?style=shield)](https://circleci.com/gh/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/tree/v1-Release) |                                              |
-
 - Github Actions
 
   | [Branches](https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow) |                                                                                                                                              Status                                                                                                                                               |                                                                                                |
