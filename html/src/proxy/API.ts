@@ -6,7 +6,7 @@ import { INetworkInterface } from "@/models/network/INetworkInterface";
 
 import { API_ROOT } from "@/config";
 
-import { Logger } from "@/utils/Logger.ts";
+import { Logger } from "@/utils/Logger";
 
 export async function fetchNetworks(): Promise<INetwork[]> {
   return fetch(API_ROOT + `/networks?recurse=true`)
