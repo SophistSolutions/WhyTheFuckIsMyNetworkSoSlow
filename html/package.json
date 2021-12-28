@@ -9,7 +9,7 @@
     "debug": "vue-cli-service build --mode debug"
   },
   "dependencies": {
-    "core-js": "^3.8.1",
+    "core-js": "^3.20.1",
     "vue": "^2.6.12",
     "vue-class-component": "^6.0.0",
     "vue-filter-pretty-bytes": "^0.1.6",
