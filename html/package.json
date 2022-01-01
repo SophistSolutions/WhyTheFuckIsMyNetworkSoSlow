@@ -1,5 +1,5 @@
 {
-  "name": "wtf.v33",
+  "name": "wtfimnss-ui",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -14,11 +14,12 @@
   "dependencies": {
     "@mdi/font": "5.9.55",
     "core-js": "^3.6.5",
+    "moment": "^2.29.1",
     "pretty-bytes": "^5.6.0",
     "roboto-fontface": "*",
     "vue": "^3.0.0",
     "vue-class-component": "^8.0.0-0",
-    "vue-json-viewer": "^2.2.21",
+    "vue-json-viewer": "^3.0.2",
     "vue-property-decorator": "^9.1.2",
     "vue-router": "^4.0.0-0",
     "vuetify": "^3.0.0-alpha.12",
@@ -28,7 +29,6 @@
     "webfontloader": "^1.0.0"
   },
   "devDependencies": {
-    "@types/vue-moment": "^4.0.3",
     "@types/webfontloader": "^1.0.0",
     "@typescript-eslint/eslint-plugin": "^4.18.0",
     "@typescript-eslint/parser": "^4.18.0",
@@ -59,6 +59,7 @@
       "node": true
     },
     "extends": [
+      "eslint:recommended",
       "plugin:vue/vue3-essential",
       "@vue/standard",
       "@vue/typescript/recommended"
@@ -67,9 +68,11 @@
       "ecmaVersion": 2020
     },
     "rules": {
-      "semi": "off",
       "space-before-function-paren": "off",
-      "quotes": "off",
+      "quotes": [
+        "warn",
+        "double"
+      ],
       "vue/no-deprecated-filter": "off",
       "@typescript-eslint/no-inferrable-types": "off",
       "comma-dangle": "off",
@@ -79,24 +82,14 @@
       "vue/no-deprecated-slot-scope-attribute": "off",
       "camelcase": "off",
       "no-prototype-builtins": "off",
-      "quotemark": [
-        true,
-        "double"
-      ],
-      "trailing-comma": {
-        "esSpecCompliant": true
-      },
+      "quotemark": "off",
+      "trailing-comma": "off",
       "indent": [
-        true,
-        "spaces",
+        "warn",
         2
       ],
-      "interface-name": false,
-      "ordered-imports": true,
-      "object-literal-sort-keys": false,
-      "no-consecutive-blank-lines": false,
-      "semicolon": [
-        true,
+      "semi": [
+        "warn",
         "always"
       ]
     }
