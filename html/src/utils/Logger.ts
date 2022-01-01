@@ -10,18 +10,21 @@ export class Logger {
       console.debug(message, ...optionalParams);
     }
   }
+
   public static info(message?: any, ...optionalParams: any[]): void {
     if (Logger.sEmitToLog) {
       // tslint:disable-next-line
       console.info(message, ...optionalParams);
     }
   }
+
   public static warn(message?: any, ...optionalParams: any[]): void {
     if (Logger.sEmitToLog) {
       // tslint:disable-next-line
       console.warn(message, ...optionalParams);
     }
   }
+
   public static error(message?: any, ...optionalParams: any[]): void {
     if (Logger.sEmitToLog) {
       // tslint:disable-next-line

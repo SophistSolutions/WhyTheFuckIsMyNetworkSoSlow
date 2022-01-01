@@ -1,5 +1,6 @@
+import { createStore } from 'vuex'
 import Vue from "vue";
-import Vuex from "vuex";
+// import Vuex from "vuex";
 
 import { INetwork } from "@/models/network/INetwork";
 import { INetworkInterface } from "@/models/network/INetworkInterface";
@@ -13,15 +14,13 @@ import {
   fetchDevices,
   fetchNetwork,
   fetchNetworkInterfaces,
-  fetchNetworks,
+  fetchNetworks
 } from "@/proxy/API";
-
-Vue.use(Vuex);
 
 const debug = process.env.NODE_ENV !== "production";
 
 // @TODO make this the root store - have other stores be props of state. Seperate by logical groups
-export default new Vuex.Store({
+export default createStore({
   state: {
     about: undefined as IAbout | undefined,
     rolledUpAvailableNetworkIDs: [] as string[],
@@ -31,36 +30,36 @@ export default new Vuex.Store({
     selectedNetworkId: {} as string,
     rolledUpDeviceIDs: [] as string[],
     // cache of objects, some of which maybe primary devices (rollups) and some maybe details
-    deviceDetails: {} as { [key: string]: IDevice },
+    deviceDetails: {} as { [key: string]: IDevice }
   },
   mutations: {
     setAvailableNetworks(state, networks: INetwork[]) {
       state.rolledUpAvailableNetworkIDs = networks.map((x) => x.id);
-      // networks.forEach((x) => (state.networkDetails[x.id] = x)); --ok in vue3
-      networks.forEach((x) => Vue.set(state.networkDetails, x.id, x));
+      networks.forEach((x) => (state.networkDetails[x.id] = x));
+      // networks.forEach((x) => Vue.set(state.networkDetails, x.id, x));
     },
     setNetworkDetails(state, network: INetwork) {
-      // state.networkDetails[network.id] = network; ok in vue3
-      Vue.set(state.networkDetails, network.id, network);
+      state.networkDetails[network.id] = network;
+      // Vue.set(state.networkDetails, network.id, network);
     },
     setNetworkInterfaces(state, networkInterfaces: INetworkInterface[]) {
       state.networkInterfaces = networkInterfaces;
     },
     setDevices(state, devices: IDevice[]) {
       state.rolledUpDeviceIDs = devices.map((x) => x.id);
-      // devices.forEach((x) => (state.deviceDetails[x.id] = x));
-      devices.forEach((x) => Vue.set(state.deviceDetails, x.id, x));
+      devices.forEach((x) => (state.deviceDetails[x.id] = x));
+      // devices.forEach((x) => Vue.set(state.deviceDetails, x.id, x));
     },
     setDeviceDetails(state, device: IDevice) {
-      // state.deviceDetails[device.id] = device;
-      Vue.set(state.deviceDetails, device.id, device);
+      state.deviceDetails[device.id] = device;
+      // Vue.set(state.deviceDetails, device.id, device);
     },
     setSelectedNetwork(state, networkId: string) {
       state.selectedNetworkId = networkId;
     },
     setAboutInfo(state, aboutInfo: IAbout) {
       state.about = aboutInfo;
-    },
+    }
   },
   actions: {
     async fetchAvailableNetworks({ commit }) {
@@ -86,7 +85,9 @@ export default new Vuex.Store({
     },
     setSelectedNetwork({ commit }, networkId: string) {
       commit("setSelectedNetwork", networkId);
-    },
+    }
+  },
+  modules: {
   },
   getters: {
     getAvailableNetworks: (state) => {
@@ -114,7 +115,7 @@ export default new Vuex.Store({
       return state.rolledUpAvailableNetworkIDs.find(
         (network) => network === state.selectedNetworkId
       );
-    },
+    }
   },
-  strict: debug,
-});
+  strict: debug
+})

@@ -26,23 +26,22 @@
 </template>
 
 <script lang="ts">
-import { IDevice, INetworkAttachmentInfo } from "@/models/device/IDevice";
+import { IDevice } from "@/models/device/IDevice";
 import { INetwork } from "@/models/network/INetwork";
 import {
   FormatLocation,
   GetDeviceIDsInNetwork,
   GetNetworkLink,
-  GetNetworkName,
+  GetNetworkName
 } from "@/models/network/Utils";
-import Vue from "vue";
-import { Component, Watch } from "vue-property-decorator";
+import { Options, Vue } from 'vue-class-component'
 
-@Component({
+@Options({
   name: "Home",
   components: {
     AppBar: () => import("@/components/AppBar.vue"),
-    ReadOnlyTextWithHover: () => import("@/components/ReadOnlyTextWithHover.vue"),
-  },
+    ReadOnlyTextWithHover: () => import("@/components/ReadOnlyTextWithHover.vue")
+  }
 })
 export default class Home extends Vue {
   private polling: undefined | number = undefined;
@@ -51,13 +50,13 @@ export default class Home extends Vue {
   private GetNetworkLink = GetNetworkLink;
   private GetNetworkName = GetNetworkName;
 
-  private created() {
+  public created() {
     this.$store.dispatch("fetchDevices", null);
     this.$store.dispatch("fetchAvailableNetworks");
     this.pollData();
   }
 
-  private beforeDestroy() {
+  public beforeDestroy() {
     clearInterval(this.polling);
   }
 
@@ -79,8 +78,8 @@ export default class Home extends Vue {
     return result;
   }
 
-  private get networksAsDisplayed(): object[] {
-    const result: object[] = [];
+  private get networksAsDisplayed(): any[] {
+    const result: any[] = [];
     this.networks.forEach((i) => {
       result.push({
         id: i.id,
@@ -92,7 +91,7 @@ export default class Home extends Vue {
           (i.internetServiceProvider == null ? " " : " (" + i.internetServiceProvider.name + ")"),
         devices: GetDeviceIDsInNetwork(i, this.devices).length,
         status: "healthy",
-        location: FormatLocation(i.geographicLocation),
+        location: FormatLocation(i.geographicLocation)
       });
     });
     result.sort((a: any, b: any) => {

@@ -1,20 +1,20 @@
-import store from "@/store/store";
-import Vue from "vue";
-import vueFilterPrettyBytes from "vue-filter-pretty-bytes";
-import JsonViewer from "vue-json-viewer";
-import VueMoment from "vue-moment";
-import App from "./App.vue";
-import vuetify from "./plugins/vuetify";
-import router from "./router";
+import { createApp } from 'vue'
+import router from './router'
+import store from './store'
+import vuetify from './plugins/vuetify'
+import App from './App.vue'
+import { loadFonts } from './plugins/webfontloader'
+import JsonViewer from "vue-json-viewer"
+import moment from 'moment';
 
-Vue.config.productionTip = false;
-Vue.use(VueMoment);
-Vue.use(JsonViewer);
-Vue.use(vueFilterPrettyBytes);
+loadFonts()
 
-(window as any).myVueApp = new Vue({
-  router,
-  store,
-  vuetify,
-  render: (h) => h(App),
-}).$mount("#app");
+const app = createApp(App)
+  .use(vuetify)
+  .use(router)
+  .use(JsonViewer)
+  .use(store)
+
+app.mount('#app')
+
+app.config.globalProperties.$moment = moment

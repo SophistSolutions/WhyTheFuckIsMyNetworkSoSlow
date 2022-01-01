@@ -1,45 +1,114 @@
 {
-  "name": "wtfimnss-ui",
+  "name": "wtf.v33",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
+    "serve-debug": "vue-cli-service serve --mode debug",
+    "serve-production": "vue-cli-service serve --mode production",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "debug": "vue-cli-service build --mode debug"
+    "build-debug": "vue-cli-service build --mode debug",
+    "build-production": "vue-cli-service build --mode debug"
   },
   "dependencies": {
-    "core-js": "^3.20.1",
-    "vue": "^2.6.12",
-    "vue-class-component": "^6.0.0",
-    "vue-filter-pretty-bytes": "^0.1.6",
-    "vue-json-viewer": "^2.2.16",
-    "vue-moment": "^4.1.0",
-    "vue-property-decorator": "^7.0.0",
-    "vue-router": "^3.4.9",
-    "vuetify": "^2.4.0",
-    "vuex": "^3.6.0"
+    "@mdi/font": "5.9.55",
+    "core-js": "^3.6.5",
+    "pretty-bytes": "^5.6.0",
+    "roboto-fontface": "*",
+    "vue": "^3.0.0",
+    "vue-class-component": "^8.0.0-0",
+    "vue-json-viewer": "^2.2.21",
+    "vue-property-decorator": "^9.1.2",
+    "vue-router": "^4.0.0-0",
+    "vuetify": "^3.0.0-alpha.12",
+    "vuex": "^4.0.0-0",
+    "vuex-class": "^0.3.2",
+    "vuex-class-modules": "^1.3.0",
+    "webfontloader": "^1.0.0"
   },
   "devDependencies": {
-    "@types/vue-moment": "^4.0.2",
-    "@vue/cli-plugin-babel": "^4.5.9",
-    "@vue/cli-plugin-typescript": "^4.5.9",
-    "@vue/cli-service": "^4.5.9",
-    "sass": "^1.45.1",
-    "sass-loader": "^8.0.0",
-    "typescript": "^4.5.4",
-    "vue-cli-plugin-vuetify": "^2.0.8",
-    "vue-template-compiler": "^2.6.12",
-    "vuetify-loader": "^1.6.0"
+    "@types/vue-moment": "^4.0.3",
+    "@types/webfontloader": "^1.0.0",
+    "@typescript-eslint/eslint-plugin": "^4.18.0",
+    "@typescript-eslint/parser": "^4.18.0",
+    "@vue/cli-plugin-babel": "5.0.0-beta.7",
+    "@vue/cli-plugin-eslint": "~4.5.0",
+    "@vue/cli-plugin-router": "~4.5.0",
+    "@vue/cli-plugin-typescript": "~4.5.0",
+    "@vue/cli-plugin-vuex": "~4.5.0",
+    "@vue/cli-service": "5.0.0-beta.7",
+    "@vue/compiler-sfc": "^3.0.0",
+    "@vue/eslint-config-standard": "^5.1.2",
+    "@vue/eslint-config-typescript": "^7.0.0",
+    "eslint": "^6.7.2",
+    "eslint-plugin-import": "^2.20.2",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.0",
+    "eslint-plugin-vue": "^7.0.0",
+    "sass": "^1.38.0",
+    "sass-loader": "^10.0.0",
+    "typescript": "~4.1.5",
+    "vue-cli-plugin-vuetify": "~2.4.5",
+    "vuetify-loader": "^2.0.0-alpha.0"
   },
-  "postcss": {
-    "plugins": {
-      "autoprefixer": {}
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "plugin:vue/vue3-essential",
+      "@vue/standard",
+      "@vue/typescript/recommended"
+    ],
+    "parserOptions": {
+      "ecmaVersion": 2020
+    },
+    "rules": {
+      "semi": "off",
+      "space-before-function-paren": "off",
+      "quotes": "off",
+      "vue/no-deprecated-filter": "off",
+      "@typescript-eslint/no-inferrable-types": "off",
+      "comma-dangle": "off",
+      "vue/no-deprecated-v-bind-sync": "off",
+      "vue/require-v-for-key": "off",
+      "vue/no-deprecated-slot-attribute": "off",
+      "vue/no-deprecated-slot-scope-attribute": "off",
+      "camelcase": "off",
+      "no-prototype-builtins": "off",
+      "quotemark": [
+        true,
+        "double"
+      ],
+      "trailing-comma": {
+        "esSpecCompliant": true
+      },
+      "indent": [
+        true,
+        "spaces",
+        2
+      ],
+      "interface-name": false,
+      "ordered-imports": true,
+      "object-literal-sort-keys": false,
+      "no-consecutive-blank-lines": false,
+      "semicolon": [
+        true,
+        "always"
+      ]
     }
   },
   "browserslist": [
     "> 1%",
     "last 2 versions",
-    "not ie <= 8"
-  ]
+    "not dead"
+  ],
+  "postcss": {
+    "plugins": {
+      "autoprefixer": {}
+    }
+  }
 }

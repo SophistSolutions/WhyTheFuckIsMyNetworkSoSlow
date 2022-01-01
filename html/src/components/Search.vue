@@ -10,9 +10,10 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import { Prop, Watch } from 'vue-property-decorator'
+import { Options, Vue } from 'vue-class-component'
 
-@Component({
+@Options({
   name: "Search",
 })
 export default class AppBar extends Vue {

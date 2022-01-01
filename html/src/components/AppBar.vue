@@ -71,12 +71,11 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import { defineComponent } from 'vue'
 
-@Component({
-  name: "AppBar",
+export default defineComponent({
+  name: 'AppBar'
 })
-export default class AppBar extends Vue {}
 </script>
 
 <style scoped lang="scss"></style>

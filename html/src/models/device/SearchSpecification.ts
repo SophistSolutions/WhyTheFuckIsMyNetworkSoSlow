@@ -1,13 +1,14 @@
-export interface ISortBy {
-    by: SortFieldEnum;
-    ascending?: boolean;
-}
 
 export enum SortFieldEnum {
     ADDRESS = "Address",
     PRIORITY = "Priority",
     NAME = "Name",
     TYPE = "Type",
+}
+
+export interface ISortBy {
+    by: SortFieldEnum;
+    ascending?: boolean;
 }
 
 export class SearchSpecification {

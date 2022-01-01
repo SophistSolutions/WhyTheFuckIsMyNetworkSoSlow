@@ -9,11 +9,10 @@
 
 <script lang="ts">
 import { INetwork } from "@/models/network/INetwork";
-import { Component, Vue } from "vue-property-decorator";
-
+import { Options, Vue } from 'vue-class-component'
 import { fetchNetworks } from "@/proxy/API";
 
-@Component({
+@Options({
   name: "Networks",
   components: {
     AppBar: () => import("@/components/AppBar.vue"),
@@ -23,12 +22,12 @@ import { fetchNetworks } from "@/proxy/API";
 export default class Networks extends Vue {
   private polling?: number;
 
-  private created() {
+  public created() {
     this.fetchAvailableNetworks();
     this.pollData();
   }
 
-  private beforeDestroy() {
+  public beforeDestroy() {
     clearInterval(this.polling);
   }
 

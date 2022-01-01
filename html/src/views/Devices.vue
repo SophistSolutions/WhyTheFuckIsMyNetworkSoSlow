@@ -158,7 +158,7 @@
 </template>
 
 <script lang="ts">
-import { IDevice, INetworkAttachmentInfo } from "@/models/device/IDevice";
+import { IDevice } from "@/models/device/IDevice";
 import {
   ComputeDeviceTypeIconURLs,
   ComputeOSIconURLList,
@@ -174,13 +174,10 @@ import {
   GetNetworkName,
   GetServices,
 } from "@/models/network/Utils";
-import { OperatingSystem } from "@/models/OperatingSystem";
+import { Options, Vue } from 'vue-class-component'
+import { Prop } from "vue-property-decorator";
 
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
-
-import { fetchNetworks } from "@/proxy/API";
-
-@Component({
+@Options({
   name: "Devices",
   components: {
     AppBar: () => import("@/components/AppBar.vue"),
@@ -207,8 +204,8 @@ export default class Devices extends Vue {
   private GetNetworkName = GetNetworkName;
   private polling: undefined | number = undefined;
   private search: string = "";
-  private sortBy: any = [];
-  private sortDesc: any = [];
+  private sortBy: string[] = [];
+  private sortDesc: string[] = [];
   private expanded: any[] = [];
 
   private selectedTimeframe: string | null = null;
@@ -217,6 +214,7 @@ export default class Devices extends Vue {
   private get filterAllowAllServices() {
     return this.selectedServices.length === this.selectableServices.length;
   }
+
   private get selectServicesFilter_icon() {
     if (this.filterAllowAllServices) {
       return "mdi-close-box";
@@ -226,6 +224,7 @@ export default class Devices extends Vue {
     }
     return "mdi-checkbox-blank-outline";
   }
+
   private selectServicesFilter_ToggleSelectAll() {
     this.$nextTick(() => {
       if (this.filterAllowAllServices) {
@@ -236,8 +235,8 @@ export default class Devices extends Vue {
     });
   }
 
-  private get selectableNetworks(): object[] {
-    const r: object[] = [
+  private get selectableNetworks(): any[] {
+    const r: any[] = [
       {
         text: "Any",
         value: null,
@@ -251,7 +250,8 @@ export default class Devices extends Vue {
     });
     return r;
   }
-  private get selectableTimeframes(): object[] {
+
+  private get selectableTimeframes(): any[] {
     return [
       {
         text: "Ever",
@@ -325,7 +325,7 @@ export default class Devices extends Vue {
     return this.$store.getters.getAvailableNetworks;
   }
 
-  private get headers(): object[] {
+  private get headers(): any[] {
     return [
       {
         text: "Name",
@@ -384,7 +384,7 @@ export default class Devices extends Vue {
     ];
   }
 
-  private created() {
+  public created() {
     // @see https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/14
     // This works, but maybe cleaner to do within the router, but wasn't able to get
     // working (so far)
@@ -399,7 +399,7 @@ export default class Devices extends Vue {
     this.pollData();
   }
 
-  private beforeDestroy() {
+  public beforeDestroy() {
     clearInterval(this.polling);
   }
 
@@ -436,8 +436,8 @@ export default class Devices extends Vue {
     this.search = "";
   }
 
-  private get filteredDevices(): object[] {
-    const result: object[] = [];
+  private get filteredDevices(): any[] {
+    const result: any[] = [];
     this.devices.forEach((i) => {
       let passedFilter = true;
       if (

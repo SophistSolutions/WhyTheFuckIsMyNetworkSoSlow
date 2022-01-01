@@ -12,12 +12,12 @@
 </template>
 
 <script lang="ts">
-import { IDevice, INetworkAttachmentInfo } from "@/models/device/IDevice";
+import { IDevice } from "@/models/device/IDevice";
 import { INetwork } from "@/models/network/INetwork";
 
-import { Component, Vue, Watch } from "vue-property-decorator";
+import { Options, Vue } from 'vue-class-component'
 
-@Component({
+@Options({
   name: "Device",
   components: {
     AppBar: () => import("@/components/AppBar.vue"),
@@ -27,11 +27,11 @@ import { Component, Vue, Watch } from "vue-property-decorator";
 export default class Device extends Vue {
   private polling: undefined | number = undefined;
 
-  private created() {
+  public created() {
     this.pollData();
   }
 
-  private beforeDestroy() {
+  public beforeDestroy() {
     clearInterval(this.polling);
   }
 
@@ -47,12 +47,7 @@ export default class Device extends Vue {
   }
 
   private get device(): IDevice {
-    let r = this.$store.getters.getDevice(this.$route.params.id);
-    return r;
-    if (r == null) {
-      r = { id: "INVALID", attachedNetworks: {}, name: "INVALID", type: null as any };
-    }
-    return r;
+    return this.$store.getters.getDevice(this.$route.params.id);
   }
 }
 </script>

@@ -51,13 +51,12 @@
 
 <script lang="ts">
 import { IDevice } from "@/models/device/IDevice";
-import { Component, Vue } from "vue-property-decorator";
+import { Options, Vue } from 'vue-class-component'
 
-import { compareValues } from "@/CustomSort";
+// import { compareValues } from "@/CustomSort";
 import { ISortBy, SortFieldEnum } from "@/models/device/SearchSpecification";
-import { fetchNetworks } from "@/proxy/API";
 
-@Component({
+@Options({
   name: "Devices",
   components: {
     AppBar: () => import("@/components/AppBar.vue"),
@@ -79,15 +78,14 @@ export default class Devices extends Vue {
     // and have it depend on the sort order (and filter) objects.
     const deviceArray: IDevice[] = this.devices;
     return deviceArray;
-    // return deviceArray.sort(compareValues(this.sortField, this.sortOrder));
   }
 
-  private created() {
+  public created(): void {
     this.fetchDevices();
     this.pollData();
   }
 
-  private beforeDestroy() {
+  public beforeDestroy(): void {
     clearInterval(this.polling);
   }
 
@@ -116,21 +114,20 @@ export default class Devices extends Vue {
     this.sortField = sortField;
     this.fetchDevices();
   }
+
   private selectSortAscending(sortOrder: boolean): void {
     this.sortOrder = sortOrder;
     this.fetchDevices();
   }
+
   private getSearchCriteria(): ISortBy | undefined {
     if (!this.sortField) {
       return undefined;
     }
-
     const searchQuery: ISortBy = { by: this.sortField };
-
     if (this.sortOrder !== undefined) {
       searchQuery.ascending = this.sortOrder;
     }
-
     return searchQuery;
   }
 }

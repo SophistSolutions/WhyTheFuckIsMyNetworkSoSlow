@@ -6,11 +6,11 @@
   </v-btn>
 </template>
 <script lang="ts">
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import { Options, Vue } from 'vue-class-component'
 
 /*
  */
-@Component({
+@Options({
   name: "ClearButton",
 })
 export default class ClearButton extends Vue {

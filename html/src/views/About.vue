@@ -47,14 +47,14 @@ Units 1=1 logical core"
             >
               <td title="Combined I/O rate (network+disk)">IO Rate (read; write)</td>
               <td>
-                {{ about.serverInfo.currentProcess.combinedIOReadRate | prettyBytes }}/sec ;
-                {{ about.serverInfo.currentProcess.combinedIOWriteRate | prettyBytes }}/sec
+                {{ prettyBytes(about.serverInfo.currentProcess.combinedIOReadRate) }}/sec ;
+                {{ prettyBytes(about.serverInfo.currentProcess.combinedIOWriteRate) }}/sec
               </td>
             </tr>
             <tr>
               <td title="How long has the service been running">Uptime</td>
               <td>
-                {{ about.serverInfo.currentProcess.processUptime | duration("humanize") }}
+                {{ $moment.duration (about.serverInfo.currentProcess.processUptime).humanize() }}
               </td>
             </tr>
             <tr>
@@ -63,7 +63,7 @@ Units 1=1 logical core"
               >
                 WSS
               </td>
-              <td>{{ about.serverInfo.currentProcess.workingOrResidentSetSize | prettyBytes }}</td>
+              <td>{{ prettyBytes (about.serverInfo.currentProcess.workingOrResidentSetSize) }}</td>
             </tr>
           </table>
         </v-col>
@@ -78,7 +78,7 @@ Units 1=1 logical core"
             </tr>
             <tr>
               <td title="How long has the machine (hosting the service) been running">Uptime</td>
-              <td>{{ about.serverInfo.currentMachine.machineUptime | duration("humanize") }}</td>
+              <td>{{ $moment.duration (about.serverInfo.currentMachine.machineUptime).humanize () }}</td>
             </tr>
             <tr v-if="about.serverInfo.currentMachine.runQLength != null">
               <td title="'Load Average' - how many threads in the RunQ on average">Run-Q</td>
@@ -140,14 +140,14 @@ Units 1=1 logical core"
 
 <script lang="ts">
 import { IAbout } from "@/models/IAbout";
-import Vue from "vue";
-import Component from "vue-class-component";
+import { Options, Vue } from 'vue-class-component'
+import prettyBytesModule from 'pretty-bytes'
 
-@Component({
+@Options({
   props: {},
   components: {
-    AppBar: () => import("@/components/AppBar.vue"),
-  },
+    AppBar: () => import("@/components/AppBar.vue")
+  }
 })
 export default class About extends Vue {
   private polling: undefined | number = undefined;
@@ -156,12 +156,16 @@ export default class About extends Vue {
     return this.$store.getters.getAboutInfo;
   }
 
-  private created() {
+  public created(): void {
     this.pollData();
   }
 
-  private beforeDestroy() {
+  public beforeDestroy(): void {
     clearInterval(this.polling);
+  }
+
+  private prettyBytes(b: number) {
+    return prettyBytesModule(b);
   }
 
   private pollData() {

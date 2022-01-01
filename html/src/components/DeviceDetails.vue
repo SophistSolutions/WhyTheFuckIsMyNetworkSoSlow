@@ -163,17 +163,15 @@
 <script lang="ts">
 import { IDevice, INetworkAttachmentInfo } from "@/models/device/IDevice";
 import {
-  ComputeDeviceTypeIconURLs,
-  ComputeOSIconURLList,
   ComputeServiceTypeIconURL,
 } from "@/models/device/Utils";
 import { INetwork } from "@/models/network/INetwork";
 import { GetNetworkLink, GetNetworkName, GetServices } from "@/models/network/Utils";
-import { OperatingSystem } from "@/models/OperatingSystem";
 import { rescanDevice } from "@/proxy/API";
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import { Prop } from "vue-property-decorator";
+import { Options, Vue } from 'vue-class-component'
 
-@Component({
+@Options({
   name: "DeviceDetails",
   components: {
     ReadOnlyTextWithHover: () => import("@/components/ReadOnlyTextWithHover.vue"),
@@ -204,11 +202,11 @@ export default class DeviceDetails extends Vue {
     return addresses.filter((value, index, self) => self.indexOf(value) === index);
   }
 
-  private created() {
+  public created(): void{
     this.pollData();
   }
 
-  private beforeDestroy() {
+  public beforeDestroy() : void {
     clearInterval(this.polling);
   }
 
@@ -250,10 +248,10 @@ export default class DeviceDetails extends Vue {
     return this.$store.getters.getDevice(this.deviceId);
   }
 
-  private get deviceDetails(): object | undefined {
+  private get deviceDetails(): any {
     const d = this.device;
     if (d) {
-      const attachedNetworkInfo = {} as { [key: string]: object };
+      const attachedNetworkInfo = {} as { [key: string]: any };
       Object.keys(d.attachedNetworks).forEach((element: any) => {
         const thisNWI = d.attachedNetworks[element] as INetworkAttachmentInfo;
         let netName = "?";

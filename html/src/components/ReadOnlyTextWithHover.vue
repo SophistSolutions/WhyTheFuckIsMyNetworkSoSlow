@@ -6,43 +6,39 @@
 </template>
 
 <script lang="ts">
-import {
-    Component,
-    Prop,
-    Vue,
-    Watch
-} from "vue-property-decorator";
+import { Options, Vue } from 'vue-class-component'
+import { Watch, Prop } from 'vue-property-decorator'
 
 /*
  */
-@Component({
-    name: "ReadOnlyTextWithHover",
+@Options({
+  name: 'ReadOnlyTextWithHover'
 })
 export default class ReadOnlyTextWithHover extends Vue {
     @Prop({
-        required: true,
+      required: true
     })
     public message!: string;
 
     @Prop({
-        required: false,
-        default: null
+      required: false,
+      default: null
     })
     public link!: string | null;
 
     @Prop({
-        required: false,
-        default: null
+      required: false,
+      default: null
     })
     public popupTitle!: string | null;
 
-    private useTitle: string = "";
+    private useTitle = '';
 
-    private created() {
+    public created () {
         this.onChange();
     }
 
-    @Watch("message")
+    @Watch('message')
     @Watch("popupTitle")
     private onChange() {
         this.useTitle = this.popupTitle == null ? this.message : this.popupTitle;
@@ -54,4 +50,3 @@ export default class ReadOnlyTextWithHover extends Vue {
 </script>
 
 <style scoped lang="scss"></style>
-</template>

@@ -93,9 +93,10 @@ import {
   GetNetworkName,
 } from "@/models/network/Utils";
 import { OperatingSystem } from "@/models/OperatingSystem";
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import { Prop } from "vue-property-decorator";
+import { Options, Vue } from 'vue-class-component'
 
-@Component({
+@Options({
   name: "NetworkDetails",
   components: {
     ReadOnlyTextWithHover: () => import("@/components/ReadOnlyTextWithHover.vue"),
@@ -138,11 +139,11 @@ export default class NetworkDetails extends Vue {
     return this.$store.getters.getNetworkInterfaces;
   }
 
-  private created() {
+  public created() {
     this.pollData();
   }
 
-  private beforeDestroy() {
+  public beforeDestroy() {
     clearInterval(this.polling);
   }
 

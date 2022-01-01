@@ -7,6 +7,7 @@
         <v-spacer></v-spacer>
       </v-card-title>
       <NetworkDetails class="detailsSection" :networkId="this.$route.params.id" v-if="network" />
+      <div>aa</div>
     </v-card>
   </v-container>
 </template>
@@ -14,10 +15,9 @@
 <script lang="ts">
 import { INetwork } from "@/models/network/INetwork";
 import { GetNetworkName } from "@/models/network/Utils";
+import { Options, Vue } from 'vue-class-component'
 
-import { Component, Vue } from "vue-property-decorator";
-
-@Component({
+@Options({
   name: "Network",
   components: {
     AppBar: () => import("@/components/AppBar.vue"),
@@ -29,11 +29,11 @@ export default class Network extends Vue {
 
   private GetNetworkName = GetNetworkName;
 
-  private created() {
+  public created() {
     this.pollData();
   }
 
-  private beforeDestroy() {
+  public beforeDestroy() {
     clearInterval(this.polling);
   }
 

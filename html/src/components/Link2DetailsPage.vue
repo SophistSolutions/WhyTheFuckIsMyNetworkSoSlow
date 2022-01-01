@@ -5,16 +5,12 @@
 </template>
 
 <script lang="ts">
-import {
-    Component,
-    Prop,
-    Vue,
-    Watch
-} from "vue-property-decorator";
+import { Prop } from "vue-property-decorator";
+import { Options, Vue } from 'vue-class-component'
 
 /*
  */
-@Component({
+@Options({
     name: "Link2DetailsPage",
 })
 export default class Link2DetailsPage extends Vue {
@@ -27,4 +23,3 @@ export default class Link2DetailsPage extends Vue {
 </script>
 
 <style scoped lang="scss"></style>
-</template>

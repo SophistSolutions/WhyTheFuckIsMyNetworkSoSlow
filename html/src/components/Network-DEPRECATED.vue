@@ -29,15 +29,15 @@
 <script lang="ts">
 import { DEBUG_MODE } from "@/config";
 import { INetwork } from "@/models/network/INetwork";
-import { Component, Vue } from "vue-property-decorator";
+import { Options, Vue } from 'vue-class-component'
 
-@Component({
+@Options({
   name: "Network",
   props: {
     network: Object as () => INetwork,
   },
   methods: {
-    setSelectedNetwork(networkId) {
+    setSelectedNetwork(networkId: string) {
       this.$store.dispatch("setSelectedNetwork", networkId);
     },
   },
@@ -53,7 +53,7 @@ export default class Network extends Vue {
   }
 
   private isGatewayNetwork(network: INetwork): boolean {
-    return network.gateways === undefined || network.gateways.length === 0 ? false : true;
+    return !(network.gateways === undefined || network.gateways.length === 0);
   }
 }
 </script>

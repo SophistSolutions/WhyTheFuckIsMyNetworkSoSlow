@@ -3,12 +3,13 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import { Prop, Watch } from "vue-property-decorator";
+import { Options, Vue } from 'vue-class-component'
 
 /*
  *  This is for use in the filter section of the app-bar, to say how much is filtered out.
  */
-@Component({
+@Options({
   name: "FilterSummaryMessage",
 })
 export default class FilterSummaryMessage extends Vue {
@@ -26,7 +27,7 @@ export default class FilterSummaryMessage extends Vue {
 
   private msg: string = "";
 
-  private created() {
+  public created() {
     this.onChange();
   }
 

@@ -69,7 +69,7 @@
 </template>
 
 <script lang="ts">
-import { IDevice, INetworkAttachmentInfo } from "@/models/device/IDevice";
+import { IDevice } from "@/models/device/IDevice";
 import { INetwork } from "@/models/network/INetwork";
 import {
   FormatLocation,
@@ -79,11 +79,9 @@ import {
   GetNetworkLink,
   GetNetworkName,
 } from "@/models/network/Utils";
-import { Component, Vue, Watch } from "vue-property-decorator";
+import { Options, Vue } from 'vue-class-component'
 
-import { fetchNetworks } from "@/proxy/API";
-
-@Component({
+@Options({
   name: "Networks",
   components: {
     AppBar: () => import("@/components/AppBar.vue"),
@@ -107,7 +105,7 @@ export default class Networks extends Vue {
   private sortDesc: any = [];
   private expanded: any[] = [];
 
-  private rowClicked(row: any) {
+  private rowClicked(row: any): void {
     // @todo Try this again with vue3 - https://github.com/vuetifyjs/vuetify/issues/9720
     // if (!e.ctrlKey) {
     //   // single select unless shift key
@@ -119,13 +117,13 @@ export default class Networks extends Vue {
     }
   }
 
-  private created() {
+  public created(): void {
     this.$store.dispatch("fetchDevices", null);
     this.$store.dispatch("fetchAvailableNetworks");
     this.pollData();
   }
 
-  private beforeDestroy() {
+  public beforeDestroy(): void {
     clearInterval(this.polling);
   }
 
@@ -140,7 +138,7 @@ export default class Networks extends Vue {
     return this.$store.getters.getAvailableNetworks;
   }
 
-  private get headers(): object[] {
+  private get headers(): any[] {
     return [
       {
         text: "Name",
@@ -201,12 +199,13 @@ export default class Networks extends Vue {
   private get filtered(): boolean {
     return this.search !== "";
   }
+
   private clearFilter() {
     this.search = "";
   }
 
-  private get filteredNetworks(): object[] {
-    const result: object[] = [];
+  private get filteredNetworks(): any[] {
+    const result: any[] = [];
     this.networks.forEach((i) => {
       let lastSeenStr = this.$moment(i.lastSeenAt).fromNow();
       let statusStr = "?";

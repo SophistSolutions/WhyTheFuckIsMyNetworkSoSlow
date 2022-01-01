@@ -33,10 +33,10 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from "vue-property-decorator";
+import { Options, Vue } from 'vue-class-component'
 import { IDevice, INetworkAttachmentInfo } from "../models/device/IDevice";
 
-@Component({
+@Options({
   name: "Device",
   props: {
     device: Object as () => IDevice,
