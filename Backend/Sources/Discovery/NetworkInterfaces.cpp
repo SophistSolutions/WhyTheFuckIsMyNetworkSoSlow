@@ -113,7 +113,7 @@ namespace {
         Require (sActive_);
         SystemInterfacesMgr      sysNetInterfaces;
         vector<NetworkInterface> results;
-        for (Interface i : sysNetInterfaces.GetAll ()) {
+        for (const Interface& i : sysNetInterfaces.GetAll ()) {
             NetworkInterface ni{i};
             {
                 ni.fGUID = MapCurrentProcessInternalInterfaceIDToReportedProcessLifetimeGUID_ (i.fInternalInterfaceID);
@@ -166,7 +166,7 @@ Collection<NetworkInterface> Discovery::NetworkInterfacesMgr::CollectActiveNetwo
 #endif
     Require (sActive_);
     Collection<NetworkInterface> results;
-    for (NetworkInterface i : CollectAllNetworkInterfaces (allowedStaleness)) {
+    for (const NetworkInterface& i : CollectAllNetworkInterfaces (allowedStaleness)) {
         if (i.fType != Interface::Type::eLoopback and i.fStatus and i.fStatus->Contains (Interface::Status::eRunning)) {
             results += i;
         }

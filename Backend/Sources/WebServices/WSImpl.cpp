@@ -184,7 +184,7 @@ tuple<Memory::BLOB, DataExchange::InternetMediaType> WSImpl::GetBLOB (const GUID
 Sequence<String> WSImpl::GetDevices (const optional<DeviceSortParamters>& sort) const
 {
     Sequence<String> result;
-    for (BackendApp::WebServices::Device n : GetDevices_Recurse (sort)) {
+    for (const BackendApp::WebServices::Device& n : GetDevices_Recurse (sort)) {
         result += Characters::ToString (n.fGUID);
     }
     return result;
@@ -237,7 +237,7 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
     Sequence<BackendApp::WebServices::Device> devices = IntegratedModel::Mgr::sThe.GetDevices ();
 
     // Sort them
-    for (DeviceSortParamters::SearchTerm st : searchTerms) {
+    for (const DeviceSortParamters::SearchTerm& st : searchTerms) {
         switch (st.fBy) {
             case DeviceSortParamters::SearchTerm::By::ePriority: {
                 devices = devices.OrderBy ([st] (const BackendApp::WebServices::Device& lhs, const BackendApp::WebServices::Device& rhs) -> bool {
@@ -266,7 +266,7 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
                         auto lookup    = [=] (const BackendApp::WebServices::Device& d) -> InternetAddress {
                             if (sortCompareNetwork) {
                                 // if multiple, grab the first (somewhat arbitrary) - maybe should grab the least?
-                                for (InternetAddress ia : d.GetInternetAddresses ()) {
+                                for (const InternetAddress& ia : d.GetInternetAddresses ()) {
                                     if (sortCompareNetwork->Any ([&] (const CIDR& cidr) { return cidr.GetRange ().Contains (ia); })) {
                                         return ia;
                                     }
@@ -321,7 +321,7 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
                         auto mapTypeToOrder2 = [&] (const optional<Set<Device::DeviceType>> dt) -> double {
                             double f = 99;
                             if (dt) {
-                                for (auto d : *dt) {
+                                for (const auto& d : *dt) {
                                     f = min (f, mapTypeToOrder (d));
                                 }
                             }

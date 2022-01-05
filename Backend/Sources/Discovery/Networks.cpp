@@ -58,7 +58,7 @@ namespace {
                 URI{L"http://myexternalip.com/raw"sv},
             };
             // @todo - when one fails, we should try the other first next time
-            for (auto&& url : kSources_) {
+            for (const auto& url : kSources_) {
                 try {
                     // this goes through the gateway, not necesarily this network, if we had multiple networks with gateways!
                     auto&& connection = IO::Network::Transfer::Connection::New ();
@@ -80,7 +80,7 @@ namespace {
  */
 bool Discovery::Network::Contains (const InternetAddress& i) const
 {
-    for (auto&& nwa : fNetworkAddresses) {
+    for (const auto& nwa : fNetworkAddresses) {
         if (nwa.GetRange ().Contains (i)) {
             return true;
         }
@@ -148,7 +148,7 @@ namespace {
             RequireNotNull (nw);
             Require (nw->fGUID == GUID{});
             auto existingNWsLock = sExistingNetworks_.rwget ();
-            for (Network nwi : existingNWsLock.load ()) {
+            for (const Network& nwi : existingNWsLock.load ()) {
                 if (nwi.fGateways.SetEquals (nw->fGateways) and nwi.fNetworkAddresses.SetEquals (nw->fNetworkAddresses)) {
                     nw->fGUID = nwi.fGUID;
                     return;
@@ -159,13 +159,13 @@ namespace {
         };
 
         Collection<Network> accumResults;
-        for (NetworkInterface i : Discovery::NetworkInterfacesMgr::sThe.CollectActiveNetworkInterfaces ()) {
+        for (const NetworkInterface& i : Discovery::NetworkInterfacesMgr::sThe.CollectActiveNetworkInterfaces ()) {
             if (not i.fBindings.fAddressRanges.empty ()) {
                 Network nw;
                 {
                     auto genCIDRsFromBindings = [] (const Iterable<CIDR>& bindings) -> Set<CIDR> {
                         Set<CIDR> cidrs;
-                        for (CIDR nib : bindings) {
+                        for (const CIDR& nib : bindings) {
                             if (not kIncludeMulticastAddressesInDiscovery) {
                                 if (nib.GetBaseInternetAddress ().IsMulticastAddress ()) {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
@@ -190,7 +190,7 @@ namespace {
                         // You CAN generate two CIDRs, one which subsumes the other. If so, lose any subsumed CIDRs from the list
                         // Use simple quadradic algorithm, since we can never have very many CIDRs in a network
                         for (Iterator<CIDR> ci = cidrs.begin (); ci != cidrs.end (); ++ci) {
-                            for (CIDR maybeSubsumerCIDR : cidrs) {
+                            for (const CIDR& maybeSubsumerCIDR : cidrs) {
                                 if (maybeSubsumerCIDR.GetNumberOfSignificantBits () > ci->GetNumberOfSignificantBits ()) {
                                     if (maybeSubsumerCIDR.GetRange ().Contains (ci->GetRange ())) {
                                         DbgTrace ("Removing subsumed CIDR %s inside %s", Characters::ToString (*ci).c_str (), Characters::ToString (maybeSubsumerCIDR).c_str ());
@@ -220,7 +220,7 @@ namespace {
                 if (not nw.fNetworkAddresses.empty ()) {
                     unsigned int score{};
                     if (i.fGateways) {
-                        for (auto gw : *i.fGateways) {
+                        for (const auto& gw : *i.fGateways) {
                             if (not nw.fGateways.Contains (gw)) {
                                 score += 20;
                                 nw.fGateways.Append (gw);
@@ -228,7 +228,7 @@ namespace {
                         }
                     }
                     if (i.fDNSServers) {
-                        for (auto dnss : *i.fDNSServers) {
+                        for (const auto& dnss : *i.fDNSServers) {
                             if (not nw.fDNSServers.Contains (dnss)) {
                                 score += 5;
                                 nw.fDNSServers.Append (dnss);
@@ -331,7 +331,7 @@ Sequence<Network> Discovery::NetworksMgr::CollectActiveNetworks (optional<Time::
 
 Network Discovery::NetworksMgr::GetNetworkByID (const GUID& id, optional<Time::DurationSecondsType> allowedStaleness) const
 {
-    for (Network i : CollectActiveNetworks (allowedStaleness)) {
+    for (const Network& i : CollectActiveNetworks (allowedStaleness)) {
         if (i.fGUID == id) {
             return i;
         }

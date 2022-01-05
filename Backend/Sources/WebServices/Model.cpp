@@ -325,7 +325,7 @@ const ObjectVariantMapper NetworkInterface::kMapper = [] () {
             //      {L"boundAddressRanges", StructFieldMetaInfo{offsetof (NetworkInterface, fBindings.fAddressRanges), typeid (NetworkInterface::fBindings.fAddressRanges)}},
             //      {L"boundAddresses", StructFieldMetaInfo{offsetof (NetworkInterface, fBindings.fAddresses), typeid (NetworkInterface::fBindings.fAddressRanges)}},
             [=] (const ObjectVariantMapper& mapper, const NetworkInterface* obj) -> VariantValue {
-                Mapping<String, VariantValue> resultMap = originalTypeMapper.fFromObjecttMapper (mapper, obj).As<Mapping<String, VariantValue>> ();
+                Mapping<String, VariantValue> resultMap = originalTypeMapper.fFromObjectMapper (mapper, obj).As<Mapping<String, VariantValue>> ();
                 resultMap.Add (L"boundAddressRanges", mapper.FromObject (obj->fBindings.fAddressRanges));
                 resultMap.Add (L"boundAddresses", mapper.FromObject (obj->fBindings.fAddresses));
                 return VariantValue{resultMap};
@@ -426,7 +426,7 @@ const ObjectVariantMapper Device::kMapper = [] () {
 Set<String> Device::GetHardwareAddresses () const
 {
     Set<String> result;
-    for (auto iNet : fAttachedNetworks) {
+    for (const auto& iNet : fAttachedNetworks) {
         result += iNet.fValue.hardwareAddresses;
     }
     return result;
@@ -435,7 +435,7 @@ Set<String> Device::GetHardwareAddresses () const
 Set<InternetAddress> Device::GetInternetAddresses () const
 {
     Set<InternetAddress> result;
-    for (auto iNet : fAttachedNetworks) {
+    for (const auto& iNet : fAttachedNetworks) {
         result += iNet.fValue.localAddresses;
     }
     return result;
