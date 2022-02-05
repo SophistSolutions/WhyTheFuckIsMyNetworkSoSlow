@@ -9,6 +9,59 @@
   that as a threshold to tweak rates of refresh in app
   calls to vueex
 
+
+- MIDDLE OF VUE3 vuetify work
+
+- Understand why running DEBUG build on my machine really slows down and stops updating when run overnight
+  (in ui - shows updates on my network last updated 5 hrs ago.)
+  (maybe lock upgrade issue?)
+
+
+===
+
+after I tested latest stroika with wtf, go back to work on 
+	html
+	
+	TRY moving appbar to above MAIN view (as suggesetd on discord)
+	
+	and respond to the guy either way.
+	
+	see if it provides any hints and see if I can look at setup lifecycle events.
+	
+	----
+	
+	and writeup short term todo on WTF eitherw ay
+	
+	
+	   > WSAPI for augmenting device and network records (mainly patch to change the name)
+	     and implement by having AGGREGATE record for that guy - rollup-id-custom-xxx
+	     but not sure thats a good naming convetion cuz of multi machine rollups - unclear we
+	     want those rollups or not?
+	     
+	     
+	    > after that process fixed, do MINIAML background ping testing and collect stats for that and priovde
+	    API to fetch them.
+	    
+	    > THEN - when that is in place - hopeufully can get back to UI work (cuz have vue3)
+	    
+	    but either way get chart package working and show simple graph of the data.
+	    
+	    MAYBE as simple as once per hour ping www.google.com and track ping time.
+	    
+	    
+	   	ANOTHER design idea to writeup - have WSAPI to collect user percentption stats:
+	   	
+	   		> (timerange)
+	   		  (bad net ... good net) - # 1..5 maybe?
+	   		  
+	   	Another thing to capture - if on WIFI - wifi strlegnnt stats
+	   	
+	   	Then - show in data rollup all those data series next to one another.
+	   	
+	   	Maybe also collect DNS lookup times.
+	   	
+	   	
+
 --------------
 
 http://localhost:8088/#/device/71c59b3c-db88-97fb-e70b-02cd6cf59100 and
