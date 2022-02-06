@@ -619,6 +619,7 @@ IntegratedModel::Mgr::Activator::Activator ()
 
 IntegratedModel::Mgr::Activator::~Activator ()
 {
+    Execution::Thread::SuppressInterruptionInContext suppressInterruption;  // must complete this abort and wait for done - this cannot abort/throw
     DBAccess_::sDatabaseSyncThread_.AbortAndWaitForDone ();
 }
 
