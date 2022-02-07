@@ -1,0 +1,123 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release-Logging|Win32">
+      <Configuration>Release-Logging</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug-x86|Win32">
+      <Configuration>Debug-x86</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug-x86_64|Win32">
+      <Configuration>Debug-x86_64</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release-x86|Win32">
+      <Configuration>Release-x86</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release-x86_64|Win32">
+      <Configuration>Release-x86_64</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectGuid>{30B6D154-A548-40A5-BCF1-E8B5B6112CD3}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(ProjectDir)\..\..\..\ThirdPartyComponents\Stroika\StroikaRoot\Library\Projects\VisualStudio.net\Microsoft.Cpp.stroika.AllConfigs.props" Condition="exists('$(ProjectDir)\..\..\..\ThirdPartyComponents\Stroika\StroikaRoot\Library\Projects\VisualStudio.net\Microsoft.Cpp.stroika.AllConfigs.props')" Label="Stroika-Configuration" />
+  </ImportGroup>
+  <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  <PropertyGroup Label="UserMacros">
+  </PropertyGroup>
+  <PropertyGroup>
+    <NMakeBuildCommandLine>make --directory $(ProjectDir)\..\..\ CONFIGURATION=$(CONFIGURATION) $(JOBS_FLAG) --silent all</NMakeBuildCommandLine>
+    <NMakeCleanCommandLine>make --directory $(ProjectDir)\..\..\ CONFIGURATION=$(CONFIGURATION) clean --silent</NMakeCleanCommandLine>
+    <OutDir>$(ProjectDir)..\..\..\Builds\$(Configuration)\WhyTheFuckIsMyNetworkSoSlow\</OutDir>
+    <IntDir>$(ProjectDir)..\..\..\IntermediateFiles\$(Configuration)\WhyTheFuckIsMyNetworkSoSlow\</IntDir>
+    <ExecutablePath>$(StroikaBuildToolsExtraPath);$(CommonExecutablePath)</ExecutablePath>
+    <NMakeIncludeSearchPath>$(ProjectDir)\..\..\;$(ProjectDir)\..\..\..\IntermediateFiles\$(Configuration)\WhyTheFuckIsMyNetworkSoSlow\;$(ProjectDir)\..\..\..\ThirdPartyComponents\Stroika\StroikaRoot\Library\Sources\</NMakeIncludeSearchPath>
+    <AdditionalOptions>/std:c++latest</AdditionalOptions>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="..\..\Makefile" />
+    <None Include="..\..\Sources\Common\BLOBMgr.inl" />
+    <None Include="..\..\Sources\Common\EthernetMACAddressOUIPrefixes.inl" />
+    <None Include="..\..\Sources\Common\GeoLocAndISPLookup.inl" />
+    <None Include="..\..\Sources\Common\GeoLocation.inl" />
+    <None Include="..\..\Sources\Common\InternetServiceProvider.inl" />
+    <None Include="..\..\Sources\Common\Makefile" />
+    <None Include="..\..\Sources\Discovery\Devices.inl" />
+    <None Include="..\..\Sources\Discovery\Makefile" />
+    <None Include="..\..\Sources\Discovery\NetworkInterfaces.inl" />
+    <None Include="..\..\Sources\Discovery\Networks.inl" />
+    <None Include="..\..\Sources\Discovery\PortScanner.inl" />
+    <None Include="..\..\Sources\IntegratedModel\Makefile" />
+    <None Include="..\..\Sources\IntegratedModel\Mgr.inl" />
+    <None Include="..\..\Sources\Makefile" />
+    <None Include="..\..\Sources\Service.inl" />
+    <None Include="..\..\Sources\WebServices\IWSAPI.inl" />
+    <None Include="..\..\Sources\WebServices\Makefile" />
+    <None Include="..\..\Sources\WebServices\Model.inl" />
+    <None Include="..\..\Sources\WebServices\WebServer.inl" />
+    <None Include="..\..\Sources\WebServices\WSImpl.inl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Sources\Common\BLOBMgr.cpp" />
+    <ClCompile Include="..\..\Sources\Common\EthernetMACAddressOUIPrefixes.cpp" />
+    <ClCompile Include="..\..\Sources\Common\GeoLocAndISPLookup.cpp" />
+    <ClCompile Include="..\..\Sources\Common\GeoLocation.cpp" />
+    <ClCompile Include="..\..\Sources\Common\InternetServiceProvider.cpp" />
+    <ClCompile Include="..\..\Sources\Discovery\Devices.cpp" />
+    <ClCompile Include="..\..\Sources\Discovery\NetworkInterfaces.cpp" />
+    <ClCompile Include="..\..\Sources\Discovery\Networks.cpp" />
+    <ClCompile Include="..\..\Sources\Discovery\PortScanner.cpp" />
+    <ClCompile Include="..\..\Sources\IntegratedModel\Mgr.cpp" />
+    <ClCompile Include="..\..\Sources\Main.cpp" />
+    <ClCompile Include="..\..\Sources\Service.cpp" />
+    <ClCompile Include="..\..\Sources\WebServices\IWSAPI.cpp" />
+    <ClCompile Include="..\..\Sources\WebServices\Model.cpp" />
+    <ClCompile Include="..\..\Sources\WebServices\WebServer.cpp" />
+    <ClCompile Include="..\..\Sources\WebServices\WSImpl.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Sources\Common\BLOBMgr.h" />
+    <ClInclude Include="..\..\Sources\Common\EthernetMACAddressOUIPrefixes.h" />
+    <ClInclude Include="..\..\Sources\Common\GeoLocAndISPLookup.h" />
+    <ClInclude Include="..\..\Sources\Common\GeoLocation.h" />
+    <ClInclude Include="..\..\Sources\Common\InternetServiceProvider.h" />
+    <ClInclude Include="..\..\Sources\Discovery\Devices.h" />
+    <ClInclude Include="..\..\Sources\Discovery\NetworkInterfaces.h" />
+    <ClInclude Include="..\..\Sources\Discovery\Networks.h" />
+    <ClInclude Include="..\..\Sources\Discovery\PortScanner.h" />
+    <ClInclude Include="..\..\Sources\IntegratedModel\Mgr.h" />
+    <ClInclude Include="..\..\Sources\Service.h" />
+    <ClInclude Include="..\..\Sources\WebServices\IWSAPI.h" />
+    <ClInclude Include="..\..\Sources\WebServices\Model.h" />
+    <ClInclude Include="..\..\Sources\WebServices\WebServer.h" />
+    <ClInclude Include="..\..\Sources\WebServices\WSImpl.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
