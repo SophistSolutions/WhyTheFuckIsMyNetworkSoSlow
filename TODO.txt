@@ -1,3 +1,28 @@
+why some last-seen = 'blank'
+
+Filter on last-seen in recent time should INGORE blnak not include
+
+and why (most importnat for stroika) do I see timezone off - says 5 hours ago - is taht stroika regresion?
+
+
+http://localhost:8080/devices/6d7817af-b60c-0965-584d-e1787f6e0458
+reports 
+	lastSeenAt": "2022-02-04T11:16:50+00:00",
+	
+	so its NOT an html bug - its on backend code - sb that but -5... same bug with lastSSDPMessageRecivedAt so appears STROIKA bug.
+	
+...
+trying to rebuild with older stroika? to see when it occurred? 
+	trying stroika r1.
+	
+	
+		get full make working iwth msys (issue with npm not working)
+
+	----
+
+
+
+
 
 - Adjust ajax refrsh pattern so doesn't automatically
   refetch so quickly if already slow getting responses.
