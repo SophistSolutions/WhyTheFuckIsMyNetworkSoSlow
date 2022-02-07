@@ -196,7 +196,7 @@ int main (int argc, const char* argv[])
     /*
      *  Create service handler instance.
      */
-    Main m (make_shared<WhyTheFuckIsMyNetworkSoSlow::BackendApp::WTFAppServiceRep> (), serviceIntegrationRep);
+    Main m{make_shared<WhyTheFuckIsMyNetworkSoSlow::BackendApp::WTFAppServiceRep> (), serviceIntegrationRep};
 
     /*
      *  Run request.
