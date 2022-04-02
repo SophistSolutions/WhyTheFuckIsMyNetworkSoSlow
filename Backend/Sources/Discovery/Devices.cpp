@@ -142,7 +142,7 @@ String NetworkAttachmentInfo::ToString () const
 Set<String> Discovery::Device::GetHardwareAddresses () const
 {
     Set<String> result;
-    for (auto iNet : fAttachedNetworks) {
+    for (const auto& iNet : fAttachedNetworks) {
         result += iNet.fValue.hardwareAddresses;
     }
     return result;
@@ -151,7 +151,7 @@ Set<String> Discovery::Device::GetHardwareAddresses () const
 Set<InternetAddress> Discovery::Device::GetInternetAddresses () const
 {
     Set<InternetAddress> result;
-    for (auto iNet : fAttachedNetworks) {
+    for (const auto& iNet : fAttachedNetworks) {
         result += iNet.fValue.localAddresses;
     }
     return result;
@@ -167,8 +167,8 @@ Sequence<InternetAddress> Discovery::Device::GetPreferredDisplayInternetAddresse
      * @todo suppress choices for inactive networks
      */
     Set<InternetAddress> result;
-    for (auto iNet : fAttachedNetworks) {
-        for (auto aNetAddr : iNet.fValue.localAddresses) {
+    for (const auto& iNet : fAttachedNetworks) {
+        for (const auto& aNetAddr : iNet.fValue.localAddresses) {
             if (aNetAddr.GetAddressFamily () == InternetAddress::AddressFamily::V4) {
                 result += aNetAddr;
             }
@@ -176,8 +176,8 @@ Sequence<InternetAddress> Discovery::Device::GetPreferredDisplayInternetAddresse
         }
     }
     if (result.empty ()) {
-        for (auto iNet : fAttachedNetworks) {
-            for (auto aNetAddr : iNet.fValue.localAddresses) {
+        for (const auto& iNet : fAttachedNetworks) {
+            for (const auto& aNetAddr : iNet.fValue.localAddresses) {
                 result += aNetAddr;
                 break;
             }
@@ -226,8 +226,8 @@ namespace {
             Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"{}::NetAndNetInterfaceMapper_::LookupNetworksGUIDs", L"ia=%s", Characters::ToString (ia).c_str ())};
 #endif
             Set<GUID> results;
-            for (Discovery::Network&& nw : Discovery::NetworksMgr::sThe.CollectActiveNetworks ()) {
-                for (InternetAddress i : ia) {
+            for (const Discovery::Network& nw : Discovery::NetworksMgr::sThe.CollectActiveNetworks ()) {
+                for (const InternetAddress& i : ia) {
                     if (nw.Contains (i)) {
                         results += nw.fGUID;
                     }
@@ -244,7 +244,7 @@ namespace {
             Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"{}::NetAndNetInterfaceMapper_::LookupNetworksGUIDs", L"ia=%s", Characters::ToString (ia).c_str ())};
 #endif
             Set<GUID> results;
-            for (Discovery::Network&& nw : Discovery::NetworksMgr::sThe.CollectActiveNetworks ()) {
+            for (const Discovery::Network& nw : Discovery::NetworksMgr::sThe.CollectActiveNetworks ()) {
                 if (nw.Contains (ia)) {
                     results += nw.fGUID;
                 }
@@ -379,7 +379,7 @@ namespace {
             unsigned int totalAddrs{};
             unsigned int totalAddrsSuppressedQuietly{};
             unsigned int totalAdds{};
-            for (InternetAddress ia : addrs) {
+            for (const InternetAddress& ia : addrs) {
                 totalAddrs++;
                 if (not kIncludeMulticastAddressesInDiscovery and ia.IsMulticastAddress ()) {
                     totalAddrsSuppressedQuietly++;
@@ -391,7 +391,7 @@ namespace {
                         continue; // skip link-local addresses, they are only used for special purposes like discovery, and aren't part of the network
                     }
                 }
-                for (GUID nw : NetAndNetInterfaceMapper_::sThe.LookupNetworksGUIDs (ia)) {
+                for (const GUID& nw : NetAndNetInterfaceMapper_::sThe.LookupNetworksGUIDs (ia)) {
                     NetworkAttachmentInfo nwAttachmentInfo = fAttachedNetworks.LookupValue (nw);
                     nwAttachmentInfo.localAddresses += ia;
                     if (hwAddr) {
@@ -456,7 +456,7 @@ namespace {
             }
             if (name.empty ()) {
                 // try reverse dns lookup
-                for (auto i : GetInternetAddresses ()) {
+                for (const auto& i : GetInternetAddresses ()) {
                     if (auto o = ReverseDNSLookup_ (i)) {
                         name = *o;
 #if qDebug
@@ -520,7 +520,7 @@ namespace {
             {
                 // See if its addresses intersect with any network gateways - if so - its a router
                 Set<InternetAddress> gateways;
-                for (GUID netGUID : fAttachedNetworks.Keys ()) {
+                for (const GUID& netGUID : fAttachedNetworks.Keys ()) {
                     IgnoreExceptionsExceptThreadAbortForCall (gateways += NetworksMgr::sThe.GetNetworkByID (netGUID).fGateways); // if network disappears dont fail to patch
                 }
                 if (not (gateways ^ GetInternetAddresses ()).empty ()) {
@@ -540,7 +540,7 @@ namespace {
                 fManufacturer  = m;
             }
             if (not fManufacturer or not fManufacturer->fFullName or not fManufacturer->fShortName) {
-                for (auto hwa : GetHardwareAddresses ()) {
+                for (const auto& hwa : GetHardwareAddresses ()) {
                     if (auto o = BackendApp::Common::LookupEthernetMACAddressOUIFromPrefix (hwa)) {
                         if (not fManufacturer) {
                             fManufacturer = Manufacturer{};
@@ -563,7 +563,7 @@ namespace {
             // Add various type(s) if hardware address matches and other open ports fields
             {
                 static const String kSMBPort_ = Characters::Format (L"tcp:%d", IO::Network::WellKnownPorts::TCP::kSMB);
-                for (auto hwa : GetHardwareAddresses ()) {
+                for (const auto& hwa : GetHardwareAddresses ()) {
                     if (auto o = BackendApp::Common::LookupEthernetMACAddressOUIFromPrefix (hwa)) {
                         if (o == L"Oracle VirtualBox virtual NIC"sv) {
                             fTypes.Add (Discovery::DeviceType::eVirtualMachine);
@@ -773,14 +773,14 @@ namespace {
         {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
             Debug::TraceContextBumper ctx{L"{}::GetMyDevice_"};
-            DbgTrace (L"interfaces=%s", Characters::ToString (IO::Network::GetInterfaces ()).c_str ());
+            DbgTrace (L"interfaces=%s", Characters::ToString (IO::Network::SystemInterfacesMgr{}.GetAll ()).c_str ());
 #endif
             DiscoveryInfo_ newDev;
             newDev.fForcedName = Configuration::GetSystemConfiguration_ComputerNames ().fHostname;
             newDev.fTypes.Add (DeviceType::ePC); //tmphack @todo fix
             newDev.fThisDevice = true;
             SystemInterfacesMgr interfacesMgr;
-            for (Interface i : interfacesMgr.GetAll ()) {
+            for (const Interface& i : interfacesMgr.GetAll ()) {
                 if (i.fType != Interface::Type::eLoopback and i.fStatus and i.fStatus->Contains (Interface::Status::eRunning)) {
                     i.fBindings.fAddresses.Apply ([&] (const InternetAddress& ia) {
                         newDev.AddNetworkAddresses_ (ia, i.fHardwareAddress);
@@ -1009,7 +1009,7 @@ namespace {
                 try {
                     DeclareActivity           da{&kDiscovering_NetNeighbors_};
                     Debug::TraceContextBumper ctx1{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"monitor.GetNeighbors ()")};
-                    for (Neighbor i : monitor.GetNeighbors ()) {
+                    for (const Neighbor& i : monitor.GetNeighbors ()) {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
                         DbgTrace (L"i=%s", Characters::ToString (i).c_str ());
 #endif
@@ -1145,8 +1145,8 @@ namespace {
                             continue;
                         }
                         // Scanning really only works for IPv4 since too large a range otherwise
-                        for (Discovery::Network nw : activeNetworks) {
-                            for (CIDR cidr : nw.fNetworkAddresses) {
+                        for (const Discovery::Network& nw : activeNetworks) {
+                            for (const CIDR& cidr : nw.fNetworkAddresses) {
                                 if (cidr.GetBaseInternetAddress ().GetAddressFamily () == InternetAddress::AddressFamily::V4) {
                                     scanAddressRange = cidr.GetRange ();
                                     DbgTrace (L"Selecting scanAddressRange=%s", Characters::ToString (scanAddressRange).c_str ());
@@ -1332,7 +1332,7 @@ namespace {
                     auto runPingCheck = [] (const GUID& deviceID, const InternetAddress& ia) {
                         PortScanResults scanResults = ScanPorts (ia, ScanOptions{ScanOptions::eRandomBasicOne});
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
-                        DbgTrace (L"Port scanning on existing device %s (addr %s) returned these ports: %s", Characters::ToString (deviceID).c_str (), Characters::ToString (ia).c_str (), Characters::ToString (scanResults.fKnownOpenPorts).c_str ());
+                        DbgTrace (L"Port scanning on existing device %s (addr %s) returned these ports: %s", Characters::ToString (deviceID).c_str (), Characters::ToString (ia).c_str (), Characters::ToString (scanResults.fDiscoveredOpenPorts).c_str ());
 #endif
 
                         {
@@ -1369,11 +1369,11 @@ namespace {
                     };
 
                     if (auto o = sDiscoveredDevices_.cget ().cref ().Lookup (**devices2CheckIterator)) {
-                        for (auto ia : o->GetInternetAddresses ()) {
+                        for (const auto& ia : o->GetInternetAddresses ()) {
                             runPingCheck (o->fGUID, ia);
                         }
                     }
-                    (*devices2CheckIterator)++;
+                    ++(*devices2CheckIterator);
                 }
                 catch (const Thread::InterruptException&) {
                     Execution::ReThrow ();
@@ -1493,7 +1493,7 @@ Collection<Discovery::Device> Discovery::DevicesMgr::GetActiveDevices (optional<
     results = sCache_.LookupValue (sCache_.Ago (allowedStaleness.value_or (kDefaultItemCacheLifetime_)),
                                    [] () {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
-                                       DbgTrace (L"sDiscoveredDevices_: %s", Characters::ToString (sDiscoveredDevices_.cget ()->MappedValues ()).c_str ());
+                                       DbgTrace (L"sDiscoveredDevices_: %s", Characters::ToString (sDiscoveredDevices_.load ()).c_str ());
 #endif
                                        return sDiscoveredDevices_.load (); // intentionally object-spice
                                    });
@@ -1556,9 +1556,9 @@ void Discovery::DevicesMgr::InitiateReScan (const GUID& deviceID)
     DiscoveryInfo_ initialDeviceInfo = findDeviceInfoAndClearFoundPorts (deviceID);
     // now now just run scan using limited portscan API
     // but redo scanning one at a time so I can SHOW results immediately, as they appear
-    for (auto ia : initialDeviceInfo.GetInternetAddresses ()) {
+    for (const auto& ia : initialDeviceInfo.GetInternetAddresses ()) {
         PortScanResults results = ScanPorts (ia, ScanOptions{ScanOptions::eFull});
-        for (String p : results.fDiscoveredOpenPorts) {
+        for (const String& p : results.fDiscoveredOpenPorts) {
             addOpenPort (deviceID, p);
         }
     }
@@ -1569,7 +1569,7 @@ VariantValue DevicesMgr::ScanAndReturnReport (const InternetAddress& addr)
     Mapping<String, VariantValue> result;
     Set<String>                   ports;
     PortScanResults               results = ScanPorts (addr, ScanOptions{ScanOptions::eFull});
-    for (String p : results.fDiscoveredOpenPorts) {
+    for (const String& p : results.fDiscoveredOpenPorts) {
         ports += p;
     }
     result.Add (L"openPorts", VariantValue{ports.Select<VariantValue> ([] (String i) { return VariantValue{i}; })});

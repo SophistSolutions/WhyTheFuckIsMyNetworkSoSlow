@@ -116,7 +116,7 @@ namespace {
             Debug::TimingTrace ttrc{L"DiscoveryWrapper_::GetNetworks_", 0.1};
             DateTime           now = DateTime::Now ();
             Sequence<Network>  result;
-            for (Discovery::Network n : Discovery::NetworksMgr::sThe.CollectActiveNetworks ()) {
+            for (const Discovery::Network& n : Discovery::NetworksMgr::sThe.CollectActiveNetworks ()) {
                 Network nw{n.fNetworkAddresses};
                 nw.fGUID                    = n.fGUID;
                 nw.fFriendlyName            = n.fFriendlyName;
@@ -153,11 +153,11 @@ namespace {
                 }
                 newDev.fLastSeenAt = d.fLastSeenAt;
                 newDev.fOpenPorts  = d.fOpenPorts;
-                for (auto i : d.fAttachedNetworks) {
+                for (const auto& i : d.fAttachedNetworks) {
                     constexpr bool            kIncludeLinkLocalAddresses_{Discovery::kIncludeLinkLocalAddressesInDiscovery};
                     constexpr bool            kIncludeMulticastAddreses_{Discovery::kIncludeMulticastAddressesInDiscovery};
                     Sequence<InternetAddress> addrs2Report;
-                    for (auto li : i.fValue.localAddresses) {
+                    for (const auto& li : i.fValue.localAddresses) {
                         if (not kIncludeLinkLocalAddresses_ and li.IsLinkLocalAddress ()) {
                             continue;
                         }
@@ -181,8 +181,8 @@ namespace {
                     // List OUI names for each hardware address (and explicit missing for those we cannot lookup)
                     using VariantValue = DataExchange::VariantValue;
                     Mapping<String, VariantValue> t;
-                    for (auto i : d.fAttachedNetworks) {
-                        for (auto hwa : i.fValue.hardwareAddresses) {
+                    for (const auto& i : d.fAttachedNetworks) {
+                        for (const auto& hwa : i.fValue.hardwareAddresses) {
                             auto o = BackendApp::Common::LookupEthernetMACAddressOUIFromPrefix (hwa);
                             t.Add (hwa, o ? VariantValue{*o} : VariantValue{});
                         }
@@ -198,7 +198,6 @@ namespace {
                 return newDev;
             })};
         }
-
     }
 }
 
@@ -505,7 +504,7 @@ namespace {
                 // (individual 2 rollup), and then provide funciton to map a set of IDs to their rolled up IDs
                 // AND DOCUMENT WHY GUARNATEED UNIQUE - IF AS I THINK IT IS - CUZ each item goes in one rollup)
                 auto mapAggregatedNetID2ItsRollupID = [&] (const GUID& netID) -> GUID {
-                    for (auto i : rolledUpNetworks.fNetworks) {
+                    for (const auto& i : rolledUpNetworks.fNetworks) {
                         if (i.fAggregatesReversibly and i.fAggregatesReversibly->Contains (netID)) {
                             return i.fGUID;
                         }
@@ -516,7 +515,7 @@ namespace {
                 };
                 auto reverseRollup = [&] (const Mapping<GUID, NetworkAttachmentInfo>& nats) -> Mapping<GUID, NetworkAttachmentInfo> {
                     Mapping<GUID, NetworkAttachmentInfo> result;
-                    for (auto ni : nats) {
+                    for (const auto& ni : nats) {
                         result.Add (mapAggregatedNetID2ItsRollupID (ni.fKey), ni.fValue);
                     }
                     return result;
@@ -544,12 +543,12 @@ namespace {
                 };
                 static bool sDidMergeFromDatabase_ = false; // no need to roll these up more than once
                 if (not sDidMergeFromDatabase_) {
-                    for (auto rdi : DBAccess_::sDBDevices_.load ()) {
+                    for (const auto& rdi : DBAccess_::sDBDevices_.load ()) {
                         doMergeOneIntoRollup (rdi);
                         sDidMergeFromDatabase_ = true;
                     }
                 }
-                for (Device d : DiscoveryWrapper_::GetDevices_ ()) {
+                for (const Device& d : DiscoveryWrapper_::GetDevices_ ()) {
                     doMergeOneIntoRollup (d);
                 }
                 sRolledUpDevices_ = result;
@@ -590,12 +589,12 @@ namespace {
                 };
                 static bool sDidMergeFromDatabase_ = false; // no need to roll these up more than once
                 if (not sDidMergeFromDatabase_) {
-                    for (auto rdi : DBAccess_::sDBNetworks_.load ()) {
+                    for (const auto& rdi : DBAccess_::sDBNetworks_.load ()) {
                         doMergeOneIntoRollup (rdi);
                         sDidMergeFromDatabase_ = true;
                     }
                 }
-                for (Network d : DiscoveryWrapper_::GetNetworks_ ()) {
+                for (const Network& d : DiscoveryWrapper_::GetNetworks_ ()) {
                     doMergeOneIntoRollup (d);
                 }
                 sRolledUpNetworks_ = result;
@@ -619,6 +618,7 @@ IntegratedModel::Mgr::Activator::Activator ()
 
 IntegratedModel::Mgr::Activator::~Activator ()
 {
+    Execution::Thread::SuppressInterruptionInContext suppressInterruption;  // must complete this abort and wait for done - this cannot abort/throw
     DBAccess_::sDatabaseSyncThread_.AbortAndWaitForDone ();
 }
 
@@ -672,7 +672,7 @@ optional<IntegratedModel::Network> IntegratedModel::Mgr::GetNetwork (const Commo
 Collection<IntegratedModel::NetworkInterface> IntegratedModel::Mgr::GetNetworkInterfaces () const
 {
     Collection<NetworkInterface> result;
-    for (Discovery::NetworkInterface n : Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ()) {
+    for (const Discovery::NetworkInterface& n : Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ()) {
         NetworkInterface nw{n};
         nw.fGUID = n.fGUID;
 #if qDebug
@@ -687,7 +687,7 @@ Collection<IntegratedModel::NetworkInterface> IntegratedModel::Mgr::GetNetworkIn
 
 optional<IntegratedModel::NetworkInterface> IntegratedModel::Mgr::GetNetworkInterface (const Common::GUID& id) const
 {
-    for (auto i : GetNetworkInterfaces ()) {
+    for (const auto& i : GetNetworkInterfaces ()) {
         if (i.fGUID == id) {
             return i;
         }
