@@ -5,11 +5,62 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "type": "pwa-chrome",
+      "name": "(gdb-UNIX) Launch EXE",
+      "type": "cppdbg",
       "request": "launch",
-      "name": "Launch Chrome against localhost",
-      "url": "http://localhost:8088",
-      "webRoot": "${workspaceFolder}/html"
+      "program": "${workspaceFolder}/Builds/${command:cpptools.activeConfigName}/phred123/phred123",
+      "args": ["-m"],
+      "stopAtEntry": true,
+      "cwd": "${workspaceFolder}",
+      "environment": [
+        {"name": "UBSAN_OPTIONS","value":"halt_on_error=1"},
+        {"name": "ASAN_OPTIONS","value":"halt_on_error=1"},
+       ],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "additionalSOLibSearchPath": "/path/to/symbols;/another/path/to/symbols"
+    },
+    {
+      "name": "(lldb-UNIX) Launch EXE",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/Builds/${command:cpptools.activeConfigName}/phred123/phred123",
+      "args": []
+    },
+    {
+      "name": "(Windows) Launch VisualStudio",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/Builds/${command:cpptools.activeConfigName}/phred123/phred123.exe",
+      "args": ["-m"],
+      "stopAtEntry": true,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "console": "externalTerminal",
+      "logging": {
+        "moduleLoad": false,
+        "trace": true
+      },
+      "visualizerFile": "${workspaceFolder}/ThirdPartyComponets/Stroika/StroikaRoot/Library/Projects/VisualStudio.Net-2022/VisualStudio-Stroika-Foundation-Debugger-Template.natvis"
+    },
+    {
+      "name": "gdbserver remote Launch(not sure helpful right now)",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceRoot}/mybinary",
+      "miDebuggerServerAddress": "myremotehostname:1234",
+      "cwd": "${workspaceRoot}",
+      "externalConsole": true,
+      "linux": {
+        "MIMode": "gdb"
+      }
     }
   ]
 }
