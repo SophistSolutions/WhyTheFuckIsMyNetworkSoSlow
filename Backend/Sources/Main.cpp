@@ -146,7 +146,7 @@ int main (int argc, const char* argv[])
      */
     Sequence<String>                         args                  = Execution::ParseCommandLine (argc, argv);
     shared_ptr<Main::IServiceIntegrationRep> serviceIntegrationRep = Main::mkDefaultServiceIntegrationRep ();
-    serviceIntegrationRep = make_shared<Main::LoggerServiceWrapper> (serviceIntegrationRep);
+    serviceIntegrationRep                                          = make_shared<Main::LoggerServiceWrapper> (serviceIntegrationRep);
 
     /*
      *  Without this firewall rule, on windows, SSDP 'listen' discovery doesn't work. The messages

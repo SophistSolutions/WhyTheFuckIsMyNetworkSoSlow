@@ -98,25 +98,25 @@ const ObjectVariantMapper Model::Manufacturer::kMapper = [] () {
  ********************************** Model::Network ******************************
  ********************************************************************************
  */
-Network Network::Merge (const Network& databaseNetwork, const Network& dynamicallyDiscoveredNetwork)
+Network Network::Merge (const Network& databaseNetwork, const Network& priorityNetwork)
 {
     Network merged = databaseNetwork;
     // name from DB takes precedence
-    merged.fNetworkAddresses.AddAll (dynamicallyDiscoveredNetwork.fNetworkAddresses);
-    Memory::CopyToIf (&merged.fFriendlyName, dynamicallyDiscoveredNetwork.fFriendlyName);
-    merged.fAttachedInterfaces.AddAll (dynamicallyDiscoveredNetwork.fAttachedInterfaces);
-    dynamicallyDiscoveredNetwork.fGateways.Apply ([&] (auto inetAddr) {  if (not merged.fGateways.Contains (inetAddr)) {merged.fGateways += inetAddr;} });
-    dynamicallyDiscoveredNetwork.fDNSServers.Apply ([&] (auto inetAddr) {  if (not merged.fDNSServers.Contains (inetAddr)) {merged.fDNSServers += inetAddr;} });
-    Memory::AccumulateIf (&merged.fExternalAddresses, dynamicallyDiscoveredNetwork.fExternalAddresses);
-    Memory::CopyToIf (&merged.fGEOLocInformation, dynamicallyDiscoveredNetwork.fGEOLocInformation);
-    Memory::CopyToIf (&merged.fInternetServiceProvider, dynamicallyDiscoveredNetwork.fInternetServiceProvider);
-    Memory::CopyToIf (&merged.fLastSeenAt, dynamicallyDiscoveredNetwork.fLastSeenAt);
-    Memory::AccumulateIf (&merged.fAggregatesReversibly, dynamicallyDiscoveredNetwork.fAggregatesReversibly); // @todo consider if this is right way to combine
-    Memory::AccumulateIf (&merged.fAggregatesIrreversibly, dynamicallyDiscoveredNetwork.fAggregatesIrreversibly);
-    Memory::CopyToIf (&merged.fIDPersistent, dynamicallyDiscoveredNetwork.fIDPersistent);
-    Memory::CopyToIf (&merged.fHistoricalSnapshot, dynamicallyDiscoveredNetwork.fHistoricalSnapshot);
+    merged.fNetworkAddresses.AddAll (priorityNetwork.fNetworkAddresses);
+    Memory::CopyToIf (&merged.fFriendlyName, priorityNetwork.fFriendlyName);
+    merged.fAttachedInterfaces.AddAll (priorityNetwork.fAttachedInterfaces);
+    priorityNetwork.fGateways.Apply ([&] (auto inetAddr) {  if (not merged.fGateways.Contains (inetAddr)) {merged.fGateways += inetAddr;} });
+    priorityNetwork.fDNSServers.Apply ([&] (auto inetAddr) {  if (not merged.fDNSServers.Contains (inetAddr)) {merged.fDNSServers += inetAddr;} });
+    Memory::AccumulateIf (&merged.fExternalAddresses, priorityNetwork.fExternalAddresses);
+    Memory::CopyToIf (&merged.fGEOLocInformation, priorityNetwork.fGEOLocInformation);
+    Memory::CopyToIf (&merged.fInternetServiceProvider, priorityNetwork.fInternetServiceProvider);
+    Memory::CopyToIf (&merged.fLastSeenAt, priorityNetwork.fLastSeenAt);
+    Memory::AccumulateIf (&merged.fAggregatesReversibly, priorityNetwork.fAggregatesReversibly); // @todo consider if this is right way to combine
+    Memory::AccumulateIf (&merged.fAggregatesIrreversibly, priorityNetwork.fAggregatesIrreversibly);
+    Memory::CopyToIf (&merged.fIDPersistent, priorityNetwork.fIDPersistent);
+    Memory::CopyToIf (&merged.fHistoricalSnapshot, priorityNetwork.fHistoricalSnapshot);
 #if qDebug
-    Memory::CopyToIf (&merged.fDebugProps, dynamicallyDiscoveredNetwork.fDebugProps);
+    Memory::CopyToIf (&merged.fDebugProps, priorityNetwork.fDebugProps);
 #endif
     return merged;
 }
@@ -124,6 +124,14 @@ Network Network::Merge (const Network& databaseNetwork, const Network& dynamical
 Network Network::Rollup (const Network& rollupNetwork, const Network& instanceNetwork2Add)
 {
     Network n = Merge (rollupNetwork, instanceNetwork2Add);
+
+    // @todo make this smarter about which device/info is newest, so we know what takes precedence
+    // but for now using fLastSeenAt as indicator; later - use globally (within WTF) consistent sequence # (not sure how todo)
+    // or maybe use UTC datetime? - but alway want to consistently compare and prefer if no ties so we can consistent merges
+    bool preferRHS = rollupNetwork.fLastSeenAt <= instanceNetwork2Add.fLastSeenAt;
+
+    Memory::CopyToIf (&n.fLastSeenAt, preferRHS ? instanceNetwork2Add.fLastSeenAt : rollupNetwork.fLastSeenAt);
+
     if (n.fAggregatesReversibly.has_value ()) {
         n.fAggregatesReversibly->Add (instanceNetwork2Add.fGUID);
     }
@@ -446,25 +454,25 @@ String Device::ToString () const
     return DataExchange::Variant::JSON::Writer{}.WriteAsString (Device::kMapper.FromObject (*this));
 }
 
-Device Device::Merge (const Device& databaseDevice, const Device& dynamicallyDiscoveredDevice)
+Device Device::Merge (const Device& databaseDevice, const Device& priorityDevice)
 {
     Device merged = databaseDevice;
     // name from databaseDevice takes precedence
-    Memory::AccumulateIf (&merged.fTypes, dynamicallyDiscoveredDevice.fTypes);
-    Memory::CopyToIf (&merged.fIcon, dynamicallyDiscoveredDevice.fIcon);
-    Memory::CopyToIf (&merged.fLastSeenAt, dynamicallyDiscoveredDevice.fLastSeenAt);
-    Memory::CopyToIf (&merged.fManufacturer, dynamicallyDiscoveredDevice.fManufacturer);
-    merged.fAttachedNetworks.AddAll (dynamicallyDiscoveredDevice.fAttachedNetworks); // @todo perhaps should MERGE these details...
-    Memory::AccumulateIf (&merged.fOpenPorts, dynamicallyDiscoveredDevice.fOpenPorts);
-    Memory::CopyToIf (&merged.fPresentationURL, dynamicallyDiscoveredDevice.fPresentationURL);
-    Memory::AccumulateIf (&merged.fAttachedNetworkInterfaces, dynamicallyDiscoveredDevice.fAttachedNetworkInterfaces);
-    Memory::CopyToIf (&merged.fOperatingSystem, dynamicallyDiscoveredDevice.fOperatingSystem);
-    Memory::AccumulateIf (&merged.fAggregatesReversibly, dynamicallyDiscoveredDevice.fAggregatesReversibly); // @todo UNSURE if this is right
-    Memory::AccumulateIf (&merged.fAggregatesIrreversibly, dynamicallyDiscoveredDevice.fAggregatesIrreversibly);
-    Memory::CopyToIf (&merged.fIDPersistent, dynamicallyDiscoveredDevice.fIDPersistent);
-    Memory::CopyToIf (&merged.fHistoricalSnapshot, dynamicallyDiscoveredDevice.fHistoricalSnapshot);
+    Memory::AccumulateIf (&merged.fTypes, priorityDevice.fTypes);
+    Memory::CopyToIf (&merged.fIcon, priorityDevice.fIcon);
+    Memory::CopyToIf (&merged.fLastSeenAt, priorityDevice.fLastSeenAt);
+    Memory::CopyToIf (&merged.fManufacturer, priorityDevice.fManufacturer);
+    merged.fAttachedNetworks.AddAll (priorityDevice.fAttachedNetworks); // @todo perhaps should MERGE these details...
+    Memory::AccumulateIf (&merged.fOpenPorts, priorityDevice.fOpenPorts);
+    Memory::CopyToIf (&merged.fPresentationURL, priorityDevice.fPresentationURL);
+    Memory::AccumulateIf (&merged.fAttachedNetworkInterfaces, priorityDevice.fAttachedNetworkInterfaces);
+    Memory::CopyToIf (&merged.fOperatingSystem, priorityDevice.fOperatingSystem);
+    Memory::AccumulateIf (&merged.fAggregatesReversibly, priorityDevice.fAggregatesReversibly); // @todo UNSURE if this is right
+    Memory::AccumulateIf (&merged.fAggregatesIrreversibly, priorityDevice.fAggregatesIrreversibly);
+    Memory::CopyToIf (&merged.fIDPersistent, priorityDevice.fIDPersistent);
+    Memory::CopyToIf (&merged.fHistoricalSnapshot, priorityDevice.fHistoricalSnapshot);
 #if qDebug
-    Memory::CopyToIf (&merged.fDebugProps, dynamicallyDiscoveredDevice.fDebugProps);
+    Memory::CopyToIf (&merged.fDebugProps, priorityDevice.fDebugProps);
 #endif
     return merged;
 }
@@ -472,6 +480,14 @@ Device Device::Merge (const Device& databaseDevice, const Device& dynamicallyDis
 Device Device::Rollup (const Device& rollupDevice, const Device& instanceDevice2Add)
 {
     Device d = Merge (rollupDevice, instanceDevice2Add);
+
+    // @todo make this smarter about which device/info is newest, so we know what takes precedence
+    // but for now using fLastSeenAt as indicator; later - use globally (within WTF) consistent sequence # (not sure how todo)
+    // or maybe use UTC datetime? - but alway want to consistently compare and prefer if no ties so we can consistent merges
+    bool preferRHS = rollupDevice.fLastSeenAt <= instanceDevice2Add.fLastSeenAt;
+
+    Memory::CopyToIf (&d.fLastSeenAt, preferRHS ? instanceDevice2Add.fLastSeenAt : rollupDevice.fLastSeenAt);
+
     if (d.fAggregatesReversibly.has_value ()) {
         d.fAggregatesReversibly->Add (instanceDevice2Add.fGUID);
     }
@@ -482,6 +498,7 @@ Device Device::Rollup (const Device& rollupDevice, const Device& instanceDevice2
     d.fIDPersistent           = false;
     d.fHistoricalSnapshot     = false;
     // for rollup, names can come in any order, and dont pick last, pick best; fix so smarter!!! @todo --LGP 2021-08-30
+    // @todo respect preferRHS
     if (not instanceDevice2Add.name.empty () and instanceDevice2Add.name[0].IsAlphabetic ()) {
         d.name = instanceDevice2Add.name;
     }

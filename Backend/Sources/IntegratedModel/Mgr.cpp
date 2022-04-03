@@ -231,7 +231,7 @@ namespace {
              * 
              *  BUt a few key things probably make sense:
              *      >   Same ISP
-             *      >   Same GeoLoc
+             *      >   Same GeoLoc (with exceptions)
              *      >   Same IPv4 CIDR
              *      >   Same Gateway addresses
              * 
@@ -243,9 +243,14 @@ namespace {
             if (n1.fInternetServiceProvider != n2.fInternetServiceProvider) {
                 return false;
             }
-            if (n1.fInternetServiceProvider != kHughsNet_ISP_) {
+            {
                 // Hughsnet makes geoloc information comparison ineffective (frequently generates many different locations depending on when you try)
-                if (n1.fGEOLocInformation != n2.fGEOLocInformation) {
+                // @todo add mobile networks like verizon wireless
+                bool networkAllowedToChangeGeoLoc = false;
+                if (n1.fInternetServiceProvider == kHughsNet_ISP_) {
+                    networkAllowedToChangeGeoLoc = true;
+                }
+                if (not networkAllowedToChangeGeoLoc and n1.fGEOLocInformation != n2.fGEOLocInformation) {
                     return false;
                 }
             }
@@ -260,18 +265,30 @@ namespace {
                 }
                 // If we got here, they differ in IPv6 (or other) address. If they matched on IPV4 (not trivially - because there were none)
                 // ignore the (ipv6) differences
-                return not ipv4s1.empty ();
+                if (ipv4s1.empty ()) {
+                    return false;
+                }
             }
             if (n1.fNetworkAddresses != n2.fNetworkAddresses) {
                 // if IPv4 CIDRs same (and non-empty), then ignore differences in IPv4 addressses
                 Set<CIDR> ipv4s1{n1.fNetworkAddresses.Where ([] (const auto& i) { return i.GetBaseInternetAddress ().GetAddressFamily () == InternetAddress::AddressFamily::V4; })};
                 Set<CIDR> ipv4s2{n2.fNetworkAddresses.Where ([] (const auto& i) { return i.GetBaseInternetAddress ().GetAddressFamily () == InternetAddress::AddressFamily::V4; })};
+                // However, sometimes we have PRIVATE (internal) networks that float their addresses, like WSL etc) so if both private, and
+                // have same name, then treat that as a rollup too
+                if (not ipv4s1.empty ()) {
+                    if (
+                        n1.fFriendlyName == n2.fFriendlyName and n1.fNetworkAddresses.All ([] (const auto& i) { return i.GetBaseInternetAddress ().IsPrivateAddress (); }) and n2.fNetworkAddresses.All ([] (const auto& i) { return i.GetBaseInternetAddress ().IsPrivateAddress (); })) {
+                        return true;
+                    }
+                }
                 if (ipv4s1 != ipv4s2) {
                     return false;
                 }
                 // If we got here, they differ in IPv6 (or other) address. If they matched on IPV4 (not trivially - because there were none)
                 // ignore the (ipv6) differences
-                return not ipv4s1.empty ();
+                if (ipv4s1.empty ()) {
+                    return false;
+                }
             }
             return true;
         }
@@ -527,7 +544,7 @@ namespace {
                 RolledUpDevices result               = sRolledUpDevices_;
                 auto            doMergeOneIntoRollup = [&result, &reverseRollup] (const Device& d2MergeIn) {
                     // @todo slow/quadradic - may need to tweak
-                    if (auto i = result.fDevices.Find ([&d2MergeIn] (auto const& kvpDevice) { return ShouldRollup_ (kvpDevice, d2MergeIn); })) {
+                    if (auto i = result.fDevices.Find ([&d2MergeIn] (auto const& exisingRolledUpDevice) { return ShouldRollup_ (exisingRolledUpDevice, d2MergeIn); })) {
                         // then merge this into that item
                         // @todo think out order of params and better document order of params!
                         auto tmp              = Device::Rollup (*i, d2MergeIn);
@@ -573,16 +590,16 @@ namespace {
                 // and then add in (should be done just once) the values from the database,
                 // and then keep adding any more recent discovery changes
                 RolledUpNetworks result               = sRolledUpNetworks_;
-                auto             doMergeOneIntoRollup = [&result] (const Network& d2MergeIn) {
+                auto             doMergeOneIntoRollup = [&result] (const Network& net2MergeIn) {
                     // @todo slow/quadradic - may need to tweak
-                    if (auto i = result.fNetworks.Find ([&d2MergeIn] (auto const& kvpDevice) { return ShouldRollup_ (kvpDevice, d2MergeIn); })) {
+                    if (auto i = result.fNetworks.Find ([&net2MergeIn] (auto const& exisingRolledUpNet) { return ShouldRollup_ (exisingRolledUpNet, net2MergeIn); })) {
                         // then merge this into that item
                         // @todo think out order of params and better document order of params!
-                        result.fNetworks.Add (Network::Rollup (*i, d2MergeIn));
+                        result.fNetworks.Add (Network::Rollup (*i, net2MergeIn));
                     }
                     else {
-                        Network newRolledUpDevice               = d2MergeIn;
-                        newRolledUpDevice.fAggregatesReversibly = Set<GUID>{d2MergeIn.fGUID};
+                        Network newRolledUpDevice               = net2MergeIn;
+                        newRolledUpDevice.fAggregatesReversibly = Set<GUID>{net2MergeIn.fGUID};
                         newRolledUpDevice.fGUID                 = GUID::GenerateNew ();
                         result.fNetworks.Add (newRolledUpDevice);
                     }
@@ -618,7 +635,7 @@ IntegratedModel::Mgr::Activator::Activator ()
 
 IntegratedModel::Mgr::Activator::~Activator ()
 {
-    Execution::Thread::SuppressInterruptionInContext suppressInterruption;  // must complete this abort and wait for done - this cannot abort/throw
+    Execution::Thread::SuppressInterruptionInContext suppressInterruption; // must complete this abort and wait for done - this cannot abort/throw
     DBAccess_::sDatabaseSyncThread_.AbortAndWaitForDone ();
 }
 

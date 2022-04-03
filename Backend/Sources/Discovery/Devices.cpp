@@ -523,7 +523,7 @@ namespace {
                 for (const GUID& netGUID : fAttachedNetworks.Keys ()) {
                     IgnoreExceptionsExceptThreadAbortForCall (gateways += NetworksMgr::sThe.GetNetworkByID (netGUID).fGateways); // if network disappears dont fail to patch
                 }
-                if (not (gateways ^ GetInternetAddresses ()).empty ()) {
+                if (not(gateways ^ GetInternetAddresses ()).empty ()) {
                     fTypes.Add (Discovery::DeviceType::eRouter);
                 }
             }
