@@ -1,3 +1,14 @@
+>> Test latest build on raspi etc (macos too)
+>> Fix build system in github actions
+>> Prooably good breaking point for a release (been a while) - and probably stable.
+>> THEN do integration with Vue3/vutify3.
+
+
+----
+DOC WTF doesnt buiold on ubunti 1804 due to issues with npm/node - not worth finding workaround for this (buit probably just force install newer nodejs)
+
+-----
+
 why some last-seen = 'blank'
 
 Filter on last-seen in recent time should INGORE blnak not include
