@@ -424,7 +424,7 @@ double WSImpl::Operation_Ping (const String& address) const
     //   options.fSampleInfo                   = Ping::Options::SampleInfo{kInterSampleTime_, sampleCount};
 
     // write GetHostAddress () function in DNS that throws if not at least one
-    auto addrs = DNS::Default ().GetHostAddresses (address, InternetAddress::AddressFamily::V4);
+    auto addrs = DNS::kThe.GetHostAddresses (address, InternetAddress::AddressFamily::V4);
     if (addrs.size () < 1) {
         Execution::Throw (Execution::Exception{L"no addr"sv});
     }
@@ -465,13 +465,13 @@ Operations::TraceRouteResults WSImpl::Operation_TraceRoute (const String& addres
 
     Model::Operations::TraceRouteResults results;
 
-    Sequence<Traceroute::Hop> hops = Traceroute::Run (DNS::Default ().GetHostAddress (address), options);
+    Sequence<Traceroute::Hop> hops = Traceroute::Run (DNS::kThe.GetHostAddress (address), options);
     // unsigned int              hopIdx{1};
     for (Traceroute::Hop h : hops) {
         String hopName = [=] () {
             String addrStr = h.fAddress.As<String> ();
             if (revDNS) {
-                if (auto rdnsName = DNS::Default ().QuietReverseLookup (h.fAddress)) {
+                if (auto rdnsName = DNS::kThe.QuietReverseLookup (h.fAddress)) {
                     return *rdnsName;
                 }
             }
@@ -498,7 +498,7 @@ Time::Duration WSImpl::Operation_DNS_CalculateNegativeLookupTime (optional<unsig
     for (unsigned int i = 0; i < useSamples; ++i) {
         String                    randomAddress = Characters::Format (L"www.xxxabc%d.com", allUInt16Distribution (sRng_));
         Time::DurationSecondsType startAt       = Time::GetTickCount ();
-        IgnoreExceptionsForCall (IO::Network::DNS::Default ().GetHostAddress (randomAddress));
+        IgnoreExceptionsForCall (IO::Network::DNS::kThe.GetHostAddress (randomAddress));
         measurements += Time::GetTickCount () - startAt;
     }
     Assert (measurements.Median ().has_value ());
@@ -510,7 +510,7 @@ Operations::DNSLookupResults WSImpl::Operation_DNS_Lookup (const String& name) c
     Debug::TraceContextBumper    ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_DNS_Lookup", L"name=%s", name.c_str ())};
     Operations::DNSLookupResults result;
     Time::DurationSecondsType    startAt = Time::GetTickCount ();
-    IgnoreExceptionsForCall (result.fResult = Characters::ToString (IO::Network::DNS::Default ().GetHostAddress (name)));
+    IgnoreExceptionsForCall (result.fResult = Characters::ToString (IO::Network::DNS::kThe.GetHostAddress (name)));
     result.fLookupTime = Time::Duration{Time::GetTickCount () - startAt};
     return result;
 }
@@ -549,6 +549,6 @@ DataExchange::VariantValue WSImpl::Operation_Scan_FullRescan (const String& devi
 DataExchange::VariantValue WSImpl::Operation_Scan_Scan (const String& addr) const
 {
     Debug::TraceContextBumper ctx{L"WSImpl::Operation_Scan_Scan"};
-    InternetAddress           useAddr = ClientErrorException::TreatExceptionsAsClientError ([&] () { return IO::Network::DNS::Default ().GetHostAddress (addr); });
+    InternetAddress           useAddr = ClientErrorException::TreatExceptionsAsClientError ([&] () { return IO::Network::DNS::kThe.GetHostAddress (addr); });
     return Discovery::DevicesMgr::sThe.ScanAndReturnReport (useAddr);
 }

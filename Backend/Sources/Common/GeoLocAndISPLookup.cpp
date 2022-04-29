@@ -96,5 +96,5 @@ optional<tuple<GEOLocationInformation, InternetServiceProvider>> BackendApp::Com
         },
         SynchronizedTimedCache<tuple<InternetAddress>, optional<tuple<GEOLocationInformation, InternetServiceProvider>>>{kInfoTimeoutInSeconds_}
     };
-    return sMemoizeCache_.Compute (ia);
+    return sMemoizeCache_ (ia);
 }
