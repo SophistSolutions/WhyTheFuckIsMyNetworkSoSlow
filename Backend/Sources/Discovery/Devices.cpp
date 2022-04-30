@@ -697,29 +697,35 @@ namespace {
             while (true) {
                 try {
                     DeclareActivity da{&kDiscovering_This_Device_};
-                    if (optional<DiscoveryInfo_> o = GetMyDevice_ ()) {
+                    if (optional<DiscoveryInfo_> thisDevice = GetMyDevice_ ()) {
                     again:
                         Execution::Sleep (retriedLockCount * 1s); // sleep before retrying read-lock so readlock not held so long nobody can update
                         auto           l  = sDiscoveredDevices_.cget ();
                         DiscoveryInfo_ di = [&] () {
                             DiscoveryInfo_ tmp{};
-                            tmp.fAttachedNetworks   = o->fAttachedNetworks;
-                            tmp.fAttachedInterfaces = o->fAttachedInterfaces;
+                            tmp.fAttachedNetworks   = thisDevice->fAttachedNetworks;
+                            tmp.fAttachedInterfaces = thisDevice->fAttachedInterfaces;
                             if (optional<DiscoveryInfo_> oo = FindMatchingDevice_ (l, tmp)) {
                                 tmp = *oo; // merge
-                                tmp.fAttachedNetworks += o->fAttachedNetworks;
-                                Memory::AccumulateIf (&tmp.fAttachedInterfaces, o->fAttachedInterfaces);
+                                tmp.fAttachedNetworks += thisDevice->fAttachedNetworks;
+                                Memory::AccumulateIf (&tmp.fAttachedInterfaces, thisDevice->fAttachedInterfaces);
+#if qDebug
+                                tmp.fDebugProps.Add (L"Updated-By-MyDeviceDiscoverer_-At", DateTime::Now ());
+#endif
                                 return tmp;
                             }
                             else {
                                 tmp.fGUID = GUID::GenerateNew ();
+#if qDebug
+                                tmp.fDebugProps.Add (L"Created-By-MyDeviceDiscoverer_-At", DateTime::Now ());
+#endif
                                 return tmp;
                             }
                         }();
                         // copy most/all fields -- @todo cleanup - do more automatically - all but GUID??? Need merge??
-                        di.fTypes           = o->fTypes;
-                        di.fForcedName      = o->fForcedName;
-                        di.fThisDevice      = o->fThisDevice;
+                        di.fTypes           = thisDevice->fTypes;
+                        di.fForcedName      = thisDevice->fForcedName;
+                        di.fThisDevice      = thisDevice->fThisDevice;
                         di.fOperatingSystem = OperatingSystem{Configuration::GetSystemConfiguration_ActualOperatingSystem ().fPrettyNameWithVersionDetails};
                         di.fLastSeenAt      = DateTime::Now ();
                         di.PatchDerivedFields ();
