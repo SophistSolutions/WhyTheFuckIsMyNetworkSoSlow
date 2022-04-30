@@ -97,8 +97,7 @@ namespace {
         static Cache::SynchronizedTimedCache<InternetAddress, optional<String>> sCache_{kCacheTTL_};
         try {
             return sCache_.LookupValue (inetAddr, [] (const InternetAddress& inetAddr) {
-                static const DNS kDNS_ = DNS::Default ();
-                return kDNS_.ReverseLookup (inetAddr);
+                return DNS::kThe.ReverseLookup (inetAddr);
             });
         }
         catch (...) {
@@ -113,8 +112,7 @@ namespace {
         static const Time::Duration                                        kCacheTTL_{5min}; // @todo fix when Stroika Duration bug supports constexpr this should
         static Cache::SynchronizedTimedCache<String, Set<InternetAddress>> sCache_{kCacheTTL_};
         return sCache_.LookupValue (hostOrIPAddress, [] (const String& hostOrIPAddress) -> Set<InternetAddress> {
-            static const DNS kDNS_ = DNS::Default ();
-            return Set<InternetAddress>{kDNS_.GetHostAddresses (hostOrIPAddress)};
+            return Set<InternetAddress>{DNS::kThe.GetHostAddresses (hostOrIPAddress)};
         });
     }
 }
@@ -426,7 +424,7 @@ namespace {
                     static const RegularExpression kSonosRE_{L"([0-9.:]*)( - .*)"_RegEx};
                     String                         newName = fSSDPInfo->fDeviceType2FriendlyNameMap[kDeviceType_ZonePlayer_];
                     optional<String>               m1, m2;
-                    if (newName.Match (kSonosRE_, &m1, &m2)) {
+                    if (newName.Matches (kSonosRE_, &m1, &m2)) {
                         Assert (m1.has_value () and m2.has_value ());
                         String speakerGroup = fSSDPInfo->fDeviceType2FriendlyNameMap[kDeviceType_SpeakerGroup_];
                         if (speakerGroup.empty ()) {
@@ -699,29 +697,35 @@ namespace {
             while (true) {
                 try {
                     DeclareActivity da{&kDiscovering_This_Device_};
-                    if (optional<DiscoveryInfo_> o = GetMyDevice_ ()) {
+                    if (optional<DiscoveryInfo_> thisDevice = GetMyDevice_ ()) {
                     again:
                         Execution::Sleep (retriedLockCount * 1s); // sleep before retrying read-lock so readlock not held so long nobody can update
                         auto           l  = sDiscoveredDevices_.cget ();
                         DiscoveryInfo_ di = [&] () {
                             DiscoveryInfo_ tmp{};
-                            tmp.fAttachedNetworks   = o->fAttachedNetworks;
-                            tmp.fAttachedInterfaces = o->fAttachedInterfaces;
+                            tmp.fAttachedNetworks   = thisDevice->fAttachedNetworks;
+                            tmp.fAttachedInterfaces = thisDevice->fAttachedInterfaces;
                             if (optional<DiscoveryInfo_> oo = FindMatchingDevice_ (l, tmp)) {
                                 tmp = *oo; // merge
-                                tmp.fAttachedNetworks += o->fAttachedNetworks;
-                                Memory::AccumulateIf (&tmp.fAttachedInterfaces, o->fAttachedInterfaces);
+                                tmp.fAttachedNetworks += thisDevice->fAttachedNetworks;
+                                Memory::AccumulateIf (&tmp.fAttachedInterfaces, thisDevice->fAttachedInterfaces);
+#if qDebug
+                                tmp.fDebugProps.Add (L"Updated-By-MyDeviceDiscoverer_-At", DateTime::Now ());
+#endif
                                 return tmp;
                             }
                             else {
                                 tmp.fGUID = GUID::GenerateNew ();
+#if qDebug
+                                tmp.fDebugProps.Add (L"Created-By-MyDeviceDiscoverer_-At", DateTime::Now ());
+#endif
                                 return tmp;
                             }
                         }();
                         // copy most/all fields -- @todo cleanup - do more automatically - all but GUID??? Need merge??
-                        di.fTypes           = o->fTypes;
-                        di.fForcedName      = o->fForcedName;
-                        di.fThisDevice      = o->fThisDevice;
+                        di.fTypes           = thisDevice->fTypes;
+                        di.fForcedName      = thisDevice->fForcedName;
+                        di.fThisDevice      = thisDevice->fThisDevice;
                         di.fOperatingSystem = OperatingSystem{Configuration::GetSystemConfiguration_ActualOperatingSystem ().fPrettyNameWithVersionDetails};
                         di.fLastSeenAt      = DateTime::Now ();
                         di.PatchDerivedFields ();

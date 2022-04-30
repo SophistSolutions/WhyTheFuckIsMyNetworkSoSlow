@@ -67,7 +67,7 @@ void WTFAppServiceRep::MainLoop (const std::function<void ()>& startedCB)
     });
 
     // Wait here until a 'service stop' command sends a thread-abort, and that will cause this wait to be abandoned and this stackframe to unwind
-    Execution::WaitableEvent (Execution::WaitableEvent::eAutoReset).Wait (); // wait til service shutdown ThreadAbortException
+    Execution::WaitableEvent{Execution::WaitableEvent::eAutoReset}.Wait (); // wait til service shutdown ThreadAbortException
 }
 
 Main::ServiceDescription WTFAppServiceRep::GetServiceDescription () const
