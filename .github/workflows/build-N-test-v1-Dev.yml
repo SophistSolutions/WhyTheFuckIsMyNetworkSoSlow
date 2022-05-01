@@ -48,7 +48,6 @@ jobs:
             # Turn off debug syms to save space, avoid failed build
             extra_config_args: --apply-default-debug-flags --trace2file enable --debug-symbols false
             includeInDevBranchBuilds: true
-
           # - displayTargetName: ubuntu-18.04-g++-8
           #   os: unix
           #   compiler: g++-8
@@ -58,7 +57,6 @@ jobs:
           #   config_name: Release
           #   extra_config_args: --apply-default-release-flags
           #   includeInDevBranchBuilds: false
-
           # - displayTargetName: ubuntu-18.04-CROSS2-raspberrypi
           #   os: unix
           #   compiler: arm-linux-gnueabihf-g++-8
@@ -144,16 +142,16 @@ jobs:
           #   config_name: Release
           #   extra_config_args: --apply-default-release-flags --compiler-driver arm-linux-gnueabihf-g++-12 --cross-compiling true
           #   includeInDevBranchBuilds: false
-          # - displayTargetName: ubuntu-22.04-CROSS2-raspberrypi-DEBUG
-          #   os: unix
-          #   compiler: arm-linux-gnueabihf-g++-12
-          #   runs_on: ubuntu-latest
-          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204
-          #   cpp_version: c++20
-          #   config_name: Debug
-          #   extra_config_args: --apply-default-debug-flags --compiler-driver arm-linux-gnueabihf-g++-12 --cross-compiling true
-          #   includeInDevBranchBuilds: false
-  
+          - displayTargetName: ubuntu-22.04-CROSS2-raspberrypi-DEBUG
+            os: unix
+            compiler: arm-linux-gnueabihf-g++-12
+            runs_on: ubuntu-latest
+            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204
+            cpp_version: c++20
+            config_name: Debug
+            extra_config_args: --apply-default-debug-flags --compiler-driver arm-linux-gnueabihf-g++-12 --cross-compiling true
+            includeInDevBranchBuilds: true
+
     container: ${{ matrix.container_image }}
     steps:
       - name: Build System Info
