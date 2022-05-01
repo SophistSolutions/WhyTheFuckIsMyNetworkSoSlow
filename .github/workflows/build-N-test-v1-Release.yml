@@ -152,8 +152,8 @@ jobs:
             cpp_version: c++20
             config_name: Debug
             extra_config_args: --apply-default-debug-flags --compiler-driver arm-linux-gnueabihf-g++-12 --cross-compiling true
-            includeInDevBranchBuilds: false
-  
+            includeInDevBranchBuilds: true
+
     container: ${{ matrix.container_image }}
     steps:
       - name: Build System Info
