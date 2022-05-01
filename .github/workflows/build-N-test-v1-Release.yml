@@ -175,6 +175,7 @@ jobs:
       - name: Checkout
         run: |
           git clone https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow.git
+          cd WhyTheFuckIsMyNetworkSoSlow
           git checkout $COMMIT_ID2BUILD
           git submodule update --recursive --init
       - name: Create build root structure
