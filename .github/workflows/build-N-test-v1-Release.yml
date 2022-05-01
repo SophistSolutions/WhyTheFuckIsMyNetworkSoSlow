@@ -174,7 +174,9 @@ jobs:
       # Couldn't get uses: actions/checkout@v2 working with submodules
       - name: Checkout
         run: |
-          git clone --branch $COMMIT_ID2BUILD --recurse-submodules  https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow.git .
+          git clone https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow.git .
+          git checkout $COMMIT_ID2BUILD
+          git submodule update --recursive --init
       - name: Create build root structure
         shell: "bash"
         run: |
@@ -311,7 +313,9 @@ jobs:
       - name: Git Checkout
         shell: "bash"
         run: |
-          docker exec buildContainer git clone --branch $COMMIT_ID2BUILD --recurse-submodules https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow.git
+          docker exec buildContainer git clone https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow.git
+          docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow/ buildContainer git checkout $COMMIT_ID2BUILD
+          docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow/ buildContainer git submodule update --recursive --init
       - name: Create build root structure
         shell: "bash"
         run: |
