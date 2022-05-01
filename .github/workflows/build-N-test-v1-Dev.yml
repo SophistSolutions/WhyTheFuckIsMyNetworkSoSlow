@@ -1,7 +1,7 @@
 #
-# build-N-test-v1-Dev and build-N-test-v1-Release are neary
+# build-N-test-v1-Dev and build-N-test-v1-Release are nearly
 # identical, but a few tests are commented out (to not needlessly stress CI system)
-# for v1-Dev builds; and on.push.branches setting; and top level name: field
+# for v1-Dev builds; and on.push.branches setting
 #
 # NOTE: I've tried many tricks - none which seem to work - to get this working on one file with one
 # workflow and tests
@@ -11,13 +11,13 @@
 # but none seem to work
 #
 
-name: build-N-test-v1-Dev
+name: build-N-test-v1-Debug
 
 on:
   push:
     branches:
       - v1-Dev
-      #- v1-Release
+      # - v1-Release
   workflow_dispatch:
     inputs:
       branch:
@@ -37,17 +37,17 @@ jobs:
     strategy:
       matrix:
         include:
-          ## ubuntu 18.04
-          - displayTargetName: ubuntu-18.04-g++-8 (Debug)
-            os: unix
-            compiler: g++-8
-            runs_on: ubuntu-latest
-            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804
-            cpp_version: c++17
-            config_name: Debug
-            # Turn off debug syms to save space, avoid failed build
-            extra_config_args: --apply-default-debug-flags --trace2file enable --debug-symbols false
-            includeInDevBranchBuilds: true
+          # ## ubuntu 18.04
+          # - displayTargetName: ubuntu-18.04-g++-8 (Debug)
+          #   os: unix
+          #   compiler: g++-8
+          #   runs_on: ubuntu-latest
+          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804
+          #   cpp_version: c++17
+          #   config_name: Debug
+          #   # Turn off debug syms to save space, avoid failed build
+          #   extra_config_args: --apply-default-debug-flags --trace2file enable --debug-symbols false
+          #   includeInDevBranchBuilds: true
 
           # - displayTargetName: ubuntu-18.04-g++-8
           #   os: unix
@@ -59,26 +59,26 @@ jobs:
           #   extra_config_args: --apply-default-release-flags
           #   includeInDevBranchBuilds: false
 
-          - displayTargetName: raspberrypi
-            os: unix
-            compiler: g++-8
-            runs_on: ubuntu-latest
-            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804
-            cpp_version: c++17
-            config_name: Release
-            extra_config_args: --apply-default-release-flags --compiler-driver arm-linux-gnueabihf-g++-8 --cross-compiling true
-            includeInDevBranchBuilds: true
+          # - displayTargetName: ubuntu-18.04-CROSS2-raspberrypi
+          #   os: unix
+          #   compiler: arm-linux-gnueabihf-g++-8
+          #   runs_on: ubuntu-latest
+          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804
+          #   cpp_version: c++17
+          #   config_name: Release
+          #   extra_config_args: --apply-default-release-flags --compiler-driver arm-linux-gnueabihf-g++-8 --cross-compiling true
+          #   includeInDevBranchBuilds: true
 
           # ubuntu 20.04
-          # - displayTargetName: ubuntu-20.04-g++-10 (Debug)
-          #   os: unix
-          #   compiler: g++-10
-          #   runs_on: ubuntu-latest
-          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
-          #   cpp_version: c++17
-          #   config_name: Debug
-          #   extra_config_args: --apply-default-debug-flags --trace2file enable
-          #   includeInDevBranchBuilds: false
+          - displayTargetName: ubuntu-20.04-g++-10 (Debug)
+            os: unix
+            compiler: g++-10
+            runs_on: ubuntu-latest
+            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
+            cpp_version: c++17
+            config_name: Debug
+            extra_config_args: --apply-default-debug-flags --trace2file enable
+            includeInDevBranchBuilds: false
           - displayTargetName: ubuntu-20.04-g++-10
             os: unix
             compiler: g++-10
@@ -88,15 +88,72 @@ jobs:
             config_name: Release
             extra_config_args: --apply-default-release-flags
             includeInDevBranchBuilds: true
-          # - displayTargetName: ubuntu-20.04-g++-10-c++2a
-          #   os: unix
-          #   compiler: g++-10
-          #   runs_on: ubuntu-latest
-          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
-          #   cpp_version: c++2a
-          #   config_name: Release
-          #   extra_config_args: --apply-default-release-flags --trace2file enable
-          #   includeInDevBranchBuilds: false
+          - displayTargetName: ubuntu-20.04-g++-10-c++2a
+            os: unix
+            compiler: g++-10
+            runs_on: ubuntu-latest
+            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
+            cpp_version: c++2a
+            config_name: Release
+            extra_config_args: --apply-default-release-flags --trace2file enable
+            includeInDevBranchBuilds: false
+          - displayTargetName: ubuntu-20.04-CROSS2-raspberrypi
+            os: unix
+            compiler: arm-linux-gnueabihf-g++-10
+            runs_on: ubuntu-latest
+            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
+            cpp_version: c++2a
+            config_name: Release
+            extra_config_args: --apply-default-release-flags --compiler-driver arm-linux-gnueabihf-g++-10 --cross-compiling true
+            includeInDevBranchBuilds: true
+          - displayTargetName: ubuntu-20.04-CROSS2-raspberrypi-DEBUG
+            os: unix
+            compiler: arm-linux-gnueabihf-g++-10
+            runs_on: ubuntu-latest
+            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
+            cpp_version: c++2a
+            config_name: Release
+            extra_config_args: --apply-default-debug-flags --compiler-driver arm-linux-gnueabihf-g++-10 --cross-compiling true
+            includeInDevBranchBuilds: true
+
+
+          # ubuntu 22.04
+          - displayTargetName: ubuntu-22.04-g++-12 (Debug)
+            os: unix
+            compiler: g++-12
+            runs_on: ubuntu-latest
+            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204
+            cpp_version: c++20
+            config_name: Debug
+            extra_config_args: --apply-default-debug-flags --trace2file enable
+            includeInDevBranchBuilds: false
+          - displayTargetName: ubuntu-22.04-g++-12
+            os: unix
+            compiler: g++-12
+            runs_on: ubuntu-latest
+            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204
+            cpp_version: c++20
+            config_name: Release
+            extra_config_args: --apply-default-release-flags
+            includeInDevBranchBuilds: true
+          - displayTargetName: ubuntu-22.04-CROSS2-raspberrypi
+            os: unix
+            compiler: arm-linux-gnueabihf-g++-12
+            runs_on: ubuntu-latest
+            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204
+            cpp_version: c++20
+            config_name: Release
+            extra_config_args: --apply-default-release-flags --compiler-driver arm-linux-gnueabihf-g++-12 --cross-compiling true
+            includeInDevBranchBuilds: true
+          - displayTargetName: ubuntu-22.04-CROSS2-raspberrypi-DEBUG
+            os: unix
+            compiler: arm-linux-gnueabihf-g++-12
+            runs_on: ubuntu-latest
+            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204
+            cpp_version: c++20
+            config_name: Debug
+            extra_config_args: --apply-default-debug-flags --compiler-driver arm-linux-gnueabihf-g++-12 --cross-compiling true
+            includeInDevBranchBuilds: true
     container: ${{ matrix.container_image }}
     steps:
       - name: Build System Info
@@ -154,12 +211,12 @@ jobs:
             config_name: Debug
             extra_config_args: --apply-default-debug-flags --trace2file enable
             includeInDevBranchBuilds: true
-          # - displayTargetName: MacOS-x86_64
-          #   os: macos-10.15
-          #   runs_on: macos-10.15
-          #   config_name: Release
-          #   extra_config_args: --apply-default-release-flags
-          #   includeInDevBranchBuilds: false
+          - displayTargetName: MacOS-x86_64
+            os: macos-10.15
+            runs_on: macos-10.15
+            config_name: Release
+            extra_config_args: --apply-default-release-flags
+            includeInDevBranchBuilds: false
     steps:
       - uses: actions/checkout@v2
         with:
@@ -212,27 +269,27 @@ jobs:
             config_name: windows-x86-Debug
             extra_config_args: --arch x86 --apply-default-debug-flags --trace2file enable
             includeInDevBranchBuilds: true
-          # - displayTargetName: windows-x86-Release
-          #   os: windows
-          #   runs_on: windows-latest
-          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19
-          #   config_name: Release
-          #   extra_config_args: --arch x86 --apply-default-release-flags --trace2file enable
-          #   includeInDevBranchBuilds: false
-          # - displayTargetName: windows-x86_64-Debug
-          #   os: windows
-          #   runs_on: windows-latest
-          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19
-          #   config_name: Debug
-          #   extra_config_args: --arch x86_64 --apply-default-debug-flags --trace2file enable
-          #   includeInDevBranchBuilds: false
-          # - displayTargetName: windows-x86_64-Release
-          #   os: windows
-          #   runs_on: windows-latest
-          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19
-          #   config_name: Release
-          #   extra_config_args: --arch x86_64 --apply-default-release-flags --trace2file enable
-          #   includeInDevBranchBuilds: false
+          - displayTargetName: windows-x86-Release
+            os: windows
+            runs_on: windows-latest
+            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19
+            config_name: Release
+            extra_config_args: --arch x86 --apply-default-release-flags --trace2file enable
+            includeInDevBranchBuilds: false
+          - displayTargetName: windows-x86_64-Debug
+            os: windows
+            runs_on: windows-latest
+            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19
+            config_name: Debug
+            extra_config_args: --arch x86_64 --apply-default-debug-flags --trace2file enable
+            includeInDevBranchBuilds: false
+          - displayTargetName: windows-x86_64-Release
+            os: windows
+            runs_on: windows-latest
+            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19
+            config_name: Release
+            extra_config_args: --arch x86_64 --apply-default-release-flags --trace2file enable
+            includeInDevBranchBuilds: false
     env:
       ARTIFACTS_DIR: "c:/Artifacts/"
     steps:

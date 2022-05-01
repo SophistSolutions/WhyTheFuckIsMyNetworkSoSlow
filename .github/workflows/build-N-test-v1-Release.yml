@@ -1,5 +1,5 @@
 #
-# build-N-test-v1-Dev and build-N-test-v1-Release are neary
+# build-N-test-v1-Dev and build-N-test-v1-Release are nearly
 # identical, but a few tests are commented out (to not needlessly stress CI system)
 # for v1-Dev builds; and on.push.branches setting
 #
@@ -59,9 +59,9 @@ jobs:
             extra_config_args: --apply-default-release-flags
             includeInDevBranchBuilds: false
 
-          - displayTargetName: raspberrypi
+          - displayTargetName: ubuntu-18.04-CROSS2-raspberrypi
             os: unix
-            compiler: g++-8
+            compiler: arm-linux-gnueabihf-g++-8
             runs_on: ubuntu-latest
             container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804
             cpp_version: c++17
@@ -97,6 +97,63 @@ jobs:
             config_name: Release
             extra_config_args: --apply-default-release-flags --trace2file enable
             includeInDevBranchBuilds: false
+          - displayTargetName: ubuntu-20.04-CROSS2-raspberrypi
+            os: unix
+            compiler: arm-linux-gnueabihf-g++-10
+            runs_on: ubuntu-latest
+            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
+            cpp_version: c++2a
+            config_name: Release
+            extra_config_args: --apply-default-release-flags --compiler-driver arm-linux-gnueabihf-g++-10 --cross-compiling true
+            includeInDevBranchBuilds: true
+          - displayTargetName: ubuntu-20.04-CROSS2-raspberrypi-DEBUG
+            os: unix
+            compiler: arm-linux-gnueabihf-g++-10
+            runs_on: ubuntu-latest
+            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
+            cpp_version: c++2a
+            config_name: Release
+            extra_config_args: --apply-default-debug-flags --compiler-driver arm-linux-gnueabihf-g++-10 --cross-compiling true
+            includeInDevBranchBuilds: true
+
+
+          # ubuntu 22.04
+          - displayTargetName: ubuntu-22.04-g++-12 (Debug)
+            os: unix
+            compiler: g++-12
+            runs_on: ubuntu-latest
+            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204
+            cpp_version: c++20
+            config_name: Debug
+            extra_config_args: --apply-default-debug-flags --trace2file enable
+            includeInDevBranchBuilds: false
+          - displayTargetName: ubuntu-22.04-g++-12
+            os: unix
+            compiler: g++-12
+            runs_on: ubuntu-latest
+            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204
+            cpp_version: c++20
+            config_name: Release
+            extra_config_args: --apply-default-release-flags
+            includeInDevBranchBuilds: true
+          - displayTargetName: ubuntu-22.04-CROSS2-raspberrypi
+            os: unix
+            compiler: arm-linux-gnueabihf-g++-12
+            runs_on: ubuntu-latest
+            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204
+            cpp_version: c++20
+            config_name: Release
+            extra_config_args: --apply-default-release-flags --compiler-driver arm-linux-gnueabihf-g++-12 --cross-compiling true
+            includeInDevBranchBuilds: true
+          - displayTargetName: ubuntu-22.04-CROSS2-raspberrypi-DEBUG
+            os: unix
+            compiler: arm-linux-gnueabihf-g++-12
+            runs_on: ubuntu-latest
+            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204
+            cpp_version: c++20
+            config_name: Debug
+            extra_config_args: --apply-default-debug-flags --compiler-driver arm-linux-gnueabihf-g++-12 --cross-compiling true
+            includeInDevBranchBuilds: true
     container: ${{ matrix.container_image }}
     steps:
       - name: Build System Info
