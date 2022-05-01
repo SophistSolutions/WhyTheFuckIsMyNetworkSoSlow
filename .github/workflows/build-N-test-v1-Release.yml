@@ -16,7 +16,7 @@ name: build-N-test-v1-Release
 on:
   push:
     branches:
-      # - v1-Dev
+      - v1-Dev
       - v1-Release
   workflow_dispatch:
     inputs:
