@@ -203,7 +203,7 @@ jobs:
         with:
           name: ${{ matrix.displayTargetName }} Installers
           path: |
-            Builds/${{ matrix.config_name }}/WhyTheFuckIsMyNetworkSoSlow/*.deb
+            Builds/${{ matrix.config_name }}/WhyTheFuckIsMyNetworkSoSlow/WhyTheFuckIsMyNetworkSoSlow/*.deb
 
   build-n-test-MacOS:
     runs-on: ${{ matrix.runs_on }}
