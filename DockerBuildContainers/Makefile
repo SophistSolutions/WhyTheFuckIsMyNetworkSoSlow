@@ -40,6 +40,7 @@ push-images:
 ifeq ($(shell uname),Linux)
 	docker push sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804
 	docker push sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
+	docker push sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204
 endif
 ifeq (Windows,$(findstring Windows,$(OS)))
 	docker push sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19
@@ -48,6 +49,7 @@ ifeq ($(VERSION_Final),true)
 ifeq ($(shell uname),Linux)
 	docker push sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804:$(VERSION)
 	docker push sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004:$(VERSION)
+	docker push sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204:$(VERSION)
 endif
 ifeq (Windows,$(findstring Windows,$(OS)))
 	docker push sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19:$(VERSION)
