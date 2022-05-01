@@ -19,6 +19,7 @@ build-images:
 ifeq ($(shell uname),Linux)
 	docker build -f Ubuntu-1804/Dockerfile -t sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804 .
 	docker build -f Ubuntu-2004/Dockerfile -t sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004 .
+	docker build -f Ubuntu-2204/Dockerfile -t sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204 .
 endif
 ifeq (Windows,$(findstring Windows,$(OS)))
 	docker build -f Windows-Cygwin-VS2k19/Dockerfile -t sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19 -m 2G .
@@ -29,6 +30,7 @@ tag-images:
 ifeq ($(shell uname),Linux)
 	docker tag sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804 sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804:$(VERSION)
 	docker tag sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004 sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004:$(VERSION)
+	docker tag sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004 sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204:$(VERSION)
 endif
 ifeq (Windows,$(findstring Windows,$(OS)))
 	docker tag sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19:latest sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19:$(VERSION)
