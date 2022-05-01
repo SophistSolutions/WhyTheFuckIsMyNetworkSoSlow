@@ -913,11 +913,14 @@ namespace {
                     if (optional<DiscoveryInfo_> o = FindMatchingDevice_ (l, tmp)) {
                         tmp = *o; // then merge in possible additions
                         tmp.AddNetworkAddresses_ (locAddrs);
+#if qDebug
+                        tmp.fDebugProps.Add (L"Updated-By-SSDPDeviceDiscoverer_-At", DateTime::Now ());
+#endif
                         return tmp;
                     }
                     else {
 #if qDebug
-                        tmp.fDebugProps.Add (L"Found-From-SSDP-broadcast", true);
+                        tmp.fDebugProps.Add (L"Found-By-SSDPDeviceDiscoverer_-At", DateTime::Now ());
 #endif
                         tmp.fGUID = GUID::GenerateNew ();
                         return tmp;
@@ -1046,10 +1049,16 @@ namespace {
                             if (optional<DiscoveryInfo_> o = FindMatchingDevice_ (l, tmp)) {
                                 tmp = *o;
                                 tmp.AddNetworkAddresses_ (i.fInternetAddress, i.fHardwareAddress); // merge in additions
+#if qDebug
+                                tmp.fDebugProps.Add (L"Updated-By-MyNeighborDiscoverer_-At", DateTime::Now ());
+#endif
                                 return tmp;
                             }
                             else {
                                 tmp.fGUID = GUID::GenerateNew ();
+#if qDebug
+                                tmp.fDebugProps.Add (L"Found-By-MyNeighborDiscoverer_-At", DateTime::Now ());
+#endif
                                 return tmp;
                             }
                         }();
@@ -1230,7 +1239,7 @@ namespace {
                                 tmp.PatchDerivedFields ();
                                 Assert (tmp.fGUID != GUID{});
 #if qDebug
-                                tmp.fDebugProps.Add (L"Found-Through-runPingCheck", true);
+                                tmp.fDebugProps.Add (L"Updated-By-RandomWalkThroughSubnetDiscoverer_-At", DateTime::Now ());
 #endif
                                 l.rwref ().Add (tmp);
                                 DbgTrace (L"Updated device %s for fKnownOpenPorts: %s", Characters::ToString (tmp.fGUID).c_str (), Characters::ToString (scanResults.fDiscoveredOpenPorts).c_str ());
@@ -1242,8 +1251,7 @@ namespace {
                                 tmp.fLastSeenAt = DateTime::Now ();
                                 tmp.PatchDerivedFields ();
 #if qDebug
-                                tmp.fDebugProps.Add (L"Found-Through-runPingCheck", true);
-                                tmp.fDebugProps.Add (L"First-Found-Through-runPingCheck", true);
+                                tmp.fDebugProps.Add (L"Found-By-RandomWalkThroughSubnetDiscoverer_-At", DateTime::Now ());
 #endif
                                 Assert (tmp.fGUID != GUID{});
                                 l.rwref ().Add (tmp);
@@ -1363,6 +1371,9 @@ namespace {
                                 tmp.fLastSeenAt = DateTime::Now ();
                                 tmp.PatchDerivedFields ();
                                 Assert (tmp.fGUID != GUID{});
+#if qDebug
+                                tmp.fDebugProps.Add (L"Updated-By-KnownDevicePortScanner_-At", DateTime::Now ());
+#endif
                                 l.rwref ().Add (tmp);
                                 DbgTrace (L"Updated device %s for fKnownOpenPorts: %s", Characters::ToString (tmp.fGUID).c_str (), Characters::ToString (scanResults.fDiscoveredOpenPorts).c_str ());
                             }
