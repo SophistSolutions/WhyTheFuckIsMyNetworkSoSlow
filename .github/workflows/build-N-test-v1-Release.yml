@@ -116,7 +116,6 @@ jobs:
             extra_config_args: --apply-default-debug-flags --compiler-driver arm-linux-gnueabihf-g++-10 --cross-compiling true
             includeInDevBranchBuilds: true
 
-
           # ubuntu 22.04
           - displayTargetName: ubuntu-22.04-g++-12 (Debug)
             os: unix
@@ -154,6 +153,7 @@ jobs:
             config_name: Debug
             extra_config_args: --apply-default-debug-flags --compiler-driver arm-linux-gnueabihf-g++-12 --cross-compiling true
             includeInDevBranchBuilds: true
+  
     container: ${{ matrix.container_image }}
     steps:
       - name: Build System Info
@@ -174,24 +174,29 @@ jobs:
       # Couldn't get uses: actions/checkout@v2 working with submodules
       - name: Checkout
         run: |
-          git clone https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow.git .
+          git clone https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow.git
           git checkout $COMMIT_ID2BUILD
           git submodule update --recursive --init
       - name: Create build root structure
         shell: "bash"
         run: |
+          cd WhyTheFuckIsMyNetworkSoSlow
           make build-root
       - name: Configure ${{ matrix.config_name }}
         run: |
+          cd WhyTheFuckIsMyNetworkSoSlow
           cd ThirdPartyComponents/Stroika/StroikaRoot && ./configure ${{ matrix.config_name }} --compiler-driver ${{ matrix.compiler }} ${{ matrix.extra_config_args }} --cppstd-version ${{ matrix.cpp_version }}
           cat ConfigurationFiles/${{ matrix.config_name }}.xml
       - name: Make ThirdPartyComponents
         # break out this make and clean to reduce disk space usage (running out of space on debug builds)
         run: |
+          cd WhyTheFuckIsMyNetworkSoSlow
           make --directory=ThirdPartyComponents CONFIGURATION=${{ matrix.config_name }} all
           make --directory=ThirdPartyComponents CONFIGURATION=${{ matrix.config_name }} clean
       - name: Make all
-        run: make all
+        run: |
+          cd WhyTheFuckIsMyNetworkSoSlow
+          make all
       - name: Archive Build Results
         uses: actions/upload-artifact@v2
         with:

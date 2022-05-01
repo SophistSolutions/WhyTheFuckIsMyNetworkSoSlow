@@ -37,7 +37,7 @@ jobs:
     strategy:
       matrix:
         include:
-          # ## ubuntu 18.04
+          ## ubuntu 18.04
           # - displayTargetName: ubuntu-18.04-g++-8 (Debug)
           #   os: unix
           #   compiler: g++-8
@@ -79,33 +79,33 @@ jobs:
             config_name: Debug
             extra_config_args: --apply-default-debug-flags --trace2file enable
             includeInDevBranchBuilds: false
-          - displayTargetName: ubuntu-20.04-g++-10
-            os: unix
-            compiler: g++-10
-            runs_on: ubuntu-latest
-            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
-            cpp_version: c++17
-            config_name: Release
-            extra_config_args: --apply-default-release-flags
-            includeInDevBranchBuilds: true
-          - displayTargetName: ubuntu-20.04-g++-10-c++2a
-            os: unix
-            compiler: g++-10
-            runs_on: ubuntu-latest
-            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
-            cpp_version: c++2a
-            config_name: Release
-            extra_config_args: --apply-default-release-flags --trace2file enable
-            includeInDevBranchBuilds: false
-          - displayTargetName: ubuntu-20.04-CROSS2-raspberrypi
-            os: unix
-            compiler: arm-linux-gnueabihf-g++-10
-            runs_on: ubuntu-latest
-            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
-            cpp_version: c++2a
-            config_name: Release
-            extra_config_args: --apply-default-release-flags --compiler-driver arm-linux-gnueabihf-g++-10 --cross-compiling true
-            includeInDevBranchBuilds: true
+          # - displayTargetName: ubuntu-20.04-g++-10
+          #   os: unix
+          #   compiler: g++-10
+          #   runs_on: ubuntu-latest
+          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
+          #   cpp_version: c++17
+          #   config_name: Release
+          #   extra_config_args: --apply-default-release-flags
+          #   includeInDevBranchBuilds: true
+          # - displayTargetName: ubuntu-20.04-g++-10-c++2a
+          #   os: unix
+          #   compiler: g++-10
+          #   runs_on: ubuntu-latest
+          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
+          #   cpp_version: c++2a
+          #   config_name: Release
+          #   extra_config_args: --apply-default-release-flags --trace2file enable
+          #   includeInDevBranchBuilds: false
+          # - displayTargetName: ubuntu-20.04-CROSS2-raspberrypi
+          #   os: unix
+          #   compiler: arm-linux-gnueabihf-g++-10
+          #   runs_on: ubuntu-latest
+          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
+          #   cpp_version: c++2a
+          #   config_name: Release
+          #   extra_config_args: --apply-default-release-flags --compiler-driver arm-linux-gnueabihf-g++-10 --cross-compiling true
+          #   includeInDevBranchBuilds: true
           - displayTargetName: ubuntu-20.04-CROSS2-raspberrypi-DEBUG
             os: unix
             compiler: arm-linux-gnueabihf-g++-10
@@ -116,44 +116,44 @@ jobs:
             extra_config_args: --apply-default-debug-flags --compiler-driver arm-linux-gnueabihf-g++-10 --cross-compiling true
             includeInDevBranchBuilds: true
 
-
-          # ubuntu 22.04
-          - displayTargetName: ubuntu-22.04-g++-12 (Debug)
-            os: unix
-            compiler: g++-12
-            runs_on: ubuntu-latest
-            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204
-            cpp_version: c++20
-            config_name: Debug
-            extra_config_args: --apply-default-debug-flags --trace2file enable
-            includeInDevBranchBuilds: false
-          - displayTargetName: ubuntu-22.04-g++-12
-            os: unix
-            compiler: g++-12
-            runs_on: ubuntu-latest
-            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204
-            cpp_version: c++20
-            config_name: Release
-            extra_config_args: --apply-default-release-flags
-            includeInDevBranchBuilds: true
-          - displayTargetName: ubuntu-22.04-CROSS2-raspberrypi
-            os: unix
-            compiler: arm-linux-gnueabihf-g++-12
-            runs_on: ubuntu-latest
-            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204
-            cpp_version: c++20
-            config_name: Release
-            extra_config_args: --apply-default-release-flags --compiler-driver arm-linux-gnueabihf-g++-12 --cross-compiling true
-            includeInDevBranchBuilds: true
-          - displayTargetName: ubuntu-22.04-CROSS2-raspberrypi-DEBUG
-            os: unix
-            compiler: arm-linux-gnueabihf-g++-12
-            runs_on: ubuntu-latest
-            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204
-            cpp_version: c++20
-            config_name: Debug
-            extra_config_args: --apply-default-debug-flags --compiler-driver arm-linux-gnueabihf-g++-12 --cross-compiling true
-            includeInDevBranchBuilds: true
+          # # ubuntu 22.04
+          # - displayTargetName: ubuntu-22.04-g++-12 (Debug)
+          #   os: unix
+          #   compiler: g++-12
+          #   runs_on: ubuntu-latest
+          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204
+          #   cpp_version: c++20
+          #   config_name: Debug
+          #   extra_config_args: --apply-default-debug-flags --trace2file enable
+          #   includeInDevBranchBuilds: false
+          # - displayTargetName: ubuntu-22.04-g++-12
+          #   os: unix
+          #   compiler: g++-12
+          #   runs_on: ubuntu-latest
+          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204
+          #   cpp_version: c++20
+          #   config_name: Release
+          #   extra_config_args: --apply-default-release-flags
+          #   includeInDevBranchBuilds: true
+          # - displayTargetName: ubuntu-22.04-CROSS2-raspberrypi
+          #   os: unix
+          #   compiler: arm-linux-gnueabihf-g++-12
+          #   runs_on: ubuntu-latest
+          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204
+          #   cpp_version: c++20
+          #   config_name: Release
+          #   extra_config_args: --apply-default-release-flags --compiler-driver arm-linux-gnueabihf-g++-12 --cross-compiling true
+          #   includeInDevBranchBuilds: true
+          # - displayTargetName: ubuntu-22.04-CROSS2-raspberrypi-DEBUG
+          #   os: unix
+          #   compiler: arm-linux-gnueabihf-g++-12
+          #   runs_on: ubuntu-latest
+          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204
+          #   cpp_version: c++20
+          #   config_name: Debug
+          #   extra_config_args: --apply-default-debug-flags --compiler-driver arm-linux-gnueabihf-g++-12 --cross-compiling true
+          #   includeInDevBranchBuilds: true
+  
     container: ${{ matrix.container_image }}
     steps:
       - name: Build System Info
@@ -174,24 +174,29 @@ jobs:
       # Couldn't get uses: actions/checkout@v2 working with submodules
       - name: Checkout
         run: |
-          git clone https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow.git .
+          git clone https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow.git
           git checkout $COMMIT_ID2BUILD
           git submodule update --recursive --init
       - name: Create build root structure
         shell: "bash"
         run: |
+          cd WhyTheFuckIsMyNetworkSoSlow
           make build-root
       - name: Configure ${{ matrix.config_name }}
         run: |
+          cd WhyTheFuckIsMyNetworkSoSlow
           cd ThirdPartyComponents/Stroika/StroikaRoot && ./configure ${{ matrix.config_name }} --compiler-driver ${{ matrix.compiler }} ${{ matrix.extra_config_args }} --cppstd-version ${{ matrix.cpp_version }}
           cat ConfigurationFiles/${{ matrix.config_name }}.xml
       - name: Make ThirdPartyComponents
         # break out this make and clean to reduce disk space usage (running out of space on debug builds)
         run: |
+          cd WhyTheFuckIsMyNetworkSoSlow
           make --directory=ThirdPartyComponents CONFIGURATION=${{ matrix.config_name }} all
           make --directory=ThirdPartyComponents CONFIGURATION=${{ matrix.config_name }} clean
       - name: Make all
-        run: make all
+        run: |
+          cd WhyTheFuckIsMyNetworkSoSlow
+          make all
       - name: Archive Build Results
         uses: actions/upload-artifact@v2
         with:
@@ -211,12 +216,12 @@ jobs:
             config_name: Debug
             extra_config_args: --apply-default-debug-flags --trace2file enable
             includeInDevBranchBuilds: true
-          - displayTargetName: MacOS-x86_64
-            os: macos-10.15
-            runs_on: macos-10.15
-            config_name: Release
-            extra_config_args: --apply-default-release-flags
-            includeInDevBranchBuilds: false
+          # - displayTargetName: MacOS-x86_64
+          #   os: macos-10.15
+          #   runs_on: macos-10.15
+          #   config_name: Release
+          #   extra_config_args: --apply-default-release-flags
+          #   includeInDevBranchBuilds: false
     steps:
       - uses: actions/checkout@v2
         with:
@@ -269,27 +274,27 @@ jobs:
             config_name: windows-x86-Debug
             extra_config_args: --arch x86 --apply-default-debug-flags --trace2file enable
             includeInDevBranchBuilds: true
-          - displayTargetName: windows-x86-Release
-            os: windows
-            runs_on: windows-latest
-            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19
-            config_name: Release
-            extra_config_args: --arch x86 --apply-default-release-flags --trace2file enable
-            includeInDevBranchBuilds: false
-          - displayTargetName: windows-x86_64-Debug
-            os: windows
-            runs_on: windows-latest
-            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19
-            config_name: Debug
-            extra_config_args: --arch x86_64 --apply-default-debug-flags --trace2file enable
-            includeInDevBranchBuilds: false
-          - displayTargetName: windows-x86_64-Release
-            os: windows
-            runs_on: windows-latest
-            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19
-            config_name: Release
-            extra_config_args: --arch x86_64 --apply-default-release-flags --trace2file enable
-            includeInDevBranchBuilds: false
+          # - displayTargetName: windows-x86-Release
+          #   os: windows
+          #   runs_on: windows-latest
+          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19
+          #   config_name: Release
+          #   extra_config_args: --arch x86 --apply-default-release-flags --trace2file enable
+          #   includeInDevBranchBuilds: false
+          # - displayTargetName: windows-x86_64-Debug
+          #   os: windows
+          #   runs_on: windows-latest
+          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19
+          #   config_name: Debug
+          #   extra_config_args: --arch x86_64 --apply-default-debug-flags --trace2file enable
+          #   includeInDevBranchBuilds: false
+          # - displayTargetName: windows-x86_64-Release
+          #   os: windows
+          #   runs_on: windows-latest
+          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19
+          #   config_name: Release
+          #   extra_config_args: --arch x86_64 --apply-default-release-flags --trace2file enable
+          #   includeInDevBranchBuilds: false
     env:
       ARTIFACTS_DIR: "c:/Artifacts/"
     steps:
