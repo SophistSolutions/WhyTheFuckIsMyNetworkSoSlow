@@ -38,16 +38,16 @@ jobs:
       matrix:
         include:
           ## ubuntu 18.04
-          # - displayTargetName: ubuntu-18.04-g++-8 (Debug)
-          #   os: unix
-          #   compiler: g++-8
-          #   runs_on: ubuntu-latest
-          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804
-          #   cpp_version: c++17
-          #   config_name: Debug
-          #   # Turn off debug syms to save space, avoid failed build
-          #   extra_config_args: --apply-default-debug-flags --trace2file enable --debug-symbols false
-          #   includeInDevBranchBuilds: true
+          - displayTargetName: ubuntu-18.04-g++-8 (Debug)
+            os: unix
+            compiler: g++-8
+            runs_on: ubuntu-latest
+            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804
+            cpp_version: c++17
+            config_name: Debug
+            # Turn off debug syms to save space, avoid failed build
+            extra_config_args: --apply-default-debug-flags --trace2file enable --debug-symbols false
+            includeInDevBranchBuilds: true
 
           # - displayTargetName: ubuntu-18.04-g++-8
           #   os: unix
@@ -67,7 +67,7 @@ jobs:
           #   cpp_version: c++17
           #   config_name: Release
           #   extra_config_args: --apply-default-release-flags --compiler-driver arm-linux-gnueabihf-g++-8 --cross-compiling true
-          #   includeInDevBranchBuilds: true
+          #   includeInDevBranchBuilds: false
 
           # ubuntu 20.04
           - displayTargetName: ubuntu-20.04-g++-10 (Debug)
@@ -78,34 +78,34 @@ jobs:
             cpp_version: c++17
             config_name: Debug
             extra_config_args: --apply-default-debug-flags --trace2file enable
-            includeInDevBranchBuilds: false
-          # - displayTargetName: ubuntu-20.04-g++-10
-          #   os: unix
-          #   compiler: g++-10
-          #   runs_on: ubuntu-latest
-          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
-          #   cpp_version: c++17
-          #   config_name: Release
-          #   extra_config_args: --apply-default-release-flags
-          #   includeInDevBranchBuilds: true
-          # - displayTargetName: ubuntu-20.04-g++-10-c++2a
-          #   os: unix
-          #   compiler: g++-10
-          #   runs_on: ubuntu-latest
-          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
-          #   cpp_version: c++2a
-          #   config_name: Release
-          #   extra_config_args: --apply-default-release-flags --trace2file enable
-          #   includeInDevBranchBuilds: false
-          # - displayTargetName: ubuntu-20.04-CROSS2-raspberrypi
-          #   os: unix
-          #   compiler: arm-linux-gnueabihf-g++-10
-          #   runs_on: ubuntu-latest
-          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
-          #   cpp_version: c++2a
-          #   config_name: Release
-          #   extra_config_args: --apply-default-release-flags --compiler-driver arm-linux-gnueabihf-g++-10 --cross-compiling true
-          #   includeInDevBranchBuilds: true
+            includeInDevBranchBuilds: true
+          - displayTargetName: ubuntu-20.04-g++-10
+            os: unix
+            compiler: g++-10
+            runs_on: ubuntu-latest
+            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
+            cpp_version: c++17
+            config_name: Release
+            extra_config_args: --apply-default-release-flags
+            includeInDevBranchBuilds: true
+          - displayTargetName: ubuntu-20.04-g++-10-c++2a
+            os: unix
+            compiler: g++-10
+            runs_on: ubuntu-latest
+            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
+            cpp_version: c++2a
+            config_name: Release
+            extra_config_args: --apply-default-release-flags --trace2file enable
+            includeInDevBranchBuilds: true
+          - displayTargetName: ubuntu-20.04-CROSS2-raspberrypi
+            os: unix
+            compiler: arm-linux-gnueabihf-g++-10
+            runs_on: ubuntu-latest
+            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
+            cpp_version: c++2a
+            config_name: Release
+            extra_config_args: --apply-default-release-flags --compiler-driver arm-linux-gnueabihf-g++-10 --cross-compiling true
+            includeInDevBranchBuilds: true
           - displayTargetName: ubuntu-20.04-CROSS2-raspberrypi-DEBUG
             os: unix
             compiler: arm-linux-gnueabihf-g++-10
@@ -116,7 +116,7 @@ jobs:
             extra_config_args: --apply-default-debug-flags --compiler-driver arm-linux-gnueabihf-g++-10 --cross-compiling true
             includeInDevBranchBuilds: true
 
-          # # ubuntu 22.04
+          # ubuntu 22.04
           # - displayTargetName: ubuntu-22.04-g++-12 (Debug)
           #   os: unix
           #   compiler: g++-12
@@ -126,15 +126,15 @@ jobs:
           #   config_name: Debug
           #   extra_config_args: --apply-default-debug-flags --trace2file enable
           #   includeInDevBranchBuilds: false
-          # - displayTargetName: ubuntu-22.04-g++-12
-          #   os: unix
-          #   compiler: g++-12
-          #   runs_on: ubuntu-latest
-          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204
-          #   cpp_version: c++20
-          #   config_name: Release
-          #   extra_config_args: --apply-default-release-flags
-          #   includeInDevBranchBuilds: true
+          - displayTargetName: ubuntu-22.04-g++-12
+            os: unix
+            compiler: g++-12
+            runs_on: ubuntu-latest
+            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204
+            cpp_version: c++20
+            config_name: Release
+            extra_config_args: --apply-default-release-flags
+            includeInDevBranchBuilds: true
           # - displayTargetName: ubuntu-22.04-CROSS2-raspberrypi
           #   os: unix
           #   compiler: arm-linux-gnueabihf-g++-12
@@ -143,7 +143,7 @@ jobs:
           #   cpp_version: c++20
           #   config_name: Release
           #   extra_config_args: --apply-default-release-flags --compiler-driver arm-linux-gnueabihf-g++-12 --cross-compiling true
-          #   includeInDevBranchBuilds: true
+          #   includeInDevBranchBuilds: false
           # - displayTargetName: ubuntu-22.04-CROSS2-raspberrypi-DEBUG
           #   os: unix
           #   compiler: arm-linux-gnueabihf-g++-12
@@ -152,7 +152,7 @@ jobs:
           #   cpp_version: c++20
           #   config_name: Debug
           #   extra_config_args: --apply-default-debug-flags --compiler-driver arm-linux-gnueabihf-g++-12 --cross-compiling true
-          #   includeInDevBranchBuilds: true
+          #   includeInDevBranchBuilds: false
   
     container: ${{ matrix.container_image }}
     steps:
@@ -211,18 +211,18 @@ jobs:
       matrix:
         # Add to extra_config_args for build speed: --Xerces no --OpenSSL no --lzma no --boost no
         include:
-          - displayTargetName: MacOS-x86_64-Debug
-            os: macos-10.15
-            runs_on: macos-10.15
-            config_name: Debug
-            extra_config_args: --apply-default-debug-flags --trace2file enable
-            includeInDevBranchBuilds: true
-          # - displayTargetName: MacOS-x86_64
+          # - displayTargetName: MacOS-x86_64-Debug
           #   os: macos-10.15
           #   runs_on: macos-10.15
-          #   config_name: Release
-          #   extra_config_args: --apply-default-release-flags
+          #   config_name: Debug
+          #   extra_config_args: --apply-default-debug-flags --trace2file enable
           #   includeInDevBranchBuilds: false
+          - displayTargetName: MacOS-x86_64
+            os: macos-10.15
+            runs_on: macos-10.15
+            config_name: Release
+            extra_config_args: --apply-default-release-flags
+            includeInDevBranchBuilds: true
     steps:
       - uses: actions/checkout@v2
         with:
