@@ -17,18 +17,16 @@ on:
   push:
     branches:
       - v1-Dev
-      - v1-Release
+      # - v1-Release
   workflow_dispatch:
     inputs:
-      branch:
-        description: "branch to build"
-        required: true
+      ignored:
+        description: "ignored"
+        required: false
+        default: ""
 
 env:
-  xx1: ${{ github.event.inputs.branch }}
-  xx2: ${{ github.sha }}
-  xx3: ${{ github }}
-  COMMIT_ID2BUILD: ${{ github.event.inputs.branch || github.sha }}
+  COMMIT_ID2BUILD: ${{ github.sha }}
   # vm has 2 virtual CPUs, but 8GB ram, so jobs=5 (empirical), and QUICK_BUILD avoids some internal testing
   MAKEFLAGS: "--jobs=3 QUICK_BUILD=1"
 
@@ -60,7 +58,7 @@ jobs:
           #   config_name: Release
           #   extra_config_args: --apply-default-release-flags
           #   includeInDevBranchBuilds: false
-          # - displayTargetName: ubuntu-18.04-CROSS2-raspberrypi
+          # - displayTargetName: ubuntu-18.04-X2-raspberrypi
           #   os: unix
           #   compiler: arm-linux-gnueabihf-g++-8
           #   runs_on: ubuntu-latest
@@ -98,7 +96,7 @@ jobs:
             config_name: Release
             extra_config_args: --apply-default-release-flags --trace2file enable
             includeInDevBranchBuilds: true
-          - displayTargetName: ubuntu-20.04-CROSS2-raspberrypi
+          - displayTargetName: ubuntu-20.04-X2-raspberrypi
             os: unix
             compiler: arm-linux-gnueabihf-g++-10
             runs_on: ubuntu-latest
@@ -107,7 +105,7 @@ jobs:
             config_name: Release
             extra_config_args: --apply-default-release-flags --compiler-driver arm-linux-gnueabihf-g++-10 --cross-compiling true
             includeInDevBranchBuilds: true
-          - displayTargetName: ubuntu-20.04-CROSS2-raspberrypi-DEBUG
+          - displayTargetName: ubuntu-20.04-X2-raspberrypi (Debug)
             os: unix
             compiler: arm-linux-gnueabihf-g++-10
             runs_on: ubuntu-latest
@@ -136,7 +134,7 @@ jobs:
             config_name: Release
             extra_config_args: --apply-default-release-flags
             includeInDevBranchBuilds: true
-          # - displayTargetName: ubuntu-22.04-CROSS2-raspberrypi
+          # - displayTargetName: ubuntu-22.04-X2-raspberrypi
           #   os: unix
           #   compiler: arm-linux-gnueabihf-g++-12
           #   runs_on: ubuntu-latest
@@ -145,7 +143,7 @@ jobs:
           #   config_name: Release
           #   extra_config_args: --apply-default-release-flags --compiler-driver arm-linux-gnueabihf-g++-12 --cross-compiling true
           #   includeInDevBranchBuilds: false
-          - displayTargetName: ubuntu-22.04-CROSS2-raspberrypi-DEBUG
+          - displayTargetName: ubuntu-22.04-X2-raspberrypi (Debug)
             os: unix
             compiler: arm-linux-gnueabihf-g++-12
             runs_on: ubuntu-latest
@@ -204,7 +202,7 @@ jobs:
         with:
           name: ${{ matrix.displayTargetName }} Installers
           path: |
-            Builds/${{ matrix.config_name }}/WhyTheFuckIsMyNetworkSoSlow/WhyTheFuckIsMyNetworkSoSlow/*.deb
+            WhyTheFuckIsMyNetworkSoSlow/Builds/${{ matrix.config_name }}/WhyTheFuckIsMyNetworkSoSlow/*.deb
 
   build-n-test-MacOS:
     runs-on: ${{ matrix.runs_on }}
