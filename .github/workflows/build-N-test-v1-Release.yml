@@ -111,9 +111,9 @@ jobs:
             runs_on: ubuntu-latest
             container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
             cpp_version: c++2a
-            config_name: Release
+            config_name: Debug
             extra_config_args: --apply-default-debug-flags --compiler-driver arm-linux-gnueabihf-g++-10 --cross-compiling true
-            includeInDevBranchBuilds: true
+            includeInDevBranchBuilds: false
 
           # ubuntu 22.04
           - displayTargetName: ubuntu-22.04-g++-12 (Debug)
