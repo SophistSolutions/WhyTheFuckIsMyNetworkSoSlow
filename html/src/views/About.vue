@@ -81,7 +81,7 @@ Units 1=1 logical core"
               <td>{{ about.serverInfo.currentMachine.machineUptime | duration("humanize") }}</td>
             </tr>
             <tr v-if="about.serverInfo.currentMachine.runQLength != null">
-              <td title="How many threads in each (logical) processors Run-Q on average. This is somewhat akin to UNIX 'Load Average' / number of logical cores, and smoothed over a different sampling interval">Run-Q</td>
+              <td title="How many threads in each (logical) processors Run-Q on average. 0 means no use, 1 means ALL cores fully used with no Q, and 2 means all cores fully utilized and each core with a Q length of 1">Run-Q</td>
               <td>{{ about.serverInfo.currentMachine.runQLength ?? "??" }} threads</td>
             </tr>
             <tr>
