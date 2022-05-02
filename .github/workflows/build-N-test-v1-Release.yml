@@ -28,7 +28,6 @@ env:
   ### xx vars to debug why manual workflow buidl fails
   xx1: ${{ github.event.inputs.branch }}
   xx2: ${{ github.sha }}
-  xx3: ${{ github }}
   COMMIT_ID2BUILD: ${{ github.event.inputs.branch || github.sha }}
   # vm has 2 virtual CPUs, but 8GB ram, so jobs=5 (empirical), and QUICK_BUILD avoids some internal testing
   MAKEFLAGS: "--jobs=3 QUICK_BUILD=1"
