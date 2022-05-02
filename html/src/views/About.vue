@@ -81,8 +81,8 @@ Units 1=1 logical core"
               <td>{{ about.serverInfo.currentMachine.machineUptime | duration("humanize") }}</td>
             </tr>
             <tr v-if="about.serverInfo.currentMachine.runQLength != null">
-              <td title="'Load Average' - how many threads in the RunQ on average">Run-Q</td>
-              <td>{{ about.serverInfo.currentMachine.runQLength }} threads</td>
+              <td title="How many threads in each (logical) processors Run-Q on average. This is somewhat akin to UNIX 'Load Average' / number of logical cores, and smoothed over a different sampling interval">Run-Q</td>
+              <td>{{ about.serverInfo.currentMachine.runQLength ?? "??" }} threads</td>
             </tr>
             <tr>
               <td
@@ -91,7 +91,7 @@ Units 1=1 logical core"
               >
                 CPU-Usage
               </td>
-              <td>{{ about.serverInfo.currentMachine.totalCPUUsage }} CPUs</td>
+              <td>{{ about.serverInfo.currentMachine.totalCPUUsage ?? "??" }} CPUs</td>
             </tr>
           </table>
         </v-col>
