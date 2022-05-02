@@ -112,7 +112,8 @@ jobs:
             container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
             cpp_version: c++2a
             config_name: Debug
-            extra_config_args: --apply-default-debug-flags --compiler-driver arm-linux-gnueabihf-g++-10 --cross-compiling true
+            # https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/22 - explains the suppression of ASAN
+            extra_config_args: --apply-default-debug-flags --compiler-driver arm-linux-gnueabihf-g++-10 --cross-compiling true --no-sanitize address
             includeInDevBranchBuilds: true
 
           # ubuntu 22.04
