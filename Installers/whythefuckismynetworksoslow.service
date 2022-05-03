@@ -11,5 +11,9 @@ ExecStart=/opt/WhyTheFuckIsMyNetworkSoSlow/WhyTheFuckIsMyNetworkSoSlow-Backend -
 ExecReload=/opt/WhyTheFuckIsMyNetworkSoSlow/WhyTheFuckIsMyNetworkSoSlow-Backend --restart
 ExecStop=/opt/WhyTheFuckIsMyNetworkSoSlow/WhyTheFuckIsMyNetworkSoSlow-Backend --stop
 
+# Helpful at least while in early development stages and running debug builds ;-)
+Restart=on-failure
+RestartSec=5s
+
 [Install]
 WantedBy=multi-user.target
