@@ -1,3 +1,36 @@
+> Add to device data structure  "FirstSeen"
+  and then in GUI for 'aggregates' replace that ID in the display with a timerange (and have the id in the hover text maybe)
+And in rollup, nice to have seen range (first/last seen)
+
+
+
+> Device
+livingRM-WAX610
+
+	shows up with no device info about tytpe
+
+
+	From SSDP:
+		SSDPInfo:{
+		USNs:[
+		0:"uuid:3da3c0e4-739e-4dfe-a71c-9cc9eb9f855f"
+		1:"uuid:3da3c0e4-739e-4dfe-a71c-9cc9eb9f855f::upnp:rootdevice"
+		2:"uuid:3da3c0e4-739e-4dfe-a71c-9cc9eb9f855f::urn:schemas-upnp-org:device:WLANAccessPointDevice:1"
+		]
+		deviceType2FriendlyNameMap:{
+		urn:schemas-upnp-org:device:WLANAccessPointDevice:1:"livingRM-WAX610"
+		}
+
+	Should be enough to show as network device (and maybe have category for wifi access point).
+
+
+>> NEED TO CACHE BLOBMAP to disk
+  Since used after reboot? Or maybe should be stored in dtabase? Some of my icons I think may disappear.
+  Not 100% sure. Make sure there is a staregty for how these images get preserved across reboots when devices
+  may no longer be present. Database seems better idea that my own private storage cache format.
+
+
+
 >> Test latest build on raspi etc (macos too)
 >> Fix build system in github actions
 >> Prooably good breaking point for a release (been a while) - and probably stable.
