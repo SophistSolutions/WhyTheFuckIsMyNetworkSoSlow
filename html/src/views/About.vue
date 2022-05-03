@@ -82,7 +82,7 @@ Units 1=1 logical core"
             </tr>
             <tr v-if="about.serverInfo.currentMachine.runQLength != null">
               <td title="How many threads in each (logical) processors Run-Q on average. 0 means no use, 1 means ALL cores fully used with no Q, and 2 means all cores fully utilized and each core with a Q length of 1">Run-Q</td>
-              <td>{{ about.serverInfo.currentMachine.runQLength ?? "??" }} threads</td>
+              <td>{{ about.serverInfo.currentMachine.runQLength || "?" }} threads</td>
             </tr>
             <tr>
               <td
@@ -91,7 +91,7 @@ Units 1=1 logical core"
               >
                 CPU-Usage
               </td>
-              <td>{{ about.serverInfo.currentMachine.totalCPUUsage ?? "??" }} CPUs</td>
+              <td>{{ about.serverInfo.currentMachine.totalCPUUsage || "?" }} CPUs</td>
             </tr>
           </table>
         </v-col>
