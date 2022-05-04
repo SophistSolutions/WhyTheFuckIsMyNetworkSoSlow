@@ -3,6 +3,27 @@
 And in rollup, nice to have seen range (first/last seen)
 
 
++ Maybe add new Stroika framework "Extension-Language-Engine" wrapper on python or javascript or something.
+  Expose/hook extension language.
+
+  Then use that in Filters so you can write custom filters (like in wireshark) "
+	filter: s.lastSeen < now-5m && s.Manufacturer contains "apple"
+  (discuss with sterling - helpful for lots of purposes like maybe his photo app as well)
+
+
++ Scan network traffic and keep track of how much data seen between device and internet and when first and most recent
+  data
+
+
++	List of Devices UI has  FILTER by LastSeen - so you can see just 'last day'. But nice to have a GROUP by
+    as well, so INSTEAD of HIDING older stuff, just group by days last seen (not fully thought out).
+
+	Or Group by network (so stuff on wierd networks not fully gone, just off at the end)
+
++ Maybe add ability to mark devices as 'favorites' (star) - and have 'group by' section at top of 'favorites'?
+
++ Need (X) to CLEAR search string when you type a search string like we currently have for the whole filters line.
+
 
 > Device
 livingRM-WAX610
