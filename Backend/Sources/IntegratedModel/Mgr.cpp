@@ -582,6 +582,12 @@ namespace {
             static Cache::SynchronizedCallerStalenessCache<void, RolledUpNetworks> sCache_;
             sCache_.fHoldWriteLockDuringCacheFill = true; // so only one call to filler lambda at a time
             return sCache_.LookupValue (sCache_.Ago (allowedStaleness), [] () -> RolledUpNetworks {
+
+                /*
+                 *  DEADLOCK NOTE
+                 *      Since this can be called while rolling up DEVICES, its important that this code not call anything involving device rollup since
+                 *      that could trigger a deadlock.
+                 */
                 Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...GetRolledUpNetworks...cachefiller")};
                 Debug::TimingTrace        ttrc{L"GetRolledUpNetworks...cachefiller", 1};
 
