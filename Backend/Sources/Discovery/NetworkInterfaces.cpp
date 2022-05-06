@@ -39,7 +39,7 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery;
  ********************************************************************************
  */
 NetworkInterface::NetworkInterface (const IO::Network::Interface& src)
-    : Interface (src)
+    : Interface{src}
 {
 }
 
