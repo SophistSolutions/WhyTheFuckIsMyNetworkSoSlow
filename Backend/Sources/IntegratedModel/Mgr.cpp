@@ -506,7 +506,11 @@ namespace {
             // SynchronizedCallerStalenessCache object just assures one rollup RUNS internally at a time, and
             // that two calls in rapid succession, the second call re-uses the previous value
             static Cache::SynchronizedCallerStalenessCache<void, RolledUpDevices> sCache_;
-            sCache_.fHoldWriteLockDuringCacheFill = true; // so only one call to filler lambda at a time
+            // Disable this cache setting due to https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/23
+            // See also
+            //      https://stroika.atlassian.net/browse/STK-906 - possible enhancement to this configuration to work better avoiding
+            //      See https://stroika.atlassian.net/browse/STK-907 - about needing some new mechanism in Stroika for deadlock detection/avoidance.
+            // sCache_.fHoldWriteLockDuringCacheFill = true; // so only one call to filler lambda at a time
             return sCache_.LookupValue (sCache_.Ago (allowedStaleness), [=] () -> RolledUpDevices {
                 Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...GetRolledUpDevies...cachefiller")};
                 Debug::TimingTrace        ttrc{L"GetRolledUpDevies...cachefiller", 1};
@@ -580,7 +584,11 @@ namespace {
             // SynchronizedCallerStalenessCache object just assures one rollup RUNS internally at a time, and
             // that two calls in rapid succession, the second call re-uses the previous value
             static Cache::SynchronizedCallerStalenessCache<void, RolledUpNetworks> sCache_;
-            sCache_.fHoldWriteLockDuringCacheFill = true; // so only one call to filler lambda at a time
+            // Disable this cache setting due to https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/23
+            // See also
+            //      https://stroika.atlassian.net/browse/STK-906 - possible enhancement to this configuration to work better avoiding
+            //      See https://stroika.atlassian.net/browse/STK-907 - about needing some new mechanism in Stroika for deadlock detection/avoidance.
+            // sCache_.fHoldWriteLockDuringCacheFill = true; // so only one call to filler lambda at a time
             return sCache_.LookupValue (sCache_.Ago (allowedStaleness), [] () -> RolledUpNetworks {
 
                 /*
