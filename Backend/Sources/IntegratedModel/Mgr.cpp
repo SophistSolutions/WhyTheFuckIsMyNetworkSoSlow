@@ -208,6 +208,11 @@ namespace {
         using IntegratedModel::NetworkAttachmentInfo;
         bool ShouldRollup_ (const Device& d1, const Device& d2)
         {
+            if (d1.fGUID == d2.fGUID) { // we retry the same 'discovered' networks repeatedly and re-roll them up.
+                                        // mostly this is handled by having the same hardware addresses, but sometimes (like for main discovered device)
+                                        // MAY not yet / always have network interface). And besides, this check cheaper/faster probably.
+                return true;
+            }
             // very rough first draft. Later add database stored 'exceptions' and/or rules tables to augment this logic
             auto hw1 = d1.GetHardwareAddresses ();
             auto hw2 = d2.GetHardwareAddresses ();
@@ -225,6 +230,9 @@ namespace {
         }
         bool ShouldRollup_ (const Network& n1, const Network& n2)
         {
+            if (n1.fGUID == n2.fGUID) { // we retry the same 'discovered' networks repeatedly and re-roll them up
+                return true;
+            }
             /*
              *  A network is not a super-well defined concept, so deciding if two instances of a network refer to the same
              *  network is a bit of a judgement call.
