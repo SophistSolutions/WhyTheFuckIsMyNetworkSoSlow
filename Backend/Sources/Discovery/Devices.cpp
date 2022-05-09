@@ -718,6 +718,8 @@ namespace {
                                 tmp.fGUID = GUID::GenerateNew ();
 #if qDebug
                                 tmp.fDebugProps.Add (L"Created-By-MyDeviceDiscoverer_-At", DateTime::Now ());
+                                tmp.fDebugProps.Add (L"Created-By-MyDeviceDiscoverer_-With-Networks", Characters::ToString (tmp.fAttachedNetworks));
+                                tmp.fDebugProps.Add (L"Created-By-MyDeviceDiscoverer_-With-Interfaces", Characters::ToString (tmp.fAttachedInterfaces));
 #endif
                                 return tmp;
                             }
