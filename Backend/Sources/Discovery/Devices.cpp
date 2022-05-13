@@ -1060,6 +1060,7 @@ namespace {
                                 tmp.fGUID = GUID::GenerateNew ();
 #if qDebug
                                 tmp.fDebugProps.Add (L"Found-By-MyNeighborDiscoverer_-At", DateTime::Now ());
+                                tmp.fDebugProps.Add (L"Found-By-MyNeighborDiscoverer_-I", Characters::ToString (i));    // to debug why sometimes we add but has no network info
 #endif
                                 return tmp;
                             }
