@@ -101,6 +101,7 @@ namespace {
             });
         }
         catch (...) {
+            sCache_.Add (inetAddr, nullopt);    // negative cache for kCacheTTL_
             return nullopt; // if DNS is failing, just dont do this match, dont abandon all data collection
         }
     }
