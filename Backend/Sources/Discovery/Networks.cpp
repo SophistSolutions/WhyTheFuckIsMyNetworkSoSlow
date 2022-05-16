@@ -218,11 +218,9 @@ namespace {
                     nw.fNetworkAddresses = cidrs;
                 }
                 if (not nw.fNetworkAddresses.empty ()) {
-                    unsigned int score{};
                     if (i.fGateways) {
                         for (const auto& gw : *i.fGateways) {
                             if (not nw.fGateways.Contains (gw)) {
-                                score += 20;
                                 nw.fGateways.Append (gw);
                             }
                         }
@@ -230,7 +228,6 @@ namespace {
                     if (i.fDNSServers) {
                         for (const auto& dnss : *i.fDNSServers) {
                             if (not nw.fDNSServers.Contains (dnss)) {
-                                score += 5;
                                 nw.fDNSServers.Append (dnss);
                             }
                         }
