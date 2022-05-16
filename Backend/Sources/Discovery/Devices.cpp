@@ -402,6 +402,13 @@ namespace {
             }
             if (totalAdds == 0 and totalAddrsSuppressedQuietly < totalAddrs) {
                 DbgTrace (L"AddNetworkAddresses_(%s) called, but no matching interfaces found", Characters::ToString (addrs).c_str ());
+                constexpr bool kExtraDebugging_ = true;
+                if (kExtraDebugging_) {
+                    // Debug why we get "Unknown" device on hercules/linux with Found-By-MyNeighborDiscoverer_-I looking good, but no networks (and docker appears as an active network)
+                    DbgTrace (L"AddNetworkAddresses_: totalAddrs=%d, totalAddrsSuppressedQuietly=%d, totalAdds=%d", totalAddrs, totalAddrsSuppressedQuietly, totalAdds);
+                    DbgTrace (L"AddNetworkAddresses_: NetAndNetInterfaceMapper_::sThe.LookupNetworksGUIDs (ia)=%s", Characters::ToString (NetAndNetInterfaceMapper_::sThe.LookupNetworksGUIDs (addrs)).c_str ());
+                    DbgTrace (L"AddNetworkAddresses_: Discovery::NetworksMgr::sThe.CollectActiveNetworks ()=%s", Characters::ToString (Discovery::NetworksMgr::sThe.CollectActiveNetworks ()).c_str ());
+                }
             }
         }
 
