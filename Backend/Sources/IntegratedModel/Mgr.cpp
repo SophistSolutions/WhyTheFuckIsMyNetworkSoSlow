@@ -206,15 +206,18 @@ namespace {
         using IntegratedModel::Device;
         using IntegratedModel::Network;
         using IntegratedModel::NetworkAttachmentInfo;
-        bool ShouldRollup_ (const Device& d1, const Device& d2)
+        bool ShouldRollup_ (const Device& exisingRolledUpDevice, const Device& d2)
         {
-            if (d1.fGUID == d2.fGUID) { // we retry the same 'discovered' networks repeatedly and re-roll them up.
-                                        // mostly this is handled by having the same hardware addresses, but sometimes (like for main discovered device)
-                                        // MAY not yet / always have network interface). And besides, this check cheaper/faster probably.
+            if ((exisingRolledUpDevice.fAggregatesIrreversibly and exisingRolledUpDevice.fAggregatesIrreversibly->Contains (d2.fGUID))
+                or (exisingRolledUpDevice.fAggregatesIrreversibly and exisingRolledUpDevice.fAggregatesIrreversibly->Contains (d2.fGUID))
+                ) {
+                // we retry the same 'discovered' networks repeatedly and re-roll them up.
+                // mostly this is handled by having the same hardware addresses, but sometimes (like for main discovered device)
+                // MAY not yet / always have network interface). And besides, this check cheaper/faster probably.
                 return true;
             }
             // very rough first draft. Later add database stored 'exceptions' and/or rules tables to augment this logic
-            auto hw1 = d1.GetHardwareAddresses ();
+            auto hw1 = exisingRolledUpDevice.GetHardwareAddresses ();
             auto hw2 = d2.GetHardwareAddresses ();
             if (Set<String>::Intersects (hw1, hw2)) {
                 return true;
@@ -223,14 +226,17 @@ namespace {
             if (hw1.empty () or hw2.empty ()) {
                 // then fold togehter if they have the same IP Addresses
                 // return d1.GetInternetAddresses () == d2.GetInternetAddresses ();
-                return Set<InternetAddress>::Intersects (d1.GetInternetAddresses (), d2.GetInternetAddresses ());
+                return Set<InternetAddress>::Intersects (exisingRolledUpDevice.GetInternetAddresses (), d2.GetInternetAddresses ());
             }
             // unclear if above test should be if EITHER set is empty, maybe then do if timeframes very close?
             return false;
         }
-        bool ShouldRollup_ (const Network& n1, const Network& n2)
+        bool ShouldRollup_ (const Network& exisingRolledUpNet, const Network& n2)
         {
-            if (n1.fGUID == n2.fGUID) { // we retry the same 'discovered' networks repeatedly and re-roll them up
+            if ((exisingRolledUpNet.fAggregatesIrreversibly and exisingRolledUpNet.fAggregatesIrreversibly->Contains (n2.fGUID))
+                or (exisingRolledUpNet.fAggregatesIrreversibly and exisingRolledUpNet.fAggregatesIrreversibly->Contains (n2.fGUID))
+                ) {
+                // we retry the same 'discovered' networks repeatedly and re-roll them up
                 return true;
             }
             /*
@@ -248,25 +254,25 @@ namespace {
              * 
              *  At least thats by best guess to start as of 2021-08-29
              */
-            if (n1.fInternetServiceProvider != n2.fInternetServiceProvider) {
+            if (exisingRolledUpNet.fInternetServiceProvider != n2.fInternetServiceProvider) {
                 return false;
             }
             {
                 // Hughsnet makes geoloc information comparison ineffective (frequently generates many different locations depending on when you try)
                 // @todo add mobile networks like verizon wireless
                 bool networkAllowedToChangeGeoLoc = false;
-                if (n1.fInternetServiceProvider == kHughsNet_ISP_) {
+                if (exisingRolledUpNet.fInternetServiceProvider == kHughsNet_ISP_) {
                     networkAllowedToChangeGeoLoc = true;
                 }
-                if (not networkAllowedToChangeGeoLoc and n1.fGEOLocInformation != n2.fGEOLocInformation) {
+                if (not networkAllowedToChangeGeoLoc and exisingRolledUpNet.fGEOLocInformation != n2.fGEOLocInformation) {
                     return false;
                 }
             }
-            if (n1.fGateways != n2.fGateways) {
+            if (exisingRolledUpNet.fGateways != n2.fGateways) {
                 // for some reason, gateway list sometimes contains IPv4 only, and sometimes IPv4 and IPv6 addresses
                 // treat the list the same if the gateway list ipv4s at least are the same (and non-empty)
                 // if IPv4 CIDRs same (and non-empty), then ignore differences in IPv4 addressses
-                Set<InternetAddress> ipv4s1{n1.fGateways.Where ([] (const InternetAddress& i) { return i.GetAddressFamily () == InternetAddress::AddressFamily::V4; })};
+                Set<InternetAddress> ipv4s1{exisingRolledUpNet.fGateways.Where ([] (const InternetAddress& i) { return i.GetAddressFamily () == InternetAddress::AddressFamily::V4; })};
                 Set<InternetAddress> ipv4s2{n2.fGateways.Where ([] (const InternetAddress& i) { return i.GetAddressFamily () == InternetAddress::AddressFamily::V4; })};
                 if (ipv4s1 != ipv4s2) {
                     return false;
@@ -277,15 +283,15 @@ namespace {
                     return false;
                 }
             }
-            if (n1.fNetworkAddresses != n2.fNetworkAddresses) {
+            if (exisingRolledUpNet.fNetworkAddresses != n2.fNetworkAddresses) {
                 // if IPv4 CIDRs same (and non-empty), then ignore differences in IPv4 addressses
-                Set<CIDR> ipv4s1{n1.fNetworkAddresses.Where ([] (const auto& i) { return i.GetBaseInternetAddress ().GetAddressFamily () == InternetAddress::AddressFamily::V4; })};
+                Set<CIDR> ipv4s1{exisingRolledUpNet.fNetworkAddresses.Where ([] (const auto& i) { return i.GetBaseInternetAddress ().GetAddressFamily () == InternetAddress::AddressFamily::V4; })};
                 Set<CIDR> ipv4s2{n2.fNetworkAddresses.Where ([] (const auto& i) { return i.GetBaseInternetAddress ().GetAddressFamily () == InternetAddress::AddressFamily::V4; })};
                 // However, sometimes we have PRIVATE (internal) networks that float their addresses, like WSL etc) so if both private, and
                 // have same name, then treat that as a rollup too
                 if (not ipv4s1.empty ()) {
                     if (
-                        n1.fFriendlyName == n2.fFriendlyName and n1.fNetworkAddresses.All ([] (const auto& i) { return i.GetBaseInternetAddress ().IsPrivateAddress (); }) and n2.fNetworkAddresses.All ([] (const auto& i) { return i.GetBaseInternetAddress ().IsPrivateAddress (); })) {
+                        exisingRolledUpNet.fFriendlyName == n2.fFriendlyName and exisingRolledUpNet.fNetworkAddresses.All ([] (const auto& i) { return i.GetBaseInternetAddress ().IsPrivateAddress (); }) and n2.fNetworkAddresses.All ([] (const auto& i) { return i.GetBaseInternetAddress ().IsPrivateAddress (); })) {
                         return true;
                     }
                 }
