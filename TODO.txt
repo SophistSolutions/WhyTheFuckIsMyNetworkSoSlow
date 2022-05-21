@@ -50,10 +50,6 @@ livingRM-WAX610
   Not 100% sure. Make sure there is a staregty for how these images get preserved across reboots when devices
   may no longer be present. Database seems better idea that my own private storage cache format.
 
-
-
->> Test latest build on raspi etc (macos too)
->> Fix build system in github actions
 >> Prooably good breaking point for a release (been a while) - and probably stable.
 >> THEN do integration with Vue3/vutify3.
 

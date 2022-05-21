@@ -11,7 +11,7 @@
 # but none seem to work
 #
 
-name: build-N-test-v1-Debug
+name: build-N-test-v1-Dev
 
 on:
   push:
@@ -96,15 +96,15 @@ jobs:
             config_name: Release
             extra_config_args: --apply-default-release-flags --trace2file enable
             includeInDevBranchBuilds: true
-          # - displayTargetName: ubuntu-20.04-X2-raspberrypi
-          #   os: unix
-          #   compiler: arm-linux-gnueabihf-g++-10
-          #   runs_on: ubuntu-latest
-          #   container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
-          #   cpp_version: c++2a
-          #   config_name: Release
-          #   extra_config_args: --apply-default-release-flags --compiler-driver arm-linux-gnueabihf-g++-10 --cross-compiling true
-          #   includeInDevBranchBuilds: false
+          - displayTargetName: ubuntu-20.04-X2-raspberrypi
+            os: unix
+            compiler: arm-linux-gnueabihf-g++-10
+            runs_on: ubuntu-latest
+            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
+            cpp_version: c++2a
+            config_name: Release
+            extra_config_args: --apply-default-release-flags --compiler-driver arm-linux-gnueabihf-g++-10 --cross-compiling true
+            includeInDevBranchBuilds: true
           - displayTargetName: ubuntu-20.04-X2-raspberrypi (Debug)
             os: unix
             compiler: arm-linux-gnueabihf-g++-10

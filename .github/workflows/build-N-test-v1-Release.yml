@@ -104,7 +104,7 @@ jobs:
             cpp_version: c++2a
             config_name: Release
             extra_config_args: --apply-default-release-flags --compiler-driver arm-linux-gnueabihf-g++-10 --cross-compiling true
-            includeInDevBranchBuilds: false
+            includeInDevBranchBuilds: true
           - displayTargetName: ubuntu-20.04-X2-raspberrypi (Debug)
             os: unix
             compiler: arm-linux-gnueabihf-g++-10
