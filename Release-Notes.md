@@ -6,11 +6,11 @@ High level summary of changes in WhyTheFuckIsMyNetworkSoSlow.
 
 ## History
 
-### 1.0d15 {DRAFT}
+### 1.0d15 {2022-05-21}
 
 #### TLDR
 
-- Backend now built using Stroika 2.1 released version
+- Backend now built using [Stroika 2.1](https://github.com/SophistSolutions/Stroika/v2.1) released version
 - Fixed important Rollup (aggregate devices/networks) bugs
 - fixes to rollup code and (super rare) deadlock issue
 - some improved debug logging for other minor discovery issues
@@ -25,8 +25,7 @@ High level summary of changes in WhyTheFuckIsMyNetworkSoSlow.
   - added misisng SuppressInterruptionInContext in Activator DTOR
   - Rollup (aggregation) of devices fixes:
     - various cleanups to Rollup code: mostly fixed issue with fLastSeenAt not rolled up correcly (randomly showed old date). Still could use work, but better
-    - fixed significant bug with rollup (and perhaps tweaked perforamnce). Sometimes on raspberrypi I was seeing the self-discvered self-device was repeasted thousands of times. Cuz had no network attached (separate bug looking into)  : but rollup in that case didn't roll it up so it got repeated. If two raw devices have same ID, then consider them rolled up, and not a new rolled up device
-    - fixed rollup devices/networks code to not re-include devices/nets that were already there (logic to avoid this was wrong)
+    - fixed significant bug with rollup - networks and devices - and perhaps tweaked perforamnce. Sometimes on raspberrypi I was seeing the self-discvered self-device was repeasted thousands of times. Cuz had no network attached (separate bug looking into)  : but rollup in that case didn't roll it up so it got repeated. If two raw devices have same ID, then consider them rolled up, and not a new rolled up device
   - extra debug logging/notes in json output
     - added debugprops for MyDeviceDiscoverer_-At, and further updates to device fDebugProps to make easier debugging of where data comes from
     - unclear why sometimes rasperrypi device discovered with Created-By-MyDeviceDiscoverer but no networks/interfaces' So add extra fDebugProps debug loggint to see more
