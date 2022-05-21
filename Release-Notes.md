@@ -6,6 +6,59 @@ High level summary of changes in WhyTheFuckIsMyNetworkSoSlow.
 
 ## History
 
+### 1.0d15 {DRAFT}
+
+#### TLDR
+
+- Backend now built using Stroika 2.1 released version
+- Fixed important Rollup (aggregate devices/networks) bugs
+- fixes to rollup code and (super rare) deadlock issue
+- some improved debug logging for other minor discovery issues
+- build with github actions fixed
+
+#### Change-Details
+
+- Backend
+  - Use Stroika 2.1 (final released version)
+    - [Release Notes](https://github.com/SophistSolutions/Stroika/blob/v2.1/Release-Notes.md)
+    - react to stroika update(s): no more run2idle server stuff - just arg to run-directly
+  - added misisng SuppressInterruptionInContext in Activator DTOR
+  - Rollup (aggregation) of devices fixes:
+    - various cleanups to Rollup code: mostly fixed issue with fLastSeenAt not rolled up correcly (randomly showed old date). Still could use work, but better
+    - fixed significant bug with rollup (and perhaps tweaked perforamnce). Sometimes on raspberrypi I was seeing the self-discvered self-device was repeasted thousands of times. Cuz had no network attached (separate bug looking into)  : but rollup in that case didn't roll it up so it got repeated. If two raw devices have same ID, then consider them rolled up, and not a new rolled up device
+    - fixed rollup devices/networks code to not re-include devices/nets that were already there (logic to avoid this was wrong)
+  - extra debug logging/notes in json output
+    - added debugprops for MyDeviceDiscoverer_-At, and further updates to device fDebugProps to make easier debugging of where data comes from
+    - unclear why sometimes rasperrypi device discovered with Created-By-MyDeviceDiscoverer but no networks/interfaces' So add extra fDebugProps debug loggint to see more
+    - added debug prop to debug why smoemtiems I find devices on linux with no attached networks
+    - Added debugging stuff ot see why we get 'Unkown' device added on linux/hercules
+  -  Hopefully temporary workaround for https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/23 - deadlock bug
+  - edit .service file so on failure, it auto-restarts (crashed on raspberrypi)
+  - negative caching of reverse DNS lookup failure
+
+- Build System
+  - use DETECTED_HOST_OS from latest Stroika in makefiles'
+  - update Microsoft.Cpp.stroika.AllConfigs.props and ExecutablePath for latest stroika (so should work with MSYS)
+  - vs2k22 project and sln files
+  - added symbolic links to Workspaces/VisualStudio.net/Microsoft.Cpp.stroika.ConfigurationBased.props etc and props loads in vsproj file so can build properly from visual studio
+  - update .vscode files from recent Stroika Skel work
+  - ubuntu 22.04 support
+    - docker containers
+    - github actions
+  - github actions:
+    - was broken, now fixed
+    - fix download directory for uploading artifacts
+    - check IncludeDebugSymbolsInExecutables before stripping for build of installers
+    - workaround https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/22 by disabling asan on raspberrypi builds
+    - includeInDevBranchBuilds true for ubuntu-20.04-X2-raspberrypi
+
+- html
+  - update dependent components
+    - upgrade core-js
+    - latest typescript
+    - npm update/audit fix
+  - tweaked html for about page
+
 ---
 
 ### 1.0d14 {2021-12-26}
