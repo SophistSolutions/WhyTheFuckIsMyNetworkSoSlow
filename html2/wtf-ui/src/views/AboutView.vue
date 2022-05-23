@@ -1,3 +1,38 @@
+
+<script setup lang="ts">
+import { defineComponent , onMounted} from 'vue';
+import { useStore } from 'vuex'
+import { duration } from 'moment';
+import prettyBytes from 'pretty-bytes';
+
+import { IAbout } from "@/models/IAbout";
+
+import AppBar from "@/components/AppBar.vue";
+
+var polling: undefined | number = undefined;
+
+const store = useStore()
+
+function about(): IAbout {
+  return store.getters.getAboutInfo;
+}
+
+function pollData() {
+  // first time check quickly, then more gradually
+  store.dispatch("fetchAboutInfo");
+  if (polling) {
+    clearInterval(polling);
+  }
+  polling = setInterval(() => {
+    store.dispatch("fetchAboutInfo");
+  }, 10 * 1000);
+}
+
+onMounted(() => {
+  pollData()
+})
+</script>
+
 <template>
   <div class="about">
     <app-bar />
@@ -134,40 +169,3 @@ Units 1=1 logical core">
     </v-container>
   </div>
 </template>
-
-<script setup lang="ts">
-import { defineComponent } from 'vue';
-import { duration } from 'moment';
-import prettyBytes from 'pretty-bytes';
-import { onMounted } from 'vue'
-import { useStore } from 'vuex'
-
-import { IAbout } from "@/models/IAbout";
-
-
-var polling: undefined | number = undefined;
-
-const store = useStore()
-
-function about(): IAbout {
-  return store.getters.getAboutInfo;
-}
-
-function pollData() {
-  // first time check quickly, then more gradually
-  store.dispatch("fetchAboutInfo");
-  if (polling) {
-    clearInterval(polling);
-  }
-  polling = setInterval(() => {
-    store.dispatch("fetchAboutInfo");
-  }, 10 * 1000);
-}
-onMounted(() => {
-  pollData()
-})
-
-import AppBar from "@/components/AppBar.vue";
-
-
-</script>
