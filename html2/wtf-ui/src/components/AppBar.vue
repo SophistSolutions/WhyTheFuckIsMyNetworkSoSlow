@@ -34,7 +34,7 @@ function log(item) {
                 </v-btn>
             </template>
             <v-list>
-                <template v-for="item in this.$router.options.routes" :key="item.path">
+                <template v-for="(item,index) in this.$router.options.routes" :key="index">
                     <v-list-item :to="item.path" class="mr-2">
                         {{ item.name }}
                     </v-list-item>
