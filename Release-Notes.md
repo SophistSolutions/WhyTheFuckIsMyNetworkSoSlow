@@ -6,7 +6,7 @@ High level summary of changes in WhyTheFuckIsMyNetworkSoSlow.
 
 ## History
 
-### 1.0d15 {2022-05-22}
+### 1.0d16 {2022-05-22}
 
 #### TLDR
 
@@ -17,6 +17,8 @@ High level summary of changes in WhyTheFuckIsMyNetworkSoSlow.
 - build with github actions fixed
 
 #### Change-Details
+
+- same as 1.0d15 (typo)
 
 - Backend
   - Use Stroika 2.1 (final released version)
