@@ -23,10 +23,10 @@ const routes: Array<RouteRecordRaw> = [
 
   {
     path: "/",
-    name: 'home',
+    name: 'Home',
     component: HomeView,
     meta: {
-      breadcrumbs: [{ text: "Home", exact: true, disabled: true }],
+      breadcrumbs: [{ text: "Home", exact: true, disabled: true, divderAfter: true }],
     },
   },
   {
@@ -55,19 +55,20 @@ const routes: Array<RouteRecordRaw> = [
   //     ],
   //   },
   // },
-  // {
-  //   path: "/devices",
-  //   name: "Devices",
-  //   // route level code-splitting
-  //   // this generates a separate chunk (about.[hash].js) for this route
-  //   // which is lazy-loaded when the route is visited.
-  //   component: () => import(/* webpackChunkName: "Devices" */ "./views/Devices.vue"),
-  //   meta: {
-  //     breadcrumbs: [
-  //       { text: "Home", href: "/#/" },
-  //       { text: "Devices", disabled: true },
-  //     ],
-  //   },
+  {
+    path: "/devices",
+    name: "Devices",
+    // route level code-splitting
+    // this generates a separate chunk (about.[hash].js) for this route
+    // which is lazy-loaded when the route is visited.
+    component: () => import(/* webpackChunkName: "Devices" */ "../views/DevicesView.vue"),
+    meta: {
+      breadcrumbs: [
+        { text: "Home", href: "/#/" },
+        { text: "Devices", disabled: true },
+      ],
+    },
+  }
   //   // @see https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/14
   //   // Cannot get this working but got basically same thing working from created
   //   // method
