@@ -60,6 +60,33 @@ export default createStore({
     },
   },
   mutations: {
+    setAvailableNetworks(state, networks: INetwork[]) {
+      state.rolledUpAvailableNetworkIDs = networks.map((x) => x.id);
+      networks.forEach((x) => (state.networkDetails[x.id] = x));
+      //networks.forEach((x) => Vue.set(state.networkDetails, x.id, x));
+    },
+    setNetworkDetails(state, network: INetwork) {
+       state.networkDetails[network.id] = network;
+      //Vue.set(state.networkDetails, network.id, network);
+    },
+    setNetworkInterfaces(state, networkInterfaces: INetworkInterface[]) {
+      state.networkInterfaces = networkInterfaces;
+    },
+    setDevices(state, devices: IDevice[]) {
+      state.rolledUpDeviceIDs = devices.map((x) => x.id);
+      devices.forEach((x) => (state.deviceDetails[x.id] = x));
+      // devices.forEach((x) => Vue.set(state.deviceDetails, x.id, x));
+    },
+    setDeviceDetails(state, device: IDevice) {
+      state.deviceDetails[device.id] = device;
+      // Vue.set(state.deviceDetails, device.id, device);
+    },
+    setSelectedNetwork(state, networkId: string) {
+      state.selectedNetworkId = networkId;
+    },
+    setAboutInfo(state, aboutInfo: IAbout) {
+      state.about = aboutInfo;
+    },
   },
   actions: {
     async fetchAvailableNetworks({ commit }) {
