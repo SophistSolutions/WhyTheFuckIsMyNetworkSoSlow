@@ -32,7 +32,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: "/about",
     name: "About",
-    component: () => import(/* webpackChunkName: "About" */ "../views/AboutView.vue"),
+    component: () => import(/* webpackChunkName: "About" */ "../views/About.vue"),
     meta: {
       breadcrumbs: [
         { text: "Home", href: "/#/" },

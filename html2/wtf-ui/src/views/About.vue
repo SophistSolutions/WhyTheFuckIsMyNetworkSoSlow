@@ -1,6 +1,6 @@
 
 <script setup lang="ts">
-import { defineComponent , onMounted} from 'vue';
+import { onMounted} from 'vue';
 import { useStore } from 'vuex'
 import { duration } from 'moment';
 import prettyBytes from 'pretty-bytes';
