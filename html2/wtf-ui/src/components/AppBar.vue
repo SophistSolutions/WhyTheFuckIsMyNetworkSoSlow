@@ -1,8 +1,5 @@
 
 <script setup lang="ts">
-function log(item) {
-    console.log(item)
-}
 </script>
 
 <template>

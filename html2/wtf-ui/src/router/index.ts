@@ -1,5 +1,5 @@
 import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+import Home from '../views/Home.vue'
 
 const routes: Array<RouteRecordRaw> = [
 
@@ -24,7 +24,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: "/",
     name: 'Home',
-    component: HomeView,
+    component: Home,
     meta: {
       breadcrumbs: [{ text: "Home", exact: true, disabled: true, divderAfter: true }],
     },

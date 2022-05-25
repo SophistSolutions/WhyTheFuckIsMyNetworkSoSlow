@@ -65,7 +65,7 @@ export async function fetchDevices(searchCriteria?: ISortBy): Promise<IDevice[]>
   return fetch(API_ROOT + `/devices?recurse=true&sort=${encodeURI(JSON.stringify(searchSpecs))}`)
     .then((response) => response.json())
     .then((data) => {
-      data.forEach((d: any) => {
+      data.forEach((d: {icon: URL| string|null}) => {
         // fixup urls that are relative to be relative to the WSAPI
         if (d.icon) {
           d.icon = new URL(d.icon, API_ROOT);
