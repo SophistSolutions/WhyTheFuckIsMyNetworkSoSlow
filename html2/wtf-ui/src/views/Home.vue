@@ -55,9 +55,18 @@ function networks(): INetwork[] {
   });
   return result;
 }
+interface IDisplayedNetwork   {
+  id: string;
+  link: string | null;
+  name: string;
+  active: string;
+  internetInfo: string;
+  status: string;
+  originalNetwork: INetwork;
+}
 
-function networksAsDisplayed(): object[] {
-  const result: object[] = [];
+function networksAsDisplayed(): IDisplayedNetwork[] {
+  const result: IDisplayedNetwork[] = [];
   networks().forEach((i: INetwork) => {
     result.push({
       id: i.id,
@@ -67,12 +76,11 @@ function networksAsDisplayed(): object[] {
       internetInfo:
         (i.gateways == null ? "" : i.gateways.join(", ")) +
         (i.internetServiceProvider == null ? " " : " (" + i.internetServiceProvider.name + ")"),
-      devices: GetDeviceIDsInNetwork(i, devices()).length,
       status: "healthy",
-      location: FormatLocation(i.geographicLocation),
+      originalNetwork: i
     });
   });
-  result.sort((a: {id:string}, b: {id:string}) => {
+  result.sort((a: IDisplayedNetwork, b: IDisplayedNetwork) => {
     if (a.id < b.id) {
       return -1;
     }
@@ -106,7 +114,7 @@ function devices(): IDevice[] {
           <li v-for="network in networksAsDisplayed()" :key="network.id">
             <ReadOnlyTextWithHover :message="network.name" :link="network.link" />
             <div>
-              : {{ GetDeviceIDsInNetwork(network, devices()).length }}
+              : {{ GetDeviceIDsInNetwork(network.originalNetwork, devices()).length }}
               <router-link to="/devices">devices</router-link>, operating normally
             </div>
           </li>
