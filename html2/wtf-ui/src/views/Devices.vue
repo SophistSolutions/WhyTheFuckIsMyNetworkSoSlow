@@ -28,7 +28,9 @@ import { fetchNetworks } from "@/proxy/API";
 // Components
 import Search from '../components/Search.vue';
 import ClearButton from '../components/ClearButton.vue';
+import DeviceDetails from '../components/DeviceDetails.vue';
 import ReadOnlyTextWithHover from '../components/ReadOnlyTextWithHover.vue';
+import Link2DetailsPage from '../components/Link2DetailsPage.vue';
 import FilterSummaryMessage from '../components/FilterSummaryMessage.vue';
 import AppBar from "@/components/AppBar.vue";
 
@@ -336,12 +338,13 @@ function filteredDevices(): object[] {
 
 
 defineComponent({
-  name: 'Devices',
+  // name: 'Devices',
 
   components: {
     AppBar,
     ClearButton,
     ReadOnlyTextWithHover,
+    Link2DetailsPage,
     Search,
   },
 });
