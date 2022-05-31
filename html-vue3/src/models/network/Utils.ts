@@ -1,7 +1,6 @@
 import { IDevice, INetworkAttachmentInfo } from "@/models/device/IDevice";
 import { IGeographicLocation } from "@/models/network/IGeographicLocation";
 import { INetwork } from "@/models/network/INetwork";
-import { OperatingSystem } from "@/models/OperatingSystem";
 
 /*
  *  returns empty string if network address list is missing or empty

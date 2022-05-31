@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { defineComponent, defineProps, onMounted, nextTick } from 'vue';
-import { useRoute,useRouter } from 'vue-router'
+import { defineComponent, defineProps, onMounted, nextTick, ref, computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import { duration } from 'moment';
-import prettyBytes from 'pretty-bytes';
 
-import { IDevice, INetworkAttachmentInfo } from "@/models/device/IDevice";
+import { IDevice } from "@/models/device/IDevice";
 import {
   ComputeDeviceTypeIconURLs,
   ComputeOSIconURLList,
@@ -13,17 +12,12 @@ import {
 } from "@/models/device/Utils";
 import { INetwork } from "@/models/network/INetwork";
 import {
-  FormatAttachedNetwork,
   FormatAttachedNetworkLocalAddresses,
-  GetNetworkByID,
   GetNetworkByIDQuietly,
   GetNetworkLink,
   GetNetworkName,
   GetServices,
 } from "@/models/network/Utils";
-import { OperatingSystem } from "@/models/OperatingSystem";
-
-import { fetchNetworks } from "@/proxy/API";
 
 // Components
 import Search from '../components/Search.vue';
@@ -37,17 +31,16 @@ import AppBar from "@/components/AppBar.vue";
 const store = useStore()
 
 const props = defineProps({
-  lselectedNetworkink: { type: String, required: false, default: null },
+  selectedNetworkink: { type: String, required: false, default: null },
 })
 
-var selectedNetworkCurrent: string | null = null;
+
 var polling: undefined | number = undefined;
 var search: string = "";
 var sortBy: any = [];
 var sortDesc: any = [];
 var expanded: any[] = [];
 
-var selectedTimeframe: string | null = null;
 var selectedServices: string[] = selectableServices().map((x) => x.value);
 
 function filterAllowAllServices() {
@@ -77,49 +70,62 @@ function selectServicesFilter_ToggleSelectAll() {
 }
 
 
-function selectableNetworks(): object[] {
-  const r: object[] = [
-    {
-      text: "Any",
-      value: null,
-    },
-  ];
-  networks().forEach((n) => {
-    r.push({
-      text: GetNetworkName(n),
-      value: n.id,
+// const count = ref(1)
+// const plusOne = computed({
+//   get: () => count.value + 1,
+//   set: val => {
+//     count.value = val - 1
+//   }
+// })
+
+const selectableNetworks = computed<object[]>(
+  () => {
+    const r: object[] = [
+      {
+        title: "Any",
+        value: null,
+      },
+    ];
+    networks().forEach((n) => {
+      r.push({
+        title: GetNetworkName(n),
+        value: n.id,
+      });
     });
-  });
-  return r;
-}
-function selectableTimeframes(): Array<{ text: string; value: string|null }> {
-  return [
+    return r;
+  }
+)
+let selectedNetworkCurrent: string | undefined = undefined;
+
+const selectableTimeframes = computed<object[]>(
+  () => [
     {
-      text: "Ever",
+      title: "Ever",
       value: null,
     },
     {
-      text: "Last Few Minutes",
+      title: "Last Few Minutes",
       value: "PT3.9M",
     },
     {
-      text: "Last Hour",
+      title: "Last Hour",
       value: "PT1H",
     },
     {
-      text: "Last Day",
+      title: "Last Day",
       value: "P1D",
     },
     {
-      text: ">15 Min Ago",
+      title: ">15 Min Ago",
       value: "-PT15M",
     },
     {
-      text: ">1 Day Ago",
+      title: ">1 Day Ago",
       value: "-P1D",
     },
-  ];
-}
+  ]
+);
+let selectedTimeframe: string | undefined = undefined;
 
 function selectableServices(): Array<{ text: string; value: string }> {
   return [
@@ -225,8 +231,8 @@ function headers(): object[] {
   ];
 }
 
- const route = useRoute()
- const router = useRouter()
+const route = useRoute()
+const router = useRouter()
 
 function beforeDestroy() {
   clearInterval(polling);
@@ -251,7 +257,7 @@ function devices(): IDevice[] {
 
 function filtered(): boolean {
   return (
-    selectedNetworkCurrent !== null ||
+    selectedNetworkCurrent != undefined ||
     selectedTimeframe !== null ||
     search !== "" ||
     !filterAllowAllServices
@@ -259,8 +265,8 @@ function filtered(): boolean {
 }
 
 function clearFilter() {
-  selectedNetworkCurrent = null;
-  selectedTimeframe = null;
+  selectedNetworkCurrent = undefined;
+  selectedTimeframe = undefined;
   selectedServices = selectableServices().map((x) => x.value);
   search = "";
 }
@@ -338,8 +344,6 @@ function filteredDevices(): object[] {
 
 
 defineComponent({
-  // name: 'Devices',
-
   components: {
     AppBar,
     ClearButton,
@@ -368,113 +372,71 @@ onMounted(() => {
 
 
 <template>
-    <app-bar>
-      <template v-slot:extrastuff>
-        <v-container fluid class="extrastuff">
-          <v-row no-gutters align="end">
-            <v-col cols="2">
-              <v-select
-                dense
-                hide-details="true"
-                :items="selectableNetworks()"
-                v-model="selectedNetworkCurrent"
-                label="On networks"
-              />
-            </v-col>
-            <v-col cols="2">
-              <v-select
-                dense
-                hide-details="true"
-                :items="selectableTimeframes()"
-                v-model="selectedTimeframe"
-                label="Seen"
-              />
-            </v-col>
-            <v-col cols="2">
-              <v-select
-                dense
-                small
-                multiple
-                hide-details="true"
-                hint="Any means dont filter on this; multiple selected items treated as OR"
-                :items="selectableServices()"
-                v-model="selectedServices"
-                :menu-props="{ auto: true, overflowY: true }"
-                label="With services"
-              >
-                <template v-slot:prepend-item>
-                  <v-list-item ripple @click="selectServicesFilter_ToggleSelectAll">
-                    <v-list-item-action>
-                      <v-icon :color="selectedServices.length > 0 ? 'indigo darken-4' : ''">
-                        {{ selectServicesFilter_icon }}
-                      </v-icon>
-                    </v-list-item-action>
-                      <v-list-item-title>
-                        Any
-                      </v-list-item-title>
-                   
-                  </v-list-item>
-                  <v-divider class="mt-2"></v-divider>
-                </template>
+  <app-bar>
+    <template v-slot:extrastuff>
+      <v-container fluid class="extrastuff">
+        <v-row no-gutters align="end">
+          <v-col cols="2">
+            <v-select dense hide-details="true" :items="selectableNetworks" v-model="selectedNetworkCurrent"
+              label="On networks" />
+          </v-col>
+          <v-col cols="2">
+            <v-select dense hide-details="true" :items="selectableTimeframes" v-model="selectedTimeframe"
+              label="Seen" />
+          </v-col>
+          <v-col cols="2" v-if="false">
+            <v-select dense small multiple hide-details="true"
+              hint="Any means dont filter on this; multiple selected items treated as OR" :items="selectableServices()"
+              v-model="selectedServices" :menu-props="{ auto: true, overflowY: true }" label="With services">
+              <template v-slot:prepend-item>
+                <v-list-item ripple @click="selectServicesFilter_ToggleSelectAll">
+                  <v-list-item-action>
+                    <v-icon :color="selectedServices.length > 0 ? 'indigo darken-4' : ''">
+                      {{ selectServicesFilter_icon }}
+                    </v-icon>
+                  </v-list-item-action>
+                  <v-list-item-title>
+                    Any
+                  </v-list-item-title>
 
-                <template slot="selection" slot-scope="{ item, index }">
-                  <span v-if="filterAllowAllServices() && index === 0">Any</span>
-                  <span v-if="index === 0 && !filterAllowAllServices()">{{ item.text }}</span>
-                  <span
-                    v-if="index === 1 && !filterAllowAllServices"
-                    class="grey--text caption othersSpan"
-                    >(+{{ selectedServices.length - 1 }} others)</span
-                  >
-                </template>
-              </v-select>
-            </v-col>
-            <v-col cols="2">
-              <Search :searchFor.sync="search" dense />
-            </v-col>
-            <v-col cols="4" align="end">
-              <FilterSummaryMessage
-                dense
-                :filtered="filtered"
-                :nItemsSelected="filteredDevices().length"
-                :nTotalItems="devices().length"
-                itemsName="devices"
-              />
-              <ClearButton v-if="filtered" v-on:click="clearFilter" />
-            </v-col>
-          </v-row>
-        </v-container>
-      </template>
-    </app-bar>
+                </v-list-item>
+                <v-divider class="mt-2"></v-divider>
+              </template>
 
-  <v-container>
+              <template slot="selection" slot-scope="{ item, index }">
+                <span v-if="filterAllowAllServices() && index === 0">Any</span>
+                <span v-if="index === 0 && !filterAllowAllServices()">{{ item.text }}</span>
+                <span v-if="index === 1 && !filterAllowAllServices" class="grey--text caption othersSpan">(+{{
+                    selectedServices.length - 1
+                }} others)</span>
+              </template>
+            </v-select>
+          </v-col>
+          <v-col cols="2" v-if="false">
+            <Search :searchFor.sync="search" dense />
+          </v-col>
+          <v-col cols="4" align="end" v-if="false">
+            <FilterSummaryMessage dense :filtered="filtered" :nItemsSelected="filteredDevices().length"
+              :nTotalItems="devices().length" itemsName="devices" />
+            <ClearButton v-if="false /*filtered*/" v-on:click="clearFilter" />
+          </v-col>
+        </v-row>
+      </v-container>
+    </template>
+  </app-bar>
+
+  <v-container v-if="null">
     <v-card class="deviceListCard">
       <v-card-title>
         Devices
         <v-spacer></v-spacer>
       </v-card-title>
-      <v-data-table
-        fixed-header
-        class="deviceList elevation-1"
-        dense
-        show-expand
-        :expanded.sync="expanded"
-        :single-expand="true"
-        :headers="headers"
-        :items="filteredDevices()"
-        :single-select="true"
-        :sort-by="sortBy"
-        :sort-desc="sortDesc"
-        multi-sort
-        disable-pagination
-        :hide-default-footer="true"
-        item-key="id"
-        @click:row="rowClicked"
-      >
+      <v-table fixed-header class="deviceList elevation-1" dense show-expand :expanded.sync="expanded"
+        :single-expand="true" :headers="headers" :items="filteredDevices()" :single-select="true" :sort-by="sortBy"
+        :sort-desc="sortDesc" multi-sort disable-pagination :hide-default-footer="true" item-key="id"
+        @click:row="rowClicked">
         <template v-slot:[`item.lastSeenAt`]="{ item }">
-          <ReadOnlyTextWithHover
-            v-if="item.lastSeenAt"
-            :message="item.lastSeenAt | moment('from', 'now')"
-          />
+          <ReadOnlyTextWithHover v-if="item.lastSeenAt" :message="item.lastSeenAt | moment('from', 'now')" />
         </template>
         <template v-slot:[`item.type`]="{ item }">
           <span v-for="(t, i) in ComputeDeviceTypeIconURLs(item.type)" :key="i">
@@ -507,11 +469,8 @@ onMounted(() => {
         </template>
         <template v-slot:[`item.networksSummary`]="{ item }">
           <span v-for="(anw, i) in Object.keys(item.attachedNetworks)" :key="i">
-            <ReadOnlyTextWithHover
-              v-if="GetNetworkByIDQuietly(anw, networks)"
-              :message="GetNetworkName(GetNetworkByIDQuietly(anw, networks))"
-              :link="GetNetworkLink(anw)"
-            />&nbsp;
+            <ReadOnlyTextWithHover v-if="GetNetworkByIDQuietly(anw, networks)"
+              :message="GetNetworkName(GetNetworkByIDQuietly(anw, networks))" :link="GetNetworkLink(anw)" />&nbsp;
           </span>
         </template>
         <template v-slot:expanded-item="{ item }">
@@ -520,7 +479,7 @@ onMounted(() => {
             <DeviceDetails class="detailsSection" :deviceId="item.id" />
           </td>
         </template>
-      </v-data-table>
+      </v-table>
     </v-card>
   </v-container>
 </template>
@@ -528,7 +487,7 @@ onMounted(() => {
 
 
 <style lang="scss">
-.deviceList > div > table {
+.deviceList>div>table {
   table-layout: fixed;
   //background-color: red;
 }

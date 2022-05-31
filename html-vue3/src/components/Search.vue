@@ -1,7 +1,7 @@
 <script setup lang="ts">
 
 
-import { onMounted, defineProps, watch } from 'vue';
+import { defineProps, watch } from 'vue';
 
 const props = defineProps({
   searchFor: { type: String, required: false },

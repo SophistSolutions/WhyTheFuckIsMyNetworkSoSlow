@@ -1,16 +1,12 @@
 <script setup lang="ts">
-import { defineProps, defineComponent, onMounted } from 'vue';
+import { defineProps, defineComponent, onMounted, onUnmounted, ref, computed } from 'vue';
 import { useStore } from 'vuex'
 
 import { IDevice, INetworkAttachmentInfo } from "@/models/device/IDevice";
 import {
-  ComputeDeviceTypeIconURLs,
-  ComputeOSIconURLList,
   ComputeServiceTypeIconURL,
 } from "@/models/device/Utils";
-import { INetwork } from "@/models/network/INetwork";
 import { GetNetworkLink, GetNetworkName, GetServices } from "@/models/network/Utils";
-import { OperatingSystem } from "@/models/OperatingSystem";
 import { rescanDevice } from "@/proxy/API";
 
 // Components
@@ -24,8 +20,6 @@ const props = defineProps({
 })
 
 defineComponent({
-  // name: 'DeviceDetails',
-
   components: {
     ReadOnlyTextWithHover,
   },
@@ -38,28 +32,21 @@ var isRescanning: boolean = false;
 
 function localNetworkAddresses(): string[] {
   const addresses: string[] = [];
-  if (this.device) {
-    Object.entries(this.device.attachedNetworks).forEach((element) => {
+  if (currentDevice.value) {
+    Object.entries(currentDevice.value.attachedNetworks).forEach((element) => {
       element[1].localAddresses.forEach((e: string) => addresses.push(e));
     });
   }
   return addresses.filter((value, index, self) => self.indexOf(value) === index);
 }
 
-
-
 onMounted(() => {
   pollData()
 })
 
-function beforeDestroy() {
-  clearInterval(this.polling);
-}
-
-function networks(): INetwork[] {
-  // @todo fix to not use getavailabletnetwks but fetch just the right ones
-  return store.getters.getAvailableNetworks;
-}
+onUnmounted(() => {
+  clearInterval(polling);
+})
 
 async function rescanSelectedDevice(): Promise<void> {
   isRescanning = true;
@@ -74,8 +61,8 @@ async function rescanSelectedDevice(): Promise<void> {
 function pollData() {
   // first time check immediately, then more gradually for updates
   store.dispatch("fetchDevice", props.deviceId);
-  if (this.device) {
-    store.dispatch("fetchNetworks", Object.keys(this.device.attachedNetworks));
+  if (currentDevice.value) {
+    store.dispatch("fetchNetworks", Object.keys(currentDevice.value.attachedNetworks));
   } else {
     store.dispatch("fetchAvailableNetworks");
   }
@@ -84,40 +71,45 @@ function pollData() {
   }
   polling = setInterval(() => {
     store.dispatch("fetchDevice", props.deviceId);
-    if (this.device) {
-      store.dispatch("fetchNetworks", Object.keys(this.device.attachedNetworks));
+    if (currentDevice.value) {
+      store.dispatch("fetchNetworks", Object.keys(currentDevice.value.attachedNetworks));
     }
   }, 15 * 1000);
 }
 
+let currentDevice = computed<IDevice | undefined>(
+  () => store.getters.getDevice(props.deviceId)
+)
 
-function device(): IDevice | undefined {
-  return store.getters.getDevice(props.deviceId);
+interface IExtendedDevice extends IDevice {
+localAddresses: string; attachedNetworks: any;
 }
 
-function deviceDetails(): object | undefined {
-  const d = this.device;
-  if (d) {
-    const attachedNetworkInfo = {} as { [key: string]: object };
-    Object.keys(d.attachedNetworks).forEach((element: any) => {
-      const thisNWI = d.attachedNetworks[element] as INetworkAttachmentInfo;
-      let netName = "?";
-      const thisNetObj = store.getters.getNetwork(element);
-      if (thisNetObj) {
-        netName = GetNetworkName(thisNetObj);
-      }
-      attachedNetworkInfo[element] = { ...thisNWI, name: netName };
-    });
-    return {
-      ...d,
-      ...{
-        localAddresses: this.localNetworkAddresses.join(", "),
-        attachedNetworks: attachedNetworkInfo,
-      },
-    };
+let currentDeviceDetails = computed<IExtendedDevice | undefined>(
+  () => {
+    if (currentDevice.value) {
+      const attachedNetworkInfo = {} as { [key: string]: object };
+      Object.keys(currentDevice.value.attachedNetworks).forEach((element: any) => {
+        const thisNWI = currentDevice.value.attachedNetworks[element] as INetworkAttachmentInfo;
+        let netName = "?";
+        const thisNetObj = store.getters.getNetwork(element);
+        if (thisNetObj) {
+          netName = GetNetworkName(thisNetObj);
+        }
+        attachedNetworkInfo[element] = { ...thisNWI, name: netName };
+      });
+      return {
+        ...currentDevice.value,
+        ...{
+          localAddresses: localNetworkAddresses().join(", "),
+          attachedNetworks: attachedNetworkInfo,
+        },
+      };
+    }
+    return undefined;
   }
-  return undefined;
-}
+)
+
 </script>
 
 <style scoped lang="scss">
@@ -155,57 +147,57 @@ td.labelColumn {
 </style>
 
 <template>
-  <div>
-    <table class="detailsTable" v-bind:key="device.id">
+  <div v-if="currentDevice">
+    <table class="detailsTable" v-bind:key="currentDevice.id">
       <tr>
         <td class="labelColumn">Name</td>
-        <td>{{ device.name }}</td>
+        <td>{{ currentDevice.name }}</td>
       </tr>
       <tr>
         <td class="labelColumn">ID</td>
         <td>
-          {{ device.id }}
-          <span class="snapshot" v-if="device.historicalSnapshot == true">{snapshot}</span>
+          {{ currentDevice.id }}
+          <span class="snapshot" v-if="currentDevice.historicalSnapshot == true">{snapshot}</span>
         </td>
       </tr>
-      <tr v-if="device.type">
+      <tr v-if="currentDevice.type">
         <td class="labelColumn">Types</td>
-        <td>{{ device.type.join(", ") }}</td>
+        <td>{{ currentDevice.type.join(", ") }}</td>
       </tr>
-      <tr v-if="device.icon">
+      <tr v-if="currentDevice.icon">
         <td>Icon</td>
-        <td><img :src="device.icon" width="24" height="24" /></td>
+        <td><img :src="currentDevice.icon" width="24" height="24" /></td>
       </tr>
-      <tr v-if="device.manufacturer">
+      <tr v-if="currentDevice.manufacturer">
         <td class="labelColumn">Manufacturer</td>
         <td>
-          <span v-if="device.manufacturer.shortName || device.manufacturer.fullName">{{
-              device.manufacturer.shortName || device.manufacturer.fullName
+          <span v-if="currentDevice.manufacturer.shortName || currentDevice.manufacturer.fullName">{{
+              currentDevice.manufacturer.shortName || currentDevice.manufacturer.fullName
           }}</span>
-          <span v-if="device.manufacturer.webSiteURL">
-            <span v-if="device.manufacturer.shortName || device.manufacturer.fullName">; </span>
+          <span v-if="currentDevice.manufacturer.webSiteURL">
+            <span v-if="currentDevice.manufacturer.shortName || currentDevice.manufacturer.fullName">; </span>
             Link:
-            <a :href="device.manufacturer.webSiteURL" target="_blank">{{
-                device.manufacturer.webSiteURL
+            <a :href="currentDevice.manufacturer.webSiteURL" target="_blank">{{
+                currentDevice.manufacturer.webSiteURL
             }}</a>
           </span>
         </td>
       </tr>
-      <tr v-if="device.operatingSystem">
+      <tr v-if="currentDevice.operatingSystem">
         <td class="labelColumn">OS</td>
         <td>
-          {{ device.operatingSystem.fullVersionedName }}
+          {{ currentDevice.operatingSystem.fullVersionedName }}
         </td>
       </tr>
-      <tr v-if="device.lastSeenAt">
+      <tr v-if="currentDevice.lastSeenAt">
         <td class="labelColumn">Last Seen</td>
-        <td>{{ device.lastSeenAt | moment("from", "now") }}</td>
+        <td>{{ currentDevice.lastSeenAt | moment("from", "now") }}</td>
       </tr>
       <tr>
         <td class="labelColumn">Networks</td>
         <td>
           <table>
-            <tr v-for="attachedNetID in Object.keys(device.attachedNetworks)" v-bind:key="attachedNetID">
+            <tr v-for="attachedNetID in Object.keys(currentDevice.attachedNetworks)" v-bind:key="attachedNetID">
               <td valign="top">&#x25cf;</td>
               <td>
                 <table>
@@ -213,23 +205,23 @@ td.labelColumn {
                     <td>Name (ID)</td>
                     <td class="nowrap">
                       <ReadOnlyTextWithHover :message="
-                        deviceDetails.attachedNetworks[attachedNetID].name +
+                        currentDeviceDetails.attachedNetworks[attachedNetID].name +
                         ' (' +
                         attachedNetID +
                         ')'
                       " :link="GetNetworkLink(attachedNetID)" />
                     </td>
                   </tr>
-                  <tr v-if="device.attachedNetworks[attachedNetID].hardwareAddresses">
+                  <tr v-if="currentDevice.attachedNetworks[attachedNetID].hardwareAddresses">
                     <td>Hardware Address(es)</td>
                     <td class="nowrap">
-                      {{ device.attachedNetworks[attachedNetID].hardwareAddresses.join(", ") }}
+                      {{ currentDevice.attachedNetworks[attachedNetID].hardwareAddresses.join(", ") }}
                     </td>
                   </tr>
-                  <tr v-if="device.attachedNetworks[attachedNetID].localAddresses">
+                  <tr v-if="currentDevice.attachedNetworks[attachedNetID].localAddresses">
                     <td>Network Address Binding(s)</td>
                     <td class="nowrap">
-                      {{ device.attachedNetworks[attachedNetID].localAddresses.join(", ") }}
+                      {{ currentDevice.attachedNetworks[attachedNetID].localAddresses.join(", ") }}
                     </td>
                   </tr>
                 </table>
@@ -242,7 +234,7 @@ td.labelColumn {
         <td class="labelColumn">Services</td>
         <td>
           <table>
-            <tr v-for="svc in GetServices(device)" v-bind:key="svc.name">
+            <tr v-for="svc in GetServices(currentDevice)" v-bind:key="svc.name">
               <td>
                 <img v-if="ComputeServiceTypeIconURL(svc.name).url" :src="ComputeServiceTypeIconURL(svc.name).url"
                   height="20" width="20" />
@@ -254,7 +246,7 @@ td.labelColumn {
                 }}</a>
               </td>
             </tr>
-            <tr v-if="GetServices(device).length == 0">
+            <tr v-if="GetServices(currentDevice).length == 0">
               <td><em>none</em></td>
             </tr>
           </table>
@@ -266,35 +258,35 @@ td.labelColumn {
           <v-btn class="smallBtnMargin" elevation="2" x-small @click="rescanSelectedDevice" :disabled="isRescanning">
             Rescan
           </v-btn>
-          <span v-if="device.openPorts">{{ device.openPorts.join(", ") }}</span>
+          <span v-if="currentDevice.openPorts">{{ currentDevice.openPorts.join(", ") }}</span>
         </td>
       </tr>
-      <tr v-if="device.attachedNetworkInterfaces">
+      <tr v-if="currentDevice.attachedNetworkInterfaces">
         <td class="labelColumn">ATTACHED NETWORK INTERFACES</td>
         <td>
-          <json-viewer :value="device.attachedNetworkInterfaces" :expand-depth="0" copyable sort />
+          <json-viewer :value="currentDevice.attachedNetworkInterfaces" :expand-depth="0" copyable sort />
         </td>
       </tr>
-      <tr v-if="device.aggregatesReversibly && device.aggregatesReversibly.length">
+      <tr v-if="currentDevice.aggregatesReversibly && currentDevice.aggregatesReversibly.length">
         <td>Aggregates Reversibly</td>
         <td>
-          <span v-for="aggregate in device.aggregatesReversibly" v-bind:key="aggregate">
+          <span v-for="aggregate in currentDevice.aggregatesReversibly" v-bind:key="aggregate">
             <ReadOnlyTextWithHover :message="aggregate" :link="'/#/device/' + aggregate" />;
           </span>
         </td>
       </tr>
-      <tr v-if="device.aggregatesIrreversibly && device.aggregatesIrreversibly.length">
+      <tr v-if="currentDevice.aggregatesIrreversibly && currentDevice.aggregatesIrreversibly.length">
         <td>Aggregates Irreversibly</td>
         <td>
-          <span v-for="aggregate in device.aggregatesIrreversibly" v-bind:key="aggregate">
+          <span v-for="aggregate in currentDevice.aggregatesIrreversibly" v-bind:key="aggregate">
             <ReadOnlyTextWithHover :message="aggregate" />;
           </span>
         </td>
       </tr>
-      <tr v-if="device.debugProps">
+      <tr v-if="currentDevice.debugProps">
         <td class="labelColumn">DEBUG INFO</td>
         <td>
-          <json-viewer :value="device.debugProps" :expand-depth="1" copyable sort></json-viewer>
+          <json-viewer :value="currentDevice.debugProps" :expand-depth="1" copyable sort></json-viewer>
         </td>
       </tr>
     </table>

@@ -19,6 +19,7 @@ export interface IDevice {
   idIsPersistent?: boolean;
   historicalSnapshot?: boolean;
   attachedNetworks: { [key: string]: INetworkAttachmentInfo };
+  attachedNetworkInterfaces: string[];
   name: string;
   lastSeenAt?: Date;
   openPorts?: string[];
@@ -27,4 +28,5 @@ export interface IDevice {
   type: Array<DeviceTypeEnum | string>;
   presentationURL?: string;
   operatingSystem?: OperatingSystem;
+  debugProps?: object;
 }
