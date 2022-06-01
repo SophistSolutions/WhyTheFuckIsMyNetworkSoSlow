@@ -79,27 +79,27 @@ export const useWTFStore = defineStore('WTF', {
     },
   },
   actions: {
-   async fetchAvailableNetworks() {
-      var networks : INetwork[] = await fetchNetworks();
+    async fetchAvailableNetworks() {
+      var networks: INetwork[] = await fetchNetworks();
       this.rolledUpAvailableNetworkIDs = networks.map((x) => x.id);
       networks.forEach((x) => (this.networkDetails[x.id] = x));
     },
     async fetchNetworkInterfaces() {
-      this.networkInterfaces =  await fetchNetworkInterfaces();
+      this.networkInterfaces = await fetchNetworkInterfaces();
     },
     async fetchNetworks(ids: string[]) {
       ids.forEach(async (id) => this.networkDetails[id] = await fetchNetwork(id));
     },
     async fetchAboutInfo() {
-     this.about =  await fetchAboutInfo();
+      this.about = await fetchAboutInfo();
     },
     async fetchDevices(searchSpecs: ISortBy) {
-      var devices : IDevice[] = await fetchDevices(searchSpecs);
+      var devices: IDevice[] = await fetchDevices(searchSpecs);
       this.rolledUpDeviceIDs = devices.map((x) => x.id);
-       devices.forEach((x) => (this.deviceDetails[x.id] = x));
+      devices.forEach((x) => (this.deviceDetails[x.id] = x));
     },
     async fetchDevice(id: string) {
-      this.deviceDetails[id] =  await fetchDevice(id);
+      this.deviceDetails[id] = await fetchDevice(id);
     },
     setSelectedNetwork(networkId: string) {
       this.selectedNetworkId = networkId;
