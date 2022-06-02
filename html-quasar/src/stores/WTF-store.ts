@@ -80,7 +80,7 @@ export const useWTFStore = defineStore('WTF', {
   },
   actions: {
     async fetchAvailableNetworks() {
-      var networks: INetwork[] = await fetchNetworks();
+      const networks: INetwork[] = await fetchNetworks();
       this.rolledUpAvailableNetworkIDs = networks.map((x) => x.id);
       networks.forEach((x) => (this.networkDetails[x.id] = x));
     },
@@ -94,7 +94,7 @@ export const useWTFStore = defineStore('WTF', {
       this.about = await fetchAboutInfo();
     },
     async fetchDevices(searchSpecs: ISortBy) {
-      var devices: IDevice[] = await fetchDevices(searchSpecs);
+      const devices: IDevice[] = await fetchDevices(searchSpecs);
       this.rolledUpDeviceIDs = devices.map((x) => x.id);
       devices.forEach((x) => (this.deviceDetails[x.id] = x));
     },

@@ -4,7 +4,7 @@ import { IAbout } from "../models/IAbout";
 import { INetwork } from "../models/network/INetwork";
 import { INetworkInterface } from "../models/network/INetworkInterface";
 
-import { API_ROOT } from "../config";
+import { API_ROOT } from "../config/config";
 
 import { Logger } from "../utils/Logger";
 

@@ -69,7 +69,15 @@ module.exports = configure(function (/* ctx */) {
 
       // publicPath: '/',
       // analyze: true,
-      // env: {},
+      env: {
+
+        VUE_APP_DEFAULT_API_PORT: 8080,
+
+        //#VUE_APP_ROOT_API="http://hercules.local:8080",
+        
+       // VUE_APP_DEBUG_MODE=true
+
+      },      
       // rawDefine: {}
       // ignorePublicFolder: true,
       // minify: false,
