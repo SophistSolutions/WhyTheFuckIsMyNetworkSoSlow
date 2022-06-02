@@ -117,20 +117,16 @@ About WSImpl::GetAbout () const
     static const Sequence<ComponentInfo> kAPIServerComponents_{initializer_list<ComponentInfo>{
         ComponentInfo{L"Stroika"sv, Configuration::Version{kStroika_Version_FullVersion}.AsPrettyVersionString (), URI{"https://github.com/SophistSolutions/Stroika"}}
 #if qHasFeature_OpenSSL
-        ,
-        ComponentInfo{L"OpenSSL"sv, String::FromASCII (OPENSSL_VERSION_TEXT), URI{"https://www.openssl.org/"}}
+        , ComponentInfo{L"OpenSSL"sv, String::FromASCII (OPENSSL_VERSION_TEXT), URI{"https://www.openssl.org/"}}
 #endif
 #if qHasFeature_LibCurl
-        ,
-        ComponentInfo{L"libcurl"sv, String::FromASCII (LIBCURL_VERSION), URI{"https://curl.se/"}}
+        ,  ComponentInfo{L"libcurl"sv, String::FromASCII (LIBCURL_VERSION), URI{"https://curl.se/"}}
 #endif
 #if qHasFeature_boost && 0 /*NOT USING BOOST AS FAR AS I KNOW*/
-        ,
-        ComponentInfo{L"boost"sv, String::FromASCII (BOOST_LIB_VERSION)}
+        , ComponentInfo{L"boost"sv, String::FromASCII (BOOST_LIB_VERSION)}
 #endif
 #if qHasFeature_sqlite
-        ,
-        ComponentInfo{L"sqlite"sv, String::FromASCII (SQLITE_VERSION)}
+        , ComponentInfo{L"sqlite"sv, String::FromASCII (SQLITE_VERSION), URI{"https://www.sqlite.org"}}
 #endif
     }};
     auto               now = DateTime::Now ();
