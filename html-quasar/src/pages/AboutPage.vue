@@ -3,11 +3,21 @@ import { onMounted } from 'vue';
 import { duration } from 'moment';
 import prettyBytes from 'pretty-bytes';
 
-import { IAbout } from "../models/IAbout";
+import { VUE_VERSION } from '../config/config';
+import { IAbout, IComponent } from "../models/IAbout";
 
 import { useWTFStore } from '../stores/WTF-store'
+import { useQuasar } from 'quasar';
 
 var polling: undefined | NodeJS.Timeout = undefined;
+const $q = useQuasar()
+
+const kUIComponents: IComponent[] = [
+  { name: "Vue ", version: VUE_VERSION, URL: "https://vuejs.org/" },
+  { name: "Quasar ", version: $q.version, URL: "https://quasar.dev/" },
+];
+
+const kRefreshFrequencyInSeconds_ : number = 10;
 
 const store = useWTFStore()
 
@@ -23,7 +33,7 @@ function pollData() {
   }
   polling = setInterval(() => {
     store.fetchAboutInfo();
-  }, 10 * 1000);
+  }, kRefreshFrequencyInSeconds_ * 1000);
 }
 
 onMounted(() => {
@@ -41,11 +51,16 @@ onMounted(() => {
     <!--App Description Overview-->
     <q-card>
       <q-card-section>
+        (vision, not all implemented)
+      </q-card-section>
+      <q-card-section>
         Why The Fuck is My Network So Slow monitors your local network, and tracks over time what devices are on the
-        network, and what traffic they generate.
-        It (will soon) allow you to see what is normal behavior on your network, and notify you of interesting
-        abberations, to help see
-        why your network maybe sometimes slow.
+        network, and what traffic they generate. It also monitors the 'speed' of your various network links.
+        It allows you to see what is normal behavior on your network, and notify you of interesting
+        abberations, to help see why your network maybe sometimes slow.
+      </q-card-section>
+      <q-card-section>
+      Multiple WTF instances can be setup on different machines on a network to share information with each other, to help get a better multi-dimensional (and sometimes more consitent) view of your network.
       </q-card-section>
     </q-card>
 
@@ -60,11 +75,11 @@ onMounted(() => {
                 <td>Version</td>
                 <td>{{ about()?.applicationVersion }}</td>
               </tr>
-              <tr v-if="about()?.serverInfo">
+              <tr v-if="about()">
                 <td style="vertical-align: top">Components</td>
                 <td>
                   <table>
-                    <tr v-for="c in about()?.serverInfo?.componentVersions" :key="c.name">
+                    <tr v-for="c in about().serverInfo.componentVersions.concat(kUIComponents)" :key="c.name">
                       <td>
                         <a :href="c.URL" target="_new">{{ c.name }}</a>
                       </td>
@@ -76,11 +91,11 @@ onMounted(() => {
                 </td>
               </tr>
               <tr v-if="about()?.serverInfo">
-                <td title="Average over the measurement interval for just this service process;
+                <td title="Average CPU usage of the WTF (server app process) over the last 30 seconds;
 Units 1=1 logical core">
                   CPU-Usage
                 </td>
-                <td>{{ about().serverInfo.currentProcess?.averageCPUTimeUsed }} CPUs</td>
+                <td>{{ about().serverInfo.currentProcess?.averageCPUTimeUsed || "?" }} CPUs</td>
               </tr>
               <tr v-if="
                 about()?.serverInfo?.currentProcess &&
@@ -115,27 +130,27 @@ Units 1=1 logical core">
     <!--App Running on-->
     <q-card>
       <q-card-section>
-        <div >
-          <div class="row" v-if="about()?.serverInfo?.currentMachine">
+        <div>
+          <div class="row" v-if="about()">
             <div class="col-2">WTF Running on</div>
             <div class="col-10">
-              <table id="appRunningOnTable">
+              <table>
                 <tr>
                   <td>OS</td>
-                  <td>{{ about().serverInfo?.currentMachine?.operatingSystem?.fullVersionedName }}</td>
+                  <td>{{ about().serverInfo.currentMachine.operatingSystem.fullVersionedName }}</td>
                 </tr>
                 <tr>
                   <td title="How long has the machine (hosting the service) been running">Uptime</td>
-                  <td>{{ duration(about().serverInfo?.currentMachine?.machineUptime).humanize() }}</td>
+                  <td>{{ duration(about().serverInfo.currentMachine.machineUptime).humanize() }}</td>
                 </tr>
-                <tr v-if="about().serverInfo.currentMachine.runQLength != null">
+                <tr v-if="about().serverInfo.currentMachine.runQLength">
                   <td
                     title="How many threads in each (logical) processors Run-Q on average. 0 means no use, 1 means ALL cores fully used with no Q, and 2 means all cores fully utilized and each core with a Q length of 1">
                     Run-Q</td>
                   <td>{{ about().serverInfo.currentMachine.runQLength }} threads</td>
                 </tr>
                 <tr>
-                  <td title="Average over the measurement interval for the entire machine hosting the service.
+                  <td title="Average CPU usage for the last 30 seconds for the entire machine hosting the service.
 Units 1=1 logical core">
                     CPU-Usage
                   </td>

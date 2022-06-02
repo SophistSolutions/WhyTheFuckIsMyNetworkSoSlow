@@ -11,6 +11,11 @@
 
 const { configure } = require('quasar/wrappers');
 
+const fs = require('fs')
+// const packageJson = JSON.parse(fs.readFileSync('./package.json'))
+const packageLockJson = JSON.parse(fs.readFileSync('./package-lock.json'))
+// const wtfUIVersion = packageJson.version || 0
+const vueVersion = packageLockJson.packages['node_modules/@vue/runtime-core'].version;
 
 module.exports = configure(function (/* ctx */) {
   return {
@@ -30,8 +35,8 @@ module.exports = configure(function (/* ctx */) {
     // --> boot files are part of "main.js"
     // https://v2.quasar.dev/quasar-cli-vite/boot-files
     boot: [
-      
-      
+
+
     ],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#css
@@ -56,7 +61,7 @@ module.exports = configure(function (/* ctx */) {
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#build
     build: {
       target: {
-        browser: [ 'es2019', 'edge88', 'firefox78', 'chrome87', 'safari13.1' ],
+        browser: ['es2019', 'edge88', 'firefox78', 'chrome87', 'safari13.1'],
         node: 'node16'
       },
 
@@ -70,14 +75,12 @@ module.exports = configure(function (/* ctx */) {
       // publicPath: '/',
       // analyze: true,
       env: {
-
         VUE_APP_DEFAULT_API_PORT: 8080,
-
+        // VUE_MY_APP_VERSION: wtfUIVersion,
+        VUE_VERSION: vueVersion,
         //#VUE_APP_ROOT_API="http://hercules.local:8080",
-        
-       // VUE_APP_DEBUG_MODE=true
-
-      },      
+        // VUE_APP_DEBUG_MODE=true
+      },
       // rawDefine: {}
       // ignorePublicFolder: true,
       // minify: false,
@@ -87,7 +90,7 @@ module.exports = configure(function (/* ctx */) {
       // extendViteConf (viteConf) {},
       // viteVuePluginOptions: {},
 
-      
+
       // vitePlugins: [
       //   [ 'package-name', { ..options.. } ]
       // ]
@@ -136,7 +139,7 @@ module.exports = configure(function (/* ctx */) {
     // https://v2.quasar.dev/quasar-cli-vite/developing-ssr/configuring-ssr
     ssr: {
       // ssrPwaHtmlFilename: 'offline.html', // do NOT use index.html as name!
-                                          // will mess up SSR
+      // will mess up SSR
 
       // extendSSRWebserverConf (esbuildConf) {},
       // extendPackageJson (json) {},
@@ -147,7 +150,7 @@ module.exports = configure(function (/* ctx */) {
       // manualPostHydrationTrigger: true,
 
       prodPort: 3000, // The default port that the production server should use
-                      // (gets superseded if process.env.PORT is specified at runtime)
+      // (gets superseded if process.env.PORT is specified at runtime)
 
       middlewares: [
         'render' // keep this as last one
