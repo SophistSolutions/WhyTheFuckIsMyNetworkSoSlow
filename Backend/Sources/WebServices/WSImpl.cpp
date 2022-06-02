@@ -82,6 +82,8 @@ namespace {
     }
 #endif
 
+    static const Duration kCaptureFrequency_ = 30s;
+
     struct MyCapturer_ final : Capturer {
     public:
         Instruments::CPU::Instrument     fCPUInstrument{};
@@ -98,7 +100,7 @@ namespace {
         };
         MyCapturer_ ()
         {
-            AddCaptureSet (CaptureSet{30s, {fCPUInstrument, fProcessInstrument}});
+            AddCaptureSet (CaptureSet{kCaptureFrequency_, {fCPUInstrument, fProcessInstrument}});
         }
     };
 }
