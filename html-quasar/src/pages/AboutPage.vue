@@ -8,7 +8,7 @@ import { VUE_VERSION } from '../config/config';
 import { IAbout, IComponent } from "../models/IAbout";
 import { useWTFStore } from '../stores/WTF-store'
 
-var polling: undefined | NodeJS.Timeout = undefined;
+let polling:  undefined | NodeJS.Timeout;
 const $q = useQuasar()
 
 const kUIComponents: IComponent[] = [

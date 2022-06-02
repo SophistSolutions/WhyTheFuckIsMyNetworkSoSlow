@@ -93,7 +93,7 @@ export const useWTFStore = defineStore('WTF', {
     async fetchAboutInfo() {
       this.about = await fetchAboutInfo();
     },
-    async fetchDevices(searchSpecs: ISortBy) {
+    async fetchDevices(searchSpecs?: ISortBy) {
       const devices: IDevice[] = await fetchDevices(searchSpecs);
       this.rolledUpDeviceIDs = devices.map((x) => x.id);
       devices.forEach((x) => (this.deviceDetails[x.id] = x));
