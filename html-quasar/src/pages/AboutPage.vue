@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { onMounted, onUnmounted, computed } from 'vue';
 import { duration } from 'moment';
 import prettyBytes from 'pretty-bytes';
 
@@ -17,15 +17,13 @@ const kUIComponents: IComponent[] = [
   { name: "Quasar ", version: $q.version, URL: "https://quasar.dev/" },
 ];
 
-const kRefreshFrequencyInSeconds_ : number = 10;
+const kRefreshFrequencyInSeconds_: number = 10;
 
 const store = useWTFStore()
 
-function about(): IAbout {
-  return store.getAboutInfo;
-}
+let aboutData = computed(() => store.getAboutInfo);
 
-function pollData() {
+onMounted(() => {
   // first time check quickly, then more gradually
   store.fetchAboutInfo();
   if (polling) {
@@ -34,15 +32,14 @@ function pollData() {
   polling = setInterval(() => {
     store.fetchAboutInfo();
   }, kRefreshFrequencyInSeconds_ * 1000);
-}
-
-onMounted(() => {
-  pollData()
+})
+onUnmounted(() => {
+  clearInterval(polling);
 })
 </script>
 
 <template>
-  <q-page class="col q-pa-md q-gutter-md" v-if="about">
+  <q-page class="col q-pa-md q-gutter-md" v-if="aboutData">
 
     <div class="row text-h5">
       About 'Why The Fuck is My Network So Slow'
@@ -60,7 +57,8 @@ onMounted(() => {
         abberations, to help see why your network maybe sometimes slow.
       </q-card-section>
       <q-card-section>
-      Multiple WTF instances can be setup on different machines on a network to share information with each other, to help get a better multi-dimensional (and sometimes more consitent) view of your network.
+        Multiple WTF instances can be setup on different machines on a network to share information with each other, to
+        help get a better multi-dimensional (and sometimes more consitent) view of your network.
       </q-card-section>
     </q-card>
 
@@ -71,15 +69,15 @@ onMounted(() => {
           <div class="col-2">WTF App</div>
           <div class="col-10">
             <table>
-              <tr v-if="about()?.applicationVersion">
+              <tr v-if="aboutData">
                 <td>Version</td>
-                <td>{{ about()?.applicationVersion }}</td>
+                <td>{{ aboutData.applicationVersion }}</td>
               </tr>
-              <tr v-if="about()">
+              <tr v-if="aboutData">
                 <td style="vertical-align: top">Components</td>
                 <td>
                   <table>
-                    <tr v-for="c in about().serverInfo.componentVersions.concat(kUIComponents)" :key="c.name">
+                    <tr v-for="c in aboutData.serverInfo.componentVersions.concat(kUIComponents)" :key="c.name">
                       <td>
                         <a :href="c.URL" target="_new">{{ c.name }}</a>
                       </td>
@@ -90,35 +88,35 @@ onMounted(() => {
                   </table>
                 </td>
               </tr>
-              <tr v-if="about()?.serverInfo">
+              <tr v-if="aboutData">
                 <td title="Average CPU usage of the WTF (server app process) over the last 30 seconds;
 Units 1=1 logical core">
                   CPU-Usage
                 </td>
-                <td>{{ about().serverInfo.currentProcess?.averageCPUTimeUsed || "?" }} CPUs</td>
+                <td>{{ aboutData.serverInfo.currentProcess.averageCPUTimeUsed || "?" }} CPUs</td>
               </tr>
               <tr v-if="
-                about()?.serverInfo?.currentProcess &&
-                about().serverInfo.currentProcess.combinedIOReadRate &&
-                about().serverInfo.currentProcess.combinedIOWriteRate
+                aboutData &&
+                aboutData.serverInfo.currentProcess.combinedIOReadRate &&
+                aboutData.serverInfo.currentProcess.combinedIOWriteRate
               ">
                 <td title="Combined I/O rate (network+disk)">IO Rate (read; write)</td>
                 <td>
-                  {{ prettyBytes(about().serverInfo.currentProcess.combinedIOReadRate) }}/sec ;
-                  {{ prettyBytes(about().serverInfo.currentProcess.combinedIOWriteRate) }}/sec
+                  {{ prettyBytes(aboutData.serverInfo.currentProcess.combinedIOReadRate) }}/sec ;
+                  {{ prettyBytes(aboutData.serverInfo.currentProcess.combinedIOWriteRate) }}/sec
                 </td>
               </tr>
-              <tr v-if="about()?.serverInfo?.currentProcess?.processUptime">
+              <tr v-if="aboutData && aboutData.serverInfo.currentProcess.processUptime">
                 <td title="How long has the service been running">Uptime</td>
                 <td>
-                  {{ duration(about().serverInfo?.currentProcess?.processUptime).humanize() }}
+                  {{ duration(aboutData.serverInfo?.currentProcess?.processUptime).humanize() }}
                 </td>
               </tr>
-              <tr v-if="about()?.serverInfo?.currentProcess">
+              <tr v-if="aboutData">
                 <td title="Working set size, or RSS resident set size (how much RAM is an active use)">
                   WSS
                 </td>
-                <td>{{ prettyBytes(about().serverInfo.currentProcess.workingOrResidentSetSize) }}</td>
+                <td>{{ prettyBytes(aboutData.serverInfo.currentProcess.workingOrResidentSetSize) }}</td>
               </tr>
             </table>
           </div>
@@ -126,35 +124,34 @@ Units 1=1 logical core">
       </q-card-section>
     </q-card>
 
-
     <!--App Running on-->
     <q-card>
       <q-card-section>
         <div>
-          <div class="row" v-if="about()">
+          <div class="row" v-if="aboutData">
             <div class="col-2">WTF Running on</div>
             <div class="col-10">
               <table>
                 <tr>
                   <td>OS</td>
-                  <td>{{ about().serverInfo.currentMachine.operatingSystem.fullVersionedName }}</td>
+                  <td>{{ aboutData.serverInfo.currentMachine.operatingSystem.fullVersionedName }}</td>
                 </tr>
                 <tr>
                   <td title="How long has the machine (hosting the service) been running">Uptime</td>
-                  <td>{{ duration(about().serverInfo.currentMachine.machineUptime).humanize() }}</td>
+                  <td>{{ duration(aboutData.serverInfo.currentMachine.machineUptime).humanize() }}</td>
                 </tr>
-                <tr v-if="about().serverInfo.currentMachine.runQLength">
+                <tr v-if="aboutData.serverInfo.currentMachine.runQLength">
                   <td
                     title="How many threads in each (logical) processors Run-Q on average. 0 means no use, 1 means ALL cores fully used with no Q, and 2 means all cores fully utilized and each core with a Q length of 1">
                     Run-Q</td>
-                  <td>{{ about().serverInfo.currentMachine.runQLength }} threads</td>
+                  <td>{{ aboutData.serverInfo.currentMachine.runQLength }} threads</td>
                 </tr>
                 <tr>
                   <td title="Average CPU usage for the last 30 seconds for the entire machine hosting the service.
 Units 1=1 logical core">
                     CPU-Usage
                   </td>
-                  <td>{{ about().serverInfo.currentMachine.totalCPUUsage || "?" }} CPUs</td>
+                  <td>{{ aboutData.serverInfo.currentMachine.totalCPUUsage || "?" }} CPUs</td>
                 </tr>
               </table>
             </div>
@@ -163,9 +160,7 @@ Units 1=1 logical core">
       </q-card-section>
     </q-card>
 
-
     <!--Written by-->
-
     <q-card>
       <q-card-section>
         <div class="row">
@@ -196,6 +191,7 @@ Units 1=1 logical core">
         </div>
       </q-card-section>
     </q-card>
+
     <!--Report issues at-->
     <q-card>
       <q-card-section>
