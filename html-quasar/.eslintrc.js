@@ -72,7 +72,7 @@ module.exports = {
     
     'prefer-promise-reject-errors': 'off',
 
-    quotes: ['warn', 'single', { avoidEscape: true }],
+    // quotes: ['warn', 'single', { avoidEscape: true }],
 
     // this rule, if on, would require explicit return type on the `render` function
     '@typescript-eslint/explicit-function-return-type': 'off',
@@ -85,6 +85,10 @@ module.exports = {
     'no-unused-vars': 'off',
 
     // allow debugger during development only
-    'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off'
+    'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
+
+    //. at least for now....
+    '@typescript-eslint/no-unused-vars' : 'off',
+    '@typescript-eslint/no-inferrable-types': 'off',
   }
 }

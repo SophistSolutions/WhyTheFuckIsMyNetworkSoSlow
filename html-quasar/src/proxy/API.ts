@@ -1,12 +1,12 @@
-import { IDevice } from "@/models/device/IDevice";
-import { ISortBy, SearchSpecification, SortFieldEnum } from "@/models/device/SearchSpecification";
-import { IAbout } from "@/models/IAbout";
-import { INetwork } from "@/models/network/INetwork";
-import { INetworkInterface } from "@/models/network/INetworkInterface";
+import { IDevice } from "../models/device/IDevice";
+import { ISortBy, SearchSpecification, SortFieldEnum } from "../models/device/SearchSpecification";
+import { IAbout } from "../models/IAbout";
+import { INetwork } from "../models/network/INetwork";
+import { INetworkInterface } from "../models/network/INetworkInterface";
 
-import { API_ROOT } from "@/config";
+import { API_ROOT } from "../config";
 
-import { Logger } from "@/utils/Logger";
+import { Logger } from "../utils/Logger";
 
 export async function fetchNetworks(): Promise<INetwork[]> {
   return fetch(API_ROOT + `/networks?recurse=true`)

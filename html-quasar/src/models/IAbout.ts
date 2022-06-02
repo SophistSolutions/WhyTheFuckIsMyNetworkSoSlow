@@ -1,4 +1,4 @@
-import { OperatingSystem } from "@/models/OperatingSystem";
+import { OperatingSystem } from "../models/OperatingSystem";
 
 export interface ICurrentMachine {
   operatingSystem: OperatingSystem;
