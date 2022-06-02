@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted} from 'vue';
+import { onMounted } from 'vue';
 import { duration } from 'moment';
 import prettyBytes from 'pretty-bytes';
 
@@ -32,15 +32,22 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="about">
-    <v-container class="pa-6" fluid v-if="about">
-      <v-row>
-        <v-col cols="12">
-          <h1>About 'Why The Fuck is My Network So Slow'</h1>
-        </v-col>
-      </v-row>
+  <q-page class="col" v-if="about">
 
-      <v-row>
+    <div class="row">
+      <h1>About 'Why The Fuck is My Network So Slow'</h1>
+    </div>
+
+    <div class="row">
+
+      <div>
+        Why The Fuck is My Network So Slow monitors your local network, and tracks over time what devices are on the network, and what traffic they generate.
+        It (will soon) allow you to see what is normal behavior on your network, and notify you of interesting abberations, to help see 
+        why your network maybe sometimes slow.
+      </div>
+
+      <!--App Stats-->
+      <div class="col-4">
         <v-col>App</v-col>
         <v-col cols="10">
           <table id="appDataTable">
@@ -95,9 +102,11 @@ Units 1=1 logical core">
             </tr>
           </table>
         </v-col>
-      </v-row>
+      </div>
 
-      <v-row v-if="about()?.serverInfo?.currentMachine">
+
+      <!--App Running on-->
+      <div class="col-4" v-if="about()?.serverInfo?.currentMachine">
         <v-col>App Running on</v-col>
         <v-col cols="10">
           <table id="appRunningOnTable">
@@ -124,44 +133,47 @@ Units 1=1 logical core">
             </tr>
           </table>
         </v-col>
-      </v-row>
+      </div>
+    </div>
 
-      <v-row>
-        <v-col>
-          Written by
-        </v-col>
-        <v-col cols="10">
-          <table>
-            <tr>
-              <td>
-                Lewis G. Pringle, Jr.
-              </td>
-              <td>
-                <a href="https://www.linkedin.com/in/lewispringle/" target="_new">LinkedIn</a> |
-                <a href="https://github.com/LewisPringle" target="_new">GitHub</a>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                Robert Lemos Pringle
-              </td>
-              <td>
-                <a href="https://github.com/robertpringle" target="_new">GitHub</a>
-              </td>
-            </tr>
-          </table>
-        </v-col>
-      </v-row>
 
-      <v-row>
-        <v-col>
-          Report issues at
-        </v-col>
-        <v-col cols="10">
-          <a href="https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues" target="_new">github
-            issues</a>
-        </v-col>
-      </v-row>
-    </v-container>
-  </div>
+    <!--Written by-->
+    <div class="row">
+      <div class="col-2">
+        Written by
+      </div>
+      <div class="col-10">
+        <table>
+          <tr>
+            <td>
+              Lewis G. Pringle, Jr.
+            </td>
+            <td>
+              <a href="https://www.linkedin.com/in/lewispringle/" target="_new">LinkedIn</a> |
+              <a href="https://github.com/LewisPringle" target="_new">GitHub</a>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              Robert Lemos Pringle
+            </td>
+            <td>
+              <a href="https://github.com/robertpringle" target="_new">GitHub</a>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!--Report issues at-->
+    <div class="row">
+      <div class="col-2">
+        Report issues at
+      </div>
+      <div class="col-10">
+        <a href="https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues" target="_new">github
+          issues</a>
+      </div>
+    </div>
+  </q-page>
 </template>
