@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, computed } from 'vue';
+import { useQuasar } from 'quasar';
 import { duration } from 'moment';
 import prettyBytes from 'pretty-bytes';
 
 import { VUE_VERSION } from '../config/config';
 import { IAbout, IComponent } from "../models/IAbout";
-
 import { useWTFStore } from '../stores/WTF-store'
-import { useQuasar } from 'quasar';
 
 var polling: undefined | NodeJS.Timeout = undefined;
 const $q = useQuasar()
