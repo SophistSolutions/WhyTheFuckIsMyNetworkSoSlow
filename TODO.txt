@@ -1,13 +1,12 @@
 - quasar work  
 
-  - and then work on toolbar
-    (mostly wroking - but get breadcrumbs centered)
-	
   - AND THEN try to get devices page working (or maybe do simple single device page first)
-
 
   - only when devices - PLURAL works - will I know if quasar will be an adequate replacement for vuetify
 
+  - and then work on toolbar
+    'extras' - did an untested draft...
+	
 
 + Add /health WS endpoint - mostly for debugging? OR EMBELISH ABOUT interface
   Include stuff like 

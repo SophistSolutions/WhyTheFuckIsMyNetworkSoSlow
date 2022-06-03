@@ -3,6 +3,7 @@
 import { defineComponent, ref } from 'vue';
 import EssentialLink from 'components/EssentialLink.vue';
 
+// Leave around stuff from sample layout, for a bit...
 const linksList = [
   {
     title: 'Docs',
@@ -72,13 +73,13 @@ export default defineComponent({
 <template>
   <q-layout view="lHh Lpr lFf">
     <q-header elevated>
-      <q-toolbar>
+      <q-toolbar class="justify-between">
         <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
 
         <q-toolbar-title>
           WhyTheFuckIsMyNetworkSoSlow
         </q-toolbar-title>
-
+ 
         <q-breadcrumbs separator=">" active-color="secondary">
           <template v-slot:divider>
             <v-icon>mdi-chevron-right</v-icon>
@@ -88,9 +89,7 @@ export default defineComponent({
           </template>
         </q-breadcrumbs>
 
-        <q-separator />
-
-        <q-btn flat dense round icon="mdi-dots-vertical" aria-label="Menu" color="white">
+        <q-btn flat dense round icon="mdi-dots-vertical" style="margin-left: 1in" aria-label="Menu" color="white">
           <q-menu>
             <q-list style="min-width: 100px">
               <template v-for="(item, index) in this.$router.options.routes" :key="index">
@@ -117,7 +116,6 @@ export default defineComponent({
         <q-item-label header>
           Essential Links
         </q-item-label>
-
         <EssentialLink v-for="link in essentialLinks" :key="link.title" v-bind="link" />
       </q-list>
     </q-drawer>
