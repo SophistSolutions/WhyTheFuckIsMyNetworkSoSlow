@@ -15,7 +15,7 @@
     "roboto-fontface": "*",
     "vue": "^3.2.13",
     "vue-router": "^4.0.3",
-    "vuetify": "^3.0.0-beta.2",
+    "vuetify": "^3.0.0-beta.3",
     "vuex": "^4.0.0",
     "webfontloader": "^1.0.0"
   },
@@ -35,7 +35,35 @@
     "sass": "^1.32.7",
     "sass-loader": "^12.0.0",
     "typescript": "~4.5.5",
-    "vue-cli-plugin-vuetify": "~2.5.0",
+    "vue-cli-plugin-vuetify": "~2.5.1",
     "webpack-plugin-vuetify": "^2.0.0-alpha.0"
-  }
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "plugin:vue/vue3-essential",
+      "eslint:recommended",
+      "@vue/typescript/recommended"
+    ],
+    "parserOptions": {
+      "ecmaVersion": 2020
+    },
+    "rules": {
+      "@typescript-eslint/no-inferrable-types": "off",
+      "vue/no-deprecated-filter": "off",
+      "vue/multi-word-component-names": "off",
+      "vue/no-deprecated-v-bind-sync": "off",
+      "vue/no-deprecated-slot-attribute": "off",
+      "vue/no-deprecated-slot-scope-attribute": "off"
+    }
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead",
+    "not ie 11"
+  ]
 }

@@ -18,7 +18,7 @@ onMounted(() => {
     onChange()
 })
 
-watch ([()=>props.message,()=>props.popupTitle], onChange)
+watch ([()=>props.message,()=>props.popupTitle], onChange);
 
 var useTitle: string = "";
 </script>
