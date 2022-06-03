@@ -1,49 +1,3 @@
-<template>
-  <q-layout view="lHh Lpr lFf">
-    <q-header elevated>
-      <q-toolbar>
-        <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
-
-        <q-toolbar-title>
-          WhyTheFuckIsMyNetworkSoSlow
-        </q-toolbar-title>
-
-        <q-btn flat dense round icon="mdi-dots-vertical" aria-label="Menu" color="white">
-          <q-menu>
-            <q-list style="min-width: 100px">
-              <template v-for="(item, index) in this.$router.options.routes" :key="index">
-                <q-item clickable v-close-popup :to="item.path" >
-                  <q-item-section> {{ item.name }}</q-item-section>
-                </q-item>
-                <v-divider v-if="item?.meta?.divderAfter"> </v-divider>
-                <v-spacer v-if="item?.meta?.divderAfter"></v-spacer>
-              </template>
-            </q-list>
-          </q-menu>
-        </q-btn>
-
-        <template v-slot:extension v-if="this.$slots.extrastuff">
-          <slot name="extrastuff" />
-        </template>
-
-      </q-toolbar>
-    </q-header>
-
-    <q-drawer v-model="leftDrawerOpen" show-if-above bordered>
-      <q-list>
-        <q-item-label header>
-          Essential Links
-        </q-item-label>
-
-        <EssentialLink v-for="link in essentialLinks" :key="link.title" v-bind="link" />
-      </q-list>
-    </q-drawer>
-
-    <q-page-container>
-      <router-view />
-    </q-page-container>
-  </q-layout>
-</template>
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
@@ -114,3 +68,62 @@ export default defineComponent({
   }
 });
 </script>
+
+<template>
+  <q-layout view="lHh Lpr lFf">
+    <q-header elevated>
+      <q-toolbar>
+        <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
+
+        <q-toolbar-title>
+          WhyTheFuckIsMyNetworkSoSlow
+        </q-toolbar-title>
+
+        <q-breadcrumbs separator=">" active-color="secondary">
+          <template v-slot:divider>
+            <v-icon>mdi-chevron-right</v-icon>
+          </template>
+          <template v-for="(item, index) in this.$route.meta.breadcrumbs" :key="index">
+            <q-breadcrumbs-el :href="item.href" :disabled="item.disabled" :label="item.text.toUpperCase()" />
+          </template>
+        </q-breadcrumbs>
+
+        <q-separator />
+
+        <q-btn flat dense round icon="mdi-dots-vertical" aria-label="Menu" color="white">
+          <q-menu>
+            <q-list style="min-width: 100px">
+              <template v-for="(item, index) in this.$router.options.routes" :key="index">
+                <q-item v-if="item.name" clickable v-close-popup :to="item.path">
+                  <q-item-section> {{ item.name }}</q-item-section>
+                </q-item>
+                <q-separator v-if="item?.meta?.divderAfter" />
+                <v-divider v-if="item?.meta?.divderAfter"> </v-divider>
+                <v-spacer v-if="item?.meta?.divderAfter"></v-spacer>
+              </template>
+            </q-list>
+          </q-menu>
+        </q-btn>
+
+        <template v-slot:extension v-if="this.$slots.extrastuff">
+          <slot name="extrastuff" />
+        </template>
+
+      </q-toolbar>
+    </q-header>
+
+    <q-drawer v-model="leftDrawerOpen" show-if-above bordered>
+      <q-list>
+        <q-item-label header>
+          Essential Links
+        </q-item-label>
+
+        <EssentialLink v-for="link in essentialLinks" :key="link.title" v-bind="link" />
+      </q-list>
+    </q-drawer>
+
+    <q-page-container>
+      <router-view />
+    </q-page-container>
+  </q-layout>
+</template>

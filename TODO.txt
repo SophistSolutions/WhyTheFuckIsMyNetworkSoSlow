@@ -1,6 +1,8 @@
 - quasar work  
 
-  - and then work on toolbar (menus / breadcrumbs etc)
+  - and then work on toolbar
+    (mostly wroking - but get breadcrumbs centered)
+	
   - AND THEN try to get devices page working (or maybe do simple single device page first)
 
 
