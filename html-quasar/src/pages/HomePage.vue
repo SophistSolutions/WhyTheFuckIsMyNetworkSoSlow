@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineComponent, onMounted, onUnmounted } from 'vue';
+import { defineComponent, onMounted, onUnmounted, computed, ComputedRef } from 'vue';
 
 import { IDevice } from "../models/device/IDevice";
 import { INetwork } from "../models/network/INetwork";
@@ -21,12 +21,11 @@ defineComponent({
 });
 
 const store = useWTFStore()
-let polling:  undefined | NodeJS.Timeout;
+let polling: undefined | NodeJS.Timeout;
 
 const kRefreshFrequencyInSeconds_: number = 15;
 
 onMounted(() => {
-  console.log('got to mounted')
   store.fetchDevices();
   store.fetchAvailableNetworks();
   polling = setInterval(() => {
@@ -38,18 +37,19 @@ onUnmounted(() => {
   clearInterval(polling);
 })
 
-
-function networks(): INetwork[] {
-  const allNetworks: INetwork[] = store.getAvailableNetworks;
-  const result: INetwork[] = [];
-  allNetworks.forEach((i) => {
+let allNetworks : ComputedRef<INetwork[]> = computed(() => store.getAvailableNetworks);
+let shownNetworks : ComputedRef<INetwork[]> = computed(() => {
+   const result: INetwork[] = [];
+  allNetworks.value.forEach((i) => {
     if (i.internetServiceProvider != null || i.geographicLocation != null) {
       result.push(i);
     }
   });
   return result;
-}
-interface IDisplayedNetwork   {
+});
+
+
+interface IDisplayedNetwork {
   id: string;
   link: string | null;
   name: string;
@@ -59,17 +59,17 @@ interface IDisplayedNetwork   {
   originalNetwork: INetwork;
 }
 
-function networksAsDisplayed(): IDisplayedNetwork[] {
+let shownNetworksAsDisplayed : ComputedRef<IDisplayedNetwork[]> = computed(() => {
   const result: IDisplayedNetwork[] = [];
-  networks().forEach((i: INetwork) => {
+  shownNetworks.value.forEach((i: INetwork) => {
     result.push({
       id: i.id,
       name: GetNetworkName(i),
       link: GetNetworkLink(i),
       active: "true",
       internetInfo:
-        (i.gateways == null ? "" : i.gateways.join(", ")) +
-        (i.internetServiceProvider == null ? " " : " (" + i.internetServiceProvider.name + ")"),
+        (i.gateways ? i.gateways.join(", "): "") +
+        (i.internetServiceProvider?" (" + i.internetServiceProvider.name + ")": " "),
       status: "healthy",
       originalNetwork: i
     });
@@ -84,35 +84,38 @@ function networksAsDisplayed(): IDisplayedNetwork[] {
     return 0;
   });
   return result;
-}
+});
 
-function devices(): IDevice[] {
-  return store.getDevices;
-}
+let allDevices : ComputedRef<IDevice[]> = computed(() => store.getDevices);
 </script>
 
 <template>
-  <v-container>
-    <v-row class="text-center">
-      <v-col class="mb-4">
-        <h1 class="display-2 font-weight-bold mb-3">
-          Why The Fuck Is My Network So Slow?
-        </h1>
-      </v-col>
-    </v-row>
-    <v-row>
-      <v-col class="mb-4">
-        <router-link to="/networks">Networks</router-link> (active + favorites)
-        <ul>
-          <li v-for="network in networksAsDisplayed()" :key="network.id">
-            <ReadOnlyTextWithHover :message="network.name" :link="network.link" />
-            <div>
-              : {{ GetDeviceIDsInNetwork(network.originalNetwork, devices()).length }}
-              <router-link to="/devices">devices</router-link>, operating normally
-            </div>
-          </li>
-        </ul>
-      </v-col>
-    </v-row>
-  </v-container>
+  <q-page class="col q-pa-md q-gutter-md">
+
+    <div class="row text-h5">
+      About 'Why The Fuck is My Network So Slow'
+    </div>
+
+    <q-card>
+      <q-card-section>
+        <div class="row">
+          <div class="col">
+            <router-link to="/networks">Networks</router-link> (active + favorites)
+            <ul>
+              <li v-for="network in shownNetworksAsDisplayed" :key="network.id">
+                <ReadOnlyTextWithHover :message="network.name" :link="network.link" />
+                <div v-if="network.internetInfo">
+                  : {{ network.internetInfo }}
+                </div>
+                <div>
+                  : {{ GetDeviceIDsInNetwork(network.originalNetwork, allDevices).length }}
+                  <router-link to="/devices">devices</router-link>, operating normally
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </q-card-section>
+    </q-card>
+  </q-page>
 </template>

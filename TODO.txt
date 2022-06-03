@@ -1,3 +1,28 @@
+- quasar work  
+
+  - finish getting home page as cleaned up as about page.
+   (up to old ui)
+  - and then work on toolbar (menus / breadcrumbs etc)
+  - AND THEN try to get devices page working (or maybe do simple single device page first)
+
+
+  - only when devices - PLURAL works - will I know if quasar will be an adequate replacement for vuetify
+
+
++ Add /health WS endpoint - mostly for debugging? OR EMBELISH ABOUT interface
+  Include stuff like 
+   - median response time for a few key requests.
+   - median q length for WS response pool
+   - maybe some memory stats? Maybe this is too close to what we already return for WTF stats. Maybe just 
+     embellish those?
+
++ Stroika WebServer framework feature to add: 503
+  - add some max # of queued up items in threadpool after whihc we generate 503.
+  - THEN - and related - change the throttling logic in GUI app, so if there is outstanding call,
+    we don't generate another. And similarly, if we see slow or 503 responses, increase delay (maybe rename the fetch store call to 
+	fetchIfNotTooBusy or take optioanl args saying how aggressive to be - more on initial load, and less on refreshes)
+
+
 > Add to device data structure  "FirstSeen"
   and then in GUI for 'aggregates' replace that ID in the display with a timerange (and have the id in the hover text maybe)
 And in rollup, nice to have seen range (first/last seen)
