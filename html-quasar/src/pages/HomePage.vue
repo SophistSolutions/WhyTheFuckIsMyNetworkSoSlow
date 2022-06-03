@@ -40,6 +40,7 @@ onUnmounted(() => {
 let allNetworks : ComputedRef<INetwork[]> = computed(() => store.getAvailableNetworks);
 let shownNetworks : ComputedRef<INetwork[]> = computed(() => {
    const result: INetwork[] = [];
+   // @todo - probaly just include 'active' and 'favorite' networks here (as it hints in UI)
   allNetworks.value.forEach((i) => {
     if (i.internetServiceProvider != null || i.geographicLocation != null) {
       result.push(i);
