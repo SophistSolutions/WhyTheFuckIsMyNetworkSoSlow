@@ -1,7 +1,5 @@
 - quasar work  
 
-  - finish getting home page as cleaned up as about page.
-   (up to old ui)
   - and then work on toolbar (menus / breadcrumbs etc)
   - AND THEN try to get devices page working (or maybe do simple single device page first)
 
