@@ -93,7 +93,7 @@ let allDevices : ComputedRef<IDevice[]> = computed(() => store.getDevices);
   <q-page class="col q-pa-md q-gutter-md">
 
     <div class="row text-h5">
-      About 'Why The Fuck is My Network So Slow'
+      Why The Fuck is My Network So Slow?
     </div>
 
     <q-card>
