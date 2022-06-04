@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, computed } from 'vue';
 import { useQuasar } from 'quasar';
-import { duration } from 'moment';
+import * as moment from 'moment';
 import prettyBytes from 'pretty-bytes';
 
 import { VUE_VERSION } from '../config/config';
@@ -108,7 +108,7 @@ Units 1=1 logical core">
               <tr v-if="aboutData && aboutData.serverInfo.currentProcess.processUptime">
                 <td title="How long has the service been running">Uptime</td>
                 <td>
-                  {{ duration(aboutData.serverInfo?.currentProcess?.processUptime).humanize() }}
+                  {{ moment.duration(aboutData.serverInfo?.currentProcess?.processUptime).humanize() }}
                 </td>
               </tr>
               <tr v-if="aboutData">
@@ -137,7 +137,7 @@ Units 1=1 logical core">
                 </tr>
                 <tr>
                   <td title="How long has the machine (hosting the service) been running">Uptime</td>
-                  <td>{{ duration(aboutData.serverInfo.currentMachine.machineUptime).humanize() }}</td>
+                  <td>{{ moment.duration(aboutData.serverInfo.currentMachine.machineUptime).humanize() }}</td>
                 </tr>
                 <tr v-if="aboutData.serverInfo.currentMachine.runQLength">
                   <td
