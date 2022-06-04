@@ -186,6 +186,7 @@ const headers = computed<object[]>(() => {
       label: "Type",
       sortable: true,
       classes: "nowrap",
+      sortable: true,
       // width: "5em",
     },
     {
@@ -193,6 +194,7 @@ const headers = computed<object[]>(() => {
       field: "lastSeenAt",
       label: "Last Seen",
       classes: "nowrap",
+      sortable: true,
       // width: "12%",
     },
     {
@@ -200,6 +202,7 @@ const headers = computed<object[]>(() => {
       field: "manufacturerSummary",
       label: "Manufacturer",
       classes: "nowrap",
+      sortable: true,
       // width: "18%",
     },
     {
@@ -207,6 +210,7 @@ const headers = computed<object[]>(() => {
       field: "operatingSystem",
       label: "OS",
       classes: "nowrap",
+      sortable: true,
       // width: "5em",
     },
     // when shown services issues vue error - not clear why...
@@ -215,6 +219,7 @@ const headers = computed<object[]>(() => {
       field: "services",
       label: "Services",
       classes: "nowrap",
+      sortable: true,
       // width: "7em",
     },
     {
@@ -222,6 +227,7 @@ const headers = computed<object[]>(() => {
       field: "localAddresses",
       label: "Local Address",
       classes: "nowrap",
+      sortable: true,
       // width: "14%",
     },
     {
@@ -230,6 +236,7 @@ const headers = computed<object[]>(() => {
       label: "Network",
       classes: "nowrap",
       width: "14%",
+      sortable: true,
     },
     // {
     //   text: "Details",
