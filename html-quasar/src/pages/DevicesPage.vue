@@ -17,16 +17,18 @@ import {
   GetNetworkName,
   GetServices,
 } from "../models/network/Utils";
+import { useQuasar } from 'quasar';
 
 // Components
 // import Search from '../components/Search.vue';
 //import ClearButton from '../components/ClearButton.vue';
 import DeviceDetails from '../components/DeviceDetails.vue';
-// import ReadOnlyTextWithHover from '../components/ReadOnlyTextWithHover.vue';
+import ReadOnlyTextWithHover from '../components/ReadOnlyTextWithHover.vue';
 // import Link2DetailsPage from '../components/Link2DetailsPage.vue';
 import FilterSummaryMessage from '../components/FilterSummaryMessage.vue';
 
 import { useWTFStore } from '../stores/WTF-store'
+const $q = useQuasar()
 
 const store = useWTFStore()
 
@@ -76,7 +78,7 @@ const selectableNetworks = computed<object[]>(
         value: null,
       },
     ];
-    networks().forEach((n) => {
+    allAvailableNetworks.value.forEach((n) => {
       r.push({
         title: GetNetworkName(n),
         value: n.id,
@@ -158,10 +160,10 @@ function rowClicked(row: any) {
   }
 }
 
-function networks(): INetwork[] {
-  return store.getAvailableNetworks;
-}
+let allAvailableNetworks: ComputedRef<INetwork[]> = computed(() => store.getAvailableNetworks);
 
+
+// @todo use ref like below!!!
 const headers = computed<object[]>(() => {
   return [
     {
@@ -178,14 +180,14 @@ const headers = computed<object[]>(() => {
       classes: "nowrap",
       align: "left",
     },
-    // {
-    //   name: "type",
-    //   field: "type",
-    //   label: "Type",
-    //   sortable: true,
-    //   classes: "nowrap",
-    //   // width: "5em",
-    // },
+    {
+      name: "type",
+      field: "type",
+      label: "Type",
+      sortable: true,
+      classes: "nowrap",
+      // width: "5em",
+    },
     {
       name: "lastSeenAt",
       field: "lastSeenAt",
@@ -207,13 +209,14 @@ const headers = computed<object[]>(() => {
       classes: "nowrap",
       // width: "5em",
     },
-    // {
-    //   name: "services",
-    //   field: "services",
-    //   label: "Services",
-    //   classes: "nowrap",
-    //   // width: "7em",
-    // },
+    // when shown services issues vue error - not clear why...
+    {
+      name: "services",
+      field: "services",
+      label: "Services",
+      classes: "nowrap",
+      // width: "7em",
+    },
     {
       name: "localAddresses",
       field: "localAddresses",
@@ -223,7 +226,7 @@ const headers = computed<object[]>(() => {
     },
     {
       name: "networksSummary",
-      field: "networksSummary",
+      field: "attachedNetworks",
       label: "Network",
       classes: "nowrap",
       width: "14%",
@@ -235,6 +238,9 @@ const headers = computed<object[]>(() => {
     // },
   ];
 });
+
+let visibleColumns = ref(['name', 'type', 'lastSeenAt', 'manufacturerSummary', 'operatingSystem', 'services', 'localAddresses', 'networksSummary']);
+
 
 const route = useRoute()
 const router = useRouter()
@@ -336,7 +342,7 @@ let filteredExtendedDevices: ComputedRef<object[]> = computed(() => {
 defineComponent({
   components: {
     // ClearButton,
-    // ReadOnlyTextWithHover,
+    ReadOnlyTextWithHover,
     // Link2DetailsPage,
     // Search,
   },
@@ -369,6 +375,12 @@ onMounted(() => {
 
 onUnmounted(() => {
   clearInterval(polling);
+})
+
+// disable pagination
+const pagination = ref({
+  page: 1,
+  rowsPerPage: 0
 })
 </script>
 
@@ -430,45 +442,75 @@ onUnmounted(() => {
 
     <q-card class="deviceListCard">
       <q-card-section>
-        <q-table title="Devices" :rows="filteredExtendedDevices" :columns="headers" row-key="id">
-          <!-- <template v-slot:[`item.lastSeenAt`]="{ item }">
-            <ReadOnlyTextWithHover v-if="item.lastSeenAt" :message="moment().fromNow(item.lastSeenAt)" />
+        <div class="row text-h5">
+          Devices
+        </div>
+        <q-table :rows="filteredExtendedDevices" :columns="headers" row-key="id" separator="none"
+          :visible-columns="visibleColumns" :pagination.sync="pagination" hide-bottom>
+
+          <!--@todo migrate to extrastuff slot in filter section above-->
+          <template v-slot:top>
+            <q-space />
+            <q-select v-model="visibleColumns" multiple outlined dense options-dense
+              :display-value="$q.lang.table.columns" emit-value map-options :options="headers" option-value="name"
+              options-cover style="min-width: 150px" />
           </template>
-          <template v-slot:[`item.type`]="{ item }">
-            <span v-for="(t, i) in ComputeDeviceTypeIconURLs(item.type)" :key="i">
-              <img v-if="t.url" :src="t.url" :title="t.label" height="20" width="20" />
-              <ReadOnlyTextWithHover v-if="!t.url" :message="t.label" />
-            </span>
+
+          <template v-slot:body-cell-name="props">
+            <q-td :props="props">
+              <ReadOnlyTextWithHover :message="props.value" />
+            </q-td>
           </template>
-          <template v-slot:[`item.operatingSystem`]="{ item }">
-            <span v-for="(t, i) in ComputeOSIconURLList(item.operatingSystem)" :key="i">
-              <img v-if="t.url" :src="t.url" :title="t.label" height="20" width="20" />
-              <ReadOnlyTextWithHover v-if="!t.url" :message="t.label" />
-            </span>
-          </template>
-          <template v-slot:[`item.name`]="{ item }">
-            <ReadOnlyTextWithHover :message="item.name" />
-          </template>
-          <template v-slot:[`item.manufacturerSummary`]="{ item }">
-            <ReadOnlyTextWithHover :message="item.manufacturerSummary" />
-          </template>
-          <template v-slot:[`item.localAddresses`]="{ item }">
-            <ReadOnlyTextWithHover :message="item.localAddresses" />
-          </template>
-          <template v-slot:[`item.services`]="{ item }">
-            <span v-for="(s, i) in item.services" :key="i">
-              <span v-for="(t, i) in ComputeServiceTypeIconURLs([s.name])" :key="i">
+          <template v-slot:body-cell-type="props">
+            <q-td :props="props">
+              <span v-for="(t, i) in ComputeDeviceTypeIconURLs(props.value)" :key="i">
                 <img v-if="t.url" :src="t.url" :title="t.label" height="20" width="20" />
                 <ReadOnlyTextWithHover v-if="!t.url" :message="t.label" />
               </span>
-            </span>
+            </q-td>
           </template>
-          <template v-slot:[`item.networksSummary`]="{ item }">
-            <span v-for="(anw, i) in Object.keys(item.attachedNetworks)" :key="i">
-              <ReadOnlyTextWithHover v-if="GetNetworkByIDQuietly(anw, networks)"
-                :message="GetNetworkName(GetNetworkByIDQuietly(anw, networks))" :link="GetNetworkLink(anw)" />&nbsp;
-            </span>
+          <template v-slot:body-cell-lastSeenAt="props">
+            <q-td :props="props">
+              <ReadOnlyTextWithHover v-if="props.value" :message="moment(props.value).fromNow()" />
+            </q-td>
           </template>
+          <template v-slot:body-cell-manufacturerSummary="props">
+            <q-td :props="props">
+            <ReadOnlyTextWithHover :message="props.value" />
+            </q-td>
+          </template>
+          <template v-slot:body-cell-operatingSystem="props">
+            <q-td :props="props">
+              <span v-for="(t, i) in ComputeOSIconURLList(props.value)" :key="i">
+                <img v-if="t.url" :src="t.url" :title="t.label" height="20" width="20" />
+                <ReadOnlyTextWithHover v-if="!t.url" :message="t.label" />
+              </span>
+            </q-td>
+          </template>
+          <template v-slot:body-cell-services="props">
+            <q-td :props="props">
+              <span v-for="(s, i) in props.value" :key="i">
+                <span v-for="(t, i) in ComputeServiceTypeIconURLs([s.name])" :key="i">
+                  <img v-if="t.url" :src="t.url" :title="t.label" height="20" width="20" />
+                  <ReadOnlyTextWithHover v-if="!t.url" :message="t.label" />
+                </span>
+              </span>
+            </q-td>
+          </template>
+          <template v-slot:body-cell-localAddresses="props">
+            <q-td :props="props">
+            <ReadOnlyTextWithHover :message="props.value" />
+            </q-td>
+          </template>       
+          <template v-slot:body-cell-networksSummary="props">
+            <q-td :props="props">
+            <span v-for="(anw, i) in Object.keys(props.value)" :key="i">
+              <ReadOnlyTextWithHover v-if="GetNetworkByIDQuietly(anw, allAvailableNetworks)"
+                :message="GetNetworkName(GetNetworkByIDQuietly(anw, allAvailableNetworks))" :link="GetNetworkLink(anw)" />&nbsp;
+            </span>
+            </q-td>
+          </template>       
+             <!--
           <template v-slot:expanded-item="{ item }">
             <td colspan="100">
               <Link2DetailsPage :link="'/#/device/' + item.id" />
