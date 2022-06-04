@@ -162,89 +162,91 @@ function rowClicked(row: any) {
 
 let allAvailableNetworks: ComputedRef<INetwork[]> = computed(() => store.getAvailableNetworks);
 
-
-// @todo use ref like below!!!
-const headers = computed<object[]>(() => {
-  return [
-    {
-      name: 'id',
-      field: 'id',
-      label: 'ID',
-      sortable: true,
-    },
-    {
-      name: 'name',
-      field: "name",
-      label: "Name",
-      sortable: true,
-      classes: "nowrap",
-      align: "left",
-    },
-    {
-      name: "type",
-      field: "type",
-      label: "Type",
-      sortable: true,
-      classes: "nowrap",
-      sortable: true,
-      // width: "5em",
-    },
-    {
-      name: "lastSeenAt",
-      field: "lastSeenAt",
-      label: "Last Seen",
-      classes: "nowrap",
-      sortable: true,
-      // width: "12%",
-    },
-    {
-      name: "manufacturerSummary",
-      field: "manufacturerSummary",
-      label: "Manufacturer",
-      classes: "nowrap",
-      sortable: true,
-      // width: "18%",
-    },
-    {
-      name: "operatingSystem",
-      field: "operatingSystem",
-      label: "OS",
-      classes: "nowrap",
-      sortable: true,
-      // width: "5em",
-    },
-    // when shown services issues vue error - not clear why...
-    {
-      name: "services",
-      field: "services",
-      label: "Services",
-      classes: "nowrap",
-      sortable: true,
-      // width: "7em",
-    },
-    {
-      name: "localAddresses",
-      field: "localAddresses",
-      label: "Local Address",
-      classes: "nowrap",
-      sortable: true,
-      // width: "14%",
-    },
-    {
-      name: "networksSummary",
-      field: "attachedNetworks",
-      label: "Network",
-      classes: "nowrap",
-      width: "14%",
-      sortable: true,
-    },
-    // {
-    //   text: "Details",
-    //   value: "data-table-expand",
-    //   width: "6em",
-    // },
-  ];
-});
+const headers = ref([
+  {
+    name: 'id',
+    field: 'id',
+    label: 'ID',
+    sortable: true,
+  },
+  {
+    name: 'name',
+    field: "name",
+    label: "Name",
+    sortable: true,
+    classes: "nowrap",
+    align: "left",
+    headerStyle: 'width: 20%; ',
+  },
+  {
+    name: "type",
+    field: "type",
+    label: "Type",
+    sortable: true,
+    classes: "nowrap",
+    align: "left",
+    headerStyle: 'width: 5em',
+  },
+  {
+    name: "lastSeenAt",
+    field: "lastSeenAt",
+    label: "Last Seen",
+    classes: "nowrap",
+    sortable: true,
+    align: "left",
+  },
+  {
+    name: "manufacturerSummary",
+    field: "manufacturerSummary",
+    label: "Manufacturer",
+    classes: "nowrap",
+    sortable: true,
+    align: "left",
+    headerStyle: 'width: 18%; ',
+  },
+  {
+    name: "operatingSystem",
+    field: "operatingSystem",
+    label: "OS",
+    classes: "nowrap",
+    sortable: true,
+    align: "left",
+    headerStyle: 'width: 5em',
+  },
+  // when shown services issues vue error - not clear why...
+  {
+    name: "services",
+    field: "services",
+    label: "Services",
+    classes: "nowrap",
+    sortable: true,
+    align: "left",
+    headerStyle: 'width: 7em',
+  },
+  {
+    name: "localAddresses",
+    field: "localAddresses",
+    label: "Local Address",
+    classes: "nowrap",
+    sortable: true,
+    align: "left",
+    headerStyle: 'width: 14%; ',
+  },
+  {
+    name: "networksSummary",
+    field: "attachedNetworks",
+    label: "Network",
+    classes: "nowrap",
+    align: "left",
+    sortable: true,
+    headerStyle: 'width: 14%; ',
+  },
+  // {
+  //   text: "Details",
+  //   value: "data-table-expand",
+  //   width: "6em",
+  // },
+]);
 
 let visibleColumns = ref(['name', 'type', 'lastSeenAt', 'manufacturerSummary', 'operatingSystem', 'services', 'localAddresses', 'networksSummary']);
 
@@ -452,8 +454,9 @@ const pagination = ref({
         <div class="row text-h5">
           Devices
         </div>
-        <q-table :rows="filteredExtendedDevices" :columns="headers" row-key="id" separator="none"
-          :visible-columns="visibleColumns" :pagination.sync="pagination" hide-bottom>
+        <q-table id="xxx" table-class="deviceList shadow-1" :rows="filteredExtendedDevices" :columns="headers"
+          row-key="id" separator="none" :visible-columns="visibleColumns" :pagination.sync="pagination" hide-bottom
+          style="table-layout: fixed;">
 
           <!--@todo migrate to extrastuff slot in filter section above-->
           <template v-slot:top>
@@ -483,7 +486,7 @@ const pagination = ref({
           </template>
           <template v-slot:body-cell-manufacturerSummary="props">
             <q-td :props="props">
-            <ReadOnlyTextWithHover :message="props.value" />
+              <ReadOnlyTextWithHover :message="props.value" />
             </q-td>
           </template>
           <template v-slot:body-cell-operatingSystem="props">
@@ -506,18 +509,19 @@ const pagination = ref({
           </template>
           <template v-slot:body-cell-localAddresses="props">
             <q-td :props="props">
-            <ReadOnlyTextWithHover :message="props.value" />
+              <ReadOnlyTextWithHover :message="props.value" />
             </q-td>
-          </template>       
+          </template>
           <template v-slot:body-cell-networksSummary="props">
             <q-td :props="props">
-            <span v-for="(anw, i) in Object.keys(props.value)" :key="i">
-              <ReadOnlyTextWithHover v-if="GetNetworkByIDQuietly(anw, allAvailableNetworks)"
-                :message="GetNetworkName(GetNetworkByIDQuietly(anw, allAvailableNetworks))" :link="GetNetworkLink(anw)" />&nbsp;
-            </span>
+              <span v-for="(anw, i) in Object.keys(props.value)" :key="i">
+                <ReadOnlyTextWithHover v-if="GetNetworkByIDQuietly(anw, allAvailableNetworks)"
+                  :message="GetNetworkName(GetNetworkByIDQuietly(anw, allAvailableNetworks))"
+                  :link="GetNetworkLink(anw)" />&nbsp;
+              </span>
             </q-td>
-          </template>       
-             <!--
+          </template>
+          <!--
           <template v-slot:expanded-item="{ item }">
             <td colspan="100">
               <Link2DetailsPage :link="'/#/device/' + item.id" />
@@ -532,10 +536,9 @@ const pagination = ref({
 </template>
 
 
-<style lang="scss">
-.deviceList>div>table {
+<style lang="scss" >
+.deviceListCard table {
   table-layout: fixed;
-  //background-color: red;
 }
 
 .nowrap {
