@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineComponent, defineProps, onMounted, onUnmounted, nextTick, ref, computed } from 'vue';
+import { defineComponent, defineProps, onMounted, onUnmounted, nextTick, ref, computed, ComputedRef } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
 import * as moment from 'moment';
 
@@ -22,8 +22,8 @@ import {
 // import Search from '../components/Search.vue';
 //import ClearButton from '../components/ClearButton.vue';
 import DeviceDetails from '../components/DeviceDetails.vue';
-import ReadOnlyTextWithHover from '../components/ReadOnlyTextWithHover.vue';
-import Link2DetailsPage from '../components/Link2DetailsPage.vue';
+// import ReadOnlyTextWithHover from '../components/ReadOnlyTextWithHover.vue';
+// import Link2DetailsPage from '../components/Link2DetailsPage.vue';
 import FilterSummaryMessage from '../components/FilterSummaryMessage.vue';
 
 import { useWTFStore } from '../stores/WTF-store'
@@ -58,7 +58,6 @@ function selectServicesFilter_icon() {
 }
 
 
-
 function selectServicesFilter_ToggleSelectAll() {
   nextTick(() => {
     if (filterAllowAllServices()) {
@@ -68,15 +67,6 @@ function selectServicesFilter_ToggleSelectAll() {
     }
   });
 }
-
-
-// const count = ref(1)
-// const plusOne = computed({
-//   get: () => count.value + 1,
-//   set: val => {
-//     count.value = val - 1
-//   }
-// })
 
 const selectableNetworks = computed<object[]>(
   () => {
@@ -172,71 +162,86 @@ function networks(): INetwork[] {
   return store.getAvailableNetworks;
 }
 
-function headers(): object[] {
+const headers = computed<object[]>(() => {
   return [
     {
-      text: "Name",
-      align: "start",
-      value: "name",
-      cellClass: "nowrap",
-      width: "20%",
+      name: 'id',
+      field: 'id',
+      label: 'ID',
+      sortable: true,
     },
     {
-      text: "Type",
-      value: "type",
-      cellClass: "nowrap",
-      width: "5em",
+      name: 'name',
+      field: "name",
+      label: "Name",
+      sortable: true,
+      classes: "nowrap",
+      align: "left",
+    },
+    // {
+    //   name: "type",
+    //   field: "type",
+    //   label: "Type",
+    //   sortable: true,
+    //   classes: "nowrap",
+    //   // width: "5em",
+    // },
+    {
+      name: "lastSeenAt",
+      field: "lastSeenAt",
+      label: "Last Seen",
+      classes: "nowrap",
+      // width: "12%",
     },
     {
-      text: "Last Seen",
-      value: "lastSeenAt",
-      cellClass: "nowrap",
-      width: "12%",
+      name: "manufacturerSummary",
+      field: "manufacturerSummary",
+      label: "Manufacturer",
+      classes: "nowrap",
+      // width: "18%",
     },
     {
-      text: "Manufacturer",
-      value: "manufacturerSummary",
-      cellClass: "nowrap",
-      width: "18%",
+      name: "operatingSystem",
+      field: "operatingSystem",
+      label: "OS",
+      classes: "nowrap",
+      // width: "5em",
+    },
+    // {
+    //   name: "services",
+    //   field: "services",
+    //   label: "Services",
+    //   classes: "nowrap",
+    //   // width: "7em",
+    // },
+    {
+      name: "localAddresses",
+      field: "localAddresses",
+      label: "Local Address",
+      classes: "nowrap",
+      // width: "14%",
     },
     {
-      text: "OS",
-      value: "operatingSystem",
-      cellClass: "nowrap",
-      width: "5em",
-    },
-    {
-      text: "Services",
-      value: "services",
-      cellClass: "nowrap",
-      width: "7em",
-    },
-    {
-      text: "Local Address",
-      value: "localAddresses",
-      cellClass: "nowrap",
+      name: "networksSummary",
+      field: "networksSummary",
+      label: "Network",
+      classes: "nowrap",
       width: "14%",
     },
-    {
-      text: "Network",
-      value: "networksSummary",
-      cellClass: "nowrap",
-      width: "14%",
-    },
-    {
-      text: "Details",
-      value: "data-table-expand",
-      width: "6em",
-    },
+    // {
+    //   text: "Details",
+    //   value: "data-table-expand",
+    //   width: "6em",
+    // },
   ];
-}
+});
 
 const route = useRoute()
 const router = useRouter()
 
-function devices(): IDevice[] {
-  return store.getDevices;
-}
+let allDevices: ComputedRef<IDevice[]> = computed(() => store.getDevices);
+
+
 
 function filtered(): boolean {
   return (
@@ -254,9 +259,10 @@ function clearFilter() {
   search = "";
 }
 
-function filteredDevices(): object[] {
+
+let filteredExtendedDevices: ComputedRef<object[]> = computed(() => {
   const result: object[] = [];
-  devices().forEach((i) => {
+  allDevices.value.forEach((i) => {
     let passedFilter = true;
     if (
       passedFilter &&
@@ -292,10 +298,12 @@ function filteredDevices(): object[] {
           .map((x) => x.name)
           .filter((value) => selectedServices.includes(value)).length > 0;
     }
+    passedFilter = true;
     if (passedFilter) {
       const r = {
         ...i,
         ...{
+          id: 'x',
           localAddresses: FormatAttachedNetworkLocalAddresses(i.attachedNetworks),
           manufacturerSummary:
             i.manufacturer == null ? "" : i.manufacturer.fullName || i.manufacturer.shortName,
@@ -322,15 +330,14 @@ function filteredDevices(): object[] {
     return 0;
   });
   return result;
-}
-
+});
 
 
 defineComponent({
   components: {
     // ClearButton,
-    ReadOnlyTextWithHover,
-    Link2DetailsPage,
+    // ReadOnlyTextWithHover,
+    // Link2DetailsPage,
     // Search,
   },
 });
@@ -412,8 +419,8 @@ onUnmounted(() => {
             <Search :searchFor.sync="search" dense />
           </v-col>
           <v-col cols="4" align="end" v-if="false">
-            <FilterSummaryMessage dense :filtered="filtered" :nItemsSelected="filteredDevices().length"
-              :nTotalItems="devices().length" itemsName="devices" />
+            <FilterSummaryMessage dense :filtered="filtered" :nItemsSelected="filteredExtendedDevices.value.length"
+              :nTotalItems="allDevices.value.length" itemsName="devices" />
             <ClearButton v-if="false /*filtered*/" v-on:click="clearFilter" />
           </v-col>
         </v-row>
@@ -422,13 +429,9 @@ onUnmounted(() => {
   </app-bar> -->
 
     <q-card class="deviceListCard">
-      <div class="text-h6">Devices</div>
       <q-card-section>
-        <v-table fixed-header class="deviceList elevation-1" dense show-expand :expanded.sync="expanded"
-          :single-expand="true" :headers="headers" :items="filteredDevices()" :single-select="true" :sort-by="sortBy"
-          :sort-desc="sortDesc" multi-sort disable-pagination :hide-default-footer="true" item-key="id"
-          @click:row="rowClicked">
-          <template v-slot:[`item.lastSeenAt`]="{ item }">
+        <q-table title="Devices" :rows="filteredExtendedDevices" :columns="headers" row-key="id">
+          <!-- <template v-slot:[`item.lastSeenAt`]="{ item }">
             <ReadOnlyTextWithHover v-if="item.lastSeenAt" :message="moment().fromNow(item.lastSeenAt)" />
           </template>
           <template v-slot:[`item.type`]="{ item }">
@@ -471,8 +474,8 @@ onUnmounted(() => {
               <Link2DetailsPage :link="'/#/device/' + item.id" />
               <DeviceDetails class="detailsSection" :deviceId="item.id" />
             </td>
-          </template>
-        </v-table>
+          </template> -->
+        </q-table>
       </q-card-section>
     </q-card>
   </q-page>
