@@ -34,25 +34,6 @@ const routes: RouteRecordRaw[] = [
 
 
   // {
-  //   path: "/",
-  //   name: 'Home',
-  //   component: Home,
-  //   meta: {
-  //     breadcrumbs: [{ text: "Home", exact: true, disabled: true, divderAfter: true }],
-  //   },
-  // },
-  // {
-  //   path: "/about",
-  //   name: "About",
-  //   component: () => import(/* webpackChunkName: "About" */ "../views/About.vue"),
-  //   meta: {
-  //     breadcrumbs: [
-  //       { text: "Home", href: "/#/" },
-  //       { text: "About", disabled: true },
-  //     ],
-  //   },
-  // },
-  // {
   //   path: "/device/:id",
   //   name: "Device",
   //   // route level code-splitting
@@ -67,20 +48,18 @@ const routes: RouteRecordRaw[] = [
   //     ],
   //   },
   // },
-  // {
-  //   path: "/devices",
-  //   name: "Devices",
-  //   // route level code-splitting
-  //   // this generates a separate chunk (about.[hash].js) for this route
-  //   // which is lazy-loaded when the route is visited.
-  //   component: () => import(/* webpackChunkName: "Devices" */ "../views/Devices.vue"),
-  //   meta: {
-  //     breadcrumbs: [
-  //       { text: "Home", href: "/#/" },
-  //       { text: "Devices", disabled: true },
-  //     ],
-  //   },
-  // }
+  {
+    path: "/devices",
+    name: "Devices",
+    component: () => import('layouts/MainLayout.vue'),
+    children: [{ path: '', component: () => import('pages/DevicesPage.vue') }],
+    meta: {
+      breadcrumbs: [
+        { text: "Home", href: "/#/" },
+        { text: "Devices", disabled: true },
+      ],
+    },
+  },
   //   // @see https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/14
   //   // Cannot get this working but got basically same thing working from created
   //   // method

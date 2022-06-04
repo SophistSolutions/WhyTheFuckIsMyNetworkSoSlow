@@ -82,7 +82,7 @@ export default defineComponent({
  
         <q-breadcrumbs separator=">" active-color="secondary">
           <template v-slot:divider>
-            <v-icon>mdi-chevron-right</v-icon>
+            <q-icon name="mdi-chevron-right"/>
           </template>
           <template v-for="(item, index) in this.$route.meta.breadcrumbs" :key="index">
             <q-breadcrumbs-el :href="item.href" :disabled="item.disabled" :label="item.text.toUpperCase()" />
@@ -97,8 +97,6 @@ export default defineComponent({
                   <q-item-section> {{ item.name }}</q-item-section>
                 </q-item>
                 <q-separator v-if="item?.meta?.divderAfter" />
-                <v-divider v-if="item?.meta?.divderAfter"> </v-divider>
-                <v-spacer v-if="item?.meta?.divderAfter"></v-spacer>
               </template>
             </q-list>
           </q-menu>

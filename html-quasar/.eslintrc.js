@@ -9,7 +9,7 @@ module.exports = {
   // `parser: 'vue-eslint-parser'` is already included with any 'plugin:vue/**' config and should be omitted
   parserOptions: {
     parser: require.resolve('@typescript-eslint/parser'),
-    extraFileExtensions: [ '.vue' ]
+    extraFileExtensions: ['.vue']
   },
 
   env: {
@@ -47,11 +47,11 @@ module.exports = {
     // https://eslint.vuejs.org/user-guide/#why-doesn-t-it-work-on-vue-files
     // required to lint *.vue files
     'vue'
-    
+
     // https://github.com/typescript-eslint/typescript-eslint/issues/389#issuecomment-509292674
     // Prettier has not been included as plugin to avoid performance impact
     // add it as an extension for your IDE
-    
+
   ],
 
   globals: {
@@ -69,7 +69,7 @@ module.exports = {
 
   // add your custom rules here
   rules: {
-    
+
     'prefer-promise-reject-errors': 'off',
 
     // quotes: ['warn', 'single', { avoidEscape: true }],
@@ -88,7 +88,13 @@ module.exports = {
     'no-debugger': process.env.NODE_ENV === 'production' ? 'error' : 'off',
 
     //. at least for now....
-    '@typescript-eslint/no-unused-vars' : 'off',
+    '@typescript-eslint/no-unused-vars': 'off',
     '@typescript-eslint/no-inferrable-types': 'off',
+    '@typescript-eslint/no-explicit-any': 'off',
+    'vue/no-deprecated-slot-attribute' : 'off',
+    'vue/no-deprecated-v-bind-sync': 'off',
+    'vue/no-deprecated-slot-scope-attribute': 'off',
+    'vue/no-deprecated-filter': 'off',
+    'vue/multi-word-component-names': 'off',
   }
 }
