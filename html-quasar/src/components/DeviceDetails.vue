@@ -1,19 +1,19 @@
 <script setup lang="ts">
 import { defineProps, defineComponent, onMounted, onUnmounted, ref, computed } from 'vue';
-import { useStore } from 'vuex'
 
-import { IDevice, INetworkAttachmentInfo } from "@/models/device/IDevice";
+import { IDevice, INetworkAttachmentInfo } from "../models/device/IDevice";
 import {
   ComputeServiceTypeIconURL,
-} from "@/models/device/Utils";
-import { GetNetworkLink, GetNetworkName, GetServices } from "@/models/network/Utils";
-import { rescanDevice } from "@/proxy/API";
+} from "../models/device/Utils";
+import { GetNetworkLink, GetNetworkName, GetServices } from "../models/network/Utils";
+import { rescanDevice } from "../proxy/API";
 
 // Components
 import ReadOnlyTextWithHover from '../components/ReadOnlyTextWithHover.vue';
 
+import { useWTFStore } from '../stores/WTF-store'
 
-const store = useStore()
+const store = useWTFStore()
 
 const props = defineProps({
   deviceId: { type: String, required: true },
@@ -26,7 +26,7 @@ defineComponent({
 });
 
 
-var polling: undefined | number = undefined;
+let polling:  undefined | NodeJS.Timeout;
 var isRescanning: boolean = false;
 
 
@@ -41,7 +41,22 @@ function localNetworkAddresses(): string[] {
 }
 
 onMounted(() => {
-  pollData()
+  // first time check immediately, then more gradually for updates
+    store.fetchDevice (props.deviceId);
+  if (currentDevice.value) {
+    store.fetchNetworks (Object.keys(currentDevice.value.attachedNetworks));
+  } else {
+    store.fetchAvailableNetworks();
+  }
+  if (polling) {
+    clearInterval(polling);
+  }
+  polling = setInterval(() => {
+    store.fetchDevice (props.deviceId);
+    if (currentDevice.value) {
+      store.fetchNetworks (Object.keys(currentDevice.value.attachedNetworks));
+    }
+  }, 15 * 1000);
 })
 
 onUnmounted(() => {
@@ -52,33 +67,14 @@ async function rescanSelectedDevice(): Promise<void> {
   isRescanning = true;
   try {
     await rescanDevice(props.deviceId);
-    store.dispatch("fetchDevice", props.deviceId);
+    store.fetchDevice (props.deviceId);
   } finally {
     isRescanning = false;
   }
 }
 
-function pollData() {
-  // first time check immediately, then more gradually for updates
-  store.dispatch("fetchDevice", props.deviceId);
-  if (currentDevice.value) {
-    store.dispatch("fetchNetworks", Object.keys(currentDevice.value.attachedNetworks));
-  } else {
-    store.dispatch("fetchAvailableNetworks");
-  }
-  if (polling) {
-    clearInterval(polling);
-  }
-  polling = setInterval(() => {
-    store.dispatch("fetchDevice", props.deviceId);
-    if (currentDevice.value) {
-      store.dispatch("fetchNetworks", Object.keys(currentDevice.value.attachedNetworks));
-    }
-  }, 15 * 1000);
-}
-
 let currentDevice = computed<IDevice | undefined>(
-  () => store.getters.getDevice(props.deviceId)
+  () => store.getDevice(props.deviceId)
 )
 
 interface IExtendedDevice extends IDevice {
@@ -109,7 +105,6 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
     return undefined;
   }
 )
-
 </script>
 
 <style scoped lang="scss">
@@ -292,4 +287,3 @@ td.labelColumn {
     </table>
   </div>
 </template>
-
