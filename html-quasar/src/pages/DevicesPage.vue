@@ -164,12 +164,6 @@ let allAvailableNetworks: ComputedRef<INetwork[]> = computed(() => store.getAvai
 
 const headers = ref([
   {
-    name: 'id',
-    field: 'id',
-    label: 'ID',
-    sortable: true,
-  },
-  {
     name: 'name',
     field: "name",
     label: "Name",
@@ -220,7 +214,7 @@ const headers = ref([
     label: "Services",
     classes: "nowrap",
     sortable: true,
-    align: "left",
+    align: "center",
     headerStyle: 'width: 7em',
   },
   {
@@ -241,21 +235,21 @@ const headers = ref([
     sortable: true,
     headerStyle: 'width: 14%; ',
   },
-  // {
-  //   text: "Details",
-  //   value: "data-table-expand",
-  //   width: "6em",
-  // },
+  {
+    name: 'expand',
+    label: "Details",
+    align: 'center',
+    headerStyle: 'width: 6em; ',
+  },
 ]);
 
-let visibleColumns = ref(['name', 'type', 'lastSeenAt', 'manufacturerSummary', 'operatingSystem', 'services', 'localAddresses', 'networksSummary']);
+let visibleColumns = ref(['name', 'type', 'lastSeenAt', 'manufacturerSummary', 'operatingSystem', 'services', 'localAddresses', 'networksSummary', 'expand']);
 
 
 const route = useRoute()
 const router = useRouter()
 
 let allDevices: ComputedRef<IDevice[]> = computed(() => store.getDevices);
-
 
 
 function filtered(): boolean {
@@ -318,7 +312,6 @@ let filteredExtendedDevices: ComputedRef<object[]> = computed(() => {
       const r = {
         ...i,
         ...{
-          id: 'x',
           localAddresses: FormatAttachedNetworkLocalAddresses(i.attachedNetworks),
           manufacturerSummary:
             i.manufacturer == null ? "" : i.manufacturer.fullName || i.manufacturer.shortName,
@@ -346,7 +339,6 @@ let filteredExtendedDevices: ComputedRef<object[]> = computed(() => {
   });
   return result;
 });
-
 
 defineComponent({
   components: {
@@ -455,8 +447,7 @@ const pagination = ref({
           Devices
         </div>
         <q-table id="xxx" table-class="deviceList shadow-1" :rows="filteredExtendedDevices" :columns="headers"
-          row-key="id" separator="none" :visible-columns="visibleColumns" :pagination.sync="pagination" hide-bottom
-          style="table-layout: fixed;">
+          row-key="id" separator="none" :visible-columns="visibleColumns" :pagination.sync="pagination" hide-bottom>
 
           <!--@todo migrate to extrastuff slot in filter section above-->
           <template v-slot:top>
@@ -466,61 +457,61 @@ const pagination = ref({
               options-cover style="min-width: 150px" />
           </template>
 
-          <template v-slot:body-cell-name="props">
-            <q-td :props="props">
-              <ReadOnlyTextWithHover :message="props.value" />
-            </q-td>
-          </template>
-          <template v-slot:body-cell-type="props">
-            <q-td :props="props">
-              <span v-for="(t, i) in ComputeDeviceTypeIconURLs(props.value)" :key="i">
-                <img v-if="t.url" :src="t.url" :title="t.label" height="20" width="20" />
-                <ReadOnlyTextWithHover v-if="!t.url" :message="t.label" />
-              </span>
-            </q-td>
-          </template>
-          <template v-slot:body-cell-lastSeenAt="props">
-            <q-td :props="props">
-              <ReadOnlyTextWithHover v-if="props.value" :message="moment(props.value).fromNow()" />
-            </q-td>
-          </template>
-          <template v-slot:body-cell-manufacturerSummary="props">
-            <q-td :props="props">
-              <ReadOnlyTextWithHover :message="props.value" />
-            </q-td>
-          </template>
-          <template v-slot:body-cell-operatingSystem="props">
-            <q-td :props="props">
-              <span v-for="(t, i) in ComputeOSIconURLList(props.value)" :key="i">
-                <img v-if="t.url" :src="t.url" :title="t.label" height="20" width="20" />
-                <ReadOnlyTextWithHover v-if="!t.url" :message="t.label" />
-              </span>
-            </q-td>
-          </template>
-          <template v-slot:body-cell-services="props">
-            <q-td :props="props">
-              <span v-for="(s, i) in props.value" :key="i">
-                <span v-for="(t, i) in ComputeServiceTypeIconURLs([s.name])" :key="i">
+          <template v-slot:body="props">
+            <q-tr :props="props">
+              <q-td :props="props" key="name">
+                <ReadOnlyTextWithHover :message="props.row.name" />
+              </q-td>
+              <q-td :props="props" key="type">
+                <span v-for="(t, i) in ComputeDeviceTypeIconURLs(props.row.type)" :key="i">
                   <img v-if="t.url" :src="t.url" :title="t.label" height="20" width="20" />
                   <ReadOnlyTextWithHover v-if="!t.url" :message="t.label" />
                 </span>
-              </span>
-            </q-td>
+              </q-td>
+              <q-td :props="props" key="lastSeenAt">
+                <ReadOnlyTextWithHover v-if="props.row.lastSeenAt" :message="moment(props.value).fromNow()" />
+              </q-td>
+              <q-td :props="props" key="manufacturerSummary">
+                <ReadOnlyTextWithHover :message="props.row.manufacturerSummary" />
+              </q-td>
+              <q-td :props="props" key="operatingSystem">
+                <span v-for="(t, i) in ComputeOSIconURLList(props.row.operatingSystem)" :key="i">
+                  <img v-if="t.url" :src="t.url" :title="t.label" height="20" width="20" />
+                  <ReadOnlyTextWithHover v-if="!t.url" :message="t.label" />
+                </span>
+              </q-td>
+              <q-td :props="props" key="services">
+                <span v-for="(s, i) in props.row.services" :key="i">
+                  <span v-for="(t, i) in ComputeServiceTypeIconURLs([s.name])" :key="i">
+                    <img v-if="t.url" :src="t.url" :title="t.label" height="20" width="20" />
+                    <ReadOnlyTextWithHover v-if="!t.url" :message="t.label" />
+                  </span>
+                </span>
+              </q-td>
+              <q-td :props="props" key="localAddresses">
+                <ReadOnlyTextWithHover :message="props.row.localAddresses" />
+              </q-td>
+              <q-td :props="props" key="networksSummary">
+                <span v-for="(anw, i) in Object.keys(props.row.attachedNetworks)" :key="i">
+                  <ReadOnlyTextWithHover v-if="GetNetworkByIDQuietly(anw, allAvailableNetworks)"
+                    :message="GetNetworkName(GetNetworkByIDQuietly(anw, allAvailableNetworks))"
+                    :link="GetNetworkLink(anw)" />&nbsp;
+                </span>
+              </q-td>
+              <q-td :props="props" key="expand">
+                <q-btn :icon="props.expand ? 'mdi-chevron-up' : 'mdi-chevron-down'" flat round dense
+                  @click="props.expand = !props.expand"></q-btn>
+              </q-td>
+            </q-tr>
+            <q-tr v-show="props.expand" :props="props">
+              <q-td colspan="100%" :props="props">
+                xxxx
+                <!-- <Link2DetailsPage :link="'/#/device/' + props.row.id" /> -->
+                <!-- <DeviceDetails class="detailsSection" :deviceId="props.row.id" /> -->
+              </q-td>
+            </q-tr>
           </template>
-          <template v-slot:body-cell-localAddresses="props">
-            <q-td :props="props">
-              <ReadOnlyTextWithHover :message="props.value" />
-            </q-td>
-          </template>
-          <template v-slot:body-cell-networksSummary="props">
-            <q-td :props="props">
-              <span v-for="(anw, i) in Object.keys(props.value)" :key="i">
-                <ReadOnlyTextWithHover v-if="GetNetworkByIDQuietly(anw, allAvailableNetworks)"
-                  :message="GetNetworkName(GetNetworkByIDQuietly(anw, allAvailableNetworks))"
-                  :link="GetNetworkLink(anw)" />&nbsp;
-              </span>
-            </q-td>
-          </template>
+
           <!--
           <template v-slot:expanded-item="{ item }">
             <td colspan="100">
