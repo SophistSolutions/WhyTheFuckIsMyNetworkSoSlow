@@ -7,6 +7,7 @@ import {
 } from "../models/device/Utils";
 import { GetNetworkLink, GetNetworkName, GetServices } from "../models/network/Utils";
 import { rescanDevice } from "../proxy/API";
+import * as moment from 'moment';
 
 // Components
 import ReadOnlyTextWithHover from '../components/ReadOnlyTextWithHover.vue';
@@ -88,7 +89,7 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
       Object.keys(currentDevice.value.attachedNetworks).forEach((element: any) => {
         const thisNWI = currentDevice.value.attachedNetworks[element] as INetworkAttachmentInfo;
         let netName = "?";
-        const thisNetObj = store.getters.getNetwork(element);
+        const thisNetObj = store.getNetwork(element);
         if (thisNetObj) {
           netName = GetNetworkName(thisNetObj);
         }
@@ -186,7 +187,7 @@ td.labelColumn {
       </tr>
       <tr v-if="currentDevice.lastSeenAt">
         <td class="labelColumn">Last Seen</td>
-        <td>{{ currentDevice.lastSeenAt | moment("from", "now") }}</td>
+        <td>{{ moment(currentDevice.lastSeenAt).fromNow() }}</td>
       </tr>
       <tr>
         <td class="labelColumn">Networks</td>
@@ -250,9 +251,9 @@ td.labelColumn {
       <tr>
         <td class="labelColumn">Open Ports</td>
         <td>
-          <v-btn class="smallBtnMargin" elevation="2" x-small @click="rescanSelectedDevice" :disabled="isRescanning">
+          <q-btn class="smallBtnMargin" elevation="2" x-small @click="rescanSelectedDevice" :disabled="isRescanning">
             Rescan
-          </v-btn>
+          </q-btn>
           <span v-if="currentDevice.openPorts">{{ currentDevice.openPorts.join(", ") }}</span>
         </td>
       </tr>

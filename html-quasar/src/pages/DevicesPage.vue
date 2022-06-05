@@ -24,7 +24,7 @@ import { useQuasar } from 'quasar';
 //import ClearButton from '../components/ClearButton.vue';
 import DeviceDetails from '../components/DeviceDetails.vue';
 import ReadOnlyTextWithHover from '../components/ReadOnlyTextWithHover.vue';
-// import Link2DetailsPage from '../components/Link2DetailsPage.vue';
+import Link2DetailsPage from '../components/Link2DetailsPage.vue';
 import FilterSummaryMessage from '../components/FilterSummaryMessage.vue';
 
 import { useWTFStore } from '../stores/WTF-store'
@@ -344,7 +344,8 @@ defineComponent({
   components: {
     // ClearButton,
     ReadOnlyTextWithHover,
-    // Link2DetailsPage,
+    Link2DetailsPage,
+    DeviceDetails,
     // Search,
   },
 });
@@ -503,22 +504,13 @@ const pagination = ref({
                   @click="props.expand = !props.expand"></q-btn>
               </q-td>
             </q-tr>
-            <q-tr v-show="props.expand" :props="props">
-              <q-td colspan="100%" :props="props">
-                xxxx
-                <!-- <Link2DetailsPage :link="'/#/device/' + props.row.id" /> -->
-                <!-- <DeviceDetails class="detailsSection" :deviceId="props.row.id" /> -->
+            <q-tr v-if="props.expand" :props="props">
+              <q-td colspan="100%">
+                <Link2DetailsPage :link="'/#/device/' + props.row.id" />
+                <DeviceDetails class="detailsSection" :deviceId="props.row.id" />
               </q-td>
             </q-tr>
           </template>
-
-          <!--
-          <template v-slot:expanded-item="{ item }">
-            <td colspan="100">
-              <Link2DetailsPage :link="'/#/device/' + item.id" />
-              <DeviceDetails class="detailsSection" :deviceId="item.id" />
-            </td>
-          </template> -->
         </q-table>
       </q-card-section>
     </q-card>
