@@ -33,21 +33,19 @@ const routes: RouteRecordRaw[] = [
 
 
 
-  // {
-  //   path: "/device/:id",
-  //   name: "Device",
-  //   // route level code-splitting
-  //   // this generates a separate chunk (about.[hash].js) for this route
-  //   // which is lazy-loaded when the route is visited.
-  //   component: () => import(/* webpackChunkName: "Device" */ "./views/Device.vue"),
-  //   meta: {
-  //     breadcrumbs: [
-  //       { text: "Home", href: "/#/" },
-  //       { text: "Devices", href: "/#/devices" },
-  //       { text: "Device", disabled: true },
-  //     ],
-  //   },
-  // },
+  {
+    path: "/device/:id",
+    name: "Device",
+    component: () => import('layouts/MainLayout.vue'),
+    children: [{ path: '', component: () => import('pages/DevicePage.vue') }],
+    meta: {
+      breadcrumbs: [
+        { text: "Home", href: "/#/" },
+        { text: "Devices", href: "/#/devices" },
+        { text: "Device", disabled: true },
+      ],
+    },
+  },
   {
     path: "/devices",
     name: "Devices",
