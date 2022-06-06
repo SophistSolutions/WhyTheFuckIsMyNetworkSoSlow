@@ -1,8 +1,8 @@
 - quasar work  
 
-  - AND THEN try to get devices page working (or maybe do simple single device page first)
-
-  - only when devices - PLURAL works - will I know if quasar will be an adequate replacement for vuetify
+  - Device/Devices page:
+    - fix json-viewer
+	- fix costmetics so looks as good as before
 
   - and then work on toolbar
     'extras' - did an untested draft...
