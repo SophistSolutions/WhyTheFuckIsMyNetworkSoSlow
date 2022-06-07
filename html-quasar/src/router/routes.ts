@@ -88,20 +88,18 @@ const routes: RouteRecordRaw[] = [
       ],
     },
   },
-  // {
-  //   path: "/networks",
-  //   name: "Networks",
-  //   // route level code-splitting
-  //   // this generates a separate chunk (about.[hash].js) for this route
-  //   // which is lazy-loaded when the route is visited.
-  //   component: () => import(/* webpackChunkName: "NetworkView" */ "./views/Networks.vue"),
-  //   meta: {
-  //     breadcrumbs: [
-  //       { text: "Home", href: "/#/" },
-  //       { text: "Networks", disabled: true },
-  //     ],
-  //   },
-  // },
+  {
+    path: "/networks",
+    name: "Networks",
+    component: () => import('layouts/MainLayout.vue'),
+    children: [{ path: '', component: () => import('pages/NetworksPage.vue') }],
+    meta: {
+      breadcrumbs: [
+        { text: "Home", href: "/#/" },
+        { text: "Networks", disabled: true },
+      ],
+    },
+  },
   // {
   //   path: "/networks-DEPRECATED",
   //   name: "Networks-DEPRECATED",

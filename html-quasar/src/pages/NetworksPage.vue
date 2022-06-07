@@ -1,147 +1,283 @@
+<script setup lang="ts">
+import { defineComponent, defineProps, onMounted, onUnmounted, nextTick, ref, computed, ComputedRef } from 'vue';
+import { useRoute, useRouter } from 'vue-router'
+import * as moment from 'moment';
 
-<script lang="ts">
-import { IDevice, INetworkAttachmentInfo } from "@/models/device/IDevice";
-import { INetwork } from "@/models/network/INetwork";
+import { IDevice } from "../models/device/IDevice";
 import {
-  FormatLocation,
-  GetDeviceIDsInNetwork,
-  GetDevicesForNetworkLink,
-  GetNetworkCIDRs,
+  ComputeDeviceTypeIconURLs,
+  ComputeOSIconURLList,
+  ComputeServiceTypeIconURLs,
+} from "../models/device/Utils";
+import { INetwork } from "../models/network/INetwork";
+import {
+  FormatAttachedNetworkLocalAddresses,
+  GetNetworkByIDQuietly,
   GetNetworkLink,
   GetNetworkName,
-} from "@/models/network/Utils";
-import { Component, Vue, Watch } from "vue-property-decorator";
+    GetNetworkCIDRs,
+    FormatLocation,
+    GetDeviceIDsInNetwork,
+    GetDevicesForNetworkLink,
+  GetServices,
+} from "../models/network/Utils";
+import { useQuasar } from 'quasar';
 
-import { fetchNetworks } from "@/proxy/API";
+// Components
+// import Search from '../components/Search.vue';
+//import ClearButton from '../components/ClearButton.vue';
+import NetworkDetails from '../components/NetworkDetails.vue';
+import ReadOnlyTextWithHover from '../components/ReadOnlyTextWithHover.vue';
+import Link2DetailsPage from '../components/Link2DetailsPage.vue';
+import FilterSummaryMessage from '../components/FilterSummaryMessage.vue';
 
-@Component({
-  name: "Networks",
-  components: {
-    AppBar: () => import("@/components/AppBar.vue"),
-    ClearButton: () => import("@/components/ClearButton.vue"),
-    FilterSummaryMessage: () => import("@/components/FilterSummaryMessage.vue"),
-    Link2DetailsPage: () => import("@/components/Link2DetailsPage.vue"),
-    NetworkDetails: () => import("@/components/NetworkDetails.vue"),
-    ReadOnlyTextWithHover: () => import("@/components/ReadOnlyTextWithHover.vue"),
-    Search: () => import("@/components/Search.vue"),
-  },
+import { useWTFStore } from '../stores/WTF-store'
+const $q = useQuasar()
+
+const store = useWTFStore()
+
+const props = defineProps({
+  selectedNetworkink: { type: String, required: false, default: null },
 })
-export default class Networks extends Vue {
-  private polling: undefined | number = undefined;
 
-  private GetNetworkLink = GetNetworkLink;
-  private GetNetworkName = GetNetworkName;
-  private GetDevicesForNetworkLink = GetDevicesForNetworkLink;
 
-  private search: string = "";
-  private sortBy: any = [];
-  private sortDesc: any = [];
-  private expanded: any[] = [];
+let polling: undefined | NodeJS.Timeout;
+var search: string = "";
+var sortBy: any = [];
+var sortDesc: any = [];
+var expanded: any[] = [];
 
-  private rowClicked(row: any) {
-    // @todo Try this again with vue3 - https://github.com/vuetifyjs/vuetify/issues/9720
-    // if (!e.ctrlKey) {
-    //   // single select unless shift key
-    //
-    const index = this.expanded.indexOf(row);
-    this.expanded = [];
-    if (index === -1) {
-      this.expanded.push(row);
+var selectedServices: string[] = selectableServices().map((x) => x.value);
+
+function filterAllowAllServices() {
+  return selectedServices.length === selectableServices().length;
+}
+
+function selectServicesFilter_icon() {
+  if (filterAllowAllServices()) {
+    return "mdi-close-box";
+  }
+  if (selectedServices.length > 0 && !filterAllowAllServices()) {
+    return "mdi-minus-box";
+  }
+  return "mdi-checkbox-blank-outline";
+}
+
+
+function selectServicesFilter_ToggleSelectAll() {
+  nextTick(() => {
+    if (filterAllowAllServices()) {
+      selectedServices = [];
+    } else {
+      selectedServices = selectableServices().map((x) => x.value);
     }
-  }
+  });
+}
 
-  private created() {
-    this.$store.dispatch("fetchDevices", null);
-    this.$store.dispatch("fetchAvailableNetworks");
-    this.pollData();
-  }
-
-  private beforeDestroy() {
-    clearInterval(this.polling);
-  }
-
-  private pollData() {
-    this.polling = setInterval(() => {
-      this.$store.dispatch("fetchDevices", null);
-      this.$store.dispatch("fetchAvailableNetworks");
-    }, 15 * 1000);
-  }
-
-  private get networks(): INetwork[] {
-    return this.$store.getters.getAvailableNetworks;
-  }
-
-  private get headers(): object[] {
-    return [
+const selectableNetworks = computed<object[]>(
+  () => {
+    const r: object[] = [
       {
-        text: "Name",
-        align: "start",
-        value: "name",
-        cellClass: "nowrap",
-        width: "20%",
-      },
-      {
-        text: "CIDRs",
-        align: "start",
-        value: "CIDRs",
-        cellClass: "nowrap",
-        width: "10%",
-      },
-      {
-        text: "Active",
-        value: "active",
-        cellClass: "nowrap",
-        width: "10%",
-      },
-      {
-        text: "Status",
-        value: "status",
-        cellClass: "nowrap",
-        width: "10%",
-      },
-      {
-        text: "Location",
-        value: "location",
-        cellClass: "nowrap",
-        width: "20%",
-      },
-      {
-        text: "Internet",
-        value: "internetInfo",
-        cellClass: "nowrap",
-        width: "20%",
-      },
-      {
-        text: "devices",
-        value: "devices",
-        cellClass: "nowrap",
-        width: "10%",
-      },
-      {
-        text: "Details",
-        value: "data-table-expand",
-        width: "6em",
+        title: "Any",
+        value: null,
       },
     ];
+    allAvailableNetworks.value.forEach((n) => {
+      r.push({
+        title: GetNetworkName(n),
+        value: n.id,
+      });
+    });
+    return r;
   }
+)
+let selectedNetworkCurrent: string | undefined = undefined;
 
-  private get devices(): IDevice[] {
-    return this.$store.getters.getDevices;
-  }
+const selectableTimeframes = computed<object[]>(
+  () => [
+    {
+      title: "Ever",
+      value: null,
+    },
+    {
+      title: "Last Few Minutes",
+      value: "PT3.9M",
+    },
+    {
+      title: "Last Hour",
+      value: "PT1H",
+    },
+    {
+      title: "Last Day",
+      value: "P1D",
+    },
+    {
+      title: ">15 Min Ago",
+      value: "-PT15M",
+    },
+    {
+      title: ">1 Day Ago",
+      value: "-P1D",
+    },
+  ]
+);
+let selectedTimeframe: string | undefined = undefined;
 
-  private get filtered(): boolean {
-    return this.search !== "";
-  }
-  private clearFilter() {
-    this.search = "";
-  }
+function selectableServices(): Array<{ text: string; value: string }> {
+  return [
+    {
+      text: "Other",
+      value: "other",
+    },
+    {
+      text: "Print",
+      value: "print",
+    },
+    {
+      text: "RDP (Remote Desktop)",
+      value: "rdp",
+    },
+    {
+      text: "SSH",
+      value: "ssh",
+    },
+    {
+      text: "SMB (Windows Network FS)",
+      value: "smb",
+    },
+    {
+      text: "Web (HTTP/HTTPS)",
+      value: "web",
+    },
+  ];
+}
 
-  private get filteredNetworks(): object[] {
+function rowClicked(row: any) {
+  // @todo Try this again with vue3 - https://github.com/vuetifyjs/vuetify/issues/9720
+  // if (!e.ctrlKey) {
+  //   // single select unless shift key
+  //
+  const index = expanded.indexOf(row);
+  expanded = [];
+  if (index === -1) {
+    expanded.push(row);
+  }
+}
+
+let allAvailableNetworks: ComputedRef<INetwork[]> = computed(() => store.getAvailableNetworks);
+
+const headers = ref([
+  {
+    name: 'name',
+    field: "name",
+    label: "Name",
+    sortable: true,
+    classes: "nowrap",
+    align: "left",
+    headerStyle: 'width: 20%; ',
+  },
+  {
+    name: 'CIDRs',
+    field: "CIDRs",
+    label: "CIDRs",
+    sortable: true,
+    classes: "nowrap",
+    align: "left",
+    headerStyle: 'width: 10%; ',
+  },
+  {
+    name: 'active',
+    field: "active",
+    label: "Active",
+    sortable: true,
+    classes: "nowrap",
+    align: "left",
+    headerStyle: 'width: 10%; ',
+  },
+  {
+    name: 'status',
+    field: "status",
+    label: "Status",
+    sortable: true,
+    classes: "nowrap",
+    align: "left",
+    headerStyle: 'width: 10%; ',
+  },
+  {
+    name: 'location',
+    field: "location",
+    label: "Location",
+    sortable: true,
+    classes: "nowrap",
+    align: "left",
+    headerStyle: 'width: 20%; ',
+  },
+  {
+    name: 'internetInfo',
+    field: "internetInfo",
+    label: "Internet",
+    sortable: true,
+    classes: "nowrap",
+    align: "left",
+    headerStyle: 'width: 20%; ',
+  },
+  {
+    name: 'devices',
+    field: "devices",
+    label: "Devices",
+    sortable: true,
+    classes: "nowrap",
+    align: "left",
+    headerStyle: 'width: 10%; ',
+  },
+  {
+    name: 'expand',
+    label: "Details",
+    align: 'center',
+    headerStyle: 'width: 6em; ',
+  },
+]);
+
+let visibleColumns = ref(['name',
+ 'CIDRs',
+ 'active',
+  'status', 
+  'location', 
+  'internetInfo', 
+  'devices', 
+  'expand']);
+
+
+const route = useRoute()
+const router = useRouter()
+
+let allDevices: ComputedRef<IDevice[]> = computed(() => store.getDevices);
+
+let allNetworks: ComputedRef<INetwork[]> = computed(() => store.getAvailableNetworks);
+
+function filtered(): boolean {
+  return (
+    selectedNetworkCurrent != undefined ||
+    selectedTimeframe !== null ||
+    search !== "" ||
+    !filterAllowAllServices
+  );
+}
+
+function clearFilter() {
+  selectedNetworkCurrent = undefined;
+  selectedTimeframe = undefined;
+  selectedServices = selectableServices().map((x) => x.value);
+  search = "";
+}
+
+
+let filteredExtendedNetworks: ComputedRef<object[]> = computed(() => {
     const result: object[] = [];
-    this.networks.forEach((i) => {
-      let lastSeenStr = this.$moment(i.lastSeenAt).fromNow();
+    allNetworks.value.forEach((i) => {
+      let lastSeenStr = moment(i.lastSeenAt).fromNow();
       let statusStr = "?";
-      if (i.lastSeenAt != null && this.$moment().diff(this.$moment(i.lastSeenAt), "seconds") < 60) {
+      if (i.lastSeenAt != null && moment().diff(moment(i.lastSeenAt), "seconds") < 60) {
         lastSeenStr = "active";
         statusStr = "healthy"; // tmphack
       }
@@ -153,15 +289,15 @@ export default class Networks extends Vue {
         internetInfo:
           (i.gateways == null ? "" : i.gateways.join(", ")) +
           (i.internetServiceProvider == null ? " " : " (" + i.internetServiceProvider.name + ")"),
-        devices: GetDeviceIDsInNetwork(i, this.devices).length,
+        devices: GetDeviceIDsInNetwork(i, allDevices.value).length,
         status: statusStr,
         location: FormatLocation(i.geographicLocation),
       };
       if (
-        this.search === "" ||
+        search === "" ||
         JSON.stringify(r)
           .toLowerCase()
-          .includes(this.search.toLowerCase())
+          .includes(search.toLowerCase())
       ) {
         // console.log("MATCH: this.search=", this.search, " and r=", JSON.stringify(r));
         result.push(r);
@@ -180,108 +316,146 @@ export default class Networks extends Vue {
     });
     return result;
   }
-}
+);
+
+defineComponent({
+  components: {
+    // ClearButton,
+    ReadOnlyTextWithHover,
+    Link2DetailsPage,
+    NetworkDetails,
+    // Search,
+  },
+});
+
+onMounted(() => {
+  // @see https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/14
+  // This works, but maybe cleaner to do within the router, but wasn't able to get
+  // working (so far)
+  if (route.query.selectedNetwork) {
+    const s: string = route.query.selectedNetwork as string;
+    router.replace({
+      path: route.path,
+      // params: { selectedNetwork: this.$route.query.selectedNetwork },
+    });
+    selectedNetworkCurrent = s;
+  }
+
+  // first time check quickly, then more gradually
+  store.fetchDevices();
+  store.fetchAvailableNetworks();
+  if (polling) {
+    clearInterval(polling);
+  }
+  polling = setInterval(() => {
+    store.fetchDevices();
+    store.fetchAvailableNetworks();
+  }, 15 * 1000);
+})
+
+onUnmounted(() => {
+  clearInterval(polling);
+})
+
+// disable pagination
+const pagination = ref({
+  page: 1,
+  rowsPerPage: 0
+})
 </script>
 
 <template>
-  <v-container class="devices">
-    <app-bar>
-      <template v-slot:extrastuff>
-        <v-container class="extrastuff">
-          <v-row no-gutters dense align="end">
-            <v-col cols="3">
-              <Search dense :searchFor.sync="search" />
-            </v-col>
-            <v-col cols="9" align="end">
-              <FilterSummaryMessage
-                dense
-                :filtered="filtered"
-                :nItemsSelected="filteredNetworks.length"
-                :nTotalItems="networks.length"
-                itemsName="networks"
-              />
-              <ClearButton v-if="filtered" v-on:click="clearFilter" />
-            </v-col>
-          </v-row>
-        </v-container>
-      </template>
-    </app-bar>
-    <v-card>
-      <v-card-title>
-        Networks
-        <v-spacer></v-spacer>
-      </v-card-title>
-      <v-data-table
-        class="networkList"
-        dense
-        show-expand
-        :expanded.sync="expanded"
-        :single-expand="true"
-        :headers="headers"
-        :items="filteredNetworks"
-        :single-select="true"
-        :sort-by="sortBy"
-        :sort-desc="sortDesc"
-        multi-sort
-        disable-pagination
-        :hide-default-footer="true"
-        item-key="id"
-        @click:row="rowClicked"
-      >
-        <template v-slot:[`item.devices`]="{ item }">
-          <td>
-            <a :href="GetDevicesForNetworkLink(item.id)">{{ item.devices }}</a>
-          </td>
-        </template>
-        <template v-slot:[`item.name`]="{ item }">
-          <ReadOnlyTextWithHover :message="GetNetworkName(item)" :link="GetNetworkLink(item)" />
-        </template>
-        <template v-slot:[`item.location`]="{ item }">
-          <ReadOnlyTextWithHover :message="item.location" />
-        </template>
-        <template v-slot:[`item.internetInfo`]="{ item }">
-          <ReadOnlyTextWithHover :message="item.internetInfo" />
-        </template>
-        <template v-slot:expanded-item="{ item }">
-          <td colspan="100">
-            <Link2DetailsPage :link="'/#/network/' + item.id" />
-            <NetworkDetails class="detailsSection" :networkId="item.id" />
-          </td>
-        </template>
-      </v-data-table>
-    </v-card>
-  </v-container>
+  <q-page class="col q-pa-md q-gutter-md">
+
+    <q-card class="deviceListCard">
+      <q-card-section>
+        <div class="row text-h5">
+          Networks
+        </div>
+        <q-table id="xxx" table-class="deviceList shadow-1" :rows="filteredExtendedNetworks" :columns="headers"
+          row-key="id" separator="none" :visible-columns="visibleColumns" :pagination.sync="pagination" hide-bottom>
+
+          <!--@todo migrate to extrastuff slot in filter section above-->
+          <template v-slot:top>
+            <q-space />
+            <q-select v-model="visibleColumns" multiple outlined dense options-dense
+              :display-value="$q.lang.table.columns" emit-value map-options :options="headers" option-value="name"
+              options-cover style="min-width: 150px" />
+          </template>
+
+          <template v-slot:body="props">
+            <q-tr :props="props">
+              <q-td :props="props" key="name">
+                <ReadOnlyTextWithHover :message="props.row.name" />
+              </q-td>
+              <q-td :props="props" key="CIDRs">
+                <ReadOnlyTextWithHover :message="props.row.CIDRs" />
+              </q-td>
+              <q-td :props="props" key="active">
+                <ReadOnlyTextWithHover :message="props.row.active" />
+              </q-td>
+              <q-td :props="props" key="status">
+                <ReadOnlyTextWithHover :message="props.row.status" />
+              </q-td>
+              <q-td :props="props" key="location">
+                <ReadOnlyTextWithHover :message="props.row.location" />
+              </q-td>
+              <q-td :props="props" key="internetInfo">
+                <ReadOnlyTextWithHover :message="props.row.internetInfo" />
+              </q-td>
+              <q-td :props="props" key="devices">
+                <a :href="GetDevicesForNetworkLink(props.row.id)">{{ props.row.devices }}</a>
+              </q-td>
+              <q-td :props="props" key="manufacturerSummary">
+                <ReadOnlyTextWithHover :message="props.row.manufacturerSummary" />
+              </q-td>
+              <q-td :props="props" key="expand">
+                <q-btn :icon="props.expand ? 'mdi-chevron-up' : 'mdi-chevron-down'" flat round dense
+                  @click="props.expand = !props.expand"></q-btn>
+              </q-td>
+            </q-tr>
+            <q-tr v-if="props.expand" :props="props">
+              <q-td colspan="100%">
+                <Link2DetailsPage :link="'/#/device/' + props.row.id" />
+                <NetworkDetails class="detailsSection" :networkId="props.row.id" />
+              </q-td>
+            </q-tr>
+          </template>
+        </q-table>
+      </q-card-section>
+    </q-card>
+  </q-page>
+
 </template>
 
-<style lang="scss">
-.devices {
-  position: relative;
-  max-width: 90%;
-  margin: auto;
-  margin-top: 20px;
-}
 
-.extrastuff {
-  padding: 0 12px;
-  //background-color: red;
-}
-
-.detailsSection {
-  margin-top: 1em;
-}
-
-.networkList {
-  margin-top: 10px;
-}
-
-.networkList > div > table {
+<style lang="scss" >
+.deviceListCard table {
   table-layout: fixed;
-  //background-color: red;
 }
 
 .nowrap {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.detailsSection {
+  margin-top: 1em;
+}
+
+.deviceListCard {
+  margin-top: 10px;
+  margin-left: 10px;
+}
+
+.deviceList {
+  margin-top: 10px;
+}
+
+.extrastuff {
+  padding: 0 12px;
+  border: 4px red;
+  // background-color: black;
 }
 </style>
