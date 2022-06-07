@@ -416,7 +416,7 @@ const pagination = ref({
             </q-tr>
             <q-tr v-if="props.expand" :props="props">
               <q-td colspan="100%">
-                <Link2DetailsPage :link="'/#/device/' + props.row.id" />
+                <Link2DetailsPage :link="'/#/network/' + props.row.id" />
                 <NetworkDetails class="detailsSection" :networkId="props.row.id" />
               </q-td>
             </q-tr>
