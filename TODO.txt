@@ -8,6 +8,11 @@
     'extras' - did an untested draft...
 	
 
+  - redo components like NetworkDetails and DeviceDetails taking object not ID as argument
+    so fetches only (mostly or fully?) done in the parent component; 
+	NOT SURE ABOUT THIS? Unclear what is best/most useful/flexible. Maybe best if compoent takes
+	EITHER ID or object?
+
 + Add /health WS endpoint - mostly for debugging? OR EMBELISH ABOUT interface
   Include stuff like 
    - median response time for a few key requests.

@@ -9,6 +9,8 @@ import { GetNetworkLink, GetNetworkName, GetServices } from "../models/network/U
 import { rescanDevice } from "../proxy/API";
 import * as moment from 'moment';
 
+import JsonViewer from 'vue-json-viewer';
+
 // Components
 import ReadOnlyTextWithHover from '../components/ReadOnlyTextWithHover.vue';
 
@@ -23,6 +25,7 @@ const props = defineProps({
 defineComponent({
   components: {
     ReadOnlyTextWithHover,
+    JsonViewer,
   },
 });
 

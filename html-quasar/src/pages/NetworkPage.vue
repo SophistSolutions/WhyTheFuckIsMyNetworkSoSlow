@@ -1,4 +1,3 @@
-
 <script setup lang="ts">
 import { defineComponent, defineProps, onMounted, onUnmounted, nextTick, ref, computed, ComputedRef } from 'vue';
 import { useRoute } from 'vue-router'
@@ -20,7 +19,7 @@ import {
 import { useQuasar } from 'quasar';
 
 // Components
-import DeviceDetails from '../components/DeviceDetails.vue';
+import NetworkDetails from '../components/NetworkDetails.vue';
 
 import { useWTFStore } from '../stores/WTF-store'
 
@@ -32,23 +31,22 @@ const props = defineProps({
 })
 
 let polling: undefined | NodeJS.Timeout;
+const route = useRoute()
 
 defineComponent({
   components: {
-    DeviceDetails,
+    NetworkDetails,
   },
 });
 
 onMounted(() => {
   // first time check quickly, then more gradually
-  store.fetchDevices();
-  store.fetchAvailableNetworks();
+  store.fetchNetworks([route.params.id as string]);
   if (polling) {
     clearInterval(polling);
   }
   polling = setInterval(() => {
-    store.fetchDevices();
-    store.fetchAvailableNetworks();
+  store.fetchNetworks([route.params.id as string]);
   }, 15 * 1000);
 })
 
@@ -56,34 +54,26 @@ onUnmounted(() => {
   clearInterval(polling);
 })
 
-const route = useRoute()
-
-let device: ComputedRef<IDevice> = computed(() => {
-  let r: IDevice = store.getDevice(route.params.id as string);
-  if (!r) {
-    r = { id: "INVALID", attachedNetworks: {}, name: "INVALID", attachedNetworkInterfaces: [], type: null };
-  }
-  return r;
+let network: ComputedRef<INetwork> = computed(() => {
+  return store.getNetwork(route.params.id as string);
 }
 );
 </script>
+
+<template>
+  <q-page class="col q-pa-md q-gutter-md">
+    <q-card class="deviceListCard">
+      <div class="text-subtitle2 absolute-top text-center">
+        Network {{ network == null ? "loading..." : '"' + GetNetworkName(network) + '"' }}
+      </div>
+      <NetworkDetails class="detailsSection" :networkId="network.id" v-if="network" />
+    </q-card>
+  </q-page>
+</template>
+
 
 <style lang="scss">
 .detailsSection {
   margin-left: 2em;
 }
 </style>
-
-<template>
-  <q-page class="col q-pa-md q-gutter-md">
-    <q-card class="deviceListCard">
-
-      <div class="text-subtitle2 absolute-top text-center">
-
-        Device {{ device == null ? "loading..." : '"' + device.name + '"' }}
-      </div>
-      <DeviceDetails v-if="device" class="detailsSection" :deviceId="device.id"></DeviceDetails>
-    </q-card>
-  </q-page>
-</template>
-
