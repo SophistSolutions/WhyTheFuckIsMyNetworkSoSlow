@@ -112,7 +112,7 @@ const selectableTimeframes = ref<object[]>(
 let selectedTimeframe: string | undefined = undefined;
 
 const selectableServices = ref<Array<{ text: string; value: string }>>(
-   [
+  [
     {
       text: "Other",
       value: "other",
@@ -142,16 +142,8 @@ const selectableServices = ref<Array<{ text: string; value: string }>>(
 
 var selectedServices: string[] = selectableServices.value.map((x) => x.value);
 
-function rowClicked(row: any) {
-  // @todo Try this again with vue3 - https://github.com/vuetifyjs/vuetify/issues/9720
-  // if (!e.ctrlKey) {
-  //   // single select unless shift key
-  //
-  const index = expanded.indexOf(row);
-  expanded = [];
-  if (index === -1) {
-    expanded.push(row);
-  }
+function rowClicked(props:object) {
+  props.expand = !props.expand;
 }
 
 let allAvailableNetworks: ComputedRef<INetwork[]> = computed(() => store.getAvailableNetworks);
@@ -362,8 +354,8 @@ const pagination = ref({
         <div class="row text-h5">
           Networks
         </div>
-        <q-table id="xxx" table-class="deviceList shadow-1" :rows="filteredExtendedNetworks" :columns="headers"
-          row-key="id" separator="none" :visible-columns="visibleColumns" :pagination.sync="pagination" hide-bottom>
+        <q-table table-class="deviceList shadow-1" :rows="filteredExtendedNetworks" :columns="headers" row-key="id"
+           dense :visible-columns="visibleColumns" :pagination.sync="pagination" hide-bottom>
 
           <!--@todo migrate to extrastuff slot in filter section above-->
           <template v-slot:top>
@@ -374,7 +366,7 @@ const pagination = ref({
           </template>
 
           <template v-slot:body="props">
-            <q-tr :props="props">
+            <q-tr :props="props" @click="rowClicked(props)">
               <q-td :props="props" key="name">
                 <ReadOnlyTextWithHover :message="props.row.name" />
               </q-td>
@@ -401,7 +393,7 @@ const pagination = ref({
               </q-td>
               <q-td :props="props" key="expand">
                 <q-btn :icon="props.expand ? 'mdi-chevron-up' : 'mdi-chevron-down'" flat round dense
-                  @click="props.expand = !props.expand"></q-btn>
+                  ></q-btn>
               </q-td>
             </q-tr>
             <q-tr v-if="props.expand" :props="props">
