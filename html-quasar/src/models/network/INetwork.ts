@@ -16,4 +16,5 @@ export interface INetwork {
   networkAddresses: string[];
   friendlyName?: string;
   lastSeenAt?: Date;
+  debugProps?: object;
 }

@@ -1,7 +1,11 @@
 <script setup lang="ts">
-import { defineProps, defineComponent, onMounted, onUnmounted, ref, computed , ComputedRef} from 'vue';
+import { defineProps, defineComponent, onMounted, onUnmounted, ref, computed, ComputedRef } from 'vue';
+
+import JsonViewer from 'vue-json-viewer';
 
 import { IDevice, INetworkAttachmentInfo } from "../models/device/IDevice";
+import { INetworkInterface } from "../models/network/INetworkInterface";
+
 import { rescanDevice } from "../proxy/API";
 import * as moment from 'moment';
 import {
@@ -12,7 +16,6 @@ import {
   GetNetworkName,
 } from "../models/network/Utils";
 
-import JsonViewer from 'vue-json-viewer';
 
 
 // Components
@@ -34,22 +37,19 @@ defineComponent({
   },
 });
 
-
-let polling:  undefined | NodeJS.Timeout;
+let polling: undefined | NodeJS.Timeout;
 var isRescanning: boolean = false;
-
-
 
 onMounted(() => {
   // first time check immediately, then more gradually for updates
-    store.fetchNetworks ([props.networkId]);
-    store.fetchDevices();
+  store.fetchNetworks([props.networkId]);
+  store.fetchDevices();
   if (polling) {
     clearInterval(polling);
   }
   polling = setInterval(() => {
     store.fetchDevices();
-    store.fetchNetworks ([props.networkId]);
+    store.fetchNetworks([props.networkId]);
   }, 15 * 1000);
 })
 
@@ -61,6 +61,35 @@ let allDevices: ComputedRef<IDevice[]> = computed(() => store.getDevices);
 
 let currentNetwork = computed<INetwork | undefined>(
   () => store.getNetwork(props.networkId)
+)
+
+
+
+let networkInterfaces = computed<INetworkInterface[]>(
+  () => store.getNetworkInterfaces
+)
+
+
+let thisNetworksInterfaces = computed<INetworkInterface[]>(
+  () => {
+    const result: INetworkInterface[] = [];
+    if (currentNetwork.value) {
+      currentNetwork.value.attachedInterfaces.forEach((e) => {
+        let answer: INetworkInterface | undefined;
+        networkInterfaces.value.forEach((ni) => {
+          if (e === ni.id) {
+            answer = ni;
+          }
+        });
+        if (answer === undefined) {
+          answer = { id: e };
+        }
+        result.push(answer);
+      });
+    }
+    return result;
+
+  }
 )
 </script>
 
@@ -84,7 +113,7 @@ let currentNetwork = computed<INetwork | undefined>(
       </tr>
       <tr v-if="currentNetwork.lastSeenAt">
         <td>Last Seen</td>
-        <td>{{ moment (currentNetwork.lastSeenAt).fromNow () }}</td>
+        <td>{{ moment(currentNetwork.lastSeenAt).fromNow() }}</td>
       </tr>
       <tr>
         <td>CIDRs</td>
@@ -126,7 +155,7 @@ let currentNetwork = computed<INetwork | undefined>(
         <td>Devices</td>
         <td>
           <a :href="GetDevicesForNetworkLink(currentNetwork.id)">{{
-            GetDeviceIDsInNetwork(currentNetwork, allDevices).length
+              GetDeviceIDsInNetwork(currentNetwork, allDevices).length
           }}</a>
         </td>
       </tr>
@@ -155,6 +184,7 @@ let currentNetwork = computed<INetwork | undefined>(
   padding-left: 5px;
   padding-right: 10px;
 }
+
 .snapshot {
   font-style: italic;
 }

@@ -1,22 +1,10 @@
 <script setup lang="ts">
 import { defineComponent, defineProps, onMounted, onUnmounted, nextTick, ref, computed, ComputedRef } from 'vue';
 import { useRoute } from 'vue-router'
-
-import { IDevice } from "../models/device/IDevice";
-import {
-  ComputeDeviceTypeIconURLs,
-  ComputeOSIconURLList,
-  ComputeServiceTypeIconURLs,
-} from "../models/device/Utils";
-import { INetwork } from "../models/network/INetwork";
-import {
-  FormatAttachedNetworkLocalAddresses,
-  GetNetworkByIDQuietly,
-  GetNetworkLink,
-  GetNetworkName,
-  GetServices,
-} from "../models/network/Utils";
 import { useQuasar } from 'quasar';
+
+import { INetwork } from "../models/network/INetwork";
+import { GetNetworkName } from "../models/network/Utils";
 
 // Components
 import NetworkDetails from '../components/NetworkDetails.vue';
@@ -46,7 +34,7 @@ onMounted(() => {
     clearInterval(polling);
   }
   polling = setInterval(() => {
-  store.fetchNetworks([route.params.id as string]);
+    store.fetchNetworks([route.params.id as string]);
   }, 15 * 1000);
 })
 
@@ -56,8 +44,7 @@ onUnmounted(() => {
 
 let network: ComputedRef<INetwork> = computed(() => {
   return store.getNetwork(route.params.id as string);
-}
-);
+});
 </script>
 
 <template>

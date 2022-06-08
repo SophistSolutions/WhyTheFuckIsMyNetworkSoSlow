@@ -1,12 +1,11 @@
 - quasar work  
 
-  - Device/Devices page:
-    - fix json-viewer
-	- fix costmetics so looks as good as before
-
   - and then work on toolbar
     'extras' - did an untested draft...
+	- I THINK LAST SIGNIFICANT FEATURE BEFORE AS GOOD AS Vue2
 	
+  - Device/Devices page:
+	- fix costmetics so looks as good as before
 
   - redo components like NetworkDetails and DeviceDetails taking object not ID as argument
     so fetches only (mostly or fully?) done in the parent component; 
