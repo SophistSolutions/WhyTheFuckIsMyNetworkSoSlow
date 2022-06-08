@@ -1,11 +1,17 @@
 - quasar work  
 
+  - networks/devices list selection (or at least click to open/expand)
+
   - and then work on toolbar
     'extras' - did an untested draft...
 	- I THINK LAST SIGNIFICANT FEATURE BEFORE AS GOOD AS Vue2
 	
-  - Device/Devices page:
+  - Device/Devices/networks etc pages:
 	- fix costmetics so looks as good as before
+
+-- AT THIS POINT - MAYBE RELEASE AS I THINK WE HAVE EQUIV OF VUE2 code but more modern and good basis to move forward...
+-- at least test on UNIX etc, build as part of WTF, etc...
+
 
   - redo components like NetworkDetails and DeviceDetails taking object not ID as argument
     so fetches only (mostly or fully?) done in the parent component; 
