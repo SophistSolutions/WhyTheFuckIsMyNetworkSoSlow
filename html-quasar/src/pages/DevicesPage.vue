@@ -350,6 +350,8 @@ defineComponent({
   },
 });
 
+const kRefreshFrequencyInSeconds_: number = 15;
+
 onMounted(() => {
   // @see https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/14
   // This works, but maybe cleaner to do within the router, but wasn't able to get
@@ -372,7 +374,7 @@ onMounted(() => {
   polling = setInterval(() => {
     store.fetchDevices();
     store.fetchAvailableNetworks();
-  }, 15 * 1000);
+  }, kRefreshFrequencyInSeconds_ * 1000);
 })
 
 onUnmounted(() => {

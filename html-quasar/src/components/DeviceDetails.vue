@@ -1,17 +1,14 @@
 <script setup lang="ts">
 import { defineProps, defineComponent, onMounted, onUnmounted, ref, computed } from 'vue';
-
-import { IDevice, INetworkAttachmentInfo } from "../models/device/IDevice";
-import {
-  ComputeServiceTypeIconURL,
-} from "../models/device/Utils";
-import { GetNetworkLink, GetNetworkName, GetServices } from "../models/network/Utils";
-import { rescanDevice } from "../proxy/API";
 import * as moment from 'moment';
-
 import JsonViewer from 'vue-json-viewer';
 
-// Components
+import { IDevice, INetworkAttachmentInfo } from "../models/device/IDevice";
+import { ComputeServiceTypeIconURL } from "../models/device/Utils";
+import { GetNetworkLink, GetNetworkName, GetServices } from "../models/network/Utils";
+import { rescanDevice } from "../proxy/API";
+
+
 import ReadOnlyTextWithHover from '../components/ReadOnlyTextWithHover.vue';
 
 import { useWTFStore } from '../stores/WTF-store'
@@ -29,10 +26,8 @@ defineComponent({
   },
 });
 
-
-let polling:  undefined | NodeJS.Timeout;
+let polling: undefined | NodeJS.Timeout;
 var isRescanning: boolean = false;
-
 
 function localNetworkAddresses(): string[] {
   const addresses: string[] = [];
@@ -46,9 +41,9 @@ function localNetworkAddresses(): string[] {
 
 onMounted(() => {
   // first time check immediately, then more gradually for updates
-    store.fetchDevice (props.deviceId);
+  store.fetchDevice(props.deviceId);
   if (currentDevice.value) {
-    store.fetchNetworks (Object.keys(currentDevice.value.attachedNetworks));
+    store.fetchNetworks(Object.keys(currentDevice.value.attachedNetworks));
   } else {
     store.fetchAvailableNetworks();
   }
@@ -56,9 +51,9 @@ onMounted(() => {
     clearInterval(polling);
   }
   polling = setInterval(() => {
-    store.fetchDevice (props.deviceId);
+    store.fetchDevice(props.deviceId);
     if (currentDevice.value) {
-      store.fetchNetworks (Object.keys(currentDevice.value.attachedNetworks));
+      store.fetchNetworks(Object.keys(currentDevice.value.attachedNetworks));
     }
   }, 15 * 1000);
 })
@@ -71,7 +66,7 @@ async function rescanSelectedDevice(): Promise<void> {
   isRescanning = true;
   try {
     await rescanDevice(props.deviceId);
-    store.fetchDevice (props.deviceId);
+    store.fetchDevice(props.deviceId);
   } finally {
     isRescanning = false;
   }
@@ -82,7 +77,8 @@ let currentDevice = computed<IDevice | undefined>(
 )
 
 interface IExtendedDevice extends IDevice {
-localAddresses: string; attachedNetworks: any;
+  localAddresses: string;
+  attachedNetworks: any;
 }
 
 let currentDeviceDetails = computed<IExtendedDevice | undefined>(
@@ -110,40 +106,6 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
   }
 )
 </script>
-
-<style scoped lang="scss">
-.list-items {
-  padding-right: 1em;
-}
-
-td.labelColumn {
-  vertical-align: top;
-}
-
-.detailsTable {
-  table-layout: fixed;
-}
-
-.detailsTable td {
-  padding-left: 5px;
-  padding-right: 10px;
-}
-
-.nowrap {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.smallBtnMargin {
-  margin-left: 1em;
-  margin-right: 1em;
-}
-
-.snapshot {
-  font-style: italic;
-}
-</style>
 
 <template>
   <div v-if="currentDevice">
@@ -291,3 +253,37 @@ td.labelColumn {
     </table>
   </div>
 </template>
+
+<style scoped lang="scss">
+.list-items {
+  padding-right: 1em;
+}
+
+td.labelColumn {
+  vertical-align: top;
+}
+
+.detailsTable {
+  table-layout: fixed;
+}
+
+.detailsTable td {
+  padding-left: 5px;
+  padding-right: 10px;
+}
+
+.nowrap {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.smallBtnMargin {
+  margin-left: 1em;
+  margin-right: 1em;
+}
+
+.snapshot {
+  font-style: italic;
+}
+</style>

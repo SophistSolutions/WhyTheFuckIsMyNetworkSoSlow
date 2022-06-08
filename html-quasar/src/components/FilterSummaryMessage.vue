@@ -30,7 +30,6 @@ watch ([()=>props.filtered,()=>props.nTotalItems,()=>props.nItemsSelected,()=>pr
  *  This is for use in the filter section of the app-bar, to say how much is filtered out.
  */
   var msg: string = "";
-
 </script>
 
 <template>

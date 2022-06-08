@@ -39,6 +39,8 @@ defineComponent({
   },
 });
 
+const kRefreshFrequencyInSeconds_: number = 15;
+
 onMounted(() => {
   // first time check quickly, then more gradually
   store.fetchDevices();
@@ -49,7 +51,7 @@ onMounted(() => {
   polling = setInterval(() => {
     store.fetchDevices();
     store.fetchAvailableNetworks();
-  }, 15 * 1000);
+  }, kRefreshFrequencyInSeconds_ * 1000);
 })
 
 onUnmounted(() => {

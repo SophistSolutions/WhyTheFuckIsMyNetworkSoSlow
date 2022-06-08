@@ -3,13 +3,13 @@ import { onMounted, defineProps, watch } from 'vue';
 
 const props = defineProps({
   message: { type: String, required: true },
-  link: { type: String, required: false, default: null },
-  popupTitle: { type: String, required: false, default: null },
+  link: { type: String, required: false, default: undefined },
+  popupTitle: { type: String, required: false, default: undefined },
 })
 
 function onChange() {
-    useTitle = props.popupTitle == null ? props.message : props.popupTitle;
-    if (useTitle === null) {
+    useTitle = props.popupTitle == undefined ? props.message : props.popupTitle;
+    if (useTitle === undefined) {
         useTitle = "";
     }
 }
@@ -22,9 +22,6 @@ watch ([()=>props.message,()=>props.popupTitle], onChange)
 
 var useTitle: string = "";
 </script>
-
-<style scoped lang="scss">
-</style>
 
 <template>
     <span>

@@ -2,12 +2,11 @@
 import { defineProps, defineComponent, onMounted, onUnmounted, ref, computed, ComputedRef } from 'vue';
 
 import JsonViewer from 'vue-json-viewer';
+import * as moment from 'moment';
 
 import { IDevice, INetworkAttachmentInfo } from "../models/device/IDevice";
 import { INetworkInterface } from "../models/network/INetworkInterface";
 
-import { rescanDevice } from "../proxy/API";
-import * as moment from 'moment';
 import {
   FormatLocation,
   GetDeviceIDsInNetwork,
@@ -63,12 +62,9 @@ let currentNetwork = computed<INetwork | undefined>(
   () => store.getNetwork(props.networkId)
 )
 
-
-
 let networkInterfaces = computed<INetworkInterface[]>(
   () => store.getNetworkInterfaces
 )
-
 
 let thisNetworksInterfaces = computed<INetworkInterface[]>(
   () => {
@@ -88,7 +84,6 @@ let thisNetworksInterfaces = computed<INetworkInterface[]>(
       });
     }
     return result;
-
   }
 )
 </script>

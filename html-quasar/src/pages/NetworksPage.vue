@@ -2,26 +2,17 @@
 import { defineComponent, defineProps, onMounted, onUnmounted, nextTick, ref, computed, ComputedRef } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
 import * as moment from 'moment';
+import { useQuasar } from 'quasar';
 
 import { IDevice } from "../models/device/IDevice";
-import {
-  ComputeDeviceTypeIconURLs,
-  ComputeOSIconURLList,
-  ComputeServiceTypeIconURLs,
-} from "../models/device/Utils";
 import { INetwork } from "../models/network/INetwork";
 import {
-  FormatAttachedNetworkLocalAddresses,
-  GetNetworkByIDQuietly,
-  GetNetworkLink,
   GetNetworkName,
-    GetNetworkCIDRs,
-    FormatLocation,
-    GetDeviceIDsInNetwork,
-    GetDevicesForNetworkLink,
-  GetServices,
+  GetNetworkCIDRs,
+  FormatLocation,
+  GetDeviceIDsInNetwork,
+  GetDevicesForNetworkLink,
 } from "../models/network/Utils";
-import { useQuasar } from 'quasar';
 
 // Components
 // import Search from '../components/Search.vue';
@@ -40,17 +31,15 @@ const props = defineProps({
   selectedNetworkink: { type: String, required: false, default: null },
 })
 
-
 let polling: undefined | NodeJS.Timeout;
 var search: string = "";
 var sortBy: any = [];
 var sortDesc: any = [];
 var expanded: any[] = [];
 
-var selectedServices: string[] = selectableServices().map((x) => x.value);
 
 function filterAllowAllServices() {
-  return selectedServices.length === selectableServices().length;
+  return selectedServices.length === selectableServices.value.length;
 }
 
 function selectServicesFilter_icon() {
@@ -63,13 +52,12 @@ function selectServicesFilter_icon() {
   return "mdi-checkbox-blank-outline";
 }
 
-
 function selectServicesFilter_ToggleSelectAll() {
   nextTick(() => {
     if (filterAllowAllServices()) {
       selectedServices = [];
     } else {
-      selectedServices = selectableServices().map((x) => x.value);
+      selectedServices = selectableServices.value.map((x) => x.value);
     }
   });
 }
@@ -93,8 +81,8 @@ const selectableNetworks = computed<object[]>(
 )
 let selectedNetworkCurrent: string | undefined = undefined;
 
-const selectableTimeframes = computed<object[]>(
-  () => [
+const selectableTimeframes = ref<object[]>(
+  [
     {
       title: "Ever",
       value: null,
@@ -123,8 +111,8 @@ const selectableTimeframes = computed<object[]>(
 );
 let selectedTimeframe: string | undefined = undefined;
 
-function selectableServices(): Array<{ text: string; value: string }> {
-  return [
+const selectableServices = ref<Array<{ text: string; value: string }>>(
+   [
     {
       text: "Other",
       value: "other",
@@ -149,8 +137,10 @@ function selectableServices(): Array<{ text: string; value: string }> {
       text: "Web (HTTP/HTTPS)",
       value: "web",
     },
-  ];
-}
+  ]
+);
+
+var selectedServices: string[] = selectableServices.value.map((x) => x.value);
 
 function rowClicked(row: any) {
   // @todo Try this again with vue3 - https://github.com/vuetifyjs/vuetify/issues/9720
@@ -239,12 +229,12 @@ const headers = ref([
 ]);
 
 let visibleColumns = ref(['name',
- 'CIDRs',
- 'active',
-  'status', 
-  'location', 
-  'internetInfo', 
-  'devices', 
+  'CIDRs',
+  'active',
+  'status',
+  'location',
+  'internetInfo',
+  'devices',
   'expand']);
 
 
@@ -267,55 +257,55 @@ function filtered(): boolean {
 function clearFilter() {
   selectedNetworkCurrent = undefined;
   selectedTimeframe = undefined;
-  selectedServices = selectableServices().map((x) => x.value);
+  selectedServices = selectableServices.value.map((x) => x.value);
   search = "";
 }
 
 
 let filteredExtendedNetworks: ComputedRef<object[]> = computed(() => {
-    const result: object[] = [];
-    allNetworks.value.forEach((i) => {
-      let lastSeenStr = moment(i.lastSeenAt).fromNow();
-      let statusStr = "?";
-      if (i.lastSeenAt != null && moment().diff(moment(i.lastSeenAt), "seconds") < 60) {
-        lastSeenStr = "active";
-        statusStr = "healthy"; // tmphack
-      }
-      const r: any = {
-        ...i,
-        name: GetNetworkName(i),
-        CIDRs: GetNetworkCIDRs(i),
-        active: lastSeenStr,
-        internetInfo:
-          (i.gateways == null ? "" : i.gateways.join(", ")) +
-          (i.internetServiceProvider == null ? " " : " (" + i.internetServiceProvider.name + ")"),
-        devices: GetDeviceIDsInNetwork(i, allDevices.value).length,
-        status: statusStr,
-        location: FormatLocation(i.geographicLocation),
-      };
-      if (
-        search === "" ||
-        JSON.stringify(r)
-          .toLowerCase()
-          .includes(search.toLowerCase())
-      ) {
-        // console.log("MATCH: this.search=", this.search, " and r=", JSON.stringify(r));
-        result.push(r);
-      } else {
-        // console.log("NO MATCH: this.search=", this.search, " and r=", JSON.stringify(r));
-      }
-    });
-    result.sort((a: any, b: any) => {
-      if (a.id < b.id) {
-        return -1;
-      }
-      if (a.id > b.id) {
-        return 1;
-      }
-      return 0;
-    });
-    return result;
-  }
+  const result: object[] = [];
+  allNetworks.value.forEach((i) => {
+    let lastSeenStr = moment(i.lastSeenAt).fromNow();
+    let statusStr = "?";
+    if (i.lastSeenAt != null && moment().diff(moment(i.lastSeenAt), "seconds") < 60) {
+      lastSeenStr = "active";
+      statusStr = "healthy"; // tmphack
+    }
+    const r: any = {
+      ...i,
+      name: GetNetworkName(i),
+      CIDRs: GetNetworkCIDRs(i),
+      active: lastSeenStr,
+      internetInfo:
+        (i.gateways == null ? "" : i.gateways.join(", ")) +
+        (i.internetServiceProvider == null ? " " : " (" + i.internetServiceProvider.name + ")"),
+      devices: GetDeviceIDsInNetwork(i, allDevices.value).length,
+      status: statusStr,
+      location: FormatLocation(i.geographicLocation),
+    };
+    if (
+      search === "" ||
+      JSON.stringify(r)
+        .toLowerCase()
+        .includes(search.toLowerCase())
+    ) {
+      // console.log("MATCH: this.search=", this.search, " and r=", JSON.stringify(r));
+      result.push(r);
+    } else {
+      // console.log("NO MATCH: this.search=", this.search, " and r=", JSON.stringify(r));
+    }
+  });
+  result.sort((a: any, b: any) => {
+    if (a.id < b.id) {
+      return -1;
+    }
+    if (a.id > b.id) {
+      return 1;
+    }
+    return 0;
+  });
+  return result;
+}
 );
 
 defineComponent({
