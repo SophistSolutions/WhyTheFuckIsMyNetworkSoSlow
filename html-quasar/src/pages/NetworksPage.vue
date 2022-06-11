@@ -348,7 +348,7 @@ const pagination = ref({
 
 <template>
   <q-page class="col q-pa-md q-gutter-md">
-
+        
     <q-card class="deviceListCard">
       <q-card-section>
         <div class="row text-h5">
@@ -440,4 +440,11 @@ const pagination = ref({
   border: 4px red;
   // background-color: black;
 }
+
+// Based on .q-layout__section--marginal
+.secondary-toolbar {
+    background-color: var(--q-primary);
+    color: #fff;
+}
+
 </style>

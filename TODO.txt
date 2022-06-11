@@ -1,6 +1,8 @@
 - quasar work  
 
   - networks/devices list selection (or at least click to open/expand)
+	(selection works sortof - onclick - but display feedback on hover I'm posting to
+	discord about - seems to only work in dark mode)
 
   - and then work on toolbar
     'extras' - did an untested draft...

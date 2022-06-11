@@ -2,6 +2,7 @@
 import { defineComponent, defineProps, onMounted, onUnmounted, nextTick, ref, computed, ComputedRef } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
 import * as moment from 'moment';
+import { useQuasar } from 'quasar';
 
 import { IDevice } from "../models/device/IDevice";
 import {
@@ -17,11 +18,10 @@ import {
   GetNetworkName,
   GetServices,
 } from "../models/network/Utils";
-import { useQuasar } from 'quasar';
 
 // Components
-// import Search from '../components/Search.vue';
-//import ClearButton from '../components/ClearButton.vue';
+import Search from '../components/Search.vue';
+import ClearButton from '../components/ClearButton.vue';
 import DeviceDetails from '../components/DeviceDetails.vue';
 import ReadOnlyTextWithHover from '../components/ReadOnlyTextWithHover.vue';
 import Link2DetailsPage from '../components/Link2DetailsPage.vue';
@@ -38,89 +38,13 @@ const props = defineProps({
 
 
 let polling: undefined | NodeJS.Timeout;
-var search: string = "";
+var search = ref("");
 var sortBy: any = [];
 var sortDesc: any = [];
-var expanded: any[] = [];
-
-var selectedServices: string[] = selectableServices().map((x) => x.value);
-
-function filterAllowAllServices() {
-  return selectedServices.length === selectableServices().length;
-}
-
-function selectServicesFilter_icon() {
-  if (filterAllowAllServices()) {
-    return "mdi-close-box";
-  }
-  if (selectedServices.length > 0 && !filterAllowAllServices()) {
-    return "mdi-minus-box";
-  }
-  return "mdi-checkbox-blank-outline";
-}
 
 
-function selectServicesFilter_ToggleSelectAll() {
-  nextTick(() => {
-    if (filterAllowAllServices()) {
-      selectedServices = [];
-    } else {
-      selectedServices = selectableServices().map((x) => x.value);
-    }
-  });
-}
-
-const selectableNetworks = computed<object[]>(
-  () => {
-    const r: object[] = [
-      {
-        title: "Any",
-        value: null,
-      },
-    ];
-    allAvailableNetworks.value.forEach((n) => {
-      r.push({
-        title: GetNetworkName(n),
-        value: n.id,
-      });
-    });
-    return r;
-  }
-)
-let selectedNetworkCurrent: string | undefined = undefined;
-
-const selectableTimeframes = computed<object[]>(
-  () => [
-    {
-      title: "Ever",
-      value: null,
-    },
-    {
-      title: "Last Few Minutes",
-      value: "PT3.9M",
-    },
-    {
-      title: "Last Hour",
-      value: "PT1H",
-    },
-    {
-      title: "Last Day",
-      value: "P1D",
-    },
-    {
-      title: ">15 Min Ago",
-      value: "-PT15M",
-    },
-    {
-      title: ">1 Day Ago",
-      value: "-P1D",
-    },
-  ]
-);
-let selectedTimeframe: string | undefined = undefined;
-
-function selectableServices(): Array<{ text: string; value: string }> {
-  return [
+const selectableServices =
+  ref([
     {
       text: "Other",
       value: "other",
@@ -145,8 +69,88 @@ function selectableServices(): Array<{ text: string; value: string }> {
       text: "Web (HTTP/HTTPS)",
       value: "web",
     },
-  ];
+  ]);
+
+let selectedServices: string[] = selectableServices.value.map((x) => x.value);
+
+
+const filterIsSetToAllowAllServices = computed<boolean>(
+  () => {
+    return selectedServices.length === selectableServices.value.length;
+  });
+
+const selectServicesFilter_icon = computed<string>(
+  () => {
+    if (filterIsSetToAllowAllServices.value) {
+      return "mdi-close-box";
+    }
+    if (selectedServices.length > 0 && !filterIsSetToAllowAllServices.value) {
+      return "mdi-minus-box";
+    }
+    return "mdi-checkbox-blank-outline";
+  });
+
+function selectServicesFilter_ToggleSelectAll() {
+  nextTick(() => {
+    if (filterIsSetToAllowAllServices.value) {
+      selectedServices = [];
+    } else {
+      selectedServices = selectableServices.value.map((x) => x.value);
+    }
+  });
 }
+
+
+const selectableNetworks = computed<object[]>(
+  () => {
+    const r: object[] = [
+      {
+        title: "Any",
+        value: null,
+      },
+    ];
+    allAvailableNetworks.value.forEach((n) => {
+      r.push({
+        title: GetNetworkName(n),
+        value: n.id,
+      });
+    });
+    return r;
+  }
+)
+let selectedNetworkCurrent: string | undefined = undefined;
+
+
+
+const selectableTimeframes = ref([
+  {
+    title: "Ever",
+    value: null,
+  },
+  {
+    title: "Last Few Minutes",
+    value: "PT3.9M",
+  },
+  {
+    title: "Last Hour",
+    value: "PT1H",
+  },
+  {
+    title: "Last Day",
+    value: "P1D",
+  },
+  {
+    title: ">15 Min Ago",
+    value: "-PT15M",
+  },
+  {
+    title: ">1 Day Ago",
+    value: "-P1D",
+  },
+]);
+let selectedTimeframe: string | undefined = undefined;
+
+
 
 function rowClicked(props: object) {
   props.expand = !props.expand;
@@ -154,7 +158,7 @@ function rowClicked(props: object) {
 
 let allAvailableNetworks: ComputedRef<INetwork[]> = computed(() => store.getAvailableNetworks);
 
-const headers = ref([
+const tableHeaders = ref([
   {
     name: 'name',
     field: "name",
@@ -248,16 +252,16 @@ function filtered(): boolean {
   return (
     selectedNetworkCurrent != undefined ||
     selectedTimeframe !== null ||
-    search !== "" ||
-    !filterAllowAllServices
+    search.value !== "" ||
+    !filterIsSetToAllowAllServices.value
   );
 }
 
 function clearFilter() {
   selectedNetworkCurrent = undefined;
   selectedTimeframe = undefined;
-  selectedServices = selectableServices().map((x) => x.value);
-  search = "";
+  selectedServices = selectableServices.value.map((x) => x.value);
+  search.value = "";
 }
 
 
@@ -293,7 +297,7 @@ let filteredExtendedDevices: ComputedRef<object[]> = computed(() => {
         }
       }
     }
-    if (passedFilter && !filterAllowAllServices()) {
+    if (passedFilter && !filterIsSetToAllowAllServices.value) {
       passedFilter =
         GetServices(i)
           .map((x) => x.name)
@@ -311,10 +315,10 @@ let filteredExtendedDevices: ComputedRef<object[]> = computed(() => {
         },
       };
       if (
-        search === "" ||
+        search.value === "" ||
         JSON.stringify(r)
           .toLowerCase()
-          .includes(search.toLowerCase())
+          .includes(search.value.toLowerCase())
       ) {
         result.push(r);
       }
@@ -332,17 +336,18 @@ let filteredExtendedDevices: ComputedRef<object[]> = computed(() => {
   return result;
 });
 
+
+const kRefreshFrequencyInSeconds_: number = 15;
+
 defineComponent({
   components: {
-    // ClearButton,
+    ClearButton,
     ReadOnlyTextWithHover,
     Link2DetailsPage,
     DeviceDetails,
-    // Search,
+    Search,
   },
 });
-
-const kRefreshFrequencyInSeconds_: number = 15;
 
 onMounted(() => {
   // @see https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/14
@@ -381,76 +386,66 @@ const pagination = ref({
 </script>
 
 <template>
+  <q-toolbar class="justify-between secondary-toolbar">
+    <div fluid class="extrastuff">
+      <div class="row">
+        <div class="col-2">
+          <q-select dense hide-details="true" :items="selectableNetworks" v-model="selectedNetworkCurrent"
+            label="On networks" />
+        </div>
+        <div class="col-2">
+          <q-select dense hide-details="true" :items="selectableTimeframes" v-model="selectedTimeframe" label="Seen" />
+        </div>
+        <div class="col-2">
+          <q-select dense small multiple hide-details="true"
+            hint="Any means dont filter on this; multiple selected items treated as OR" :items="selectableServices"
+            v-model="selectedServices" :menu-props="{ auto: true, overflowY: true }" label="With services">
+            <!-- <template v-slot:prepend-item>
+              <v-list-item ripple @click="selectServicesFilter_ToggleSelectAll">
+                <v-list-item-action>
+                  <q-icon :color="selectedServices.length > 0 ? 'indigo darken-4' : ''">
+                    {{ selectServicesFilter_icon }}
+                  </q-icon>
+                </v-list-item-action>
+                <v-list-item-title>
+                  Any
+                </v-list-item-title>
+              </v-list-item>
+              <v-divider class="mt-2"></v-divider>
+            </template> -->
+            <!-- <template slot="selection" slot-scope="{ item, index }">
+              <span v-if="filterIsSetToAllowAllServices && index === 0">Any</span>
+              <span v-if="index === 0 && !filterIsSetToAllowAllServices">{{ item.text }}</span>
+              <span v-if="index === 1 && !filterIsSetToAllowAllServices" class="grey--text caption othersSpan">(+{{
+                  selectedServices.length - 1
+              }} others)</span>
+            </template> -->
+          </q-select>
+        </div>
+        <div class="col-2">
+          <Search v-model:searchFor="search" />
+        </div>
+        <div class="col-4">
+          <!-- <FilterSummaryMessage dense :filtered="filtered" :nItemsSelected="filteredExtendedDevices.value.length"
+            :nTotalItems="allDevices?.length" itemsName="devices" /> -->
+          <ClearButton v-if="false /*filtered*/" v-on:click="clearFilter" />
+        </div>
+        <div class="col-2">
+          <q-select v-model="visibleColumns" multiple outlined dense options-dense
+            :display-value="$q.lang.table.columns" emit-value map-options :options="tableHeaders" option-value="name"
+            options-cover style="min-width: 150px" />
+        </div>
+      </div>
+    </div>
+  </q-toolbar>
   <q-page class="col q-pa-md q-gutter-md">
-
-    <!-- <app-bar>
-    <template v-slot:extrastuff>
-      <v-container fluid class="extrastuff">
-        <v-row no-gutters align="end">
-          <v-col cols="2">
-            <v-select dense hide-details="true" :items="selectableNetworks" v-model="selectedNetworkCurrent"
-              label="On networks" />
-          </v-col>
-          <v-col cols="2">
-            <v-select dense hide-details="true" :items="selectableTimeframes" v-model="selectedTimeframe"
-              label="Seen" />
-          </v-col>
-          <v-col cols="2" v-if="false">
-            <v-select dense small multiple hide-details="true"
-              hint="Any means dont filter on this; multiple selected items treated as OR" :items="selectableServices()"
-              v-model="selectedServices" :menu-props="{ auto: true, overflowY: true }" label="With services">
-              <template v-slot:prepend-item>
-                <v-list-item ripple @click="selectServicesFilter_ToggleSelectAll">
-                  <v-list-item-action>
-                    <v-icon :color="selectedServices.length > 0 ? 'indigo darken-4' : ''">
-                      {{ selectServicesFilter_icon }}
-                    </v-icon>
-                  </v-list-item-action>
-                  <v-list-item-title>
-                    Any
-                  </v-list-item-title>
-
-                </v-list-item>
-                <v-divider class="mt-2"></v-divider>
-              </template>
-
-              <template slot="selection" slot-scope="{ item, index }">
-                <span v-if="filterAllowAllServices() && index === 0">Any</span>
-                <span v-if="index === 0 && !filterAllowAllServices()">{{ item.text }}</span>
-                <span v-if="index === 1 && !filterAllowAllServices" class="grey--text caption othersSpan">(+{{
-                    selectedServices.length - 1
-                }} others)</span>
-              </template>
-            </v-select>
-          </v-col>
-          <v-col cols="2" v-if="false">
-            <Search :searchFor.sync="search" dense />
-          </v-col>
-          <v-col cols="4" align="end" v-if="false">
-            <FilterSummaryMessage dense :filtered="filtered" :nItemsSelected="filteredExtendedDevices.value.length"
-              :nTotalItems="allDevices.value.length" itemsName="devices" />
-            <ClearButton v-if="false /*filtered*/" v-on:click="clearFilter" />
-          </v-col>
-        </v-row>
-      </v-container>
-    </template>
-  </app-bar> -->
-
     <q-card class="deviceListCard">
       <q-card-section>
         <div class="row text-h5">
           Devices
         </div>
-        <q-table dense table-class="deviceList shadow-1" :rows="filteredExtendedDevices" :columns="headers" row-key="id"
-          :visible-columns="visibleColumns" :pagination.sync="pagination" hide-bottom>
-
-          <!--@todo migrate to extrastuff slot in filter section above-->
-          <template v-slot:top>
-            <q-space />
-            <q-select v-model="visibleColumns" multiple outlined dense options-dense
-              :display-value="$q.lang.table.columns" emit-value map-options :options="headers" option-value="name"
-              options-cover style="min-width: 150px" />
-          </template>
+        <q-table dense table-class="deviceList shadow-1" :rows="filteredExtendedDevices" :columns="tableHeaders"
+          row-key="id" :visible-columns="visibleColumns" :pagination.sync="pagination" hide-bottom>
 
           <template v-slot:body="props">
             <q-tr :props="props" @click="rowClicked(props)">
@@ -508,11 +503,15 @@ const pagination = ref({
       </q-card-section>
     </q-card>
   </q-page>
-
 </template>
 
-
 <style lang="scss" >
+// Based on .q-layout__section--marginal
+.secondary-toolbar {
+  background-color: var(--q-primary);
+  color: #fff;
+}
+
 .deviceListCard table {
   table-layout: fixed;
 }

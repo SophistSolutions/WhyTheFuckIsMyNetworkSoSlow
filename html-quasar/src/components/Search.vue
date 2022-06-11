@@ -1,22 +1,20 @@
 <script setup lang="ts">
-
-
-import { defineProps, watch } from 'vue';
+import { defineProps, defineEmits, watch, ref, Ref } from 'vue';
 
 const props = defineProps({
   searchFor: { type: String, required: false },
 })
 
-// see https://stackoverflow.com/questions/43933405/can-i-disable-certain-vue-warnings-for-a-specific-component
-var searchForBWA: string = "";
+const emit = defineEmits(['update:searchFor'])
 
-watch([() => props.searchFor], () => searchForBWA = props.searchFor == null ? "" : props.searchFor)
+var search: Ref<string|undefined> = ref(props.searchFor);
+
+const updateSearchFor = (newValue:string|number|null) => {
+    emit('update:searchFor', newValue)
+}
 </script>
 
-<style scoped lang="scss">
-</style>
-
 <template>
-  <q-icon name="mdi-magnify" left="true" />
-  <q-input v-model="searchForBWA" label="Search" @keyup="$emit('update:searchFor', searchForBWA)" />
+  <q-icon name="mdi-magnify" :left="true" />
+  <q-input :modelValue="search" label="Search"  @update:modelValue="updateSearchFor"  />
 </template>
