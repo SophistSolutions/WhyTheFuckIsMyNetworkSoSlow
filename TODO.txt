@@ -1,5 +1,14 @@
 - quasar work  
 
+
+ + gui cleanup in devices page 
+
+    + undersntad hte null versus undefined thing in q-select
+	+ use that to fix second q-select
+	+ finish/fix serices q-select (incldiung slots I thinK)
+	+ fix issue with lastseenat always wrong in listbox for devices
+	+ be sure filters really working (eg. for timestamp)
+
   - networks/devices list selection (or at least click to open/expand)
 	(selection works sortof - onclick - but display feedback on hover I'm posting to
 	discord about - seems to only work in dark mode)
