@@ -421,8 +421,8 @@ const pagination = ref({
     <ClearButton v-if="filtered" v-on:click="clearFilter" />
   </q-toolbar>
   <q-toolbar  class="justify-between secondary-toolbar">
-    <q-select v-model="visibleColumns" multiple outlined dense options-dense :display-value="$q.lang.table.columns"
-      emit-value map-options :options="tableHeaders" option-value="name" options-cover style="min-width: 250px"
+    <q-select v-model="visibleColumns" multiple dense options-dense :display-value="$q.lang.table.columns"
+      emit-value map-options :options="tableHeaders" option-value="name" style="min-width: 250px"
       label="Shown" dark :options-dark="false" />
   </q-toolbar>
   <q-page class="col q-pa-md q-gutter-md">
