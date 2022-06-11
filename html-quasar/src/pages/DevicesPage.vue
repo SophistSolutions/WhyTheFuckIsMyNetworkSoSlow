@@ -247,7 +247,7 @@ const router = useRouter()
 let allDevices: ComputedRef<IDevice[]> = computed(() => store.getDevices);
 
 
-let filtered: ComputedRef<boolean> = computed(() =>selectedNetworkCurrent.value != null ||
+let filtered: ComputedRef<boolean> = computed(() => selectedNetworkCurrent.value != null ||
   selectedTimeframe.value !== undefined ||
   search.value !== "" ||
   !filterIsSetToAllowAllServices.value
@@ -384,13 +384,14 @@ const pagination = ref({
 <template>
   <q-toolbar class="justify-between secondary-toolbar">
     <q-select dense hide-details="true" :options="selectableNetworks" v-model="selectedNetworkCurrent" emit-value
-      map-options label="On network" style="min-width: 150px"  />
+      map-options label="On network" style="min-width: 150px" dark :options-dark="false" />
 
-    <q-select dense hide-details="true" :options="selectableTimeframes" v-model="selectedTimeframe" label="Seen" style="min-width: 150px" />
+    <q-select dense hide-details="true" :options="selectableTimeframes" v-model="selectedTimeframe" label="Seen"
+      style="min-width: 150px" dark :options-dark="false" />
 
     <q-select dense small multiple hide-details="true"
       hint="Any means dont filter on this; multiple selected items treated as OR" :items="selectableServices"
-      v-model="selectedServices" :menu-props="{ auto: true, overflowY: true }" label="With services">
+      v-model="selectedServices" :menu-props="{ auto: true, overflowY: true }" label="With services" dark>
       <!-- <template v-slot:prepend-item>
               <v-list-item ripple @click="selectServicesFilter_ToggleSelectAll">
                 <v-list-item-action>
@@ -416,7 +417,8 @@ const pagination = ref({
     <Search v-model:searchFor="search" />
 
     <q-select v-model="visibleColumns" multiple outlined dense options-dense :display-value="$q.lang.table.columns"
-      emit-value map-options :options="tableHeaders" option-value="name" options-cover style="min-width: 150px" label="Shown" />
+      emit-value map-options :options="tableHeaders" option-value="name" options-cover style="min-width: 250px"
+      label="Shown" dark :options-dark="false" />
 
     <FilterSummaryMessage dense :filtered="filtered" :nItemsSelected="filteredExtendedDevices.values.length"
       :nTotalItems="allDevices?.length" itemsName="devices" />
