@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, defineProps, watch } from 'vue';
+import { onMounted, defineProps, watch, ref } from 'vue';
 
 const props = defineProps({
   nTotalItems: { type: Number, required: true },
@@ -14,10 +14,11 @@ function onChange() {
       filtered = props.nItemsSelected === props.nTotalItems;
     }
     if (filtered) {
-      msg = `Filtered: showing ${props.nItemsSelected} of ${props.nTotalItems} ${props.itemsName}`;
+      msg.value = `Filtered: showing ${props.nItemsSelected} of ${props.nTotalItems} ${props.itemsName}`;
     } else {
-      msg = `Unfiltered: all ${props.nTotalItems} ${props.itemsName} showing`;
+      msg.value = `Unfiltered: all ${props.nTotalItems} ${props.itemsName} showing`;
     }
+
 }
 
 onMounted(() => {
@@ -29,7 +30,7 @@ watch ([()=>props.filtered,()=>props.nTotalItems,()=>props.nItemsSelected,()=>pr
 /*
  *  This is for use in the filter section of the app-bar, to say how much is filtered out.
  */
-  var msg: string = "";
+  var msg = ref ("");
 </script>
 
 <template>

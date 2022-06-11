@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineComponent, defineProps, onMounted, onUnmounted, nextTick, ref, computed, ComputedRef } from 'vue';
+import { defineComponent, defineProps, onMounted, onUnmounted, nextTick, Ref, ref, computed, ComputedRef } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
 import * as moment from 'moment';
 import { useQuasar } from 'quasar';
@@ -46,27 +46,27 @@ var sortDesc: any = [];
 const selectableServices =
   ref([
     {
-      text: "Other",
+      label: "Other",
       value: "other",
     },
     {
-      text: "Print",
+      label: "Print",
       value: "print",
     },
     {
-      text: "RDP (Remote Desktop)",
+      label: "RDP (Remote Desktop)",
       value: "rdp",
     },
     {
-      text: "SSH",
+      label: "SSH",
       value: "ssh",
     },
     {
-      text: "SMB (Windows Network FS)",
+      label: "SMB (Windows Network FS)",
       value: "smb",
     },
     {
-      text: "Web (HTTP/HTTPS)",
+      label: "Web (HTTP/HTTPS)",
       value: "web",
     },
   ]);
@@ -105,50 +105,50 @@ const selectableNetworks = computed<object[]>(
   () => {
     const r: object[] = [
       {
-        title: "Any",
+        label: "Any",
         value: null,
       },
     ];
     allAvailableNetworks.value.forEach((n) => {
       r.push({
-        title: GetNetworkName(n),
+        label: GetNetworkName(n),
         value: n.id,
       });
     });
     return r;
   }
 )
-let selectedNetworkCurrent: string | undefined = undefined;
+let selectedNetworkCurrent: Ref<string | undefined> = ref(undefined);
 
 
 
 const selectableTimeframes = ref([
   {
-    title: "Ever",
-    value: null,
+    label: "Ever",
+    value: undefined,
   },
   {
-    title: "Last Few Minutes",
+    label: "Last Few Minutes",
     value: "PT3.9M",
   },
   {
-    title: "Last Hour",
+    label: "Last Hour",
     value: "PT1H",
   },
   {
-    title: "Last Day",
+    label: "Last Day",
     value: "P1D",
   },
   {
-    title: ">15 Min Ago",
+    label: ">15 Min Ago",
     value: "-PT15M",
   },
   {
-    title: ">1 Day Ago",
+    label: ">1 Day Ago",
     value: "-P1D",
   },
 ]);
-let selectedTimeframe: string | undefined = undefined;
+let selectedTimeframe: Ref<string | undefined> = ref(undefined);
 
 
 
@@ -241,25 +241,23 @@ const tableHeaders = ref([
 
 let visibleColumns = ref(['name', 'type', 'lastSeenAt', 'manufacturerSummary', 'operatingSystem', 'services', 'localAddresses', 'networksSummary', 'expand']);
 
-
 const route = useRoute()
 const router = useRouter()
 
 let allDevices: ComputedRef<IDevice[]> = computed(() => store.getDevices);
 
-
 function filtered(): boolean {
   return (
-    selectedNetworkCurrent != undefined ||
-    selectedTimeframe !== null ||
+    selectedNetworkCurrent.value != undefined ||
+    selectedTimeframe.value !== null ||
     search.value !== "" ||
     !filterIsSetToAllowAllServices.value
   );
 }
 
 function clearFilter() {
-  selectedNetworkCurrent = undefined;
-  selectedTimeframe = undefined;
+  selectedNetworkCurrent.value = undefined;
+  selectedTimeframe.value = undefined;
   selectedServices = selectableServices.value.map((x) => x.value);
   search.value = "";
 }
@@ -272,18 +270,18 @@ let filteredExtendedDevices: ComputedRef<object[]> = computed(() => {
     if (
       passedFilter &&
       !(
-        selectedNetworkCurrent == null ||
-        Object.prototype.hasOwnProperty.call(i.attachedNetworks, selectedNetworkCurrent)
+        selectedNetworkCurrent.value == null ||
+        Object.prototype.hasOwnProperty.call(i.attachedNetworks, selectedNetworkCurrent.value)
       )
     ) {
       passedFilter = false;
     }
-    if (passedFilter && selectedTimeframe !== null) {
+    if (passedFilter && selectedTimeframe.value !== null) {
       if (i.lastSeenAt == null) {
         // not sure how to treat missing data so for now treat as passed filter
       } else {
         const timeSinceSeenAsMS = Date.now() - new Date(i.lastSeenAt).getTime();
-        const selectedTimeframeAsMS = moment.duration(selectedTimeframe)
+        const selectedTimeframeAsMS = moment.duration(selectedTimeframe.value)
           .asMilliseconds();
         if (selectedTimeframeAsMS < 0) {
           // Treat negative duration as meaning stuff OLDER than
@@ -344,6 +342,7 @@ defineComponent({
     ClearButton,
     ReadOnlyTextWithHover,
     Link2DetailsPage,
+    FilterSummaryMessage,
     DeviceDetails,
     Search,
   },
@@ -359,7 +358,7 @@ onMounted(() => {
       path: route.path,
       // params: { selectedNetwork: this.$route.query.selectedNetwork },
     });
-    selectedNetworkCurrent = s;
+    selectedNetworkCurrent.value = s;
   }
 
   // first time check quickly, then more gradually
@@ -387,20 +386,15 @@ const pagination = ref({
 
 <template>
   <q-toolbar class="justify-between secondary-toolbar">
-    <div fluid class="extrastuff">
-      <div class="row">
-        <div class="col-2">
-          <q-select dense hide-details="true" :items="selectableNetworks" v-model="selectedNetworkCurrent"
-            label="On networks" />
-        </div>
-        <div class="col-2">
-          <q-select dense hide-details="true" :items="selectableTimeframes" v-model="selectedTimeframe" label="Seen" />
-        </div>
-        <div class="col-2">
-          <q-select dense small multiple hide-details="true"
-            hint="Any means dont filter on this; multiple selected items treated as OR" :items="selectableServices"
-            v-model="selectedServices" :menu-props="{ auto: true, overflowY: true }" label="With services">
-            <!-- <template v-slot:prepend-item>
+    <q-select dense hide-details="true" :options="selectableNetworks" v-model="selectedNetworkCurrent"
+      label="On networks" />
+
+    <q-select dense hide-details="true" :options="selectableTimeframes" v-model="selectedTimeframe" label="Seen" />
+
+    <q-select dense small multiple hide-details="true"
+      hint="Any means dont filter on this; multiple selected items treated as OR" :items="selectableServices"
+      v-model="selectedServices" :menu-props="{ auto: true, overflowY: true }" label="With services">
+      <!-- <template v-slot:prepend-item>
               <v-list-item ripple @click="selectServicesFilter_ToggleSelectAll">
                 <v-list-item-action>
                   <q-icon :color="selectedServices.length > 0 ? 'indigo darken-4' : ''">
@@ -413,30 +407,24 @@ const pagination = ref({
               </v-list-item>
               <v-divider class="mt-2"></v-divider>
             </template> -->
-            <!-- <template slot="selection" slot-scope="{ item, index }">
+      <!-- <template slot="selection" slot-scope="{ item, index }">
               <span v-if="filterIsSetToAllowAllServices && index === 0">Any</span>
               <span v-if="index === 0 && !filterIsSetToAllowAllServices">{{ item.text }}</span>
               <span v-if="index === 1 && !filterIsSetToAllowAllServices" class="grey--text caption othersSpan">(+{{
                   selectedServices.length - 1
               }} others)</span>
             </template> -->
-          </q-select>
-        </div>
-        <div class="col-2">
-          <Search v-model:searchFor="search" />
-        </div>
-        <div class="col-4">
-          <!-- <FilterSummaryMessage dense :filtered="filtered" :nItemsSelected="filteredExtendedDevices.value.length"
-            :nTotalItems="allDevices?.length" itemsName="devices" /> -->
-          <ClearButton v-if="false /*filtered*/" v-on:click="clearFilter" />
-        </div>
-        <div class="col-2">
-          <q-select v-model="visibleColumns" multiple outlined dense options-dense
-            :display-value="$q.lang.table.columns" emit-value map-options :options="tableHeaders" option-value="name"
-            options-cover style="min-width: 150px" />
-        </div>
-      </div>
-    </div>
+    </q-select>
+    <Search v-model:searchFor="search" />
+
+    <q-select v-model="visibleColumns" multiple outlined dense options-dense :display-value="$q.lang.table.columns"
+      emit-value map-options :options="tableHeaders" option-value="name" options-cover style="min-width: 150px" />
+
+
+
+    <FilterSummaryMessage dense :filtered="filtered()" :nItemsSelected="filteredExtendedDevices.values.length"
+            :nTotalItems="allDevices?.length" itemsName="devices" />
+    <ClearButton v-if="false /*filtered*/" v-on:click="clearFilter" />
   </q-toolbar>
   <q-page class="col q-pa-md q-gutter-md">
     <q-card class="deviceListCard">
