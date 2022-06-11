@@ -382,7 +382,7 @@ const pagination = ref({
 </script>
 
 <template>
-  <q-toolbar class="justify-between secondary-toolbar">
+  <q-toolbar  class="justify-between secondary-toolbar">
     <q-select dense hide-details="true" :options="selectableNetworks" v-model="selectedNetworkCurrent" emit-value
       map-options label="On network" style="min-width: 150px" dark :options-dark="false" />
 
@@ -416,13 +416,14 @@ const pagination = ref({
 
     <Search v-model:searchFor="search" />
 
-    <q-select v-model="visibleColumns" multiple outlined dense options-dense :display-value="$q.lang.table.columns"
-      emit-value map-options :options="tableHeaders" option-value="name" options-cover style="min-width: 250px"
-      label="Shown" dark :options-dark="false" />
-
     <FilterSummaryMessage dense :filtered="filtered" :nItemsSelected="filteredExtendedDevices.values.length"
       :nTotalItems="allDevices?.length" itemsName="devices" />
     <ClearButton v-if="filtered" v-on:click="clearFilter" />
+  </q-toolbar>
+  <q-toolbar  class="justify-between secondary-toolbar">
+    <q-select v-model="visibleColumns" multiple outlined dense options-dense :display-value="$q.lang.table.columns"
+      emit-value map-options :options="tableHeaders" option-value="name" options-cover style="min-width: 250px"
+      label="Shown" dark :options-dark="false" />
   </q-toolbar>
   <q-page class="col q-pa-md q-gutter-md">
     <q-card class="deviceListCard">
