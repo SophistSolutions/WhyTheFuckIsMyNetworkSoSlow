@@ -118,7 +118,7 @@ const selectableNetworks = computed<object[]>(
     return r;
   }
 )
-let selectedNetworkCurrent: Ref<string | undefined> = ref(undefined);
+let selectedNetworkCurrent: Ref<string | null> = ref(null);
 
 
 
@@ -246,22 +246,19 @@ const router = useRouter()
 
 let allDevices: ComputedRef<IDevice[]> = computed(() => store.getDevices);
 
-function filtered(): boolean {
-  return (
-    selectedNetworkCurrent.value != undefined ||
-    selectedTimeframe.value !== null ||
-    search.value !== "" ||
-    !filterIsSetToAllowAllServices.value
-  );
-}
+
+let filtered: ComputedRef<boolean> = computed(() =>selectedNetworkCurrent.value != null ||
+  selectedTimeframe.value !== undefined ||
+  search.value !== "" ||
+  !filterIsSetToAllowAllServices.value
+);
 
 function clearFilter() {
-  selectedNetworkCurrent.value = undefined;
+  selectedNetworkCurrent.value = null;
   selectedTimeframe.value = undefined;
   selectedServices = selectableServices.value.map((x) => x.value);
   search.value = "";
 }
-
 
 let filteredExtendedDevices: ComputedRef<object[]> = computed(() => {
   const result: object[] = [];
@@ -386,10 +383,10 @@ const pagination = ref({
 
 <template>
   <q-toolbar class="justify-between secondary-toolbar">
-    <q-select dense hide-details="true" :options="selectableNetworks" v-model="selectedNetworkCurrent"
-      label="On networks" />
+    <q-select dense hide-details="true" :options="selectableNetworks" v-model="selectedNetworkCurrent" emit-value
+      map-options label="On network" style="min-width: 150px"  />
 
-    <q-select dense hide-details="true" :options="selectableTimeframes" v-model="selectedTimeframe" label="Seen" />
+    <q-select dense hide-details="true" :options="selectableTimeframes" v-model="selectedTimeframe" label="Seen" style="min-width: 150px" />
 
     <q-select dense small multiple hide-details="true"
       hint="Any means dont filter on this; multiple selected items treated as OR" :items="selectableServices"
@@ -415,16 +412,15 @@ const pagination = ref({
               }} others)</span>
             </template> -->
     </q-select>
+
     <Search v-model:searchFor="search" />
 
     <q-select v-model="visibleColumns" multiple outlined dense options-dense :display-value="$q.lang.table.columns"
-      emit-value map-options :options="tableHeaders" option-value="name" options-cover style="min-width: 150px" />
+      emit-value map-options :options="tableHeaders" option-value="name" options-cover style="min-width: 150px" label="Shown" />
 
-
-
-    <FilterSummaryMessage dense :filtered="filtered()" :nItemsSelected="filteredExtendedDevices.values.length"
-            :nTotalItems="allDevices?.length" itemsName="devices" />
-    <ClearButton v-if="false /*filtered*/" v-on:click="clearFilter" />
+    <FilterSummaryMessage dense :filtered="filtered" :nItemsSelected="filteredExtendedDevices.values.length"
+      :nTotalItems="allDevices?.length" itemsName="devices" />
+    <ClearButton v-if="filtered" v-on:click="clearFilter" />
   </q-toolbar>
   <q-page class="col q-pa-md q-gutter-md">
     <q-card class="deviceListCard">
