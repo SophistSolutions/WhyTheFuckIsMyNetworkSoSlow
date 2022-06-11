@@ -446,7 +446,7 @@ const pagination = ref({
                 </span>
               </q-td>
               <q-td :props="props" key="lastSeenAt">
-                <ReadOnlyTextWithHover v-if="props.row.lastSeenAt" :message="moment(props.value).fromNow()" />
+                <ReadOnlyTextWithHover v-if="props.row.lastSeenAt" :message="moment(props.row.lastSeenAt).fromNow()" />
               </q-td>
               <q-td :props="props" key="manufacturerSummary">
                 <ReadOnlyTextWithHover :message="props.row.manufacturerSummary" />
