@@ -36,7 +36,7 @@ const props = defineProps({
   selectedNetworkink: { type: String, required: false, default: null },
 })
 
-let polling: undefined | NodeJS.Timeout;
+let polling: null | NodeJS.Timeout = null;
 var search = ref("");
 
 const selectableServices =
@@ -119,7 +119,7 @@ let selectedNetworkCurrent: Ref<string | null> = ref(null);
 const selectableTimeframes = ref([
   {
     label: "Ever",
-    value: undefined,
+    value: null,
   },
   {
     label: "Last Few Minutes",
@@ -142,7 +142,7 @@ const selectableTimeframes = ref([
     value: "-P1D",
   },
 ]);
-let selectedTimeframe: Ref<string | undefined> = ref(undefined);
+let selectedTimeframe: Ref<string | null> = ref(null);
 
 
 function rowClicked(props: object) {
@@ -241,14 +241,14 @@ let allDevices: ComputedRef<IDevice[]> = computed(() => store.getDevices);
 
 
 let filtered: ComputedRef<boolean> = computed(() => selectedNetworkCurrent.value != null ||
-  selectedTimeframe.value !== undefined ||
+  selectedTimeframe.value !== null ||
   search.value !== "" ||
   !filterIsSetToAllowAllServices.value
 );
 
 function clearFilter() {
   selectedNetworkCurrent.value = null;
-  selectedTimeframe.value = undefined;
+  selectedTimeframe.value = null;
   selectedServices.value = selectableServices.value.map((x) => x.value);
   search.value = "";
 }
@@ -379,7 +379,7 @@ const pagination = ref({
     <q-select dense hide-details="true" :options="selectableNetworks" v-model="selectedNetworkCurrent" emit-value
       map-options label="On network" style="min-width: 150px" dark :options-dark="false" />
     <q-select dense hide-details="true" :options="selectableTimeframes" v-model="selectedTimeframe" label="Seen"
-      style="min-width: 150px" dark :options-dark="false" />
+      emit-value map-options style="min-width: 150px" dark :options-dark="false" />
     <q-select dense small multiple hide-details="true"
       hint="Any means dont filter on this; multiple selected items treated as OR" :options="selectableServices"
       emit-value map-options v-model="selectedServices" label="With services" style="min-width: 150px" dark

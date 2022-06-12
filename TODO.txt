@@ -4,6 +4,9 @@
  + gui cleanup in devices page 
 
     + undersntad hte null versus undefined thing in q-select
+
+
+
 	+ use that to fix second q-select
 	+ finish/fix serices q-select (incldiung slots I thinK)
 	   (just need todo the prepend slot for add the clearall/all)
