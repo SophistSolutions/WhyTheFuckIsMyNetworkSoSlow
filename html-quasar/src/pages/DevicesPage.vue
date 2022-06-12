@@ -380,10 +380,8 @@ const pagination = ref({
   <q-toolbar class="justify-between secondary-toolbar">
     <q-select dense hide-details="true" :options="selectableNetworks" v-model="selectedNetworkCurrent" emit-value
       map-options label="On network" style="min-width: 150px" dark :options-dark="false" />
-
     <q-select dense hide-details="true" :options="selectableTimeframes" v-model="selectedTimeframe" label="Seen"
       style="min-width: 150px" dark :options-dark="false" />
-
     <q-select dense small multiple hide-details="true"
       hint="Any means dont filter on this; multiple selected items treated as OR" :options="selectableServices"
       emit-value map-options v-model="selectedServices" label="With services" style="min-width: 150px" dark
@@ -414,16 +412,14 @@ const pagination = ref({
         </q-chip>
       </template>
     </q-select>
-
     <Search v-model:searchFor="search" />
-
     <FilterSummaryMessage dense :filtered="filtered" :nItemsSelected="filteredExtendedDevices.length"
       :nTotalItems="allDevices?.length" itemsName="devices" />
     <ClearButton v-if="filtered" v-on:click="clearFilter" />
   </q-toolbar>
   <q-toolbar class="justify-between secondary-toolbar">
     <q-select v-model="visibleColumns" multiple dense options-dense :display-value="$q.lang.table.columns" emit-value
-      map-options :options="tableHeaders" option-value="name" style="min-width: 250px" label="Shown" dark
+      map-options :options="tableHeaders" option-value="name" style="min-width: 150px" label="Shown" dark
       :options-dark="false" />
   </q-toolbar>
   <q-page class="col q-pa-md q-gutter-md">
@@ -434,7 +430,6 @@ const pagination = ref({
         </div>
         <q-table dense table-class="deviceList shadow-1" :rows="filteredExtendedDevices" :columns="tableHeaders"
           row-key="id" :visible-columns="visibleColumns" :pagination.sync="pagination" hide-bottom>
-
           <template v-slot:body="props">
             <q-tr :props="props" @click="rowClicked(props)">
               <q-td :props="props" key="name">

@@ -6,7 +6,7 @@
     + undersntad hte null versus undefined thing in q-select
 	+ use that to fix second q-select
 	+ finish/fix serices q-select (incldiung slots I thinK)
-	+ fix issue with lastseenat always wrong in listbox for devices
+	   (just need todo the prepend slot for add the clearall/all)
 	+ be sure filters really working (eg. for timestamp)
 
   - networks/devices list selection (or at least click to open/expand)
@@ -22,7 +22,6 @@
 
 -- AT THIS POINT - MAYBE RELEASE AS I THINK WE HAVE EQUIV OF VUE2 code but more modern and good basis to move forward...
 -- at least test on UNIX etc, build as part of WTF, etc...
-
 
   - redo components like NetworkDetails and DeviceDetails taking object not ID as argument
     so fetches only (mostly or fully?) done in the parent component; 
