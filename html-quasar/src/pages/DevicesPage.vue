@@ -36,12 +36,10 @@ const props = defineProps({
   selectedNetworkink: { type: String, required: false, default: null },
 })
 
-
 let polling: undefined | NodeJS.Timeout;
 var search = ref("");
 var sortBy: any = [];
 var sortDesc: any = [];
-
 
 const selectableServices =
   ref([
@@ -71,12 +69,11 @@ const selectableServices =
     },
   ]);
 
-let selectedServices: string[] = selectableServices.value.map((x) => x.value);
-
+let selectedServices = ref(selectableServices.value.map((x) => x.value));
 
 const filterIsSetToAllowAllServices = computed<boolean>(
   () => {
-    return selectedServices.length === selectableServices.value.length;
+    return selectedServices.value.length === selectableServices.value.length;
   });
 
 const selectServicesFilter_icon = computed<string>(
@@ -84,7 +81,7 @@ const selectServicesFilter_icon = computed<string>(
     if (filterIsSetToAllowAllServices.value) {
       return "mdi-close-box";
     }
-    if (selectedServices.length > 0 && !filterIsSetToAllowAllServices.value) {
+    if (selectedServices.value.length > 0 && !filterIsSetToAllowAllServices.value) {
       return "mdi-minus-box";
     }
     return "mdi-checkbox-blank-outline";
@@ -93,9 +90,9 @@ const selectServicesFilter_icon = computed<string>(
 function selectServicesFilter_ToggleSelectAll() {
   nextTick(() => {
     if (filterIsSetToAllowAllServices.value) {
-      selectedServices = [];
+      selectedServices.value = [];
     } else {
-      selectedServices = selectableServices.value.map((x) => x.value);
+      selectedServices.value = selectableServices.value.map((x) => x.value);
     }
   });
 }
@@ -119,7 +116,6 @@ const selectableNetworks = computed<object[]>(
   }
 )
 let selectedNetworkCurrent: Ref<string | null> = ref(null);
-
 
 
 const selectableTimeframes = ref([
@@ -149,7 +145,6 @@ const selectableTimeframes = ref([
   },
 ]);
 let selectedTimeframe: Ref<string | undefined> = ref(undefined);
-
 
 
 function rowClicked(props: object) {
@@ -256,7 +251,7 @@ let filtered: ComputedRef<boolean> = computed(() => selectedNetworkCurrent.value
 function clearFilter() {
   selectedNetworkCurrent.value = null;
   selectedTimeframe.value = undefined;
-  selectedServices = selectableServices.value.map((x) => x.value);
+  selectedServices.value = selectableServices.value.map((x) => x.value);
   search.value = "";
 }
 
@@ -296,7 +291,7 @@ let filteredExtendedDevices: ComputedRef<object[]> = computed(() => {
       passedFilter =
         GetServices(i)
           .map((x) => x.name)
-          .filter((value) => selectedServices.includes(value)).length > 0;
+          .filter((value) => selectedServices.value.includes(value)).length > 0;
     }
     passedFilter = true;
     if (passedFilter) {
@@ -382,7 +377,7 @@ const pagination = ref({
 </script>
 
 <template>
-  <q-toolbar  class="justify-between secondary-toolbar">
+  <q-toolbar class="justify-between secondary-toolbar">
     <q-select dense hide-details="true" :options="selectableNetworks" v-model="selectedNetworkCurrent" emit-value
       map-options label="On network" style="min-width: 150px" dark :options-dark="false" />
 
@@ -390,8 +385,9 @@ const pagination = ref({
       style="min-width: 150px" dark :options-dark="false" />
 
     <q-select dense small multiple hide-details="true"
-      hint="Any means dont filter on this; multiple selected items treated as OR" :items="selectableServices"
-      v-model="selectedServices" :menu-props="{ auto: true, overflowY: true }" label="With services" dark>
+      hint="Any means dont filter on this; multiple selected items treated as OR" :options="selectableServices"
+      emit-value map-options v-model="selectedServices" label="With services" style="min-width: 150px" dark
+      :options-dark="false">
       <!-- <template v-slot:prepend-item>
               <v-list-item ripple @click="selectServicesFilter_ToggleSelectAll">
                 <v-list-item-action>
@@ -405,13 +401,18 @@ const pagination = ref({
               </v-list-item>
               <v-divider class="mt-2"></v-divider>
             </template> -->
-      <!-- <template slot="selection" slot-scope="{ item, index }">
-              <span v-if="filterIsSetToAllowAllServices && index === 0">Any</span>
-              <span v-if="index === 0 && !filterIsSetToAllowAllServices">{{ item.text }}</span>
-              <span v-if="index === 1 && !filterIsSetToAllowAllServices" class="grey--text caption othersSpan">(+{{
-                  selectedServices.length - 1
-              }} others)</span>
-            </template> -->
+      <template v-slot:selected>
+        <div v-if="selectableServices.length == selectedServices.length">Any</div>
+        <q-chip dark dense v-if="1 == selectedServices.length">
+          {{ selectableServices.find((a) => a.value == selectedServices[0])?.label }}
+        </q-chip>
+        <q-chip dark dense v-if="1 < selectedServices.length && selectableServices.length != selectedServices.length">
+          {{ selectableServices.find((a) => a.value == selectedServices[0])?.label }}
+        </q-chip>
+        <q-chip dark dense v-if="1 < selectedServices.length && selectableServices.length != selectedServices.length">
+          + {{ selectedServices.length - 1 }} other(s)
+        </q-chip>
+      </template>
     </q-select>
 
     <Search v-model:searchFor="search" />
@@ -420,10 +421,10 @@ const pagination = ref({
       :nTotalItems="allDevices?.length" itemsName="devices" />
     <ClearButton v-if="filtered" v-on:click="clearFilter" />
   </q-toolbar>
-  <q-toolbar  class="justify-between secondary-toolbar">
-    <q-select v-model="visibleColumns" multiple dense options-dense :display-value="$q.lang.table.columns"
-      emit-value map-options :options="tableHeaders" option-value="name" style="min-width: 250px"
-      label="Shown" dark :options-dark="false" />
+  <q-toolbar class="justify-between secondary-toolbar">
+    <q-select v-model="visibleColumns" multiple dense options-dense :display-value="$q.lang.table.columns" emit-value
+      map-options :options="tableHeaders" option-value="name" style="min-width: 250px" label="Shown" dark
+      :options-dark="false" />
   </q-toolbar>
   <q-page class="col q-pa-md q-gutter-md">
     <q-card class="deviceListCard">

@@ -7,17 +7,16 @@ const props = defineProps({
 
 const emit = defineEmits(['update:searchFor'])
 
-var search: Ref<string|undefined> = ref(props.searchFor);
+var search: Ref<string | undefined> = ref(props.searchFor);
 
-const updateSearchFor = (newValue:string|number|null) => {
-    emit('update:searchFor', newValue)
+const updateSearchFor = (newValue: string | number | null) => {
+  emit('update:searchFor', newValue)
 }
 </script>
 
 <template>
-<div class="row no-wrap">
-  <q-icon name="mdi-magnify" :left="true" />
-  <q-input dark :modelValue="search" label="Search"  @update:modelValue="updateSearchFor"  />
-
-</div>
+  <div class="row no-wrap">
+    <q-icon name="mdi-magnify" :left="true" />
+    <q-input dense dark :modelValue="search" label="Search" @update:modelValue="updateSearchFor" />
+  </div>
 </template>
