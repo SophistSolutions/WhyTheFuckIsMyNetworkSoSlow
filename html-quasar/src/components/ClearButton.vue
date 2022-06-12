@@ -1,6 +1,6 @@
 <template>
   <q-btn class="mx-4" fab dark x-small v-on:click="$emit('click')">
-    <q-icon dark x-small name="mdi-close"/>
+    <q-icon dark x-small name="mdi-close" />
   </q-btn>
 </template>
 
@@ -9,4 +9,3 @@ q-btn {
   float: right;
 }
 </style>
-
