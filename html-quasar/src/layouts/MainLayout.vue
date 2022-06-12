@@ -93,7 +93,7 @@ export default defineComponent({
           <q-menu>
             <q-list style="min-width: 100px">
               <template v-for="(item, index) in this.$router.options.routes" :key="index">
-                <q-item v-if="item.name" clickable v-close-popup :to="item.path">
+                <q-item v-if="item.name && item?.meta?.showInDotDotDotMenu" clickable v-close-popup :to="item.path">
                   <q-item-section> {{ item.name }}</q-item-section>
                 </q-item>
                 <q-separator v-if="item?.meta?.divderAfter" />

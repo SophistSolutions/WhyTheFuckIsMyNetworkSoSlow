@@ -8,7 +8,8 @@ const routes: RouteRecordRaw[] = [
     children: [{ path: '', component: () => import('pages/HomePage.vue') }],
     meta: {
       breadcrumbs: [{ text: "Home", exact: true, disabled: true,  }],
-      divderAfter: true
+      divderAfter: true,
+      showInDotDotDotMenu: true
     },
   },
   {
@@ -27,6 +28,7 @@ const routes: RouteRecordRaw[] = [
         { text: "Home", href: "/#/" },
         { text: "About", disabled: true },
       ],
+      showInDotDotDotMenu: true
     },
 },
 
@@ -56,6 +58,7 @@ const routes: RouteRecordRaw[] = [
         { text: "Home", href: "/#/" },
         { text: "Devices", disabled: true },
       ],
+      showInDotDotDotMenu: true
     },
   },
   //   // @see https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/14
@@ -98,6 +101,7 @@ const routes: RouteRecordRaw[] = [
         { text: "Home", href: "/#/" },
         { text: "Networks", disabled: true },
       ],
+      showInDotDotDotMenu: true
     },
   },
   // {
