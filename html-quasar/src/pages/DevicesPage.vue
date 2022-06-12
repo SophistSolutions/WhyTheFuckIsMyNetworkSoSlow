@@ -38,8 +38,6 @@ const props = defineProps({
 
 let polling: undefined | NodeJS.Timeout;
 var search = ref("");
-var sortBy: any = [];
-var sortDesc: any = [];
 
 const selectableServices =
   ref([
