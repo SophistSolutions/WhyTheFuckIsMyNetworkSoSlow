@@ -3,23 +3,21 @@
 
  + gui cleanup in devices page 
 
-    + undersntad hte null versus undefined thing in q-select
+    + NEATEN DISPLAY OF "CARD" embedded expanded item
+	+ look at 'expanded' feature in q-table - I think I'm not using
+	+ Look into moving the logic for toolar into parent/uncle slot,
+	  so that we get the right scrolling behavior
 
-
-
-	+ use that to fix second q-select
-	+ finish/fix serices q-select (incldiung slots I thinK)
-	   (just need todo the prepend slot for add the clearall/all)
-	+ be sure filters really working (eg. for timestamp)
+	  ====
 
   - networks/devices list selection (or at least click to open/expand)
 	(selection works sortof - onclick - but display feedback on hover I'm posting to
 	discord about - seems to only work in dark mode)
 
-  - and then work on toolbar
-    'extras' - did an untested draft...
 	- I THINK LAST SIGNIFICANT FEATURE BEFORE AS GOOD AS Vue2
-	
+
+
+
   - Device/Devices/networks etc pages:
 	- fix costmetics so looks as good as before
 
