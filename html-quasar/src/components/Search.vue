@@ -15,8 +15,8 @@ const updateSearchFor = (newValue: string | number | null) => {
 </script>
 
 <template>
-  <div class="row no-wrap">
+  <div class="row no-wrap items-baseline">
     <q-icon name="mdi-magnify" :left="true" />
-    <q-input dense dark :modelValue="search" label="Search" @update:modelValue="updateSearchFor" />
+    <q-input dense dark v-model="search" label="Search" @update:modelValue="updateSearchFor"  />
   </div>
 </template>
