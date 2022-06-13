@@ -240,9 +240,10 @@ const router = useRouter()
 let allDevices: ComputedRef<IDevice[]> = computed(() => store.getDevices);
 
 
-let filtered: ComputedRef<boolean> = computed(() => selectedNetworkCurrent.value != null ||
+let filtered: ComputedRef<boolean> = computed(() =>
+  selectedNetworkCurrent.value != null ||
   selectedTimeframe.value !== null ||
-  search.value !== "" ||
+  search.value != "" ||
   !filterIsSetToAllowAllServices.value
 );
 
@@ -273,13 +274,14 @@ let filteredExtendedDevices: ComputedRef<object[]> = computed(() => {
         const timeSinceSeenAsMS = Date.now() - new Date(i.lastSeenAt).getTime();
         const selectedTimeframeAsMS = moment.duration(selectedTimeframe.value)
           .asMilliseconds();
-        if (selectedTimeframeAsMS < 0) {
-          // Treat negative duration as meaning stuff OLDER than
-          if (-selectedTimeframeAsMS > timeSinceSeenAsMS) {
+        // selectedTimeframeAsMS can be > 0 or < 0
+        if (selectedTimeframeAsMS > 0) {
+          if (timeSinceSeenAsMS > selectedTimeframeAsMS) {
             passedFilter = false;
           }
-        } else {
-          if (selectedTimeframeAsMS < timeSinceSeenAsMS) {
+        }
+        else {
+          if (timeSinceSeenAsMS < -selectedTimeframeAsMS) {
             passedFilter = false;
           }
         }
@@ -291,7 +293,6 @@ let filteredExtendedDevices: ComputedRef<object[]> = computed(() => {
           .map((x) => x.name)
           .filter((value) => selectedServices.value.includes(value)).length > 0;
     }
-    passedFilter = true;
     if (passedFilter) {
       const r = {
         ...i,
@@ -311,7 +312,12 @@ let filteredExtendedDevices: ComputedRef<object[]> = computed(() => {
         result.push(r);
       }
     }
-  });
+  }
+
+
+
+  );
+  // standardize results to same order each time, and let list control do real user sorting
   result.sort((a: any, b: any) => {
     if (a.id < b.id) {
       return -1;
@@ -364,7 +370,9 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  clearInterval(polling);
+  if (polling) {
+    clearInterval(polling);
+  }
 })
 
 // disable pagination
@@ -402,10 +410,10 @@ const pagination = ref({
         <q-chip dark dense v-if="1 == selectedServices.length">
           {{ selectableServices.find((a) => a.value == selectedServices[0])?.label }}
         </q-chip>
-        <q-chip dark dense v-if="1 < selectedServices.length && selectableServices.length != selectedServices.length">
+        <q-chip dark dense v-if="1 < selectedServices.length && !filterIsSetToAllowAllServices">
           {{ selectableServices.find((a) => a.value == selectedServices[0])?.label }}
         </q-chip>
-        <q-chip dark dense v-if="1 < selectedServices.length && selectableServices.length != selectedServices.length">
+        <q-chip dark dense v-if="1 < selectedServices.length && !filterIsSetToAllowAllServices">
           + {{ selectedServices.length - 1 }} other(s)
         </q-chip>
       </template>
