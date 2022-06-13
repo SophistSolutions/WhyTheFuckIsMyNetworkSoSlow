@@ -35,6 +35,12 @@ export const useCounterStore = defineStore('counter', {
 });
 
 
+// @todo perhaps add in 'lasttimerequested' and 'lastTimeSuccessfulResponse' and throttle/dont request 
+// (not sure where in model) if outtsanding requests etc) and maybe show in UI if data stale
+interface ILoading {
+  numberOfTimesLoaded: number;
+  numberOfOutstandingLoadRequests: number;
+}
 
 /// DRAFT new WTF app data store  - maybe should be called cached-network-state-store?
 
@@ -44,13 +50,21 @@ export const useWTFStore = defineStore('WTF', {
     rolledUpAvailableNetworkIDs: [] as string[],
     // cache of objects, some of which maybe primary networks (rollups) and some maybe details
     networkDetails: {} as { [key: string]: INetwork },
+    loadingNetworks: { numberOfTimesLoaded: 0, numberOfOutstandingLoadRequests: 0 } as ILoading,
     networkInterfaces: [] as INetworkInterface[],
     selectedNetworkId: {} as string,
     rolledUpDeviceIDs: [] as string[],
     // cache of objects, some of which maybe primary devices (rollups) and some maybe details
     deviceDetails: {} as { [key: string]: IDevice },
+    devicesLoading: { numberOfTimesLoaded: 0, numberOfOutstandingLoadRequests: 0 } as ILoading,
   }),
   getters: {
+    getLoading_Networks: (state) => {
+      return state.loadingNetworks;
+    },
+    getLoading_Devices: (state) => {
+      return state.devicesLoading;
+    },
     getAvailableNetworks: (state) => {
       return state.rolledUpAvailableNetworkIDs.map((di) => state.networkDetails[di]);
     },
@@ -88,15 +102,29 @@ export const useWTFStore = defineStore('WTF', {
       this.networkInterfaces = await fetchNetworkInterfaces();
     },
     async fetchNetworks(ids: string[]) {
-      ids.forEach(async (id) => this.networkDetails[id] = await fetchNetwork(id));
+      this.loadingNetworks.numberOfOutstandingLoadRequests++;
+      try {
+        ids.forEach(async (id) => this.networkDetails[id] = await fetchNetwork(id));
+        this.loadingNetworks.numberOfTimesLoaded++;
+      }
+      finally {
+        this.loadingNetworks.numberOfOutstandingLoadRequests--;
+      }
     },
     async fetchAboutInfo() {
       this.about = await fetchAboutInfo();
     },
     async fetchDevices(searchSpecs?: ISortBy) {
-      const devices: IDevice[] = await fetchDevices(searchSpecs);
-      this.rolledUpDeviceIDs = devices.map((x) => x.id);
-      devices.forEach((x) => (this.deviceDetails[x.id] = x));
+      this.devicesLoading.numberOfOutstandingLoadRequests++;
+      try {
+        const devices: IDevice[] = await fetchDevices(searchSpecs);
+        this.rolledUpDeviceIDs = devices.map((x) => x.id);
+        devices.forEach((x) => (this.deviceDetails[x.id] = x));
+        this.devicesLoading.numberOfTimesLoaded++;
+      }
+      finally {
+        this.devicesLoading.numberOfOutstandingLoadRequests--;
+      }
     },
     async fetchDevice(id: string) {
       this.deviceDetails[id] = await fetchDevice(id);

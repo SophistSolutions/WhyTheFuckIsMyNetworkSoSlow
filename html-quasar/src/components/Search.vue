@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, defineEmits, watch, ref, Ref } from 'vue';
+import { defineProps, defineEmits, ref, Ref } from 'vue';
 
 const props = defineProps({
   searchFor: { type: String, required: false },
@@ -17,6 +17,6 @@ const updateSearchFor = (newValue: string | number | null) => {
 <template>
   <div class="row no-wrap items-baseline">
     <q-icon name="mdi-magnify" :left="true" />
-    <q-input dense dark v-model="search" label="Search" @update:modelValue="updateSearchFor"  />
+    <q-input dense dark v-model="search" label="Search" @update:modelValue="updateSearchFor" />
   </div>
 </template>

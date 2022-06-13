@@ -39,6 +39,13 @@ const props = defineProps({
 let polling: null | NodeJS.Timeout = null;
 var search = ref("");
 
+
+const loading = computed<boolean>(
+  // could adjust this more dynamically to show new load attempts, but this works pretty well
+  () =>  store.getLoading_Devices.numberOfOutstandingLoadRequests > 0
+)
+
+
 const selectableServices =
   ref([
     {
@@ -312,21 +319,18 @@ let filteredExtendedDevices: ComputedRef<object[]> = computed(() => {
         result.push(r);
       }
     }
-  }
-
-
-
-  );
-  // standardize results to same order each time, and let list control do real user sorting
-  result.sort((a: any, b: any) => {
-    if (a.id < b.id) {
-      return -1;
-    }
-    if (a.id > b.id) {
-      return 1;
-    }
-    return 0;
   });
+  // standardize results to same order each time, and let list control do real user sorting
+  // NO- DEFAULT TO ORDER RETURNED BY WEBSERVICE, SINCE THAT MAYBE THE MOST NATURAL ORDER
+  // result.sort((a: any, b: any) => {
+  //   if (a.id < b.id) {
+  //     return -1;
+  //   }
+  //   if (a.id > b.id) {
+  //     return 1;
+  //   }
+  //   return 0;
+  // });
   return result;
 });
 
@@ -435,7 +439,7 @@ const pagination = ref({
           Devices
         </div>
         <q-table dense table-class="deviceList shadow-1" :rows="filteredExtendedDevices" :columns="tableHeaders"
-          row-key="id" :visible-columns="visibleColumns" :pagination.sync="pagination" hide-bottom>
+          row-key="id" :visible-columns="visibleColumns" :pagination.sync="pagination" hide-bottom :loading="loading">
           <template v-slot:body="props">
             <q-tr :props="props" @click="rowClicked(props)">
               <q-td :props="props" key="name">

@@ -72,9 +72,10 @@ async function rescanSelectedDevice(): Promise<void> {
   }
 }
 
-let currentDevice = computed<IDevice | undefined>(
+const currentDevice = computed<IDevice | undefined>(
   () => store.getDevice(props.deviceId)
 )
+
 
 interface IExtendedDevice extends IDevice {
   localAddresses: string;

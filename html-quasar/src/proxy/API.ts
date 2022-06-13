@@ -52,9 +52,10 @@ export async function fetchDevices(searchCriteria?: ISortBy): Promise<IDevice[]>
   const searchSpecification: ISortBy[] = [];
 
   if (!searchCriteria) {
-    searchSpecification.push({ by: SortFieldEnum.ADDRESS, ascending: true });
-    searchSpecification.push({ by: SortFieldEnum.TYPE, ascending: true });
-    searchSpecification.push({ by: SortFieldEnum.PRIORITY, ascending: true });
+    // if no criteria specified, let WSAPI return defaults...
+    // searchSpecification.push({ by: SortFieldEnum.ADDRESS, ascending: true });
+    // searchSpecification.push({ by: SortFieldEnum.TYPE, ascending: true });
+    // searchSpecification.push({ by: SortFieldEnum.PRIORITY, ascending: true });
   } else {
     searchSpecification.push(searchCriteria);
   }
