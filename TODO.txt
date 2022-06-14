@@ -1,9 +1,6 @@
 - quasar work  
 
-
  + gui cleanup in devices page 
-
-
 	+ any service select celar button slot still not done
     + NEATEN DISPLAY OF "CARD" embedded expanded item
 	+ look at 'expanded' feature in q-table - I think I'm not using
@@ -13,6 +10,7 @@
 	+ Do display options store backing to local storage and use that to track
 	  Devices/Columns-shown buttons
 
+
 	  ====
 
   - networks/devices list selection (or at least click to open/expand)
@@ -21,6 +19,10 @@
 
 	- I THINK LAST SIGNIFICANT FEATURE BEFORE AS GOOD AS Vue2
 
+
+= Have filters and customization sections in devices page shrinkable, and little button in top-right of table to pop it open to allow customization.
+  And probably have a way to make more sections (and delete sections) and maybe revert to default (storing thise prefs in local-storage ui-prefs 
+  pinia store)
 
 
   - Device/Devices/networks etc pages:
