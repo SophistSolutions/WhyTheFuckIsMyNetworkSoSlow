@@ -63,6 +63,7 @@ export default defineComponent({
       essentialLinks: linksList,
       leftDrawerOpen,
       toggleLeftDrawer() {
+        console.log('called')
         leftDrawerOpen.value = !leftDrawerOpen.value
       }
     }
@@ -109,7 +110,7 @@ export default defineComponent({
       </q-toolbar>
     </q-header>
 
-    <q-drawer v-model="leftDrawerOpen" show-if-above bordered>
+    <q-drawer v-model="leftDrawerOpen" bordered>
       <q-list>
         <q-item-label header>
           Essential Links
