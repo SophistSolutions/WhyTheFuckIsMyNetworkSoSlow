@@ -15,8 +15,8 @@ import {
 } from "../models/network/Utils";
 
 // Components
-// import Search from '../components/Search.vue';
-//import ClearButton from '../components/ClearButton.vue';
+import Search from '../components/Search.vue';
+import ClearButton from '../components/ClearButton.vue';
 import NetworkDetails from '../components/NetworkDetails.vue';
 import ReadOnlyTextWithHover from '../components/ReadOnlyTextWithHover.vue';
 import Link2DetailsPage from '../components/Link2DetailsPage.vue';
@@ -32,7 +32,7 @@ const props = defineProps({
 })
 
 let polling: undefined | NodeJS.Timeout;
-var search: string = "";
+var search = ref ("");
 var sortBy: any = [];
 var sortDesc: any = [];
 var expanded: any[] = [];
@@ -142,7 +142,7 @@ const selectableServices = ref<Array<{ text: string; value: string }>>(
 
 var selectedServices: string[] = selectableServices.value.map((x) => x.value);
 
-function rowClicked(props:object) {
+function rowClicked(props: object) {
   props.expand = !props.expand;
 }
 
@@ -237,14 +237,12 @@ let allDevices: ComputedRef<IDevice[]> = computed(() => store.getDevices);
 
 let allNetworks: ComputedRef<INetwork[]> = computed(() => store.getAvailableNetworks);
 
-function filtered(): boolean {
-  return (
-    selectedNetworkCurrent != undefined ||
-    selectedTimeframe !== null ||
-    search !== "" ||
-    !filterAllowAllServices
-  );
-}
+
+
+
+let filtered: ComputedRef<boolean> = computed(() =>
+  search.value != ""
+);
 
 function clearFilter() {
   selectedNetworkCurrent = undefined;
@@ -252,6 +250,12 @@ function clearFilter() {
   selectedServices = selectableServices.value.map((x) => x.value);
   search = "";
 }
+
+
+const loading = computed<boolean>(
+  // could use numberOfOutstandingLoadRequests or numberOfTimesLoaded depending if we want to show when 'reloading'
+  () => store.getLoading_Networks.numberOfOutstandingLoadRequests > 0
+)
 
 
 let filteredExtendedNetworks: ComputedRef<object[]> = computed(() => {
@@ -276,10 +280,10 @@ let filteredExtendedNetworks: ComputedRef<object[]> = computed(() => {
       location: FormatLocation(i.geographicLocation),
     };
     if (
-      search === "" ||
+      search.value === "" ||
       JSON.stringify(r)
         .toLowerCase()
-        .includes(search.toLowerCase())
+        .includes(search.value.toLowerCase())
     ) {
       // console.log("MATCH: this.search=", this.search, " and r=", JSON.stringify(r));
       result.push(r);
@@ -287,26 +291,28 @@ let filteredExtendedNetworks: ComputedRef<object[]> = computed(() => {
       // console.log("NO MATCH: this.search=", this.search, " and r=", JSON.stringify(r));
     }
   });
-  result.sort((a: any, b: any) => {
-    if (a.id < b.id) {
-      return -1;
-    }
-    if (a.id > b.id) {
-      return 1;
-    }
-    return 0;
-  });
+  // use the default sort from API-Server for now...
+  // result.sort((a: any, b: any) => {
+  //   if (a.id < b.id) {
+  //     return -1;
+  //   }
+  //   if (a.id > b.id) {
+  //     return 1;
+  //   }
+  //   return 0;
+  // });
   return result;
 }
 );
 
 defineComponent({
   components: {
-    // ClearButton,
+    ClearButton,
     ReadOnlyTextWithHover,
     Link2DetailsPage,
     NetworkDetails,
-    // Search,
+    Search,
+    FilterSummaryMessage,
   },
 });
 
@@ -347,24 +353,26 @@ const pagination = ref({
 </script>
 
 <template>
+  <q-toolbar class="justify-between secondary-toolbar">
+    <Search v-model:searchFor="search" />
+    <FilterSummaryMessage dense :filtered="filtered" :nItemsSelected="filteredExtendedNetworks.length"
+      :nTotalItems="allNetworks?.length" itemsName="networks" />
+    <ClearButton v-if="filtered" v-on:click="clearFilter" />
+  </q-toolbar>
+  <q-toolbar class="justify-between secondary-toolbar">
+    <q-select v-model="visibleColumns" multiple dense options-dense :display-value="$q.lang.table.columns" emit-value
+      map-options :options="headers" option-value="name" style="min-width: 150px" label="Shown" dark
+      :options-dark="false" />
+  </q-toolbar>
   <q-page class="col q-pa-md q-gutter-md">
-        
+
     <q-card class="deviceListCard">
       <q-card-section>
         <div class="row text-h5">
           Networks
         </div>
         <q-table table-class="deviceList shadow-1" :rows="filteredExtendedNetworks" :columns="headers" row-key="id"
-           dense :visible-columns="visibleColumns" :pagination.sync="pagination" hide-bottom>
-
-          <!--@todo migrate to extrastuff slot in filter section above-->
-          <template v-slot:top>
-            <q-space />
-            <q-select v-model="visibleColumns" multiple outlined dense options-dense
-              :display-value="$q.lang.table.columns" emit-value map-options :options="headers" option-value="name"
-              options-cover style="min-width: 150px" />
-          </template>
-
+          dense :visible-columns="visibleColumns" :pagination.sync="pagination" hide-bottom :loading="loading">
           <template v-slot:body="props">
             <q-tr :props="props" @click="rowClicked(props)">
               <q-td :props="props" key="name">
@@ -392,8 +400,7 @@ const pagination = ref({
                 <ReadOnlyTextWithHover :message="props.row.manufacturerSummary" />
               </q-td>
               <q-td :props="props" key="expand">
-                <q-btn :icon="props.expand ? 'mdi-chevron-up' : 'mdi-chevron-down'" flat round dense
-                  ></q-btn>
+                <q-btn :icon="props.expand ? 'mdi-chevron-up' : 'mdi-chevron-down'" flat round dense></q-btn>
               </q-td>
             </q-tr>
             <q-tr v-if="props.expand" :props="props">
@@ -443,8 +450,7 @@ const pagination = ref({
 
 // Based on .q-layout__section--marginal
 .secondary-toolbar {
-    background-color: var(--q-primary);
-    color: #fff;
+  background-color: var(--q-primary);
+  color: #fff;
 }
-
 </style>

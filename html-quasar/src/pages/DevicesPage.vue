@@ -41,7 +41,7 @@ var search = ref("");
 
 
 const loading = computed<boolean>(
-  // could adjust this more dynamically to show new load attempts, but this works pretty well
+  // could use numberOfOutstandingLoadRequests or numberOfTimesLoaded depending if we want to show when 'reloading'
   () =>  store.getLoading_Devices.numberOfOutstandingLoadRequests > 0
 )
 
