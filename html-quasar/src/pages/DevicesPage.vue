@@ -439,12 +439,12 @@ const pagination = ref({
       :options-dark="false" />
   </q-toolbar>
   <q-page class="col q-pa-md q-gutter-md">
-    <q-card class="deviceListCard">
+    <q-card class="listCard">
       <q-card-section>
         <div class="row text-h5">
           Devices
         </div>
-        <q-table dense table-class="deviceList shadow-1" :rows="filteredExtendedDevices" :columns="tableHeaders"
+        <q-table dense table-class="itemList shadow-1" :rows="filteredExtendedDevices" :columns="tableHeaders"
           row-key="id" :visible-columns="visibleColumns" :pagination.sync="pagination" hide-bottom :loading="loading">
           <template v-slot:body="props">
             <q-tr :props="props" @click="rowClicked(props)">
@@ -488,13 +488,16 @@ const pagination = ref({
                 </span>
               </q-td>
               <q-td :props="props" key="expand">
-                <q-btn :icon="props.expand ? 'mdi-chevron-up' : 'mdi-chevron-down'" flat round dense></q-btn>
+                <div class="row no-wrap items-baseline">
+                  <q-btn :icon="props.expand ? 'mdi-chevron-up' : 'mdi-chevron-down'" flat round dense
+                    title="Toggle details expanded"></q-btn>
+                  <Link2DetailsPage :link="'/#/device/' + props.row.id" />
+                </div>
               </q-td>
             </q-tr>
             <q-tr v-if="props.expand" :props="props">
               <q-td colspan="100%">
-                <Link2DetailsPage :link="'/#/device/' + props.row.id" />
-                <DeviceDetails class="detailsSection" :deviceId="props.row.id" />
+                <DeviceDetails class="detailsSection z-top" :deviceId="props.row.id" />
               </q-td>
             </q-tr>
           </template>
@@ -511,7 +514,7 @@ const pagination = ref({
   color: #fff;
 }
 
-.deviceListCard table {
+.listCard table {
   table-layout: fixed;
 }
 
@@ -523,14 +526,17 @@ const pagination = ref({
 
 .detailsSection {
   margin-top: 1em;
+  margin-left: 2em;
+  margin-right: 1em;
+  box-shadow: 4px 4px 8px 4px rgba(0, 0, 0, 0.2);
 }
 
-.deviceListCard {
+.listCard {
   margin-top: 10px;
   margin-left: 10px;
 }
 
-.deviceList {
+.itemList {
   margin-top: 10px;
 }
 

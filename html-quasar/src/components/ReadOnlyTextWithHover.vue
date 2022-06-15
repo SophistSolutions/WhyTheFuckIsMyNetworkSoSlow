@@ -2,9 +2,9 @@
 import { onMounted, defineProps, watch } from 'vue';
 
 const props = defineProps({
-  message: { type: String, required: true },
-  link: { type: String, required: false, default: undefined },
-  popupTitle: { type: String, required: false, default: undefined },
+    message: { type: String, required: true },
+    link: { type: String, required: false, default: undefined },
+    popupTitle: { type: String, required: false, default: undefined },
 })
 
 function onChange() {
@@ -18,7 +18,7 @@ onMounted(() => {
     onChange()
 })
 
-watch ([()=>props.message,()=>props.popupTitle], onChange)
+watch([() => props.message, () => props.popupTitle], onChange)
 
 var useTitle: string = "";
 </script>

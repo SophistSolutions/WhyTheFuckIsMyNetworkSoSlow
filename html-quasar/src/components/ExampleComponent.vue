@@ -57,7 +57,7 @@ export default defineComponent({
       type: Boolean
     }
   },
-  setup (props) {
+  setup(props) {
     return { ...useClickCount(), ...useDisplayTodo(toRef(props, 'todos')) };
   },
 });

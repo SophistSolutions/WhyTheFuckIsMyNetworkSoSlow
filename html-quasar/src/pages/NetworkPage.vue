@@ -48,19 +48,17 @@ let network: ComputedRef<INetwork> = computed(() => {
 </script>
 
 <template>
-      
-  <q-page class="col q-pa-md q-gutter-md">
-
-
-    <q-card class="deviceListCard">
-      <div class="text-subtitle2 absolute-top text-center">
+  <q-page class="col q-gutter-md">
+    <q-card>
+      <q-card-section class="text-subtitle2" style="margin: 0 0 0 0">
         Network {{ network == null ? "loading..." : '"' + GetNetworkName(network) + '"' }}
-      </div>
-      <NetworkDetails class="detailsSection" :networkId="network.id" v-if="network" />
+      </q-card-section>
+      <q-card-section style="margin-top: 0">
+        <NetworkDetails class="detailsSection" :networkId="network.id" v-if="network" />
+      </q-card-section>
     </q-card>
   </q-page>
 </template>
-
 
 <style lang="scss">
 .detailsSection {

@@ -16,7 +16,6 @@ import {
 } from "../models/network/Utils";
 
 
-
 // Components
 import ReadOnlyTextWithHover from '../components/ReadOnlyTextWithHover.vue';
 
@@ -27,6 +26,7 @@ const store = useWTFStore()
 
 const props = defineProps({
   networkId: { type: String, required: true },
+  includeLinkToDetailsPage: { type: Boolean, required: false, default: false },
 })
 
 defineComponent({
@@ -90,6 +90,7 @@ let thisNetworksInterfaces = computed<INetworkInterface[]>(
 
 <template>
   <div>
+    <Link2DetailsPage :link="'/#/network/' + currentNetwork.id" v-if="currentNetwork && props.includeLinkToDetailsPage" />
     <table class="detailsTable" v-bind:key="currentNetwork.id" v-if="currentNetwork">
       <tr>
         <td>Name</td>
@@ -157,13 +158,14 @@ let thisNetworksInterfaces = computed<INetworkInterface[]>(
       <tr v-if="currentNetwork.attachedInterfaces">
         <td>ATTACHED INTERFACES</td>
         <td>
-          <json-viewer :value="thisNetworksInterfaces" :expand-depth="0" copyable sort />
+          <json-viewer :value="thisNetworksInterfaces" :expand-depth="0" copyable sort class="debugInfoJSONViewers" />
         </td>
       </tr>
       <tr v-if="currentNetwork.debugProps">
         <td>DEBUG INFO</td>
         <td>
-          <json-viewer :value="currentNetwork.debugProps" :expand-depth="1" copyable sort />
+          <json-viewer :value="currentNetwork.debugProps" :expand-depth="1" copyable sort
+            class="debugInfoJSONViewers" />
         </td>
       </tr>
     </table>
@@ -178,9 +180,14 @@ let thisNetworksInterfaces = computed<INetworkInterface[]>(
 .detailsTable td {
   padding-left: 5px;
   padding-right: 10px;
+  border: none;
 }
 
 .snapshot {
   font-style: italic;
+}
+
+.debugInfoJSONViewers {
+  margin-right: 2em;
 }
 </style>

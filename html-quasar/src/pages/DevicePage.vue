@@ -4,19 +4,6 @@ import { defineComponent, defineProps, onMounted, onUnmounted, nextTick, ref, co
 import { useRoute } from 'vue-router'
 
 import { IDevice } from "../models/device/IDevice";
-import {
-  ComputeDeviceTypeIconURLs,
-  ComputeOSIconURLList,
-  ComputeServiceTypeIconURLs,
-} from "../models/device/Utils";
-import { INetwork } from "../models/network/INetwork";
-import {
-  FormatAttachedNetworkLocalAddresses,
-  GetNetworkByIDQuietly,
-  GetNetworkLink,
-  GetNetworkName,
-  GetServices,
-} from "../models/network/Utils";
 import { useQuasar } from 'quasar';
 
 // Components
@@ -70,22 +57,21 @@ let device: ComputedRef<IDevice> = computed(() => {
 );
 </script>
 
+<template>
+  <q-page class="col q-gutter-md">
+    <q-card>
+      <q-card-section class="text-subtitle2" style="margin: 0 0 0 0">
+        Device {{ device == null ? "loading..." : '"' + device.name + '"' }}
+      </q-card-section>
+      <q-card-section style="margin-top: 0">
+        <DeviceDetails v-if="device" class="detailsSection" :deviceId="device.id" />
+      </q-card-section>
+    </q-card>
+  </q-page>
+</template>
+
 <style lang="scss">
 .detailsSection {
   margin-left: 2em;
 }
 </style>
-
-<template>
-  <q-page class="col q-pa-md q-gutter-md">
-    <q-card class="deviceListCard">
-
-      <div class="text-subtitle2 absolute-top text-center">
-
-        Device {{ device == null ? "loading..." : '"' + device.name + '"' }}
-      </div>
-      <DeviceDetails v-if="device" class="detailsSection" :deviceId="device.id"></DeviceDetails>
-    </q-card>
-  </q-page>
-</template>
-

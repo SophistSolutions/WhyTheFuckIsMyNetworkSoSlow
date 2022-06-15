@@ -10,6 +10,7 @@ import { rescanDevice } from "../proxy/API";
 
 
 import ReadOnlyTextWithHover from '../components/ReadOnlyTextWithHover.vue';
+import Link2DetailsPage from '../components/Link2DetailsPage.vue';
 
 import { useWTFStore } from '../stores/WTF-store'
 
@@ -17,11 +18,13 @@ const store = useWTFStore()
 
 const props = defineProps({
   deviceId: { type: String, required: true },
+  includeLinkToDetailsPage: { type: Boolean, required: false, default: false },
 })
 
 defineComponent({
   components: {
     ReadOnlyTextWithHover,
+    Link2DetailsPage,
     JsonViewer,
   },
 });
@@ -110,12 +113,13 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
 
 <template>
   <div v-if="currentDevice">
+    <Link2DetailsPage :link="'/#/device/' + currentDevice.id" v-if="props.includeLinkToDetailsPage" />
     <table class="detailsTable" v-bind:key="currentDevice.id">
-      <tr>
-        <td class="labelColumn">Name</td>
-        <td>{{ currentDevice.name }}</td>
+      <tr style="border-collapse; border: none">
+        <td class="labelColumn" style="border: none">Name</td>
+        <td style="border: none">{{ currentDevice.name }}</td>
       </tr>
-      <tr>
+      <tr style="border-collapse; border: none">
         <td class="labelColumn">ID</td>
         <td>
           {{ currentDevice.id }}
@@ -226,7 +230,8 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
       <tr v-if="currentDevice.attachedNetworkInterfaces">
         <td class="labelColumn">ATTACHED NETWORK INTERFACES</td>
         <td>
-          <json-viewer :value="currentDevice.attachedNetworkInterfaces" :expand-depth="0" copyable sort />
+          <json-viewer :value="currentDevice.attachedNetworkInterfaces" :expand-depth="0" copyable sort
+            class="debugInfoJSONViewers" />
         </td>
       </tr>
       <tr v-if="currentDevice.aggregatesReversibly && currentDevice.aggregatesReversibly.length">
@@ -248,7 +253,7 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
       <tr v-if="currentDevice.debugProps">
         <td class="labelColumn">DEBUG INFO</td>
         <td>
-          <json-viewer :value="currentDevice.debugProps" :expand-depth="1" copyable sort></json-viewer>
+          <json-viewer :value="currentDevice.debugProps" :expand-depth="1" copyable sort class="debugInfoJSONViewers" />
         </td>
       </tr>
     </table>
@@ -271,6 +276,7 @@ td.labelColumn {
 .detailsTable td {
   padding-left: 5px;
   padding-right: 10px;
+  border: none;
 }
 
 .nowrap {
@@ -286,5 +292,9 @@ td.labelColumn {
 
 .snapshot {
   font-style: italic;
+}
+
+.debugInfoJSONViewers {
+  margin-right: 2em;
 }
 </style>
