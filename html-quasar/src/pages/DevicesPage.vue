@@ -42,7 +42,7 @@ var search = ref("");
 
 const loading = computed<boolean>(
   // could use numberOfOutstandingLoadRequests or numberOfTimesLoaded depending if we want to show when 'reloading'
-  () =>  store.getLoading_Devices.numberOfOutstandingLoadRequests > 0
+  () => store.getLoading_Devices.numberOfOutstandingLoadRequests > 0
 )
 
 
@@ -81,6 +81,11 @@ const filterIsSetToAllowAllServices = computed<boolean>(
     return selectedServices.value.length === selectableServices.value.length;
   });
 
+const filterIsSetToAllowEmptyServices = computed<boolean>(
+  () => {
+    return selectedServices.value.length === 0;
+  });
+
 const selectServicesFilter_icon = computed<string>(
   () => {
     if (filterIsSetToAllowAllServices.value) {
@@ -93,13 +98,11 @@ const selectServicesFilter_icon = computed<string>(
   });
 
 function selectServicesFilter_ToggleSelectAll() {
-  nextTick(() => {
-    if (filterIsSetToAllowAllServices.value) {
-      selectedServices.value = [];
-    } else {
-      selectedServices.value = selectableServices.value.map((x) => x.value);
-    }
-  });
+  if (filterIsSetToAllowAllServices.value) {
+    selectedServices.value = [];
+  } else {
+    selectedServices.value = selectableServices.value.map((x) => x.value);
+  }
 }
 
 
@@ -295,10 +298,14 @@ let filteredExtendedDevices: ComputedRef<object[]> = computed(() => {
       }
     }
     if (passedFilter && !filterIsSetToAllowAllServices.value) {
-      passedFilter =
-        GetServices(i)
-          .map((x) => x.name)
-          .filter((value) => selectedServices.value.includes(value)).length > 0;
+      var itsServices = GetServices(i);
+      if (filterIsSetToAllowEmptyServices.value) {
+        passedFilter = itsServices.length == 0
+      }
+      else {
+        passedFilter =
+          itsServices.map((x) => x.name).filter((value) => selectedServices.value.includes(value)).length > 0;
+      }
     }
     if (passedFilter) {
       const r = {
@@ -392,23 +399,21 @@ const pagination = ref({
       map-options label="On network" style="min-width: 150px" dark :options-dark="false" />
     <q-select dense hide-details="true" :options="selectableTimeframes" v-model="selectedTimeframe" label="Seen"
       emit-value map-options style="min-width: 150px" dark :options-dark="false" />
-    <q-select dense small multiple hide-details="true"
-      hint="Any means dont filter on this; multiple selected items treated as OR" :options="selectableServices"
-      emit-value map-options v-model="selectedServices" label="With services" style="min-width: 150px" dark
-      :options-dark="false">
-      <!-- <template v-slot:prepend-item>
-              <v-list-item ripple @click="selectServicesFilter_ToggleSelectAll">
-                <v-list-item-action>
-                  <q-icon :color="selectedServices.length > 0 ? 'indigo darken-4' : ''">
-                    {{ selectServicesFilter_icon }}
-                  </q-icon>
-                </v-list-item-action>
-                <v-list-item-title>
-                  Any
-                </v-list-item-title>
-              </v-list-item>
-              <v-divider class="mt-2"></v-divider>
-            </template> -->
+    <q-select dense small multiple hide-details="true" hint="Any=>no filter; multiple=>OR" hide-hint
+      :options="selectableServices" emit-value map-options v-model="selectedServices" label="With services"
+      style="min-width: 150px" dark :options-dark="false">
+      <template v-slot:before-options>
+        <q-item>
+          <q-item-section @click="selectServicesFilter_ToggleSelectAll">
+            <div class="row no-wrap items-baseline">
+              <q-icon :color="selectedServices.length > 0 ? 'indigo darken-4' : ''" :name="selectServicesFilter_icon"
+                left />
+              {{ filterIsSetToAllowAllServices ? "Select None" : "Select All" }}
+            </div>
+          </q-item-section>
+        </q-item>
+        <q-separator />
+      </template>
       <template v-slot:selected>
         <div v-if="selectableServices.length == selectedServices.length">Any</div>
         <q-chip dark dense v-if="1 == selectedServices.length">
@@ -420,6 +425,7 @@ const pagination = ref({
         <q-chip dark dense v-if="1 < selectedServices.length && !filterIsSetToAllowAllServices">
           + {{ selectedServices.length - 1 }} other(s)
         </q-chip>
+        <div v-if="filterIsSetToAllowEmptyServices">None</div>
       </template>
     </q-select>
     <Search v-model:searchFor="search" />
