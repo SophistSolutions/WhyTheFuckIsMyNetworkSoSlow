@@ -72,7 +72,7 @@ export default defineComponent({
 </script>
 
 <template>
-  <q-layout view="lHh Lpr lFf">
+  <q-layout view="lHh Lpr lFf" >
     <q-header elevated>
       <q-toolbar class="justify-between">
         <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
@@ -82,9 +82,6 @@ export default defineComponent({
         </q-toolbar-title>
  
         <q-breadcrumbs separator=">" active-color="secondary">
-          <template v-slot:divider>
-            <q-icon name="mdi-chevron-right"/>
-          </template>
           <template v-for="(item, index) in this.$route.meta.breadcrumbs" :key="index">
             <q-breadcrumbs-el :href="item.href" :disabled="item.disabled" :label="item.text.toUpperCase()" />
           </template>

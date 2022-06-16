@@ -1,15 +1,13 @@
 - quasar work  
 
  + gui cleanup in devices page 
-    + NEATEN DISPLAY OF "CARD" embedded expanded item
+	+ look into why devices table when I click expando - columns shift - this is confusing UI
+	  (issue more pronounced when I enlarge web brower to full screen width)
 	+ look at 'expanded' feature in q-table - I think I'm not using
 	+ Look into moving the logic for toolar into parent/uncle slot,
 	  so that we get the right scrolling behavior
-
 	+ Do display options store backing to local storage and use that to track
 	  Devices/Columns-shown buttons
-
-
 	  ====
 
   - networks/devices list selection (or at least click to open/expand)

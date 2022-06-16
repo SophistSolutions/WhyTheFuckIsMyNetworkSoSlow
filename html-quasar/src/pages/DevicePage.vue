@@ -50,7 +50,7 @@ const route = useRoute()
 let device: ComputedRef<IDevice> = computed(() => {
   let r: IDevice = store.getDevice(route.params.id as string);
   if (!r) {
-    r = { id: "INVALID", attachedNetworks: {}, name: "INVALID", attachedNetworkInterfaces: [], type: null };
+    r = { id: "INVALID", attachedNetworks: {}, name: "INVALID", attachedNetworkInterfaces: [], type: [] };
   }
   return r;
 }
@@ -58,20 +58,26 @@ let device: ComputedRef<IDevice> = computed(() => {
 </script>
 
 <template>
-  <q-page class="col q-gutter-md">
+  <q-page>
     <q-card>
-      <q-card-section class="text-subtitle2" style="margin: 0 0 0 0">
+      <q-card-section class="text-subtitle2">
         Device {{ device == null ? "loading..." : '"' + device.name + '"' }}
       </q-card-section>
-      <q-card-section style="margin-top: 0">
-        <DeviceDetails v-if="device" class="detailsSection" :deviceId="device.id" />
+      <q-card-section class="detailsSection">
+        <DeviceDetails v-if="device" :deviceId="device.id"  />
       </q-card-section>
     </q-card>
   </q-page>
 </template>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .detailsSection {
-  margin-left: 2em;
+  margin: 0em 2em;
+  box-shadow: 4px 4px 8px 4px rgba(0, 0, 0, 0.2);
+  transition: 0.3s;
+}
+
+.detailsSection:hover {
+  box-shadow: 4px 4px 8px 4px rgba(0, 0, 0, 0.2);
 }
 </style>
