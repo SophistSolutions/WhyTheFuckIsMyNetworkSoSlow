@@ -394,7 +394,11 @@ namespace {
                     NetworkAttachmentInfo nwAttachmentInfo = fAttachedNetworks.LookupValue (nw);
                     nwAttachmentInfo.localAddresses += ia;
                     if (hwAddr) {
+#if qPlatform_Windows && kStroika_Version_FullVersion < Stroika_Make_FULL_VERSION(2, 1, kStroika_Version_Stage_Release, 1, 1)
+                        nwAttachmentInfo.hardwareAddresses += hwAddr->ReplaceAll (L"-", L":");
+#else
                         nwAttachmentInfo.hardwareAddresses += *hwAddr;
+#endif
                     }
                     fAttachedNetworks.Add (nw, nwAttachmentInfo);
                     totalAdds++;
