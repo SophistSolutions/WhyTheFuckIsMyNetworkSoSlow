@@ -6,11 +6,6 @@
 	  so that we get the right scrolling behavior
 	+ Do display options store backing to local storage and use that to track
 	  Devices/Columns-shown buttons
-	  ====
-
-  - networks/devices list selection (or at least click to open/expand)
-	(selection works sortof - onclick - but display feedback on hover I'm posting to
-	discord about - seems to only work in dark mode)
 
 	- I THINK LAST SIGNIFICANT FEATURE BEFORE AS GOOD AS Vue2
 
