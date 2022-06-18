@@ -1,5 +1,6 @@
 
-<script lang="ts">
+<script setup lang="ts">
+
 import { defineComponent, ref } from 'vue';
 import EssentialLink from 'components/EssentialLink.vue';
 
@@ -49,30 +50,21 @@ const linksList = [
   }
 ];
 
-export default defineComponent({
-  name: 'MainLayout',
+const leftDrawerOpen = ref(false)
 
+function toggleLeftDrawer() {
+  leftDrawerOpen.value = !leftDrawerOpen.value
+}
+
+defineComponent({
   components: {
     EssentialLink
-  },
-
-  setup() {
-    const leftDrawerOpen = ref(false)
-
-    return {
-      essentialLinks: linksList,
-      leftDrawerOpen,
-      toggleLeftDrawer() {
-        console.log('called')
-        leftDrawerOpen.value = !leftDrawerOpen.value
-      }
-    }
   }
 });
 </script>
 
 <template>
-  <q-layout view="lHh Lpr lFf" >
+  <q-layout view="lHh Lpr lFf">
     <q-header elevated>
       <q-toolbar class="justify-between">
         <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
@@ -80,7 +72,7 @@ export default defineComponent({
         <q-toolbar-title>
           WhyTheFuckIsMyNetworkSoSlow
         </q-toolbar-title>
- 
+
         <q-breadcrumbs separator=">" active-color="secondary">
           <template v-for="(item, index) in this.$route.meta.breadcrumbs" :key="index">
             <q-breadcrumbs-el :href="item.href" :disabled="item.disabled" :label="item.text.toUpperCase()" />
