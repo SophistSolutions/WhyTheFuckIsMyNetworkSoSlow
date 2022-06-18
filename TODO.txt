@@ -1,8 +1,6 @@
 - quasar work  
 
  + gui cleanup in devices page 
-	+ look into why devices table when I click expando - columns shift - this is confusing UI
-	  (issue more pronounced when I enlarge web brower to full screen width)
 	+ look at 'expanded' feature in q-table - I think I'm not using
 	+ Look into moving the logic for toolar into parent/uncle slot,
 	  so that we get the right scrolling behavior

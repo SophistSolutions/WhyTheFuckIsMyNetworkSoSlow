@@ -407,7 +407,7 @@ const pagination = ref({
               </q-td>
             </q-tr>
             <q-tr v-if="props.expand" :props="props">
-              <q-td colspan="100%">
+              <q-td :colspan="visibleColumns.length">
                 <NetworkDetails class="detailsSection z-top" :networkId="props.row.id" />
               </q-td>
             </q-tr>

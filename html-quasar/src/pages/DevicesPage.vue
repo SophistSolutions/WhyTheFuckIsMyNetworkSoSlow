@@ -496,7 +496,7 @@ const pagination = ref({
               </q-td>
             </q-tr>
             <q-tr v-if="props.expand" :props="props">
-              <q-td colspan="100%">
+              <q-td :colspan="visibleColumns.length">
                 <DeviceDetails class="detailsSection z-top" :deviceId="props.row.id" />
               </q-td>
             </q-tr>
