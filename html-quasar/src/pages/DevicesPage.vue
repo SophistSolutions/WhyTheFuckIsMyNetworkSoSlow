@@ -445,7 +445,8 @@ const pagination = ref({
           Devices
         </div>
         <q-table dense table-class="itemList shadow-1" :rows="filteredExtendedDevices" :columns="tableHeaders"
-          row-key="id" :visible-columns="visibleColumns" :pagination.sync="pagination" hide-bottom :loading="loading">
+          separator="none" row-key="id" :visible-columns="visibleColumns" :pagination.sync="pagination" hide-bottom
+          :loading="loading">
           <template v-slot:body="props">
             <q-tr :props="props" @click="rowClicked(props)">
               <q-td :props="props" key="name">

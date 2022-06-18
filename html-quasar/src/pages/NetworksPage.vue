@@ -371,7 +371,8 @@ const pagination = ref({
           Networks
         </div>
         <q-table table-class="itemList shadow-1" :rows="filteredExtendedNetworks" :columns="headers" row-key="id" dense
-          :visible-columns="visibleColumns" :pagination.sync="pagination" hide-bottom :loading="loading">
+          separator="none" :visible-columns="visibleColumns" :pagination.sync="pagination" hide-bottom
+          :loading="loading">
           <template v-slot:body="props">
             <q-tr :props="props" @click="rowClicked(props)">
               <q-td :props="props" key="name">
