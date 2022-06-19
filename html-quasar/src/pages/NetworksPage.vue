@@ -316,6 +316,9 @@ defineComponent({
   },
 });
 
+// See https://github.com/storybookjs/storybook/issues/17954 for why we need this hack
+var addHeaderSectionBugWorkaround = ref(false);
+
 onMounted(() => {
   // @see https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/14
   // This works, but maybe cleaner to do within the router, but wasn't able to get
@@ -339,6 +342,8 @@ onMounted(() => {
     store.fetchDevices();
     store.fetchAvailableNetworks();
   }, 15 * 1000);
+
+  addHeaderSectionBugWorkaround.value = true;
 })
 
 onUnmounted(() => {
@@ -353,17 +358,19 @@ const pagination = ref({
 </script>
 
 <template>
-  <q-toolbar class="justify-between secondary-toolbar">
-    <Search v-model:searchFor="search" />
-    <FilterSummaryMessage dense :filtered="filtered" :nItemsSelected="filteredExtendedNetworks.length"
-      :nTotalItems="allNetworks?.length" itemsName="networks" />
-    <ClearButton v-if="filtered" v-on:click="clearFilter" />
-  </q-toolbar>
-  <q-toolbar class="justify-between secondary-toolbar">
-    <q-select v-model="visibleColumns" multiple dense options-dense :display-value="$q.lang.table.columns" emit-value
-      map-options :options="headers" option-value="name" style="min-width: 150px" label="Shown" dark
-      :options-dark="false" />
-  </q-toolbar>
+  <Teleport to="#CHILD_HEADER_SECTION" v-if="addHeaderSectionBugWorkaround">
+    <q-toolbar class="justify-between secondary-toolbar">
+      <Search v-model:searchFor="search" />
+      <FilterSummaryMessage dense :filtered="filtered" :nItemsSelected="filteredExtendedNetworks.length"
+        :nTotalItems="allNetworks?.length" itemsName="networks" />
+      <ClearButton v-if="filtered" v-on:click="clearFilter" />
+    </q-toolbar>
+    <q-toolbar class="justify-between secondary-toolbar">
+      <q-select v-model="visibleColumns" multiple dense options-dense :display-value="$q.lang.table.columns" emit-value
+        map-options :options="headers" option-value="name" style="min-width: 150px" label="Shown" dark
+        :options-dark="false" />
+    </q-toolbar>
+  </Teleport>
   <q-page class="col q-pa-md q-gutter-md">
     <q-card class="listCard">
       <q-card-section>

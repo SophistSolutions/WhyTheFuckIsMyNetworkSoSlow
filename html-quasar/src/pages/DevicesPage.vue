@@ -386,13 +386,20 @@ onMounted(() => {
     store.fetchDevices();
     store.fetchAvailableNetworks();
   }, kRefreshFrequencyInSeconds_ * 1000);
+
+  addHeaderSectionBugWorkaround.value = true;
 })
+
+
 
 onUnmounted(() => {
   if (polling) {
     clearInterval(polling);
   }
 })
+
+// See https://github.com/storybookjs/storybook/issues/17954 for why we need this hack
+var addHeaderSectionBugWorkaround = ref(false);
 
 // disable pagination
 const pagination = ref({
@@ -402,50 +409,52 @@ const pagination = ref({
 </script>
 
 <template>
-  <q-toolbar class="justify-between secondary-toolbar">
-    <q-select dense hide-details="true" :options="selectableNetworks" v-model="selectedNetworkCurrent" emit-value
-      map-options label="On network" style="min-width: 150px" dark :options-dark="false" />
-    <q-select dense hide-details="true" :options="selectableTimeframes" v-model="selectedTimeframe" label="Seen"
-      emit-value map-options style="min-width: 150px" dark :options-dark="false" />
-    <q-select dense small multiple hide-details="true" hint="Any=>no filter; multiple=>OR" hide-hint
-      :options="selectableServices" emit-value map-options v-model="selectedServices" label="With services"
-      style="min-width: 150px" dark :options-dark="false">
-      <template v-slot:before-options>
-        <q-item>
-          <q-item-section @click="selectServicesFilter_ToggleSelectAll">
-            <div class="row no-wrap items-baseline">
-              <q-icon :color="selectedServices.length > 0 ? 'indigo darken-4' : ''" :name="selectServicesFilter_icon"
-                left />
-              {{ filterIsSetToAllowAllServices ? "Select None" : "Select All" }}
-            </div>
-          </q-item-section>
-        </q-item>
-        <q-separator />
-      </template>
-      <template v-slot:selected>
-        <div v-if="selectableServices.length == selectedServices.length">Any</div>
-        <q-chip dark dense v-if="1 == selectedServices.length">
-          {{ selectableServices.find((a) => a.value == selectedServices[0])?.label }}
-        </q-chip>
-        <q-chip dark dense v-if="1 < selectedServices.length && !filterIsSetToAllowAllServices">
-          {{ selectableServices.find((a) => a.value == selectedServices[0])?.label }}
-        </q-chip>
-        <q-chip dark dense v-if="1 < selectedServices.length && !filterIsSetToAllowAllServices">
-          + {{ selectedServices.length - 1 }} other(s)
-        </q-chip>
-        <div v-if="filterIsSetToAllowEmptyServices">None</div>
-      </template>
-    </q-select>
-    <Search v-model:searchFor="search" />
-    <FilterSummaryMessage dense :filtered="filtered" :nItemsSelected="filteredExtendedDevices.length"
-      :nTotalItems="allDevices?.length" itemsName="devices" />
-    <ClearButton v-if="filtered" v-on:click="clearFilter" />
-  </q-toolbar>
-  <q-toolbar class="justify-between secondary-toolbar">
-    <q-select v-model="visibleColumns" multiple dense options-dense :display-value="$q.lang.table.columns" emit-value
-      map-options :options="tableHeaders" option-value="name" style="min-width: 150px" label="Shown" dark
-      :options-dark="false" />
-  </q-toolbar>
+  <Teleport to="#CHILD_HEADER_SECTION" v-if="addHeaderSectionBugWorkaround">
+    <q-toolbar class="justify-between secondary-toolbar">
+      <q-select dense hide-details="true" :options="selectableNetworks" v-model="selectedNetworkCurrent" emit-value
+        map-options label="On network" style="min-width: 150px" dark :options-dark="false" />
+      <q-select dense hide-details="true" :options="selectableTimeframes" v-model="selectedTimeframe" label="Seen"
+        emit-value map-options style="min-width: 150px" dark :options-dark="false" />
+      <q-select dense small multiple hide-details="true" hint="Any=>no filter; multiple=>OR" hide-hint
+        :options="selectableServices" emit-value map-options v-model="selectedServices" label="With services"
+        style="min-width: 150px" dark :options-dark="false">
+        <template v-slot:before-options>
+          <q-item>
+            <q-item-section @click="selectServicesFilter_ToggleSelectAll">
+              <div class="row no-wrap items-baseline">
+                <q-icon :color="selectedServices.length > 0 ? 'indigo darken-4' : ''" :name="selectServicesFilter_icon"
+                  left />
+                {{ filterIsSetToAllowAllServices ? "Select None" : "Select All" }}
+              </div>
+            </q-item-section>
+          </q-item>
+          <q-separator />
+        </template>
+        <template v-slot:selected>
+          <div v-if="selectableServices.length == selectedServices.length">Any</div>
+          <q-chip dark dense v-if="1 == selectedServices.length">
+            {{ selectableServices.find((a) => a.value == selectedServices[0])?.label }}
+          </q-chip>
+          <q-chip dark dense v-if="1 < selectedServices.length && !filterIsSetToAllowAllServices">
+            {{ selectableServices.find((a) => a.value == selectedServices[0])?.label }}
+          </q-chip>
+          <q-chip dark dense v-if="1 < selectedServices.length && !filterIsSetToAllowAllServices">
+            + {{ selectedServices.length - 1 }} other(s)
+          </q-chip>
+          <div v-if="filterIsSetToAllowEmptyServices">None</div>
+        </template>
+      </q-select>
+      <Search v-model:searchFor="search" />
+      <FilterSummaryMessage dense :filtered="filtered" :nItemsSelected="filteredExtendedDevices.length"
+        :nTotalItems="allDevices?.length" itemsName="devices" />
+      <ClearButton v-if="filtered" v-on:click="clearFilter" />
+    </q-toolbar>
+    <q-toolbar class="justify-between secondary-toolbar">
+      <q-select v-model="visibleColumns" multiple dense options-dense :display-value="$q.lang.table.columns" emit-value
+        map-options :options="tableHeaders" option-value="name" style="min-width: 150px" label="Shown" dark
+        :options-dark="false" />
+    </q-toolbar>
+  </Teleport>
   <q-page class="col q-pa-md q-gutter-md">
     <q-card class="listCard">
       <q-card-section>

@@ -4,17 +4,6 @@
 import { defineComponent, defineProps, Ref, ref } from 'vue';
 import EssentialLink from 'components/EssentialLink.vue';
 
-
-const props = defineProps({
-  extraContent: {  required: false, default: null },
-})
-
-var extraContent : Ref<any> = ref (props.extraContent)
-
-function updateExtraContent(value: string) {
-  extraContent.value = value;
-}
-
 // Leave around stuff from sample layout, for a bit...
 const linksList = [
   {
@@ -67,8 +56,6 @@ function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value
 }
 
-
-
 defineComponent({
   components: {
     EssentialLink
@@ -81,17 +68,14 @@ defineComponent({
     <q-header elevated>
       <q-toolbar class="justify-between">
         <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
-
         <q-toolbar-title>
           WhyTheFuckIsMyNetworkSoSlow
         </q-toolbar-title>
-
         <q-breadcrumbs separator=">" active-color="secondary">
           <template v-for="(item, index) in this.$route.meta.breadcrumbs" :key="index">
             <q-breadcrumbs-el :href="item.href" :disabled="item.disabled" :label="item.text.toUpperCase()" />
           </template>
         </q-breadcrumbs>
-
         <q-btn flat dense round icon="mdi-dots-vertical" style="margin-left: 1in" aria-label="Menu" color="white">
           <q-menu>
             <q-list style="min-width: 100px">
@@ -104,28 +88,19 @@ defineComponent({
             </q-list>
           </q-menu>
         </q-btn>
-
-        <!-- <template v-slot:extension v-if="this.$slots.extrastuff">
-          <slot name="extrastuff" />
-        </template> -->
-        <div v-if="extraContent">
-          {{extraContent}}
-        </div>
-
       </q-toolbar>
+      <div class="row" id="CHILD_HEADER_SECTION" />
     </q-header>
 
     <q-drawer v-model="leftDrawerOpen" bordered>
       <q-list>
-        <q-item-label header>
-          Essential Links
-        </q-item-label>
+        <q-item-label header>Essential Links</q-item-label>
         <EssentialLink v-for="link in linksList" :key="link.title" v-bind="link" />
       </q-list>
     </q-drawer>
 
     <q-page-container>
-      <router-view @updateExtraContent="updateExtraContent" />
+      <router-view />
     </q-page-container>
   </q-layout>
 </template>

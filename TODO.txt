@@ -1,8 +1,6 @@
 - quasar work  
 
  + gui cleanup in devices page 
-	+ Look into moving the logic for toolar into parent/uncle slot,
-	  so that we get the right scrolling behavior
 	+ Do display options store backing to local storage and use that to track
 	  Devices/Columns-shown buttons
 
