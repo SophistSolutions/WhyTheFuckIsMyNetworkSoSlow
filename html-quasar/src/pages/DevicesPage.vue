@@ -19,6 +19,8 @@ import {
   GetServices,
 } from "../models/network/Utils";
 
+import { useStorage } from '@vueuse/core'
+
 // Components
 import Search from '../components/Search.vue';
 import ClearButton from '../components/ClearButton.vue';
@@ -38,6 +40,7 @@ const props = defineProps({
 
 let polling: null | NodeJS.Timeout = null;
 var search = ref("");
+
 
 
 const loading = computed<boolean>(
@@ -242,7 +245,11 @@ const tableHeaders = ref([
   },
 ]);
 
-let visibleColumns = ref(['name', 'type', 'lastSeenAt', 'manufacturerSummary', 'operatingSystem', 'services', 'localAddresses', 'networksSummary', 'expand']);
+// store page options in local storage, but eventually add many more options here (like collapsed or open show filter section etc)
+// COULD POSSIBLY also store stuff like selected filter (search string etc) - but no need for now....
+const pageUserOptions = useStorage('Devices-Page-User-Options', {
+  VisibleColumns: ['name', 'type', 'lastSeenAt', 'manufacturerSummary', 'operatingSystem', 'services', 'localAddresses', 'networksSummary', 'expand']
+})
 
 const route = useRoute()
 const router = useRouter()
@@ -450,9 +457,9 @@ const pagination = ref({
       <ClearButton v-if="filtered" v-on:click="clearFilter" />
     </q-toolbar>
     <q-toolbar class="justify-between secondary-toolbar">
-      <q-select v-model="visibleColumns" multiple dense options-dense :display-value="$q.lang.table.columns" emit-value
-        map-options :options="tableHeaders" option-value="name" style="min-width: 150px" label="Shown" dark
-        :options-dark="false" />
+      <q-select v-model="pageUserOptions.VisibleColumns" multiple dense options-dense
+        :display-value="$q.lang.table.columns" emit-value map-options :options="tableHeaders" option-value="name"
+        style="min-width: 150px" label="Shown" dark :options-dark="false" />
     </q-toolbar>
   </Teleport>
   <q-page class="col q-pa-md q-gutter-md">
@@ -462,8 +469,8 @@ const pagination = ref({
           Devices
         </div>
         <q-table dense table-class="itemList shadow-1" :rows="filteredExtendedDevices" :columns="tableHeaders"
-          separator="none" row-key="id" :visible-columns="visibleColumns" :pagination.sync="pagination" hide-bottom
-          :loading="loading">
+          separator="none" row-key="id" :visible-columns="pageUserOptions.VisibleColumns" :pagination.sync="pagination"
+          hide-bottom :loading="loading">
           <template v-slot:body="props">
             <q-tr :props="props" @click="rowClicked(props)">
               <q-td :props="props" key="name">
@@ -514,7 +521,7 @@ const pagination = ref({
               </q-td>
             </q-tr>
             <q-tr v-if="props.expand" :props="props">
-              <q-td :colspan="visibleColumns.length">
+              <q-td :colspan="pageUserOptions.VisibleColumns.length">
                 <DeviceDetails class="detailsSection z-top" :deviceId="props.row.id" />
               </q-td>
             </q-tr>
