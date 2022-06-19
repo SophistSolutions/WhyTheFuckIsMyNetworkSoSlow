@@ -1,8 +1,19 @@
 
 <script setup lang="ts">
 
-import { defineComponent, ref } from 'vue';
+import { defineComponent, defineProps, Ref, ref } from 'vue';
 import EssentialLink from 'components/EssentialLink.vue';
+
+
+const props = defineProps({
+  extraContent: {  required: false, default: null },
+})
+
+var extraContent : Ref<any> = ref (props.extraContent)
+
+function updateExtraContent(value: string) {
+  extraContent.value = value;
+}
 
 // Leave around stuff from sample layout, for a bit...
 const linksList = [
@@ -57,6 +68,7 @@ function toggleLeftDrawer() {
 }
 
 
+
 defineComponent({
   components: {
     EssentialLink
@@ -93,9 +105,12 @@ defineComponent({
           </q-menu>
         </q-btn>
 
-        <template v-slot:extension v-if="this.$slots.extrastuff">
+        <!-- <template v-slot:extension v-if="this.$slots.extrastuff">
           <slot name="extrastuff" />
-        </template>
+        </template> -->
+        <div v-if="extraContent">
+          {{extraContent}}
+        </div>
 
       </q-toolbar>
     </q-header>
@@ -110,7 +125,7 @@ defineComponent({
     </q-drawer>
 
     <q-page-container>
-      <router-view />
+      <router-view @updateExtraContent="updateExtraContent" />
     </q-page-container>
   </q-layout>
 </template>

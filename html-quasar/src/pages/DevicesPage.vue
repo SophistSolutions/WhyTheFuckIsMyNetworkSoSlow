@@ -342,6 +342,11 @@ let filteredExtendedDevices: ComputedRef<object[]> = computed(() => {
 });
 
 
+
+const emit = defineEmits<{
+  (e: 'updateExtraContent', value: string): void
+}>()
+
 const kRefreshFrequencyInSeconds_: number = 15;
 
 defineComponent({
@@ -353,9 +358,12 @@ defineComponent({
     DeviceDetails,
     Search,
   },
+  emits: ['updateExtraContent']
 });
 
 onMounted(() => {
+  // emit ('updateExtraContent', "must put actual slot here");
+
   // @see https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/14
   // This works, but maybe cleaner to do within the router, but wasn't able to get
   // working (so far)
