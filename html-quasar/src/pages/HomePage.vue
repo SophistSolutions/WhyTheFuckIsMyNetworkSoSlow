@@ -9,7 +9,7 @@ import {
   GetNetworkLink,
   GetNetworkName,
 } from "../models/network/Utils";
-import { useWTFStore } from '../stores/WTF-store'
+import { useNetStateStore } from '../stores/Net-State-store'
 
 // Components
 import ReadOnlyTextWithHover from '../components/ReadOnlyTextWithHover.vue';
@@ -20,7 +20,7 @@ defineComponent({
   },
 });
 
-const store = useWTFStore()
+const store = useNetStateStore()
 let polling: undefined | NodeJS.Timeout;
 
 const kRefreshFrequencyInSeconds_: number = 15;

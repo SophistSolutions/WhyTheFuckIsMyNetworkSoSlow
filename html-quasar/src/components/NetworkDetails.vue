@@ -20,10 +20,10 @@ import {
 import ReadOnlyTextWithHover from '../components/ReadOnlyTextWithHover.vue';
 import Link2DetailsPage from '../components/Link2DetailsPage.vue';
 
-import { useWTFStore } from '../stores/WTF-store'
+import { useNetStateStore } from '../stores/Net-State-store'
 import { INetwork } from 'src/models/network/INetwork';
 
-const store = useWTFStore()
+const store = useNetStateStore()
 
 const props = defineProps({
   networkId: { type: String, required: true },

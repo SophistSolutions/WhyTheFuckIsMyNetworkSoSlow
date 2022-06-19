@@ -9,10 +9,10 @@ import { useQuasar } from 'quasar';
 // Components
 import DeviceDetails from '../components/DeviceDetails.vue';
 
-import { useWTFStore } from '../stores/WTF-store'
+import { useNetStateStore } from '../stores/Net-State-store'
 
 const $q = useQuasar()
-const store = useWTFStore()
+const store = useNetStateStore()
 
 const props = defineProps({
   selectedNetworkink: { type: String, required: false, default: null },

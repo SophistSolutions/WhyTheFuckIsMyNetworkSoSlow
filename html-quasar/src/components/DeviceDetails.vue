@@ -12,9 +12,9 @@ import { rescanDevice } from "../proxy/API";
 import ReadOnlyTextWithHover from '../components/ReadOnlyTextWithHover.vue';
 import Link2DetailsPage from '../components/Link2DetailsPage.vue';
 
-import { useWTFStore } from '../stores/WTF-store'
+import { useNetStateStore } from '../stores/Net-State-store'
 
-const store = useWTFStore()
+const store = useNetStateStore()
 
 const props = defineProps({
   deviceId: { type: String, required: true },

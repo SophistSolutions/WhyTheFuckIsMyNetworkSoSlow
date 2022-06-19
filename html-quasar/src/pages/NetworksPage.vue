@@ -22,10 +22,10 @@ import ReadOnlyTextWithHover from '../components/ReadOnlyTextWithHover.vue';
 import Link2DetailsPage from '../components/Link2DetailsPage.vue';
 import FilterSummaryMessage from '../components/FilterSummaryMessage.vue';
 
-import { useWTFStore } from '../stores/WTF-store'
+import { useNetStateStore } from '../stores/Net-State-store'
 const $q = useQuasar()
 
-const store = useWTFStore()
+const store = useNetStateStore()
 
 const props = defineProps({
   selectedNetworkink: { type: String, required: false, default: null },

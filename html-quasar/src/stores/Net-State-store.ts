@@ -34,7 +34,6 @@ export const useCounterStore = defineStore('counter', {
   },
 });
 
-
 // @todo perhaps add in 'lasttimerequested' and 'lastTimeSuccessfulResponse' and throttle/dont request 
 // (not sure where in model) if outtsanding requests etc) and maybe show in UI if data stale
 interface ILoading {
@@ -44,7 +43,7 @@ interface ILoading {
 
 /// DRAFT new WTF app data store  - maybe should be called cached-network-state-store?
 
-export const useWTFStore = defineStore('WTF', {
+export const useNetStateStore = defineStore('WTF', {
   state: () => ({
     about: undefined as IAbout | undefined,
     rolledUpAvailableNetworkIDs: [] as string[],
@@ -134,4 +133,3 @@ export const useWTFStore = defineStore('WTF', {
     },
   },
 });
-

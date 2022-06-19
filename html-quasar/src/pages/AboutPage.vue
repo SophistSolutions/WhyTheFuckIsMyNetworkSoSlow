@@ -6,7 +6,7 @@ import prettyBytes from 'pretty-bytes';
 
 import { VUE_VERSION } from '../config/config';
 import { IAbout, IComponent } from "../models/IAbout";
-import { useWTFStore } from '../stores/WTF-store'
+import { useNetStateStore } from '../stores/Net-State-store'
 
 let polling:  undefined | NodeJS.Timeout;
 const $q = useQuasar()
@@ -18,7 +18,7 @@ const kUIComponents: IComponent[] = [
 
 const kRefreshFrequencyInSeconds_: number = 10;
 
-const store = useWTFStore()
+const store = useNetStateStore()
 
 let aboutData = computed(() => store.getAboutInfo);
 
