@@ -3,6 +3,7 @@ import { defineComponent, defineProps, onMounted, onUnmounted, nextTick, Ref, re
 import { useRoute, useRouter } from 'vue-router'
 import * as moment from 'moment';
 import { useQuasar } from 'quasar';
+import { useStorage } from '@vueuse/core'
 
 import { IDevice } from "../models/device/IDevice";
 import {
@@ -19,7 +20,6 @@ import {
   GetServices,
 } from "../models/network/Utils";
 
-import { useStorage } from '@vueuse/core'
 
 // Components
 import Search from '../components/Search.vue';

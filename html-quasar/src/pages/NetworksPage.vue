@@ -3,6 +3,7 @@ import { defineComponent, defineProps, onMounted, onUnmounted, nextTick, ref, co
 import { useRoute, useRouter } from 'vue-router'
 import * as moment from 'moment';
 import { useQuasar } from 'quasar';
+import { useStorage } from '@vueuse/core'
 
 import { IDevice } from "../models/device/IDevice";
 import { INetwork } from "../models/network/INetwork";
@@ -36,6 +37,20 @@ var search = ref("");
 var sortBy: any = [];
 var sortDesc: any = [];
 var expanded: any[] = [];
+
+
+// store page options in local storage, but eventually add many more options here (like collapsed or open show filter section etc)
+// COULD POSSIBLY also store stuff like selected filter (search string etc) - but no need for now....
+const pageUserOptions = useStorage('Networks-Page-User-Options', {
+  VisibleColumns: ['name',
+  'CIDRs',
+  'active',
+  'status',
+  'location',
+  'internetInfo',
+  'devices',
+  'expand']
+})
 
 
 function filterAllowAllServices() {
@@ -220,14 +235,6 @@ const headers = ref([
   },
 ]);
 
-let visibleColumns = ref(['name',
-  'CIDRs',
-  'active',
-  'status',
-  'location',
-  'internetInfo',
-  'devices',
-  'expand']);
 
 
 const route = useRoute()
@@ -366,7 +373,7 @@ const pagination = ref({
       <ClearButton v-if="filtered" v-on:click="clearFilter" />
     </q-toolbar>
     <q-toolbar class="justify-between secondary-toolbar">
-      <q-select v-model="visibleColumns" multiple dense options-dense :display-value="$q.lang.table.columns" emit-value
+      <q-select v-model="pageUserOptions.VisibleColumns" multiple dense options-dense :display-value="$q.lang.table.columns" emit-value
         map-options :options="headers" option-value="name" style="min-width: 150px" label="Shown" dark
         :options-dark="false" />
     </q-toolbar>
@@ -378,7 +385,7 @@ const pagination = ref({
           Networks
         </div>
         <q-table table-class="itemList shadow-1" :rows="filteredExtendedNetworks" :columns="headers" row-key="id" dense
-          separator="none" :visible-columns="visibleColumns" :pagination.sync="pagination" hide-bottom
+          separator="none" :visible-columns="pageUserOptions.VisibleColumns" :pagination.sync="pagination" hide-bottom
           :loading="loading">
           <template v-slot:body="props">
             <q-tr :props="props" @click="rowClicked(props)">
@@ -415,7 +422,7 @@ const pagination = ref({
               </q-td>
             </q-tr>
             <q-tr v-if="props.expand" :props="props">
-              <q-td :colspan="visibleColumns.length">
+              <q-td :colspan="pageUserOptions.VisibleColumns.length">
                 <NetworkDetails class="detailsSection z-top" :networkId="props.row.id" />
               </q-td>
             </q-tr>

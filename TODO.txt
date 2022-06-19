@@ -1,9 +1,5 @@
 - quasar work  
 
- + gui cleanup in devices page 
-	+ Do display options store backing to local storage and use that to track
-	  Devices/Columns-shown buttons
-
 	- I THINK LAST SIGNIFICANT FEATURE BEFORE AS GOOD AS Vue2
 
 
