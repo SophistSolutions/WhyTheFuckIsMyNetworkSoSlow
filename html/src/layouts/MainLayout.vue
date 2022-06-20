@@ -2,7 +2,15 @@
 <script setup lang="ts">
 
 import { defineComponent, defineProps, Ref, ref } from 'vue';
+
+import { useRoute, useRouter } from 'vue-router'
+
+
 import EssentialLink from 'components/EssentialLink.vue';
+
+
+const route = useRoute()
+const router = useRouter()
 
 // Leave around stuff from sample layout, for a bit...
 const linksList = [
@@ -72,14 +80,14 @@ defineComponent({
           WhyTheFuckIsMyNetworkSoSlow
         </q-toolbar-title>
         <q-breadcrumbs separator=">" active-color="secondary">
-          <template v-for="(item, index) in this.$route.meta.breadcrumbs" :key="index">
+          <template v-for="(item, index) in route.meta.breadcrumbs" :key="index">
             <q-breadcrumbs-el :href="item.href" :disabled="item.disabled" :label="item.text.toUpperCase()" />
           </template>
         </q-breadcrumbs>
         <q-btn flat dense round icon="mdi-dots-vertical" style="margin-left: 1in" aria-label="Menu" color="white">
           <q-menu>
             <q-list style="min-width: 100px">
-              <template v-for="(item, index) in this.$router.options.routes" :key="index">
+              <template v-for="(item, index) in router.options.routes" :key="index">
                 <q-item v-if="item.name && item?.meta?.showInDotDotDotMenu" clickable v-close-popup :to="item.path">
                   <q-item-section> {{ item.name }}</q-item-section>
                 </q-item>
