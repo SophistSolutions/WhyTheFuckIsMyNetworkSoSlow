@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { defineProps, defineComponent, onMounted, onUnmounted, ref, computed } from 'vue';
-import * as moment from 'moment';
+import moment from 'moment';
 import JsonViewer from 'vue-json-viewer';
 
 import { IDevice, INetworkAttachmentInfo } from "../models/device/IDevice";

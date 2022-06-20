@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, computed } from 'vue';
 import { useQuasar } from 'quasar';
-import * as moment from 'moment';
+import moment from 'moment';
 import prettyBytes from 'pretty-bytes';
 
 import { VUE_VERSION } from '../config/config';
@@ -51,7 +51,7 @@ onUnmounted(() => {
       </q-card-section>
       <q-card-section>
         Why The Fuck is My Network So Slow monitors your local network, and tracks over time what devices are on the
-        network, and what traffic they generate. It also monitors the 'speed' of your various network links.
+        network, and what traffic those devices generate. It also monitors the 'speed' of your various network links.
         It allows you to see what is normal behavior on your network, and notify you of interesting
         abberations, to help see why your network maybe sometimes slow.
       </q-card-section>

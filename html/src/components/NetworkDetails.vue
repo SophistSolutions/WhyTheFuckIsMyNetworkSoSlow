@@ -2,7 +2,7 @@
 import { defineProps, defineComponent, onMounted, onUnmounted, ref, computed, ComputedRef } from 'vue';
 
 import JsonViewer from 'vue-json-viewer';
-import * as moment from 'moment';
+import moment from 'moment';
 
 import { IDevice, INetworkAttachmentInfo } from "../models/device/IDevice";
 import { INetworkInterface } from "../models/network/INetworkInterface";
