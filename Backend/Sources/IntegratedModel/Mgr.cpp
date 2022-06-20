@@ -443,6 +443,7 @@ namespace {
                             sDBNetworks_.store (NetworkKeyedCollection_{networkTableConnection->GetAll ()});
                         }
                         catch (...) {
+                            DbgTrace (L"Probably important error reading database of old netowrks data: %s", Characters::ToString (current_exception ()).c_str ());
                             networkTableConnection = nullptr; // so we re-fetch
                             Execution::ReThrow ();
                         }
@@ -454,6 +455,7 @@ namespace {
                             sDBDevices_.store (DeviceKeyedCollection_{deviceTableConnection->GetAll ()}); // pre-load in memory copy with whatever we had stored in the database
                         }
                         catch (...) {
+                            DbgTrace (L"Probably important error reading database of old device data: %s", Characters::ToString (current_exception ()).c_str ());
                             deviceTableConnection = nullptr; // so we re-fetch
                             Execution::ReThrow ();
                         }
