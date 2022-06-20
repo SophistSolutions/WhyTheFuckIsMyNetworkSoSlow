@@ -255,7 +255,7 @@ function clearFilter() {
   selectedNetworkCurrent = undefined;
   selectedTimeframe = undefined;
   selectedServices = selectableServices.value.map((x) => x.value);
-  search = "";
+  search.value = "";
 }
 
 

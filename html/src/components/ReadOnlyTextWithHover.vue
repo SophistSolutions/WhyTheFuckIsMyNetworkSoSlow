@@ -1,16 +1,17 @@
 <script setup lang="ts">
-import { onMounted, defineProps, watch } from 'vue';
+import { onMounted, defineProps, watch, ref, Ref } from 'vue';
 
 const props = defineProps({
     message: { type: String, required: true },
-    link: { type: String, required: false, default: undefined },
-    popupTitle: { type: String, required: false, default: undefined },
+    link: { type: String, required: false, default: null },
+    popupTitle: { type: String, required: false, default: null },
 })
 
 function onChange() {
-    useTitle = props.popupTitle == undefined ? props.message : props.popupTitle;
-    if (useTitle === undefined) {
-        useTitle = "";
+    
+    useTitle.value = props.popupTitle == null ? props.message : props.popupTitle;
+    if (useTitle.value === null) {
+        useTitle.value = "";
     }
 }
 
@@ -20,7 +21,7 @@ onMounted(() => {
 
 watch([() => props.message, () => props.popupTitle], onChange)
 
-var useTitle: string = "";
+var useTitle: Ref<string> = ref ("");
 </script>
 
 <template>
