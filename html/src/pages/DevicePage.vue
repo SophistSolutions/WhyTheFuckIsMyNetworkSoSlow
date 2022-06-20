@@ -30,13 +30,13 @@ const kRefreshFrequencyInSeconds_: number = 15;
 
 onMounted(() => {
   // first time check quickly, then more gradually
-  store.fetchDevices();
+  store.fetchDevice(route.params.id as string);
   store.fetchAvailableNetworks();
   if (polling) {
     clearInterval(polling);
   }
   polling = setInterval(() => {
-    store.fetchDevices();
+    store.fetchDevice(route.params.id as string);
     store.fetchAvailableNetworks();
   }, kRefreshFrequencyInSeconds_ * 1000);
 })
@@ -64,7 +64,7 @@ let device: ComputedRef<IDevice> = computed(() => {
         Device {{ device == null ? "loading..." : '"' + device.name + '"' }}
       </q-card-section>
       <q-card-section class="detailsSection">
-        <DeviceDetails v-if="device" :deviceId="device.id"  />
+        <DeviceDetails v-if="device" :deviceId="device.id" />
       </q-card-section>
     </q-card>
   </q-page>
