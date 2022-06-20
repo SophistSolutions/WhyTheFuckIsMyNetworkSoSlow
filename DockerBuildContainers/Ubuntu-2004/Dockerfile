@@ -10,8 +10,14 @@ RUN apt-get install -y g++-10
 # Cross-compile for ARM
 RUN apt-get install -y g++-10-arm-linux-gnueabihf
 
+# Because Ubuntu2004 node version not working with vite (requires 14.x or later, but that has version of npm that didn't seem to work with builds)
+RUN apt-get install -y curl
+RUN curl -sL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+
 # For html code
-RUN apt-get install -y nodejs npm
+RUN apt-get install -y nodejs
+# Somehow installing npm from apt-get (using newer nodejs) not working --LGP 2022-06-20
+RUN npm install -g npm@latest
 
 RUN rm -f /Getting-Started-With-Stroika.md
 ADD Shared-Files/Getting-Started.md /

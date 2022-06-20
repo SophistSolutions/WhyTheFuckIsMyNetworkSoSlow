@@ -10,14 +10,14 @@ RUN apt-get install -y g++-8
 # Cross-compile for ARM
 RUN apt-get install -y g++-8-arm-linux-gnueabihf
 
-# For html code
-RUN apt-get install -y nodejs npm
-
-# Because Ubuntu1804 node version not working
+# Because Ubuntu1804 node version not working with vite (requires 14.x or later, but that has version of npm that didn't seem to work with builds, and 18x requires too new libc)
 RUN apt-get install -y curl
-RUN curl -sL https://deb.nodesource.com/setup_10.x -o nodesource_setup.sh
-RUN bash nodesource_setup.sh
+RUN curl -sL https://deb.nodesource.com/setup_16.x | sudo -E bash -
+
+# For html code
 RUN apt-get install -y nodejs
+# Somehow installing npm from apt-get (using newer nodejs) not working --LGP 2022-06-20
+RUN npm install -g npm@latest
 
 RUN rm -f /Getting-Started-With-Stroika.md
 ADD Shared-Files/Getting-Started.md /
