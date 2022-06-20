@@ -64,12 +64,7 @@ SRC_FILES2Link_ += src
 SRC_FILES2Link_ += Makefile
 SRC_FILES2Link_ += $(wildcard *.js *.ts)
 SRC_FILES2Link_ += $(wildcard *.json)
-
-ifeq (Windows,$(findstring Windows,$(OS)))
-NPM_WORKS_WITH_SYMBOLIC_LINKS_=0
-else
-NPM_WORKS_WITH_SYMBOLIC_LINKS_=1
-endif
+SRC_FILES2Link_ += $(wildcard *.html)
 
 $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_)/TOOLS_CHECKED:
 	@$(MAKE) check-prerequisites --no-print-directory
@@ -79,9 +74,5 @@ $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_)/TOOLS_CHECKED:
 $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_):
 	@$(StroikaRoot)ScriptsLib/PrintProgressLine $(MAKE_INDENT_LEVEL) `$(StroikaRoot)ScriptsLib/SubstituteBackVariables "Preparing symbolic links for $@"` "... "
 	@rm -rf $@ && mkdir -p $@
-ifeq ($(NPM_WORKS_WITH_SYMBOLIC_LINKS_),1)
-	@for i in ${SRC_FILES2Link_}; do ln -s `pwd`/$$i $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_)/$$i; done
-else
 	@for i in ${SRC_FILES2Link_}; do cp -r `pwd`/$$i $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_)/$$i; done
-endif
 
