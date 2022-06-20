@@ -1,12 +1,12 @@
-import { IDevice } from "@/models/device/IDevice";
-import { ISortBy, SearchSpecification, SortFieldEnum } from "@/models/device/SearchSpecification";
-import { IAbout } from "@/models/IAbout";
-import { INetwork } from "@/models/network/INetwork";
-import { INetworkInterface } from "@/models/network/INetworkInterface";
+import { IDevice } from "../models/device/IDevice";
+import { ISortBy, SearchSpecification, SortFieldEnum } from "../models/device/SearchSpecification";
+import { IAbout } from "../models/IAbout";
+import { INetwork } from "../models/network/INetwork";
+import { INetworkInterface } from "../models/network/INetworkInterface";
 
-import { API_ROOT } from "@/config";
+import { API_ROOT } from "../config/config";
 
-import { Logger } from "@/utils/Logger";
+import { Logger } from "../utils/Logger";
 
 export async function fetchNetworks(): Promise<INetwork[]> {
   return fetch(API_ROOT + `/networks?recurse=true`)
@@ -52,9 +52,10 @@ export async function fetchDevices(searchCriteria?: ISortBy): Promise<IDevice[]>
   const searchSpecification: ISortBy[] = [];
 
   if (!searchCriteria) {
-    searchSpecification.push({ by: SortFieldEnum.ADDRESS, ascending: true });
-    searchSpecification.push({ by: SortFieldEnum.TYPE, ascending: true });
-    searchSpecification.push({ by: SortFieldEnum.PRIORITY, ascending: true });
+    // if no criteria specified, let WSAPI return defaults...
+    // searchSpecification.push({ by: SortFieldEnum.ADDRESS, ascending: true });
+    // searchSpecification.push({ by: SortFieldEnum.TYPE, ascending: true });
+    // searchSpecification.push({ by: SortFieldEnum.PRIORITY, ascending: true });
   } else {
     searchSpecification.push(searchCriteria);
   }
@@ -65,7 +66,7 @@ export async function fetchDevices(searchCriteria?: ISortBy): Promise<IDevice[]>
   return fetch(API_ROOT + `/devices?recurse=true&sort=${encodeURI(JSON.stringify(searchSpecs))}`)
     .then((response) => response.json())
     .then((data) => {
-      data.forEach((d: any) => {
+      data.forEach((d: {icon: URL| string|null}) => {
         // fixup urls that are relative to be relative to the WSAPI
         if (d.icon) {
           d.icon = new URL(d.icon, API_ROOT);

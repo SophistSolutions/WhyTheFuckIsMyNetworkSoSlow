@@ -1,27 +1,11 @@
 <template>
-  <v-btn class="mx-4" fab dark x-small v-on:click="myclick">
-    <v-icon dark x-small>
-      mdi-close
-    </v-icon>
-  </v-btn>
+  <q-btn class="mx-4" fab dark x-small v-on:click="$emit('click')">
+    <q-icon dark x-small name="mdi-close" />
+  </q-btn>
 </template>
-<script lang="ts">
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
-
-/*
- */
-@Component({
-  name: "ClearButton",
-})
-export default class ClearButton extends Vue {
-  private myclick() {
-    this.$emit("click");
-  }
-}
-</script>
 
 <style scoped lang="scss">
-v-btn {
+q-btn {
   float: right;
 }
 </style>

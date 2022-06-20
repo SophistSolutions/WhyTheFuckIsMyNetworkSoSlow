@@ -1,32 +1,22 @@
-<template>
-  <v-text-field
-    v-model="searchForBWA"
-    prepend-icon="mdi-magnify"
-    label="Search"
-    single-line
-    hide-details
-    @keyup="$emit('update:searchFor', searchForBWA)"
-  ></v-text-field>
-</template>
+<script setup lang="ts">
+import { defineProps, defineEmits, ref, Ref } from 'vue';
 
-<script lang="ts">
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
-
-@Component({
-  name: "Search",
+const props = defineProps({
+  searchFor: { type: String, required: false },
 })
-export default class AppBar extends Vue {
-  @Prop()
-  public searchFor: string = "";
 
-  // see https://stackoverflow.com/questions/43933405/can-i-disable-certain-vue-warnings-for-a-specific-component
-  private searchForBWA: string = "";
+const emit = defineEmits(['update:searchFor'])
 
-  @Watch("searchFor")
-  private watchChangeInSearchFor() {
-    this.searchForBWA = this.searchFor;
-  }
+var search: Ref<string | undefined> = ref(props.searchFor);
+
+const updateSearchFor = (newValue: string | number | null) => {
+  emit('update:searchFor', newValue)
 }
 </script>
 
-<style scoped lang="scss"></style>
+<template>
+  <div class="row no-wrap items-baseline">
+    <q-icon name="mdi-magnify" :left="true" />
+    <q-input dense dark v-model="search" label="Search" @update:modelValue="updateSearchFor" />
+  </div>
+</template>

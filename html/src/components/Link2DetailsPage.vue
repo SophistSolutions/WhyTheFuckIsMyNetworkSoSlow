@@ -1,30 +1,15 @@
-<template>
-<a :href="link" target="_blank"
-              ><img src="images/as-new-page-link.png" title="View in new page" width=19 style="padding-top: 5px; float:right"
-            /></a>
-</template>
+<script setup lang="ts">
+import { defineProps } from 'vue';
 
-<script lang="ts">
-import {
-    Component,
-    Prop,
-    Vue,
-    Watch
-} from "vue-property-decorator";
-
-/*
- */
-@Component({
-    name: "Link2DetailsPage",
+const props = defineProps({
+    link: { type: String, required: false, default: undefined },
 })
-export default class Link2DetailsPage extends Vue {
-    @Prop({
-        required: false,
-        default: null
-    })
-    public link!: string | null;
-}
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+</style>
+
+<template>
+    <a :href="props.link" target="_blank"><img src="images/as-new-page-link.png" title="View details in new page"
+            width=19 style="padding-top: 5px; float:right" /></a>
 </template>

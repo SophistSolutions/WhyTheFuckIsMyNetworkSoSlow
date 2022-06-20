@@ -1,0 +1,23 @@
+.DS_Store
+
+# local env files
+.env.local
+.env.*.local
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor directories and files
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw*
+
+# normal builds (make) won't produce these but its often helpful to test with npm run build/serve/etc/, and this will run here
+node_modules/
+dist/

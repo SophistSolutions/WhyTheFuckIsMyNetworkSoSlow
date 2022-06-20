@@ -10,4 +10,5 @@ export interface INetworkInterface {
   receiveLinkSpeedBaud?: number;
   type?: string;
   wirelessInformation?: object;
+  debugProps?: object;
 }

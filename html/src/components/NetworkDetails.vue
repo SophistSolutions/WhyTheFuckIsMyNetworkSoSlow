@@ -1,187 +1,190 @@
-<template>
-  <div>
-    <table class="detailsTable" v-bind:key="network.id" v-if="network">
-      <tr>
-        <td>Name</td>
-        <td>{{ GetNetworkName(network) }}</td>
-      </tr>
-      <tr>
-        <td>ID</td>
-        <td>
-          {{ network.id }}
-          <span class="snapshot" v-if="network.historicalSnapshot == true">{snapshot}</span>
-        </td>
-      </tr>
-      <tr>
-        <td>Friendly Name</td>
-        <td>{{ network.friendlyName }}</td>
-      </tr>
-      <tr v-if="network.lastSeenAt">
-        <td>Last Seen</td>
-        <td>{{ network.lastSeenAt | moment("from", "now") }}</td>
-      </tr>
-      <tr>
-        <td>CIDRs</td>
-        <td>{{ GetNetworkCIDRs(network) }}</td>
-      </tr>
-      <tr v-if="network.DNSServers && network.DNSServers.length">
-        <td>DNS Servers</td>
-        <td>{{ network.DNSServers.join(", ") }}</td>
-      </tr>
-      <tr v-if="network.gateways && network.gateways.length">
-        <td>Gateways</td>
-        <td>{{ network.gateways.join(", ") }}</td>
-      </tr>
-      <tr v-if="network.geographicLocation">
-        <td>Geographic Location</td>
-        <td>{{ FormatLocation(network.geographicLocation) }}</td>
-      </tr>
-      <tr v-if="network.internetServiceProvider">
-        <td>Internet Service Provider</td>
-        <td>{{ network.internetServiceProvider.name }}</td>
-      </tr>
-      <tr v-if="network.aggregatesReversibly && network.aggregatesReversibly.length">
-        <td>Aggregates Reversibly</td>
-        <td>
-          <span v-for="aggregate in network.aggregatesReversibly" v-bind:key="aggregate">
-            <ReadOnlyTextWithHover :message="aggregate" :link="'/#/network/' + aggregate" />;
-          </span>
-        </td>
-      </tr>
-      <tr v-if="network.aggregatesIrreversibly && network.aggregatesIrreversibly.length">
-        <td>Aggregates Irreversibly</td>
-        <td>
-          <span v-for="aggregate in network.aggregatesIrreversibly" v-bind:key="aggregate">
-            <ReadOnlyTextWithHover :message="aggregate" />;
-          </span>
-        </td>
-      </tr>
-      <tr>
-        <td>Devices</td>
-        <td>
-          <a :href="GetDevicesForNetworkLink(network.id)">{{
-            GetDeviceIDsInNetwork(network, devices).length
-          }}</a>
-        </td>
-      </tr>
-      <tr v-if="network.attachedInterfaces">
-        <td>ATTACHED INTERFACES</td>
-        <td>
-          <json-viewer :value="thisNetworksInterfaces" :expand-depth="0" copyable sort />
-        </td>
-      </tr>
-      <tr v-if="network.debugProps">
-        <td>DEBUG INFO</td>
-        <td>
-          <json-viewer :value="network.debugProps" :expand-depth="1" copyable sort />
-        </td>
-      </tr>
-    </table>
-  </div>
-</template>
+<script setup lang="ts">
+import { defineProps, defineComponent, onMounted, onUnmounted, ref, computed, ComputedRef } from 'vue';
 
-<script lang="ts">
-import { IDevice, INetworkAttachmentInfo } from "@/models/device/IDevice";
-import { IGeographicLocation } from "@/models/network/IGeographicLocation";
-import { INetwork } from "@/models/network/INetwork";
-import { INetworkInterface } from "@/models/network/INetworkInterface";
+import JsonViewer from 'vue-json-viewer';
+import * as moment from 'moment';
+
+import { IDevice, INetworkAttachmentInfo } from "../models/device/IDevice";
+import { INetworkInterface } from "../models/network/INetworkInterface";
+
 import {
   FormatLocation,
   GetDeviceIDsInNetwork,
   GetDevicesForNetworkLink,
   GetNetworkCIDRs,
   GetNetworkName,
-} from "@/models/network/Utils";
-import { OperatingSystem } from "@/models/OperatingSystem";
-import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+} from "../models/network/Utils";
 
-@Component({
-  name: "NetworkDetails",
-  components: {
-    ReadOnlyTextWithHover: () => import("@/components/ReadOnlyTextWithHover.vue"),
-  },
+
+// Components
+import ReadOnlyTextWithHover from '../components/ReadOnlyTextWithHover.vue';
+import Link2DetailsPage from '../components/Link2DetailsPage.vue';
+
+import { useNetStateStore } from '../stores/Net-State-store'
+import { INetwork } from 'src/models/network/INetwork';
+
+const store = useNetStateStore()
+
+const props = defineProps({
+  networkId: { type: String, required: true },
+  includeLinkToDetailsPage: { type: Boolean, required: false, default: false },
 })
-export default class NetworkDetails extends Vue {
-  @Prop({
-    required: true,
-    default: null,
-  })
-  public networkId!: string;
 
-  private polling: undefined | number = undefined;
+defineComponent({
+  components: {
+    ReadOnlyTextWithHover,
+    JsonViewer,
+    Link2DetailsPage,
+  },
+});
 
-  private GetNetworkName = GetNetworkName;
-  private GetNetworkCIDRs = GetNetworkCIDRs;
-  private FormatLocation = FormatLocation;
-  private GetDeviceIDsInNetwork = GetDeviceIDsInNetwork;
-  private GetDevicesForNetworkLink = GetDevicesForNetworkLink;
+let polling: undefined | NodeJS.Timeout;
+var isRescanning: boolean = false;
 
-  private get thisNetworksInterfaces(): INetworkInterface[] {
+onMounted(() => {
+  // first time check immediately, then more gradually for updates
+  store.fetchNetworks([props.networkId]);
+  store.fetchDevices();
+  if (polling) {
+    clearInterval(polling);
+  }
+  polling = setInterval(() => {
+    store.fetchDevices();
+    store.fetchNetworks([props.networkId]);
+  }, 15 * 1000);
+})
+
+onUnmounted(() => {
+  clearInterval(polling);
+})
+
+let allDevices: ComputedRef<IDevice[]> = computed(() => store.getDevices);
+
+let currentNetwork = computed<INetwork | undefined>(
+  () => store.getNetwork(props.networkId)
+)
+
+let networkInterfaces = computed<INetworkInterface[]>(
+  () => store.getNetworkInterfaces
+)
+
+let thisNetworksInterfaces = computed<INetworkInterface[]>(
+  () => {
     const result: INetworkInterface[] = [];
-    if (this.network) {
-      this.network.attachedInterfaces.forEach((e) => {
-        let answer: INetworkInterface = {
-          id: e,
-        };
-        this.networkInterfaces.forEach((ni) => {
+    if (currentNetwork.value) {
+      currentNetwork.value.attachedInterfaces.forEach((e) => {
+        let answer: INetworkInterface | undefined;
+        networkInterfaces.value.forEach((ni) => {
           if (e === ni.id) {
             answer = ni;
           }
         });
+        if (answer === undefined) {
+          answer = { id: e };
+        }
         result.push(answer);
       });
     }
     return result;
   }
-
-  private get networkInterfaces(): INetworkInterface[] {
-    return this.$store.getters.getNetworkInterfaces;
-  }
-
-  private created() {
-    this.pollData();
-  }
-
-  private beforeDestroy() {
-    clearInterval(this.polling);
-  }
-
-  private pollData() {
-    // first time check quickly, then more gradually
-    this.$store.dispatch("fetchDevices");
-    this.$store.dispatch("fetchNetwork", this.networkId);
-    this.$store.dispatch("fetchNetworkInterfaces");
-    if (this.polling) {
-      clearInterval(this.polling);
-    }
-    this.polling = setInterval(() => {
-      this.$store.dispatch("fetchDevices");
-      this.$store.dispatch("fetchNetwork", this.networkId);
-      this.$store.dispatch("fetchNetworkInterfaces");
-    }, 15 * 1000);
-  }
-
-  private get network(): INetwork | undefined {
-    return this.$store.getters.getNetwork(this.networkId);
-  }
-
-  // @todo should fix so fetching just devices on this network!!!
-  private get devices(): IDevice[] {
-    return this.$store.getters.getDevices;
-  }
-}
+)
 </script>
 
-<style lang="scss" scoped>
-.detailsTable {
-  table-layout: fixed;
+<template>
+  <div v-if="currentNetwork" class="q-pa-sm">
+    <Link2DetailsPage :link="'/#/network/' + currentNetwork.id" v-if="props.includeLinkToDetailsPage" />
+
+    <div class="row">
+      <div class="col-3 labelColumn"> Name </div>
+      <div class="col"> {{ GetNetworkName(currentNetwork) }} </div>
+    </div>
+    <div class="row">
+      <div class="col-3 labelColumn"> ID </div>
+      <div class="col"> {{ currentNetwork.id }} <span class="snapshot" v-if="currentNetwork.historicalSnapshot == true">{snapshot}</span></div>
+    </div>
+    <div class="row">
+      <div class="col-3 labelColumn"> Friendly Name </div>
+      <div class="col"> {{ currentNetwork.friendlyName }} </div>
+    </div>
+    <div class="row" v-if="currentNetwork.lastSeenAt">
+      <div class="col-3 labelColumn"> Last Seen </div>
+      <div class="col"> {{ moment(currentNetwork.lastSeenAt).fromNow() }} </div>
+    </div>
+    <div class="row">
+      <div class="col-3 labelColumn"> CIDRs </div>
+      <div class="col"> {{ GetNetworkCIDRs(currentNetwork) }} </div>
+    </div>
+    <div class="row"  v-if="currentNetwork.DNSServers && currentNetwork.DNSServers.length">
+      <div class="col-3 labelColumn"> DNS Servers </div>
+      <div class="col"> {{ currentNetwork.DNSServers.join(", ") }} </div>
+    </div>
+    <div class="row"  v-if="currentNetwork.gateways && currentNetwork.gateways.length">
+      <div class="col-3 labelColumn"> Gateways </div>
+      <div class="col"> {{ currentNetwork.gateways.join(", ") }} </div>
+    </div>
+    <div class="row"  v-if="currentNetwork.geographicLocation">
+      <div class="col-3 labelColumn"> Geographic Location </div>
+      <div class="col"> {{ FormatLocation(currentNetwork.geographicLocation) }} </div>
+    </div>
+    <div class="row"  v-if="currentNetwork.internetServiceProvider">
+      <div class="col-3 labelColumn"> Internet Service Provider </div>
+      <div class="col"> {{ currentNetwork.internetServiceProvider.name }} </div>
+    </div>
+    <div class="row"  v-if="currentNetwork.aggregatesReversibly && currentNetwork.aggregatesReversibly.length">
+      <div class="col-3 labelColumn"> Aggregates Reversibly </div>
+      <div class="col"> <span v-for="aggregate in currentNetwork.aggregatesReversibly" v-bind:key="aggregate">
+            <ReadOnlyTextWithHover :message="aggregate" :link="'/#/network/' + aggregate" />;
+          </span> </div>
+    </div>
+    <div class="row"  v-if="currentNetwork.aggregatesIrreversibly && currentNetwork.aggregatesIrreversibly.length">
+      <div class="col-3 labelColumn"> Aggregates Irreversibly </div>
+      <div class="col"> <span v-for="aggregate in currentNetwork.aggregatesIrreversibly" v-bind:key="aggregate">
+            <ReadOnlyTextWithHover :message="aggregate" :link="'/#/network/' + aggregate" />;
+          </span> </div>
+    </div>
+    <div class="row"  v-if="currentNetwork.geographicLocation">
+      <div class="col-3 labelColumn"> Devices </div>
+      <div class="col"> <a :href="GetDevicesForNetworkLink(currentNetwork.id)">{{
+              GetDeviceIDsInNetwork(currentNetwork, allDevices).length
+          }}</a> </div>
+    </div>
+    <div class="row"  v-if="currentNetwork.attachedInterfaces">
+      <div class="col-3 labelColumn"> ATTACHED INTERFACES </div>
+      <div class="col"> <json-viewer :value="thisNetworksInterfaces" :expand-depth="0" copyable sort class="debugInfoJSONViewers" /></div>
+    </div>
+    <div class="row"  v-if="currentNetwork.debugProps">
+      <div class="col-3 labelColumn"> DEBUG INFO </div>
+      <div class="col">  <json-viewer :value="currentNetwork.debugProps" :expand-depth="0" copyable sort
+            class="debugInfoJSONViewers" /></div>
+    </div>
+  </div>
+</template>
+
+<style scoped lang="scss">
+.list-items {
+  padding-right: 1em;
 }
 
-.detailsTable td {
-  padding-left: 5px;
-  padding-right: 10px;
+.labelColumn {
+  vertical-align: top;
 }
+
+.nowrap {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.smallBtnMargin {
+  margin-left: 1em;
+  margin-right: 1em;
+}
+
 .snapshot {
   font-style: italic;
+}
+
+.debugInfoJSONViewers {
+  margin-right: 2em;
 }
 </style>

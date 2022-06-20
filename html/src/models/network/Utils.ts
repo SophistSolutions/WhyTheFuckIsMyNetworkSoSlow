@@ -1,7 +1,6 @@
 import { IDevice, INetworkAttachmentInfo } from "@/models/device/IDevice";
 import { IGeographicLocation } from "@/models/network/IGeographicLocation";
 import { INetwork } from "@/models/network/INetwork";
-import { OperatingSystem } from "@/models/OperatingSystem";
 
 /*
  *  returns empty string if network address list is missing or empty
@@ -29,34 +28,34 @@ export function GetNetworkByID(networkID: string, networks: INetwork[]): INetwor
   return n;
 }
 
-export function GetNetworkByIDQuietly(networkID: string, networks: INetwork[]): INetwork | null {
+export function GetNetworkByIDQuietly(networkID: string, networks: INetwork[]): INetwork | undefined {
   let n: INetwork;
   for (n of networks) {
     if (networkID === n.id) {
       return n;
     }
   }
-  return null;
+  return undefined;
 }
 
-export function GetNetworkLink(n: INetwork | string): string | null {
+export function GetNetworkLink(n: INetwork | string): string | undefined {
   if (typeof n === "string" || n instanceof String) {
     return `/#/network/${n}`;
   }
   if ((n as INetwork).id) {
     return GetNetworkLink((n as INetwork).id);
   }
-  return null;
+  return undefined;
 }
 
-export function GetDevicesForNetworkLink(n: INetwork | string): string | null {
+export function GetDevicesForNetworkLink(n: INetwork | string): string | undefined {
   if (typeof n === "string" || n instanceof String) {
     return `/#/devices?selectedNetwork=${n}`;
   }
   if ((n as INetwork).id) {
     return GetDevicesForNetworkLink((n as INetwork).id);
   }
-  return null;
+  return undefined;
 }
 
 /**

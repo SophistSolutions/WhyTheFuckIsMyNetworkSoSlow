@@ -1,18 +1,16 @@
-import { IDevice, INetworkAttachmentInfo } from "@/models/device/IDevice";
-import { INetwork } from "@/models/network/INetwork";
 import { OperatingSystem } from "@/models/OperatingSystem";
 
 /*
  *  Return an array of image-url/label pairs, for the given operating system object
  */
 export function ComputeOSIconURLList(
-  t: OperatingSystem | null
+  t: OperatingSystem
 ): Array<{
-  url?: string | null;
+  url?: string;
   label: string;
 }> {
   const result: Array<{
-    url?: string | null;
+    url?: string;
     label: string;
   }> = [];
   if (t) {

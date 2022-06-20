@@ -1,34 +1,41 @@
-# wtfimnss-ui
+# WTF-UI (html-quasar)
 
-## Project setup
-```
+WTF user interface
+
+## Install the dependencies
+```bash
+yarn
+# or
 npm install
 ```
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
-
-### Compiles and minifies for production
-```
-npm run build
+### Start the app in development mode (hot-code reloading, error reporting, etc.)
+```bash
+quasar dev
 ```
 
-### Run your tests
-```
-npm run test
-```
 
-### Lints and fixes files
-```
+### Lint the files
+```bash
+yarn lint
+# or
 npm run lint
 ```
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
 
-### package-lock.json
-Since this file is different for different platforms, and different versions of node,
-and since this project is cross-platform, despite the advice in
-https://stackoverflow.com/questions/44206782/do-i-commit-the-package-lock-json-file-created-by-npm-5 I've decided it makes more sense to not check this file in.
+### Format the files
+```bash
+yarn format
+# or
+npm run format
+```
+
+
+
+### Build the app for production
+```bash
+quasar build
+```
+
+### Customize the configuration
+See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-config-js).

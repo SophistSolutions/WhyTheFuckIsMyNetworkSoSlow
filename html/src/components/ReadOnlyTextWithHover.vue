@@ -1,57 +1,31 @@
-<template>
-<span>
-    <span v-if="!link" :title="useTitle">{{ message }}</span>
-    <a v-if="link" :href=link :title="useTitle" >{{ message }}</a>
-</span>
-</template>
+<script setup lang="ts">
+import { onMounted, defineProps, watch } from 'vue';
 
-<script lang="ts">
-import {
-    Component,
-    Prop,
-    Vue,
-    Watch
-} from "vue-property-decorator";
-
-/*
- */
-@Component({
-    name: "ReadOnlyTextWithHover",
+const props = defineProps({
+    message: { type: String, required: true },
+    link: { type: String, required: false, default: undefined },
+    popupTitle: { type: String, required: false, default: undefined },
 })
-export default class ReadOnlyTextWithHover extends Vue {
-    @Prop({
-        required: true,
-    })
-    public message!: string;
 
-    @Prop({
-        required: false,
-        default: null
-    })
-    public link!: string | null;
-
-    @Prop({
-        required: false,
-        default: null
-    })
-    public popupTitle!: string | null;
-
-    private useTitle: string = "";
-
-    private created() {
-        this.onChange();
-    }
-
-    @Watch("message")
-    @Watch("popupTitle")
-    private onChange() {
-        this.useTitle = this.popupTitle == null ? this.message : this.popupTitle;
-        if (this.useTitle === null) {
-            this.useTitle = "";
-        }
+function onChange() {
+    useTitle = props.popupTitle == undefined ? props.message : props.popupTitle;
+    if (useTitle === undefined) {
+        useTitle = "";
     }
 }
+
+onMounted(() => {
+    onChange()
+})
+
+watch([() => props.message, () => props.popupTitle], onChange)
+
+var useTitle: string = "";
 </script>
 
-<style scoped lang="scss"></style>
+<template>
+    <span>
+        <span v-if="!link" :title="useTitle">{{ message }}</span>
+        <a v-if="link" :href=link :title="useTitle">{{ message }}</a>
+    </span>
 </template>
