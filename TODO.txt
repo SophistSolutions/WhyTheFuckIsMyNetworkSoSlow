@@ -1,3 +1,13 @@
+- bug with CDIR serialize/desierailze stuff
+  need updat eto stroila.
+
+  - then must UP data store version# (cuz of bad data written).
+
+   - then test again, and MAYBE ready to release
+
+   - UNCELAR if thats the problem on raspberrypi?
+
+
 - quasar work  
 
 	- I THINK LAST SIGNIFICANT FEATURE BEFORE AS GOOD AS Vue2
