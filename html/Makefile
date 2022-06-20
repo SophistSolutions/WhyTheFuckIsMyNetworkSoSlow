@@ -65,8 +65,7 @@ SRC_FILES2Link_ += Makefile
 SRC_FILES2Link_ += $(wildcard *.js *.ts)
 SRC_FILES2Link_ += $(wildcard *.json)
 SRC_FILES2Link_ += $(wildcard *.html)
-SRC_FILES2Link_ += .eslintignore .eslintrc.js .prettierrc .quasar
-
+SRC_FILES2Link_ += .eslintignore .eslintrc.js .prettierrc
 
 
 $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_)/TOOLS_CHECKED:
