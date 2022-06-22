@@ -7,8 +7,17 @@
 
    - UNCELAR if thats the problem on raspberrypi?
 
+   - TESTING
 
-- quasar work  
+
+- still have infinite rollup bug on raspberrypi
+
+....
+
+debug before I upload new build on rasperbrypi machine
+
+and also compare UIS (reboot raspi) to see diff between uis
+
 
 	- I THINK LAST SIGNIFICANT FEATURE BEFORE AS GOOD AS Vue2
 -- AT THIS POINT - MAYBE RELEASE AS I THINK WE HAVE EQUIV OF VUE2 code but more modern and good basis to move forward...
