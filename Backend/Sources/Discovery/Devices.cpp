@@ -1041,12 +1041,6 @@ namespace {
                             //DbgTrace (L"ignoring arped multicast address %s", Characters::ToString (i.ia).c_str ());
                             continue;
                         }
-#if qPlatform_Windows
-                        if (i.fHardwareAddress == L"ff-ff-ff-ff-ff-ff") {
-                            //DbgTrace (L"ignoring arped fake(broadcast) address %s", Characters::ToString (i.ia).c_str ());
-                            continue;
-                        }
-#endif
 
                         unsigned int retriedLockCount = 0;
                     again:
