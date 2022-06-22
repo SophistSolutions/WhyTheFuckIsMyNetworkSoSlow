@@ -1,15 +1,11 @@
-- bug with CDIR serialize/desierailze stuff
-  need updat eto stroila.
-
-  - then must UP data store version# (cuz of bad data written).
-
-   - then test again, and MAYBE ready to release
-
-   - UNCELAR if thats the problem on raspberrypi?
-
++ Rescan button is syncrhonous so update UI so you can tell when rescan completes
++ Search in devices page, and then hit clear button. FUNCTIONS properly but text for search string remains in control
+ so that part is buggy.
+ 
+ 
+ 
+ - retest to see if recent fixes corrected issues on rasbperry pi having too many bogus entries
    - TESTING
-
-
 - still have infinite rollup bug on raspberrypi
 
 ....
