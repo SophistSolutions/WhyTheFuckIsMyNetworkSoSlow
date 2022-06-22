@@ -165,9 +165,7 @@ Collection<NetworkInterface> Discovery::NetworkInterfacesMgr::CollectActiveNetwo
     Debug::TraceContextBumper ctx{L"Discovery::CollectActiveNetworkInterfaces"};
 #endif
     Require (sActive_);
-    Collection<NetworkInterface> results = CollectAllNetworkInterfaces (allowedStaleness).Where (
-            [] (const NetworkInterface& i) { return i.fType != Interface::Type::eLoopback and i.fStatus and i.fStatus->Contains (Interface::Status::eRunning); }
-        );
+    Collection<NetworkInterface> results = CollectAllNetworkInterfaces (allowedStaleness).Where ([] (const NetworkInterface& i) { return i.fType != Interface::Type::eLoopback and i.fStatus and i.fStatus->Contains (Interface::Status::eRunning); });
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
     DbgTrace (L"returns: %s", Characters::ToString (results).c_str ());
 #endif
