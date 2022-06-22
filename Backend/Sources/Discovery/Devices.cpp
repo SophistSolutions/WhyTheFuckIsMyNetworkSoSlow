@@ -1540,12 +1540,12 @@ namespace {
     };
 }
 
-void Discovery::DevicesMgr::InitiateReScan (const GUID& deviceID)
+void Discovery::DevicesMgr::ReScan (const GUID& deviceID)
 {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
-    Debug::TraceContextBumper ctx{L"Discovery::InitiateReScan"};
+    Debug::TraceContextBumper ctx{L"Discovery::ReScan"};
 #endif
-    Debug::TimingTrace        ttrc{L"Discovery::DevicesMgr::InitiateReScan"};
+    Debug::TimingTrace        ttrc{L"Discovery::DevicesMgr::ReScan"};
     static constexpr Activity kRescanning_Device_{L"rescanning device"sv};
     DeclareActivity           da{&kRescanning_Device_};
 

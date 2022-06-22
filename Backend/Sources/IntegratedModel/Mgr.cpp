@@ -692,14 +692,15 @@ optional<IntegratedModel::Device> IntegratedModel::Mgr::GetDevice (const GUID& i
 
 std::optional<GUID> IntegratedModel::Mgr::GetCorrespondingDynamicDeviceID (const GUID& id) const
 {
-    DeviceKeyedCollection_ dynamicDevices = DBAccess_::sDBDevices_.load ();
+    Set<GUID> dynamicDevices{Discovery::DevicesMgr::sThe.GetActiveDevices ().Select<GUID> ([] (const auto& d) { return d.fGUID; })};
     if (dynamicDevices.Contains (id)) {
         return id;
     }
     auto thisRolledUpDevice = RollupSummary_::GetRolledUpDevies ().fDevices.Lookup (id);
-    if (thisRolledUpDevice and thisRolledUpDevice->fAggregatesIrreversibly) {
-        // then find the dynamic device corresponding to this rollup
-        if (auto ff = thisRolledUpDevice->fAggregatesIrreversibly->First ([&] (const GUID& d) -> bool { return dynamicDevices.Contains (d); })) {
+    if (thisRolledUpDevice and thisRolledUpDevice->fAggregatesReversibly) {
+        // then find the dynamic device corresponding to this rollup, which will be (as of 2022-06-22) in the aggregates reversibly list
+        if (auto ff = thisRolledUpDevice->fAggregatesReversibly->First ([&] (const GUID& d) -> bool { return dynamicDevices.Contains (d); })) {
+            Assert (dynamicDevices.Contains (*ff));
             return *ff;
         }
         DbgTrace (L"Info: GetCorrespondingDynamicDeviceID found rollup device with no corresponding dynamic device (can happen if its a hisorical device not on network right now)");

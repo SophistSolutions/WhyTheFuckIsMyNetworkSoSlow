@@ -547,7 +547,7 @@ DataExchange::VariantValue WSImpl::Operation_Scan_FullRescan (const String& devi
     // @todo if the device has no dynamic device (cuz it hasn't been discovered - yet) - we don't force an attempt to rediscover
     // because Discovery::DevicesMgr doesn't have API for this. Maybe add one --LGP 2022-06-22
     if (auto useDevID = IntegratedModel::Mgr::sThe.GetCorrespondingDynamicDeviceID (useDeviceID)) {
-        Discovery::DevicesMgr::sThe.InitiateReScan (*useDevID);
+        Discovery::DevicesMgr::sThe.ReScan (*useDevID);
     }
     return x;
 }

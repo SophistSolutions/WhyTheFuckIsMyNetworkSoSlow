@@ -213,7 +213,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
          * 
          * For now - NYI
          */
-        nonvirtual void InitiateReScan (const GUID& deviceID);
+        nonvirtual void ReScan (const GUID& deviceID);
 
     public:
         /**
