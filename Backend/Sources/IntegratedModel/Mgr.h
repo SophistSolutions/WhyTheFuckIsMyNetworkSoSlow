@@ -54,8 +54,17 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel {
 
     public:
         /**
+         *  Note that 'id' could refer to a rolled-up device, or an aggregated device, and the appropriate type of Device object
+         *  will be returned. If the id doesn't refer to a device, this returns nullopt, not an exception.
          */
         nonvirtual std::optional<Device> GetDevice (const Common::GUID& id) const;
+
+    public:
+        /**
+         *  For the given id, which can be a rolledup or aggregated device id, return the corresponding
+         *  dynamic device id, if any. Can return nullopt if none found.
+         */
+        nonvirtual std::optional<Common::GUID> GetCorrespondingDynamicDeviceID (const Common::GUID& id) const;
 
     public:
         /**

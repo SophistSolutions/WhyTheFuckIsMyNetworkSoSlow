@@ -119,16 +119,20 @@ About WSImpl::GetAbout () const
     static const Sequence<ComponentInfo> kAPIServerComponents_{initializer_list<ComponentInfo>{
         ComponentInfo{L"Stroika"sv, Configuration::Version{kStroika_Version_FullVersion}.AsPrettyVersionString (), URI{"https://github.com/SophistSolutions/Stroika"}}
 #if qHasFeature_OpenSSL
-        , ComponentInfo{L"OpenSSL"sv, String::FromASCII (OPENSSL_VERSION_TEXT), URI{"https://www.openssl.org/"}}
+        ,
+        ComponentInfo{L"OpenSSL"sv, String::FromASCII (OPENSSL_VERSION_TEXT), URI{"https://www.openssl.org/"}}
 #endif
 #if qHasFeature_LibCurl
-        ,  ComponentInfo{L"libcurl"sv, String::FromASCII (LIBCURL_VERSION), URI{"https://curl.se/"}}
+        ,
+        ComponentInfo{L"libcurl"sv, String::FromASCII (LIBCURL_VERSION), URI{"https://curl.se/"}}
 #endif
 #if qHasFeature_boost && 0 /*NOT USING BOOST AS FAR AS I KNOW*/
-        , ComponentInfo{L"boost"sv, String::FromASCII (BOOST_LIB_VERSION)}
+        ,
+        ComponentInfo{L"boost"sv, String::FromASCII (BOOST_LIB_VERSION)}
 #endif
 #if qHasFeature_sqlite
-        , ComponentInfo{L"sqlite"sv, String::FromASCII (SQLITE_VERSION), URI{"https://www.sqlite.org"}}
+        ,
+        ComponentInfo{L"sqlite"sv, String::FromASCII (SQLITE_VERSION), URI{"https://www.sqlite.org"}}
 #endif
     }};
     auto               now = DateTime::Now ();
@@ -540,7 +544,11 @@ DataExchange::VariantValue WSImpl::Operation_Scan_FullRescan (const String& devi
     Debug::TraceContextBumper  ctx{L"WSImpl::Operation_Scan_FullRescan"};
     DataExchange::VariantValue x;
     GUID                       useDeviceID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{deviceID}; });
-    Discovery::DevicesMgr::sThe.InitiateReScan (useDeviceID);
+    // @todo if the device has no dynamic device (cuz it hasn't been discovered - yet) - we don't force an attempt to rediscover
+    // because Discovery::DevicesMgr doesn't have API for this. Maybe add one --LGP 2022-06-22
+    if (auto useDevID = IntegratedModel::Mgr::sThe.GetCorrespondingDynamicDeviceID (useDeviceID)) {
+        Discovery::DevicesMgr::sThe.InitiateReScan (*useDevID);
+    }
     return x;
 }
 

@@ -208,9 +208,7 @@ namespace {
         using IntegratedModel::NetworkAttachmentInfo;
         bool ShouldRollup_ (const Device& exisingRolledUpDevice, const Device& d2)
         {
-            if ((exisingRolledUpDevice.fAggregatesIrreversibly and exisingRolledUpDevice.fAggregatesIrreversibly->Contains (d2.fGUID))
-                or (exisingRolledUpDevice.fAggregatesIrreversibly and exisingRolledUpDevice.fAggregatesIrreversibly->Contains (d2.fGUID))
-                ) {
+            if ((exisingRolledUpDevice.fAggregatesIrreversibly and exisingRolledUpDevice.fAggregatesIrreversibly->Contains (d2.fGUID)) or (exisingRolledUpDevice.fAggregatesIrreversibly and exisingRolledUpDevice.fAggregatesIrreversibly->Contains (d2.fGUID))) {
                 // we retry the same 'discovered' networks repeatedly and re-roll them up.
                 // mostly this is handled by having the same hardware addresses, but sometimes (like for main discovered device)
                 // MAY not yet / always have network interface). And besides, this check cheaper/faster probably.
@@ -233,9 +231,7 @@ namespace {
         }
         bool ShouldRollup_ (const Network& exisingRolledUpNet, const Network& n2)
         {
-            if ((exisingRolledUpNet.fAggregatesIrreversibly and exisingRolledUpNet.fAggregatesIrreversibly->Contains (n2.fGUID))
-                or (exisingRolledUpNet.fAggregatesIrreversibly and exisingRolledUpNet.fAggregatesIrreversibly->Contains (n2.fGUID))
-                ) {
+            if ((exisingRolledUpNet.fAggregatesIrreversibly and exisingRolledUpNet.fAggregatesIrreversibly->Contains (n2.fGUID)) or (exisingRolledUpNet.fAggregatesIrreversibly and exisingRolledUpNet.fAggregatesIrreversibly->Contains (n2.fGUID))) {
                 // we retry the same 'discovered' networks repeatedly and re-roll them up
                 return true;
             }
@@ -333,7 +329,7 @@ namespace {
             mapper += IntegratedModel::Network::kMapper;
 
             // ONLY DO THIS FOR WHEN WRITING TO DB -- store GUIDs as BLOBs - at least for database interactions (cuz more efficient)
-            mapper.AddCommonType<Stroika::Foundation::Common::GUID> (kRepresentIDAs_);
+            mapper.AddCommonType<GUID> (kRepresentIDAs_);
 
             return mapper;
         }};
@@ -606,7 +602,6 @@ namespace {
             //      See https://stroika.atlassian.net/browse/STK-907 - about needing some new mechanism in Stroika for deadlock detection/avoidance.
             // sCache_.fHoldWriteLockDuringCacheFill = true; // so only one call to filler lambda at a time
             return sCache_.LookupValue (sCache_.Ago (allowedStaleness), [] () -> RolledUpNetworks {
-
                 /*
                  *  DEADLOCK NOTE
                  *      Since this can be called while rolling up DEVICES, its important that this code not call anything involving device rollup since
@@ -681,7 +676,7 @@ Sequence<IntegratedModel::Device> IntegratedModel::Mgr::GetDevices () const
     return Sequence<IntegratedModel::Device>{RollupSummary_::GetRolledUpDevies ().fDevices};
 }
 
-optional<IntegratedModel::Device> IntegratedModel::Mgr::GetDevice (const Common::GUID& id) const
+optional<IntegratedModel::Device> IntegratedModel::Mgr::GetDevice (const GUID& id) const
 {
     // first check rolled up networks, and then raw/unrolled up networks
     auto result = RollupSummary_::GetRolledUpDevies ().fDevices.Lookup (id);
@@ -695,6 +690,23 @@ optional<IntegratedModel::Device> IntegratedModel::Mgr::GetDevice (const Common:
     return result;
 }
 
+std::optional<GUID> IntegratedModel::Mgr::GetCorrespondingDynamicDeviceID (const GUID& id) const
+{
+    DeviceKeyedCollection_ dynamicDevices = DBAccess_::sDBDevices_.load ();
+    if (dynamicDevices.Contains (id)) {
+        return id;
+    }
+    auto thisRolledUpDevice = RollupSummary_::GetRolledUpDevies ().fDevices.Lookup (id);
+    if (thisRolledUpDevice and thisRolledUpDevice->fAggregatesIrreversibly) {
+        // then find the dynamic device corresponding to this rollup
+        if (auto ff = thisRolledUpDevice->fAggregatesIrreversibly->First ([&] (const GUID& d) -> bool { return dynamicDevices.Contains (d); })) {
+            return *ff;
+        }
+        DbgTrace (L"Info: GetCorrespondingDynamicDeviceID found rollup device with no corresponding dynamic device (can happen if its a hisorical device not on network right now)");
+    }
+    return nullopt;
+}
+
 Sequence<IntegratedModel::Network> IntegratedModel::Mgr::GetNetworks () const
 {
     Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"IntegratedModel::Mgr::GetNetworks")};
@@ -702,7 +714,7 @@ Sequence<IntegratedModel::Network> IntegratedModel::Mgr::GetNetworks () const
     return Sequence<IntegratedModel::Network>{RollupSummary_::GetRolledUpNetworks ().fNetworks};
 }
 
-optional<IntegratedModel::Network> IntegratedModel::Mgr::GetNetwork (const Common::GUID& id) const
+optional<IntegratedModel::Network> IntegratedModel::Mgr::GetNetwork (const GUID& id) const
 {
     // first check rolled up networks, and then raw/unrolled up networks
     auto result = RollupSummary_::GetRolledUpNetworks ().fNetworks.Lookup (id);
@@ -732,7 +744,7 @@ Collection<IntegratedModel::NetworkInterface> IntegratedModel::Mgr::GetNetworkIn
     return result;
 }
 
-optional<IntegratedModel::NetworkInterface> IntegratedModel::Mgr::GetNetworkInterface (const Common::GUID& id) const
+optional<IntegratedModel::NetworkInterface> IntegratedModel::Mgr::GetNetworkInterface (const GUID& id) const
 {
     for (const auto& i : GetNetworkInterfaces ()) {
         if (i.fGUID == id) {
