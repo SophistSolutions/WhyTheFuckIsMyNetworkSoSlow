@@ -101,8 +101,8 @@ namespace {
             });
         }
         catch (...) {
-            sCache_.Add (inetAddr, nullopt);    // negative cache for kCacheTTL_
-            return nullopt; // if DNS is failing, just dont do this match, dont abandon all data collection
+            sCache_.Add (inetAddr, nullopt); // negative cache for kCacheTTL_
+            return nullopt;                  // if DNS is failing, just dont do this match, dont abandon all data collection
         }
     }
     Set<InternetAddress> DNSLookup_ (const String& hostOrIPAddress)
@@ -1066,7 +1066,7 @@ namespace {
                                 tmp.fGUID = GUID::GenerateNew ();
 #if qDebug
                                 tmp.fDebugProps.Add (L"Found-By-MyNeighborDiscoverer_-At", DateTime::Now ());
-                                tmp.fDebugProps.Add (L"Found-By-MyNeighborDiscoverer_-I", Characters::ToString (i));    // to debug why sometimes we add but has no network info
+                                tmp.fDebugProps.Add (L"Found-By-MyNeighborDiscoverer_-I", Characters::ToString (i)); // to debug why sometimes we add but has no network info
 #endif
                                 return tmp;
                             }
