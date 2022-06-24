@@ -1,23 +1,24 @@
++ Review UI on raspberrypi and hercules, and make a few more UI tweaks so new stuff strictly better
+
+	- I think havinv the fixed sizes for the main page (responsibve) the way we had with vue2 app
+	  is better (more cenbtered page but full width toolbar)
+	  better spacing in old ui
+	  in some cases, two row headers (local addresses) in devices tab allows better layout. Anyhow
+	  tweak col widths
+
+	  and force spacing bwteeen columns - not overlapping
+
 + Rescan button is syncrhonous so update UI so you can tell when rescan completes
-+ Search in devices page, and then hit clear button. FUNCTIONS properly but text for search string remains in control
- so that part is buggy.
- 
- 
  
  - retest to see if recent fixes corrected issues on rasbperry pi having too many bogus entries
    - TESTING
 - still have infinite rollup bug on raspberrypi
 
-....
-
-debug before I upload new build on rasperbrypi machine
-
-and also compare UIS (reboot raspi) to see diff between uis
-
 
 	- I THINK LAST SIGNIFICANT FEATURE BEFORE AS GOOD AS Vue2
 -- AT THIS POINT - MAYBE RELEASE AS I THINK WE HAVE EQUIV OF VUE2 code but more modern and good basis to move forward...
 
+-------------
 
 = Have filters and customization sections in devices page shrinkable, and little button in top-right of table to pop it open to allow customization.
   And probably have a way to make more sections (and delete sections) and maybe revert to default (storing thise prefs in local-storage ui-prefs 
