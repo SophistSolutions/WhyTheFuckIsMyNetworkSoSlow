@@ -39,7 +39,6 @@ defineComponent({
 });
 
 let polling: undefined | NodeJS.Timeout;
-var isRescanning: boolean = false;
 
 onMounted(() => {
   // first time check immediately, then more gradually for updates
@@ -161,23 +160,8 @@ let thisNetworksInterfaces = computed<INetworkInterface[]>(
 </template>
 
 <style scoped lang="scss">
-.list-items {
-  padding-right: 1em;
-}
-
 .labelColumn {
   vertical-align: top;
-}
-
-.nowrap {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.smallBtnMargin {
-  margin-left: 1em;
-  margin-right: 1em;
 }
 
 .snapshot {
