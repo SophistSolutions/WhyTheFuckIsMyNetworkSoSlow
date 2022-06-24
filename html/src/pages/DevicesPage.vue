@@ -578,5 +578,4 @@ const pagination = ref({
 .itemList {
   margin-top: 10px;
 }
-
 </style>
