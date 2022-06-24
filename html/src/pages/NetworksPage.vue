@@ -370,7 +370,7 @@ const pagination = ref({
       <Search v-model:searchFor="search" />
       <FilterSummaryMessage dense :filtered="filtered" :nItemsSelected="filteredExtendedNetworks.length"
         :nTotalItems="allNetworks?.length" itemsName="networks" />
-      <ClearButton v-if="filtered" v-on:click="clearFilter" />
+      <ClearButton v-if="filtered" @click="clearFilter" />
     </q-toolbar>
     <q-toolbar class="justify-between secondary-toolbar">
       <q-select v-model="pageUserOptions.VisibleColumns" multiple dense options-dense :display-value="$q.lang.table.columns" emit-value
