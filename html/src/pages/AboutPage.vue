@@ -8,7 +8,7 @@ import { VUE_VERSION } from '../config/config';
 import { IAbout, IComponent } from "../models/IAbout";
 import { useNetStateStore } from '../stores/Net-State-store'
 
-let polling:  undefined | NodeJS.Timeout;
+let polling: undefined | NodeJS.Timeout;
 const $q = useQuasar()
 
 const kUIComponents: IComponent[] = [
@@ -38,17 +38,16 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <q-page class="col q-pa-md q-gutter-md" v-if="aboutData">
+  <q-page class="row q-pa-md justify-center  " v-if="aboutData">
 
     <div class="row text-h5">
-      About 'Why The Fuck is My Network So Slow'
+      <div class="col">
+        About 'Why The Fuck is My Network So Slow'
+      </div>
     </div>
 
     <!--App Description Overview-->
-    <q-card>
-      <q-card-section>
-        (vision, not all implemented)
-      </q-card-section>
+    <q-card class="pageCard col-11 ">
       <q-card-section>
         Why The Fuck is My Network So Slow monitors your local network, and tracks over time what devices are on the
         network, and what traffic those devices generate. It also monitors the 'speed' of your various network links.
@@ -59,10 +58,13 @@ onUnmounted(() => {
         Multiple WTF instances can be setup on different machines on a network to share information with each other, to
         help get a better multi-dimensional (and sometimes more consitent) view of your network.
       </q-card-section>
+      <q-card-section style="margin-left: 1em; padding: 0; padding-bottom: 0; font-style: italic; font-weight: bold;">
+        (vision, not all implemented)
+      </q-card-section>
     </q-card>
 
     <!--App Stats-->
-    <q-card>
+    <q-card class="pageCard col-11">
       <q-card-section>
         <div class="row">
           <div class="col-2">WTF App</div>
@@ -124,7 +126,7 @@ Units 1=1 logical core">
     </q-card>
 
     <!--App Running on-->
-    <q-card>
+    <q-card class="pageCard col-11">
       <q-card-section>
         <div>
           <div class="row" v-if="aboutData">
@@ -160,7 +162,7 @@ Units 1=1 logical core">
     </q-card>
 
     <!--Written by-->
-    <q-card>
+    <q-card class="pageCard col-11">
       <q-card-section>
         <div class="row">
           <div class="col-2">
@@ -192,7 +194,7 @@ Units 1=1 logical core">
     </q-card>
 
     <!--Report issues at-->
-    <q-card>
+    <q-card class="pageCard q-mt-md col-11">
       <q-card-section>
         <div class="row">
           <div class="col-2">
@@ -207,3 +209,14 @@ Units 1=1 logical core">
     </q-card>
   </q-page>
 </template>
+
+<style lang="scss" scoped>
+.pageCard {
+  margin-bottom: 1.2em;
+}
+.q-card__section {
+  padding-top: 8px;
+  padding-bottom: 8px;
+
+}
+</style>

@@ -462,15 +462,15 @@ const pagination = ref({
         style="min-width: 150px" label="Shown" dark :options-dark="false" />
     </q-toolbar>
   </Teleport>
-  <q-page class="col q-pa-md q-gutter-md">
-    <q-card class="listCard">
-      <q-card-section>
+  <q-page padding class="justify-center row">
+    <q-card class="pageCard listCard col-11">
+      <q-card-section style="border: none">
         <div class="row text-h5">
           Devices
         </div>
-        <q-table dense table-class="itemList shadow-1" :rows="filteredExtendedDevices" :columns="tableHeaders"
+        <q-table dense table-class="itemList " :rows="filteredExtendedDevices" :columns="tableHeaders"
           separator="none" row-key="id" :visible-columns="pageUserOptions.VisibleColumns" :pagination.sync="pagination"
-          hide-bottom :loading="loading">
+          hide-bottom flat :loading="loading">
           <template v-slot:body="props">
             <q-tr :props="props" @click="rowClicked(props)">
               <q-td :props="props" key="name">
@@ -532,7 +532,7 @@ const pagination = ref({
   </q-page>
 </template>
 
-<style lang="scss" >
+<style lang="scss">
 // Based on .q-layout__section--marginal
 .secondary-toolbar {
   background-color: var(--q-primary);

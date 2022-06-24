@@ -58,26 +58,14 @@ let device: ComputedRef<IDevice> = computed(() => {
 </script>
 
 <template>
-  <q-page>
-    <q-card>
+  <q-page padding class=" justify-center row">
+    <q-card class="pageCard col-11">
       <q-card-section class="text-subtitle2">
         Device {{ device == null ? "loading..." : '"' + device.name + '"' }}
       </q-card-section>
-      <q-card-section class="detailsSection">
+      <q-card-section>
         <DeviceDetails v-if="device" :deviceId="device.id" />
       </q-card-section>
     </q-card>
   </q-page>
 </template>
-
-<style lang="scss" scoped>
-.detailsSection {
-  margin: 0em 2em;
-  box-shadow: 4px 4px 8px 4px rgba(0, 0, 0, 0.2);
-  transition: 0.3s;
-}
-
-.detailsSection:hover {
-  box-shadow: 4px 4px 8px 4px rgba(0, 0, 0, 0.2);
-}
-</style>

@@ -37,10 +37,10 @@ onUnmounted(() => {
   clearInterval(polling);
 })
 
-let allNetworks : ComputedRef<INetwork[]> = computed(() => store.getAvailableNetworks);
-let shownNetworks : ComputedRef<INetwork[]> = computed(() => {
-   const result: INetwork[] = [];
-   // @todo - probaly just include 'active' and 'favorite' networks here (as it hints in UI)
+let allNetworks: ComputedRef<INetwork[]> = computed(() => store.getAvailableNetworks);
+let shownNetworks: ComputedRef<INetwork[]> = computed(() => {
+  const result: INetwork[] = [];
+  // @todo - probaly just include 'active' and 'favorite' networks here (as it hints in UI)
   allNetworks.value.forEach((i) => {
     if (i.internetServiceProvider != null || i.geographicLocation != null) {
       result.push(i);
@@ -60,7 +60,7 @@ interface IDisplayedNetwork {
   originalNetwork: INetwork;
 }
 
-let shownNetworksAsDisplayed : ComputedRef<IDisplayedNetwork[]> = computed(() => {
+let shownNetworksAsDisplayed: ComputedRef<IDisplayedNetwork[]> = computed(() => {
   const result: IDisplayedNetwork[] = [];
   shownNetworks.value.forEach((i: INetwork) => {
     result.push({
@@ -69,8 +69,8 @@ let shownNetworksAsDisplayed : ComputedRef<IDisplayedNetwork[]> = computed(() =>
       link: GetNetworkLink(i),
       active: "true",
       internetInfo:
-        (i.gateways ? i.gateways.join(", "): "") +
-        (i.internetServiceProvider?" (" + i.internetServiceProvider.name + ")": " "),
+        (i.gateways ? i.gateways.join(", ") : "") +
+        (i.internetServiceProvider ? " (" + i.internetServiceProvider.name + ")" : " "),
       status: "healthy",
       originalNetwork: i
     });
@@ -87,36 +87,41 @@ let shownNetworksAsDisplayed : ComputedRef<IDisplayedNetwork[]> = computed(() =>
   return result;
 });
 
-let allDevices : ComputedRef<IDevice[]> = computed(() => store.getDevices);
+let allDevices: ComputedRef<IDevice[]> = computed(() => store.getDevices);
 </script>
 
 <template>
-  <q-page class="col q-pa-md q-gutter-md">
+  <q-page padding>
 
-    <div class="row text-h5">
-      Why The Fuck is My Network So Slow?
+    <div class="row text-h4 text-center">
+      <div class="col">
+        Why The Fuck is My Network So Slow?
+      </div>
     </div>
 
-    <q-card>
-      <q-card-section>
-        <div class="row">
-          <div class="col">
-            <router-link to="/networks">Networks</router-link> (active + favorites)
-            <ul>
-              <li v-for="network in shownNetworksAsDisplayed" :key="network.id">
-                <ReadOnlyTextWithHover :message="network.name" :link="network.link" />
-                <div v-if="network.internetInfo">
-                  : {{ network.internetInfo }}
-                </div>
-                <div>
-                  : {{ GetDeviceIDsInNetwork(network.originalNetwork, allDevices).length }}
-                  <router-link to="/devices">devices</router-link>, operating normally
-                </div>
-              </li>
-            </ul>
+    <div class="justify-center row">
+      <q-card class="col-11 pageCard">
+        <q-card-section>
+          <div class="row">
+            <div class="col">
+              <router-link to="/networks">Networks</router-link> (active + favorites)
+              <ul>
+                <li v-for="network in shownNetworksAsDisplayed" :key="network.id">
+                  <ReadOnlyTextWithHover :message="network.name" :link="network.link" />
+                  <div v-if="network.internetInfo">
+                    : {{ network.internetInfo }}
+                  </div>
+                  <div>
+                    : {{ GetDeviceIDsInNetwork(network.originalNetwork, allDevices).length }}
+                    <router-link to="/devices">devices</router-link>, operating normally
+                  </div>
+                </li>
+              </ul>
+            </div>
           </div>
-        </div>
-      </q-card-section>
-    </q-card>
+        </q-card-section>
+      </q-card>
+    </div>
+
   </q-page>
 </template>

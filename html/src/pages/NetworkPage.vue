@@ -48,8 +48,8 @@ let network: ComputedRef<INetwork> = computed(() => {
 </script>
 
 <template>
-  <q-page>
-    <q-card>
+  <q-page padding class=" justify-center row">
+    <q-card class="pageCard col-11">
       <q-card-section class="text-subtitle2" style="margin: 0 0 0 0">
         Network {{ network == null ? "loading..." : '"' + GetNetworkName(network) + '"' }}
       </q-card-section>

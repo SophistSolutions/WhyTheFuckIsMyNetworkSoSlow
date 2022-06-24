@@ -43,13 +43,13 @@ var expanded: any[] = [];
 // COULD POSSIBLY also store stuff like selected filter (search string etc) - but no need for now....
 const pageUserOptions = useStorage('Networks-Page-User-Options', {
   VisibleColumns: ['name',
-  'CIDRs',
-  'active',
-  'status',
-  'location',
-  'internetInfo',
-  'devices',
-  'expand']
+    'CIDRs',
+    'active',
+    'status',
+    'location',
+    'internetInfo',
+    'devices',
+    'expand']
 })
 
 
@@ -373,20 +373,20 @@ const pagination = ref({
       <ClearButton v-if="filtered" @click="clearFilter" />
     </q-toolbar>
     <q-toolbar class="justify-between secondary-toolbar">
-      <q-select v-model="pageUserOptions.VisibleColumns" multiple dense options-dense :display-value="$q.lang.table.columns" emit-value
-        map-options :options="headers" option-value="name" style="min-width: 150px" label="Shown" dark
-        :options-dark="false" />
+      <q-select v-model="pageUserOptions.VisibleColumns" multiple dense options-dense
+        :display-value="$q.lang.table.columns" emit-value map-options :options="headers" option-value="name"
+        style="min-width: 150px" label="Shown" dark :options-dark="false" />
     </q-toolbar>
   </Teleport>
-  <q-page class="col q-pa-md q-gutter-md">
-    <q-card class="listCard">
+  <q-page padding class="justify-center row">
+    <q-card class="pageCard listCard col-11">
       <q-card-section>
         <div class="row text-h5">
           Networks
         </div>
-        <q-table table-class="itemList shadow-1" :rows="filteredExtendedNetworks" :columns="headers" row-key="id" dense
+        <q-table table-class="itemList" :rows="filteredExtendedNetworks" :columns="headers" row-key="id" dense
           separator="none" :visible-columns="pageUserOptions.VisibleColumns" :pagination.sync="pagination" hide-bottom
-          :loading="loading">
+          :loading="loading" flat>
           <template v-slot:body="props">
             <q-tr :props="props" @click="rowClicked(props)">
               <q-td :props="props" key="name">
@@ -466,11 +466,5 @@ const pagination = ref({
 
 .itemList {
   margin-top: 10px;
-}
-
-.extrastuff {
-  padding: 0 12px;
-  border: 4px red;
-  // background-color: black;
 }
 </style>
