@@ -7,8 +7,7 @@ const props = defineProps({
     popupTitle: { type: String, required: false, default: null },
 })
 
-function onChange() {
-    
+function onChange_() {
     useTitle.value = props.popupTitle == null ? props.message : props.popupTitle;
     if (useTitle.value === null) {
         useTitle.value = "";
@@ -16,10 +15,10 @@ function onChange() {
 }
 
 onMounted(() => {
-    onChange()
+    onChange_()
 })
 
-watch([() => props.message, () => props.popupTitle], onChange)
+watch([() => props.message, () => props.popupTitle], onChange_)
 
 var useTitle: Ref<string> = ref ("");
 </script>
