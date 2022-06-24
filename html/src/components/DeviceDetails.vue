@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, defineComponent, onMounted, onUnmounted, ref, computed } from 'vue';
+import { defineProps, defineComponent, onMounted, onUnmounted, Ref, ref, computed } from 'vue';
 import moment from 'moment';
 import JsonViewer from 'vue-json-viewer';
 
@@ -30,7 +30,7 @@ defineComponent({
 });
 
 let polling: undefined | NodeJS.Timeout;
-var isRescanning: boolean = false;
+var isRescanning: Ref<boolean> = ref (false);
 
 function localNetworkAddresses(): string[] {
   const addresses: string[] = [];
@@ -66,12 +66,12 @@ onUnmounted(() => {
 })
 
 async function rescanSelectedDevice(): Promise<void> {
-  isRescanning = true;
+  isRescanning.value = true;
   try {
     await rescanDevice(props.deviceId);
     store.fetchDevice(props.deviceId);
   } finally {
-    isRescanning = false;
+    isRescanning.value = false;
   }
 }
 
@@ -208,7 +208,7 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
       <div class="col-3 labelColumn"> Open Ports </div>
       <div class="col">
         <q-btn class="smallBtnMargin" elevation="2" dense size="sm" @click="rescanSelectedDevice"
-          :disabled="isRescanning"> Rescan </q-btn>
+          :disabled="isRescanning"> {{isRescanning? "**SCANNING**" : "Rescan"}} </q-btn>
         <span v-if="currentDevice.openPorts">{{ currentDevice.openPorts.join(", ") }}</span>
       </div>
     </div>
