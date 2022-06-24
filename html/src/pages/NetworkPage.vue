@@ -54,20 +54,8 @@ let network: ComputedRef<INetwork> = computed(() => {
         Network {{ network == null ? "loading..." : '"' + GetNetworkName(network) + '"' }}
       </q-card-section>
       <q-card-section style="margin-top: 0">
-        <NetworkDetails class="detailsSection" :networkId="network.id" v-if="network" />
+        <NetworkDetails :networkId="network.id" v-if="network" />
       </q-card-section>
     </q-card>
   </q-page>
 </template>
-
-<style lang="scss" scoped>
-.detailsSection {
-  margin: 0em 2em;
-  box-shadow: 4px 4px 8px 4px rgba(0, 0, 0, 0.2);
-  transition: 0.3s;
-}
-
-.detailsSection:hover {
-  box-shadow: 4px 4px 8px 4px rgba(0, 0, 0, 0.2);
-}
-</style>
