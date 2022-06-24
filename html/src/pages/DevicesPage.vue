@@ -173,6 +173,7 @@ const tableHeaders = ref([
     classes: "nowrap",
     align: "left",
     headerStyle: 'width: 20%; ',
+    headerClasses  :  "nowrap cellNoScribble",
   },
   {
     name: "type",
@@ -181,23 +182,27 @@ const tableHeaders = ref([
     sortable: true,
     classes: "nowrap",
     align: "left",
+    headerClasses  :  "nowrap cellNoScribble",
     headerStyle: 'width: 5em',
   },
   {
     name: "lastSeenAt",
     field: "lastSeenAt",
     label: "Last Seen",
-    classes: "nowrap",
+    classes: "nowrap cellNoScribble",
     sortable: true,
     align: "left",
+    headerStyle: 'width: 9em; ',
+    headerClasses :  "nowrap cellNoScribble",
   },
   {
     name: "manufacturerSummary",
     field: "manufacturerSummary",
     label: "Manufacturer",
-    classes: "nowrap",
+    classes: "nowrap cellNoScribble",
     sortable: true,
     align: "left",
+    headerClasses :  "nowrap cellNoScribble",
     headerStyle: 'width: 18%; ',
   },
   {
@@ -207,6 +212,7 @@ const tableHeaders = ref([
     classes: "nowrap",
     sortable: true,
     align: "left",
+    headerClasses  :  "nowrap cellNoScribble",
     headerStyle: 'width: 5em',
   },
   // when shown services issues vue error - not clear why...
@@ -218,6 +224,7 @@ const tableHeaders = ref([
     sortable: true,
     align: "center",
     headerStyle: 'width: 7em',
+    headerClasses  :  "nowrap cellNoScribble",
   },
   {
     name: "localAddresses",
@@ -226,6 +233,7 @@ const tableHeaders = ref([
     classes: "nowrap",
     sortable: true,
     align: "left",
+    headerClasses  :  "nowrap cellNoScribble",
     headerStyle: 'width: 14%; ',
   },
   {
@@ -235,12 +243,14 @@ const tableHeaders = ref([
     classes: "nowrap",
     align: "left",
     sortable: true,
+    headerClasses  :  "nowrap cellNoScribble",
     headerStyle: 'width: 14%; ',
   },
   {
     name: 'expand',
     label: "Details",
     align: 'center',
+    headerClasses  :  "nowrap cellNoScribble",
     headerStyle: 'width: 6em; ',
   },
 ]);
@@ -561,13 +571,12 @@ const pagination = ref({
   margin-left: 10px;
 }
 
+.cellNoScribble {
+  text-overflow: ellipsis;
+}
+
 .itemList {
   margin-top: 10px;
 }
 
-.extrastuff {
-  padding: 0 12px;
-  border: 4px red;
-  // background-color: black;
-}
 </style>
