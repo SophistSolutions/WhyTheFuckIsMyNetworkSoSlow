@@ -116,24 +116,24 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
     <Link2DetailsPage :link="'/#/device/' + currentDevice.id" v-if="props.includeLinkToDetailsPage" />
 
     <div class="row">
-      <div class="col-3 labelColumn"> Name </div>
+      <div class="col-3">Name</div>
       <div class="col"> {{ currentDevice.name }} </div>
     </div>
     <div class="row">
-      <div class="col-3 labelColumn"> ID </div>
+      <div class="col-3">ID</div>
       <div class="col"> {{ currentDevice.id }} <span class="snapshot"
           v-if="currentDevice.historicalSnapshot == true">{snapshot}</span></div>
     </div>
     <div class="row" v-if="currentDevice.type">
-      <div class="col-3 labelColumn"> Types </div>
+      <div class="col-3">Types</div>
       <div class="col"> {{ currentDevice.type.join(", ") }}</div>
     </div>
     <div class="row" v-if="currentDevice.icon">
-      <div class="col-3 labelColumn"> Icon </div>
+      <div class="col-3">Icon</div>
       <div class="col"> <img :src="currentDevice.icon" width="24" height="24" /></div>
     </div>
     <div class="row" v-if="currentDevice.manufacturer">
-      <div class="col-3 labelColumn"> Manufacturer </div>
+      <div class="col-3">Manufacturer</div>
       <div class="col">
         <span v-if="currentDevice.manufacturer.shortName || currentDevice.manufacturer.fullName">{{
             currentDevice.manufacturer.shortName || currentDevice.manufacturer.fullName
@@ -148,15 +148,15 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
       </div>
     </div>
     <div class="row" v-if="currentDevice.operatingSystem">
-      <div class="col-3 labelColumn"> OS </div>
+      <div class="col-3">OS</div>
       <div class="col"> {{ currentDevice.operatingSystem.fullVersionedName }}</div>
     </div>
     <div class="row" v-if="currentDevice.lastSeenAt">
-      <div class="col-3 labelColumn"> Last Seen </div>
+      <div class="col-3">Last Seen</div>
       <div class="col"> {{ moment(currentDevice.lastSeenAt).fromNow() }}</div>
     </div>
-    <div class="row">
-      <div class="col-3 labelColumn"> Networks </div>
+    <div class="row" v-if="currentDevice.attachedNetworks && currentDeviceDetails">
+      <div class="col-3">Networks</div>
       <div class="col">
         <div class="row" v-for="attachedNetID in Object.keys(currentDevice.attachedNetworks)"
           v-bind:key="attachedNetID">
@@ -188,7 +188,7 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
       </div>
     </div>
     <div class="row">
-      <div class="col-3 labelColumn"> Services </div>
+      <div class="col-3">Services</div>
       <div class="col">
         <div class="row" v-for="svc in GetServices(currentDevice)" v-bind:key="svc.name">
           <div class="col-1">
@@ -205,7 +205,7 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
       </div>
     </div>
     <div class="row">
-      <div class="col-3 labelColumn"> Open Ports </div>
+      <div class="col-3">Open Ports</div>
       <div class="col">
         <q-btn class="smallBtnMargin" elevation="2" dense size="sm" @click="rescanSelectedDevice"
           :disabled="isRescanning"> {{isRescanning? "**SCANNING**" : "Rescan"}} </q-btn>
@@ -213,14 +213,14 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
       </div>
     </div>
     <div class="row" v-if="currentDevice.attachedNetworkInterfaces">
-      <div class="col-3 labelColumn"> ATTACHED NETWORK INTERFACES </div>
+      <div class="col-3">ATTACHED NETWORK INTERFACES</div>
       <div class="col">
         <json-viewer :value="currentDevice.attachedNetworkInterfaces" :expand-depth="0" copyable sort
           class="debugInfoJSONViewers" />
       </div>
     </div>
     <div class="row" v-if="currentDevice.aggregatesReversibly && currentDevice.aggregatesReversibly.length">
-      <div class="col-3 labelColumn"> Aggregates Reversibly </div>
+      <div class="col-3">Aggregates Reversibly</div>
       <div class="col">
         <span v-for="aggregate in currentDevice.aggregatesReversibly" v-bind:key="aggregate">
           <ReadOnlyTextWithHover :message="aggregate" :link="'/#/device/' + aggregate" />;
@@ -228,7 +228,7 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
       </div>
     </div>
     <div class="row" v-if="currentDevice.aggregatesIrreversibly && currentDevice.aggregatesIrreversibly.length">
-      <div class="col-3 labelColumn"> Aggregates Irreversibly </div>
+      <div class="col-3">Aggregates Irreversibly</div>
       <div class="col">
         <span v-for="aggregate in currentDevice.aggregatesIrreversibly" v-bind:key="aggregate">
           <ReadOnlyTextWithHover :message="aggregate" />;
@@ -236,10 +236,8 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
       </div>
     </div>
     <div class="row" v-if="currentDevice.debugProps">
-      <div class="col-3 labelColumn"> DEBUG INFO </div>
-      <div class="col">
-        <json-viewer :value="currentDevice.debugProps" :expand-depth="0" copyable sort class="debugInfoJSONViewers" />
-      </div>
+      <div class="col-3">DEBUG INFO</div>
+      <div class="col"><json-viewer :value="currentDevice.debugProps" :expand-depth="0" copyable sort class="debugInfoJSONViewers" /></div>
     </div>
   </div>
 </template>
@@ -247,10 +245,6 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
 <style scoped lang="scss">
 .list-items {
   padding-right: 1em;
-}
-
-.labelColumn {
-  vertical-align: top;
 }
 
 .nowrap {
