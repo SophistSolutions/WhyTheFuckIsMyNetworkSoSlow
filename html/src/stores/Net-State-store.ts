@@ -28,7 +28,7 @@ interface ILoading {
 
 /// DRAFT new WTF app data store  - maybe should be called cached-network-state-store?
 
-export const useNetStateStore = defineStore('Net-State-Store-Cache', {
+export const useNetStateStore = defineStore('Net-State-Store', {
   state: () => ({
     about: undefined as IAbout | undefined,
     rolledUpAvailableNetworkIDs: [] as string[],
