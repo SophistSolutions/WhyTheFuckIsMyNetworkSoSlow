@@ -144,7 +144,7 @@ Units 1=1 logical core">
                     <td title="How long has the machine (hosting the service) been running">Uptime</td>
                     <td>{{ moment.duration(aboutData.serverInfo.currentMachine.machineUptime).humanize() }}</td>
                   </tr>
-                  <tr v-if="aboutData.serverInfo.currentMachine.runQLength">
+                  <tr v-if="aboutData.serverInfo.currentMachine.runQLength != null">
                     <td
                       title="How many threads in each (logical) processors Run-Q on average. 0 means no use, 1 means ALL cores fully used with no Q, and 2 means all cores fully utilized and each core with a Q length of 1">
                       Run-Q</td>
