@@ -1,12 +1,8 @@
-
 NETWORKS page - when I expando - Aggreageates reviersably too wide, and creates scrollbar.
 Thsis shoudl wrap! ANd anyhow should be stopped from overflow
----
-In devices page refactoring constructor for table columns c
 ----
 Why 'Run-Q' not showing on raspberrypi machine (about page) - maybe cuz reported as zero? Yes, hide if null/missing
 not if zero (happens on raspi cuz not mcuh going on there)
-
 -----
 
 + try to use scoped - but in some cases breaks things... (CSS SCOPED)

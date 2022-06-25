@@ -129,7 +129,7 @@ const selectableNetworks = computed<object[]>(
 let selectedNetworkCurrent: Ref<string | null> = ref(null);
 
 
-const selectableTimeframes = ref([
+const selectableTimeframes = ref<object[]>([
   {
     label: "Ever",
     value: null,
@@ -164,95 +164,67 @@ function rowClicked(props: object) {
 
 let allAvailableNetworks: ComputedRef<INetwork[]> = computed(() => store.getAvailableNetworks);
 
+function mkTblHdr_(o: {name: string, field?: string, classes?: string, align?: string, sortable?: boolean, headerClasses?: string, label: string, headerStyle?:string}) {
+  return {
+    ...o,
+    field: o.field ?? o.name,
+    classes: o.classes ?? "nowrap",
+    align: o.align ?? "left",
+    sortable: o.sortable === undefined ? true : o.sortable,
+    headerClasses: o.headerClasses ?? "nowrap cellNoScribble"
+  };
+}
 const tableHeaders = ref([
-  {
+  mkTblHdr_({
     name: 'name',
-    field: "name",
     label: "Name",
-    sortable: true,
-    classes: "nowrap",
-    align: "left",
     headerStyle: 'width: 20%; ',
-    headerClasses  :  "nowrap cellNoScribble",
-  },
-  {
+  }),
+  mkTblHdr_({
     name: "type",
-    field: "type",
     label: "Type",
-    sortable: true,
-    classes: "nowrap",
-    align: "left",
-    headerClasses  :  "nowrap cellNoScribble",
     headerStyle: 'width: 5em',
-  },
-  {
+  }),
+  mkTblHdr_({
     name: "lastSeenAt",
-    field: "lastSeenAt",
     label: "Last Seen",
     classes: "nowrap cellNoScribble",
-    sortable: true,
-    align: "left",
     headerStyle: 'width: 9em; ',
-    headerClasses :  "nowrap cellNoScribble",
-  },
-  {
+  }),
+  mkTblHdr_({
     name: "manufacturerSummary",
-    field: "manufacturerSummary",
     label: "Manufacturer",
     classes: "nowrap cellNoScribble",
-    sortable: true,
-    align: "left",
-    headerClasses :  "nowrap cellNoScribble",
     headerStyle: 'width: 18%; ',
-  },
-  {
+  }),
+  mkTblHdr_({
     name: "operatingSystem",
-    field: "operatingSystem",
     label: "OS",
-    classes: "nowrap",
-    sortable: true,
-    align: "left",
-    headerClasses  :  "nowrap cellNoScribble",
     headerStyle: 'width: 5em',
-  },
-  // when shown services issues vue error - not clear why...
-  {
+  }),
+  mkTblHdr_({
     name: "services",
-    field: "services",
     label: "Services",
-    classes: "nowrap",
-    sortable: true,
     align: "center",
     headerStyle: 'width: 7em',
-    headerClasses  :  "nowrap cellNoScribble",
-  },
-  {
+  }),
+  mkTblHdr_({
     name: "localAddresses",
-    field: "localAddresses",
     label: "Local Address",
-    classes: "nowrap",
-    sortable: true,
-    align: "left",
-    headerClasses  :  "nowrap cellNoScribble",
     headerStyle: 'width: 14%; ',
-  },
-  {
+  }),
+  mkTblHdr_({
     name: "networksSummary",
     field: "attachedNetworks",
     label: "Network",
-    classes: "nowrap",
-    align: "left",
-    sortable: true,
-    headerClasses  :  "nowrap cellNoScribble",
     headerStyle: 'width: 14%; ',
-  },
-  {
+  }),
+  mkTblHdr_({
     name: 'expand',
     label: "Details",
     align: 'center',
-    headerClasses  :  "nowrap cellNoScribble",
     headerStyle: 'width: 6em; ',
-  },
+  }),
 ]);
 
 // store page options in local storage, but eventually add many more options here (like collapsed or open show filter section etc)
@@ -407,8 +379,6 @@ onMounted(() => {
   addHeaderSectionBugWorkaround.value = true;
 })
 
-
-
 onUnmounted(() => {
   if (polling) {
     clearInterval(polling);
@@ -478,9 +448,9 @@ const pagination = ref({
         <div class="row text-h5">
           Devices
         </div>
-        <q-table dense table-class="itemList " :rows="filteredExtendedDevices" :columns="tableHeaders"
-          separator="none" row-key="id" :visible-columns="pageUserOptions.VisibleColumns" :pagination.sync="pagination"
-          hide-bottom flat :loading="loading">
+        <q-table dense table-class="itemList " :rows="filteredExtendedDevices" :columns="tableHeaders" separator="none"
+          row-key="id" :visible-columns="pageUserOptions.VisibleColumns" :pagination.sync="pagination" hide-bottom flat
+          :loading="loading">
           <template v-slot:body="props">
             <q-tr :props="props" @click="rowClicked(props)">
               <q-td :props="props" key="name">

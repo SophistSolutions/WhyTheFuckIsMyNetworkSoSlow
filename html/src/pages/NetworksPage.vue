@@ -163,76 +163,59 @@ function rowClicked(props: object) {
 
 let allAvailableNetworks: ComputedRef<INetwork[]> = computed(() => store.getAvailableNetworks);
 
+function mkTblHdr_(o: {name: string, field?: string, classes?: string, align?: string, sortable?: boolean, headerClasses?: string, label: string, headerStyle?:string}) {
+  return {
+    ...o,
+    field: o.field ?? o.name,
+    classes: o.classes ?? "nowrap",
+    align: o.align ?? "left",
+    sortable: o.sortable === undefined ? true : o.sortable,
+    headerClasses: o.headerClasses ?? "nowrap cellNoScribble"
+  };
+}
 const headers = ref([
-  {
+  mkTblHdr_({
     name: 'name',
-    field: "name",
     label: "Name",
-    sortable: true,
-    classes: "nowrap",
-    align: "left",
     headerStyle: 'width: 20%; ',
-  },
-  {
+  }),
+  mkTblHdr_({
     name: 'CIDRs',
-    field: "CIDRs",
     label: "CIDRs",
-    sortable: true,
-    classes: "nowrap",
-    align: "left",
     headerStyle: 'width: 10%; ',
-  },
-  {
+  }),
+   mkTblHdr_({
     name: 'active',
-    field: "active",
     label: "Active",
-    sortable: true,
-    classes: "nowrap",
     align: "left",
     headerStyle: 'width: 10%; ',
-  },
-  {
+  }),
+   mkTblHdr_({
     name: 'status',
-    field: "status",
     label: "Status",
-    sortable: true,
-    classes: "nowrap",
-    align: "left",
     headerStyle: 'width: 10%; ',
-  },
-  {
+  }),
+   mkTblHdr_({
     name: 'location',
-    field: "location",
     label: "Location",
-    sortable: true,
-    classes: "nowrap",
-    align: "left",
     headerStyle: 'width: 20%; ',
-  },
-  {
+  }),
+   mkTblHdr_({
     name: 'internetInfo',
-    field: "internetInfo",
     label: "Internet",
-    sortable: true,
-    classes: "nowrap",
-    align: "left",
     headerStyle: 'width: 20%; ',
-  },
-  {
+  }),
+   mkTblHdr_({
     name: 'devices',
-    field: "devices",
     label: "Devices",
-    sortable: true,
-    classes: "nowrap",
-    align: "left",
     headerStyle: 'width: 10%; ',
-  },
-  {
+  }),
+   mkTblHdr_({
     name: 'expand',
     label: "Details",
     align: 'center',
     headerStyle: 'width: 6em; ',
-  },
+  }),
 ]);
 
 
@@ -462,6 +445,10 @@ const pagination = ref({
 .listCard {
   margin-top: 10px;
   margin-left: 10px;
+}
+
+.cellNoScribble {
+  text-overflow: ellipsis;
 }
 
 .itemList {
