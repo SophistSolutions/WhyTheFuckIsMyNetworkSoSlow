@@ -8,13 +8,10 @@
 // Configuration for your app
 // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js
 
-
 const { configure } = require('quasar/wrappers');
 
 const fs = require('fs')
-// const packageJson = JSON.parse(fs.readFileSync('./package.json'))
 const packageLockJson = JSON.parse(fs.readFileSync('./package-lock.json'))
-// const wtfUIVersion = packageJson.version || 0
 const vueVersion = packageLockJson.packages['node_modules/@vue/runtime-core'].version;
 
 module.exports = configure(function (/* ctx */) {
@@ -35,7 +32,6 @@ module.exports = configure(function (/* ctx */) {
     // --> boot files are part of "main.js"
     // https://v2.quasar.dev/quasar-cli-vite/boot-files
     boot: [
-
 
     ],
 
@@ -74,13 +70,14 @@ module.exports = configure(function (/* ctx */) {
 
       // publicPath: '/',
       // analyze: true,
-      env: {
-        VUE_APP_DEFAULT_API_PORT: 8080,
-        // VUE_MY_APP_VERSION: wtfUIVersion,
+
+      // https://quasar.dev/quasar-cli-webpack/handling-process-env
+      env: { 
+        ... require('dotenv').config().parsed,
         VUE_VERSION: vueVersion,
-        //#VUE_APP_ROOT_API="http://hercules.local:8080",
-        // VUE_APP_DEBUG_MODE=true
-      },
+        VUE_MY_HTML_APP_VERSION: packageLockJson.version
+       }
+
       // rawDefine: {}
       // ignorePublicFolder: true,
       // minify: false,
