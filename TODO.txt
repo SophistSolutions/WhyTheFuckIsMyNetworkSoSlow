@@ -1,9 +1,6 @@
 
 NETWORKS page - when I expando - Aggreageates reviersably too wide, and creates scrollbar.
 Thsis shoudl wrap! ANd anyhow should be stopped from overflow
-
----
-Wtf store cleanups
 ---
 In devices page refactoring constructor for table columns c
 ----
