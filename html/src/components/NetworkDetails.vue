@@ -170,5 +170,6 @@ let thisNetworksInterfaces = computed<INetworkInterface[]>(
 
 .debugInfoJSONViewers {
   margin-right: 2em;
+  background-color: transparent;
 }
 </style>

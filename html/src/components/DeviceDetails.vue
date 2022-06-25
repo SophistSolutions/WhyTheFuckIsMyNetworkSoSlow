@@ -270,5 +270,6 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
 
 .debugInfoJSONViewers {
   margin-right: 2em;
+  background-color: transparent;
 }
 </style>

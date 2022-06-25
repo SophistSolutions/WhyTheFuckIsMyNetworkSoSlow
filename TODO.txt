@@ -1,15 +1,16 @@
 NETWORKS page - when I expando - Aggreageates reviersably too wide, and creates scrollbar.
 Thsis shoudl wrap! ANd anyhow should be stopped from overflow
------
 
+	>>> DEBUGGIUNG IN NETWOKS PAGE CUZ EAISER THERE, BUT SAME ISSUE I THINK WIHT DEVICES PAGE MOSTLY
+
+---
 + try to use scoped - but in some cases breaks things... (CSS SCOPED)
 	(mostly done but Devices and Networks pages)
 	(and those can probably break into parts that can and cannot be)
- 
+---
 - I THINK LAST SIGNIFICANT FEATURE BEFORE AS GOOD AS Vue2
--- AT THIS POINT - MAYBE RELEASE AS I THINK WE HAVE EQUIV OF VUE2 code but more modern and good basis to move forward...
-
-----
+   -- AT THIS POINT - MAYBE RELEASE AS I THINK WE HAVE EQUIV OF VUE2 code but more modern and good basis to move forward...
+-
 >	Provide some configuration way in WS to use alternatme ports; Maybe provide a way so GUI can change API-Server
     at runtime (? arg or localstorage peek) - but current config / .env stuff is fine for now
 
