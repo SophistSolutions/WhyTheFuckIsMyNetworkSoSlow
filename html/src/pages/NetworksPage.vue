@@ -418,15 +418,11 @@ const pagination = ref({
 </template>
 
 
-<style lang="scss" >
+<style lang="scss" scoped>
 // Based on .q-layout__section--marginal
 .secondary-toolbar {
   background-color: var(--q-primary);
   color: #fff;
-}
-
-.listCard table {
-  table-layout: fixed;
 }
 
 .detailsSection {
@@ -447,5 +443,13 @@ const pagination = ref({
 
 .itemList {
   margin-top: 10px;
+}
+</style>
+
+
+
+<style lang="scss" >
+.listCard table {
+  table-layout: fixed;
 }
 </style>
