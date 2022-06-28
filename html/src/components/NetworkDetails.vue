@@ -99,7 +99,8 @@ let thisNetworksInterfaces = computed<INetworkInterface[]>(
     </div>
     <div class="row">
       <div class="col-3">ID</div>
-      <div class="col"> {{ currentNetwork.id }} <span class="snapshot" v-if="currentNetwork.historicalSnapshot == true">{snapshot}</span></div>
+      <div class="col"> {{ currentNetwork.id }} <span class="snapshot"
+          v-if="currentNetwork.historicalSnapshot == true">{snapshot}</span></div>
     </div>
     <div class="row">
       <div class="col-3">Friendly Name</div>
@@ -113,48 +114,55 @@ let thisNetworksInterfaces = computed<INetworkInterface[]>(
       <div class="col-3">CIDRs</div>
       <div class="col"> {{ GetNetworkCIDRs(currentNetwork) }} </div>
     </div>
-    <div class="row"  v-if="currentNetwork.DNSServers && currentNetwork.DNSServers.length">
+    <div class="row" v-if="currentNetwork.DNSServers && currentNetwork.DNSServers.length">
       <div class="col-3">DNS Servers</div>
       <div class="col"> {{ currentNetwork.DNSServers.join(", ") }} </div>
     </div>
-    <div class="row"  v-if="currentNetwork.gateways && currentNetwork.gateways.length">
+    <div class="row" v-if="currentNetwork.gateways && currentNetwork.gateways.length">
       <div class="col-3">Gateways</div>
       <div class="col"> {{ currentNetwork.gateways.join(", ") }} </div>
     </div>
-    <div class="row"  v-if="currentNetwork.geographicLocation">
+    <div class="row" v-if="currentNetwork.geographicLocation">
       <div class="col-3">Geographic Location</div>
       <div class="col"> {{ FormatLocation(currentNetwork.geographicLocation) }} </div>
     </div>
-    <div class="row"  v-if="currentNetwork.internetServiceProvider">
+    <div class="row" v-if="currentNetwork.internetServiceProvider">
       <div class="col-3">Internet Service Provider</div>
       <div class="col"> {{ currentNetwork.internetServiceProvider.name }} </div>
     </div>
-    <div class="row"  v-if="currentNetwork.aggregatesReversibly && currentNetwork.aggregatesReversibly.length">
+    <div class="row" v-if="currentNetwork.aggregatesReversibly && currentNetwork.aggregatesReversibly.length">
       <div class="col-3">Aggregates Reversibly</div>
-      <div class="col"> <span v-for="aggregate in currentNetwork.aggregatesReversibly" v-bind:key="aggregate">
+      <div class="col">
+        <div class="row wrap"><span v-for="aggregate in currentNetwork.aggregatesReversibly" v-bind:key="aggregate">
             <ReadOnlyTextWithHover :message="aggregate" :link="'/#/network/' + aggregate" />;
-          </span> </div>
+          </span></div>
+      </div>
     </div>
-    <div class="row"  v-if="currentNetwork.aggregatesIrreversibly && currentNetwork.aggregatesIrreversibly.length">
+    <div class="row" v-if="currentNetwork.aggregatesIrreversibly && currentNetwork.aggregatesIrreversibly.length">
       <div class="col-3">Aggregates Irreversibly</div>
-      <div class="col"> <span v-for="aggregate in currentNetwork.aggregatesIrreversibly" v-bind:key="aggregate">
+      <div class="col">
+        <div class="row wrap"><span v-for="aggregate in currentNetwork.aggregatesIrreversibly" v-bind:key="aggregate">
             <ReadOnlyTextWithHover :message="aggregate" :link="'/#/network/' + aggregate" />;
           </span> </div>
+      </div>
     </div>
-    <div class="row"  v-if="currentNetwork.geographicLocation">
+    <div class="row" v-if="currentNetwork.geographicLocation">
       <div class="col-3">Devices</div>
       <div class="col"> <a :href="GetDevicesForNetworkLink(currentNetwork.id)">{{
-              GetDeviceIDsInNetwork(currentNetwork, allDevices).length
-          }}</a> </div>
+          GetDeviceIDsInNetwork(currentNetwork, allDevices).length
+      }}</a> </div>
     </div>
-    <div class="row"  v-if="currentNetwork.attachedInterfaces">
+    <div class="row" v-if="currentNetwork.attachedInterfaces">
       <div class="col-3">ATTACHED INTERFACES</div>
-      <div class="col"> <json-viewer :value="thisNetworksInterfaces" :expand-depth="0" copyable sort class="debugInfoJSONViewers" /></div>
+      <div class="col">
+        <json-viewer :value="thisNetworksInterfaces" :expand-depth="0" copyable sort class="debugInfoJSONViewers" />
+      </div>
     </div>
-    <div class="row"  v-if="currentNetwork.debugProps">
+    <div class="row" v-if="currentNetwork.debugProps">
       <div class="col-3">DEBUG INFO</div>
-      <div class="col">  <json-viewer :value="currentNetwork.debugProps" :expand-depth="0" copyable sort
-            class="debugInfoJSONViewers" /></div>
+      <div class="col">
+        <json-viewer :value="currentNetwork.debugProps" :expand-depth="0" copyable sort class="debugInfoJSONViewers" />
+      </div>
     </div>
   </div>
 </template>

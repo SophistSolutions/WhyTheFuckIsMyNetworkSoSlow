@@ -30,7 +30,7 @@ defineComponent({
 });
 
 let polling: undefined | NodeJS.Timeout;
-var isRescanning: Ref<boolean> = ref (false);
+var isRescanning: Ref<boolean> = ref(false);
 
 function localNetworkAddresses(): string[] {
   const addresses: string[] = [];
@@ -196,10 +196,10 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
               height="20" width="20" />
           </div>
           <div class="col-1">{{ svc.name }}</div>
-          <div class="col no-wrap"> <a v-for="l in svc.links" v-bind:href="l.href" v-bind:key="l.href"
+          <div class="col"> <div class="row wrap"> <a v-for="l in svc.links" v-bind:href="l.href" v-bind:key="l.href"
               class="list-items" target="_blank">{{
                   l.href
-              }}</a>
+              }}</a></div>
           </div>
         </div>
       </div>
@@ -208,7 +208,7 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
       <div class="col-3">Open Ports</div>
       <div class="col">
         <q-btn class="smallBtnMargin" elevation="2" dense size="sm" @click="rescanSelectedDevice"
-          :disabled="isRescanning"> {{isRescanning? "**SCANNING**" : "Rescan"}} </q-btn>
+          :disabled="isRescanning"> {{ isRescanning ? "**SCANNING**" : "Rescan" }} </q-btn>
         <span v-if="currentDevice.openPorts">{{ currentDevice.openPorts.join(", ") }}</span>
       </div>
     </div>
@@ -222,22 +222,24 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
     <div class="row" v-if="currentDevice.aggregatesReversibly && currentDevice.aggregatesReversibly.length">
       <div class="col-3">Aggregates Reversibly</div>
       <div class="col">
-        <span v-for="aggregate in currentDevice.aggregatesReversibly" v-bind:key="aggregate">
-          <ReadOnlyTextWithHover :message="aggregate" :link="'/#/device/' + aggregate" />;
-        </span>
+        <div class="row wrap"><span v-for="aggregate in currentDevice.aggregatesReversibly" v-bind:key="aggregate">
+            <ReadOnlyTextWithHover :message="aggregate" :link="'/#/device/' + aggregate" />;
+          </span></div>
       </div>
     </div>
     <div class="row" v-if="currentDevice.aggregatesIrreversibly && currentDevice.aggregatesIrreversibly.length">
       <div class="col-3">Aggregates Irreversibly</div>
       <div class="col">
-        <span v-for="aggregate in currentDevice.aggregatesIrreversibly" v-bind:key="aggregate">
-          <ReadOnlyTextWithHover :message="aggregate" />;
-        </span>
+        <div class="row wrap"> <span v-for="aggregate in currentDevice.aggregatesIrreversibly" v-bind:key="aggregate">
+            <ReadOnlyTextWithHover :message="aggregate" />;
+          </span></div>
       </div>
     </div>
     <div class="row" v-if="currentDevice.debugProps">
       <div class="col-3">DEBUG INFO</div>
-      <div class="col"><json-viewer :value="currentDevice.debugProps" :expand-depth="0" copyable sort class="debugInfoJSONViewers" /></div>
+      <div class="col">
+        <json-viewer :value="currentDevice.debugProps" :expand-depth="0" copyable sort class="debugInfoJSONViewers" />
+      </div>
     </div>
   </div>
 </template>
