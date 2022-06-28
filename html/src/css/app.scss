@@ -12,3 +12,10 @@
 .pageCard:hover {
   box-shadow: 3px 3px 8px 6px rgba(0, 0, 0, 0.2);
 }
+
+// NOT to be confused with no-wrap, which does flex-wrap: none
+.nowrap {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

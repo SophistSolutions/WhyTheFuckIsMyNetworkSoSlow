@@ -247,12 +247,6 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
   padding-right: 1em;
 }
 
-.nowrap {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .smallBtnMargin {
   margin-left: 1em;
   margin-right: 1em;

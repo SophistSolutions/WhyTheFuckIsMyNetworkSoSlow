@@ -523,12 +523,6 @@ const pagination = ref({
   table-layout: fixed;
 }
 
-.nowrap {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .detailsSection {
   margin-top: 1em;
   margin-left: 2em;
