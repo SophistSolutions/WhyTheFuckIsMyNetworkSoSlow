@@ -1,3 +1,6 @@
+when I was running and run service remove - got hang (long time) - so see why failing to uninstall
+
+
 + try to use scoped - but in some cases breaks things... (CSS SCOPED)
 	(mostly done but Devices and Networks pages)
 	Only case not working
