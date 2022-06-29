@@ -167,10 +167,10 @@ function mkTblHdr_(o: {name: string, field?: string, classes?: string, align?: s
   return {
     ...o,
     field: o.field ?? o.name,
-    classes: o.classes ?? "nowrap",
+    classes: o.classes ?? "truncateWithElipsis",
     align: o.align ?? "left",
     sortable: o.sortable === undefined ? true : o.sortable,
-    headerClasses: o.headerClasses ?? "nowrap cellNoScribble"
+    headerClasses: o.headerClasses ?? "truncateWithElipsis cellNoScribble"
   };
 }
 const headers = ref([

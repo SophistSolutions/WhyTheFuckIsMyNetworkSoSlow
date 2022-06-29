@@ -14,7 +14,7 @@
 }
 
 // NOT to be confused with no-wrap, which does flex-wrap: none
-.nowrap {
+.truncateWithElipsis {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

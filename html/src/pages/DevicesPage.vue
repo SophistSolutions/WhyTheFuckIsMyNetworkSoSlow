@@ -168,10 +168,10 @@ function mkTblHdr_(o: {name: string, field?: string, classes?: string, align?: s
   return {
     ...o,
     field: o.field ?? o.name,
-    classes: o.classes ?? "nowrap",
+    classes: o.classes ?? "truncateWithElipsis",
     align: o.align ?? "left",
     sortable: o.sortable === undefined ? true : o.sortable,
-    headerClasses: o.headerClasses ?? "nowrap cellNoScribble"
+    headerClasses: o.headerClasses ?? "truncateWithElipsis cellNoScribble"
   };
 }
 const tableHeaders = ref([
@@ -188,13 +188,13 @@ const tableHeaders = ref([
   mkTblHdr_({
     name: "lastSeenAt",
     label: "Last Seen",
-    classes: "nowrap cellNoScribble",
+    classes: "truncateWithElipsis cellNoScribble",
     headerStyle: 'width: 9em; ',
   }),
   mkTblHdr_({
     name: "manufacturerSummary",
     label: "Manufacturer",
-    classes: "nowrap cellNoScribble",
+    classes: "truncateWithElipsis cellNoScribble",
     headerStyle: 'width: 18%; ',
   }),
   mkTblHdr_({
