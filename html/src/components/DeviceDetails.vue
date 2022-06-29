@@ -162,7 +162,7 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
           v-bind:key="attachedNetID">
           <div class="col">
             <div class="row">
-              <div class="col no-wrap">
+              <div class="col no-wrap truncateWithElipsis">
                 <ReadOnlyTextWithHover :message="
                   currentDeviceDetails.attachedNetworks[attachedNetID].name +
                   ' (' +
