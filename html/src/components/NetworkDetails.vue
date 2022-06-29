@@ -134,7 +134,7 @@ let thisNetworksInterfaces = computed<INetworkInterface[]>(
       <div class="col-3">Aggregates Reversibly</div>
       <div class="col">
         <div class="row wrap"><span v-for="aggregate in currentNetwork.aggregatesReversibly" v-bind:key="aggregate">
-            <ReadOnlyTextWithHover :message="aggregate" :link="'/#/network/' + aggregate" />;
+            <ReadOnlyTextWithHover :message="aggregate" :link="'/#/network/' + aggregate" />;&nbsp;
           </span></div>
       </div>
     </div>
@@ -142,7 +142,7 @@ let thisNetworksInterfaces = computed<INetworkInterface[]>(
       <div class="col-3">Aggregates Irreversibly</div>
       <div class="col">
         <div class="row wrap"><span v-for="aggregate in currentNetwork.aggregatesIrreversibly" v-bind:key="aggregate">
-            <ReadOnlyTextWithHover :message="aggregate" :link="'/#/network/' + aggregate" />;
+            <ReadOnlyTextWithHover :message="aggregate" :link="'/#/network/' + aggregate" />;&nbsp;
           </span> </div>
       </div>
     </div>

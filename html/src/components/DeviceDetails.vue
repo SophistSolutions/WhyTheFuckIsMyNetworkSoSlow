@@ -223,7 +223,7 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
       <div class="col-3">Aggregates Reversibly</div>
       <div class="col">
         <div class="row wrap"><span v-for="aggregate in currentDevice.aggregatesReversibly" v-bind:key="aggregate">
-            <ReadOnlyTextWithHover :message="aggregate" :link="'/#/device/' + aggregate" />;
+            <ReadOnlyTextWithHover :message="aggregate" :link="'/#/device/' + aggregate" />;&nbsp;
           </span></div>
       </div>
     </div>
@@ -231,7 +231,7 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
       <div class="col-3">Aggregates Irreversibly</div>
       <div class="col">
         <div class="row wrap"> <span v-for="aggregate in currentDevice.aggregatesIrreversibly" v-bind:key="aggregate">
-            <ReadOnlyTextWithHover :message="aggregate" />;
+            <ReadOnlyTextWithHover :message="aggregate" />;&nbsp;
           </span></div>
       </div>
     </div>
