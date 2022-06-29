@@ -257,9 +257,4 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
 .snapshot {
   font-style: italic;
 }
-
-.debugInfoJSONViewers {
-  margin-right: 2em;
-  background-color: transparent;
-}
 </style>

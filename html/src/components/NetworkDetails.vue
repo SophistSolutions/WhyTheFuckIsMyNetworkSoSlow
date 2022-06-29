@@ -171,9 +171,4 @@ let thisNetworksInterfaces = computed<INetworkInterface[]>(
 .snapshot {
   font-style: italic;
 }
-
-.debugInfoJSONViewers {
-  margin-right: 2em;
-  background-color: transparent;
-}
 </style>
