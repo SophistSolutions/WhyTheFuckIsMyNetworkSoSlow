@@ -6,6 +6,10 @@ High level summary of changes in WhyTheFuckIsMyNetworkSoSlow.
 
 ## History
 
+### START 1.0d18x DEV
+
+---
+
 ### 1.0d17 {2022-06-30}
 
 #### TLDR
