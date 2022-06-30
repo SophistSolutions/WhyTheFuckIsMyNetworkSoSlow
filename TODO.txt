@@ -1,4 +1,8 @@
-when I was running and run service remove - got hang (long time) - so see why failing to uninstall
+
++ put last seen for network into HOME page
++ link to devices from home page should (when under network) preselect network
+
++ on tablet, the two details icons appear on different levels (2 rows)
 
 
 + try to use scoped - but in some cases breaks things... (CSS SCOPED)

@@ -6,6 +6,32 @@ High level summary of changes in WhyTheFuckIsMyNetworkSoSlow.
 
 ## History
 
+### 1.0d17 {2022-06-30}
+
+#### TLDR
+- Minor backend fixes
+- Nearly full rewrite of UI, based on Vue3/Quasar instead of Vue2/vuetify; UI slightly changed, but mostly the same look and feel
+
+#### Change-Details
+- Backend
+  - Stroika 2.1.1x (almost point release)
+    - fix windows hardware addresses to use : instead of -
+    - workaround issue with Logger::Shutdown () - taking a long time
+    - fix for serializing / deserializing CIDRs; 
+    - latest stroika (maybe fix shutdown)
+  - new IntegrationMgr function GetCorrespondingDynamicDeviceID (), and used that in the RefreshDevice WSAPI to allow rescan of aggregated devices; and cosmetic cleanups
+  - uppded DB filename version to db8 cuz of incompatible change in database format (still no upgrade logic in place)
+  - renamed DevicesMgr::sThe.InitiateReScan -> DevicesMgr::sThe.ReScan (); fixed  bug in GetCorrespondingDynamicDeviceID () - was looking at wrong list for dynamic device ids;
+- html / UI
+  - Experimented upgrading to vuetify3, but its not close to ready
+  - Experimented with using react instead of vue
+  - Switched to using Quasar, and vu3 3
+    - this was a huge change - almost a total rewrite of html
+    - major cleanup of internals of typescript and html code
+  - html makefile fixes - copy html file and use cp not ln -s
+
+---
+
 ### 1.0d16 {2022-05-22}
 
 #### TLDR
