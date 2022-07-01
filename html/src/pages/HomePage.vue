@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import { defineComponent, onMounted, onUnmounted, computed, ComputedRef } from 'vue';
+import moment from 'moment';
 
 import { IDevice } from "../models/device/IDevice";
 import { INetwork } from "../models/network/INetwork";
 import {
   FormatLocation,
   GetDeviceIDsInNetwork,
+  GetDevicesForNetworkLink,
   GetNetworkLink,
   GetNetworkName,
 } from "../models/network/Utils";
+
 import { useNetStateStore } from '../stores/Net-State-store'
 
 // Components
@@ -37,27 +40,58 @@ onUnmounted(() => {
   clearInterval(polling);
 })
 
+
+// return a non-negative number, with highest number most attractive to show
+const kAlwaysShowMinPriority_ = 15;
+const kMinHoursToBeConsideredProbablyActive_ = 1;
+
+function showNetworkPriority_(n: INetwork) {
+  // @todo - probaly just include 'active' and 'favorite' networks here (as it hints in UI)
+  let r: number = 0;
+  const now = moment(new Date);
+  if (n.lastSeenAt) {
+    var hours = moment.duration(now.diff(n.lastSeenAt)).asHours();
+    if (hours < kMinHoursToBeConsideredProbablyActive_) {
+      r += 10;
+    }
+  }
+  if (n.internetServiceProvider != null || n.geographicLocation != null) {
+    r += 10;
+  }
+  return r;
+}
+
 let allNetworks: ComputedRef<INetwork[]> = computed(() => store.getAvailableNetworks);
 let shownNetworks: ComputedRef<INetwork[]> = computed(() => {
   const result: INetwork[] = [];
-  // @todo - probaly just include 'active' and 'favorite' networks here (as it hints in UI)
+  // pick out all top priority items, and any above some threshold (15)
+  let priorities: Array<{ id: string, priorty: number }> = [];
   allNetworks.value.forEach((i) => {
-    if (i.internetServiceProvider != null || i.geographicLocation != null) {
-      result.push(i);
-    }
+    priorities.push({ id: i.id, priorty: showNetworkPriority_(i) });
+  });
+  priorities.sort((a: { id: string, priorty: number }, b: { id: string, priorty: number }) => {
+    return b.priorty - a.priorty;
+  });
+  if (priorities.length != 0) {
+    const maxPri = priorities[0].priorty;
+    priorities = priorities.filter(item => item.priorty == maxPri || item.priorty >= kAlwaysShowMinPriority_);
+  }
+  priorities.forEach((i: { id: string, priorty: number }) => {
+    result.push(allNetworks.value.find(x => x.id == i.id));
   });
   return result;
 });
 
-
 interface IDisplayedNetwork {
   id: string;
+  showPriority: number;
   link: string | null;
   name: string;
   active: string;
   internetInfo: string;
   status: string;
   originalNetwork: INetwork;
+  lastSeenAt?: Date;
 }
 
 let shownNetworksAsDisplayed: ComputedRef<IDisplayedNetwork[]> = computed(() => {
@@ -65,6 +99,7 @@ let shownNetworksAsDisplayed: ComputedRef<IDisplayedNetwork[]> = computed(() => 
   shownNetworks.value.forEach((i: INetwork) => {
     result.push({
       id: i.id,
+      lastSeenAt: i.lastSeenAt,
       name: GetNetworkName(i),
       link: GetNetworkLink(i),
       active: "true",
@@ -93,27 +128,31 @@ let allDevices: ComputedRef<IDevice[]> = computed(() => store.getDevices);
 <template>
   <q-page padding>
 
-    <div class="row text-h4 text-center">
+    <div class="row text-h4 text-center q-mb-md">
       <div class="col">
         Why The Fuck is My Network So Slow?
       </div>
     </div>
 
-    <div class="justify-center row">
+    <div class="justify-center row ">
       <q-card class="col-11 pageCard">
         <q-card-section>
           <div class="row">
             <div class="col">
               <router-link to="/networks">Networks</router-link> (active + favorites)
               <ul>
-                <li v-for="network in shownNetworksAsDisplayed" :key="network.id">
+                <li v-for="network in shownNetworksAsDisplayed" :key="network.id" class=" q-mb-md">
                   <ReadOnlyTextWithHover :message="network.name" :link="network.link" />
                   <div v-if="network.internetInfo">
                     : {{ network.internetInfo }}
                   </div>
                   <div>
+                    : Last Seen: {{ moment(network.lastSeenAt).fromNow() }}
+                  </div>
+                  <div>
                     : {{ GetDeviceIDsInNetwork(network.originalNetwork, allDevices).length }}
-                    <router-link to="/devices">devices</router-link>, operating normally
+                    <a :href="GetDevicesForNetworkLink(network.originalNetwork.id)">devices</a>
+                    , operating normally
                   </div>
                 </li>
               </ul>
