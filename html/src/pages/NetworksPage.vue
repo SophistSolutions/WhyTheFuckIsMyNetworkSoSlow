@@ -163,7 +163,7 @@ function rowClicked(props: object) {
 
 let allAvailableNetworks: ComputedRef<INetwork[]> = computed(() => store.getAvailableNetworks);
 
-function mkTblHdr_(o: {name: string, field?: string, classes?: string, align?: string, sortable?: boolean, headerClasses?: string, label: string, headerStyle?:string}) {
+function mkTblHdr_(o: { name: string, field?: string, classes?: string, align?: string, sortable?: boolean, headerClasses?: string, label: string, headerStyle?: string }) {
   return {
     ...o,
     field: o.field ?? o.name,
@@ -184,33 +184,33 @@ const headers = ref([
     label: "CIDRs",
     headerStyle: 'width: 10%; ',
   }),
-   mkTblHdr_({
+  mkTblHdr_({
     name: 'active',
     label: "Active",
     align: "left",
     headerStyle: 'width: 10%; ',
   }),
-   mkTblHdr_({
+  mkTblHdr_({
     name: 'status',
     label: "Status",
     headerStyle: 'width: 10%; ',
   }),
-   mkTblHdr_({
+  mkTblHdr_({
     name: 'location',
     label: "Location",
     headerStyle: 'width: 20%; ',
   }),
-   mkTblHdr_({
+  mkTblHdr_({
     name: 'internetInfo',
     label: "Internet",
     headerStyle: 'width: 20%; ',
   }),
-   mkTblHdr_({
+  mkTblHdr_({
     name: 'devices',
     label: "Devices",
     headerStyle: 'width: 10%; ',
   }),
-   mkTblHdr_({
+  mkTblHdr_({
     name: 'expand',
     label: "Details",
     align: 'center',
