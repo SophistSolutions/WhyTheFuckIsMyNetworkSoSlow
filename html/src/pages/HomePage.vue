@@ -52,7 +52,7 @@ function showNetworkPriority_(n: INetwork) {
   if (n.lastSeenAt) {
     var hours = moment.duration(now.diff(n.lastSeenAt)).asHours();
     if (hours < kMinHoursToBeConsideredProbablyActive_) {
-      r += 10;
+      r += 11;
     }
   }
   if (n.internetServiceProvider != null || n.geographicLocation != null) {
@@ -109,15 +109,6 @@ let shownNetworksAsDisplayed: ComputedRef<IDisplayedNetwork[]> = computed(() => 
       status: "healthy",
       originalNetwork: i
     });
-  });
-  result.sort((a: IDisplayedNetwork, b: IDisplayedNetwork) => {
-    if (a.id < b.id) {
-      return -1;
-    }
-    if (a.id > b.id) {
-      return 1;
-    }
-    return 0;
   });
   return result;
 });
