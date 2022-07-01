@@ -214,7 +214,7 @@ const headers = ref([
     name: 'expand',
     label: "Details",
     align: 'center',
-    headerStyle: 'width: 6em; ',
+    headerStyle: 'width: 6.7em; ',
   }),
 ]);
 

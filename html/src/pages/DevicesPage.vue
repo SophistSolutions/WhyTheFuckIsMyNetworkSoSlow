@@ -211,19 +211,19 @@ const tableHeaders = ref([
   mkTblHdr_({
     name: "localAddresses",
     label: "Local Address",
-    headerStyle: 'width: 14%; ',
+    headerStyle: 'width: 12%; ',
   }),
   mkTblHdr_({
     name: "networksSummary",
     field: "attachedNetworks",
     label: "Network",
-    headerStyle: 'width: 14%; ',
+    headerStyle: 'width: 12%; ',
   }),
   mkTblHdr_({
     name: 'expand',
     label: "Details",
     align: 'center',
-    headerStyle: 'width: 6em; ',
+    headerStyle: 'width: 6.7em; ',
   }),
 ]);
 

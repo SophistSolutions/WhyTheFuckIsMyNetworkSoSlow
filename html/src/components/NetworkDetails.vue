@@ -91,7 +91,7 @@ let thisNetworksInterfaces = computed<INetworkInterface[]>(
 
 <template>
   <div v-if="currentNetwork" class="q-pa-sm">
-    <Link2DetailsPage :link="'/#/network/' + currentNetwork.id" v-if="props.includeLinkToDetailsPage" />
+    <Link2DetailsPage :link="'/#/network/' + currentNetwork.id" v-if="props.includeLinkToDetailsPage" style="padding-top: 5px; float:right" />
 
     <div class="row">
       <div class="col-3">Name</div>

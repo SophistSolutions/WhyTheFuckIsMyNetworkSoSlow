@@ -113,7 +113,7 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
 
 <template>
   <div v-if="currentDevice" class="q-pa-sm">
-    <Link2DetailsPage :link="'/#/device/' + currentDevice.id" v-if="props.includeLinkToDetailsPage" />
+    <Link2DetailsPage :link="'/#/device/' + currentDevice.id" v-if="props.includeLinkToDetailsPage" style="padding-top: 5px; float:right" />
 
     <div class="row">
       <div class="col-3">Name</div>

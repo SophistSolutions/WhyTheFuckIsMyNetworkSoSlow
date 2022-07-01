@@ -1,6 +1,6 @@
 
 + on tablet, the two details icons appear on different levels (2 rows)
-
+   (RETEST)
 + try to use scoped - but in some cases breaks things... (CSS SCOPED)
 	(mostly done but Devices and Networks pages)
 	Only case not working
