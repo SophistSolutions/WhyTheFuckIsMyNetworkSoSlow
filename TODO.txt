@@ -1,9 +1,5 @@
 
-+ put last seen for network into HOME page
-+ link to devices from home page should (when under network) preselect network
-
 + on tablet, the two details icons appear on different levels (2 rows)
-
 
 + try to use scoped - but in some cases breaks things... (CSS SCOPED)
 	(mostly done but Devices and Networks pages)
@@ -14,9 +10,6 @@
 		}
 		</style>
 
----
-- I THINK LAST SIGNIFICANT FEATURE BEFORE AS GOOD AS Vue2
-   -- AT THIS POINT - MAYBE RELEASE AS I THINK WE HAVE EQUIV OF VUE2 code but more modern and good basis to move forward...
 -
 >	Provide some configuration way in WS to use alternatme ports; Maybe provide a way so GUI can change API-Server
     at runtime (? arg or localstorage peek) - but current config / .env stuff is fine for now
@@ -26,8 +19,6 @@
 = Have filters and customization sections in devices page shrinkable, and little button in top-right of table to pop it open to allow customization.
   And probably have a way to make more sections (and delete sections) and maybe revert to default (storing thise prefs in local-storage ui-prefs 
   pinia store)
-
--- at least test on UNIX etc, build as part of WTF, etc...
 
   - redo components like NetworkDetails and DeviceDetails taking object not ID as argument
     so fetches only (mostly or fully?) done in the parent component; 
