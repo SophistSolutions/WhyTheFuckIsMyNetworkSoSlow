@@ -747,10 +747,13 @@ Collection<IntegratedModel::NetworkInterface> IntegratedModel::Mgr::GetNetworkIn
 
 optional<IntegratedModel::NetworkInterface> IntegratedModel::Mgr::GetNetworkInterface (const GUID& id) const
 {
+    return GetNetworkInterfaces ().First ([&] (const auto& i) { return i.fGUID == id; });
+    #if 0
     for (const auto& i : GetNetworkInterfaces ()) {
         if (i.fGUID == id) {
             return i;
         }
     }
     return nullopt;
+    #endif
 }

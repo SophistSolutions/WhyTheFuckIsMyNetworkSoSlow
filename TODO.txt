@@ -1,4 +1,15 @@
 
+>> NEED TO CACHE BLOBMAP to disk
+  Since used after reboot? Or maybe should be stored in dtabase? Some of my icons I think may disappear.
+  Not 100% sure. Make sure there is a staregty for how these images get preserved across reboots when devices
+  may no longer be present. Database seems better idea that my own private storage cache format.
+
+  (maybe already done / rexamine)
+
+
+
++ List of networks in popup must be sorted so last seen most recently at the top
+
 + on tablet, the two details icons appear on different levels (2 rows)
    (RETEST)
 + try to use scoped - but in some cases breaks things... (CSS SCOPED)
@@ -63,6 +74,10 @@ And in rollup, nice to have seen range (first/last seen)
 
 + Maybe add ability to mark devices as 'favorites' (star) - and have 'group by' section at top of 'favorites'?
 
++ Add ability to "FAVORITE" or SAVE layouts/filter combos, and store in local storage, and ability to restore/save
+  in UI, so can easily open precombfingured set of viuews
+
+
 + Need (X) to CLEAR search string when you type a search string like we currently have for the whole filters line.
 
 
@@ -84,15 +99,6 @@ livingRM-WAX610
 		}
 
 	Should be enough to show as network device (and maybe have category for wifi access point).
-
-
->> NEED TO CACHE BLOBMAP to disk
-  Since used after reboot? Or maybe should be stored in dtabase? Some of my icons I think may disappear.
-  Not 100% sure. Make sure there is a staregty for how these images get preserved across reboots when devices
-  may no longer be present. Database seems better idea that my own private storage cache format.
-
->> Prooably good breaking point for a release (been a while) - and probably stable.
->> THEN do integration with Vue3/vutify3.
 
 
 ----
