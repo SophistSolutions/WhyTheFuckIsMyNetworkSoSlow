@@ -6,6 +6,8 @@
 
   (maybe already done / rexamine)
 
+	>>> create abstraction arround DB object, and then use that from IntegrationMgr and BLOBMgr.
+
 
 
 + List of networks in popup must be sorted so last seen most recently at the top

@@ -20,6 +20,7 @@
 #include "Stroika/Foundation/IO/FileSystem/WellKnownLocations.h"
 
 #include "../Common/BLOBMgr.h"
+#include "../Common/DB.h"
 #include "../Common/EthernetMACAddressOUIPrefixes.h"
 
 #include "../Discovery/Devices.h"
@@ -308,7 +309,6 @@ namespace {
 namespace {
     namespace DBAccess_ {
         using namespace SQL::ORM;
-        using namespace SQL::SQLite;
 
         constexpr VariantValue::Type kRepresentIDAs_ = VariantValue::Type::eBLOB; // else as string
 
@@ -378,49 +378,14 @@ namespace {
             Schema::CatchAllField{}};
         static_assert (kRepresentIDAs_ == VariantValue::eBLOB); // @todo to support string, just change '.fDefaultExpression'
 
-        template <typename T>
-        T AddOrMergeUpdate_ (SQL::ORM::TableConnection<T>* dbConnTable, const T& d)
-        {
-            Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...AddOrMergeUpdate_", L"...,d=%s", Characters::ToString (d).c_str ())};
-            RequireNotNull (dbConnTable);
-            SQL::Transaction t{dbConnTable->pConnection ()->mkTransaction ()};
-            optional<T>      result;
-            if (auto dbObj = dbConnTable->GetByID (d.fGUID)) {
-                result = T::Merge (*dbObj, d);
-                dbConnTable->Update (*result);
-            }
-            else {
-                result = d;
-                dbConnTable->AddNew (d);
-            }
-            t.Commit ();
-            Ensure (result.has_value ());
-            return *result;
-        }
-        Connection::Ptr SetupDB_ ()
-        {
-            auto dbPath = IO::FileSystem::WellKnownLocations::GetApplicationData () / "WhyTheFuckIsMyNetworkSoSlow" / "db-v8.db";
-            filesystem::create_directories (dbPath.parent_path ());
-#if __cpp_designated_initializers
-            auto options = Options{.fDBPath = dbPath, .fThreadingMode = Options::ThreadingMode::eMultiThread};
-#else
-            auto options = Options{dbPath, true, nullopt, nullopt, Options::ThreadingMode::eMultiThread};
-#endif
-            auto conn = Connection::New (options);
-
-            // @todo use AppVersion? probably not not clearly. SHOULD MATCH but dont auto-update
-            // verison just cuz code version goes up - maybe write both verisons
-            constexpr Configuration::Version kCurrentVersion_ = Configuration::Version{1, 0, Configuration::VersionStage::Alpha, 0};
-            Database::SQL::ORM::ProvisionForVersion (conn,
-                                                     kCurrentVersion_,
-                                                     Traversal::Iterable<Database::SQL::ORM::Schema::Table>{kDeviceTableSchema_, kNetworkTableSchema_});
-
-            return conn;
-        }
         void BackgroundDatabaseThread_ ()
         {
-            Debug::TraceContextBumper                                       ctx{L"BackgroundDatabaseThread_ loop"};
-            Connection::Ptr                                                 conn;
+            Debug::TraceContextBumper        ctx{L"BackgroundDatabaseThread_ loop"};
+            constexpr Configuration::Version kCurrentVersion_ = Configuration::Version{1, 0, Configuration::VersionStage::Alpha, 0};
+            BackendApp::Common::DB           db{
+                kCurrentVersion_,
+                Traversal::Iterable<Database::SQL::ORM::Schema::Table>{kDeviceTableSchema_, kNetworkTableSchema_}};
+            SQL::Connection::Ptr                                            conn;
             unique_ptr<SQL::ORM::TableConnection<IntegratedModel::Device>>  deviceTableConnection;
             unique_ptr<SQL::ORM::TableConnection<IntegratedModel::Network>> networkTableConnection;
 #if qDefaultTracingOn
@@ -429,7 +394,7 @@ namespace {
             while (true) {
                 try {
                     if (conn == nullptr) {
-                        conn = SetupDB_ ();
+                        conn = db.NewConnection ();
                     }
                     // load networks before devices because devices depend on networks but not the reverse
                     if (networkTableConnection == nullptr) {
@@ -469,7 +434,7 @@ namespace {
                         if (not kSupportPersistedNetworkInterfaces_) {
                             ni.fAttachedInterfaces.clear ();
                         }
-                        auto rec2Update = AddOrMergeUpdate_ (networkTableConnection.get (), ni);
+                        auto rec2Update = db.AddOrMergeUpdate (networkTableConnection.get (), ni);
                         sDBNetworks_.rwget ()->Add (rec2Update);
                     }
 
@@ -478,7 +443,7 @@ namespace {
                         if (not kSupportPersistedNetworkInterfaces_) {
                             di.fAttachedNetworkInterfaces = nullopt;
                         }
-                        auto rec2Update = AddOrMergeUpdate_ (deviceTableConnection.get (), di);
+                        auto rec2Update = db.AddOrMergeUpdate (deviceTableConnection.get (), di);
                         sDBDevices_.rwget ()->Add (rec2Update);
                     }
 
@@ -748,12 +713,4 @@ Collection<IntegratedModel::NetworkInterface> IntegratedModel::Mgr::GetNetworkIn
 optional<IntegratedModel::NetworkInterface> IntegratedModel::Mgr::GetNetworkInterface (const GUID& id) const
 {
     return GetNetworkInterfaces ().First ([&] (const auto& i) { return i.fGUID == id; });
-    #if 0
-    for (const auto& i : GetNetworkInterfaces ()) {
-        if (i.fGUID == id) {
-            return i;
-        }
-    }
-    return nullopt;
-    #endif
 }

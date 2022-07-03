@@ -79,6 +79,9 @@
     <None Include="..\..\Sources\IntegratedModel\Makefile">
       <Filter>Sources\IntegratedModel</Filter>
     </None>
+    <None Include="..\..\Sources\Common\DB.inl">
+      <Filter>Sources\Common</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Main.cpp">
@@ -129,6 +132,9 @@
     <ClCompile Include="..\..\Sources\IntegratedModel\Mgr.cpp">
       <Filter>Sources\IntegratedModel</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Common\DB.cpp">
+      <Filter>Sources\Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Service.h">
@@ -175,6 +181,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\IntegratedModel\Mgr.h">
       <Filter>Sources\IntegratedModel</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Common\DB.h">
+      <Filter>Sources\Common</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

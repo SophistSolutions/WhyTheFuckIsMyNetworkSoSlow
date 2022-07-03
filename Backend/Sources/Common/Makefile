@@ -16,6 +16,7 @@ vpath %cpp $(SrcDir)
 
 Objs	=	\
 	$(ObjDir)BLOBMgr${OBJ_SUFFIX}\
+	$(ObjDir)DB${OBJ_SUFFIX}\
 	$(ObjDir)EthernetMACAddressOUIPrefixes${OBJ_SUFFIX}\
 	$(ObjDir)GeoLocAndISPLookup${OBJ_SUFFIX}\
 	$(ObjDir)GeoLocation${OBJ_SUFFIX}\

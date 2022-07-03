@@ -62,6 +62,7 @@
   <ItemGroup>
     <None Include="..\..\Makefile" />
     <None Include="..\..\Sources\Common\BLOBMgr.inl" />
+    <None Include="..\..\Sources\Common\DB.inl" />
     <None Include="..\..\Sources\Common\EthernetMACAddressOUIPrefixes.inl" />
     <None Include="..\..\Sources\Common\GeoLocAndISPLookup.inl" />
     <None Include="..\..\Sources\Common\GeoLocation.inl" />
@@ -84,6 +85,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Common\BLOBMgr.cpp" />
+    <ClCompile Include="..\..\Sources\Common\DB.cpp" />
     <ClCompile Include="..\..\Sources\Common\EthernetMACAddressOUIPrefixes.cpp" />
     <ClCompile Include="..\..\Sources\Common\GeoLocAndISPLookup.cpp" />
     <ClCompile Include="..\..\Sources\Common\GeoLocation.cpp" />
@@ -102,6 +104,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Common\BLOBMgr.h" />
+    <ClInclude Include="..\..\Sources\Common\DB.h" />
     <ClInclude Include="..\..\Sources\Common\EthernetMACAddressOUIPrefixes.h" />
     <ClInclude Include="..\..\Sources\Common\GeoLocAndISPLookup.h" />
     <ClInclude Include="..\..\Sources\Common\GeoLocation.h" />
