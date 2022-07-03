@@ -560,7 +560,7 @@ namespace {
                 RolledUpDevices result               = sRolledUpDevices_;
                 auto            doMergeOneIntoRollup = [&result, &reverseRollup] (const Device& d2MergeIn) {
                     // @todo slow/quadradic - may need to tweak
-                    if (auto i = result.fDevices.Find ([&d2MergeIn] (auto const& exisingRolledUpDevice) { return ShouldRollup_ (exisingRolledUpDevice, d2MergeIn); })) {
+                    if (auto i = result.fDevices.First ([&d2MergeIn] (const auto& exisingRolledUpDevice) { return ShouldRollup_ (exisingRolledUpDevice, d2MergeIn); })) {
                         // then merge this into that item
                         // @todo think out order of params and better document order of params!
                         auto tmp              = Device::Rollup (*i, d2MergeIn);
