@@ -7,6 +7,7 @@ const props = defineProps({
 </script>
 
 <template>
-    <a :href="props.link" target="_blank"><img src="images/as-new-page-link.png" title="View details in new page"
-            width=19 /></a>
+    <q-btn flat round dense title="View details in new page" :href="props.link" target="_blank">
+        <img src="images/as-new-page-link.png" width=19 />
+    </q-btn>
 </template>
