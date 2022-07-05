@@ -13,9 +13,9 @@
       "stopAtEntry": true,
       "cwd": "${workspaceFolder}",
       "environment": [
-        {"name": "UBSAN_OPTIONS","value":"halt_on_error=1"},
-        {"name": "ASAN_OPTIONS","value":"halt_on_error=1"},
-       ],
+        { "name": "UBSAN_OPTIONS", "value": "halt_on_error=1" },
+        { "name": "ASAN_OPTIONS", "value": "halt_on_error=1" }
+      ],
       "externalConsole": false,
       "MIMode": "gdb",
       "setupCommands": [
@@ -60,6 +60,16 @@
       "externalConsole": true,
       "linux": {
         "MIMode": "gdb"
+      }
+    },
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "Quasar App: chrome",
+      "url": "http://localhost:9000",
+      "webRoot": "${workspaceFolder}/src",
+      "sourceMapPathOverrides": {
+        "webpack://package-name/./src/*": "${webRoot}/*"
       }
     }
   ]

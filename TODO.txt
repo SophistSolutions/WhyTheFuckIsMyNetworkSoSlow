@@ -1,5 +1,3 @@
-+ Get vscode debugging working for html
-
 + try to use scoped - but in some cases breaks things... (CSS SCOPED)
 	(mostly done but Devices and Networks pages)
 	Only case not working
@@ -41,6 +39,9 @@
 > Add to device data structure  "FirstSeen"
   and then in GUI for 'aggregates' replace that ID in the display with a timerange (and have the id in the hover text maybe)
 And in rollup, nice to have seen range (first/last seen)
+  + must generalize 'seen'. Diff kinds of seen events? Maybe just dont even show devices as around til seen
+    (CRREUNTLY -we show devices we never successfully pinged cuz they are neighbors, but we could 
+	supporess those, and just use them as hints to ping more quickly.)
 
 
 + Maybe add new Stroika framework "Extension-Language-Engine" wrapper on python or javascript or something.
