@@ -1,15 +1,3 @@
-
->> NEED TO CACHE BLOBMAP to disk
-  Since used after reboot? Or maybe should be stored in dtabase? Some of my icons I think may disappear.
-  Not 100% sure. Make sure there is a staregty for how these images get preserved across reboots when devices
-  may no longer be present. Database seems better idea that my own private storage cache format.
-
-  (maybe already done / rexamine)
-
-	>>> create abstraction arround DB object, and then use that from IntegrationMgr and BLOBMgr.
-
-
-
 + List of networks in popup must be sorted so last seen most recently at the top
 
 + on tablet, the two details icons appear on different levels (2 rows)
