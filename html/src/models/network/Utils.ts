@@ -1,6 +1,8 @@
-import { IDevice, INetworkAttachmentInfo } from "@/models/device/IDevice";
-import { IGeographicLocation } from "@/models/network/IGeographicLocation";
-import { INetwork } from "@/models/network/INetwork";
+import moment from 'moment';
+
+import { IDevice, INetworkAttachmentInfo } from '../../models/device/IDevice';
+import { IGeographicLocation } from '../../models/network/IGeographicLocation';
+import { INetwork } from '../../models/network/INetwork';
 
 /*
  *  returns empty string if network address list is missing or empty
@@ -9,26 +11,46 @@ import { INetwork } from "@/models/network/INetwork";
 export function GetNetworkName(n: INetwork): string {
   // @todo this should probably sometimes be shortened and be more careful if no
   // freindlyname/networkaddresses, and maybe include reference to location (sudbury etc)
-  let addresses = n.networkAddresses.filter((nn) => nn.includes("."));
+  let addresses = n.networkAddresses.filter((nn) => nn.includes('.'));
   if (addresses.length === 0) {
     addresses = n.networkAddresses;
   }
-  return n.friendlyName + " {" + addresses.join(", ") + "}";
+  return n.friendlyName + ' {' + addresses.join(', ') + '}';
+}
+
+export function SortNetworks(nws: INetwork[]) {
+  const result = Object.assign([], nws);
+  result.sort((l: INetwork, r: INetwork) => {
+    let res = -moment(l.lastSeenAt).diff(r.lastSeenAt);
+    if (res == 0) {
+      const lex = l.externalAddresses ? l.externalAddresses.length : 0;
+      const rex = r.externalAddresses ? r.externalAddresses.length : 0;
+      res = rex - lex;
+    }
+    return res;
+  });
+  return result;
 }
 
 export function GetNetworkCIDRs(n: INetwork): string {
-  return n.networkAddresses.join(", ");
+  return n.networkAddresses.join(', ');
 }
 
-export function GetNetworkByID(networkID: string, networks: INetwork[]): INetwork {
+export function GetNetworkByID(
+  networkID: string,
+  networks: INetwork[]
+): INetwork {
   const n: INetwork | null = GetNetworkByIDQuietly(networkID, networks);
   if (n == null) {
-    throw new Error("no such network id found");
+    throw new Error('no such network id found');
   }
   return n;
 }
 
-export function GetNetworkByIDQuietly(networkID: string, networks: INetwork[]): INetwork | undefined {
+export function GetNetworkByIDQuietly(
+  networkID: string,
+  networks: INetwork[]
+): INetwork | undefined {
   let n: INetwork;
   for (n of networks) {
     if (networkID === n.id) {
@@ -39,7 +61,7 @@ export function GetNetworkByIDQuietly(networkID: string, networks: INetwork[]): 
 }
 
 export function GetNetworkLink(n: INetwork | string): string | undefined {
-  if (typeof n === "string" || n instanceof String) {
+  if (typeof n === 'string' || n instanceof String) {
     return `/#/network/${n}`;
   }
   if ((n as INetwork).id) {
@@ -48,8 +70,10 @@ export function GetNetworkLink(n: INetwork | string): string | undefined {
   return undefined;
 }
 
-export function GetDevicesForNetworkLink(n: INetwork | string): string | undefined {
-  if (typeof n === "string" || n instanceof String) {
+export function GetDevicesForNetworkLink(
+  n: INetwork | string
+): string | undefined {
+  if (typeof n === 'string' || n instanceof String) {
     return `/#/devices?selectedNetwork=${n}`;
   }
   if ((n as INetwork).id) {
@@ -63,7 +87,7 @@ export function GetDevicesForNetworkLink(n: INetwork | string): string | undefin
  * @param l argument can be null, in which case this returns ""
  */
 export function FormatLocation(l?: IGeographicLocation): string {
-  let result: string = "";
+  let result: string = '';
   if (l == null) {
     return result;
   }
@@ -71,27 +95,30 @@ export function FormatLocation(l?: IGeographicLocation): string {
     result += l.city;
   }
   if (l.regionCode != null) {
-    if (result !== "") {
-      result += " ";
+    if (result !== '') {
+      result += ' ';
     }
     result += l.regionCode;
   }
   if (l.countryCode != null) {
-    if (result !== "") {
-      result += ", ";
+    if (result !== '') {
+      result += ', ';
     }
     result += l.countryCode;
   }
   if (l.postalCode != null) {
-    if (result !== "") {
-      result += " ";
+    if (result !== '') {
+      result += ' ';
     }
     result += l.postalCode;
   }
   return result;
 }
 
-export function GetDeviceIDsInNetwork(nw: INetwork, devices: IDevice[]): string[] {
+export function GetDeviceIDsInNetwork(
+  nw: INetwork,
+  devices: IDevice[]
+): string[] {
   const ids: string[] = [];
   devices.forEach((i: IDevice) => {
     let hasThisNetwork = false;
@@ -117,12 +144,14 @@ export function FormatAttachedNetworkLocalAddresses(attachedNetworks: {
   Object.entries(attachedNetworks).forEach((element) => {
     element[1].localAddresses.forEach((e: string) => addresses.push(e));
   });
-  addresses = addresses.filter((value, index, self) => self.indexOf(value) === index);
-  return addresses.join(", ");
+  addresses = addresses.filter(
+    (value, index, self) => self.indexOf(value) === index
+  );
+  return addresses.join(', ');
 }
 
 export function FormatAttachedNetwork(anw: INetworkAttachmentInfo): string {
-  return anw.localAddresses.join(", ");
+  return anw.localAddresses.join(', ');
 }
 
 export function GetLocalNetworkAddresses(device: IDevice): string[] {
@@ -130,7 +159,9 @@ export function GetLocalNetworkAddresses(device: IDevice): string[] {
   Object.entries(device.attachedNetworks).forEach((element) => {
     element[1].localAddresses.forEach((e: string) => addresses.push(e));
   });
-  return addresses.filter((value, index, self) => self.indexOf(value) === index);
+  return addresses.filter(
+    (value, index, self) => self.indexOf(value) === index
+  );
 }
 
 /**
@@ -146,57 +177,69 @@ export function GetServices(
   // @todo add more, but this is probably the most important ones to list...
   if (device.openPorts) {
     const links: Array<{ href: string }> = [];
-    if (device.openPorts.includes("tcp:515")) {
-      localNetworkAddresses.forEach((la) => links.push({ href: `lpd://${la}` }));
+    if (device.openPorts.includes('tcp:515')) {
+      localNetworkAddresses.forEach((la) =>
+        links.push({ href: `lpd://${la}` })
+      );
     }
-    if (device.openPorts.includes("tcp:631")) {
-      localNetworkAddresses.forEach((la) => links.push({ href: `ipp://${la}` }));
+    if (device.openPorts.includes('tcp:631')) {
+      localNetworkAddresses.forEach((la) =>
+        links.push({ href: `ipp://${la}` })
+      );
     }
     if (links.length !== 0) {
-      result.push({ name: "print", links });
+      result.push({ name: 'print', links });
     }
   }
-  if (device.openPorts && device.openPorts.includes("tcp:3389")) {
+  if (device.openPorts && device.openPorts.includes('tcp:3389')) {
     const links: Array<{ href: string }> = [];
     localNetworkAddresses.forEach((la) => links.push({ href: `rdp://${la}` }));
-    result.push({ name: "rdp", links });
+    result.push({ name: 'rdp', links });
   }
-  if (device.openPorts && device.openPorts.includes("tcp:5900")) {
+  if (device.openPorts && device.openPorts.includes('tcp:5900')) {
     const links: Array<{ href: string }> = [];
     localNetworkAddresses.forEach((la) => links.push({ href: `vnc://${la}` }));
-    result.push({ name: "vnc", links });
+    result.push({ name: 'vnc', links });
   }
-  if (device.openPorts && device.openPorts.includes("tcp:22")) {
+  if (device.openPorts && device.openPorts.includes('tcp:22')) {
     const links: Array<{ href: string }> = [];
     localNetworkAddresses.forEach((la) => links.push({ href: `ssh://@${la}` }));
-    result.push({ name: "ssh", links });
+    result.push({ name: 'ssh', links });
   }
-  if (device.openPorts && device.openPorts.includes("tcp:139")) {
+  if (device.openPorts && device.openPorts.includes('tcp:139')) {
     const links: Array<{ href: string }> = [];
     localNetworkAddresses.forEach((la) => links.push({ href: `smb://${la}` }));
-    result.push({ name: "smb", links });
+    result.push({ name: 'smb', links });
   }
-  if (device.openPorts && device.openPorts.includes("tcp:23")) {
+  if (device.openPorts && device.openPorts.includes('tcp:23')) {
     const links: Array<{ href: string }> = [];
-    localNetworkAddresses.forEach((la) => links.push({ href: `telnet://@${la}` }));
-    result.push({ name: "telnet", links });
+    localNetworkAddresses.forEach((la) =>
+      links.push({ href: `telnet://@${la}` })
+    );
+    result.push({ name: 'telnet', links });
   }
   {
     const links: Array<{ href: string }> = [];
     if (device.presentationURL) {
       links.push({ href: device.presentationURL });
     }
-    if (device.openPorts && device.openPorts.includes("tcp:80")) {
-      localNetworkAddresses.forEach((la) => links.push({ href: `http://${la}` }));
+    if (device.openPorts && device.openPorts.includes('tcp:80')) {
+      localNetworkAddresses.forEach((la) =>
+        links.push({ href: `http://${la}` })
+      );
     }
-    if (device.openPorts && device.openPorts.includes("tcp:443")) {
-      localNetworkAddresses.forEach((la) => links.push({ href: `https://${la}` }));
+    if (device.openPorts && device.openPorts.includes('tcp:443')) {
+      localNetworkAddresses.forEach((la) =>
+        links.push({ href: `https://${la}` })
+      );
     }
-    if (device.openPorts && device.openPorts.includes("tcp:8080")) {
-      localNetworkAddresses.forEach((la) => links.push({ href: `http://${la}:8080` }));
+    if (device.openPorts && device.openPorts.includes('tcp:8080')) {
+      localNetworkAddresses.forEach((la) =>
+        links.push({ href: `http://${la}:8080` })
+      );
     }
     if (links.length !== 0) {
-      result.push({ name: "web", links });
+      result.push({ name: 'web', links });
     }
   }
   return result;

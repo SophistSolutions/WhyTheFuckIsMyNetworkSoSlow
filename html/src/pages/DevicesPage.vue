@@ -18,6 +18,7 @@ import {
   GetNetworkLink,
   GetNetworkName,
   GetServices,
+  SortNetworks
 } from "../models/network/Utils";
 
 
@@ -117,7 +118,7 @@ const selectableNetworks = computed<object[]>(
         value: null,
       },
     ];
-    allAvailableNetworks.value.forEach((n) => {
+    SortNetworks(allAvailableNetworks.value).forEach((n) => {
       r.push({
         label: GetNetworkName(n),
         value: n.id,

@@ -13,6 +13,7 @@ import {
   FormatLocation,
   GetDeviceIDsInNetwork,
   GetDevicesForNetworkLink,
+  SortNetworks
 } from "../models/network/Utils";
 
 // Components
@@ -250,7 +251,7 @@ const loading = computed<boolean>(
 
 let filteredExtendedNetworks: ComputedRef<object[]> = computed(() => {
   const result: object[] = [];
-  allNetworks.value.forEach((i) => {
+  SortNetworks(allNetworks.value).forEach((i: INetwork) => {
     let lastSeenStr = moment(i.lastSeenAt).fromNow();
     let statusStr = "?";
     if (i.lastSeenAt != null && moment().diff(moment(i.lastSeenAt), "seconds") < 60) {
