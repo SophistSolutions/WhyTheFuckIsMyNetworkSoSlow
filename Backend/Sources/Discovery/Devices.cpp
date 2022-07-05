@@ -211,7 +211,7 @@ String Discovery::Device::ToString () const
 namespace {
     /*
      ********************************************************************************
-     ********************** NetAndNetInterfaceMapper_ *******************************
+     ************************* NetAndNetInterfaceMapper_ ****************************
      ********************************************************************************
      */
     class NetAndNetInterfaceMapper_ {
@@ -1072,6 +1072,12 @@ namespace {
                             }
                         }();
 
+                        if (di.fAttachedNetworks.empty ()) {
+                            DbgTrace (L"Ignorning MyNeighborDiscoverer_ device %s because it was not on a known network (neighbor: %s)", Characters::ToString (di).c_str (), Characters::ToString (i).c_str ());
+                            return;
+                        }
+                        Assert (not di.GetInternetAddresses ().empty ()); // can happen if we find address in tmp.AddIPAddress_() thats not bound to any adapter (but that shouldnt happen so investigate but is for now so ignore breifly)
+
                         // INTENTIONALLY DONT UPDATE tmp.fLastSeenAt cuz this info can be quite stale
 
                         di.PatchDerivedFields ();
@@ -1266,6 +1272,7 @@ namespace {
                                 l.rwref ().Add (tmp);
                                 DbgTrace (L"Added device %s for fKnownOpenPorts: %s", Characters::ToString (tmp.fGUID).c_str (), Characters::ToString (scanResults.fDiscoveredOpenPorts).c_str ());
                             }
+                            Assert (not tmp.GetInternetAddresses ().empty ()); // shouldn't happen
                         }
                     };
 

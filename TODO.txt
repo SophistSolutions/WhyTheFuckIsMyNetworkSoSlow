@@ -1,5 +1,3 @@
-+ debug why 1600 devices
-
 + Get vscode debugging working for html
 
 + on tablet, the two details icons appear on different levels (2 rows)
