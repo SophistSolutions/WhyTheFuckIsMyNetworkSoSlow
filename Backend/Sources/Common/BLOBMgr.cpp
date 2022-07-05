@@ -212,17 +212,11 @@ GUID BLOBMgr::AddBLOBFromURL (const URI& url, bool recheckIfExpired)
     };
     auto data = fetchData (url);
     GUID guid = AddBLOB (data.first, data.second);
-    DbgTrace (L"Added blob mapping: %s maps to blobid %s", Characters::ToString (url).c_str (), Characters::ToString (guid).c_str ());
     if (!sConn_) {
         sConn_ = make_shared<DBConn_> ();
     }
-    /// @todo Stroika needs AddOrUpdate() method - see https://stroika.atlassian.net/browse/STK-919
-    if (sConn_->fBLOBURLs->GetByID (url).has_value ()) {
-        sConn_->fBLOBURLs->Update (DBRecs_::BLOBURL_{url, guid});
-    }
-    else {
-        sConn_->fBLOBURLs->AddNew (DBRecs_::BLOBURL_{url, guid});
-    }
+    sConn_->fBLOBURLs->AddOrUpdate (DBRecs_::BLOBURL_{url, guid});
+    DbgTrace (L"Added blob mapping: %s maps to blobid %s", Characters::ToString (url).c_str (), Characters::ToString (guid).c_str ());
     return guid;
 }
 
