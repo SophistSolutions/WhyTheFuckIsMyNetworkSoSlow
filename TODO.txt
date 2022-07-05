@@ -1,6 +1,3 @@
-+ Try default guessing of network name based on LOCATION before network interface name.
-
-
 + Get vscode debugging working for html
 
 + try to use scoped - but in some cases breaks things... (CSS SCOPED)

@@ -157,50 +157,50 @@ namespace {
             nw->fGUID = GUID::GenerateNew ();
             existingNWsLock->Add (*nw);
         };
+        auto genCIDRsFromBindings = [] (const Iterable<CIDR>& bindings) -> Set<CIDR> {
+            Set<CIDR> cidrs;
+            for (const CIDR& nib : bindings) {
+                if (not kIncludeMulticastAddressesInDiscovery) {
+                    if (nib.GetBaseInternetAddress ().IsMulticastAddress ()) {
+#if USE_NOISY_TRACE_IN_THIS_MODULE_
+                        DbgTrace (L"CollectActiveNetworks_: interface=%s; ia=%s binding ignored because IsMulticastAddress", Characters::ToString (i.fGUID).c_str (), Characters::ToString (nib.fInternetAddress).c_str ());
+#endif
+                        continue; // skip multicast addresses, because they don't really refer to a device
+                    }
+                }
+                if (not kIncludeLinkLocalAddressesInDiscovery) {
+                    if (nib.GetBaseInternetAddress ().IsLinkLocalAddress ()) {
+#if USE_NOISY_TRACE_IN_THIS_MODULE_
+                        DbgTrace (L"CollectActiveNetworks_: interface=%s; ia=%s binding ignored because IsLinkLocalAddress", Characters::ToString (i.fGUID).c_str (), Characters::ToString (nib.fInternetAddress).c_str ());
+#endif
+                        continue; // skip link-local addresses, they are only used for special purposes like discovery, and aren't part of the network
+                    }
+                }
+                if (nib.GetBaseInternetAddress ().GetAddressSize ().has_value ()) {
+                    // Guess CIDR prefix is max (so one address - bad guess) - if we cannot read from adapter
+                    cidrs += CIDR{nib.GetBaseInternetAddress (), nib.GetNumberOfSignificantBits ()};
+                }
+            }
+            // You CAN generate two CIDRs, one which subsumes the other. If so, lose any subsumed CIDRs from the list
+            // Use simple quadradic algorithm, since we can never have very many CIDRs in a network
+            for (Iterator<CIDR> ci = cidrs.begin (); ci != cidrs.end (); ++ci) {
+                for (const CIDR& maybeSubsumerCIDR : cidrs) {
+                    if (maybeSubsumerCIDR.GetNumberOfSignificantBits () > ci->GetNumberOfSignificantBits ()) {
+                        if (maybeSubsumerCIDR.GetRange ().Contains (ci->GetRange ())) {
+                            DbgTrace ("Removing subsumed CIDR %s inside %s", Characters::ToString (*ci).c_str (), Characters::ToString (maybeSubsumerCIDR).c_str ());
+                            cidrs.Remove (ci);
+                        }
+                    }
+                }
+            }
+            return cidrs;
+        };
 
         Collection<Network> accumResults;
         for (const NetworkInterface& i : Discovery::NetworkInterfacesMgr::sThe.CollectActiveNetworkInterfaces ()) {
             if (not i.fBindings.fAddressRanges.empty ()) {
                 Network nw;
                 {
-                    auto genCIDRsFromBindings = [] (const Iterable<CIDR>& bindings) -> Set<CIDR> {
-                        Set<CIDR> cidrs;
-                        for (const CIDR& nib : bindings) {
-                            if (not kIncludeMulticastAddressesInDiscovery) {
-                                if (nib.GetBaseInternetAddress ().IsMulticastAddress ()) {
-#if USE_NOISY_TRACE_IN_THIS_MODULE_
-                                    DbgTrace (L"CollectActiveNetworks_: interface=%s; ia=%s binding ignored because IsMulticastAddress", Characters::ToString (i.fGUID).c_str (), Characters::ToString (nib.fInternetAddress).c_str ());
-#endif
-                                    continue; // skip multicast addresses, because they don't really refer to a device
-                                }
-                            }
-                            if (not kIncludeLinkLocalAddressesInDiscovery) {
-                                if (nib.GetBaseInternetAddress ().IsLinkLocalAddress ()) {
-#if USE_NOISY_TRACE_IN_THIS_MODULE_
-                                    DbgTrace (L"CollectActiveNetworks_: interface=%s; ia=%s binding ignored because IsLinkLocalAddress", Characters::ToString (i.fGUID).c_str (), Characters::ToString (nib.fInternetAddress).c_str ());
-#endif
-                                    continue; // skip link-local addresses, they are only used for special purposes like discovery, and aren't part of the network
-                                }
-                            }
-                            if (nib.GetBaseInternetAddress ().GetAddressSize ().has_value ()) {
-                                // Guess CIDR prefix is max (so one address - bad guess) - if we cannot read from adapter
-                                cidrs += CIDR{nib.GetBaseInternetAddress (), nib.GetNumberOfSignificantBits ()};
-                            }
-                        }
-                        // You CAN generate two CIDRs, one which subsumes the other. If so, lose any subsumed CIDRs from the list
-                        // Use simple quadradic algorithm, since we can never have very many CIDRs in a network
-                        for (Iterator<CIDR> ci = cidrs.begin (); ci != cidrs.end (); ++ci) {
-                            for (const CIDR& maybeSubsumerCIDR : cidrs) {
-                                if (maybeSubsumerCIDR.GetNumberOfSignificantBits () > ci->GetNumberOfSignificantBits ()) {
-                                    if (maybeSubsumerCIDR.GetRange ().Contains (ci->GetRange ())) {
-                                        DbgTrace ("Removing subsumed CIDR %s inside %s", Characters::ToString (*ci).c_str (), Characters::ToString (maybeSubsumerCIDR).c_str ());
-                                        cidrs.Remove (ci);
-                                    }
-                                }
-                            }
-                        }
-                        return cidrs;
-                    };
                     Set<CIDR> cidrs = genCIDRsFromBindings (i.fBindings.fAddressRanges);
 
                     // See if the network has already been found. VERY TRICKY - cuz ambiguous concept a network. Mostly follow my
@@ -267,6 +267,16 @@ namespace {
                 else {
                     DbgTrace (L"Skipping interface %s - cuz bindings bad address", Characters::ToString (i).c_str ());
                 }
+            }
+        }
+
+        // foreach network, replace friendly name (computed from arbitrarily chosen interface name) with info about
+        // geoloc
+        for (Iterator<Network> nwi = accumResults.begin (); nwi != accumResults.end (); ++nwi) {
+            if (nwi->fGEOLocInfo and nwi->fGEOLocInfo->fCity) {
+                Network nw         = *nwi;
+                nw.fFriendlyName = nwi->fGEOLocInfo->fCity;
+                accumResults.Update (nwi, nw, &nwi);
             }
         }
 
