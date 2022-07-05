@@ -5,17 +5,23 @@
 #define _WhyTheFuckIsMyNetworkSoSlow_BackendApp_Common_DB_inl_ 1
 
 /*
-********************************************************************************
-***************************** Implementation Details ***************************
-********************************************************************************
-*/
+ ********************************************************************************
+ ***************************** Implementation Details ***************************
+ ********************************************************************************
+ */
 
 #include "Stroika/Foundation/Characters/ToString.h"
+#include "Stroika/Foundation/Database/SQL/Transaction.h"
 #include "Stroika/Foundation/Debug/Assertions.h"
 #include "Stroika/Foundation/Debug/Trace.h"
 
 namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
 
+    /*
+     ********************************************************************************
+     *************************************** DB *************************************
+     ********************************************************************************
+     */
     inline DB::DB (Version targetDBVersion, const Iterable<ORM::Schema::Table>& tables)
         : fTargetDBVersion_{targetDBVersion}
         , fTables_{tables}

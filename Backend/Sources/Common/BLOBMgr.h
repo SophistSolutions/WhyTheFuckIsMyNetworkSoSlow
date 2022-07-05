@@ -54,26 +54,29 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
 
     public:
         /**
+         *  NOTE AddBLOB () may re-use a BLOB-ID of an existing entry if it was already identical.
          */
         nonvirtual GUID AddBLOB (const BLOB& b, const InternetMediaType& ct);
 
     public:
         /**
-         *  This may cache (based on url) and not fetch each time...
+         *  This may cache (based on url) and not fetch each time (Depending on recheck flag)
+         *  if recheckIfExpired, check expired flag (conditional get) - else FORCE refetch/check.
          */
-        nonvirtual GUID AddBLOBFromURL (const URI& url);
+        nonvirtual GUID AddBLOBFromURL (const URI& url, bool recheckIfExpired = true);
 
     public:
         /**
-         *  Queue up work - fetching that url, and store it when it becomes available
+         *  Queue up work - fetching that url, and store it when it becomes available; Return
+         *  ID for BLOB if it already exists (even if its out of date - return the latest - even if new fetch request queued).
          */
-        nonvirtual optional<GUID> AsyncAddBLOBFromURL (const URI& url, bool allowExpired = false);
+        nonvirtual optional < GUID> AsyncAddBLOBFromURL (const URI& url, bool recheckIfExpired = true);
 
     public:
         /**
-         *  Check if there is a BLOB stored associated with the given URL.
+         *  Check if there is a BLOB stored associated with the given URL. Does not fetch.
          */
-        nonvirtual optional<GUID> Lookup (const URI& url, bool allowExpired = false);
+        nonvirtual optional<GUID> Lookup (const URI& url);
 
     public:
         /**
@@ -81,8 +84,6 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         nonvirtual tuple<BLOB, InternetMediaType> GetBLOB (const GUID& id) const;
 
     private:
-        Execution::Synchronized<Containers::Bijection<GUID, tuple<BLOB, InternetMediaType>>> fStorage_;
-        Execution::Synchronized<Containers::Mapping<URI, GUID>>                              fURI2BLOBMap_;
         Execution::Synchronized<unique_ptr<Execution::ThreadPool>>                           fThreadPool_;
     };
     inline BLOBMgr BLOBMgr::sThe; // @todo recondider if this follows new Stroika Singleton pattern -- LGP 2020-08-20
