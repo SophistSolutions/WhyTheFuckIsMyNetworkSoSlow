@@ -274,7 +274,7 @@ namespace {
         // geoloc
         for (Iterator<Network> nwi = accumResults.begin (); nwi != accumResults.end (); ++nwi) {
             if (nwi->fGEOLocInfo and nwi->fGEOLocInfo->fCity) {
-                Network nw         = *nwi;
+                Network nw       = *nwi;
                 nw.fFriendlyName = nwi->fGEOLocInfo->fCity;
                 accumResults.Update (nwi, nw, &nwi);
             }
