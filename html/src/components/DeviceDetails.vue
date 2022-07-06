@@ -5,7 +5,7 @@ import JsonViewer from 'vue-json-viewer';
 
 import { IDevice, INetworkAttachmentInfo } from "../models/device/IDevice";
 import { ComputeServiceTypeIconURL } from "../models/device/Utils";
-import { GetNetworkLink, GetNetworkName, GetServices } from "../models/network/Utils";
+import { GetNetworkLink, GetNetworkName, GetServices, SortNetworks } from "../models/network/Utils";
 import { rescanDevice } from "../proxy/API";
 
 
@@ -13,6 +13,7 @@ import ReadOnlyTextWithHover from '../components/ReadOnlyTextWithHover.vue';
 import Link2DetailsPage from '../components/Link2DetailsPage.vue';
 
 import { useNetStateStore } from '../stores/Net-State-store'
+import { INetwork } from 'src/models/network/INetwork';
 
 const store = useNetStateStore()
 
@@ -83,26 +84,31 @@ const currentDevice = computed<IDevice | undefined>(
 interface IExtendedDevice extends IDevice {
   localAddresses: string;
   attachedNetworks: any;
+  attachedFullNetworkObjects: INetwork[];
 }
 
 let currentDeviceDetails = computed<IExtendedDevice | undefined>(
   () => {
     if (currentDevice.value) {
-      const attachedNetworkInfo = {} as { [key: string]: object };
+      let attachedFullNetworkObjects = [] as INetwork[];
+      let attachedNetworkInfo = {} as { [key: string]: object };
       Object.keys(currentDevice.value.attachedNetworks).forEach((element: any) => {
         const thisNWI = currentDevice.value.attachedNetworks[element] as INetworkAttachmentInfo;
         let netName = "?";
-        const thisNetObj = store.getNetwork(element);
+        const thisNetObj : INetwork = store.getNetwork(element);
         if (thisNetObj) {
           netName = GetNetworkName(thisNetObj);
+          attachedFullNetworkObjects.push (thisNetObj);
         }
         attachedNetworkInfo[element] = { ...thisNWI, name: netName };
       });
+      attachedFullNetworkObjects = SortNetworks(attachedFullNetworkObjects)
       return {
         ...currentDevice.value,
         ...{
           localAddresses: localNetworkAddresses().join(", "),
           attachedNetworks: attachedNetworkInfo,
+          attachedFullNetworkObjects: attachedFullNetworkObjects
         },
       };
     }
@@ -158,29 +164,29 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
     <div class="row" v-if="currentDevice.attachedNetworks && currentDeviceDetails">
       <div class="col-3">Networks</div>
       <div class="col">
-        <div class="row" v-for="attachedNetID in Object.keys(currentDevice.attachedNetworks)"
-          v-bind:key="attachedNetID">
+        <div class="row" v-for="attachedNet in currentDeviceDetails.attachedFullNetworkObjects"
+          v-bind:key="attachedNet.id">
           <div class="col">
             <div class="row">
               <div class="col no-wrap truncateWithElipsis">
                 <ReadOnlyTextWithHover :message="
-                  currentDeviceDetails.attachedNetworks[attachedNetID].name +
+                  currentDeviceDetails.attachedNetworks[attachedNet.id].name +
                   ' (' +
-                  attachedNetID +
+                  attachedNet.id +
                   ')'
-                " :link="GetNetworkLink(attachedNetID)" title="Network Name" />
+                " :link="GetNetworkLink(attachedNet.id)" title="Network Name" />
               </div>
             </div>
-            <div class="row" v-if="currentDevice.attachedNetworks[attachedNetID].hardwareAddresses">
+            <div class="row" v-if="currentDevice.attachedNetworks[attachedNet.id].hardwareAddresses">
               <div class="col-1" />
               <div class="col-4">Hardware Address(es)</div>
-              <div class="col no-wrap"> {{ currentDevice.attachedNetworks[attachedNetID].hardwareAddresses.join(", ") }}
+              <div class="col no-wrap truncateWithElipsis"> {{ currentDevice.attachedNetworks[attachedNet.id].hardwareAddresses.join(", ") }}
               </div>
             </div>
-            <div class="row" v-if="currentDevice.attachedNetworks[attachedNetID].localAddresses">
+            <div class="row" v-if="currentDevice.attachedNetworks[attachedNet.id].localAddresses">
               <div class="col-1" />
               <div class="col-4">Network Address Binding(s)</div>
-              <div class="col no-wrap"> {{ currentDevice.attachedNetworks[attachedNetID].localAddresses.join(", ") }}
+              <div class="col no-wrap truncateWithElipsis"> {{ currentDevice.attachedNetworks[attachedNet.id].localAddresses.join(", ") }}
               </div>
             </div>
           </div>
