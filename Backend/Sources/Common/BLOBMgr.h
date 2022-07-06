@@ -70,7 +70,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
          *  Queue up work - fetching that url, and store it when it becomes available; Return
          *  ID for BLOB if it already exists (even if its out of date - return the latest - even if new fetch request queued).
          */
-        nonvirtual optional < GUID> AsyncAddBLOBFromURL (const URI& url, bool recheckIfExpired = true);
+        nonvirtual optional<GUID> AsyncAddBLOBFromURL (const URI& url, bool recheckIfExpired = true);
 
     public:
         /**
@@ -84,7 +84,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         nonvirtual tuple<BLOB, InternetMediaType> GetBLOB (const GUID& id) const;
 
     private:
-        Execution::Synchronized<unique_ptr<Execution::ThreadPool>>                           fThreadPool_;
+        Execution::Synchronized<unique_ptr<Execution::ThreadPool>> fThreadPool_;
     };
     inline BLOBMgr BLOBMgr::sThe; // @todo recondider if this follows new Stroika Singleton pattern -- LGP 2020-08-20
 

@@ -138,9 +138,9 @@ namespace {
             fBLOBURLs                        = make_shared<BLOBURLTableConnection_> (conn, kBLOBURLTableSchema_, kDBObjectMapper_);
             fLookupBLOBByValueAndContentType = make_shared<SQL::Statement> (conn.mkStatement (L"SELECT * from BLOB where blob=:b and contentType=:ct;"));
         }
-        shared_ptr<SQL::ORM::TableConnection<DBRecs_::BLOB_>>    fBLOBs;
-        shared_ptr<BLOBURLTableConnection_> fBLOBURLs;
-        shared_ptr<SQL::Statement>                               fLookupBLOBByValueAndContentType;
+        shared_ptr<SQL::ORM::TableConnection<DBRecs_::BLOB_>> fBLOBs;
+        shared_ptr<BLOBURLTableConnection_>                   fBLOBURLs;
+        shared_ptr<SQL::Statement>                            fLookupBLOBByValueAndContentType;
 
         optional<GUID> Lookup (const BLOB& b, const InternetMediaType& ct) const
         {
@@ -220,7 +220,7 @@ GUID BLOBMgr::AddBLOBFromURL (const URI& url, bool recheckIfExpired)
     return guid;
 }
 
-optional < GUID> BLOBMgr::AsyncAddBLOBFromURL (const URI& url, bool recheckIfExpired)
+optional<GUID> BLOBMgr::AsyncAddBLOBFromURL (const URI& url, bool recheckIfExpired)
 {
     // create mapping of URL to guid, and if not presnt, add task to threadpool to AddBLOBFromURL and store mapping into mapping object
 
@@ -232,7 +232,7 @@ optional < GUID> BLOBMgr::AsyncAddBLOBFromURL (const URI& url, bool recheckIfExp
     }
 
     optional<GUID> storeGUID;
-    if (optional < DBRecs_::BLOBURL_> cachedURLObj = sConn_->fBLOBURLs->GetByID (url)) {
+    if (optional<DBRecs_::BLOBURL_> cachedURLObj = sConn_->fBLOBURLs->GetByID (url)) {
         storeGUID = cachedURLObj->fBLOBID;
     }
     if (not storeGUID.has_value ()) {
