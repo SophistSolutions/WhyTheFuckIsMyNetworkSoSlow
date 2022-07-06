@@ -217,7 +217,7 @@ const tableHeaders = ref([
   mkTblHdr_({
     name: "networksSummary",
     field: "attachedNetworks",
-    label: "Network",
+    label: "Networks",
     headerStyle: 'width: 12%; ',
   }),
   mkTblHdr_({
