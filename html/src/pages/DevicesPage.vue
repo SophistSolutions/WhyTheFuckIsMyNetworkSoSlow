@@ -239,7 +239,6 @@ const router = useRouter()
 
 let allDevices: ComputedRef<IDevice[]> = computed(() => store.getDevices);
 
-
 let filtered: ComputedRef<boolean> = computed(() =>
   selectedNetworkCurrent.value != null ||
   selectedTimeframe.value !== null ||
@@ -352,8 +351,6 @@ defineComponent({
 });
 
 onMounted(() => {
-  // emit ('updateExtraContent', "must put actual slot here");
-
   // @see https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/14
   // This works, but maybe cleaner to do within the router, but wasn't able to get
   // working (so far)
