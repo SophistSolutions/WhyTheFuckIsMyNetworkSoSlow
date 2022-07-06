@@ -469,6 +469,25 @@ namespace {
         struct RolledUpNetworks {
             // @todo add much more here - different useful summaries of same info
             NetworkKeyedCollection_ fNetworks;
+
+            //tmphack slow impl - instead build mapping table when constructing rollup
+            // of networkinfo
+            // @todo define struct for NetworksRollup (and devices) that has above map, and the REVERSE ID map
+            // (individual 2 rollup), and then provide funciton to map a set of IDs to their rolled up IDs
+            // AND DOCUMENT WHY GUARNATEED UNIQUE - IF AS I THINK IT IS - CUZ each item goes in one rollup)
+            auto MapAggregatedNetID2ItsRollupID (const GUID& netID) -> GUID
+            {
+                for (const auto& i : fNetworks) {
+                    if (i.fAggregatesReversibly and i.fAggregatesReversibly->Contains (netID)) {
+                        return i.fGUID;
+                    }
+                    if (i.fAggregatesIrreversibly and i.fAggregatesIrreversibly->Contains (netID)) {
+                        return i.fGUID;
+                    }
+                }
+                AssertNotReached (); // because we guarantee each item rolled up exactly once
+                return netID;
+            };
         };
         RolledUpNetworks GetRolledUpNetworks (Time::DurationSecondsType allowedStaleness = 5.0);
 
@@ -496,25 +515,10 @@ namespace {
                 auto rolledUpNetworks = GetRolledUpNetworks (allowedStaleness * 10.0); // longer allowedStaleness cuz we dont care much about this and the parts
                                                                                        // we look at really dont change
 
-                //tmphack slow impl - instead build mapping table when constructing rollup
-                // of networkinfo
-                // @todo define struct for NetworksRollup (and devices) that has above map, and the REVERSE ID map
-                // (individual 2 rollup), and then provide funciton to map a set of IDs to their rolled up IDs
-                // AND DOCUMENT WHY GUARNATEED UNIQUE - IF AS I THINK IT IS - CUZ each item goes in one rollup)
-                auto mapAggregatedNetID2ItsRollupID = [&] (const GUID& netID) -> GUID {
-                    for (const auto& i : rolledUpNetworks.fNetworks) {
-                        if (i.fAggregatesReversibly and i.fAggregatesReversibly->Contains (netID)) {
-                            return i.fGUID;
-                        }
-                    }
-                    // address- but not yet, as we get this too often, and too noisy in logs - WeakAsserteNotReached ();
-                    //AssertNotReached ();    // because we guarantee each item rolled up exactly once
-                    return netID;
-                };
-                auto reverseRollup = [&] (const Mapping<GUID, NetworkAttachmentInfo>& nats) -> Mapping<GUID, NetworkAttachmentInfo> {
+                auto mapAggregatedAttachments2Rollups = [&] (const Mapping<GUID, NetworkAttachmentInfo>& nats) -> Mapping<GUID, NetworkAttachmentInfo> {
                     Mapping<GUID, NetworkAttachmentInfo> result;
                     for (const auto& ni : nats) {
-                        result.Add (mapAggregatedNetID2ItsRollupID (ni.fKey), ni.fValue);
+                        result.Add (rolledUpNetworks.MapAggregatedNetID2ItsRollupID (ni.fKey), ni.fValue);
                     }
                     return result;
                 };
@@ -523,19 +527,22 @@ namespace {
                 // and then add in (should be done just once) the values from the database,
                 // and then keep adding any more recent discovery changes
                 RolledUpDevices result               = sRolledUpDevices_;
-                auto            doMergeOneIntoRollup = [&result, &reverseRollup] (const Device& d2MergeIn) {
+                auto            doMergeOneIntoRollup = [&result, &mapAggregatedAttachments2Rollups] (const Device& d2MergeIn) {
                     // @todo slow/quadradic - may need to tweak
                     if (auto i = result.fDevices.First ([&d2MergeIn] (const auto& exisingRolledUpDevice) { return ShouldRollup_ (exisingRolledUpDevice, d2MergeIn); })) {
                         // then merge this into that item
                         // @todo think out order of params and better document order of params!
-                        auto tmp              = Device::Rollup (*i, d2MergeIn);
-                        tmp.fAttachedNetworks = reverseRollup (tmp.fAttachedNetworks);
-                        result.fDevices.Add (tmp);
+                        auto d2MergeInPatched              = d2MergeIn;
+                        d2MergeInPatched.fAttachedNetworks = mapAggregatedAttachments2Rollups (d2MergeInPatched.fAttachedNetworks);
+                        auto tmp                           = Device::Rollup (*i, d2MergeInPatched);
+                        result.fDevices.Add (tmp); // update
                     }
                     else {
+                        Assert (not d2MergeIn.fAggregatesReversibly.has_value ());
                         Device newRolledUpDevice                = d2MergeIn;
                         newRolledUpDevice.fAggregatesReversibly = Set<GUID>{d2MergeIn.fGUID};
                         newRolledUpDevice.fGUID                 = GUID::GenerateNew ();
+                        newRolledUpDevice.fAttachedNetworks     = mapAggregatedAttachments2Rollups (newRolledUpDevice.fAttachedNetworks);
                         result.fDevices.Add (newRolledUpDevice);
                     }
                 };
