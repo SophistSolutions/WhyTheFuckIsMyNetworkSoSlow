@@ -18,7 +18,8 @@ import {
   GetNetworkLink,
   GetNetworkName,
   GetServices,
-  SortNetworks
+  SortNetworks,
+  GetAttachedNetworksAsNetworks
 } from "../models/network/Utils";
 
 
@@ -484,9 +485,9 @@ const pagination = ref({
                 <ReadOnlyTextWithHover :message="props.row.localAddresses" />
               </q-td>
               <q-td :props="props" key="networksSummary">
-                <span v-for="(anw, i) in Object.keys(props.row.attachedNetworks)" :key="i">
-                  <ReadOnlyTextWithHover v-if="GetNetworkByIDQuietly(anw, allAvailableNetworks)"
-                    :message="GetNetworkName(GetNetworkByIDQuietly(anw, allAvailableNetworks))"
+                <span v-for="anw in GetAttachedNetworksAsNetworks(props.row.attachedNetworks, allAvailableNetworks)" :key="anw.id">
+                  <ReadOnlyTextWithHover 
+                    :message="GetNetworkName(anw)"
                     :link="GetNetworkLink(anw)" />&nbsp;
                 </span>
               </q-td>

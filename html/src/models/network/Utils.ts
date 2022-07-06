@@ -164,6 +164,23 @@ export function GetLocalNetworkAddresses(device: IDevice): string[] {
   );
 }
 
+/// And sort them the way we do throughout the rest of the UI
+export function GetAttachedNetworksAsNetworks(
+  attachedNetworks: {
+    [key: string]: INetworkAttachmentInfo;
+  },
+  allNetworks: INetwork[]
+): INetwork[] {
+  const result = [] as INetwork[];
+  Object.entries(attachedNetworks).forEach((element) => {
+    const i = allNetworks.find((i) => i.id == element[0]);
+    if (i) {
+      result.push(i);
+    }
+  });
+  return SortNetworks(result);
+}
+
 /**
  * returned devices are { name: .e.g ssh, links: [{href: telnet://202.2.2.2}] }, returns array of them
  * @param device
