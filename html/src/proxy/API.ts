@@ -13,7 +13,7 @@ import { gRuntimeConfiguration } from 'boot/configuration';
 import { Logger } from '../utils/Logger';
 
 export async function fetchNetworks(): Promise<INetwork[]> {
-  return fetch(`${gRuntimeConfiguration.API_ROOT}/networks?recurse=true`)
+  return fetch(`${gRuntimeConfiguration.API_ROOT}/api/v1/networks?recurse=true`)
     .then((response) => response.json())
     .then((data) => {
       return data;
@@ -22,7 +22,7 @@ export async function fetchNetworks(): Promise<INetwork[]> {
 }
 
 export async function fetchNetwork(id: string): Promise<INetwork> {
-  return fetch(`${gRuntimeConfiguration.API_ROOT}/networks/${id}`)
+  return fetch(`${gRuntimeConfiguration.API_ROOT}/api/v1/networks/${id}`)
     .then((response) => response.json())
     .then((data) => {
       return data;
@@ -32,7 +32,7 @@ export async function fetchNetwork(id: string): Promise<INetwork> {
 
 export async function fetchNetworkInterfaces(): Promise<INetworkInterface[]> {
   return fetch(
-    `${gRuntimeConfiguration.API_ROOT}/network-interfaces?recurse=true`
+    `${gRuntimeConfiguration.API_ROOT}/api/v1/network-interfaces?recurse=true`
   )
     .then((response) => response.json())
     .then((data) => {
@@ -43,7 +43,7 @@ export async function fetchNetworkInterfaces(): Promise<INetworkInterface[]> {
 
 export async function rescanDevice(deviceID: string): Promise<void> {
   return fetch(
-    `${gRuntimeConfiguration.API_ROOT}/operations/scan/FullRescan?deviceID=${deviceID}`
+    `${gRuntimeConfiguration.API_ROOT}/api/v1/operations/scan/FullRescan?deviceID=${deviceID}`
   )
     .then((response) => response.json())
     .then((data) => {
@@ -77,7 +77,7 @@ export async function fetchDevices(
   );
 
   return fetch(
-    `${gRuntimeConfiguration.API_ROOT}/devices?recurse=true&sort=${encodeURI(
+    `${gRuntimeConfiguration.API_ROOT}/api/v1/devices?recurse=true&sort=${encodeURI(
       JSON.stringify(searchSpecs)
     )}`
   )
@@ -98,7 +98,7 @@ export async function fetchDevices(
 }
 
 export async function fetchDevice(id: string): Promise<IDevice> {
-  return fetch(`${gRuntimeConfiguration.API_ROOT}/devices/${id}`)
+  return fetch(`${gRuntimeConfiguration.API_ROOT}/api/v1/devices/${id}`)
     .then((response) => response.json())
     .then((data) => {
       // fixup urls that are relative to be relative to the WSAPI
@@ -114,7 +114,7 @@ export async function fetchDevice(id: string): Promise<IDevice> {
 }
 
 export async function fetchAboutInfo(): Promise<IAbout> {
-  return fetch(`${gRuntimeConfiguration.API_ROOT}/about`)
+  return fetch(`${gRuntimeConfiguration.API_ROOT}/api/v1/about`)
     .then((response) => response.json())
     .then((data) => {
       return data;

@@ -193,11 +193,11 @@ public:
             DefaultPage_},
 
             Route{
-                L"about"_RegEx,
+                L"api/v1/about"_RegEx,
                 mkRequestHandler (kAbout_, About::kMapper, function<About (void)>{[=] () { return fWSAPI_->GetAbout (); }})},
 
             Route{
-                L"blob/(.+)"_RegEx,
+                L"api/v1/blob/(.+)"_RegEx,
                 [=] (Message* m, const String& id) {
                     tuple<Memory::BLOB, DataExchange::InternetMediaType> b = fWSAPI_->GetBLOB (id);
                     m->rwResponse ().contentType                           = get<1> (b);
@@ -205,7 +205,7 @@ public:
                 }},
 
             Route{
-                L"devices(/?)"_RegEx,
+                L"api/v1/devices(/?)"_RegEx,
                 [=] (Message* m) {
                     constexpr bool                              kDefault_FilterRunningOnly_{true};
                     Mapping<String, DataExchange::VariantValue> args              = PickoutParamValues (&m->rwRequest ());
@@ -232,13 +232,13 @@ public:
                     }
                 }},
             Route{
-                L"devices/(.+)"_RegEx,
+                L"api/v1/devices/(.+)"_RegEx,
                 [=] (Message* m, const String& id) {
                     WriteResponse (&m->rwResponse (), kDevices_, Device::kMapper.FromObject (fWSAPI_->GetDevice (id)));
                 }},
 
             Route{
-                L"network-interfaces(/?)"_RegEx,
+                L"api/v1/network-interfaces(/?)"_RegEx,
                 [=] (Message* m) {
                     constexpr bool                              kDefault_FilterRunningOnly_{true};
                     Mapping<String, DataExchange::VariantValue> args              = PickoutParamValues (&m->rwRequest ());
@@ -251,13 +251,13 @@ public:
                     }
                 }},
             Route{
-                L"network-interfaces/(.+)"_RegEx,
+                L"api/v1/network-interfaces/(.+)"_RegEx,
                 [=] (Message* m, const String& id) {
                     WriteResponse (&m->rwResponse (), kNetworkInterfaces_, NetworkInterface::kMapper.FromObject (fWSAPI_->GetNetworkInterface (id)));
                 }},
 
             Route{
-                L"networks(/?)"_RegEx,
+                L"api/v1/networks(/?)"_RegEx,
                 [=] (Message* m) {
                     Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (&m->rwRequest ());
                     if (args.LookupValue (L"recurse"sv, false).As<bool> ()) {
@@ -268,13 +268,13 @@ public:
                     }
                 }},
             Route{
-                L"networks/(.+)"_RegEx,
+                L"api/v1/networks/(.+)"_RegEx,
                 [=] (Message* m, const String& id) {
                     WriteResponse (&m->rwResponse (), kNetworks_, Network::kMapper.FromObject (fWSAPI_->GetNetwork (id)));
                 }},
 
             Route{
-                L"operations/ping"_RegEx,
+                L"api/v1/operations/ping"_RegEx,
                 [=] (Message* m) {
                     Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (&m->rwRequest ());
                     if (auto address = args.Lookup (L"target"sv)) {
@@ -286,7 +286,7 @@ public:
                     }
                 }},
             Route{
-                L"operations/traceroute"_RegEx,
+                L"api/v1/operations/traceroute"_RegEx,
                 [=] (Message* m) {
                     Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (&m->rwRequest ());
                     optional<bool>                              reverseDNSResult;
@@ -302,7 +302,7 @@ public:
                     }
                 }},
             Route{
-                L"operations/dns/calculate-negative-lookup-time"_RegEx,
+                L"api/v1/operations/dns/calculate-negative-lookup-time"_RegEx,
                 [=] (Message* m) {
                     ExpectedMethod (m->request, kOperations_);
                     optional<unsigned int>                      samples;
@@ -313,7 +313,7 @@ public:
                     WriteResponse (&m->rwResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_DNS_CalculateNegativeLookupTime (samples)));
                 }},
             Route{
-                L"operations/dns/lookup"_RegEx,
+                L"api/v1/operations/dns/lookup"_RegEx,
                 [=] (Message* m) {
                     ExpectedMethod (m->request, kOperations_);
                     String                                      name;
@@ -327,13 +327,13 @@ public:
                     WriteResponse (&m->rwResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_DNS_Lookup (name)));
                 }},
             Route{
-                L"operations/dns/calculate-score"_RegEx,
+                L"api/v1/operations/dns/calculate-score"_RegEx,
                 [=] (Message* m) {
                     ExpectedMethod (m->request, kOperations_);
                     WriteResponse (&m->rwResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_DNS_CalculateScore ()));
                 }},
             Route{
-                L"operations/scan/FullRescan"_RegEx,
+                L"api/v1/operations/scan/FullRescan"_RegEx,
                 [=] (Message* m) {
                     Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (&m->rwRequest ());
                     ExpectedMethod (m->request, kOperations_);
@@ -345,7 +345,7 @@ public:
                     }
                 }},
             Route{
-                L"operations/scan/Scan"_RegEx,
+                L"api/v1/operations/scan/Scan"_RegEx,
                 [=] (Message* m) {
                     Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (&m->rwRequest ());
                     ExpectedMethod (m->request, kOperations_);
@@ -428,7 +428,7 @@ const WebServiceMethodDescription WebServer::Rep_::kAbout_{
     DataExchange::InternetMediaTypes::kJSON,
     L"Data about the WTF application, version etc"sv,
     Sequence<String>{
-        L"curl http://localhost:8080/about"sv,
+        L"curl http://localhost:8080/api/v1/about"sv,
     },
     Sequence<String>{L"Fetch the component versions, etc."sv},
 };
@@ -438,7 +438,7 @@ const WebServiceMethodDescription WebServer::Rep_::kBlob_{
     nullopt,
     L"BLOBs (and their associated media type) generally sourced from other computers, but cached here so they will be available when those other computers are not (like icons from SSDP)"sv,
     Sequence<String>{
-        L"curl http://localhost:8080/blob/{ID}"sv,
+        L"curl http://localhost:8080/api/v1/blob/{ID}"sv,
     },
     Sequence<String>{L"Fetch the blob by value (generally these links appear in GET /devices/{x} etc output)."sv},
 };
@@ -448,12 +448,12 @@ const WebServiceMethodDescription WebServer::Rep_::kDevices_{
     DataExchange::InternetMediaTypes::kJSON,
     {},
     Sequence<String>{
-        L"curl http://localhost:8080/devices"sv,
-        L"curl http://localhost:8080/devices?recurse=true"sv,
-        L"curl 'http://localhost:8080/devices?recurse=true&sort=%7b\"searchTerms\":[%7b\"by\":\"Address\"%7d],\"compareNetwork\":\"192.168.244.0/24\"%7d'"sv,
-        L"curl 'http://localhost:8080/devices?recurse=true&sort={\"searchTerms\":[{\"by\":\"Address\"},{\"by\":\"Priority\"}],\"compareNetwork\":\"192.168.244.0/24\"}'"sv,
-        L"curl http://localhost:8080/devices?recurse=true&sortBy=Address&sortCompareNetwork=192.168.244.0/24"sv,
-        L"curl http://localhost:8080/devices/60c59f9c-9a69-c89e-9d99-99c7976869c5"sv},
+        L"curl http://localhost:8080/api/v1/devices"sv,
+        L"curl http://localhost:8080/api/v1/devices?recurse=true"sv,
+        L"curl 'http://localhost:8080/api/v1/devices?recurse=true&sort=%7b\"searchTerms\":[%7b\"by\":\"Address\"%7d],\"compareNetwork\":\"192.168.244.0/24\"%7d'"sv,
+        L"curl 'http://localhost:8080/api/v1/devices?recurse=true&sort={\"searchTerms\":[{\"by\":\"Address\"},{\"by\":\"Priority\"}],\"compareNetwork\":\"192.168.244.0/24\"}'"sv,
+        L"curl http://localhost:8080/api/v1/devices?recurse=true&sortBy=Address&sortCompareNetwork=192.168.244.0/24"sv,
+        L"curl http://localhost:8080/api/v1/devices/60c59f9c-9a69-c89e-9d99-99c7976869c5"sv},
     Sequence<String>{
         L"Fetch the list of known devices for the currently connected network. By default, this list is sorted so the most interesting devices come first (like this machine is first)"sv,
         L"query-string: sort={[by: Address|Priority|Name|Type, ascending: true|false]+, compareNetwork?: CIDR|network-id}; sort=ARG is JSON encoded SearchTerm={by: string, ascending?: bool}, {searchTerms: SearchTerm[], compareNetwork: string}"sv,
@@ -466,7 +466,7 @@ const WebServiceMethodDescription WebServer::Rep_::kNetworks_{
     Set<String>{IO::Network::HTTP::Methods::kGet},
     DataExchange::InternetMediaTypes::kJSON,
     {},
-    Sequence<String>{L"curl http://localhost:8080/networks"sv, L"curl http://localhost:8080/networks?recurse=true"sv, L"curl http://localhost:8080/networks/{ID}"sv},
+    Sequence<String>{L"curl http://localhost:8080/api/v1/networks"sv, L"curl http://localhost:8080/api/v1/networks?recurse=true"sv, L"curl http://localhost:8080/api/v1/networks/{ID}"sv},
     Sequence<String>{L"Fetch the list of known Networks."sv,
                      L"@todo - in the future - add support for parameters to this fetch - which can be used to filter/subset etc"sv},
 };
@@ -475,7 +475,7 @@ const WebServiceMethodDescription WebServer::Rep_::kNetworkInterfaces_{
     Set<String>{IO::Network::HTTP::Methods::kGet},
     DataExchange::InternetMediaTypes::kJSON,
     {},
-    Sequence<String>{L"curl http://localhost:8080/network-interfaces", L"curl http://localhost:8080/network-interfaces?recurse=true"sv, L"curl http://localhost:8080/network-interfaces?filter-only-running=true"sv},
+    Sequence<String>{L"curl http://localhost:8080/api/v1/network-interfaces", L"curl http://localhost:8080/api/v1/network-interfaces?recurse=true"sv, L"curl http://localhost:8080/api/v1/network-interfaces?filter-only-running=true"sv},
     Sequence<String>{L"Fetch the list of known Network Interfaces."sv,
                      L"[filter-only-running=true|false]?, recurse=true|false]?"sv},
 };
@@ -485,13 +485,13 @@ const WebServiceMethodDescription WebServer::Rep_::kOperations_{
     DataExchange::InternetMediaTypes::kJSON,
     {},
     Sequence<String>{
-        L"curl http://localhost:8080/operations/ping?target=www.google.com"sv,
-        L"curl http://localhost:8080/operations/traceroute?target=www.sophists.com"sv,
-        L"curl http://localhost:8080/operations/dns/calculate-negative-lookup-time"sv,
-        L"curl http://localhost:8080/operations/dns/lookup?name=www.youtube.com"sv,
-        L"curl http://localhost:8080/operations/dns/calculate-score"sv,
-        L"curl http://localhost:8080/operations/scan/FullRescan?device=ID"sv,
-        L"curl http://localhost:8080/operations/scan/Scan?addr=hostOrIPAddr"sv,
+        L"curl http://localhost:8080/api/v1/operations/ping?target=www.google.com"sv,
+        L"curl http://localhost:8080/api/v1/operations/traceroute?target=www.sophists.com"sv,
+        L"curl http://localhost:8080/api/v1/operations/dns/calculate-negative-lookup-time"sv,
+        L"curl http://localhost:8080/api/v1/operations/dns/lookup?name=www.youtube.com"sv,
+        L"curl http://localhost:8080/api/v1/operations/dns/calculate-score"sv,
+        L"curl http://localhost:8080/api/v1/operations/scan/FullRescan?device=ID"sv,
+        L"curl http://localhost:8080/api/v1/operations/scan/Scan?addr=hostOrIPAddr"sv,
     },
     Sequence<String>{
         L"perform a wide variety of operations - mostly for debugging for now but may stay around."sv,
