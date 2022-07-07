@@ -7,30 +7,7 @@
 		}
 		</style>
 
-
->	Provide some configuration way in WS to use alternatme ports; Maybe provide a way so GUI can change API-Server
-    at runtime (? arg or localstorage peek) - but current config / .env stuff is fine for now
-
-		-	LOSE HARDWIRED API_SERVER
-		-	TOP LEVEL PAGES take API-SERVER= arg, and stores into local-storage
-		    Then use the local-storage value in API calls.
-			
-			See if we can specify a 'boot' method of the app to get API-Server from localstorage or query args
-			and maybe add some way to add somewhat static content which is API-SERVER configuration
-
-
-			>>>> CREATED NEW CONFIG MECHANSM - NOW DO SERVER SIDE in C++ APP
-			MAYBE fold all together into a single PORT/CONNECTION?
-			optional
-			But - provide c++ json config file to specify UI port (maybe only port)
-			and maybe dynamically configure api-server port?
-			But - ROUTE for special /Config.json file
-			(DID DRAFT BUT NEEDS MORE WORK)
-
-
--------------
-
-= Have filters and customization sections in devices page shrinkable, and little button in top-right of table to pop it open to allow customization.
+- Have filters and customization sections in devices page shrinkable, and little button in top-right of table to pop it open to allow customization.
   And probably have a way to make more sections (and delete sections) and maybe revert to default (storing thise prefs in local-storage ui-prefs 
   pinia store)
 

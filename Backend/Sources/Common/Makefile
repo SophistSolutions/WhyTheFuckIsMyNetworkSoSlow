@@ -15,6 +15,7 @@ include $(StroikaRoot)ScriptsLib/SharedMakeVariables-Default.mk
 vpath %cpp $(SrcDir)
 
 Objs	=	\
+	$(ObjDir)AppConfiguration${OBJ_SUFFIX}\
 	$(ObjDir)BLOBMgr${OBJ_SUFFIX}\
 	$(ObjDir)DB${OBJ_SUFFIX}\
 	$(ObjDir)EthernetMACAddressOUIPrefixes${OBJ_SUFFIX}\

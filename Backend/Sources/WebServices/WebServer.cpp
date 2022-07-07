@@ -29,6 +29,7 @@
 #include "Stroika/Frameworks/WebService/Server/Basic.h"
 #include "Stroika/Frameworks/WebService/Server/VariantValue.h"
 
+#include "../Common/AppConfiguration.h"
 #include "AppVersion.h"
 
 #include "WebServer.h"
@@ -59,6 +60,9 @@ using namespace WhyTheFuckIsMyNetworkSoSlow;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices;
 
+using WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::AppConfigurationType;
+using WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::gAppConfiguration;
+
 // Configuration object passed to GUI as startup parameters/configuration
 namespace {
     struct Config_ {
@@ -87,9 +91,13 @@ namespace {
     }();
     Config_ GetConfig_ ()
     {
+
+        //tmphack - put elsewhere...
+        auto f = gAppConfiguration.Get ().WebServerPort;
+
         return Config_{
             nullopt,
-            80};
+            gAppConfiguration.Get ().WebServerPort.value_or (AppConfigurationType::kWebServerPort_Default)};
     }
 }
 
@@ -352,14 +360,14 @@ public:
 #if __cpp_designated_initializers
     , fGUIWebConnectionMgr_
     {
-        SocketAddresses (InternetAddresses_Any (), 80),
+        SocketAddresses (InternetAddresses_Any (), gAppConfiguration.Get ().WebServerPort.value_or (AppConfigurationType::kWebServerPort_Default)),
             fWSRoutes_ + fGUIWebRoutes_,
             ConnectionManager::Options { .fMaxConnections = kMaxWebServerConcurrentConnections_, .fMaxConcurrentlyHandledConnections = kMaxThreads_, .fBindFlags = Socket::BindFlags{.fSO_REUSEADDR = true}, .fDefaultResponseHeaders = kDefaultResponseHeadersStaticSite_ }
     }
 #else
     , fGUIWebConnectionMgr_
     {
-        SocketAddresses (InternetAddresses_Any (), 80),
+        SocketAddresses (InternetAddresses_Any (), gAppConfiguration.Get ().WebServerPort.value_or (AppConfigurationType::kWebServerPort_Default)),
             fWSRoutes_ + fGUIWebRoutes_,
             ConnectionManager::Options { kMaxWebServerConcurrentConnections_, kMaxThreads_, Socket::BindFlags{true}, kDefaultResponseHeadersStaticSite_ }
     }
