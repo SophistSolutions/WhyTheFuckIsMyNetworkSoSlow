@@ -91,10 +91,6 @@ namespace {
     }();
     Config_ GetConfig_ ()
     {
-
-        //tmphack - put elsewhere...
-        auto f = gAppConfiguration.Get ().WebServerPort;
-
         return Config_{
             nullopt,
             gAppConfiguration.Get ().WebServerPort.value_or (AppConfigurationType::kWebServerPort_Default)};
@@ -116,8 +112,7 @@ namespace {
 }
 
 namespace {
-    constexpr Activity kContructing_GUI_WebServer_{L"constructing static content webserver"sv};
-    constexpr Activity kContructing_WSAPI_WebServer_{L"constructing WSAPI webserver"sv};
+    constexpr Activity kContructing_WebServer_{L"constructing webserver"sv};
 }
 
 namespace {
@@ -169,7 +164,7 @@ private:
     shared_ptr<IWSAPI>                                   fWSAPI_;
     const Sequence<Route>                                fWSRoutes_;
     const Sequence<Route>                                fGUIWebRoutes_;
-    optional<DeclareActivity<Activity<wstring_view>>>    fEstablishActivity1_{&kContructing_GUI_WebServer_};
+    optional<DeclareActivity<Activity<wstring_view>>>    fEstablishActivity1_{&kContructing_WebServer_};
     ConnectionManager                                    fGUIWebConnectionMgr_;
     [[NO_UNIQUE_ADDRESS_ATTR]] EmptyObjectForSideEffects fIgnore1_{[this] () { fEstablishActivity1_.reset (); }};
 
