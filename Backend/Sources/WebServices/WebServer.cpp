@@ -62,24 +62,29 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices;
 namespace {
 
     struct Config_ {
-        String API_SERVER;
+        optional<String> API_ROOT;
+        optional<unsigned int>    DEFAULT_API_PORT;
 
         static const DataExchange::ObjectVariantMapper kMapper;
     };
 
     const DataExchange::ObjectVariantMapper Config_::kMapper = [] () {
         DataExchange::ObjectVariantMapper mapper;
+        mapper.AddCommonType<optional<String>> ();
+        mapper.AddCommonType<optional<unsigned int>> ();
         mapper.AddClass<Config_> ({
-            DataExchange::ObjectVariantMapper::StructFieldInfo{L"API_SERVER", DataExchange::StructFieldMetaInfo{&Config_::API_SERVER}},
+            DataExchange::ObjectVariantMapper::StructFieldInfo{L"API_ROOT", DataExchange::StructFieldMetaInfo{&Config_::API_ROOT}},
+            DataExchange::ObjectVariantMapper::StructFieldInfo{L"DEFAULT_API_PORT", DataExchange::StructFieldMetaInfo{&Config_::DEFAULT_API_PORT}},
         });
-
         return mapper;
     }();
 
     Config_ GetConfig_ ()
     {
         return Config_{
-            L"http://localhost:8080"};
+            nullopt,//L"http://localhost:8080",
+            8080
+        };
     }
 }
 
