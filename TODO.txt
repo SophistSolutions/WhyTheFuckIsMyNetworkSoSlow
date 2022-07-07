@@ -20,6 +20,11 @@
 
 
 			>>>> CREATED NEW CONFIG MECHANSM - NOW DO SERVER SIDE in C++ APP
+			MAYBE fold all together into a single PORT/CONNECTION?
+			optional
+			But - provide c++ json config file to specify UI port (maybe only port)
+			and maybe dynamically configure api-server port?
+			But - ROUTE for special /Config.json file
 
 
 -------------
