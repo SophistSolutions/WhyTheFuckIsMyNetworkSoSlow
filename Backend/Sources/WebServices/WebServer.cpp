@@ -59,15 +59,22 @@ using namespace WhyTheFuckIsMyNetworkSoSlow;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices;
 
+// Configuration object passed to GUI as startup parameters/configuration
 namespace {
-
     struct Config_ {
-        optional<String> API_ROOT;
-        optional<unsigned int>    DEFAULT_API_PORT;
+        optional<String>       API_ROOT;
+        optional<unsigned int> DEFAULT_API_PORT;
 
         static const DataExchange::ObjectVariantMapper kMapper;
     };
-
+    const WebServiceMethodDescription kGUIConfig_{
+        L"config"sv,
+        Set<String>{IO::Network::HTTP::Methods::kGet},
+        DataExchange::InternetMediaTypes::kJSON,
+        L"GUI config"sv,
+        Sequence<String>{},
+        Sequence<String>{L"GUI config."sv},
+    };
     const DataExchange::ObjectVariantMapper Config_::kMapper = [] () {
         DataExchange::ObjectVariantMapper mapper;
         mapper.AddCommonType<optional<String>> ();
@@ -78,13 +85,11 @@ namespace {
         });
         return mapper;
     }();
-
     Config_ GetConfig_ ()
     {
         return Config_{
-            nullopt,//L"http://localhost:8080",
-            8080
-        };
+            nullopt, //L"http://localhost:8080",
+            8080};
     }
 }
 
@@ -148,7 +153,6 @@ namespace {
 
 class WebServer::Rep_ {
 public:
-    static const WebServiceMethodDescription kGUIConfig_;
     static const WebServiceMethodDescription kAbout_;
     static const WebServiceMethodDescription kBlob_;
     static const WebServiceMethodDescription kDevices_;
@@ -382,10 +386,8 @@ public:
 #endif
     , fGUIWebRoutes_
     {
-        Route{
-            L"config.json"_RegEx,
-            mkRequestHandler (kGUIConfig_, Config_::kMapper, function<Config_ (void)>{[=] () { return GetConfig_ (); }})},
-            Route{RegularExpression::kAny, FileSystemRequestHandler{Execution::GetEXEDir () / "html", kStaticSiteHandlerOptions_}},
+        Route{L"config.json"_RegEx, mkRequestHandler (kGUIConfig_, Config_::kMapper, function<Config_ (void)>{[=] () { return GetConfig_ (); }})},
+        Route{RegularExpression::kAny, FileSystemRequestHandler{Execution::GetEXEDir () / "html", kStaticSiteHandlerOptions_}},
     }
 #if __cpp_designated_initializers
     , fGUIWebConnectionMgr_
@@ -409,7 +411,6 @@ public:
         WriteDocsPage (
             response,
             Sequence<WebServiceMethodDescription>{
-                kGUIConfig_,
                 kAbout_,
                 kBlob_,
                 kDevices_,
@@ -421,16 +422,6 @@ public:
     }
 };
 
-const WebServiceMethodDescription WebServer::Rep_::kGUIConfig_{
-    L"config"sv,
-    Set<String>{IO::Network::HTTP::Methods::kGet},
-    DataExchange::InternetMediaTypes::kJSON,
-    L"GUI config"sv,
-    Sequence<String>{
-        L"curl http://localhost:8080/about"sv,
-    },
-    Sequence<String>{L"GUI config."sv},
-};
 const WebServiceMethodDescription WebServer::Rep_::kAbout_{
     L"about"sv,
     Set<String>{IO::Network::HTTP::Methods::kGet},
