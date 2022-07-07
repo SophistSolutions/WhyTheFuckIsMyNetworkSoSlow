@@ -7,6 +7,23 @@
 		}
 		</style>
 
+> Add to device data structure  "FirstSeen"
+  and then in GUI for 'aggregates' replace that ID in the display with a timerange (and have the id in the hover text maybe)
+And in rollup, nice to have seen range (first/last seen)
+  + must generalize 'seen'. Diff kinds of seen events? Maybe just dont even show devices as around til seen
+    (CRREUNTLY -we show devices we never successfully pinged cuz they are neighbors, but we could 
+	supporess those, and just use them as hints to ping more quickly.)
+
++ Maybe add ability to mark devices as 'favorites' (star) - and have 'group by' section at top of 'favorites'?
+
+	   > WSAPI for augmenting device and network records (mainly patch to change the name)
+	     and implement by having AGGREGATE record for that guy - rollup-id-custom-xxx
+	     but not sure thats a good naming convetion cuz of multi machine rollups - unclear we
+	     want those rollups or not?
+	     
+	     
+
+
 - Have filters and customization sections in devices page shrinkable, and little button in top-right of table to pop it open to allow customization.
   And probably have a way to make more sections (and delete sections) and maybe revert to default (storing thise prefs in local-storage ui-prefs 
   pinia store)
@@ -30,14 +47,6 @@
 	fetchIfNotTooBusy or take optioanl args saying how aggressive to be - more on initial load, and less on refreshes)
 
 
-> Add to device data structure  "FirstSeen"
-  and then in GUI for 'aggregates' replace that ID in the display with a timerange (and have the id in the hover text maybe)
-And in rollup, nice to have seen range (first/last seen)
-  + must generalize 'seen'. Diff kinds of seen events? Maybe just dont even show devices as around til seen
-    (CRREUNTLY -we show devices we never successfully pinged cuz they are neighbors, but we could 
-	supporess those, and just use them as hints to ping more quickly.)
-
-
 + Maybe add new Stroika framework "Extension-Language-Engine" wrapper on python or javascript or something.
   Expose/hook extension language.
 
@@ -55,11 +64,8 @@ And in rollup, nice to have seen range (first/last seen)
 
 	Or Group by network (so stuff on wierd networks not fully gone, just off at the end)
 
-+ Maybe add ability to mark devices as 'favorites' (star) - and have 'group by' section at top of 'favorites'?
-
 + Add ability to "FAVORITE" or SAVE layouts/filter combos, and store in local storage, and ability to restore/save
   in UI, so can easily open precombfingured set of viuews
-
 
 + Need (X) to CLEAR search string when you type a search string like we currently have for the whole filters line.
 
@@ -112,9 +118,6 @@ trying to rebuild with older stroika? to see when it occurred?
 	----
 
 
-
-
-
 - Adjust ajax refrsh pattern so doesn't automatically
   refetch so quickly if already slow getting responses.
 
@@ -124,37 +127,12 @@ trying to rebuild with older stroika? to see when it occurred?
   average response time for last 5 or 10 calls, and use 
   that as a threshold to tweak rates of refresh in app
   calls to vueex
-
-
-- MIDDLE OF VUE3 vuetify work
-
-- Understand why running DEBUG build on my machine really slows down and stops updating when run overnight
-  (in ui - shows updates on my network last updated 5 hrs ago.)
-  (maybe lock upgrade issue?)
-
-
-===
-
-after I tested latest stroika with wtf, go back to work on 
-	html
-	
-	TRY moving appbar to above MAIN view (as suggesetd on discord)
-	
-	and respond to the guy either way.
-	
-	see if it provides any hints and see if I can look at setup lifecycle events.
 	
 	----
 	
 	and writeup short term todo on WTF eitherw ay
 	
 	
-	   > WSAPI for augmenting device and network records (mainly patch to change the name)
-	     and implement by having AGGREGATE record for that guy - rollup-id-custom-xxx
-	     but not sure thats a good naming convetion cuz of multi machine rollups - unclear we
-	     want those rollups or not?
-	     
-	     
 	    > after that process fixed, do MINIAML background ping testing and collect stats for that and priovde
 	    API to fetch them.
 	    
