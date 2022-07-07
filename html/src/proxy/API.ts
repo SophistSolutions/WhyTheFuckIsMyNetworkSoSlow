@@ -1,15 +1,19 @@
-import { IDevice } from "../models/device/IDevice";
-import { ISortBy, SearchSpecification, SortFieldEnum } from "../models/device/SearchSpecification";
-import { IAbout } from "../models/IAbout";
-import { INetwork } from "../models/network/INetwork";
-import { INetworkInterface } from "../models/network/INetworkInterface";
+import { IDevice } from '../models/device/IDevice';
+import {
+  ISortBy,
+  SearchSpecification,
+  SortFieldEnum,
+} from '../models/device/SearchSpecification';
+import { IAbout } from '../models/IAbout';
+import { INetwork } from '../models/network/INetwork';
+import { INetworkInterface } from '../models/network/INetworkInterface';
 
-import { API_ROOT } from "../config/config";
+import { gRuntimeConfiguration } from 'boot/configuration';
 
-import { Logger } from "../utils/Logger";
+import { Logger } from '../utils/Logger';
 
 export async function fetchNetworks(): Promise<INetwork[]> {
-  return fetch(API_ROOT + `/networks?recurse=true`)
+  return fetch(`${gRuntimeConfiguration.API_ROOT}/networks?recurse=true`)
     .then((response) => response.json())
     .then((data) => {
       return data;
@@ -18,7 +22,7 @@ export async function fetchNetworks(): Promise<INetwork[]> {
 }
 
 export async function fetchNetwork(id: string): Promise<INetwork> {
-  return fetch(API_ROOT + `/networks/${id}`)
+  return fetch(`${gRuntimeConfiguration.API_ROOT}/networks/${id}`)
     .then((response) => response.json())
     .then((data) => {
       return data;
@@ -27,7 +31,9 @@ export async function fetchNetwork(id: string): Promise<INetwork> {
 }
 
 export async function fetchNetworkInterfaces(): Promise<INetworkInterface[]> {
-  return fetch(API_ROOT + `/network-interfaces?recurse=true`)
+  return fetch(
+    `${gRuntimeConfiguration.API_ROOT}/network-interfaces?recurse=true`
+  )
     .then((response) => response.json())
     .then((data) => {
       return data;
@@ -36,7 +42,9 @@ export async function fetchNetworkInterfaces(): Promise<INetworkInterface[]> {
 }
 
 export async function rescanDevice(deviceID: string): Promise<void> {
-  return fetch(API_ROOT + `/operations/scan/FullRescan?deviceID=${deviceID}`)
+  return fetch(
+    `${gRuntimeConfiguration.API_ROOT}/operations/scan/FullRescan?deviceID=${deviceID}`
+  )
     .then((response) => response.json())
     .then((data) => {
       return data;
@@ -44,7 +52,9 @@ export async function rescanDevice(deviceID: string): Promise<void> {
     .catch((error) => Logger.error(error));
 }
 
-export async function fetchDevices(searchCriteria?: ISortBy): Promise<IDevice[]> {
+export async function fetchDevices(
+  searchCriteria?: ISortBy
+): Promise<IDevice[]> {
   // @todo make these search params depend on parameters,
   // and especially make compareNetwork depend on current active network
   // (and maybe sometimes omit)
@@ -61,15 +71,22 @@ export async function fetchDevices(searchCriteria?: ISortBy): Promise<IDevice[]>
   }
 
   // TODO correct hardcoded compareNetwork
-  const searchSpecs = new SearchSpecification(searchSpecification, "192.168.244.0/24");
+  const searchSpecs = new SearchSpecification(
+    searchSpecification,
+    '192.168.244.0/24'
+  );
 
-  return fetch(API_ROOT + `/devices?recurse=true&sort=${encodeURI(JSON.stringify(searchSpecs))}`)
+  return fetch(
+    `${gRuntimeConfiguration.API_ROOT}/devices?recurse=true&sort=${encodeURI(
+      JSON.stringify(searchSpecs)
+    )}`
+  )
     .then((response) => response.json())
     .then((data) => {
-      data.forEach((d: {icon: URL| string|null}) => {
+      data.forEach((d: { icon: URL | string | null }) => {
         // fixup urls that are relative to be relative to the WSAPI
         if (d.icon) {
-          d.icon = new URL(d.icon, API_ROOT);
+          d.icon = new URL(d.icon, gRuntimeConfiguration.API_ROOT);
         }
       });
       return data;
@@ -81,12 +98,12 @@ export async function fetchDevices(searchCriteria?: ISortBy): Promise<IDevice[]>
 }
 
 export async function fetchDevice(id: string): Promise<IDevice> {
-  return fetch(API_ROOT + `/devices/${id}`)
+  return fetch(`${gRuntimeConfiguration.API_ROOT}/devices/${id}`)
     .then((response) => response.json())
     .then((data) => {
       // fixup urls that are relative to be relative to the WSAPI
       if (data.icon) {
-        data.icon = new URL(data.icon, API_ROOT);
+        data.icon = new URL(data.icon, gRuntimeConfiguration.API_ROOT);
       }
       return data;
     })
@@ -97,15 +114,10 @@ export async function fetchDevice(id: string): Promise<IDevice> {
 }
 
 export async function fetchAboutInfo(): Promise<IAbout> {
-  return fetch(API_ROOT + "/about")
+  return fetch(`${gRuntimeConfiguration.API_ROOT}/about`)
     .then((response) => response.json())
     .then((data) => {
       return data;
     })
     .catch((error) => Logger.error(error));
 }
-
-// TODO could instead do this but not modular enough for future
-// export default {
-//     fetchNetworks,
-// };

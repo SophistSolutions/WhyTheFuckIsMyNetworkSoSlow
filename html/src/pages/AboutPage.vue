@@ -4,7 +4,7 @@ import { useQuasar } from 'quasar';
 import moment from 'moment';
 import prettyBytes from 'pretty-bytes';
 
-import { VUE_VERSION } from '../config/config';
+import { kCompileTimeConfiguration } from '../config/config';
 import { IAbout, IComponent } from "../models/IAbout";
 import { useNetStateStore } from '../stores/Net-State-store'
 
@@ -12,7 +12,7 @@ let polling: undefined | NodeJS.Timeout;
 const $q = useQuasar()
 
 const kUIComponents: IComponent[] = [
-  { name: "Vue ", version: VUE_VERSION, URL: "https://vuejs.org/" },
+  { name: "Vue ", version: kCompileTimeConfiguration.VUE_VERSION, URL: "https://vuejs.org/" },
   { name: "Quasar ", version: $q.version, URL: "https://quasar.dev/" },
 ];
 

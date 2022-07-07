@@ -7,9 +7,20 @@
 		}
 		</style>
 
--
+
 >	Provide some configuration way in WS to use alternatme ports; Maybe provide a way so GUI can change API-Server
     at runtime (? arg or localstorage peek) - but current config / .env stuff is fine for now
+
+		-	LOSE HARDWIRED API_SERVER
+		-	TOP LEVEL PAGES take API-SERVER= arg, and stores into local-storage
+		    Then use the local-storage value in API calls.
+			
+			See if we can specify a 'boot' method of the app to get API-Server from localstorage or query args
+			and maybe add some way to add somewhat static content which is API-SERVER configuration
+
+
+			>>>> CREATED NEW CONFIG MECHANSM - NOW DO SERVER SIDE in C++ APP
+
 
 -------------
 
