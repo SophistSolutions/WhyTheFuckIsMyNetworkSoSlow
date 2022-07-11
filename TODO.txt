@@ -7,6 +7,25 @@
 		}
 		</style>
 
+
+---
+
+	> WTF feature as important as NAMING devices - tags list!
+
+		(so can group by tags and and filter by tags) for nets and devices
+
+	+ need to mark nets/devicoes as favorites
+	  and take into account in sort.
+
+	+ and in combobox in ui for networks, only take top 10 (so we lose old nets ability to filter).
+
+
+	+ maybe add to last seen 'last reached' for pinged and include in last seen when we discover via arp.
+	  Or have 'seen' events with types (arp, ping, tcp-conn, udp-message) and keep track of first/last
+	  of each per monitoring interval.
+	   
+	   	COULD be seen = [ {tod-range: [x,x], type: 'udp'}, {tod: [y..z], type: 'arp'}, ....]
+		 beet: {udp: tod: [x..x], arp: [y..z], any: [x..z] ]}
 ----
 Need WTF favs icon
 

@@ -76,8 +76,8 @@ namespace {
         }
         catch (const std::system_error& e) {
             DbgTrace (L"ignoring %s", Characters::ToString (e).c_str ());
-            Assert (e.code () == errc::device_or_resource_busy);        // this can happen talking to database
-                                                                        // might be better to up timeout so more rare
+            Assert (e.code () == errc::device_or_resource_busy); // this can happen talking to database
+                                                                 // might be better to up timeout so more rare
         }
         catch (...) {
             AssertNotReached ();
