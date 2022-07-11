@@ -46,6 +46,13 @@ SQL::Connection::Ptr WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB::NewCon
 #else
     auto options = Options{dbPath, true, nullopt, nullopt, Options::ThreadingMode::eMultiThread};
 #endif
+
+    /*
+     *  Software doing database accesses must handle busy timeout exceptions, but
+     *  reducing thier frequency probably produces better, smoother operation.
+     */
+    options.fBusyTimeout = 1s;
+
     auto conn = SQLite::Connection::New (options);
 
     Database::SQL::ORM::ProvisionForVersion (conn, fTargetDBVersion_, fTables_);
