@@ -1,11 +1,4 @@
-+ try to use scoped - but in some cases breaks things... (CSS SCOPED)
-	(mostly done but Devices and Networks pages)
-	Only case not working
-		<style lang="scss">
-		.listCard table {
-		table-layout: fixed;
-		}
-		</style>
+
 
 ---
 
@@ -24,9 +17,6 @@
 	   
 	   	COULD be seen = [ {tod-range: [x,x], type: 'udp'}, {tod: [y..z], type: 'arp'}, ....]
 		 beet: {udp: tod: [x..x], arp: [y..z], any: [x..z] ]}
-----
-Need WTF favs icon
-
 ---
 
 > Add to device data structure  "FirstSeen"
