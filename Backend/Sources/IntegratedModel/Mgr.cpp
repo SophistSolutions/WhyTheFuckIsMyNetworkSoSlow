@@ -64,7 +64,6 @@ namespace {
 
         // if we are unable to cache the url (say because the url is bad or the device is currently down)
         // just return the original
-
         try {
             // This BLOBMgr code wont block - it will push a request into a Q, and fetch whatever data is has (maybe none)
             optional<GUID> g = BackendApp::Common::BLOBMgr::sThe.AsyncAddBLOBFromURL (url);
@@ -74,6 +73,11 @@ namespace {
             if (g) {
                 return URI{nullopt, nullopt, L"/blob/" + g->ToString ()};
             }
+        }
+        catch (const std::system_error& e) {
+            DbgTrace (L"ignoring %s", Characters::ToString (e).c_str ());
+            Assert (e.code () == errc::device_or_resource_busy);        // this can happen talking to database
+                                                                        // might be better to up timeout so more rare
         }
         catch (...) {
             AssertNotReached ();
