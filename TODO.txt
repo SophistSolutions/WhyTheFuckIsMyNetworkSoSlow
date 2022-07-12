@@ -1,7 +1,4 @@
 
-
----
-
 	> WTF feature as important as NAMING devices - tags list!
 
 		(so can group by tags and and filter by tags) for nets and devices
@@ -11,20 +8,32 @@
 
 	+ and in combobox in ui for networks, only take top 10 (so we lose old nets ability to filter).
 
-	+ maybe add to last seen 'last reached' for pinged and include in last seen when we discover via arp.
-	  Or have 'seen' events with types (arp, ping, tcp-conn, udp-message) and keep track of first/last
-	  of each per monitoring interval.
-	   
-	   	COULD be seen = [ {tod-range: [x,x], type: 'udp'}, {tod: [y..z], type: 'arp'}, ....]
-		 beet: {udp: tod: [x..x], arp: [y..z], any: [x..z] ]}
 ---
 
-> Add to device data structure  "FirstSeen"
-  and then in GUI for 'aggregates' replace that ID in the display with a timerange (and have the id in the hover text maybe)
-And in rollup, nice to have seen range (first/last seen)
-  + must generalize 'seen'. Diff kinds of seen events? Maybe just dont even show devices as around til seen
-    (CRREUNTLY -we show devices we never successfully pinged cuz they are neighbors, but we could 
-	supporess those, and just use them as hints to ping more quickly.)
+	+	New feature to replace LastSeen (in network and device probably)
+	  	- seen : {
+			udp: {x,x}   (RANGE of timetsamps)
+			tcp: {x,x}
+			arp: {x,x}
+		}
+		then lastSeen computed as max ((x) => x.to)
+		or anySeen computed as {min((x)->x.from), max((x)=>x.to)}
+
+		WAS:
+			+ maybe add to last seen 'last reached' for pinged and include in last seen when we discover via arp.
+			Or have 'seen' events with types (arp, ping, tcp-conn, udp-message) and keep track of first/last
+			of each per monitoring interval.
+			
+				COULD be seen = [ {tod-range: [x,x], type: 'udp'}, {tod: [y..z], type: 'arp'}, ....]
+				beet: {udp: tod: [x..x], arp: [y..z], any: [x..z] ]}
+				> Add to device data structure  "FirstSeen"
+				and then in GUI for 'aggregates' replace that ID in the display with a timerange (and have the id in the hover text maybe)
+				And in rollup, nice to have seen range (first/last seen)
+				+ must generalize 'seen'. Diff kinds of seen events? Maybe just dont even show devices as around til seen
+					(CRREUNTLY -we show devices we never successfully pinged cuz they are neighbors, but we could 
+					supporess those, and just use them as hints to ping more quickly.)
+
+---
 
 + Maybe add ability to mark devices as 'favorites' (star) - and have 'group by' section at top of 'favorites'?
 
@@ -204,26 +213,15 @@ tmphack slow impl - instead build mapping table when constructing rollup
 
 
 ---
-= once merging networks (rollups) works well, compute new random guid for each new network
-
----
 >	Do same versioning/rollup crap I did for networks/devices to network-interfaces.
 
 ---
 
 display aggreates in netwowkr pages(maybe done but test when I have firstseenatat/lastseenat data range stuff) 
-----
-AddNetworkAddresses_
-frequently called with no hardware address so make check for merge slightly less agrresive
-or at least document we may not always get hardware address
-
 ---
-
 revisit rollup code once UI works better to explore
  (hover text over aggregates to print thier date range(seen range) once I change lastSeen to
  a daterange))
-
-
 
 ----
 - WRITEUP DESIGN DOC FOR OBJECT IDS
@@ -363,19 +361,6 @@ report on devices no longer found.; Maaybe add DELETE API, so you can DELETE a N
 + fix make parallelel issue causes + make -j1 warning and slower build
   (seems just in building backend)
 
----
-DEBUG WHY SO SLOW:
-
-	>>> TRY THIS FIRST - time curl http://192.168.244.187 -v - this is 90ms
-	I THINK ISSUE IS DNS
-
-time curl http://hercules.local -v
-	1.6 seconds (of course thats debug build but test release build too!)
-
-	>>> SETUP DEBUGGING SYSTEM ON STROIKA-DEV vm
-		PROBABLY USING PORT FORWARD 80->9081, 8080->9082
-	>>>	Need GUI flag saying what port# to use
-
 -----
 
 Network Interaces SB shown in DETAILS page for DEVICE
@@ -385,34 +370,10 @@ DIsplay JSON for attached interfaces. AND display pretty summary (upper case onl
 
 -----
 
-update TODO and github issues
-
-fix readme file (looks bad)
-
---
-
-Do :busy=isBusy
-
-set isBusy when fetching and isBusy = false when we get answer (not sure how to tell when
-we get answer from vuex)
-	https://dev.to/viniciuskneves/watch-for-vuex-state-changes-2mgj
-
-	(this mostly makes celar, but still not clear if we do 3 gets in a row, how to make
-	sure the RECEIPS match the last one?)
-
------
-
 	>>> ADD SORT ICONS FUNCTION SO TV comes before speaker, and
 	   add TICKET for issue that we want the hoever text to include all items
 	   and the elipsis has to operate over all of them.... Need some fancy component 
 	   todo this that agrggesates the text but inside it iterates and shows icons
-
------
-
-	BINDING ADDRESSES From the DEVICE record from which WTF is running reports the wrong
-	address (CIDR NOT ACTUAL ADDRESS). This is due to a stroika bug, and will be fixed 
-	in the next Stroka (and WTF) release
-
 ---
 	Per-Device historical graphs that may make sense:
 
@@ -443,15 +404,6 @@ Hints about privacy policy
 ---
 when I get fix for input github action stuff working,
 do for stroika builds too
----
-
-check stackoverflow messages
-
----
-
-	> BETH suggests consulting lawyer about storing Personally identification data
-	like machines IP addresses etc
-
 ---
 
 https://dev.to/kanishkt123/runtime-environment-variables-with-github-actions-2if8
@@ -520,9 +472,6 @@ make[3]: warning: jobserver unavailable: using -j1.  Add '+' to parent make rule
 manifeacturer 'synonlogy with 
 http://192.168.244.83:5000/ssdp/desc-DSM-eth1.xml
 modelType = NAS
-
-----
-	>	upgrade to latest vue
 ---
 - Include the device ICON in its name field (prepend or append? prepend. Old Devices API shows those icons.
   OR - maybe use that in the device type field? Not sure. Maybe that makes more sense to show icon
@@ -627,10 +576,6 @@ on device
  a a2ec
  192.168.244.13 - elizabeths iphone
  62078/tcp open  iphone-sync?
-
----
-
-Add FILESERVER icon (for Drobo/Synology )
 
 ---
 Guess more ports based on SSDP messages (urls in ssdp)
