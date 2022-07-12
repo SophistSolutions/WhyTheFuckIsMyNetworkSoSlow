@@ -386,7 +386,7 @@ public:
 };
 
 const WebServiceMethodDescription WebServer::Rep_::kAbout_{
-    L"about"sv,
+    L"api/v1/about"sv,
     Set<String>{IO::Network::HTTP::Methods::kGet},
     DataExchange::InternetMediaTypes::kJSON,
     L"Data about the WTF application, version etc"sv,
@@ -396,7 +396,7 @@ const WebServiceMethodDescription WebServer::Rep_::kAbout_{
     Sequence<String>{L"Fetch the component versions, etc."sv},
 };
 const WebServiceMethodDescription WebServer::Rep_::kBlob_{
-    L"blob"sv,
+    L"api/v1/blob"sv,
     Set<String>{IO::Network::HTTP::Methods::kGet},
     nullopt,
     L"BLOBs (and their associated media type) generally sourced from other computers, but cached here so they will be available when those other computers are not (like icons from SSDP)"sv,
@@ -406,7 +406,7 @@ const WebServiceMethodDescription WebServer::Rep_::kBlob_{
     Sequence<String>{L"Fetch the blob by value (generally these links appear in GET /devices/{x} etc output)."sv},
 };
 const WebServiceMethodDescription WebServer::Rep_::kDevices_{
-    L"devices"sv,
+    L"api/v1/devices"sv,
     Set<String>{IO::Network::HTTP::Methods::kGet},
     DataExchange::InternetMediaTypes::kJSON,
     {},
@@ -425,7 +425,7 @@ const WebServiceMethodDescription WebServer::Rep_::kDevices_{
     },
 };
 const WebServiceMethodDescription WebServer::Rep_::kNetworks_{
-    L"networks"sv,
+    L"api/v1/networks"sv,
     Set<String>{IO::Network::HTTP::Methods::kGet},
     DataExchange::InternetMediaTypes::kJSON,
     {},
@@ -434,7 +434,7 @@ const WebServiceMethodDescription WebServer::Rep_::kNetworks_{
                      L"@todo - in the future - add support for parameters to this fetch - which can be used to filter/subset etc"sv},
 };
 const WebServiceMethodDescription WebServer::Rep_::kNetworkInterfaces_{
-    L"network-interfaces"sv,
+    L"api/v1/network-interfaces"sv,
     Set<String>{IO::Network::HTTP::Methods::kGet},
     DataExchange::InternetMediaTypes::kJSON,
     {},
@@ -443,7 +443,7 @@ const WebServiceMethodDescription WebServer::Rep_::kNetworkInterfaces_{
                      L"[filter-only-running=true|false]?, recurse=true|false]?"sv},
 };
 const WebServiceMethodDescription WebServer::Rep_::kOperations_{
-    L"operations"sv,
+    L"api/v1/operations"sv,
     Set<String>{IO::Network::HTTP::Methods::kGet},
     DataExchange::InternetMediaTypes::kJSON,
     {},
