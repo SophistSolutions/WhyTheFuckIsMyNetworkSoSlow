@@ -134,9 +134,9 @@ namespace {
                 kCurrentVersion_,
                 Traversal::Iterable<Database::SQL::ORM::Schema::Table>{kBLOBTableSchema_, kBLOBURLTableSchema_}};
             SQL::Connection::Ptr conn        = db.NewConnection ();
-            fBLOBs                           = make_shared<SQL::ORM::TableConnection<DBRecs_::BLOB_>> (conn, kBLOBTableSchema_, kDBObjectMapper_);
-            fBLOBURLs                        = make_shared<BLOBURLTableConnection_> (conn, kBLOBURLTableSchema_, kDBObjectMapper_);
-            fLookupBLOBByValueAndContentType = make_shared<SQL::Statement> (conn.mkStatement (L"SELECT * from BLOB where blob=:b and contentType=:ct;"));
+            fBLOBs                           = make_shared<SQL::ORM::TableConnection<DBRecs_::BLOB_>> (conn, kBLOBTableSchema_, kDBObjectMapper_, mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<DBRecs_::BLOB_>> ());
+            fBLOBURLs                        = make_shared<BLOBURLTableConnection_> (conn, kBLOBURLTableSchema_, kDBObjectMapper_, mkOperationalStatisticsMgrProcessDBCmd<BLOBURLTableConnection_> ());
+            fLookupBLOBByValueAndContentType = make_shared<SQL::Statement> (conn.mkStatement (L"SELECT * from BLOB where blob=:b and contentType=:ct;"sv));
         }
         shared_ptr<SQL::ORM::TableConnection<DBRecs_::BLOB_>> fBLOBs;
         shared_ptr<BLOBURLTableConnection_>                   fBLOBURLs;
@@ -145,10 +145,11 @@ namespace {
         optional<GUID> Lookup (const BLOB& b, const InternetMediaType& ct) const
         {
             fLookupBLOBByValueAndContentType->Reset ();
-            fLookupBLOBByValueAndContentType->Bind (L"b", b);
-            fLookupBLOBByValueAndContentType->Bind (L"ct", ct.As<String> ());
+            fLookupBLOBByValueAndContentType->Bind (L"b"sv, b);
+            fLookupBLOBByValueAndContentType->Bind (L"ct"sv, ct.As<String> ());
+            DB::ReadStatsContext readStats; // explicit stats cuz not read through TableORM code
             if (auto row = fLookupBLOBByValueAndContentType->GetNextRow ()) {
-                return row->Lookup (L"id")->As<BLOB> ();
+                return row->Lookup (L"id"sv)->As<BLOB> ();
             }
             return nullopt;
         }
@@ -184,8 +185,10 @@ GUID BLOBMgr::AddBLOB (const BLOB& b, const InternetMediaType& ct)
     if (!sConn_) {
         sConn_ = make_shared<DBConn_> ();
     }
-    if (auto id = sConn_->Lookup (b, ct)) {
-        return *id;
+    {
+        if (auto id = sConn_->Lookup (b, ct)) {
+            return *id;
+        }
     }
     GUID g = GUID::GenerateNew ();
     sConn_->fBLOBs->AddNew (DBRecs_::BLOB_{g, b, ct});

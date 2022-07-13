@@ -402,7 +402,7 @@ namespace {
                     }
                     // load networks before devices because devices depend on networks but not the reverse
                     if (networkTableConnection == nullptr) {
-                        networkTableConnection = make_unique<SQL::ORM::TableConnection<IntegratedModel::Network>> (conn, kNetworkTableSchema_, kDBObjectMapper_);
+                        networkTableConnection = make_unique<SQL::ORM::TableConnection<IntegratedModel::Network>> (conn, kNetworkTableSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<IntegratedModel::Network>> ());
                         try {
                             Debug::TimingTrace ttrc{L"...initial load of sDBNetworks_ from database ", 1};
                             sDBNetworks_.store (NetworkKeyedCollection_{networkTableConnection->GetAll ()});
@@ -414,7 +414,7 @@ namespace {
                         }
                     }
                     if (deviceTableConnection == nullptr) {
-                        deviceTableConnection = make_unique<SQL::ORM::TableConnection<IntegratedModel::Device>> (conn, kDeviceTableSchema_, kDBObjectMapper_);
+                        deviceTableConnection = make_unique<SQL::ORM::TableConnection<IntegratedModel::Device>> (conn, kDeviceTableSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<IntegratedModel::Device>> ());
                         try {
                             Debug::TimingTrace ttrc{L"...initial load of sDBDevices_ from database ", 1};
                             sDBDevices_.store (DeviceKeyedCollection_{deviceTableConnection->GetAll ()}); // pre-load in memory copy with whatever we had stored in the database

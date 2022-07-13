@@ -1,3 +1,16 @@
+add errors and db size to about recordings
+add UI to new  about reportings
+add median/max request-pool length?
+	
+			+ Add /health WS endpoint - mostly for debugging? OR EMBELISH ABOUT interface
+			Include stuff like 
+			- median response time for a few key requests.
+			- median q length for WS response pool
+			- maybe some memory stats? Maybe this is too close to what we already return for WTF stats. Maybe just 
+				embellish those?
+
+	
+	---
 
 	> WTF feature as important as NAMING devices - tags list!
 
@@ -50,13 +63,6 @@
     so fetches only (mostly or fully?) done in the parent component; 
 	NOT SURE ABOUT THIS? Unclear what is best/most useful/flexible. Maybe best if compoent takes
 	EITHER ID or object?
-
-+ Add /health WS endpoint - mostly for debugging? OR EMBELISH ABOUT interface
-  Include stuff like 
-   - median response time for a few key requests.
-   - median q length for WS response pool
-   - maybe some memory stats? Maybe this is too close to what we already return for WTF stats. Maybe just 
-     embellish those?
 
 + Stroika WebServer framework feature to add: 503
   - add some max # of queued up items in threadpool after whihc we generate 503.

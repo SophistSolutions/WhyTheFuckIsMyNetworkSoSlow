@@ -22,6 +22,7 @@ Objs	=	\
 	$(ObjDir)GeoLocAndISPLookup${OBJ_SUFFIX}\
 	$(ObjDir)GeoLocation${OBJ_SUFFIX}\
 	$(ObjDir)InternetServiceProvider${OBJ_SUFFIX}\
+	$(ObjDir)OperationalStatistics${OBJ_SUFFIX}\
 
 all:$(ObjDir) $(Objs)
 

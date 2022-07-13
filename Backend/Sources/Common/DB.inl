@@ -48,6 +48,26 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         return *result;
     }
 
+    /*
+     ********************************************************************************
+     ***************************** DB::ReadStatsContext *****************************
+     ********************************************************************************
+     */
+    inline DB::ReadStatsContext::ReadStatsContext ()
+        : ProcessDBCmd{OperationalStatisticsMgr::DBCommandType::eRead}
+    {
+    }
+
+    /*
+     ********************************************************************************
+     ****************************** DB::WriteStatsContext ***************************
+     ********************************************************************************
+     */
+    inline DB::WriteStatsContext::WriteStatsContext ()
+        : ProcessDBCmd{OperationalStatisticsMgr::DBCommandType::eWrite}
+    {
+    }
+
 }
 
 #endif /*_WhyTheFuckIsMyNetworkSoSlow_BackendApp_Common_DB_inl_*/

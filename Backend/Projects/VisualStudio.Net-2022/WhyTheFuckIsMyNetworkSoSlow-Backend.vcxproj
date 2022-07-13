@@ -69,6 +69,7 @@
     <None Include="..\..\Sources\Common\GeoLocation.inl" />
     <None Include="..\..\Sources\Common\InternetServiceProvider.inl" />
     <None Include="..\..\Sources\Common\Makefile" />
+    <None Include="..\..\Sources\Common\OperationalStatistics.inl" />
     <None Include="..\..\Sources\Discovery\Devices.inl" />
     <None Include="..\..\Sources\Discovery\Makefile" />
     <None Include="..\..\Sources\Discovery\NetworkInterfaces.inl" />
@@ -92,6 +93,7 @@
     <ClCompile Include="..\..\Sources\Common\GeoLocAndISPLookup.cpp" />
     <ClCompile Include="..\..\Sources\Common\GeoLocation.cpp" />
     <ClCompile Include="..\..\Sources\Common\InternetServiceProvider.cpp" />
+    <ClCompile Include="..\..\Sources\Common\OperationalStatistics.cpp" />
     <ClCompile Include="..\..\Sources\Discovery\Devices.cpp" />
     <ClCompile Include="..\..\Sources\Discovery\NetworkInterfaces.cpp" />
     <ClCompile Include="..\..\Sources\Discovery\Networks.cpp" />
@@ -112,6 +114,7 @@
     <ClInclude Include="..\..\Sources\Common\GeoLocAndISPLookup.h" />
     <ClInclude Include="..\..\Sources\Common\GeoLocation.h" />
     <ClInclude Include="..\..\Sources\Common\InternetServiceProvider.h" />
+    <ClInclude Include="..\..\Sources\Common\OperationalStatistics.h" />
     <ClInclude Include="..\..\Sources\Discovery\Devices.h" />
     <ClInclude Include="..\..\Sources\Discovery\NetworkInterfaces.h" />
     <ClInclude Include="..\..\Sources\Discovery\Networks.h" />

@@ -651,6 +651,30 @@ String About::APIServerInfo::CurrentProcess::ToString () const
     return sb.str ();
 }
 
+String About::APIServerInfo::APIEndpoint::ToString () const
+{
+    Characters::StringBuilder sb;
+    sb += L"{";
+    sb += L"fCallsCompleted: " + Characters::ToString (fCallsCompleted) + L", ";
+    sb += L"fMeanDuration: " + Characters::ToString (fMeanDuration) + L", ";
+    sb += L"fMaxDuration: " + Characters::ToString (fMaxDuration) + L", ";
+    sb += L"}";
+    return sb.str ();
+}
+
+String About::APIServerInfo::Database::ToString () const
+{
+    Characters::StringBuilder sb;
+    sb += L"{";
+    sb += L"fReads: " + Characters::ToString (fReads) + L", ";
+    sb += L"fWrites: " + Characters::ToString (fWrites) + L", ";
+    sb += L"fMeanReadDuration: " + Characters::ToString (fMeanReadDuration) + L", ";
+    sb += L"fMeanWriteDuration: " + Characters::ToString (fMeanWriteDuration) + L", ";
+    sb += L"fMaxDuration: " + Characters::ToString (fMaxDuration) + L", ";
+    sb += L"}";
+    return sb.str ();
+}
+
 String About::APIServerInfo::ToString () const
 {
     Characters::StringBuilder sb;
@@ -659,6 +683,8 @@ String About::APIServerInfo::ToString () const
     sb += L"Component-Versions: " + Characters::ToString (fComponentVersions) + L", ";
     sb += L"Current-Machine: " + Characters::ToString (fCurrentMachine) + L", ";
     sb += L"Current-Process: " + Characters::ToString (fCurrentProcess) + L", ";
+    sb += L"API-Endpoint: " + Characters::ToString (fAPIEndpoint) + L", ";
+    sb += L"Database: " + Characters::ToString (fDatabase) + L", ";
     sb += L"}";
     return sb.str ();
 }
@@ -706,11 +732,29 @@ const ObjectVariantMapper About::kMapper = [] () {
         {L"combinedIOWriteRate", StructFieldMetaInfo{&About::APIServerInfo::CurrentProcess::fCombinedIOWriteRate}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
 
+    mapper.AddClass<About::APIServerInfo::APIEndpoint> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+        {L"callsCompleted", StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fCallsCompleted}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"meanDuration", StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fMeanDuration}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"maxDuration", StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fMaxDuration}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+    });
+    mapper.AddCommonType<optional<About::APIServerInfo::APIEndpoint>> ();
+
+    mapper.AddClass<About::APIServerInfo::Database> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+        {L"reads", StructFieldMetaInfo{&About::APIServerInfo::Database::fReads}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"writes", StructFieldMetaInfo{&About::APIServerInfo::Database::fWrites}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"meanReadDuration", StructFieldMetaInfo{&About::APIServerInfo::Database::fMeanReadDuration}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"meanWriteDuration", StructFieldMetaInfo{&About::APIServerInfo::Database::fMeanWriteDuration}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"maxDuration", StructFieldMetaInfo{&About::APIServerInfo::Database::fMaxDuration}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+    });
+    mapper.AddCommonType<optional<About::APIServerInfo::Database>> ();
+
     mapper.AddClass<About::APIServerInfo> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
         {L"version", StructFieldMetaInfo{&About::APIServerInfo::fVersion}},
         {L"componentVersions", StructFieldMetaInfo{&About::APIServerInfo::fComponentVersions}},
         {L"currentMachine", StructFieldMetaInfo{&About::APIServerInfo::fCurrentMachine}},
         {L"currentProcess", StructFieldMetaInfo{&About::APIServerInfo::fCurrentProcess}},
+        {L"apiEndpoint", StructFieldMetaInfo{&About::APIServerInfo::fAPIEndpoint}},
+        {L"database", StructFieldMetaInfo{&About::APIServerInfo::fDatabase}},
     });
 
     mapper.AddClass<About> (initializer_list<ObjectVariantMapper::StructFieldInfo>{

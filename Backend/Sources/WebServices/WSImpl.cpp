@@ -43,6 +43,7 @@
 #include "Stroika-Current-Version.h"
 
 #include "../Common/BLOBMgr.h"
+#include "../Common/OperationalStatistics.h"
 #include "../Discovery/Devices.h"
 #include "../IntegratedModel/Mgr.h"
 
@@ -112,10 +113,13 @@ namespace {
  */
 About WSImpl::GetAbout () const
 {
+    Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
     using APIServerInfo  = About::APIServerInfo;
     using ComponentInfo  = APIServerInfo::ComponentInfo;
     using CurrentMachine = APIServerInfo::CurrentMachine;
     using CurrentProcess = APIServerInfo::CurrentProcess;
+    using APIEndpoint    = APIServerInfo::APIEndpoint;
+    using Database       = APIServerInfo::Database;
     static const Sequence<ComponentInfo> kAPIServerComponents_{initializer_list<ComponentInfo>{
         ComponentInfo{L"Stroika"sv, Configuration::Version{kStroika_Version_FullVersion}.AsPrettyVersionString (), URI{"https://github.com/SophistSolutions/Stroika"}}
 #if qHasFeature_OpenSSL
@@ -169,23 +173,45 @@ About WSImpl::GetAbout () const
         return result;
     }();
 
+    Common::OperationalStatisticsMgr::Statistics stats    = Common::OperationalStatisticsMgr::sThe.GetStatistics ();
+    APIEndpoint                                  apiStats = [&] () {
+        APIEndpoint r;
+        r.fCallsCompleted = stats.fRecentAPI.fCallsCompleted;
+        r.fMeanDuration   = stats.fRecentAPI.fMeanDuration;
+        r.fMaxDuration    = stats.fRecentAPI.fMaxDuration;
+        return r;
+    }();
+    Database dbStats = [&] () {
+        Database r;
+        r.fReads             = stats.fRecentDB.fReads;
+        r.fWrites            = stats.fRecentDB.fWrites;
+        r.fMeanReadDuration  = stats.fRecentDB.fMeanReadDuration;
+        r.fMeanWriteDuration = stats.fRecentDB.fMeanWriteDuration;
+        r.fMaxDuration       = stats.fRecentDB.fMaxDuration;
+        return r;
+    }();
+
     return About{
         AppVersion::kVersion,
         APIServerInfo{
             AppVersion::kVersion,
             kAPIServerComponents_,
             machineInfo,
-            processInfo}};
+            processInfo,
+            apiStats,
+            dbStats}};
 }
 
 tuple<Memory::BLOB, DataExchange::InternetMediaType> WSImpl::GetBLOB (const GUID& guid) const
 {
+    Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
     return Common::BLOBMgr::sThe.GetBLOB (guid);
 }
 
 Sequence<String> WSImpl::GetDevices (const optional<DeviceSortParamters>& sort) const
 {
-    Sequence<String> result;
+    Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
+    Sequence<String>                                result;
     for (const BackendApp::WebServices::Device& n : GetDevices_Recurse (sort)) {
         result += Characters::ToString (n.fGUID);
     }
@@ -194,8 +220,9 @@ Sequence<String> WSImpl::GetDevices (const optional<DeviceSortParamters>& sort) 
 
 Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const optional<DeviceSortParamters>& sort) const
 {
-    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::GetDevices_Recurse", L"sort=%s", Characters::ToString (sort).c_str ())};
-    Debug::TimingTrace        ttrc{L"WSImpl::GetDevices_Recurse", .1};
+    Debug::TraceContextBumper                       ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::GetDevices_Recurse", L"sort=%s", Characters::ToString (sort).c_str ())};
+    Debug::TimingTrace                              ttrc{L"WSImpl::GetDevices_Recurse", .1};
+    Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
 
     // Compute effective sort Search Terms - filling in optional values
     Sequence<DeviceSortParamters::SearchTerm> searchTerms;
@@ -343,8 +370,9 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
 
 Device WSImpl::GetDevice (const String& id) const
 {
-    Debug::TimingTrace ttrc{L"WSImpl::GetDevice", 0.1};
-    GUID               compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
+    Debug::TimingTrace                              ttrc{L"WSImpl::GetDevice", 0.1};
+    Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
+    GUID                                            compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
     if (auto d = IntegratedModel::Mgr::sThe.GetDevice (compareWithID)) {
         return *d;
     }
@@ -353,20 +381,23 @@ Device WSImpl::GetDevice (const String& id) const
 
 Sequence<String> WSImpl::GetNetworks () const
 {
-    Debug::TimingTrace ttrc{L"WSImpl::GetNetworks", 0.1};
+    Debug::TimingTrace                              ttrc{L"WSImpl::GetNetworks", 0.1};
+    Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
     return Sequence<String>{IntegratedModel::Mgr::sThe.GetNetworks ().Select<String> ([] (const auto& n) { return n.fGUID.ToString (); })};
 }
 
 Sequence<BackendApp::WebServices::Network> WSImpl::GetNetworks_Recurse () const
 {
-    Debug::TimingTrace ttrc{L"WSImpl::GetNetworks_Recurse", 0.1};
+    Debug::TimingTrace                              ttrc{L"WSImpl::GetNetworks_Recurse", 0.1};
+    Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
     return IntegratedModel::Mgr::sThe.GetNetworks ();
 }
 
 Network WSImpl::GetNetwork (const String& id) const
 {
-    Debug::TimingTrace ttrc{L"WSImpl::GetNetwork", 0.1};
-    GUID               compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
+    Debug::TimingTrace                              ttrc{L"WSImpl::GetNetwork", 0.1};
+    Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
+    GUID                                            compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
     if (auto d = IntegratedModel::Mgr::sThe.GetNetwork (compareWithID)) {
         return *d;
     }
@@ -375,7 +406,8 @@ Network WSImpl::GetNetwork (const String& id) const
 
 Collection<String> WSImpl::GetNetworkInterfaces (bool filterRunningOnly) const
 {
-    Debug::TimingTrace ttrc{L"WSImpl::GetNetworkInterfaces_Recurse", 0.1};
+    Debug::TimingTrace                              ttrc{L"WSImpl::GetNetworkInterfaces_Recurse", 0.1};
+    Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
     return Collection<String>{IntegratedModel::Mgr::sThe.GetNetworkInterfaces ().Select<String> ([=] (const auto& ni) -> optional<String> {
         if (ni.fStatus.has_value () and not ni.fStatus->Contains (IO::Network::Interface::Status::eConnected)) {
             return nullopt;
@@ -386,7 +418,8 @@ Collection<String> WSImpl::GetNetworkInterfaces (bool filterRunningOnly) const
 
 Collection<BackendApp::WebServices::NetworkInterface> WSImpl::GetNetworkInterfaces_Recurse (bool filterRunningOnly) const
 {
-    Debug::TimingTrace ttrc{L"WSImpl::GetNetworkInterfaces_Recurse", 0.1};
+    Debug::TimingTrace                              ttrc{L"WSImpl::GetNetworkInterfaces_Recurse", 0.1};
+    Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
     return IntegratedModel::Mgr::sThe.GetNetworkInterfaces ().Select<NetworkInterface> ([=] (const auto& ni) -> optional<NetworkInterface> {
         if (ni.fStatus.has_value () and not ni.fStatus->Contains (IO::Network::Interface::Status::eConnected)) {
             return nullopt;
@@ -397,8 +430,9 @@ Collection<BackendApp::WebServices::NetworkInterface> WSImpl::GetNetworkInterfac
 
 NetworkInterface WSImpl::GetNetworkInterface (const String& id) const
 {
-    Debug::TimingTrace ttrc{L"WSImpl::GetNetworkInterface", 0.1};
-    GUID               compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
+    Debug::TimingTrace                              ttrc{L"WSImpl::GetNetworkInterface", 0.1};
+    Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
+    GUID                                            compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
     if (auto ni = IntegratedModel::Mgr::sThe.GetNetworkInterface (compareWithID)) {
         return *ni;
     }
@@ -407,7 +441,8 @@ NetworkInterface WSImpl::GetNetworkInterface (const String& id) const
 
 double WSImpl::Operation_Ping (const String& address) const
 {
-    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_Ping", L"address=%s", Characters::ToString (address).c_str ())};
+    Debug::TraceContextBumper                       ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_Ping", L"address=%s", Characters::ToString (address).c_str ())};
+    Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
 
     using namespace Stroika::Foundation::IO::Network;
     using namespace Stroika::Foundation::IO::Network::InternetProtocol;
@@ -441,7 +476,8 @@ double WSImpl::Operation_Ping (const String& address) const
 
 Operations::TraceRouteResults WSImpl::Operation_TraceRoute (const String& address, optional<bool> reverseDNSResults) const
 {
-    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_TraceRoute", L"address=%s, reverseDNSResults=%s", Characters::ToString (address).c_str (), Characters::ToString (reverseDNSResults).c_str ())};
+    Debug::TraceContextBumper                       ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_TraceRoute", L"address=%s, reverseDNSResults=%s", Characters::ToString (address).c_str (), Characters::ToString (reverseDNSResults).c_str ())};
+    Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
 
     using namespace Stroika::Foundation::IO::Network;
     using namespace Stroika::Foundation::IO::Network::InternetProtocol;
@@ -488,9 +524,10 @@ Operations::TraceRouteResults WSImpl::Operation_TraceRoute (const String& addres
 
 Time::Duration WSImpl::Operation_DNS_CalculateNegativeLookupTime (optional<unsigned int> samples) const
 {
-    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_DNS_CalculateNegativeLookupTime")};
-    constexpr unsigned int    kDefault_Samples = 7;
-    unsigned int              useSamples       = samples.value_or (kDefault_Samples);
+    Debug::TraceContextBumper                       ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_DNS_CalculateNegativeLookupTime")};
+    Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
+    constexpr unsigned int                          kDefault_Samples = 7;
+    unsigned int                                    useSamples       = samples.value_or (kDefault_Samples);
     if (useSamples == 0) {
         Execution::Throw (ClientErrorException{L"samples must be > 0"sv});
     }
@@ -509,9 +546,10 @@ Time::Duration WSImpl::Operation_DNS_CalculateNegativeLookupTime (optional<unsig
 
 Operations::DNSLookupResults WSImpl::Operation_DNS_Lookup (const String& name) const
 {
-    Debug::TraceContextBumper    ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_DNS_Lookup", L"name=%s", name.c_str ())};
-    Operations::DNSLookupResults result;
-    Time::DurationSecondsType    startAt = Time::GetTickCount ();
+    Debug::TraceContextBumper                       ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_DNS_Lookup", L"name=%s", name.c_str ())};
+    Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
+    Operations::DNSLookupResults                    result;
+    Time::DurationSecondsType                       startAt = Time::GetTickCount ();
     IgnoreExceptionsForCall (result.fResult = Characters::ToString (IO::Network::DNS::kThe.GetHostAddress (name)));
     result.fLookupTime = Time::Duration{Time::GetTickCount () - startAt};
     return result;
@@ -519,6 +557,7 @@ Operations::DNSLookupResults WSImpl::Operation_DNS_Lookup (const String& name) c
 
 double WSImpl::Operation_DNS_CalculateScore () const
 {
+    Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
     // decent estimate of score is (weighted) sum of these numbers - capped at some maximum, and then 1-log of that number (log to skew so mostly sensative to small differences around small numbers and big is big, and 1- to get 1 better score than zero)
     double           totalWeightedTime{};
     constexpr double kNegLookupWeight = 2.5;
@@ -541,9 +580,10 @@ double WSImpl::Operation_DNS_CalculateScore () const
 
 DataExchange::VariantValue WSImpl::Operation_Scan_FullRescan (const String& deviceID) const
 {
-    Debug::TraceContextBumper  ctx{L"WSImpl::Operation_Scan_FullRescan"};
-    DataExchange::VariantValue x;
-    GUID                       useDeviceID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{deviceID}; });
+    Debug::TraceContextBumper                       ctx{L"WSImpl::Operation_Scan_FullRescan"};
+    DataExchange::VariantValue                      x;
+    Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
+    GUID                                            useDeviceID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{deviceID}; });
     // @todo if the device has no dynamic device (cuz it hasn't been discovered - yet) - we don't force an attempt to rediscover
     // because Discovery::DevicesMgr doesn't have API for this. Maybe add one --LGP 2022-06-22
     if (auto useDevID = IntegratedModel::Mgr::sThe.GetCorrespondingDynamicDeviceID (useDeviceID)) {
@@ -554,7 +594,8 @@ DataExchange::VariantValue WSImpl::Operation_Scan_FullRescan (const String& devi
 
 DataExchange::VariantValue WSImpl::Operation_Scan_Scan (const String& addr) const
 {
-    Debug::TraceContextBumper ctx{L"WSImpl::Operation_Scan_Scan"};
-    InternetAddress           useAddr = ClientErrorException::TreatExceptionsAsClientError ([&] () { return IO::Network::DNS::kThe.GetHostAddress (addr); });
+    Debug::TraceContextBumper                       ctx{L"WSImpl::Operation_Scan_Scan"};
+    Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
+    InternetAddress                                 useAddr = ClientErrorException::TreatExceptionsAsClientError ([&] () { return IO::Network::DNS::kThe.GetHostAddress (addr); });
     return Discovery::DevicesMgr::sThe.ScanAndReturnReport (useAddr);
 }

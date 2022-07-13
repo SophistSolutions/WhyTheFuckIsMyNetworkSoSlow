@@ -454,6 +454,26 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
             };
             CurrentProcess fCurrentProcess;
 
+            struct APIEndpoint {
+                unsigned int       fCallsCompleted;
+                optional<Duration> fMeanDuration;
+                optional<Duration> fMaxDuration;
+
+                nonvirtual String ToString () const;
+            };
+            optional<APIEndpoint> fAPIEndpoint;
+
+            struct Database {
+                unsigned int       fReads;
+                unsigned int       fWrites;
+                optional<Duration> fMeanReadDuration;
+                optional<Duration> fMeanWriteDuration;
+                optional<Duration> fMaxDuration;
+
+                nonvirtual String ToString () const;
+            };
+            optional<Database> fDatabase;
+
             nonvirtual String ToString () const;
         };
         APIServerInfo fAPIServerInfo;
