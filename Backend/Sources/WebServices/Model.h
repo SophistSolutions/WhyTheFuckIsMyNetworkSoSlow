@@ -457,6 +457,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
             struct APIEndpoint {
                 unsigned int       fCallsCompleted;
                 optional<Duration> fMeanDuration;
+                optional<Duration> fMedianDuration;
                 optional<Duration> fMaxDuration;
 
                 nonvirtual String ToString () const;
@@ -467,7 +468,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
                 unsigned int       fReads;
                 unsigned int       fWrites;
                 optional<Duration> fMeanReadDuration;
+                optional<Duration> fMedianReadDuration;
                 optional<Duration> fMeanWriteDuration;
+                optional<Duration> fMedianWriteDuration;
                 optional<Duration> fMaxDuration;
 
                 nonvirtual String ToString () const;

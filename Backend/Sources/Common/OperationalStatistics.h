@@ -73,7 +73,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
     };
 
     /**
-         */
+     */
     class OperationalStatisticsMgr::ProcessAPICmd {
     public:
         ProcessAPICmd ();
@@ -84,7 +84,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
     };
 
     /**
-         */
+     */
     class OperationalStatisticsMgr::ProcessDBCmd {
     public:
         ProcessDBCmd (DBCommandType cmdType);
@@ -95,11 +95,14 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         Time::DurationSecondsType fStart_;
     };
 
+    /**
+     */
     struct OperationalStatisticsMgr::Statistics {
         struct WSAPI {
             unsigned int       fCallsCompleted;
             unsigned int       fCallsCompletedSuccessfully;
             optional<Duration> fMeanDuration;
+            optional<Duration> fMedianDuration;
             optional<Duration> fMaxDuration;
         };
         struct DB {
@@ -107,7 +110,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
             unsigned int       fWrites;
             unsigned int       fErrors;
             optional<Duration> fMeanReadDuration;
+            optional<Duration> fMedianReadDuration;
             optional<Duration> fMeanWriteDuration;
+            optional<Duration> fMedianWriteDuration;
             optional<Duration> fMaxDuration;
         };
 

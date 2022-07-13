@@ -8,6 +8,8 @@
 #include "Stroika/Foundation/DataExchange/ObjectVariantMapper.h"
 #include "Stroika/Foundation/Execution/Synchronized.h"
 #include "Stroika/Foundation/IO/Network/Transfer/Connection.h"
+#include "Stroika/Foundation/Math/Statistics.h"
+#include "Stroika/Foundation/Memory/Optional.h"
 
 #include "DB.h"
 
@@ -61,64 +63,46 @@ OperationalStatisticsMgr::ProcessDBCmd::~ProcessDBCmd ()
 
 auto OperationalStatisticsMgr::GetStatistics () const -> Statistics
 {
-    Statistics   result;
-    unsigned int apiCallsCompleted{};
-    //unsigned int apiCallsCompletedSuccessfully;-- NYI
-    double       totalAPIDuration{0};
-    double       maxAPIDuration{0};
-    unsigned int dbReads{0};
-    unsigned int dbWrites{0};
-    //unsigned int       dbErrors{0};  -- NYI
-    double totalDBReadDuration{0};
-    double totalDBWriteDuration{0};
-    double maxDBDuration{0};
-    auto   doOne = [&] (const Rec_& r) {
-        switch (r.fKind) {
-            case Rec_::Kind::eAPI: {
-                ++apiCallsCompleted;
-                totalAPIDuration += r.fDuration;
-                maxAPIDuration = max (maxAPIDuration, r.fDuration);
-            } break;
-            case Rec_::Kind::eDBRead: {
-                ++dbReads;
-                totalDBReadDuration += r.fDuration;
-                maxDBDuration = max (maxDBDuration, r.fDuration);
-            } break;
-            case Rec_::Kind::eDBWrite: {
-                ++dbWrites;
-                totalDBWriteDuration += r.fDuration;
-                maxDBDuration = max (maxDBDuration, r.fDuration);
-            } break;
-        }
-    };
-    lock_guard lk{fMutex_};
+    Statistics result;
+
+    using Time::DurationSecondsType;
+    using Time::Duration;
     // hit every entry and just skip those with null events
-    Time::DurationSecondsType skipBefore = Time::GetTickCount () - kLookbackInterval.As<Time::DurationSecondsType> ();
-    for (size_t i = 0; i < Memory::NEltsOf (fRollingHistory_); ++i) {
-        // could optimize slightly and skip a bunch in a row, but not worht the trouble probably
-        if (fRollingHistory_[i].fAt >= skipBefore) {
-            doOne (fRollingHistory_[i]);
+    DurationSecondsType skipBefore = Time::GetTickCount () - kLookbackInterval.As<DurationSecondsType> ();
+
+    // could optimize slightly and skip a bunch in a row, but not worht the trouble probably
+    Iterable<Rec_> allApplicable = [&] () {
+        lock_guard lk{fMutex_};
+        return Sequence<Rec_>{begin (fRollingHistory_), end (fRollingHistory_)}.Where ([&] (const Rec_& r) { return r.fAt >= skipBefore and r.fKind != Rec_::Kind::eNull; });
+    }();
+
+    {
+        Iterable<DurationSecondsType> apiTimes = allApplicable.Select<DurationSecondsType> ([] (const Rec_& r) -> optional<DurationSecondsType> { if (r.fKind == Rec_::Kind::eAPI) return r.fDuration; return nullopt; });
+        if (not apiTimes.empty ()) {
+            result.fRecentAPI.fMeanDuration   = Duration{Math::Mean (apiTimes)};
+            result.fRecentAPI.fMedianDuration = Duration{Math::Median (apiTimes)};
+            result.fRecentAPI.fMaxDuration    = Duration{*apiTimes.Max ()};
         }
+        result.fRecentAPI.fCallsCompleted             = static_cast<unsigned int> (apiTimes.length ());
+        result.fRecentAPI.fCallsCompletedSuccessfully = static_cast<unsigned int> (apiTimes.length ()); // @todo fix
     }
-
-    result.fRecentAPI.fCallsCompleted             = apiCallsCompleted;
-    result.fRecentAPI.fCallsCompletedSuccessfully = apiCallsCompleted; // @todo fix
-    if (apiCallsCompleted > 0) {
-        result.fRecentAPI.fMeanDuration = Duration{totalAPIDuration / apiCallsCompleted};
-        result.fRecentAPI.fMaxDuration  = Duration{maxAPIDuration};
+    {
+        Iterable<DurationSecondsType> dbReadTimes = allApplicable.Select<DurationSecondsType> ([] (const Rec_& r) -> optional<DurationSecondsType> { if (r.fKind == Rec_::Kind::eDBRead) return r.fDuration; return nullopt; });
+        if (not dbReadTimes.empty ()) {
+            result.fRecentDB.fMeanReadDuration   = Duration{Math::Mean (dbReadTimes)};
+            result.fRecentDB.fMedianReadDuration = Duration{Math::Median (dbReadTimes)};
+            result.fRecentDB.fMaxDuration        = Duration{*dbReadTimes.Max ()};
+        }
+        result.fRecentDB.fReads = static_cast<unsigned int> (dbReadTimes.length ());
     }
-
-    result.fRecentDB.fReads  = dbReads;
-    result.fRecentDB.fWrites = dbWrites;
-    result.fRecentDB.fErrors = 0; // @todo fix
-    if (dbReads > 0) {
-        result.fRecentDB.fMeanReadDuration = Duration{totalDBReadDuration / dbReads};
-    }
-    if (dbWrites > 0) {
-        result.fRecentDB.fMeanWriteDuration = Duration{totalDBWriteDuration / dbWrites};
-    }
-    if (dbReads > 0 or dbWrites > 0) {
-        result.fRecentDB.fMaxDuration = Duration{maxDBDuration};
+    {
+        Iterable<DurationSecondsType> dbWriteTimes = allApplicable.Select<DurationSecondsType> ([] (const Rec_& r) -> optional<DurationSecondsType> { if (r.fKind == Rec_::Kind::eDBWrite) return r.fDuration; return nullopt; });
+        if (not dbWriteTimes.empty ()) {
+            result.fRecentDB.fMeanWriteDuration   = Duration{Math::Mean (dbWriteTimes)};
+            result.fRecentDB.fMedianWriteDuration = Duration{Math::Median (dbWriteTimes)};
+            Memory::AccumulateIf (&result.fRecentDB.fMaxDuration, Duration{*dbWriteTimes.Max ()}, [] (Duration l, Duration r) { return max (l, r); });
+        }
+        result.fRecentDB.fWrites = static_cast<unsigned int> (dbWriteTimes.length ());
     }
     return result;
 }

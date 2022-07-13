@@ -178,16 +178,19 @@ About WSImpl::GetAbout () const
         APIEndpoint r;
         r.fCallsCompleted = stats.fRecentAPI.fCallsCompleted;
         r.fMeanDuration   = stats.fRecentAPI.fMeanDuration;
+        r.fMedianDuration = stats.fRecentAPI.fMedianDuration;
         r.fMaxDuration    = stats.fRecentAPI.fMaxDuration;
         return r;
     }();
     Database dbStats = [&] () {
         Database r;
-        r.fReads             = stats.fRecentDB.fReads;
-        r.fWrites            = stats.fRecentDB.fWrites;
-        r.fMeanReadDuration  = stats.fRecentDB.fMeanReadDuration;
-        r.fMeanWriteDuration = stats.fRecentDB.fMeanWriteDuration;
-        r.fMaxDuration       = stats.fRecentDB.fMaxDuration;
+        r.fReads               = stats.fRecentDB.fReads;
+        r.fWrites              = stats.fRecentDB.fWrites;
+        r.fMeanReadDuration    = stats.fRecentDB.fMeanReadDuration;
+        r.fMedianReadDuration  = stats.fRecentDB.fMedianReadDuration;
+        r.fMeanWriteDuration   = stats.fRecentDB.fMeanWriteDuration;
+        r.fMedianWriteDuration = stats.fRecentDB.fMedianWriteDuration;
+        r.fMaxDuration         = stats.fRecentDB.fMaxDuration;
         return r;
     }();
 

@@ -185,10 +185,8 @@ GUID BLOBMgr::AddBLOB (const BLOB& b, const InternetMediaType& ct)
     if (!sConn_) {
         sConn_ = make_shared<DBConn_> ();
     }
-    {
-        if (auto id = sConn_->Lookup (b, ct)) {
-            return *id;
-        }
+    if (auto id = sConn_->Lookup (b, ct)) {
+        return *id;
     }
     GUID g = GUID::GenerateNew ();
     sConn_->fBLOBs->AddNew (DBRecs_::BLOB_{g, b, ct});

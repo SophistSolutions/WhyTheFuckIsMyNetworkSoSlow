@@ -1,6 +1,7 @@
 add errors and db size to about recordings
 add UI to new  about reportings
 add median/max request-pool length?
+
 	
 			+ Add /health WS endpoint - mostly for debugging? OR EMBELISH ABOUT interface
 			Include stuff like 
