@@ -61,6 +61,12 @@ OperationalStatisticsMgr::ProcessDBCmd::~ProcessDBCmd ()
     sThe.Add_ (Rec_{fKind_, now, now - fStart_});
 }
 
+void OperationalStatisticsMgr::ProcessDBCmd::NoteError ()
+{
+    Time::DurationSecondsType now{Time::GetTickCount ()};
+    sThe.Add_ (Rec_{Rec_::Kind::eDBError, now, now});
+}
+
 auto OperationalStatisticsMgr::GetStatistics () const -> Statistics
 {
     Statistics result;
@@ -89,8 +95,8 @@ auto OperationalStatisticsMgr::GetStatistics () const -> Statistics
     {
         Iterable<DurationSecondsType> dbReadTimes = allApplicable.Select<DurationSecondsType> ([] (const Rec_& r) -> optional<DurationSecondsType> { if (r.fKind == Rec_::Kind::eDBRead) return r.fDuration; return nullopt; });
         if (not dbReadTimes.empty ()) {
-            result.fRecentDB.fMeanReadDuration   = Duration{Math::Mean (dbReadTimes)};
-            result.fRecentDB.fMedianReadDuration = Duration{Math::Median (dbReadTimes)};
+            result.fRecentDB.fMeanReadDuration   = Duration{dbReadTimes.MeanValue ()};
+            result.fRecentDB.fMedianReadDuration = Duration{dbReadTimes.MedianValue ()};
             result.fRecentDB.fMaxDuration        = Duration{*dbReadTimes.Max ()};
         }
         result.fRecentDB.fReads = static_cast<unsigned int> (dbReadTimes.length ());
@@ -98,11 +104,12 @@ auto OperationalStatisticsMgr::GetStatistics () const -> Statistics
     {
         Iterable<DurationSecondsType> dbWriteTimes = allApplicable.Select<DurationSecondsType> ([] (const Rec_& r) -> optional<DurationSecondsType> { if (r.fKind == Rec_::Kind::eDBWrite) return r.fDuration; return nullopt; });
         if (not dbWriteTimes.empty ()) {
-            result.fRecentDB.fMeanWriteDuration   = Duration{Math::Mean (dbWriteTimes)};
-            result.fRecentDB.fMedianWriteDuration = Duration{Math::Median (dbWriteTimes)};
+            result.fRecentDB.fMeanWriteDuration   = Duration{dbWriteTimes.MeanValue ()};
+            result.fRecentDB.fMedianWriteDuration = Duration{dbWriteTimes.MedianValue ()};
             Memory::AccumulateIf (&result.fRecentDB.fMaxDuration, Duration{*dbWriteTimes.Max ()}, [] (Duration l, Duration r) { return max (l, r); });
         }
         result.fRecentDB.fWrites = static_cast<unsigned int> (dbWriteTimes.length ());
     }
+    result.fRecentDB.fErrors = static_cast<unsigned int> (allApplicable.Count ([] (const Rec_& r) { return r.fKind == Rec_::Kind::eDBError; }));
     return result;
 }

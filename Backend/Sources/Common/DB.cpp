@@ -37,9 +37,6 @@ using namespace Stroika::Foundation::IO::Network::HTTP;
 using namespace SQL::ORM;
 using namespace SQL::SQLite;
 
-
-
-
 /*
  ********************************************************************************
  ********* WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB ******************

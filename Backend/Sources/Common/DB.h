@@ -21,9 +21,9 @@
 namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
 
     using namespace Stroika::Foundation::Database::SQL;
+    using Stroika::Foundation::Common::ReadOnlyProperty;
     using Stroika::Foundation::Configuration::Version;
     using Stroika::Foundation::Traversal::Iterable;
-    using Stroika::Foundation::Common::ReadOnlyProperty;
     using namespace Stroika::Foundation::Database;
 
     /**
@@ -83,6 +83,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
                     break;
                 case TABLE_CONNECTION::Operation::eCompletedWrite:
                     tmp.reset ();
+                    break;
+                case TABLE_CONNECTION::Operation::eNotifyError:
+                    Assert (tmp);
+                    tmp->NoteError ();
                     break;
             }
         };

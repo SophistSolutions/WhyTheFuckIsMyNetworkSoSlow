@@ -669,6 +669,7 @@ String About::APIServerInfo::Database::ToString () const
     sb += L"{";
     sb += L"fReads: " + Characters::ToString (fReads) + L", ";
     sb += L"fWrites: " + Characters::ToString (fWrites) + L", ";
+    sb += L"fErrors: " + Characters::ToString (fErrors) + L", ";
     sb += L"fMeanReadDuration: " + Characters::ToString (fMeanReadDuration) + L", ";
     sb += L"fMeanReadDuration: " + Characters::ToString (fMedianReadDuration) + L", ";
     sb += L"fMeanWriteDuration: " + Characters::ToString (fMeanWriteDuration) + L", ";
@@ -745,8 +746,9 @@ const ObjectVariantMapper About::kMapper = [] () {
     mapper.AddCommonType<optional<About::APIServerInfo::APIEndpoint>> ();
 
     mapper.AddClass<About::APIServerInfo::Database> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-        {L"reads", StructFieldMetaInfo{&About::APIServerInfo::Database::fReads}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"writes", StructFieldMetaInfo{&About::APIServerInfo::Database::fWrites}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"reads", StructFieldMetaInfo{&About::APIServerInfo::Database::fReads}},
+        {L"writes", StructFieldMetaInfo{&About::APIServerInfo::Database::fWrites}},
+        {L"errors", StructFieldMetaInfo{&About::APIServerInfo::Database::fErrors}},
         {L"meanReadDuration", StructFieldMetaInfo{&About::APIServerInfo::Database::fMeanReadDuration}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"medianReadDuration", StructFieldMetaInfo{&About::APIServerInfo::Database::fMedianReadDuration}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"meanWriteDuration", StructFieldMetaInfo{&About::APIServerInfo::Database::fMeanWriteDuration}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},

@@ -109,7 +109,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
             return not(*this == rhs);
         }
 #else
-        auto operator<=> (const Manufacturer&) const    = default;
+        auto operator<=> (const Manufacturer&) const = default;
 #endif
 
         /**
@@ -454,8 +454,11 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
             };
             CurrentProcess fCurrentProcess;
 
+            /**
+             * WSAPI related stats - for now - averaged over the last 5 minutes.
+             */
             struct APIEndpoint {
-                unsigned int       fCallsCompleted;
+                unsigned int       fCallsCompleted{};
                 optional<Duration> fMeanDuration;
                 optional<Duration> fMedianDuration;
                 optional<Duration> fMaxDuration;
@@ -464,9 +467,13 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
             };
             optional<APIEndpoint> fAPIEndpoint;
 
+            /**
+             * Database related stats - for now - averaged over the last 5 minutes.
+             */
             struct Database {
-                unsigned int        fReads;
-                unsigned int        fWrites;
+                unsigned int        fReads{};
+                unsigned int        fWrites{};
+                unsigned int        fErrors{};
                 optional<Duration>  fMeanReadDuration;
                 optional<Duration>  fMedianReadDuration;
                 optional<Duration>  fMeanWriteDuration;

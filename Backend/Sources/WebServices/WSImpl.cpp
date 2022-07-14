@@ -187,6 +187,7 @@ About WSImpl::GetAbout () const
         Database r;
         r.fReads               = stats.fRecentDB.fReads;
         r.fWrites              = stats.fRecentDB.fWrites;
+        r.fErrors              = stats.fRecentDB.fErrors;
         r.fMeanReadDuration    = stats.fRecentDB.fMeanReadDuration;
         r.fMedianReadDuration  = stats.fRecentDB.fMedianReadDuration;
         r.fMeanWriteDuration   = stats.fRecentDB.fMeanWriteDuration;

@@ -1,6 +1,6 @@
-add errors and db size to about recordings
-add UI to new  about reportings
+add API errors to about recordings
 add median/max request-pool length?
+add UI to new  about reportings
 
 	
 			+ Add /health WS endpoint - mostly for debugging? OR EMBELISH ABOUT interface
@@ -10,7 +10,7 @@ add median/max request-pool length?
 			- maybe some memory stats? Maybe this is too close to what we already return for WTF stats. Maybe just 
 				embellish those?
 
-	
+
 	---
 
 	> WTF feature as important as NAMING devices - tags list!

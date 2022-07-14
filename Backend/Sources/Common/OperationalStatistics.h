@@ -57,11 +57,11 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
     private:
         mutable mutex fMutex_; // protect all data with single quick access mutex
         struct Rec_ {
-            enum Kind { eNull,
-                        eDBRead,
-                        eDBWrite,
-                        eDBError,
-                        eAPI };
+            enum class Kind { eNull,
+                              eDBRead,
+                              eDBWrite,
+                              eDBError,
+                              eAPI };
             Kind                      fKind;
             Time::DurationSecondsType fAt;
             Time::DurationSecondsType fDuration;
@@ -89,6 +89,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
     public:
         ProcessDBCmd (DBCommandType cmdType);
         ~ProcessDBCmd ();
+
+    public:
+        nonvirtual void NoteError ();
 
     private:
         Rec_::Kind                fKind_;
