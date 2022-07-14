@@ -43,6 +43,7 @@
 #include "Stroika-Current-Version.h"
 
 #include "../Common/BLOBMgr.h"
+#include "../Common/DB.h"
 #include "../Common/OperationalStatistics.h"
 #include "../Discovery/Devices.h"
 #include "../IntegratedModel/Mgr.h"
@@ -191,6 +192,7 @@ About WSImpl::GetAbout () const
         r.fMeanWriteDuration   = stats.fRecentDB.fMeanWriteDuration;
         r.fMedianWriteDuration = stats.fRecentDB.fMedianWriteDuration;
         r.fMaxDuration         = stats.fRecentDB.fMaxDuration;
+        r.fFileSize            = WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB::pFileSize ();
         return r;
     }();
 

@@ -674,6 +674,7 @@ String About::APIServerInfo::Database::ToString () const
     sb += L"fMeanWriteDuration: " + Characters::ToString (fMeanWriteDuration) + L", ";
     sb += L"fMeanWriteDuration: " + Characters::ToString (fMedianWriteDuration) + L", ";
     sb += L"fMaxDuration: " + Characters::ToString (fMaxDuration) + L", ";
+    sb += L"fFileSize: " + Characters::ToString (fFileSize) + L", ";
     sb += L"}";
     return sb.str ();
 }
@@ -751,6 +752,7 @@ const ObjectVariantMapper About::kMapper = [] () {
         {L"meanWriteDuration", StructFieldMetaInfo{&About::APIServerInfo::Database::fMeanWriteDuration}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"medianWriteDuration", StructFieldMetaInfo{&About::APIServerInfo::Database::fMedianWriteDuration}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"maxDuration", StructFieldMetaInfo{&About::APIServerInfo::Database::fMaxDuration}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"fileSize", StructFieldMetaInfo{&About::APIServerInfo::Database::fFileSize}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
     mapper.AddCommonType<optional<About::APIServerInfo::Database>> ();
 

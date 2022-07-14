@@ -109,7 +109,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
             return not(*this == rhs);
         }
 #else
-        auto operator<=> (const Manufacturer&) const = default;
+        auto operator<=> (const Manufacturer&) const    = default;
 #endif
 
         /**
@@ -465,13 +465,14 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
             optional<APIEndpoint> fAPIEndpoint;
 
             struct Database {
-                unsigned int       fReads;
-                unsigned int       fWrites;
-                optional<Duration> fMeanReadDuration;
-                optional<Duration> fMedianReadDuration;
-                optional<Duration> fMeanWriteDuration;
-                optional<Duration> fMedianWriteDuration;
-                optional<Duration> fMaxDuration;
+                unsigned int        fReads;
+                unsigned int        fWrites;
+                optional<Duration>  fMeanReadDuration;
+                optional<Duration>  fMedianReadDuration;
+                optional<Duration>  fMeanWriteDuration;
+                optional<Duration>  fMedianWriteDuration;
+                optional<Duration>  fMaxDuration;
+                optional<uintmax_t> fFileSize;
 
                 nonvirtual String ToString () const;
             };

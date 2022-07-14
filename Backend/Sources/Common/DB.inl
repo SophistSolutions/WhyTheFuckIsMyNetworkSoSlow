@@ -22,11 +22,6 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
      *************************************** DB *************************************
      ********************************************************************************
      */
-    inline DB::DB (Version targetDBVersion, const Iterable<ORM::Schema::Table>& tables)
-        : fTargetDBVersion_{targetDBVersion}
-        , fTables_{tables}
-    {
-    }
     template <typename T>
     T DB::AddOrMergeUpdate (ORM::TableConnection<T>* dbConnTable, const T& d)
     {

@@ -6,6 +6,7 @@
 
 #include "Stroika/Frameworks/StroikaPreComp.h"
 
+#include "Stroika/Foundation/Common/Property.h"
 #include "Stroika/Foundation/Configuration/Version.h"
 #include "Stroika/Foundation/Database/SQL/Connection.h"
 #include "Stroika/Foundation/Database/SQL/ORM/Schema.h"
@@ -22,6 +23,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
     using namespace Stroika::Foundation::Database::SQL;
     using Stroika::Foundation::Configuration::Version;
     using Stroika::Foundation::Traversal::Iterable;
+    using Stroika::Foundation::Common::ReadOnlyProperty;
     using namespace Stroika::Foundation::Database;
 
     /**
@@ -38,6 +40,12 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
     public:
         template <typename T>
         nonvirtual T AddOrMergeUpdate (ORM::TableConnection<T>* dbConnTable, const T& d);
+
+    public:
+        static ReadOnlyProperty<filesystem::path> pFileName;
+
+    public:
+        static ReadOnlyProperty<uintmax_t> pFileSize;
 
     public:
         struct ReadStatsContext;

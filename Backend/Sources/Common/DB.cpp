@@ -37,9 +37,32 @@ using namespace Stroika::Foundation::IO::Network::HTTP;
 using namespace SQL::ORM;
 using namespace SQL::SQLite;
 
+
+
+
+/*
+ ********************************************************************************
+ ********* WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB ******************
+ ********************************************************************************
+ */
+ReadOnlyProperty<filesystem::path> WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB::pFileName{
+    [qStroika_Foundation_Common_Property_ExtraCaptureStuff] ([[maybe_unused]] const auto* property) -> filesystem::path {
+        return IO::FileSystem::WellKnownLocations::GetApplicationData () / "WhyTheFuckIsMyNetworkSoSlow" / "db-v9.db";
+    }};
+
+ReadOnlyProperty<uintmax_t> WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB::pFileSize{[qStroika_Foundation_Common_Property_ExtraCaptureStuff] ([[maybe_unused]] const auto* property) -> uintmax_t {
+    return filesystem::file_size (pFileName ());
+}};
+
+WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB::DB (Version targetDBVersion, const Iterable<ORM::Schema::Table>& tables)
+    : fTargetDBVersion_{targetDBVersion}
+    , fTables_{tables}
+{
+}
+
 SQL::Connection::Ptr WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB::NewConnection ()
 {
-    auto dbPath = IO::FileSystem::WellKnownLocations::GetApplicationData () / "WhyTheFuckIsMyNetworkSoSlow" / "db-v9.db";
+    auto dbPath = pFileName ();
     filesystem::create_directories (dbPath.parent_path ());
 #if __cpp_designated_initializers
     auto options = Options{.fDBPath = dbPath, .fThreadingMode = Options::ThreadingMode::eMultiThread};

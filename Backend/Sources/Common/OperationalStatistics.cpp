@@ -65,8 +65,8 @@ auto OperationalStatisticsMgr::GetStatistics () const -> Statistics
 {
     Statistics result;
 
-    using Time::DurationSecondsType;
     using Time::Duration;
+    using Time::DurationSecondsType;
     // hit every entry and just skip those with null events
     DurationSecondsType skipBefore = Time::GetTickCount () - kLookbackInterval.As<DurationSecondsType> ();
 
