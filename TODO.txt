@@ -1,4 +1,3 @@
-add API errors to about recordings
 add median/max request-pool length?
 add UI to new  about reportings
 

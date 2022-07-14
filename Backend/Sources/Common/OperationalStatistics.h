@@ -58,10 +58,12 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         mutable mutex fMutex_; // protect all data with single quick access mutex
         struct Rec_ {
             enum class Kind { eNull,
+                              eAPI,
+                              eAPIError,
                               eDBRead,
                               eDBWrite,
                               eDBError,
-                              eAPI };
+            };
             Kind                      fKind;
             Time::DurationSecondsType fAt;
             Time::DurationSecondsType fDuration;
@@ -79,6 +81,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         ProcessAPICmd ();
         ~ProcessAPICmd ();
 
+    public:
+        static void NoteError ();
+
     private:
         Time::DurationSecondsType fStart_;
     };
@@ -91,7 +96,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         ~ProcessDBCmd ();
 
     public:
-        nonvirtual void NoteError ();
+        static void NoteError ();
 
     private:
         Rec_::Kind                fKind_;
@@ -102,16 +107,16 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
      */
     struct OperationalStatisticsMgr::Statistics {
         struct WSAPI {
-            unsigned int       fCallsCompleted;
-            unsigned int       fCallsCompletedSuccessfully;
+            unsigned int       fCallsCompleted{};
             optional<Duration> fMeanDuration;
             optional<Duration> fMedianDuration;
             optional<Duration> fMaxDuration;
+            unsigned int       fErrors{};
         };
         struct DB {
-            unsigned int       fReads;
-            unsigned int       fWrites;
-            unsigned int       fErrors;
+            unsigned int       fReads{};
+            unsigned int       fWrites{};
+            unsigned int       fErrors{};
             optional<Duration> fMeanReadDuration;
             optional<Duration> fMedianReadDuration;
             optional<Duration> fMeanWriteDuration;

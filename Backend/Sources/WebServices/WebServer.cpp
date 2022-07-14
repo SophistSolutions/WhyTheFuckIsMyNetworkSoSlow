@@ -24,12 +24,15 @@
 #include "Stroika/Foundation/Time/Duration.h"
 
 #include "Stroika/Frameworks/WebServer/ConnectionManager.h"
+#include "Stroika/Frameworks/WebServer/DefaultFaultInterceptor.h"
 #include "Stroika/Frameworks/WebServer/FileSystemRequestHandler.h"
 #include "Stroika/Frameworks/WebServer/Router.h"
 #include "Stroika/Frameworks/WebService/Server/Basic.h"
 #include "Stroika/Frameworks/WebService/Server/VariantValue.h"
 
 #include "../Common/AppConfiguration.h"
+#include "../Common/OperationalStatistics.h"
+
 #include "AppVersion.h"
 
 #include "WebServer.h"
@@ -163,9 +166,9 @@ private:
 private:
     shared_ptr<IWSAPI>                                   fWSAPI_;
     const Sequence<Route>                                fWSRoutes_;
-    const Sequence<Route>                                fGUIWebRoutes_;
+    const Sequence<Route>                                fStaticRoutes_;
     optional<DeclareActivity<Activity<wstring_view>>>    fEstablishActivity1_{&kContructing_WebServer_};
-    ConnectionManager                                    fGUIWebConnectionMgr_;
+    ConnectionManager                                    fConnectionMgr_;
     [[NO_UNIQUE_ADDRESS_ATTR]] EmptyObjectForSideEffects fIgnore1_{[this] () { fEstablishActivity1_.reset (); }};
 
 public:
@@ -347,27 +350,37 @@ public:
                       }
                   }},
           }
-        , fGUIWebRoutes_
+        , fStaticRoutes_
     {
         Route{L"config.json"_RegEx, mkRequestHandler (kGUIConfig_, Config_::kMapper, function<Config_ (void)>{[=] () { return GetConfig_ (); }})},
             Route{RegularExpression::kAny, FileSystemRequestHandler{Execution::GetEXEDir () / "html", kStaticSiteHandlerOptions_}},
     }
 #if __cpp_designated_initializers
-    , fGUIWebConnectionMgr_
+    , fConnectionMgr_
     {
         SocketAddresses (InternetAddresses_Any (), gAppConfiguration.Get ().WebServerPort.value_or (AppConfigurationType::kWebServerPort_Default)),
-            fWSRoutes_ + fGUIWebRoutes_,
+            fWSRoutes_ + fStaticRoutes_,
             ConnectionManager::Options { .fMaxConnections = kMaxWebServerConcurrentConnections_, .fMaxConcurrentlyHandledConnections = kMaxThreads_, .fBindFlags = Socket::BindFlags{.fSO_REUSEADDR = true}, .fDefaultResponseHeaders = kDefaultResponseHeadersStaticSite_ }
     }
 #else
-    , fGUIWebConnectionMgr_
+    , fConnectionMgr_
     {
         SocketAddresses (InternetAddresses_Any (), gAppConfiguration.Get ().WebServerPort.value_or (AppConfigurationType::kWebServerPort_Default)),
-            fWSRoutes_ + fGUIWebRoutes_,
+            fWSRoutes_ + fStaticRoutes_,
             ConnectionManager::Options { kMaxWebServerConcurrentConnections_, kMaxThreads_, Socket::BindFlags{true}, kDefaultResponseHeadersStaticSite_ }
     }
 #endif
     {
+        using Stroika::Frameworks::WebServer::DefaultFaultInterceptor;
+        DefaultFaultInterceptor defaultHandler;
+        fConnectionMgr_.defaultErrorHandler = DefaultFaultInterceptor{[defaultHandler] (Message* m, const exception_ptr& e) {
+            // Unsure if we should bother recording 404s
+            DbgTrace (L"faulting on request %s", Characters::ToString (m->request ()).c_str ());
+            if (m->request ().url ().GetPath ().StartsWith (L"/api"sv, CompareOptions::eCaseInsensitive)) {
+                WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::OperationalStatisticsMgr::ProcessAPICmd::NoteError ();
+            }
+            defaultHandler.HandleFault (m, e);
+        }};
     }
     static void DefaultPage_ ([[maybe_unused]] Request* request, Response* response)
     {

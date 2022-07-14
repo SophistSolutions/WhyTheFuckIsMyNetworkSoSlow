@@ -656,6 +656,7 @@ String About::APIServerInfo::APIEndpoint::ToString () const
     Characters::StringBuilder sb;
     sb += L"{";
     sb += L"fCallsCompleted: " + Characters::ToString (fCallsCompleted) + L", ";
+    sb += L"fErrors: " + Characters::ToString (fErrors) + L", ";
     sb += L"fMedianDuration: " + Characters::ToString (fMedianDuration) + L", ";
     sb += L"fMeanDuration: " + Characters::ToString (fMeanDuration) + L", ";
     sb += L"fMaxDuration: " + Characters::ToString (fMaxDuration) + L", ";
@@ -738,7 +739,8 @@ const ObjectVariantMapper About::kMapper = [] () {
     });
 
     mapper.AddClass<About::APIServerInfo::APIEndpoint> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-        {L"callsCompleted", StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fCallsCompleted}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"callsCompleted", StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fCallsCompleted}},
+        {L"errors", StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fErrors}},
         {L"medianDuration", StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fMedianDuration}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"meanDuration", StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fMeanDuration}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"maxDuration", StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fMaxDuration}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},

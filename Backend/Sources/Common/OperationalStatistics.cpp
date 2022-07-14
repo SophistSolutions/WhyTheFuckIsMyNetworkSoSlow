@@ -50,6 +50,12 @@ OperationalStatisticsMgr::ProcessAPICmd::~ProcessAPICmd ()
     sThe.Add_ (Rec_{Rec_::Kind::eAPI, now, now - fStart_});
 }
 
+void OperationalStatisticsMgr::ProcessAPICmd::NoteError ()
+{
+    Time::DurationSecondsType now{Time::GetTickCount ()};
+    sThe.Add_ (Rec_{Rec_::Kind::eAPIError, now, now});
+}
+
 /*
  ********************************************************************************
  ****************** OperationalStatisticsMgr::ProcessDBCmd **********************
@@ -89,8 +95,8 @@ auto OperationalStatisticsMgr::GetStatistics () const -> Statistics
             result.fRecentAPI.fMedianDuration = Duration{Math::Median (apiTimes)};
             result.fRecentAPI.fMaxDuration    = Duration{*apiTimes.Max ()};
         }
-        result.fRecentAPI.fCallsCompleted             = static_cast<unsigned int> (apiTimes.length ());
-        result.fRecentAPI.fCallsCompletedSuccessfully = static_cast<unsigned int> (apiTimes.length ()); // @todo fix
+        result.fRecentAPI.fCallsCompleted = static_cast<unsigned int> (apiTimes.length ());
+        result.fRecentAPI.fErrors         = static_cast<unsigned int> (allApplicable.Count ([] (const Rec_& r) { return r.fKind == Rec_::Kind::eAPIError; }));
     }
     {
         Iterable<DurationSecondsType> dbReadTimes = allApplicable.Select<DurationSecondsType> ([] (const Rec_& r) -> optional<DurationSecondsType> { if (r.fKind == Rec_::Kind::eDBRead) return r.fDuration; return nullopt; });
