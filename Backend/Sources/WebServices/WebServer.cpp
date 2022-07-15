@@ -14,6 +14,7 @@
 #include "Stroika/Foundation/DataExchange/Variant/JSON/Reader.h"
 #include "Stroika/Foundation/DataExchange/Variant/JSON/Writer.h"
 #include "Stroika/Foundation/Execution/Activity.h"
+#include "Stroika/Foundation/Execution/IntervalTimer.h"
 #include "Stroika/Foundation/Execution/Module.h"
 #include "Stroika/Foundation/Execution/Synchronized.h"
 #include "Stroika/Foundation/IO/Network/HTTP/ClientErrorException.h"
@@ -171,6 +172,21 @@ private:
     ConnectionManager                                    fConnectionMgr_;
     [[NO_UNIQUE_ADDRESS_ATTR]] EmptyObjectForSideEffects fIgnore1_{[this] () { fEstablishActivity1_.reset (); }};
 
+    atomic<unsigned int> fActiveCallCnt_{0};
+    struct ActiveCallCounter_ {
+        ActiveCallCounter_ (Rep_& r)
+            : fRep_{r}
+        {
+            ++r.fActiveCallCnt_;
+        }
+        ~ActiveCallCounter_ ()
+        {
+            --fRep_.fActiveCallCnt_;
+        }
+        Rep_& fRep_;
+    };
+    IntervalTimer::Adder fIntervalTimerAdder_;
+
 public:
     Rep_ (const shared_ptr<IWSAPI>& wsImpl)
         : fWSAPI_{wsImpl}
@@ -187,11 +203,12 @@ public:
 
               Route{
                   L"api/v1/about"_RegEx,
-                  mkRequestHandler (kAbout_, About::kMapper, function<About (void)>{[=] () { return fWSAPI_->GetAbout (); }})},
+                  mkRequestHandler (kAbout_, About::kMapper, function<About (void)>{[=] () { ActiveCallCounter_ acc{*this}; return fWSAPI_->GetAbout (); }})},
 
               Route{
                   L"api/v1/blob/(.+)"_RegEx,
                   [=] (Message* m, const String& id) {
+                      ActiveCallCounter_                                   acc{*this};
                       tuple<Memory::BLOB, DataExchange::InternetMediaType> b = fWSAPI_->GetBLOB (id);
                       m->rwResponse ().contentType                           = get<1> (b);
                       m->rwResponse ().write (get<0> (b));
@@ -201,6 +218,7 @@ public:
                   L"api/v1/devices(/?)"_RegEx,
                   [=] (Message* m) {
                       constexpr bool                              kDefault_FilterRunningOnly_{true};
+                      ActiveCallCounter_                          acc{*this};
                       Mapping<String, DataExchange::VariantValue> args              = PickoutParamValues (&m->rwRequest ());
                       bool                                        filterRunningOnly = args.LookupValue (L"filter-only-running"sv, DataExchange::VariantValue{kDefault_FilterRunningOnly_}).As<bool> ();
                       optional<DeviceSortParamters>               sort;
@@ -227,12 +245,14 @@ public:
               Route{
                   L"api/v1/devices/(.+)"_RegEx,
                   [=] (Message* m, const String& id) {
+                      ActiveCallCounter_ acc{*this};
                       WriteResponse (&m->rwResponse (), kDevices_, Device::kMapper.FromObject (fWSAPI_->GetDevice (id)));
                   }},
 
               Route{
                   L"api/v1/network-interfaces(/?)"_RegEx,
                   [=] (Message* m) {
+                      ActiveCallCounter_                          acc{*this};
                       constexpr bool                              kDefault_FilterRunningOnly_{true};
                       Mapping<String, DataExchange::VariantValue> args              = PickoutParamValues (&m->rwRequest ());
                       bool                                        filterRunningOnly = args.LookupValue (L"filter-only-running"sv, DataExchange::VariantValue{kDefault_FilterRunningOnly_}).As<bool> ();
@@ -246,12 +266,14 @@ public:
               Route{
                   L"api/v1/network-interfaces/(.+)"_RegEx,
                   [=] (Message* m, const String& id) {
+                      ActiveCallCounter_ acc{*this};
                       WriteResponse (&m->rwResponse (), kNetworkInterfaces_, NetworkInterface::kMapper.FromObject (fWSAPI_->GetNetworkInterface (id)));
                   }},
 
               Route{
                   L"api/v1/networks(/?)"_RegEx,
                   [=] (Message* m) {
+                      ActiveCallCounter_                          acc{*this};
                       Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (&m->rwRequest ());
                       if (args.LookupValue (L"recurse"sv, false).As<bool> ()) {
                           WriteResponse (&m->rwResponse (), kNetworkInterfaces_, Network::kMapper.FromObject (fWSAPI_->GetNetworks_Recurse ()));
@@ -263,12 +285,14 @@ public:
               Route{
                   L"api/v1/networks/(.+)"_RegEx,
                   [=] (Message* m, const String& id) {
+                      ActiveCallCounter_ acc{*this};
                       WriteResponse (&m->rwResponse (), kNetworks_, Network::kMapper.FromObject (fWSAPI_->GetNetwork (id)));
                   }},
 
               Route{
                   L"api/v1/operations/ping"_RegEx,
                   [=] (Message* m) {
+                      ActiveCallCounter_                          acc{*this};
                       Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (&m->rwRequest ());
                       if (auto address = args.Lookup (L"target"sv)) {
                           ExpectedMethod (m->request, kOperations_);
@@ -281,6 +305,7 @@ public:
               Route{
                   L"api/v1/operations/traceroute"_RegEx,
                   [=] (Message* m) {
+                      ActiveCallCounter_                          acc{*this};
                       Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (&m->rwRequest ());
                       optional<bool>                              reverseDNSResult;
                       if (auto rdr = args.Lookup (L"reverse-dns-result"sv)) {
@@ -297,6 +322,7 @@ public:
               Route{
                   L"api/v1/operations/dns/calculate-negative-lookup-time"_RegEx,
                   [=] (Message* m) {
+                      ActiveCallCounter_ acc{*this};
                       ExpectedMethod (m->request, kOperations_);
                       optional<unsigned int>                      samples;
                       Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (&m->rwRequest ());
@@ -308,6 +334,7 @@ public:
               Route{
                   L"api/v1/operations/dns/lookup"_RegEx,
                   [=] (Message* m) {
+                      ActiveCallCounter_ acc{*this};
                       ExpectedMethod (m->request, kOperations_);
                       String                                      name;
                       Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (&m->rwRequest ());
@@ -322,12 +349,14 @@ public:
               Route{
                   L"api/v1/operations/dns/calculate-score"_RegEx,
                   [=] (Message* m) {
+                      ActiveCallCounter_ acc{*this};
                       ExpectedMethod (m->request, kOperations_);
                       WriteResponse (&m->rwResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_DNS_CalculateScore ()));
                   }},
               Route{
                   L"api/v1/operations/scan/FullRescan"_RegEx,
                   [=] (Message* m) {
+                      ActiveCallCounter_                          acc{*this};
                       Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (&m->rwRequest ());
                       ExpectedMethod (m->request, kOperations_);
                       if (auto rdr = args.Lookup (L"deviceID"sv)) {
@@ -340,6 +369,7 @@ public:
               Route{
                   L"api/v1/operations/scan/Scan"_RegEx,
                   [=] (Message* m) {
+                      ActiveCallCounter_                          acc{*this};
                       Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (&m->rwRequest ());
                       ExpectedMethod (m->request, kOperations_);
                       if (auto rdr = args.Lookup (L"addr"sv)) {
@@ -370,6 +400,11 @@ public:
             ConnectionManager::Options { kMaxWebServerConcurrentConnections_, kMaxThreads_, Socket::BindFlags{true}, kDefaultResponseHeadersStaticSite_ }
     }
 #endif
+    , fIntervalTimerAdder_{
+          [this] () {
+              WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::OperationalStatisticsMgr::sThe.RecordInputQLength (fActiveCallCnt_);
+          },
+          15s}
     {
         using Stroika::Frameworks::WebServer::DefaultFaultInterceptor;
         DefaultFaultInterceptor defaultHandler;

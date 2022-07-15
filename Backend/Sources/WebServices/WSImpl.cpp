@@ -182,6 +182,8 @@ About WSImpl::GetAbout () const
         r.fMedianDuration = stats.fRecentAPI.fMedianDuration;
         r.fMaxDuration    = stats.fRecentAPI.fMaxDuration;
         r.fErrors         = stats.fRecentAPI.fErrors;
+        r.fMeanQLength    = stats.fRecentAPI.fMeanQLength;
+        r.fMedianQLength  = stats.fRecentAPI.fMedianQLength;
         return r;
     }();
     Database dbStats = [&] () {

@@ -1,5 +1,8 @@
-add median/max request-pool length?
-add UI to new  about reportings
+add UI to new  about reportings (/about/apiendpoint and /about/database)
+
+
++ Consider using new IntervalTimer code for background checking of discovered devices etc? Is that better than
+  thread code I have now?
 
 	
 			+ Add /health WS endpoint - mostly for debugging? OR EMBELISH ABOUT interface

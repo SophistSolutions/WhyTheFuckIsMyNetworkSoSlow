@@ -463,6 +463,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
                 optional<Duration> fMedianDuration;
                 optional<Duration> fMaxDuration;
                 unsigned int       fErrors{};
+                optional<float>    fMeanQLength;
+                optional<float>    fMedianQLength;
 
                 nonvirtual String ToString () const;
             };

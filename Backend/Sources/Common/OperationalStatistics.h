@@ -47,6 +47,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         class ProcessDBCmd;
 
     public:
+        nonvirtual void RecordInputQLength (size_t length);
+
+    public:
         struct Statistics;
 
     public:
@@ -63,6 +66,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
                               eDBRead,
                               eDBWrite,
                               eDBError,
+                              eAPIInputQLength, // length value stored in 'fDuration'
             };
             Kind                      fKind;
             Time::DurationSecondsType fAt;
@@ -111,6 +115,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
             optional<Duration> fMeanDuration;
             optional<Duration> fMedianDuration;
             optional<Duration> fMaxDuration;
+            optional<float>    fMeanQLength;
+            optional<float>    fMedianQLength;
             unsigned int       fErrors{};
         };
         struct DB {
