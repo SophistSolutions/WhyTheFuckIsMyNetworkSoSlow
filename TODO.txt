@@ -1,18 +1,5 @@
 add UI to new  about reportings (/about/apiendpoint and /about/database)
 
-
-+ Consider using new IntervalTimer code for background checking of discovered devices etc? Is that better than
-  thread code I have now?
-
-	
-			+ Add /health WS endpoint - mostly for debugging? OR EMBELISH ABOUT interface
-			Include stuff like 
-			- median response time for a few key requests.
-			- median q length for WS response pool
-			- maybe some memory stats? Maybe this is too close to what we already return for WTF stats. Maybe just 
-				embellish those?
-
-
 	---
 
 	> WTF feature as important as NAMING devices - tags list!

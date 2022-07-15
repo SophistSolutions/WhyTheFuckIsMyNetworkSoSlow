@@ -182,8 +182,9 @@ About WSImpl::GetAbout () const
         r.fMedianDuration = stats.fRecentAPI.fMedianDuration;
         r.fMaxDuration    = stats.fRecentAPI.fMaxDuration;
         r.fErrors         = stats.fRecentAPI.fErrors;
-        r.fMeanQLength    = stats.fRecentAPI.fMeanQLength;
-        r.fMedianQLength  = stats.fRecentAPI.fMedianQLength;
+        r.fMedianWebServerConnections = stats.fRecentAPI.fMedianWebServerConnections;
+        r.fMedianProcessingWebServerConnections = stats.fRecentAPI.fMedianProcessingWebServerConnections;
+        r.fMedianRunningAPITasks      = stats.fRecentAPI.fMedianRunningAPITasks;
         return r;
     }();
     Database dbStats = [&] () {

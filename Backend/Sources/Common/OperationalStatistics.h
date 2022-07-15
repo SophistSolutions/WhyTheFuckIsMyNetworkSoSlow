@@ -47,7 +47,13 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         class ProcessDBCmd;
 
     public:
-        nonvirtual void RecordInputQLength (size_t length);
+        nonvirtual void RecordActiveRunningTasksCount (size_t length);
+
+    public:
+        nonvirtual void RecordOpenConnectionCount (size_t length);
+
+    public:
+        nonvirtual void RecordProcessingConnectionCount (size_t length);
 
     public:
         struct Statistics;
@@ -66,11 +72,14 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
                               eDBRead,
                               eDBWrite,
                               eDBError,
-                              eAPIInputQLength, // length value stored in 'fDuration'
+                              eAPIActiveRunningTasks,
+                              eAPIOpenConnectionCount,
+                              eAPIProcessingConnectionCount,
             };
             Kind                      fKind;
             Time::DurationSecondsType fAt;
             Time::DurationSecondsType fDuration;
+            size_t                    fLength;
         };
         Rec_   fRollingHistory_[1024]; // @todo see https://stroika.atlassian.net/browse/STK-174 - redo as circular q when available
         size_t fNextHistory_{0};       // circular - can be < first. - first==last implies zero length q
@@ -115,8 +124,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
             optional<Duration> fMeanDuration;
             optional<Duration> fMedianDuration;
             optional<Duration> fMaxDuration;
-            optional<float>    fMeanQLength;
-            optional<float>    fMedianQLength;
+            optional<float>    fMedianWebServerConnections;
+            optional<float>    fMedianProcessingWebServerConnections;
+            optional<float>    fMedianRunningAPITasks;
             unsigned int       fErrors{};
         };
         struct DB {

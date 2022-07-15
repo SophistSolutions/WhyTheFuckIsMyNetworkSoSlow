@@ -402,7 +402,9 @@ public:
 #endif
     , fIntervalTimerAdder_{
           [this] () {
-              WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::OperationalStatisticsMgr::sThe.RecordInputQLength (fActiveCallCnt_);
+              WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::OperationalStatisticsMgr::sThe.RecordActiveRunningTasksCount (fActiveCallCnt_);
+              WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::OperationalStatisticsMgr::sThe.RecordOpenConnectionCount (fConnectionMgr_.pConnections ().length ());
+              WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::OperationalStatisticsMgr::sThe.RecordActiveRunningTasksCount (fConnectionMgr_.pActiveConnection ().length ());
           },
           15s}
     {

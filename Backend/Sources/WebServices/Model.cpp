@@ -660,8 +660,9 @@ String About::APIServerInfo::APIEndpoint::ToString () const
     sb += L"fMedianDuration: " + Characters::ToString (fMedianDuration) + L", ";
     sb += L"fMeanDuration: " + Characters::ToString (fMeanDuration) + L", ";
     sb += L"fMaxDuration: " + Characters::ToString (fMaxDuration) + L", ";
-    sb += L"fMeanQLength: " + Characters::ToString (fMeanQLength) + L", ";
-    sb += L"fMedianQLength: " + Characters::ToString (fMedianQLength) + L", ";
+    sb += L"fMedianWebServerConnections: " + Characters::ToString (fMedianWebServerConnections) + L", ";
+    sb += L"fMedianProcessingWebServerConnections: " + Characters::ToString (fMedianProcessingWebServerConnections) + L", ";
+    sb += L"fMedianRunningAPITasks: " + Characters::ToString (fMedianRunningAPITasks) + L", ";
     sb += L"}";
     return sb.str ();
 }
@@ -747,9 +748,11 @@ const ObjectVariantMapper About::kMapper = [] () {
         {L"medianDuration", StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fMedianDuration}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"meanDuration", StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fMeanDuration}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"maxDuration", StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fMaxDuration}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"meanQLength", StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fMeanQLength}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"medianQLength", StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fMedianQLength}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"medianWebServerConnections", StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fMedianWebServerConnections}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"medianProcessingWebServerConnections", StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fMedianProcessingWebServerConnections}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"medianRunningAPITasks", StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fMedianRunningAPITasks}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
+    
     mapper.AddCommonType<optional<About::APIServerInfo::APIEndpoint>> ();
 
     mapper.AddClass<About::APIServerInfo::Database> (initializer_list<ObjectVariantMapper::StructFieldInfo>{

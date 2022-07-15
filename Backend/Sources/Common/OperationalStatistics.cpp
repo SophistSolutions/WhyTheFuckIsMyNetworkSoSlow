@@ -73,10 +73,22 @@ void OperationalStatisticsMgr::ProcessDBCmd::NoteError ()
     sThe.Add_ (Rec_{Rec_::Kind::eDBError, now, now});
 }
 
-void OperationalStatisticsMgr::RecordInputQLength (size_t length)
+void OperationalStatisticsMgr::RecordActiveRunningTasksCount (size_t length)
 {
     Time::DurationSecondsType now{Time::GetTickCount ()};
-    sThe.Add_ (Rec_{Rec_::Kind::eAPIInputQLength, now, static_cast<Time::DurationSecondsType> (length)});
+    sThe.Add_ (Rec_{Rec_::Kind::eAPIActiveRunningTasks, now, 0, length});
+}
+
+void OperationalStatisticsMgr::RecordOpenConnectionCount (size_t length)
+{
+    Time::DurationSecondsType now{Time::GetTickCount ()};
+    sThe.Add_ (Rec_{Rec_::Kind::eAPIOpenConnectionCount, now, 0, length});
+}
+
+void OperationalStatisticsMgr::RecordProcessingConnectionCount (size_t length)
+{
+    Time::DurationSecondsType now{Time::GetTickCount ()};
+    sThe.Add_ (Rec_{Rec_::Kind::eAPIProcessingConnectionCount, now, 0, length});
 }
 
 auto OperationalStatisticsMgr::GetStatistics () const -> Statistics
@@ -105,10 +117,27 @@ auto OperationalStatisticsMgr::GetStatistics () const -> Statistics
         result.fRecentAPI.fErrors         = static_cast<unsigned int> (allApplicable.Count ([] (const Rec_& r) { return r.fKind == Rec_::Kind::eAPIError; }));
     }
     {
-        Iterable<float> apiQLength = allApplicable.Select<float> ([] (const Rec_& r) -> optional<float> { if (r.fKind == Rec_::Kind::eAPIInputQLength) return static_cast<float> (r.fDuration); return nullopt; });
-        if (not apiQLength.empty ()) {
-            result.fRecentAPI.fMeanQLength   = Math::Mean (apiQLength);
-            result.fRecentAPI.fMedianQLength = Math::Median (apiQLength);
+        Iterable<float> openWSConnections = allApplicable.Select<float> ([] (const Rec_& r) -> optional<float> { if (r.fKind == Rec_::Kind::eAPIOpenConnectionCount) return static_cast<float> (r.fLength); return nullopt; });
+        if (not openWSConnections.empty ()) {
+            result.fRecentAPI.fMedianWebServerConnections = Math::Median (openWSConnections);
+        }
+    }
+    {
+        Iterable<float> processingWSConnections = allApplicable.Select<float> ([] (const Rec_& r) -> optional<float> { if (r.fKind == Rec_::Kind::eAPIOpenConnectionCount) return static_cast<float> (r.fLength); return nullopt; });
+        if (not processingWSConnections.empty ()) {
+            result.fRecentAPI.fMedianProcessingWebServerConnections = Math::Median (processingWSConnections);
+        }
+    }
+    {
+        Iterable<float> activeRunningWSAPITasks = allApplicable.Select<float> ([] (const Rec_& r) -> optional<float> { if (r.fKind == Rec_::Kind::eAPIActiveRunningTasks) return static_cast<float> (r.fLength); return nullopt; });
+        if (not activeRunningWSAPITasks.empty ()) {
+            result.fRecentAPI.fMedianRunningAPITasks      = Math::Median (activeRunningWSAPITasks);
+        }
+    }
+    {
+        Iterable<float> activeWSConnections = allApplicable.Select<float> ([] (const Rec_& r) -> optional<float> { if (r.fKind == Rec_::Kind::eAPIOpenConnectionCount) return static_cast<float> (r.fLength); return nullopt; });
+        if (not activeWSConnections.empty ()) {
+            result.fRecentAPI.fMedianProcessingWebServerConnections = Math::Median (activeWSConnections);
         }
     }
     {
