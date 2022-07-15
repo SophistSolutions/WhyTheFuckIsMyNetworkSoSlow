@@ -66,6 +66,7 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices;
 
 using WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::AppConfigurationType;
 using WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::gAppConfiguration;
+using WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::OperationalStatisticsMgr;
 
 // Configuration object passed to GUI as startup parameters/configuration
 namespace {
@@ -402,9 +403,9 @@ public:
 #endif
     , fIntervalTimerAdder_{
           [this] () {
-              WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::OperationalStatisticsMgr::sThe.RecordActiveRunningTasksCount (fActiveCallCnt_);
-              WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::OperationalStatisticsMgr::sThe.RecordOpenConnectionCount (fConnectionMgr_.pConnections ().length ());
-              WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::OperationalStatisticsMgr::sThe.RecordActiveRunningTasksCount (fConnectionMgr_.pActiveConnection ().length ());
+              OperationalStatisticsMgr::sThe.RecordActiveRunningTasksCount (fActiveCallCnt_);
+              OperationalStatisticsMgr::sThe.RecordOpenConnectionCount (fConnectionMgr_.pConnections ().length ());
+              OperationalStatisticsMgr::sThe.RecordActiveRunningTasksCount (fConnectionMgr_.pActiveConnections ().length ());
           },
           15s}
     {
@@ -414,7 +415,7 @@ public:
             // Unsure if we should bother recording 404s
             DbgTrace (L"faulting on request %s", Characters::ToString (m->request ()).c_str ());
             if (m->request ().url ().GetPath ().StartsWith (L"/api"sv, CompareOptions::eCaseInsensitive)) {
-                WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::OperationalStatisticsMgr::ProcessAPICmd::NoteError ();
+                OperationalStatisticsMgr::ProcessAPICmd::NoteError ();
             }
             defaultHandler.HandleFault (m, e);
         }};
