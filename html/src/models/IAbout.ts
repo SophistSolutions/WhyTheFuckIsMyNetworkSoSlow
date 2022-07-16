@@ -11,6 +11,27 @@ export interface ICurrentMachine {
   runQLength?: number;
   totalCPUUsage?: number;
 }
+export interface IAPIEndpoint {
+  callsCompleted?: number;
+  errors?: number;
+  maxDuration?: string;
+  meanDuration?: string;
+  medianDuration?: string;
+  medianProcessingWebServerConnections?: number;
+  medianRunningAPITasks?: number;
+  medianWebServerConnections?: number;
+}
+export interface IDatabase {
+  errors?: number;
+  fileSize?: number;
+  maxDuration?: string;
+  meanReadDuration?: string;
+  meanWriteDuration?: string;
+  medianReadDuration?: string;
+  medianWriteDuration?: string;
+  reads?: number;
+  writes?: number;
+}
 export interface ICurrentProcess {
   averageCPUTimeUsed?: number;
   combinedIOReadRate?: number;
@@ -19,10 +40,11 @@ export interface ICurrentProcess {
   workingOrResidentSetSize?: number;
 }
 export interface IServerInfo {
+  apiEndpoint?: IAPIEndpoint;
   componentVersions: IComponent[];
-  components: any;
   currentMachine: ICurrentMachine;
   currentProcess: ICurrentProcess;
+  database: IDatabase;
 }
 export interface IAbout {
   applicationVersion: string;

@@ -5,7 +5,7 @@ import moment from 'moment';
 import prettyBytes from 'pretty-bytes';
 
 import { kCompileTimeConfiguration } from '../config/config';
-import { IAbout, IComponent } from "../models/IAbout";
+import { IAbout, IAPIEndpoint, IComponent, IDatabase } from "../models/IAbout";
 import { useNetStateStore } from '../stores/Net-State-store'
 
 let polling: undefined | NodeJS.Timeout;
@@ -35,6 +35,48 @@ onMounted(() => {
 onUnmounted(() => {
   clearInterval(polling);
 })
+
+function prettyPrintMSTime(time: string)
+{
+  var m = moment.duration(time);
+  return m.milliseconds().toFixed(1) + "ms";
+}
+function wsAPIMsg(info: IAPIEndpoint, showShort: boolean): string
+{
+ let msg = "";
+ if (!showShort) {
+msg += `${info.callsCompleted} calls; `;
+ }
+if (!showShort || info.errors != 0) {
+msg += `errors: ${info.errors}; `;
+}
+if (showShort) {
+msg += `${info.medianWebServerConnections} Q2 connections (${info.medianRunningAPITasks} Q2 active API calls); `;
+}
+else {
+msg += `${info.medianWebServerConnections} Q2 connections (${info.medianProcessingWebServerConnections} active, and ${info.medianRunningAPITasks} Q2 active API calls); `;
+}
+msg += `Q2 ${prettyPrintMSTime(info.medianDuration)}, max ${prettyPrintMSTime(info.maxDuration)}`
+return msg;
+}
+function dbStatsMsg(info: IDatabase, showShort: boolean): string
+{
+ let msg = "";
+if (!showShort || info.errors != 0) {
+msg += `errors: ${info.errors}; `;
+}
+if (info.fileSize) {
+msg += `${prettyBytes(info.fileSize)}; `
+}
+ if (!showShort) {
+msg += `${info.reads} reads, ${info.writes} writes; `;
+ }
+msg += `${prettyPrintMSTime(info.medianReadDuration)} Q2 reads, ${prettyPrintMSTime(info.medianWriteDuration)} Q2 writes`;
+if (!showShort) {
+msg += `; ${prettyPrintMSTime(info.maxDuration)} max; `;
+}
+return msg;
+}
 </script>
 
 <template>
@@ -121,6 +163,18 @@ Units 1=1 logical core">
                     WSS
                   </td>
                   <td>{{ prettyBytes(aboutData.serverInfo.currentProcess.workingOrResidentSetSize) }}</td>
+                </tr>
+                <tr v-if="aboutData.serverInfo.apiEndpoint">
+                  <td title="Information about app WebService endpoint (#connections, timing, Q-lengths) over the last 5 minutes">
+                    WSAPI
+                  </td>
+                  <td :title="wsAPIMsg(aboutData.serverInfo.apiEndpoint, false)">{{ wsAPIMsg(aboutData.serverInfo.apiEndpoint, true) }}</td>
+                </tr>
+                <tr v-if="aboutData">
+                  <td title="Information about database: size on disk, median read/write times; hover for more like max read/write times">
+                    DB
+                  </td>
+                  <td :title="dbStatsMsg(aboutData.serverInfo.database, false)">{{ dbStatsMsg(aboutData.serverInfo.database, true) }}</td>
                 </tr>
               </table>
             </div>
