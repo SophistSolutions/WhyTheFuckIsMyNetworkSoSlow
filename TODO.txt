@@ -1,7 +1,3 @@
-+ switch from momentjs to luxon and see if I can then fix the millisecond humanize thing
-	https://vhudyma-blog.eu/the-best-momentjs-alternatives/#Dayjs
-	
-	---
 
 	> WTF feature as important as NAMING devices - tags list!
 
