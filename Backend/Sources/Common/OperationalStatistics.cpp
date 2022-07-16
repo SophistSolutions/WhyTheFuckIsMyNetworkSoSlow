@@ -131,7 +131,7 @@ auto OperationalStatisticsMgr::GetStatistics () const -> Statistics
     {
         Iterable<float> activeRunningWSAPITasks = allApplicable.Select<float> ([] (const Rec_& r) -> optional<float> { if (r.fKind == Rec_::Kind::eAPIActiveRunningTasks) return static_cast<float> (r.fLength); return nullopt; });
         if (not activeRunningWSAPITasks.empty ()) {
-            result.fRecentAPI.fMedianRunningAPITasks      = Math::Median (activeRunningWSAPITasks);
+            result.fRecentAPI.fMedianRunningAPITasks = Math::Median (activeRunningWSAPITasks);
         }
     }
     {

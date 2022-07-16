@@ -36,46 +36,48 @@ onUnmounted(() => {
   clearInterval(polling);
 })
 
-function prettyPrintMSTime(time: string)
-{
+function prettyPrintMSTime(time: string) {
   var m = moment.duration(time);
   return m.milliseconds().toFixed(1) + "ms";
 }
-function wsAPIMsg(info: IAPIEndpoint, showShort: boolean): string
-{
- let msg = "";
- if (!showShort) {
-msg += `${info.callsCompleted} calls; `;
- }
-if (!showShort || info.errors != 0) {
-msg += `errors: ${info.errors}; `;
+function wsAPIMsg(info: IAPIEndpoint, showShort: boolean): string {
+  let msg = "";
+  if (!showShort) {
+    msg += `${info.callsCompleted} calls; `;
+  }
+  if (!showShort || info.errors != 0) {
+    msg += `errors: ${info.errors}; `;
+  }
+  if (showShort) {
+    msg += `${info.medianWebServerConnections} connections (${info.medianRunningAPITasks} active API calls); `;
+  }
+  else {
+    msg += `${info.medianWebServerConnections} Q2 connections (${info.medianProcessingWebServerConnections} active, and ${info.medianRunningAPITasks} Q2 active API calls); `;
+  }
+  if (showShort) {
+  msg += `${prettyPrintMSTime(info.medianDuration)}, max ${prettyPrintMSTime(info.maxDuration)}`
+  }
+  else {
+  msg += `${prettyPrintMSTime(info.medianDuration)} Q2 call time,  ${prettyPrintMSTime(info.maxDuration)} max call time`
+  }
+  return msg;
 }
-if (showShort) {
-msg += `${info.medianWebServerConnections} Q2 connections (${info.medianRunningAPITasks} Q2 active API calls); `;
-}
-else {
-msg += `${info.medianWebServerConnections} Q2 connections (${info.medianProcessingWebServerConnections} active, and ${info.medianRunningAPITasks} Q2 active API calls); `;
-}
-msg += `Q2 ${prettyPrintMSTime(info.medianDuration)}, max ${prettyPrintMSTime(info.maxDuration)}`
-return msg;
-}
-function dbStatsMsg(info: IDatabase, showShort: boolean): string
-{
- let msg = "";
-if (!showShort || info.errors != 0) {
-msg += `errors: ${info.errors}; `;
-}
-if (info.fileSize) {
-msg += `${prettyBytes(info.fileSize)}; `
-}
- if (!showShort) {
-msg += `${info.reads} reads, ${info.writes} writes; `;
- }
-msg += `${prettyPrintMSTime(info.medianReadDuration)} Q2 reads, ${prettyPrintMSTime(info.medianWriteDuration)} Q2 writes`;
-if (!showShort) {
-msg += `; ${prettyPrintMSTime(info.maxDuration)} max; `;
-}
-return msg;
+function dbStatsMsg(info: IDatabase, showShort: boolean): string {
+  let msg = "";
+  if (!showShort || info.errors != 0) {
+    msg += `errors: ${info.errors}; `;
+  }
+  if (info.fileSize) {
+    msg += `${prettyBytes(info.fileSize)}; `
+  }
+  if (!showShort) {
+    msg += `${info.reads} reads, ${info.writes} writes; `;
+  }
+  msg += `${prettyPrintMSTime(info.medianReadDuration)} reads, ${prettyPrintMSTime(info.medianWriteDuration)} writes`;
+  if (!showShort) {
+    msg += `; ${prettyPrintMSTime(info.maxDuration)} max; `;
+  }
+  return msg;
 }
 </script>
 
@@ -114,69 +116,64 @@ return msg;
           <div class="row">
             <div class="col-2">WTF App</div>
             <div class="col-10">
-              <table>
-                <tr v-if="aboutData">
-                  <td>Version</td>
-                  <td>{{ aboutData.applicationVersion }}</td>
-                </tr>
-                <tr v-if="aboutData">
-                  <td style="vertical-align: top">Components</td>
-                  <td>
-                    <table>
-                      <tr v-for="c in aboutData.serverInfo.componentVersions.concat(kUIComponents)" :key="c.name">
-                        <td>
-                          <a :href="c.URL" target="_new">{{ c.name }}</a>
-                        </td>
-                        <td>
-                          {{ c.version }}
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-                <tr v-if="aboutData">
-                  <td title="Average CPU usage of the WTF (server app process) over the last 30 seconds;
-Units 1=1 logical core">
-                    CPU-Usage
-                  </td>
-                  <td>{{ aboutData.serverInfo.currentProcess.averageCPUTimeUsed || "?" }} CPUs</td>
-                </tr>
-                <tr v-if="
-                  aboutData &&
-                  aboutData.serverInfo.currentProcess.combinedIOReadRate &&
-                  aboutData.serverInfo.currentProcess.combinedIOWriteRate
-                ">
-                  <td title="Combined I/O rate (network+disk)">IO Rate (read; write)</td>
-                  <td>
-                    {{ prettyBytes(aboutData.serverInfo.currentProcess.combinedIOReadRate) }}/sec ;
-                    {{ prettyBytes(aboutData.serverInfo.currentProcess.combinedIOWriteRate) }}/sec
-                  </td>
-                </tr>
-                <tr v-if="aboutData && aboutData.serverInfo.currentProcess.processUptime">
-                  <td title="How long has the service been running">Uptime</td>
-                  <td>
-                    {{ moment.duration(aboutData.serverInfo?.currentProcess?.processUptime).humanize() }}
-                  </td>
-                </tr>
-                <tr v-if="aboutData">
-                  <td title="Working set size, or RSS resident set size (how much RAM is an active use)">
-                    WSS
-                  </td>
-                  <td>{{ prettyBytes(aboutData.serverInfo.currentProcess.workingOrResidentSetSize) }}</td>
-                </tr>
-                <tr v-if="aboutData.serverInfo.apiEndpoint">
-                  <td title="Information about app WebService endpoint (#connections, timing, Q-lengths) over the last 5 minutes">
-                    WSAPI
-                  </td>
-                  <td :title="wsAPIMsg(aboutData.serverInfo.apiEndpoint, false)">{{ wsAPIMsg(aboutData.serverInfo.apiEndpoint, true) }}</td>
-                </tr>
-                <tr v-if="aboutData">
-                  <td title="Information about database: size on disk, median read/write times; hover for more like max read/write times">
-                    DB
-                  </td>
-                  <td :title="dbStatsMsg(aboutData.serverInfo.database, false)">{{ dbStatsMsg(aboutData.serverInfo.database, true) }}</td>
-                </tr>
-              </table>
+              <div class="row" v-if="aboutData">
+                <div class="col-3">Version</div>
+                <div class="col">{{ aboutData.applicationVersion }}</div>
+              </div>
+              <div class="row" v-if="aboutData">
+                <div class="col-3">Components</div>
+                <div class="col">
+                  <div class="row" v-for="c in aboutData.serverInfo.componentVersions.concat(kUIComponents)"
+                    :key="c.name">
+                    <div class="col-2"><a :href="c.URL" target="_new">{{ c.name }}</a></div>
+                    <div class="col"> {{ c.version }}</div>
+                  </div>
+                </div>
+              </div>
+              <div class="row" v-if="aboutData">
+                <div class="col-3" title="Average CPU usage of the WTF (server app process) over the last 30 seconds;
+Units 1=1 logical core">CPU-Usage</div>
+                <div class="col">{{ aboutData.serverInfo.currentProcess.averageCPUTimeUsed?.toFixed(2) || "?" }} CPUs
+                </div>
+              </div>
+              <div class="row" v-if="aboutData">
+                <div class="col-3" title="Combined I/O rate (network+disk)">IO Rate (read; write)</div>
+                <div class="col"
+                  v-if="aboutData.serverInfo.currentProcess.combinedIOReadRate != null && aboutData.serverInfo.currentProcess.combinedIOWriteRate != null">
+                  {{ prettyBytes(aboutData.serverInfo.currentProcess.combinedIOReadRate) }}/sec ;
+                  {{ prettyBytes(aboutData.serverInfo.currentProcess.combinedIOWriteRate) }}/sec</div>
+              </div>
+              <div class="row" v-if="aboutData">
+                <div class="col-3" title="How long has the service been running">Uptime</div>
+                <div class="col" v-if="aboutData.serverInfo.currentProcess.processUptime"> {{
+                    moment.duration(aboutData.serverInfo?.currentProcess?.processUptime).humanize()
+                }}</div>
+              </div>
+              <div class="row" v-if="aboutData">
+                <div class="col-3" title="Working set size, or RSS resident set size (how much RAM is an active use)">
+                  Memory</div>
+                <div class="col" v-if="aboutData.serverInfo.currentProcess.workingOrResidentSetSize"> {{
+                    prettyBytes(aboutData.serverInfo.currentProcess.workingOrResidentSetSize)
+                }}</div>
+              </div>
+              <div class="row" v-if="aboutData">
+                <div class="col-3"
+                  title="Information about app WebService endpoint (median #connections, timing, Q-lengths) over the last 5 minutes">
+                  WSAPI</div>
+                <div class="col" v-if="aboutData.serverInfo.apiEndpoint"
+                  :title="wsAPIMsg(aboutData.serverInfo.apiEndpoint, false)"> {{
+                      wsAPIMsg(aboutData.serverInfo.apiEndpoint, true)
+                  }}</div>
+              </div>
+              <div class="row" v-if="aboutData">
+                <div class="col-3"
+                  title="Information about database: size on disk, median read/write times; hover for more like max read/write times">
+                  DB</div>
+                <div class="col" v-if="aboutData.serverInfo.database"
+                  :title="dbStatsMsg(aboutData.serverInfo.database, false)"> {{
+                      dbStatsMsg(aboutData.serverInfo.database, true)
+                  }}</div>
+              </div>
             </div>
           </div>
         </q-card-section>
@@ -189,29 +186,30 @@ Units 1=1 logical core">
             <div class="row" v-if="aboutData">
               <div class="col-2">WTF Running on</div>
               <div class="col-10">
-                <table>
-                  <tr>
-                    <td>OS</td>
-                    <td>{{ aboutData.serverInfo.currentMachine.operatingSystem.fullVersionedName }}</td>
-                  </tr>
-                  <tr>
-                    <td title="How long has the machine (hosting the service) been running">Uptime</td>
-                    <td>{{ moment.duration(aboutData.serverInfo.currentMachine.machineUptime).humanize() }}</td>
-                  </tr>
-                  <tr v-if="aboutData.serverInfo.currentMachine.runQLength != null">
-                    <td
-                      title="How many threads in each (logical) processors Run-Q on average. 0 means no use, 1 means ALL cores fully used with no Q, and 2 means all cores fully utilized and each core with a Q length of 1">
-                      Run-Q</td>
-                    <td>{{ aboutData.serverInfo.currentMachine.runQLength }} threads</td>
-                  </tr>
-                  <tr>
-                    <td title="Average CPU usage for the last 30 seconds for the entire machine hosting the service.
-Units 1=1 logical core">
-                      CPU-Usage
-                    </td>
-                    <td>{{ aboutData.serverInfo.currentMachine.totalCPUUsage || "?" }} CPUs</td>
-                  </tr>
-                </table>
+                <div class="row">
+                  <div class="col-3">OS</div>
+                  <div class="col"> {{ aboutData.serverInfo.currentMachine.operatingSystem.fullVersionedName }}</div>
+                </div>
+                <div class="row">
+                  <div class="col-3" title="How long has the machine (hosting the service) been running">Uptime</div>
+                  <div class="col"> {{ moment.duration(aboutData.serverInfo.currentMachine.machineUptime).humanize() }}
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-3"
+                    title="How many threads in each (logical) processors Run-Q on average. 0 means no use, 1 means ALL cores fully used with no Q, and 2 means all cores fully utilized and each core with a Q length of 1">
+                    Run-Q</div>
+                  <div class="col" v-if="aboutData.serverInfo.currentMachine.runQLength != null"> {{
+                      aboutData.serverInfo.currentMachine.runQLength
+                  }} threads</div>
+                </div>
+                <div class="row">
+                  <div class="col-3" title="Average CPU usage for the last 30 seconds for the entire machine hosting the service.
+Units 1=1 logical core">CPU-Usage</div>
+                  <div class="col" v-if="aboutData.serverInfo.currentMachine.runQLength != null"> {{
+                      aboutData.serverInfo.currentMachine.totalCPUUsage?.toFixed(2) || "?"
+                  }} CPUs</div>
+                </div>
               </div>
             </div>
           </div>
@@ -226,25 +224,17 @@ Units 1=1 logical core">
               Written by
             </div>
             <div class="col-10">
-              <table>
-                <tr>
-                  <td>
-                    Lewis G. Pringle, Jr.
-                  </td>
-                  <td>
-                    <a href="https://www.linkedin.com/in/lewispringle/" target="_new">LinkedIn</a> |
-                    <a href="https://github.com/LewisPringle" target="_new">GitHub</a>
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    Robert Lemos Pringle
-                  </td>
-                  <td>
-                    <a href="https://github.com/robertpringle" target="_new">GitHub</a>
-                  </td>
-                </tr>
-              </table>
+              <div class="row">
+                <div class="col-3">Lewis G. Pringle, Jr.</div>
+                <div class="col"><a href="https://www.linkedin.com/in/lewispringle/" target="_new">LinkedIn</a> |
+                  <a href="https://github.com/LewisPringle" target="_new">GitHub</a>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-3">Robert Lemos Pringle</div>
+                <div class="col"><a href="https://github.com/robertpringle" target="_new">GitHub</a>
+                </div>
+              </div>
             </div>
           </div>
         </q-card-section>
@@ -279,6 +269,5 @@ Units 1=1 logical core">
 .q-card__section {
   padding-top: 8px;
   padding-bottom: 8px;
-
 }
 </style>

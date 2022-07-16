@@ -752,7 +752,7 @@ const ObjectVariantMapper About::kMapper = [] () {
         {L"medianProcessingWebServerConnections", StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fMedianProcessingWebServerConnections}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"medianRunningAPITasks", StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fMedianRunningAPITasks}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
-    
+
     mapper.AddCommonType<optional<About::APIServerInfo::APIEndpoint>> ();
 
     mapper.AddClass<About::APIServerInfo::Database> (initializer_list<ObjectVariantMapper::StructFieldInfo>{

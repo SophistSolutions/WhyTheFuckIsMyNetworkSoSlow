@@ -177,14 +177,14 @@ About WSImpl::GetAbout () const
     Common::OperationalStatisticsMgr::Statistics stats    = Common::OperationalStatisticsMgr::sThe.GetStatistics ();
     APIEndpoint                                  apiStats = [&] () {
         APIEndpoint r;
-        r.fCallsCompleted = stats.fRecentAPI.fCallsCompleted;
-        r.fMeanDuration   = stats.fRecentAPI.fMeanDuration;
-        r.fMedianDuration = stats.fRecentAPI.fMedianDuration;
-        r.fMaxDuration    = stats.fRecentAPI.fMaxDuration;
-        r.fErrors         = stats.fRecentAPI.fErrors;
-        r.fMedianWebServerConnections = stats.fRecentAPI.fMedianWebServerConnections;
+        r.fCallsCompleted                       = stats.fRecentAPI.fCallsCompleted;
+        r.fMeanDuration                         = stats.fRecentAPI.fMeanDuration;
+        r.fMedianDuration                       = stats.fRecentAPI.fMedianDuration;
+        r.fMaxDuration                          = stats.fRecentAPI.fMaxDuration;
+        r.fErrors                               = stats.fRecentAPI.fErrors;
+        r.fMedianWebServerConnections           = stats.fRecentAPI.fMedianWebServerConnections;
         r.fMedianProcessingWebServerConnections = stats.fRecentAPI.fMedianProcessingWebServerConnections;
-        r.fMedianRunningAPITasks      = stats.fRecentAPI.fMedianRunningAPITasks;
+        r.fMedianRunningAPITasks                = stats.fRecentAPI.fMedianRunningAPITasks;
         return r;
     }();
     Database dbStats = [&] () {
