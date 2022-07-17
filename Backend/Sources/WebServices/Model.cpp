@@ -44,15 +44,16 @@ namespace Stroika::Foundation::DataExchange {
 namespace {
     void MergeSeen_ (Device::SeenType* lhs, const Device::SeenType& rhs)
     {
+        RequireNotNull (lhs);
         // @todo consider if this should be a disjoint union and use Range::Union.... - more logically correct, but perhaps less useful
         if (rhs.fARP) {
-            *lhs->fARP = Memory::NullCoalesce (lhs->fARP).UnionBounds (*rhs.fARP);
+            lhs->fARP = Memory::NullCoalesce (lhs->fARP).UnionBounds (*rhs.fARP);
         }
         if (rhs.fTCP) {
-            *lhs->fTCP = Memory::NullCoalesce (lhs->fTCP).UnionBounds (*rhs.fTCP);
+            lhs->fTCP = Memory::NullCoalesce (lhs->fTCP).UnionBounds (*rhs.fTCP);
         }
         if (rhs.fUDP) {
-            *lhs->fUDP = Memory::NullCoalesce (lhs->fUDP).UnionBounds (*rhs.fUDP);
+            lhs->fUDP = Memory::NullCoalesce (lhs->fUDP).UnionBounds (*rhs.fUDP);
         }
     };
 }
