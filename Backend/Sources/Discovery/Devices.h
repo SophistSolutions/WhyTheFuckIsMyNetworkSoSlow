@@ -49,6 +49,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
     using IO::Network::InternetAddress;
     using IO::Network::URI;
     using Stroika::Foundation::Common::GUID;
+    using Stroika::Foundation::Time::DateTime;
+    using Stroika::Foundation::Traversal::Range;
 
     /**
      */
@@ -101,12 +103,39 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
         bool                                 fThisDevice{};
         Mapping<GUID, NetworkAttachmentInfo> fAttachedNetworks;
         optional<Set<GUID>>                  fAttachedInterfaces;
-        optional<Time::DateTime>             fLastSeenAt;
-        optional<Set<String>>                fOpenPorts;
-        optional<URI>                        fIcon;
-        optional<Manufacturer>               fManufacturer;
-        optional<URI>                        fPresentationURL;
-        optional<OperatingSystem>            fOperatingSystem;
+        optional<DateTime>                   fLastSeenAt;
+        struct SeenType {
+            optional<Range<DateTime>> fARP;
+            optional<Range<DateTime>> fTCP;
+            optional<Range<DateTime>> fUDP;
+#if __cpp_impl_three_way_comparison < 201711
+            bool operator== (const SeenType& rhs) const
+            {
+                if (fARP != rhs.fARP) {
+                    return false;
+                }
+                if (fTCP != rhs.fTCP) {
+                    return false;
+                }
+                if (fUDP != rhs.fUDP) {
+                    return false;
+                }
+                return true;
+            }
+            bool operator!= (const SeenType& rhs) const
+            {
+                return not(*this == rhs);
+            }
+#else
+            auto operator<=> (const SeenType&) const = default;
+#endif
+        };
+        SeenType                  fSeen;
+        optional<Set<String>>     fOpenPorts;
+        optional<URI>             fIcon;
+        optional<Manufacturer>    fManufacturer;
+        optional<URI>             fPresentationURL;
+        optional<OperatingSystem> fOperatingSystem;
 #if qDebug
         Mapping<String, DataExchange::VariantValue> fDebugProps;
 #endif
@@ -151,6 +180,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
                 return false;
             }
             if (fLastSeenAt != rhs.fLastSeenAt) {
+                return false;
+            }
+            if (fSeen != rhs.fSeen) {
                 return false;
             }
             if (fOpenPorts != rhs.fOpenPorts) {

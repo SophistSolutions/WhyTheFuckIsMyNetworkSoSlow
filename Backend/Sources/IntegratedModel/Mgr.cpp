@@ -50,6 +50,7 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices;
 
 using Stroika::Foundation::Common::ConstantProperty;
 using Stroika::Foundation::Common::GUID;
+using Stroika::Foundation::Traversal::Range;
 
 namespace {
     // For now (as of 2021-07-18) NYI
@@ -116,6 +117,7 @@ namespace {
         using IntegratedModel::Device;
         using IntegratedModel::Network;
         using IntegratedModel::NetworkAttachmentInfo;
+        // Map all the 'Discovery::Network' objects to 'Model::Network' objects.
         Sequence<Network> GetNetworks_ ()
         {
             Debug::TimingTrace ttrc{L"DiscoveryWrapper_::GetNetworks_", 0.1};
@@ -133,6 +135,7 @@ namespace {
                 nw.fGEOLocInformation       = n.fGEOLocInfo;
                 nw.fInternetServiceProvider = n.fISP;
                 nw.fLastSeenAt              = now; // if we are discovering it now, the network is there now...
+                nw.fSeen                    = Range<DateTime>{now, now};
 #if qDebug
                 if (not n.fDebugProps.empty ()) {
                     nw.fDebugProps = n.fDebugProps;
@@ -157,6 +160,9 @@ namespace {
                     newDev.fTypes = d.fTypes; // leave missing if no discovered types
                 }
                 newDev.fLastSeenAt = d.fLastSeenAt;
+                newDev.fSeen.fARP  = d.fSeen.fARP;
+                newDev.fSeen.fTCP  = d.fSeen.fTCP;
+                newDev.fSeen.fUDP  = d.fSeen.fUDP;
                 newDev.fOpenPorts  = d.fOpenPorts;
                 for (const auto& i : d.fAttachedNetworks) {
                     constexpr bool            kIncludeLinkLocalAddresses_{Discovery::kIncludeLinkLocalAddressesInDiscovery};

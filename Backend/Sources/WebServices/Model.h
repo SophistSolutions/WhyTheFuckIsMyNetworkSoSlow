@@ -39,7 +39,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
     using IO::Network::InternetAddress;
     using IO::Network::URI;
     using Stroika::Foundation::Common::GUID;
+    using Time::DateTime;
     using Time::Duration;
+    using Traversal::Range;
 
     /**
      */
@@ -196,6 +198,12 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         optional<Time::DateTime> fLastSeenAt;
 
         /**
+        * @todo use this to replace fLastSeenAt
+        *   // NOTE - COULD USE DisjointRange<> - WOULD make more sense but maybe not worth the work
+         */
+        Range<DateTime> fSeen;
+
+        /**
          * This network summary represents an aggregation of the following network objects.
          */
         optional<Set<GUID>> fAggregatesReversibly;
@@ -282,8 +290,33 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         optional<URI> fIcon;
 
         /**
+         *  Basically this is a datetime range, but we keep a separate one for each way of being seen.
+         */
+        struct SeenType {
+            optional<Range<DateTime>> fARP;
+            optional<Range<DateTime>> fTCP;
+            optional<Range<DateTime>> fUDP;
+
+            /**
+             * Combine (union bounds) all the ranges.
+             */
+            nonvirtual optional<Range<DateTime>> EverSeen () const;
+
+            /**
+             *  @see Characters::ToString ();
+             */
+            nonvirtual String ToString () const;
+
+            static const DataExchange::ObjectVariantMapper kMapper;
+        };
+
+        /**
          */
         optional<Time::DateTime> fLastSeenAt;
+
+        /**
+         */
+        SeenType fSeen;
 
         /**
          */

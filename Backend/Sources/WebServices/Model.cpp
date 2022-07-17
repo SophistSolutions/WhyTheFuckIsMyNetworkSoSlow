@@ -24,6 +24,7 @@ using namespace Stroika::Foundation::DataExchange;
 using namespace Stroika::Foundation::IO::Network;
 
 using Stroika::Foundation::Common::GUID;
+using Traversal::Range;
 
 using namespace WhyTheFuckIsMyNetworkSoSlow;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp;
@@ -38,6 +39,22 @@ namespace Stroika::Foundation::DataExchange {
         ToObject (toObjectMapper, v, &tmp);
         return tmp;
     }
+}
+
+namespace {
+    void MergeSeen_ (Device::SeenType* lhs, const Device::SeenType& rhs)
+    {
+        // @todo consider if this should be a disjoint union and use Range::Union.... - more logically correct, but perhaps less useful
+        if (rhs.fARP) {
+            *lhs->fARP = Memory::NullCoalesce (lhs->fARP).UnionBounds (*rhs.fARP);
+        }
+        if (rhs.fTCP) {
+            *lhs->fTCP = Memory::NullCoalesce (lhs->fTCP).UnionBounds (*rhs.fTCP);
+        }
+        if (rhs.fUDP) {
+            *lhs->fUDP = Memory::NullCoalesce (lhs->fUDP).UnionBounds (*rhs.fUDP);
+        }
+    };
 }
 
 /*
@@ -93,6 +110,22 @@ const ObjectVariantMapper Model::Manufacturer::kMapper = [] () {
     return mapper;
 }();
 
+namespace {
+    void MergeSeen_ (Range<DateTime>* target2Update, const Range<DateTime>& timeToInclude)
+    {
+        // for now, ignore openness... @todo fix/preserve
+        RequireNotNull (target2Update);
+        if (target2Update->empty ()) {
+            *target2Update = timeToInclude;
+        }
+        else if (not timeToInclude.empty ()) {
+            *target2Update = Range<DateTime>{
+                min (target2Update->GetLowerBound (), timeToInclude.GetLowerBound ()),
+                max (target2Update->GetUpperBound (), timeToInclude.GetUpperBound ()),
+            };
+        }
+    }
+}
 /*
  ********************************************************************************
  ********************************** Model::Network ******************************
@@ -111,6 +144,10 @@ Network Network::Merge (const Network& databaseNetwork, const Network& priorityN
     Memory::CopyToIf (&merged.fGEOLocInformation, priorityNetwork.fGEOLocInformation);
     Memory::CopyToIf (&merged.fInternetServiceProvider, priorityNetwork.fInternetServiceProvider);
     Memory::CopyToIf (&merged.fLastSeenAt, priorityNetwork.fLastSeenAt);
+    MergeSeen_ (&merged.fSeen, priorityNetwork.fSeen);
+
+    // @todo fSeen
+
     Memory::AccumulateIf (&merged.fAggregatesReversibly, priorityNetwork.fAggregatesReversibly); // @todo consider if this is right way to combine
     Memory::AccumulateIf (&merged.fAggregatesIrreversibly, priorityNetwork.fAggregatesIrreversibly);
     Memory::CopyToIf (&merged.fIDPersistent, priorityNetwork.fIDPersistent);
@@ -155,6 +192,7 @@ String Network::ToString () const
     sb += L"Gateways: " + Characters::ToString (fGateways) + L", ";
     sb += L"DNS-Servers: " + Characters::ToString (fDNSServers) + L", ";
     sb += L"LastSeenAt: " + Characters::ToString (fLastSeenAt) + L", ";
+    sb += L"Seen: " + Characters::ToString (fSeen) + L", ";
     sb += L"Aggregates-Reversibly: " + Characters::ToString (fAggregatesReversibly) + L", ";
     sb += L"Aggregates-Irreverisbly: " + Characters::ToString (fAggregatesIrreversibly) + L", ";
     sb += L"IDPersistent: " + Characters::ToString (fIDPersistent) + L", ";
@@ -180,6 +218,7 @@ const ObjectVariantMapper Network::kMapper = [] () {
     mapper.AddCommonType<optional<Set<InternetAddress>>> ();
     mapper.AddCommonType<Set<GUID>> ();
     mapper.AddCommonType<optional<Set<GUID>>> ();
+    mapper.AddCommonType<Range<DateTime>> ();
 
     if (true) {
         // looks better as an object, than as an array
@@ -226,6 +265,7 @@ const ObjectVariantMapper Network::kMapper = [] () {
             {L"internetServiceProvider"sv, StructFieldMetaInfo{&Network::fInternetServiceProvider}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"id"sv, StructFieldMetaInfo{&Network::fGUID}},
             {L"lastSeenAt"sv, StructFieldMetaInfo{&Network::fLastSeenAt}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+            {L"seen"sv, StructFieldMetaInfo{&Network::fSeen}},
             {L"aggregatesReversibly"sv, StructFieldMetaInfo{&Network::fAggregatesReversibly}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"aggregatesIrreversibly"sv, StructFieldMetaInfo{&Network::fAggregatesIrreversibly}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"idIsPersistent"sv, StructFieldMetaInfo{&Network::fIDPersistent}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
@@ -370,6 +410,57 @@ String NetworkAttachmentInfo::ToString () const
 
 /*
  ********************************************************************************
+ ***************************** Model::Device::SeenType **************************
+ ********************************************************************************
+ */
+optional<Range<DateTime>> Model::Device::SeenType::EverSeen () const
+{
+    optional<Range<DateTime>> result{fUDP};
+    if (fTCP) {
+        if (result) {
+            result = result->UnionBounds (*fTCP);
+        }
+        else {
+            result = fTCP;
+        }
+    }
+    if (fARP) {
+        if (result) {
+            result = result->UnionBounds (*fARP);
+        }
+        else {
+            result = fARP;
+        }
+    }
+    return result;
+}
+
+String Model::Device::SeenType::ToString () const
+{
+    Characters::StringBuilder sb;
+    sb += L"{";
+    sb += L"fARP: " + Characters::ToString (fARP) + L", ";
+    sb += L"fTCP: " + Characters::ToString (fTCP) + L", ";
+    sb += L"fUDP: " + Characters::ToString (fUDP) + L", ";
+    sb += L"}";
+    return sb.str ();
+}
+
+const DataExchange::ObjectVariantMapper Model::Device::SeenType::kMapper = [] () {
+    ObjectVariantMapper mapper;
+    mapper.AddCommonType<Traversal::Range<DateTime>> ();
+    mapper.AddClass<SeenType> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+        {L"UDP"sv, StructFieldMetaInfo{&SeenType::fUDP}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"TCP"sv, StructFieldMetaInfo{&SeenType::fTCP}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"ARP"sv, StructFieldMetaInfo{&SeenType::fARP}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+    });
+    return mapper;
+}();
+
+/*
+
+/*
+ ********************************************************************************
  ********************************* Model::Device ********************************
  ********************************************************************************
  */
@@ -402,6 +493,7 @@ const ObjectVariantMapper Device::kMapper = [] () {
     mapper.AddCommonType<optional<URI>> ();
     mapper.AddCommonType<Set<GUID>> ();
     mapper.AddCommonType<optional<Set<GUID>>> ();
+    mapper += SeenType::kMapper;
     mapper.AddClass<NetworkAttachmentInfo> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
         {L"hardwareAddresses", StructFieldMetaInfo{&NetworkAttachmentInfo::hardwareAddresses}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"localAddresses", StructFieldMetaInfo{&NetworkAttachmentInfo::localAddresses}},
@@ -412,6 +504,7 @@ const ObjectVariantMapper Device::kMapper = [] () {
             {L"name", StructFieldMetaInfo{&Device::name}},
             {L"type", StructFieldMetaInfo{&Device::fTypes}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"lastSeenAt", StructFieldMetaInfo{&Device::fLastSeenAt}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+            {L"seen", StructFieldMetaInfo{&Device::fSeen}},
             {L"openPorts", StructFieldMetaInfo{&Device::fOpenPorts}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"icon", StructFieldMetaInfo{&Device::fIcon}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"manufacturer", StructFieldMetaInfo{&Device::fManufacturer}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
@@ -461,6 +554,7 @@ Device Device::Merge (const Device& databaseDevice, const Device& priorityDevice
     Memory::AccumulateIf (&merged.fTypes, priorityDevice.fTypes);
     Memory::CopyToIf (&merged.fIcon, priorityDevice.fIcon);
     Memory::CopyToIf (&merged.fLastSeenAt, priorityDevice.fLastSeenAt);
+    MergeSeen_ (&merged.fSeen, priorityDevice.fSeen);
     Memory::CopyToIf (&merged.fManufacturer, priorityDevice.fManufacturer);
     merged.fAttachedNetworks.AddAll (priorityDevice.fAttachedNetworks); // @todo perhaps should MERGE these details...
     Memory::AccumulateIf (&merged.fOpenPorts, priorityDevice.fOpenPorts);
@@ -487,6 +581,7 @@ Device Device::Rollup (const Device& rollupDevice, const Device& instanceDevice2
     bool preferRHS = rollupDevice.fLastSeenAt <= instanceDevice2Add.fLastSeenAt;
 
     Memory::CopyToIf (&d.fLastSeenAt, preferRHS ? instanceDevice2Add.fLastSeenAt : rollupDevice.fLastSeenAt);
+    MergeSeen_ (&d.fSeen, preferRHS ? instanceDevice2Add.fSeen : rollupDevice.fSeen);
 
     if (d.fAggregatesReversibly.has_value ()) {
         d.fAggregatesReversibly->Add (instanceDevice2Add.fGUID);

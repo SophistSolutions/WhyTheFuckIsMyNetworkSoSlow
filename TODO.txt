@@ -1,15 +1,3 @@
-
-	> WTF feature as important as NAMING devices - tags list!
-
-		(so can group by tags and and filter by tags) for nets and devices
-
-	+ need to mark nets/devicoes as favorites
-	  and take into account in sort.
-
-	+ and in combobox in ui for networks, only take top 10 (so we lose old nets ability to filter).
-
----
-
 	+	New feature to replace LastSeen (in network and device probably)
 	  	- seen : {
 			udp: {x,x}   (RANGE of timetsamps)
@@ -18,6 +6,9 @@
 		}
 		then lastSeen computed as max ((x) => x.to)
 		or anySeen computed as {min((x)->x.from), max((x)=>x.to)}
+
+
+		Probably needed on DEVICE, NETWORK, and NETWORK INTERFACE objects
 
 		WAS:
 			+ maybe add to last seen 'last reached' for pinged and include in last seen when we discover via arp.
@@ -33,6 +24,16 @@
 					(CRREUNTLY -we show devices we never successfully pinged cuz they are neighbors, but we could 
 					supporess those, and just use them as hints to ping more quickly.)
 
+---
+
+	> WTF feature as important as NAMING devices - tags list!
+
+		(so can group by tags and and filter by tags) for nets and devices
+
+	+ need to mark nets/devicoes as favorites
+	  and take into account in sort.
+
+	+ and in combobox in ui for networks, only take top 10 (so we lose old nets ability to filter).
 ---
 
 + Maybe add ability to mark devices as 'favorites' (star) - and have 'group by' section at top of 'favorites'?
