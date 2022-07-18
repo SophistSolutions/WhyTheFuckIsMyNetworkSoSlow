@@ -591,6 +591,8 @@ namespace {
                 fTypes.Add (DeviceType::ePrinter);
             }
 
+            Assert (fSeen.fARP or fSeen.fCollector or fSeen.fICMP or fSeen.fTCP or fSeen.fUDP); // else confusing why this was added
+
 #if qDebug
             if (fSSDPInfo) {
                 fDebugProps.Add (L"SSDPInfo"sv,
@@ -688,6 +690,21 @@ namespace {
 }
 
 namespace {
+    void PatchSeen_ (DiscoveryInfo_* d, const PortScanResults& scanResults)
+    {
+        if (scanResults.fIncludedICMP) {
+            d->fSeen.fICMP = Memory::NullCoalesce (d->fSeen.fICMP).Extend (DateTime::Now ());
+        }
+        if (scanResults.fIncludesTCP) {
+            d->fSeen.fTCP = Memory::NullCoalesce (d->fSeen.fTCP).Extend (DateTime::Now ());
+        }
+        if (scanResults.fIncludesUDP) {
+            d->fSeen.fUDP = Memory::NullCoalesce (d->fSeen.fUDP).Extend (DateTime::Now ());
+        }
+    }
+}
+
+namespace {
     /*
      ********************************************************************************
      *************************** MyDeviceDiscoverer_ ********************************
@@ -741,10 +758,7 @@ namespace {
                         di.fForcedName      = thisDevice->fForcedName;
                         di.fThisDevice      = thisDevice->fThisDevice;
                         di.fOperatingSystem = OperatingSystem{Configuration::GetSystemConfiguration_ActualOperatingSystem ().fPrettyNameWithVersionDetails};
-                        di.fLastSeenAt      = DateTime::Now ();
-                        di.fSeen.fARP       = Memory::NullCoalesce (di.fSeen.fARP).Extend (DateTime::Now ());
-                        di.fSeen.fTCP       = Memory::NullCoalesce (di.fSeen.fTCP).Extend (DateTime::Now ());
-                        di.fSeen.fUDP       = Memory::NullCoalesce (di.fSeen.fUDP).Extend (DateTime::Now ());
+                        di.fSeen.fCollector = Memory::NullCoalesce (di.fSeen.fCollector).Extend (DateTime::Now ());
                         di.PatchDerivedFields ();
 
                         Assert (di.fGUID != GUID{});
@@ -973,8 +987,7 @@ namespace {
                 Memory::CopyToIf (&di.fSSDPInfo->fManufacturer, manufactureName);
 
                 di.fSSDPInfo->fLastSSDPMessageRecievedAt = Time::DateTime::Now (); // update each message, even if already created
-                di.fLastSeenAt                           = di.fSSDPInfo->fLastSSDPMessageRecievedAt;
-                di.fSeen.fTCP                            = Memory::NullCoalesce (di.fSeen.fTCP).Extend (di.fSSDPInfo->fLastSSDPMessageRecievedAt);
+                di.fSeen.fUDP                            = Memory::NullCoalesce (di.fSeen.fUDP).Extend (di.fSSDPInfo->fLastSSDPMessageRecievedAt);
 
 #if qDebug
                 di.fSSDPInfo->fLastAdvertisement = d;
@@ -1082,7 +1095,7 @@ namespace {
                         }
                         Assert (not di.GetInternetAddresses ().empty ()); // can happen if we find address in tmp.AddIPAddress_() thats not bound to any adapter (but that shouldnt happen so investigate but is for now so ignore breifly)
 
-                        // INTENTIONALLY DONT UPDATE tmp.fLastSeenAt cuz this info can be quite stale
+                        di.fSeen.fARP = Memory::NullCoalesce (di.fSeen.fARP).Extend (DateTime::Now ());
 
                         di.PatchDerivedFields ();
 
@@ -1254,8 +1267,7 @@ namespace {
                                 // if found, update to say what ports we found
                                 tmp = *oo;
                                 Memory::AccumulateIf (&tmp.fOpenPorts, scanResults.fDiscoveredOpenPorts);
-                                tmp.fLastSeenAt = DateTime::Now ();
-                                tmp.fSeen.fUDP  = Memory::NullCoalesce (tmp.fSeen.fUDP).Extend (DateTime::Now ()); // not sure to use udp here?
+                                PatchSeen_ (&tmp, scanResults);
                                 tmp.PatchDerivedFields ();
                                 Assert (tmp.fGUID != GUID{});
 #if qDebug
@@ -1267,9 +1279,8 @@ namespace {
                             else {
                                 tmp.fGUID = GUID::GenerateNew ();
                                 // only CREATE an entry for addresses where we found a port
-                                tmp.fOpenPorts  = scanResults.fDiscoveredOpenPorts;
-                                tmp.fLastSeenAt = DateTime::Now ();
-                                tmp.fSeen.fUDP  = Memory::NullCoalesce (tmp.fSeen.fUDP).Extend (DateTime::Now ()); // not sure to use udp here?
+                                tmp.fOpenPorts = scanResults.fDiscoveredOpenPorts;
+                                PatchSeen_ (&tmp, scanResults);
                                 tmp.PatchDerivedFields ();
 #if qDebug
                                 tmp.fDebugProps.Add (L"Found-By-RandomWalkThroughSubnetDiscoverer_-At", DateTime::Now ());
@@ -1390,8 +1401,7 @@ namespace {
                                 // if found, update to say what ports we found
                                 tmp = *oo;
                                 Memory::AccumulateIf (&tmp.fOpenPorts, scanResults.fDiscoveredOpenPorts);
-                                tmp.fLastSeenAt = DateTime::Now ();
-                                tmp.fSeen.fUDP  = Memory::NullCoalesce (tmp.fSeen.fUDP).Extend (DateTime::Now ()); // not sure to use udp here?
+                                PatchSeen_ (&tmp, scanResults);
                                 tmp.PatchDerivedFields ();
                                 Assert (tmp.fGUID != GUID{});
 #if qDebug
@@ -1575,17 +1585,18 @@ void Discovery::DevicesMgr::ReScan (const GUID& deviceID)
         }
         Execution::Throw (IO::Network::HTTP::ClientErrorException{L"deviceID not recognized"});
     };
-    auto addOpenPort = [] (const GUID& deviceID, const String& openPort) {
+    auto addOpenPorts = [] (const GUID& deviceID, const PortScanResults& portScanResults) {
         auto l = sDiscoveredDevices_.rwget ();
         if (optional<DiscoveryInfo_> oo = l.rwref ().Lookup (deviceID)) {
             DiscoveryInfo_ tmp{*oo};
-            Memory::AccumulateIf (&tmp.fOpenPorts, openPort);
-            tmp.fLastSeenAt = DateTime::Now ();
-            tmp.fSeen.fUDP  = Memory::NullCoalesce (tmp.fSeen.fUDP).Extend (DateTime::Now ()); // not sure to use udp here?
+            for (const String& p : portScanResults.fDiscoveredOpenPorts) {
+                Memory::AccumulateIf (&tmp.fOpenPorts, p);
+            }
+            PatchSeen_ (&tmp, portScanResults);
             tmp.PatchDerivedFields ();
             Assert (tmp.fGUID != GUID{});
             l.rwref ().Add (tmp);
-            DbgTrace (L"Updated device %s for fKnownOpenPorts: %s", Characters::ToString (tmp.fGUID).c_str (), Characters::ToString (openPort).c_str ());
+            DbgTrace (L"Updated device %s for fKnownOpenPorts: %s", Characters::ToString (tmp.fGUID).c_str (), Characters::ToString (portScanResults.fDiscoveredOpenPorts).c_str ());
         }
         else {
             AssertNotReached ();
@@ -1597,9 +1608,7 @@ void Discovery::DevicesMgr::ReScan (const GUID& deviceID)
     // but redo scanning one at a time so I can SHOW results immediately, as they appear
     for (const auto& ia : initialDeviceInfo.GetInternetAddresses ()) {
         PortScanResults results = ScanPorts (ia, ScanOptions{ScanOptions::eFull});
-        for (const String& p : results.fDiscoveredOpenPorts) {
-            addOpenPort (deviceID, p);
-        }
+        addOpenPorts (deviceID, results);
     }
 }
 

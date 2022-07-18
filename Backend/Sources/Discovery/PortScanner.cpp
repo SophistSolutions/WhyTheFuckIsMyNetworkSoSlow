@@ -51,6 +51,7 @@ namespace {
             ConnectionOrientedStreamSocket::Ptr s = ConnectionOrientedStreamSocket::New (SocketAddress::INET, Socket::STREAM);
             s.Connect (SocketAddress{ia, portNumber}, quickOpen ? 5s : 30s);
             results->fDiscoveredOpenPorts += Characters::Format (L"tcp:%d", portNumber);
+            results->fIncludesTCP = true;
         }
         catch (...) {
             // Ignored - we typically we get connection failures
@@ -66,6 +67,7 @@ namespace {
         try {
             auto r = p.RunOnce (); //incomplete
             results->fDiscoveredOpenPorts.Add (L"icmp:ping"sv);
+            results->fIncludedICMP = true;
         }
         catch (const Network::InternetProtocol::ICMP::V4::DestinationUnreachableException&) {
             DbgTrace (L"ICMPPingScan_(ia=%s): Dest Unreachable: Typically means router blocking", Characters::ToString (ia).c_str ());

@@ -103,15 +103,22 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
         bool                                 fThisDevice{};
         Mapping<GUID, NetworkAttachmentInfo> fAttachedNetworks;
         optional<Set<GUID>>                  fAttachedInterfaces;
-        optional<DateTime>                   fLastSeenAt;
         struct SeenType {
             optional<Range<DateTime>> fARP;
+            optional<Range<DateTime>> fCollector; // host device collecting data
+            optional<Range<DateTime>> fICMP;
             optional<Range<DateTime>> fTCP;
             optional<Range<DateTime>> fUDP;
 #if __cpp_impl_three_way_comparison < 201711
             bool operator== (const SeenType& rhs) const
             {
                 if (fARP != rhs.fARP) {
+                    return false;
+                }
+                if (fCollector != rhs.fCollector) {
+                    return false;
+                }
+                if (fICMP != rhs.fICMP) {
                     return false;
                 }
                 if (fTCP != rhs.fTCP) {
@@ -177,9 +184,6 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
                 return false;
             }
             if (fAttachedInterfaces != rhs.fAttachedInterfaces) {
-                return false;
-            }
-            if (fLastSeenAt != rhs.fLastSeenAt) {
                 return false;
             }
             if (fSeen != rhs.fSeen) {

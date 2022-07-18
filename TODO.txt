@@ -9,6 +9,22 @@
 
 
 		Probably needed on DEVICE, NETWORK, and NETWORK INTERFACE objects
+		
+
+
+	middle of updating service stuff to support both. WHEN DOES - including DB - then
+	change GUI to use new code (seen not lastSeenAt) - first just at WS level, and then
+	in actual reset of code.
+
+
+	also - todo fix - we declare in TS that the types of lastseen etc are dates, but the reality is we get luck with
+	moment. FIX the code to ACTUALLY store date objects (use new date code from luxon to parse and realy store dates)
+
+
+
+                //tmphack back compat til I update webgui
+                newDev.fLastSeenAt = newDev.fSeen.EverSeen ()->GetUpperBound ();
+
 
 		WAS:
 			+ maybe add to last seen 'last reached' for pinged and include in last seen when we discover via arp.

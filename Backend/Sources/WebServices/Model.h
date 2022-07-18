@@ -294,6 +294,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
          */
         struct SeenType {
             optional<Range<DateTime>> fARP;
+            optional<Range<DateTime>> fCollector;
+            optional<Range<DateTime>> fICMP;
             optional<Range<DateTime>> fTCP;
             optional<Range<DateTime>> fUDP;
 

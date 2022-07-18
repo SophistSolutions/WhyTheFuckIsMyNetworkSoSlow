@@ -49,6 +49,12 @@ namespace {
         if (rhs.fARP) {
             lhs->fARP = Memory::NullCoalesce (lhs->fARP).UnionBounds (*rhs.fARP);
         }
+        if (rhs.fCollector) {
+            lhs->fCollector = Memory::NullCoalesce (lhs->fCollector).UnionBounds (*rhs.fCollector);
+        }
+        if (rhs.fICMP) {
+            lhs->fICMP = Memory::NullCoalesce (lhs->fICMP).UnionBounds (*rhs.fICMP);
+        }
         if (rhs.fTCP) {
             lhs->fTCP = Memory::NullCoalesce (lhs->fTCP).UnionBounds (*rhs.fTCP);
         }
@@ -416,7 +422,23 @@ String NetworkAttachmentInfo::ToString () const
  */
 optional<Range<DateTime>> Model::Device::SeenType::EverSeen () const
 {
-    optional<Range<DateTime>> result{fUDP};
+    optional<Range<DateTime>> result{fARP};
+    if (fCollector) {
+        if (result) {
+            result = result->UnionBounds (*fCollector);
+        }
+        else {
+            result = fCollector;
+        }
+    }
+    if (fICMP) {
+        if (result) {
+            result = result->UnionBounds (*fICMP);
+        }
+        else {
+            result = fICMP;
+        }
+    }
     if (fTCP) {
         if (result) {
             result = result->UnionBounds (*fTCP);
@@ -425,12 +447,13 @@ optional<Range<DateTime>> Model::Device::SeenType::EverSeen () const
             result = fTCP;
         }
     }
-    if (fARP) {
+
+    if (fUDP) {
         if (result) {
-            result = result->UnionBounds (*fARP);
+            result = result->UnionBounds (*fUDP);
         }
         else {
-            result = fARP;
+            result = fUDP;
         }
     }
     return result;
@@ -441,6 +464,9 @@ String Model::Device::SeenType::ToString () const
     Characters::StringBuilder sb;
     sb += L"{";
     sb += L"fARP: " + Characters::ToString (fARP) + L", ";
+
+    sb += L"fCollector: " + Characters::ToString (fCollector) + L", ";
+    sb += L"fICMP: " + Characters::ToString (fICMP) + L", ";
     sb += L"fTCP: " + Characters::ToString (fTCP) + L", ";
     sb += L"fUDP: " + Characters::ToString (fUDP) + L", ";
     sb += L"}";
@@ -451,9 +477,11 @@ const DataExchange::ObjectVariantMapper Model::Device::SeenType::kMapper = [] ()
     ObjectVariantMapper mapper;
     mapper.AddCommonType<Traversal::Range<DateTime>> ();
     mapper.AddClass<SeenType> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+        {L"ARP"sv, StructFieldMetaInfo{&SeenType::fARP}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"Collector"sv, StructFieldMetaInfo{&SeenType::fCollector}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"ICMP"sv, StructFieldMetaInfo{&SeenType::fICMP}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"UDP"sv, StructFieldMetaInfo{&SeenType::fUDP}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"TCP"sv, StructFieldMetaInfo{&SeenType::fTCP}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"ARP"sv, StructFieldMetaInfo{&SeenType::fARP}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
     return mapper;
 }();
