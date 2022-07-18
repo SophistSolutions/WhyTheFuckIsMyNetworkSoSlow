@@ -150,11 +150,7 @@ Network Network::Merge (const Network& databaseNetwork, const Network& priorityN
     Memory::AccumulateIf (&merged.fExternalAddresses, priorityNetwork.fExternalAddresses);
     Memory::CopyToIf (&merged.fGEOLocInformation, priorityNetwork.fGEOLocInformation);
     Memory::CopyToIf (&merged.fInternetServiceProvider, priorityNetwork.fInternetServiceProvider);
-  //  Memory::CopyToIf (&merged.fLastSeenAt, priorityNetwork.fLastSeenAt);
     MergeSeen_ (&merged.fSeen, priorityNetwork.fSeen);
-
-    // @todo fSeen
-
     Memory::AccumulateIf (&merged.fAggregatesReversibly, priorityNetwork.fAggregatesReversibly); // @todo consider if this is right way to combine
     Memory::AccumulateIf (&merged.fAggregatesIrreversibly, priorityNetwork.fAggregatesIrreversibly);
     Memory::CopyToIf (&merged.fIDPersistent, priorityNetwork.fIDPersistent);
@@ -168,15 +164,6 @@ Network Network::Merge (const Network& databaseNetwork, const Network& priorityN
 Network Network::Rollup (const Network& rollupNetwork, const Network& instanceNetwork2Add)
 {
     Network n = Merge (rollupNetwork, instanceNetwork2Add);
-
-    // @todo make this smarter about which device/info is newest, so we know what takes precedence
-    // but for now using fLastSeenAt as indicator; later - use globally (within WTF) consistent sequence # (not sure how todo)
-    // or maybe use UTC datetime? - but alway want to consistently compare and prefer if no ties so we can consistent merges
-   // bool preferRHS = rollupNetwork.fLastSeenAt <= instanceNetwork2Add.fLastSeenAt;
-//    bool preferRHS = rollupNetwork.fSeen.GetUpperBound () <= instanceNetwork2Add.fSeen.GetUpperBound ();
-
-   // Memory::CopyToIf (&n.fLastSeenAt, preferRHS ? instanceNetwork2Add.fLastSeenAt : rollupNetwork.fLastSeenAt);
-
     if (n.fAggregatesReversibly.has_value ()) {
         n.fAggregatesReversibly->Add (instanceNetwork2Add.fGUID);
     }
@@ -199,7 +186,6 @@ String Network::ToString () const
     sb += L"Attached-Interfaces: " + Characters::ToString (fAttachedInterfaces) + L", ";
     sb += L"Gateways: " + Characters::ToString (fGateways) + L", ";
     sb += L"DNS-Servers: " + Characters::ToString (fDNSServers) + L", ";
-  //  sb += L"LastSeenAt: " + Characters::ToString (fLastSeenAt) + L", ";
     sb += L"Seen: " + Characters::ToString (fSeen) + L", ";
     sb += L"Aggregates-Reversibly: " + Characters::ToString (fAggregatesReversibly) + L", ";
     sb += L"Aggregates-Irreverisbly: " + Characters::ToString (fAggregatesIrreversibly) + L", ";
@@ -226,7 +212,7 @@ const ObjectVariantMapper Network::kMapper = [] () {
     mapper.AddCommonType<optional<Set<InternetAddress>>> ();
     mapper.AddCommonType<Set<GUID>> ();
     mapper.AddCommonType<optional<Set<GUID>>> ();
-    mapper.AddCommonType<Range<DateTime>> (ObjectVariantMapper::RangeSerializerOptions{L"lowerBound"sv, L"upperBound"sv});  // lower-camel-case names happier in javascript?
+    mapper.AddCommonType<Range<DateTime>> (ObjectVariantMapper::RangeSerializerOptions{L"lowerBound"sv, L"upperBound"sv}); // lower-camel-case names happier in javascript?
 
     if (true) {
         // looks better as an object, than as an array
@@ -273,7 +259,6 @@ const ObjectVariantMapper Network::kMapper = [] () {
             {L"geographicLocation"sv, StructFieldMetaInfo{&Network::fGEOLocInformation}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"internetServiceProvider"sv, StructFieldMetaInfo{&Network::fInternetServiceProvider}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"id"sv, StructFieldMetaInfo{&Network::fGUID}},
-      //      {L"lastSeenAt"sv, StructFieldMetaInfo{&Network::fLastSeenAt}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"seen"sv, StructFieldMetaInfo{&Network::fSeen}},
             {L"aggregatesReversibly"sv, StructFieldMetaInfo{&Network::fAggregatesReversibly}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"aggregatesIrreversibly"sv, StructFieldMetaInfo{&Network::fAggregatesIrreversibly}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
@@ -528,8 +513,6 @@ const ObjectVariantMapper Device::kMapper = [] () {
 
     mapper.AddCommonType<Range<DateTime>> (ObjectVariantMapper::RangeSerializerOptions{L"lowerBound"sv, L"upperBound"sv}); // lower-camel-case names happier in javascript?
 
-
-
     mapper.AddClass<NetworkAttachmentInfo> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
         {L"hardwareAddresses", StructFieldMetaInfo{&NetworkAttachmentInfo::hardwareAddresses}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"localAddresses", StructFieldMetaInfo{&NetworkAttachmentInfo::localAddresses}},
@@ -539,7 +522,6 @@ const ObjectVariantMapper Device::kMapper = [] () {
         {L"id", StructFieldMetaInfo{&Device::fGUID}},
             {L"name", StructFieldMetaInfo{&Device::name}},
             {L"type", StructFieldMetaInfo{&Device::fTypes}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-     //       {L"lastSeenAt", StructFieldMetaInfo{&Device::fLastSeenAt}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"seen", StructFieldMetaInfo{&Device::fSeen}},
             {L"openPorts", StructFieldMetaInfo{&Device::fOpenPorts}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"icon", StructFieldMetaInfo{&Device::fIcon}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
@@ -589,7 +571,6 @@ Device Device::Merge (const Device& databaseDevice, const Device& priorityDevice
     // name from databaseDevice takes precedence
     Memory::AccumulateIf (&merged.fTypes, priorityDevice.fTypes);
     Memory::CopyToIf (&merged.fIcon, priorityDevice.fIcon);
-  //  Memory::CopyToIf (&merged.fLastSeenAt, priorityDevice.fLastSeenAt);
     MergeSeen_ (&merged.fSeen, priorityDevice.fSeen);
     Memory::CopyToIf (&merged.fManufacturer, priorityDevice.fManufacturer);
     merged.fAttachedNetworks.AddAll (priorityDevice.fAttachedNetworks); // @todo perhaps should MERGE these details...
@@ -610,21 +591,6 @@ Device Device::Merge (const Device& databaseDevice, const Device& priorityDevice
 Device Device::Rollup (const Device& rollupDevice, const Device& instanceDevice2Add)
 {
     Device d = Merge (rollupDevice, instanceDevice2Add);
-
-    // @todo make this smarter about which device/info is newest, so we know what takes precedence
-    // but for now using fLastSeenAt as indicator; later - use globally (within WTF) consistent sequence # (not sure how todo)
-    // or maybe use UTC datetime? - but alway want to consistently compare and prefer if no ties so we can consistent merges
-  //  bool preferRHS = rollupDevice.fLastSeenAt <= instanceDevice2Add.fLastSeenAt;
-
-    #if 0
-    bool preferRHS = rollupDevice.fSeen.EverSeen ()->GetUpperBound () <= instanceDevice2Add.fSeen.EverSeen ()->GetUpperBound ();
-
-    // @todo reconsider - DONT THINK WE NEED this anymore
-    
-    //Memory::CopyToIf (&d.fLastSeenAt, preferRHS ? instanceDevice2Add.fLastSeenAt : rollupDevice.fLastSeenAt);
-    MergeSeen_ (&d.fSeen, preferRHS ? instanceDevice2Add.fSeen : rollupDevice.fSeen);
-    #endif
-
     if (d.fAggregatesReversibly.has_value ()) {
         d.fAggregatesReversibly->Add (instanceDevice2Add.fGUID);
     }

@@ -135,7 +135,7 @@ namespace {
                 nw.fExternalAddresses       = n.fExternalAddresses;
                 nw.fGEOLocInformation       = n.fGEOLocInfo;
                 nw.fInternetServiceProvider = n.fISP;
-                nw.fSeen = Range<DateTime>{now, now};
+                nw.fSeen                    = Range<DateTime>{now, now};        // discovered now, when rolled up, expand timeframe
 #if qDebug
                 if (not n.fDebugProps.empty ()) {
                     nw.fDebugProps = n.fDebugProps;
@@ -208,7 +208,7 @@ namespace {
                     }
                 }
 #endif
-                Assert (newDev.fSeen.EverSeen ());  // maybe won't always require but look into any cases like this and probably remove them...
+                Assert (newDev.fSeen.EverSeen ()); // maybe won't always require but look into any cases like this and probably remove them...
                 return newDev;
             })};
         }
