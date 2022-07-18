@@ -1,5 +1,6 @@
-import { IGeographicLocation } from "@/models/network/IGeographicLocation";
-import { IInternetServiceProvider } from "@/models/network/IInternetServiceProvider";
+import { IGeographicLocation } from "../network/IGeographicLocation";
+import { IInternetServiceProvider } from "../network/IInternetServiceProvider";
+import { IDateTimeRange } from "../common/IDateTimeRange"
 
 export interface INetwork {
   id: string;
@@ -16,5 +17,6 @@ export interface INetwork {
   networkAddresses: string[];
   friendlyName?: string;
   lastSeenAt?: Date;
+  seen?: IDateTimeRange;
   debugProps?: object;
 }

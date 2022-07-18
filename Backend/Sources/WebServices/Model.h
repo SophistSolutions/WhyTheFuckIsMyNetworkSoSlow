@@ -195,7 +195,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
         /**
          */
-        optional<Time::DateTime> fLastSeenAt;
+   //     optional<Time::DateTime> fLastSeenAt;
 
         /**
         * @todo use this to replace fLastSeenAt
@@ -314,7 +314,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
         /**
          */
-        optional<Time::DateTime> fLastSeenAt;
+   //     optional<Time::DateTime> fLastSeenAt;
 
         /**
          */

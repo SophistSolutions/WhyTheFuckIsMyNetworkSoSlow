@@ -1,3 +1,5 @@
++ cleanup lastSeen/seen UI code in HTML
+
 	+	New feature to replace LastSeen (in network and device probably)
 	  	- seen : {
 			udp: {x,x}   (RANGE of timetsamps)

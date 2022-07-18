@@ -81,6 +81,7 @@ namespace {
                                                                  // might be better to up timeout so more rare
         }
         catch (...) {
+            DbgTrace (L"ignoring %s", Characters::ToString (current_exception ()).c_str ());
             AssertNotReached ();
         }
         DbgTrace (L"Failed to cache url (%s) - so returning original", Characters::ToString (url).c_str ());
@@ -207,12 +208,7 @@ namespace {
                     }
                 }
 #endif
-
                 Assert (newDev.fSeen.EverSeen ());  // maybe won't always require but look into any cases like this and probably remove them...
-
-                //tmphack back compat til I update webgui
-                newDev.fLastSeenAt = newDev.fSeen.EverSeen ()->GetUpperBound ();
-
                 return newDev;
             })};
         }
@@ -364,11 +360,9 @@ namespace {
                  */
                 {.fName = L"ID"sv, .fVariantValueName = L"id"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = L"randomblob(16)"sv},
                 {.fName = L"name"sv, .fVariantValueType = VariantValue::eString},
-                {.fName = L"lastSeenAt"sv, .fVariantValueType = VariantValue::eString},
 #else
                 {L"ID", L"id"sv, true, kRepresentIDAs_, nullopt, true, nullopt, L"randomblob(16)"sv},
                 {L"name", nullopt, false, VariantValue::eString},
-                {L"lastSeenAt", nullopt, false, VariantValue::eString},
 #endif
             },
             Schema::CatchAllField{}};
@@ -385,11 +379,9 @@ namespace {
                  */
                 {.fName = L"ID"sv, .fVariantValueName = L"id"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = L"randomblob(16)"sv},
                 {.fName = L"friendlyName"sv, .fVariantValueType = VariantValue::eString},
-                {.fName = L"lastSeenAt"sv, .fVariantValueType = VariantValue::eString},
 #else
                 {L"ID", L"id"sv, true, kRepresentIDAs_, nullopt, true, nullopt, L"randomblob(16)"sv},
                 {L"friendlyName", nullopt, false, VariantValue::eString},
-                {L"lastSeenAt", nullopt, false, VariantValue::eString},
 #endif
             },
             Schema::CatchAllField{}};
@@ -418,18 +410,7 @@ namespace {
                         networkTableConnection = make_unique<SQL::ORM::TableConnection<IntegratedModel::Network>> (conn, kNetworkTableSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<IntegratedModel::Network>> ());
                         try {
                             Debug::TimingTrace ttrc{L"...initial load of sDBNetworks_ from database ", 1};
-                            // fLastSeenAt backward compat
-                            auto tmp = networkTableConnection->GetAll ();
-                            for (auto i = tmp.begin (); i != tmp.end (); ++i) {
-                                IntegratedModel::Network nw = *i;
-                                if (!nw.fSeen) {
-                                    DateTime now = DateTime::Now ();
-                                    nw.fSeen     = nw.fLastSeenAt ? Range<DateTime>{nw.fLastSeenAt, nw.fLastSeenAt} : Range<DateTime>{now, now};
-                                }
-                                nw.fLastSeenAt = nullopt;
-                                tmp.Update (i, nw, &i);
-                            }
-                            sDBNetworks_.store (NetworkKeyedCollection_{tmp});
+                            sDBNetworks_.store (NetworkKeyedCollection_{networkTableConnection->GetAll ()});
                         }
                         catch (...) {
                             DbgTrace (L"Probably important error reading database of old netowrks data: %s", Characters::ToString (current_exception ()).c_str ());
@@ -441,19 +422,7 @@ namespace {
                         deviceTableConnection = make_unique<SQL::ORM::TableConnection<IntegratedModel::Device>> (conn, kDeviceTableSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<IntegratedModel::Device>> ());
                         try {
                             Debug::TimingTrace ttrc{L"...initial load of sDBDevices_ from database ", 1};
-                            auto               tmp = deviceTableConnection->GetAll ();
-
-                            for (auto i = tmp.begin (); i != tmp.end (); ++i) {
-                                IntegratedModel::Device dd = *i;
-                                if (!dd.fSeen.EverSeen ()) {
-                                    DateTime now  = DateTime::Now ();
-                                    dd.fSeen.fUDP = dd.fLastSeenAt ? Range<DateTime>{dd.fLastSeenAt, dd.fLastSeenAt} : Range<DateTime>{now, now};
-                                }
-                                dd.fLastSeenAt = nullopt;
-                                tmp.Update (i, dd, &i);
-                            }
-
-                            sDBDevices_.store (DeviceKeyedCollection_{tmp}); // pre-load in memory copy with whatever we had stored in the database
+                            sDBDevices_.store (DeviceKeyedCollection_{deviceTableConnection->GetAll ()}); // pre-load in memory copy with whatever we had stored in the database
                         }
                         catch (...) {
                             DbgTrace (L"Probably important error reading database of old device data: %s", Characters::ToString (current_exception ()).c_str ());
@@ -635,20 +604,12 @@ namespace {
                     if (auto i = result.fNetworks.Find ([&net2MergeIn] (auto const& exisingRolledUpNet) { return ShouldRollup_ (exisingRolledUpNet, net2MergeIn); })) {
                         // then merge this into that item
                         // @todo think out order of params and better document order of params!
-                        Assert (net2MergeIn.fLastSeenAt == nullopt);
-                        auto ii        = *i;
-                        ii.fLastSeenAt = nullopt;
-                        auto tmp       = Network::Rollup (ii, net2MergeIn);
-                        Assert (tmp.fLastSeenAt == nullopt);
-                        tmp.fLastSeenAt = tmp.fSeen.GetUpperBound ();
-                        result.fNetworks.Add (tmp);
+                        result.fNetworks.Add (Network::Rollup (*i, net2MergeIn));
                     }
                     else {
                         Network newRolledUpNetwork               = net2MergeIn;
                         newRolledUpNetwork.fAggregatesReversibly = Set<GUID>{net2MergeIn.fGUID};
                         newRolledUpNetwork.fGUID                 = GUID::GenerateNew ();
-                        Assert (newRolledUpNetwork.fLastSeenAt == nullopt);
-                        newRolledUpNetwork.fLastSeenAt = newRolledUpNetwork.fSeen.GetUpperBound ();
                         result.fNetworks.Add (newRolledUpNetwork);
                     }
                 };
