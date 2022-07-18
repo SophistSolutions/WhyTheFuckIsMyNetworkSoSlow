@@ -106,9 +106,9 @@ let thisNetworksInterfaces = computed<INetworkInterface[]>(
       <div class="col-3">Friendly Name</div>
       <div class="col"> {{ currentNetwork.friendlyName }} </div>
     </div>
-    <div class="row" v-if="currentNetwork.lastSeenAt">
-      <div class="col-3">Last Seen</div>
-      <div class="col"> {{ moment(currentNetwork.lastSeenAt).fromNow() }} </div>
+    <div class="row" v-if="currentNetwork.seen">
+      <div class="col-3">Seen</div>
+      <div class="col"> {{ moment(currentNetwork.seen.lowerBound).fromNow() }} thru {{ moment(currentNetwork.seen.upperBound).fromNow() }} </div>
     </div>
     <div class="row">
       <div class="col-3">CIDRs</div>

@@ -16,7 +16,6 @@ export interface INetwork {
   internetServiceProvider: IInternetServiceProvider;
   networkAddresses: string[];
   friendlyName?: string;
-  lastSeenAt?: Date;
   seen?: IDateTimeRange;
   debugProps?: object;
 }

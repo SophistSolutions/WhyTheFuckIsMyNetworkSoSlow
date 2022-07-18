@@ -1,5 +1,6 @@
 import { DeviceTypeEnum } from "@/models/device/DeviceTypeEnum";
 import { OperatingSystem } from "@/models/OperatingSystem";
+import { IDateTimeRange } from "../common/IDateTimeRange";
 
 export interface INetworkAttachmentInfo {
   hardwareAddresses: string[];
@@ -21,7 +22,7 @@ export interface IDevice {
   attachedNetworks: { [key: string]: INetworkAttachmentInfo };
   attachedNetworkInterfaces: string[];
   name: string;
-  lastSeenAt?: Date;
+  seen?: { [key: string]: IDateTimeRange };
   openPorts?: string[];
   icon?: string;
   manufacturer?: IManufacturer;

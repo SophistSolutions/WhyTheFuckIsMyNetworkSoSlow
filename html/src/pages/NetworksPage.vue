@@ -252,9 +252,9 @@ const loading = computed<boolean>(
 let filteredExtendedNetworks: ComputedRef<object[]> = computed(() => {
   const result: object[] = [];
   SortNetworks(allNetworks.value).forEach((i: INetwork) => {
-    let lastSeenStr = moment(i.lastSeenAt).fromNow();
+    let lastSeenStr = moment(i.seen?.upperBound).fromNow();
     let statusStr = "?";
-    if (i.lastSeenAt != null && moment().diff(moment(i.lastSeenAt), "seconds") < 60) {
+    if (i.seen?.upperBound != null && moment().diff(moment(i.seen?.upperBound), "seconds") < 60) {
       lastSeenStr = "active";
       statusStr = "healthy"; // tmphack
     }

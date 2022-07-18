@@ -49,8 +49,8 @@ function showNetworkPriority_(n: INetwork) {
   // @todo - probaly just include 'active' and 'favorite' networks here (as it hints in UI)
   let r: number = 0;
   const now = moment(new Date);
-  if (n.lastSeenAt) {
-    var hours = moment.duration(now.diff(n.lastSeenAt)).asHours();
+  if (n.seen?.upperBound) {
+    var hours = moment.duration(now.diff(n.seen.upperBound)).asHours();
     if (hours < kMinHoursToBeConsideredProbablyActive_) {
       r += 11;
     }
@@ -91,7 +91,6 @@ interface IDisplayedNetwork {
   internetInfo: string;
   status: string;
   originalNetwork: INetwork;
-  lastSeenAt?: Date;
 }
 
 let shownNetworksAsDisplayed: ComputedRef<IDisplayedNetwork[]> = computed(() => {
@@ -99,7 +98,6 @@ let shownNetworksAsDisplayed: ComputedRef<IDisplayedNetwork[]> = computed(() => 
   shownNetworks.value.forEach((i: INetwork) => {
     result.push({
       id: i.id,
-      lastSeenAt: i.lastSeenAt,
       name: GetNetworkName(i),
       link: GetNetworkLink(i),
       active: "true",
@@ -138,7 +136,7 @@ let allDevices: ComputedRef<IDevice[]> = computed(() => store.getDevices);
                     : {{ network.internetInfo }}
                   </div>
                   <div>
-                    : Last Seen: {{ moment(network.lastSeenAt).fromNow() }}
+                    : Last Seen: {{ moment(network.originalNetwork.seen?.upperBound).fromNow() }}
                   </div>
                   <div>
                     : {{ GetDeviceIDsInNetwork(network.originalNetwork, allDevices).length }}

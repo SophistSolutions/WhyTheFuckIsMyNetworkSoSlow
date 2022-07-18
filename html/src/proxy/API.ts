@@ -19,10 +19,6 @@ export async function fetchNetworks(): Promise<INetwork[]> {
   return fetch(`${gRuntimeConfiguration.API_ROOT}/api/v1/networks?recurse=true`)
     .then((response) => response.json())
     .then((data) => {
-      //tmphack backward compat -- LGP 2022-07-18
-      data.forEach((n: { seen?: IDateTimeRange; lastSeenAt?: Date }) => {
-        n.lastSeenAt = n.seen?.upperBound;
-      });
       return data;
     })
     .catch((error) => Logger.error(error));
@@ -32,8 +28,6 @@ export async function fetchNetwork(id: string): Promise<INetwork> {
   return fetch(`${gRuntimeConfiguration.API_ROOT}/api/v1/networks/${id}`)
     .then((response) => response.json())
     .then((data) => {
-      //tmphack backward compat -- LGP 2022-07-18
-      data.lastSeenAt = data.seen?.upperBound;
       return data;
     })
     .catch((error) => Logger.error(error));
@@ -100,6 +94,7 @@ export async function fetchDevices(
           d.icon = new URL(d.icon, gRuntimeConfiguration.API_ROOT);
         }
       });
+      // Compute the seen.Ever 'virtual field'
       data.forEach((d: { seen: { [key: string]: IDateTimeRange } }) => {
         if (d.seen) {
           let mn = null;
@@ -113,14 +108,13 @@ export async function fetchDevices(
               if (moment(value.lowerBound).diff(mn) < 0) {
                 mn = value.lowerBound;
               }
-              if (moment(value.upperBound).diff(mn) > 0) {
+              if (moment(value.upperBound).diff(mx) > 0) {
                 mx = value.upperBound;
               }
             }
           }
           d.seen.Ever = { lowerBound: mn, upperBound: mx };
         }
-        d.lastSeenAt = d.seen?.Ever?.upperBound;
       });
       return data;
     })
@@ -150,7 +144,7 @@ export async function fetchDevice(id: string): Promise<IDevice> {
             if (moment(value.lowerBound).diff(mn) < 0) {
               mn = value.lowerBound;
             }
-            if (moment(value.upperBound).diff(mn) > 0) {
+            if (moment(value.upperBound).diff(mx) > 0) {
               mx = value.upperBound;
             }
           }

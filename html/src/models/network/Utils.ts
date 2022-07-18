@@ -21,7 +21,7 @@ export function GetNetworkName(n: INetwork): string {
 export function SortNetworks(nws: INetwork[]) {
   const result = Object.assign([], nws);
   result.sort((l: INetwork, r: INetwork) => {
-    let res = -moment(l.lastSeenAt).diff(r.lastSeenAt);
+    let res = -moment(l.seen?.upperBound).diff(r.seen?.upperBound);
     if (res == 0) {
       const lex = l.externalAddresses ? l.externalAddresses.length : 0;
       const rex = r.externalAddresses ? r.externalAddresses.length : 0;

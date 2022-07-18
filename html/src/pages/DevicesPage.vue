@@ -256,7 +256,7 @@ function clearFilter() {
 
 let filteredExtendedDevices: ComputedRef<object[]> = computed(() => {
   const result: object[] = [];
-  allDevices.value.forEach((i) => {
+  allDevices.value.forEach((i:IDevice) => {
     let passedFilter = true;
     if (
       passedFilter &&
@@ -268,10 +268,10 @@ let filteredExtendedDevices: ComputedRef<object[]> = computed(() => {
       passedFilter = false;
     }
     if (passedFilter && selectedTimeframe.value !== null) {
-      if (i.lastSeenAt == null) {
+      if (i.seen?.Ever?.upperBound == null) {
         // not sure how to treat missing data so for now treat as passed filter
       } else {
-        const timeSinceSeenAsMS = Date.now() - new Date(i.lastSeenAt).getTime();
+        const timeSinceSeenAsMS = Date.now() - new Date(i.seen?.Ever?.upperBound).getTime();
         const selectedTimeframeAsMS = moment.duration(selectedTimeframe.value)
           .asMilliseconds();
         // selectedTimeframeAsMS can be > 0 or < 0
@@ -462,7 +462,7 @@ const pagination = ref({
                 </span>
               </q-td>
               <q-td :props="props" key="lastSeenAt">
-                <ReadOnlyTextWithHover v-if="props.row.lastSeenAt" :message="moment(props.row.lastSeenAt).fromNow()" />
+                <ReadOnlyTextWithHover v-if="props.row.seen?.Ever?.upperBound" :message="moment(props.row.seen.Ever.upperBound).fromNow()" />
               </q-td>
               <q-td :props="props" key="manufacturerSummary">
                 <ReadOnlyTextWithHover :message="props.row.manufacturerSummary" />

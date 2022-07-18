@@ -157,9 +157,15 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
       <div class="col-3">OS</div>
       <div class="col"> {{ currentDevice.operatingSystem.fullVersionedName }}</div>
     </div>
-    <div class="row" v-if="currentDevice.lastSeenAt">
-      <div class="col-3">Last Seen</div>
-      <div class="col"> {{ moment(currentDevice.lastSeenAt).fromNow() }}</div>
+    <div class="row" v-if="currentDevice.seen">
+      <div class="col-3">Seen</div>
+
+      <div class="col"> 
+        <div class="row" v-for=" [seenType, seenRange] in Object.entries(currentDevice.seen)" v-bind:key="seenType"> 
+          <div class="col">  {{moment(seenRange.lowerBound).fromNow()}} thru   {{moment(seenRange.upperBound).fromNow()}}</div>
+          <div class="col"><span v-if="seenType!='Ever'">via</span> {{seenType}}</div>
+        </div>
+      </div>
     </div>
     <div class="row" v-if="currentDevice.attachedNetworks && currentDeviceDetails">
       <div class="col-3">Networks</div>
