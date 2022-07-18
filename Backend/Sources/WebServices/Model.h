@@ -194,12 +194,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         optional<Common::InternetServiceProvider> fInternetServiceProvider;
 
         /**
-         */
-        //     optional<Time::DateTime> fLastSeenAt;
-
-        /**
-        * @todo use this to replace fLastSeenAt
-        *   // NOTE - COULD USE DisjointRange<> - WOULD make more sense but maybe not worth the work
+         *   // NOTE - COULD USE DisjointRange<> - WOULD make more sense but maybe not worth the work
          */
         Range<DateTime> fSeen;
 
@@ -311,10 +306,6 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
             static const DataExchange::ObjectVariantMapper kMapper;
         };
-
-        /**
-         */
-        //     optional<Time::DateTime> fLastSeenAt;
 
         /**
          */
