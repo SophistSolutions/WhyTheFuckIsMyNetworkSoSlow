@@ -1,3 +1,7 @@
+> Default Sort for devices - if it has a TYPE - then higher priority than having NO type.
+   THEN, having known services above none. MAYBE also known OS above none.
+
+----
 
 	> WTF feature as important as NAMING devices - tags list!
 
@@ -16,6 +20,11 @@
 	     but not sure thats a good naming convetion cuz of multi machine rollups - unclear we
 	     want those rollups or not?
 	     
+- REDO storage of seen IDateTimeRange code so actually stores date objects, not strings so dont need to moment
+  all over the place to convert and compare.
+  - REDUCE use of moment, and maybe eliminate in favor of luxon?
+
+
 - Have filters and customization sections in devices page shrinkable, and little button in top-right of table to pop it open to allow customization.
   And probably have a way to make more sections (and delete sections) and maybe revert to default (storing thise prefs in local-storage ui-prefs 
   pinia store)
