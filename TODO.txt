@@ -1,6 +1,11 @@
 > Default Sort for devices - if it has a TYPE - then higher priority than having NO type.
    THEN, having known services above none. MAYBE also known OS above none.
 
+---
+raspbian and ubuntu dont show Linux icon. Should have some 'category' for OS like  
+  Category Linux|MacOS|Windows|BSD| UNIX
+     and other field which is DistributioN (eg Ubuntu)
+
 ----
 
 	> WTF feature as important as NAMING devices - tags list!

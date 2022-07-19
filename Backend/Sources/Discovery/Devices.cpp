@@ -757,7 +757,8 @@ namespace {
                         di.fTypes           = thisDevice->fTypes;
                         di.fForcedName      = thisDevice->fForcedName;
                         di.fThisDevice      = thisDevice->fThisDevice;
-                        di.fOperatingSystem = OperatingSystem{Configuration::GetSystemConfiguration_ActualOperatingSystem ().fPrettyNameWithVersionDetails};
+                        auto osInfo         = Configuration::GetSystemConfiguration_ActualOperatingSystem ();
+                        di.fOperatingSystem = OperatingSystem{osInfo.fTokenName, osInfo.fPrettyNameWithVersionDetails};
                         di.fSeen.fCollector = Memory::NullCoalesce (di.fSeen.fCollector).Extend (DateTime::Now ());
                         di.PatchDerivedFields ();
 
@@ -998,7 +999,7 @@ namespace {
                         di.fOperatingSystem = Discovery::OperatingSystem{L"Linux"_k};
                     }
                     else if (di.fSSDPInfo->fServer and di.fSSDPInfo->fServer->Contains (L"POSIX"_k)) {
-                        di.fOperatingSystem = Discovery::OperatingSystem{L"POSIX"_k};
+                        di.fOperatingSystem = Discovery::OperatingSystem{L"Unix"_k};
                     }
                 }
                 di.PatchDerivedFields ();

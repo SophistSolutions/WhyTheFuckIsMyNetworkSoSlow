@@ -47,6 +47,16 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
      */
     struct OperatingSystem {
         /**
+         *  Open enum, but basic names are:
+         *      o   Linux
+         *      o   Windows
+         *      o   MacOS
+         *      o   BSD
+         *      o   Unix            (for cases not BSD or Linux)
+         */
+        optional<String> fMajorOSCategory;
+
+        /**
          *  For Linux, try to show distribution.
          *  e.g. "Ubuntu 18.04", "Red-Hat 9", "Windows 10 Version 1809 (OS Build 17763.349)", "Linux (unknown)"
          */
@@ -55,6 +65,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 #if __cpp_impl_three_way_comparison < 201711
         bool operator== (const OperatingSystem& rhs) const
         {
+            if (fMajorOSCategory != rhs.fMajorOSCategory) {
+                return false;
+            }
             if (fFullVersionedOSName != rhs.fFullVersionedOSName) {
                 return false;
             }

@@ -73,6 +73,7 @@ String OperatingSystem::ToString () const
 {
     Characters::StringBuilder sb;
     sb += L"{";
+    sb += L"majorOSCategory: " + Characters::ToString (fMajorOSCategory) + L", ";
     sb += L"fullVersionedOSName: " + Characters::ToString (fFullVersionedOSName) + L", ";
     sb += L"}";
     return sb.str ();
@@ -80,11 +81,10 @@ String OperatingSystem::ToString () const
 
 const ObjectVariantMapper OperatingSystem::kMapper = [] () {
     ObjectVariantMapper mapper;
-
     mapper.AddClass<OperatingSystem> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+        {L"majorOSCategory", StructFieldMetaInfo{&OperatingSystem::fMajorOSCategory}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"fullVersionedName", StructFieldMetaInfo{&OperatingSystem::fFullVersionedOSName}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
-
     return mapper;
 }();
 

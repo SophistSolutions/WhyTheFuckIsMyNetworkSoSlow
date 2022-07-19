@@ -1,11 +1,9 @@
-import { OperatingSystem } from "@/models/OperatingSystem";
+import { OperatingSystem } from '../../models/OperatingSystem';
 
 /*
  *  Return an array of image-url/label pairs, for the given operating system object
  */
-export function ComputeOSIconURLList(
-  t: OperatingSystem
-): Array<{
+export function ComputeOSIconURLList(t: OperatingSystem): Array<{
   url?: string;
   label: string;
 }> {
@@ -14,25 +12,37 @@ export function ComputeOSIconURLList(
     label: string;
   }> = [];
   if (t) {
-    if (t.fullVersionedName.startsWith("Windows")) {
-      result.push({
-        url: "images/WindowsOS.ico",
-        label: t.fullVersionedName,
-      });
-    } else if (t.fullVersionedName.startsWith("Linux")) {
-      result.push({
-        url: "images/Linux.png",
-        label: t.fullVersionedName,
-      });
-    } else if (t.fullVersionedName.startsWith("POSIX")) {
-      result.push({
-        url: "images/UnixOSIcon.png",
-        label: t.fullVersionedName,
-      });
-    } else {
-      result.push({
-        label: t.fullVersionedName,
-      });
+    switch (t?.majorOSCategory) {
+      case 'Windows':
+        result.push({
+          url: 'images/WindowsOS.ico',
+          label: t.fullVersionedName ?? t.majorOSCategory,
+        });
+        break;
+      case 'Linux':
+        result.push({
+          url: 'images/Linux.png',
+          label: t.fullVersionedName ?? t.majorOSCategory,
+        });
+        break;
+      case 'BSD':
+        // Could add another icon, but who cares...
+        result.push({
+          url: 'images/UnixOSIcon.png',
+          label: t.fullVersionedName ?? t.majorOSCategory,
+        });
+        break;
+      case 'Unix':
+        result.push({
+          url: 'images/UnixOSIcon.png',
+          label: t.fullVersionedName ?? t.majorOSCategory,
+        });
+        break;
+      default: {
+        result.push({
+          label: t.fullVersionedName ?? t.majorOSCategory,
+        });
+      }
     }
   }
   return result;
@@ -41,9 +51,7 @@ export function ComputeOSIconURLList(
 /*
  *  Return an array of image-url/label pairs, for the given array of device types.
  */
-export function ComputeDeviceTypeIconURLs(
-  t: string[] | null
-): Array<{
+export function ComputeDeviceTypeIconURLs(t: string[] | null): Array<{
   url?: string | null;
   label: string;
 }> {
@@ -54,57 +62,57 @@ export function ComputeDeviceTypeIconURLs(
   if (t) {
     t.forEach((ti: string) => {
       switch (ti) {
-        case "Network-Attached-Storage":
+        case 'Network-Attached-Storage':
           result.push({
-            url: "images/NAS.png",
+            url: 'images/NAS.png',
             label: ti,
           });
           break;
-        case "Network-Infrastructure":
+        case 'Network-Infrastructure':
           result.push({
-            url: "images/network-infrastructure.ico",
+            url: 'images/network-infrastructure.ico',
             label: ti,
           });
           break;
-        case "Media-Player":
+        case 'Media-Player':
           result.push({
-            url: "images/Media-Player-Icon.png",
+            url: 'images/Media-Player-Icon.png',
             label: ti,
           });
           break;
-        case "Personal-Computer":
+        case 'Personal-Computer':
           result.push({
-            url: "images/PC-Device.png",
+            url: 'images/PC-Device.png',
             label: ti,
           });
           break;
-        case "Printer":
+        case 'Printer':
           result.push({
-            url: "images/Printer.ico",
+            url: 'images/Printer.ico',
             label: ti,
           });
           break;
-        case "Router":
+        case 'Router':
           result.push({
-            url: "images/RouterDevice.ico",
+            url: 'images/RouterDevice.ico',
             label: ti,
           });
           break;
-        case "Speaker":
+        case 'Speaker':
           result.push({
-            url: "images/SpeakerDeviceIcon.png",
+            url: 'images/SpeakerDeviceIcon.png',
             label: ti,
           });
           break;
-        case "TV":
+        case 'TV':
           result.push({
-            url: "images/TV-Icon.png",
+            url: 'images/TV-Icon.png',
             label: ti,
           });
           break;
-        case "Virtual-Machine":
+        case 'Virtual-Machine':
           result.push({
-            url: "images/Virtual-Machine.png",
+            url: 'images/Virtual-Machine.png',
             label: ti,
           });
           break;
@@ -122,41 +130,39 @@ export function ComputeDeviceTypeIconURLs(
 /*
  *  Returnimage-url/label for the given service type.
  */
-export function ComputeServiceTypeIconURL(
-  t: string
-): {
+export function ComputeServiceTypeIconURL(t: string): {
   url?: string | null;
   label: string;
 } {
   switch (t) {
-    case "print":
+    case 'print':
       return {
-        url: "images/Printer.ico",
+        url: 'images/Printer.ico',
         label: t,
       };
-    case "rdp":
+    case 'rdp':
       return {
-        url: "images/rdp.png",
+        url: 'images/rdp.png',
         label: t,
       };
-    case "ssh":
+    case 'ssh':
       return {
-        url: "images/ssh.png",
+        url: 'images/ssh.png',
         label: t,
       };
-    case "smb":
+    case 'smb':
       return {
-        url: "images/SMB.png",
+        url: 'images/SMB.png',
         label: t,
       };
-    case "vnc":
+    case 'vnc':
       return {
-        url: "images/vnc.png",
+        url: 'images/vnc.png',
         label: t,
       };
-    case "web":
+    case 'web':
       return {
-        url: "images/web-page.png",
+        url: 'images/web-page.png',
         label: t,
       };
     default:
@@ -166,9 +172,7 @@ export function ComputeServiceTypeIconURL(
   }
 }
 
-export function ComputeServiceTypeIconURLs(
-  t: string[] | null
-): Array<{
+export function ComputeServiceTypeIconURLs(t: string[] | null): Array<{
   url?: string | null;
   label: string;
 }> {

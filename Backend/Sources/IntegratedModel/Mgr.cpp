@@ -135,7 +135,7 @@ namespace {
                 nw.fExternalAddresses       = n.fExternalAddresses;
                 nw.fGEOLocInformation       = n.fGEOLocInfo;
                 nw.fInternetServiceProvider = n.fISP;
-                nw.fSeen                    = Range<DateTime>{now, now};        // discovered now, when rolled up, expand timeframe
+                nw.fSeen                    = Range<DateTime>{now, now}; // discovered now, when rolled up, expand timeframe
 #if qDebug
                 if (not n.fDebugProps.empty ()) {
                     nw.fDebugProps = n.fDebugProps;
