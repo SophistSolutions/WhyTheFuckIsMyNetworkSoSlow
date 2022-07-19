@@ -1,11 +1,6 @@
 > Default Sort for devices - if it has a TYPE - then higher priority than having NO type.
    THEN, having known services above none. MAYBE also known OS above none.
 
----
-raspbian and ubuntu dont show Linux icon. Should have some 'category' for OS like  
-  Category Linux|MacOS|Windows|BSD| UNIX
-     and other field which is DistributioN (eg Ubuntu)
-
 ----
 
 	> WTF feature as important as NAMING devices - tags list!
@@ -86,9 +81,6 @@ livingRM-WAX610
 
 	Should be enough to show as network device (and maybe have category for wifi access point).
 
-
-----
-DOC WTF doesnt buiold on ubunti 1804 due to issues with npm/node - not worth finding workaround for this (buit probably just force install newer nodejs)
 
 -----
 

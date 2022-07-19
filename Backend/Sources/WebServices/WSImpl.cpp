@@ -284,10 +284,19 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
                     auto priFun = [] (const BackendApp::WebServices::Device& d) {
                         int pri = 0;
                         if (d.fTypes and d.fTypes->Contains (Device::DeviceType::ePC)) {
-                            pri = 10;
+                            pri += 10;
                         }
                         if (d.fTypes and d.fTypes->Contains (Device::DeviceType::eRouter)) {
-                            pri = 5;
+                            pri += 5;
+                        }
+                        if (d.fTypes) {
+                            pri += static_cast<int> (d.fTypes->length ());
+                        }
+                        if (d.fOperatingSystem) {
+                            pri += 2;
+                        }
+                        if (d.fOpenPorts) {
+                            pri += static_cast<int> (d.fOpenPorts->length ());
                         }
                         return pri;
                     };
