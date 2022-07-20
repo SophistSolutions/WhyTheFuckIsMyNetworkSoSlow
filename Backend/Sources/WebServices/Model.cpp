@@ -23,9 +23,9 @@ using namespace Stroika::Foundation::Containers;
 using namespace Stroika::Foundation::DataExchange;
 using namespace Stroika::Foundation::IO::Network;
 
+using Memory::NullCoalesce;
 using Stroika::Foundation::Common::GUID;
 using Traversal::Range;
-using Memory::NullCoalesce;
 
 using namespace WhyTheFuckIsMyNetworkSoSlow;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp;
@@ -47,17 +47,6 @@ namespace {
     {
         RequireNotNull (target2Update);
         *target2Update = target2Update->UnionBounds (timeToInclude);
-        #if 0
-        if (target2Update->empty ()) {
-            *target2Update = timeToInclude;
-        }
-        else if (not timeToInclude.empty ()) {
-            *target2Update = Range<DateTime>{
-                min (target2Update->GetLowerBound (), timeToInclude.GetLowerBound ()),
-                max (target2Update->GetUpperBound (), timeToInclude.GetUpperBound ()),
-            };
-        }
-        #endif
     }
     void MergeSeen_ (Device::SeenType* lhs, const Device::SeenType& rhs)
     {
@@ -80,7 +69,6 @@ namespace {
         }
     };
 }
-
 
 /*
  ********************************************************************************
