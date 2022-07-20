@@ -395,9 +395,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         static const DataExchange::ObjectVariantMapper kMapper;
 
         /**
-         * \brief  Merge data from two device objects, but the second one, where they have conflicts, takes precedence
+         * \brief  Merge data from two device objects, but the second one, where they have conflicts, takes precedence (that includes the ID).
          */
-        static Device Merge (const Device& databaseDevice, const Device& priorityDevice);
+        static Device Merge (const Device& baseDevice, const Device& priorityDevice);
 
         /**
          * \brief  Combine two device objects, but track the original IDs. LHS sb the one from previous rollups.

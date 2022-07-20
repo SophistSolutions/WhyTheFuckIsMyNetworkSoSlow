@@ -522,7 +522,10 @@ namespace {
             return sCache_.LookupValue (sCache_.Ago (allowedStaleness), [=] () -> RolledUpDevices {
                 Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...GetRolledUpDevies...cachefiller")};
                 Debug::TimingTrace        ttrc{L"GetRolledUpDevies...cachefiller", 1};
-                static RolledUpDevices    sRolledUpDevices_; // keep always across runs so we have consisent IDs
+                // sRolledUpDevices_: keep always across runs so we have consisent IDs (safe to use Synchronized cuz accessed from just this call,
+                // and always with consistent set of locks and short lived locks and no other app layer locks grabbed inside lock/copy)
+                // NOTE - we would NOT need to use Syncrhonized here if we used sCache_.fHoldWriteLockDuringCacheFill
+                static Synchronized<RolledUpDevices> sRolledUpDevices_;
 
                 auto rolledUpNetworks = GetRolledUpNetworks (allowedStaleness * 10.0); // longer allowedStaleness cuz we dont care much about this and the parts
                                                                                        // we look at really dont change
@@ -542,11 +545,10 @@ namespace {
                 auto            doMergeOneIntoRollup = [&result, &mapAggregatedAttachments2Rollups] (const Device& d2MergeIn) {
                     // @todo slow/quadradic - may need to tweak
                     if (auto i = result.fDevices.First ([&d2MergeIn] (const auto& exisingRolledUpDevice) { return ShouldRollup_ (exisingRolledUpDevice, d2MergeIn); })) {
-                        // then merge this into that item
-                        // @todo think out order of params and better document order of params!
-                        auto d2MergeInPatched              = d2MergeIn;
+                        Device d2MergeInPatched            = d2MergeIn;
                         d2MergeInPatched.fAttachedNetworks = mapAggregatedAttachments2Rollups (d2MergeInPatched.fAttachedNetworks);
-                        auto tmp                           = Device::Rollup (*i, d2MergeInPatched);
+                        Device tmp                         = Device::Rollup (*i, d2MergeInPatched);
+                        Assert (tmp.fGUID == i->fGUID); // rollup cannot change device ID
                         result.fDevices.Add (tmp); // update
                     }
                     else {

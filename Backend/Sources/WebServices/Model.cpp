@@ -474,8 +474,6 @@ const DataExchange::ObjectVariantMapper Model::Device::SeenType::kMapper = [] ()
 }();
 
 /*
-
-/*
  ********************************************************************************
  ********************************* Model::Device ********************************
  ********************************************************************************
@@ -565,10 +563,12 @@ String Device::ToString () const
     return DataExchange::Variant::JSON::Writer{}.WriteAsString (Device::kMapper.FromObject (*this));
 }
 
-Device Device::Merge (const Device& databaseDevice, const Device& priorityDevice)
+Device Device::Merge (const Device& baseDevice, const Device& priorityDevice)
 {
-    Device merged = databaseDevice;
-    // name from databaseDevice takes precedence
+    Device merged = baseDevice;
+    // NO---// name from baseDevice takes precedence
+    merged.name = priorityDevice.name;
+    merged.fGUID = priorityDevice.fGUID;
     Memory::AccumulateIf (&merged.fTypes, priorityDevice.fTypes);
     Memory::CopyToIf (&merged.fIcon, priorityDevice.fIcon);
     MergeSeen_ (&merged.fSeen, priorityDevice.fSeen);
@@ -583,14 +583,26 @@ Device Device::Merge (const Device& databaseDevice, const Device& priorityDevice
     Memory::CopyToIf (&merged.fIDPersistent, priorityDevice.fIDPersistent);
     Memory::CopyToIf (&merged.fHistoricalSnapshot, priorityDevice.fHistoricalSnapshot);
 #if qDebug
-    Memory::CopyToIf (&merged.fDebugProps, priorityDevice.fDebugProps);
+    if (priorityDevice.fDebugProps) {
+        // copy sub-elements of debug props
+        Mapping<String, VariantValue> newProps = Memory::NullCoalesce (merged.fDebugProps);
+        for (auto i : *priorityDevice.fDebugProps) {
+            newProps.Add (i);
+        }
+        merged.fDebugProps = newProps;
+    }
 #endif
     return merged;
 }
 
 Device Device::Rollup (const Device& rollupDevice, const Device& instanceDevice2Add)
 {
-    Device d = Merge (rollupDevice, instanceDevice2Add);
+    // Use seen.Ever() to decide which 'device' gets precedence in merging. Give the most
+    // recent device precedence
+    Device d           = rollupDevice.fSeen.EverSeen ()->GetUpperBound () < instanceDevice2Add.fSeen.EverSeen ()->GetUpperBound ()
+                   ? Merge (rollupDevice, instanceDevice2Add)
+                   : Merge (instanceDevice2Add, rollupDevice);
+    d.fGUID = rollupDevice.fGUID; // regardless of dates, keep the rollupDevice GUID
     if (d.fAggregatesReversibly.has_value ()) {
         d.fAggregatesReversibly->Add (instanceDevice2Add.fGUID);
     }
