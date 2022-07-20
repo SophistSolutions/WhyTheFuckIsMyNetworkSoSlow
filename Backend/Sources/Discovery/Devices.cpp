@@ -729,6 +729,7 @@ namespace {
                 try {
                     DeclareActivity da{&kDiscovering_This_Device_};
                     if (optional<DiscoveryInfo_> thisDevice = GetMyDevice_ ()) {
+                        DbgTrace (L"***trying to discover failure in logsdddd2");
                     again:
                         Execution::Sleep (retriedLockCount * 1s); // sleep before retrying read-lock so readlock not held so long nobody can update
                         auto           l  = sDiscoveredDevices_.cget ();
@@ -759,10 +760,14 @@ namespace {
                         di.fTypes           = thisDevice->fTypes;
                         di.fForcedName      = thisDevice->fForcedName;
                         di.fThisDevice      = thisDevice->fThisDevice;
+                        DbgTrace (L"***trying to discover failure in logs");
                         auto osInfo         = Configuration::GetSystemConfiguration_ActualOperatingSystem ();
+                        DbgTrace (L"***trying to discover failure in logs222");
                         di.fOperatingSystem = OperatingSystem{osInfo.fTokenName, osInfo.fPrettyNameWithVersionDetails};
                         di.fSeen.fCollector = Memory::NullCoalesce (di.fSeen.fCollector).Extend (DateTime::Now ());
+                        DbgTrace (L"***trying to discover failure in logs4333");
                         di.PatchDerivedFields ();
+                        DbgTrace (L"***trying to discover failure in logs444");
 
                         Assert (di.fGUID != GUID{});
                         // Skip upgrade look to reduce the number of write locks we do, for the common case when there is no
