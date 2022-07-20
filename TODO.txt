@@ -1,8 +1,32 @@
-> Default Sort for devices - if it has a TYPE - then higher priority than having NO type.
-   THEN, having known services above none. MAYBE also known OS above none.
+Why on hercules, I see Bedroom-Roku wiht OS 'Linux' but no icon? appears to not be setting
+ the magic OS-CLASS-CATEGORY field or not getting rolled up properly?
 
 ----
+> Device
+livingRM-WAX610
 
+	shows up with no device info about tytpe
+
+NETGREAR WIFI ACCESS POINTS NOT SHOWING UP AS NET INFORATRUCUTRE
+	9c:c9:eb:b8:01:df (netgear -3-floor)192.168.244.3
+     9c:c9:eb:9f:85:5f       livingRM-WAX610  192.168.244.4
+
+	From SSDP:
+		SSDPInfo:{
+		USNs:[
+		0:"uuid:3da3c0e4-739e-4dfe-a71c-9cc9eb9f855f"
+		1:"uuid:3da3c0e4-739e-4dfe-a71c-9cc9eb9f855f::upnp:rootdevice"
+		2:"uuid:3da3c0e4-739e-4dfe-a71c-9cc9eb9f855f::urn:schemas-upnp-org:device:WLANAccessPointDevice:1"
+		]
+		deviceType2FriendlyNameMap:{
+		urn:schemas-upnp-org:device:WLANAccessPointDevice:1:"livingRM-WAX610"
+		}
+
+	Should be enough to show as network device (and maybe have category for wifi access point).
+
+
+
+----
 	> WTF feature as important as NAMING devices - tags list!
 
 		(so can group by tags and and filter by tags) for nets and devices
@@ -60,27 +84,6 @@
   in UI, so can easily open precombfingured set of viuews
 
 + Need (X) to CLEAR search string when you type a search string like we currently have for the whole filters line.
-
-
-> Device
-livingRM-WAX610
-
-	shows up with no device info about tytpe
-
-
-	From SSDP:
-		SSDPInfo:{
-		USNs:[
-		0:"uuid:3da3c0e4-739e-4dfe-a71c-9cc9eb9f855f"
-		1:"uuid:3da3c0e4-739e-4dfe-a71c-9cc9eb9f855f::upnp:rootdevice"
-		2:"uuid:3da3c0e4-739e-4dfe-a71c-9cc9eb9f855f::urn:schemas-upnp-org:device:WLANAccessPointDevice:1"
-		]
-		deviceType2FriendlyNameMap:{
-		urn:schemas-upnp-org:device:WLANAccessPointDevice:1:"livingRM-WAX610"
-		}
-
-	Should be enough to show as network device (and maybe have category for wifi access point).
-
 
 -----
 

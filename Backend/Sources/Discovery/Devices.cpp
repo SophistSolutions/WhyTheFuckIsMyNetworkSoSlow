@@ -79,6 +79,7 @@ namespace {
     const String kDeviceType_ZonePlayer_{L"urn:schemas-upnp-org:device:ZonePlayer:1"sv};
     const String kDeviceType_WFADevice_{L"urn:schemas-wifialliance-org:device:WFADevice:1"sv};
     const String kDeviceType_WANConnectionDevice_{L"urn:schemas-upnp-org:device:WANConnectionDevice:1"sv};
+    const String kDeviceType_WLANAccessPointDevice_{L"urn:schemas-upnp-org:device:WLANAccessPointDevice:1"sv};
     const String kDeviceType_WANDevice_{L"urn:schemas-upnp-org:device:WANDevice:1"sv};
     const String kDeviceType_MediaRenderer_{L"urn:schemas-upnp-org:device:MediaRenderer:1"sv};
     const String kDeviceType_DIALServer_{L"urn:dial-multiscreen-org:device:dial:1"sv}; // typically TV, Blu-ray player, set-top-box, or similar device
@@ -495,6 +496,7 @@ namespace {
             if (fSSDPInfo.has_value () and
                 (fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_WFADevice_) or
                  fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_WANConnectionDevice_) or
+                 fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_WLANAccessPointDevice_) or
                  fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_WANDevice_))) {
                 fTypes.Add (Discovery::DeviceType::eNetworkInfrastructure);
             }
