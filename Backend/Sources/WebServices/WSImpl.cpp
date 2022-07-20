@@ -146,7 +146,7 @@ About WSImpl::GetAbout () const
 
     CurrentMachine machineInfo = [now, &measurements] () {
         CurrentMachine    result;
-        static const auto kOS_  = OperatingSystem{Configuration::GetSystemConfiguration_ActualOperatingSystem ().fPrettyNameWithVersionDetails};
+        static const auto kOS_  = OperatingSystem{Configuration::GetSystemConfiguration_ActualOperatingSystem ().fTokenName, Configuration::GetSystemConfiguration_ActualOperatingSystem ().fPrettyNameWithVersionDetails};
         result.fOperatingSystem = kOS_;
         if (auto o = Configuration::GetSystemConfiguration_BootInformation ().fBootedAt) {
             result.fMachineUptime = now - *o;
@@ -284,13 +284,13 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
                     auto priFun = [] (const BackendApp::WebServices::Device& d) {
                         int pri = 0;
                         if (d.fTypes and d.fTypes->Contains (Device::DeviceType::ePC)) {
-                            pri += 10;
+                            pri += 20;
                         }
                         if (d.fTypes and d.fTypes->Contains (Device::DeviceType::eRouter)) {
-                            pri += 5;
+                            pri += 10;
                         }
                         if (d.fTypes) {
-                            pri += static_cast<int> (d.fTypes->length ());
+                            pri += 2 * static_cast<int> (d.fTypes->length ());
                         }
                         if (d.fOperatingSystem) {
                             pri += 2;
