@@ -549,7 +549,7 @@ namespace {
                         d2MergeInPatched.fAttachedNetworks = mapAggregatedAttachments2Rollups (d2MergeInPatched.fAttachedNetworks);
                         Device tmp                         = Device::Rollup (*i, d2MergeInPatched);
                         Assert (tmp.fGUID == i->fGUID); // rollup cannot change device ID
-                        result.fDevices.Add (tmp); // update
+                        result.fDevices.Add (tmp);      // update
                     }
                     else {
                         Assert (not d2MergeIn.fAggregatesReversibly.has_value ());

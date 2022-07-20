@@ -25,6 +25,7 @@ using namespace Stroika::Foundation::IO::Network;
 
 using Stroika::Foundation::Common::GUID;
 using Traversal::Range;
+using Memory::NullCoalesce;
 
 using namespace WhyTheFuckIsMyNetworkSoSlow;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp;
@@ -42,27 +43,44 @@ namespace Stroika::Foundation::DataExchange {
 }
 
 namespace {
+    void MergeSeen_ (Range<DateTime>* target2Update, const Range<DateTime>& timeToInclude)
+    {
+        RequireNotNull (target2Update);
+        *target2Update = target2Update->UnionBounds (timeToInclude);
+        #if 0
+        if (target2Update->empty ()) {
+            *target2Update = timeToInclude;
+        }
+        else if (not timeToInclude.empty ()) {
+            *target2Update = Range<DateTime>{
+                min (target2Update->GetLowerBound (), timeToInclude.GetLowerBound ()),
+                max (target2Update->GetUpperBound (), timeToInclude.GetUpperBound ()),
+            };
+        }
+        #endif
+    }
     void MergeSeen_ (Device::SeenType* lhs, const Device::SeenType& rhs)
     {
         RequireNotNull (lhs);
         // @todo consider if this should be a disjoint union and use Range::Union.... - more logically correct, but perhaps less useful
         if (rhs.fARP) {
-            lhs->fARP = Memory::NullCoalesce (lhs->fARP).UnionBounds (*rhs.fARP);
+            lhs->fARP = NullCoalesce (lhs->fARP).UnionBounds (*rhs.fARP);
         }
         if (rhs.fCollector) {
-            lhs->fCollector = Memory::NullCoalesce (lhs->fCollector).UnionBounds (*rhs.fCollector);
+            lhs->fCollector = NullCoalesce (lhs->fCollector).UnionBounds (*rhs.fCollector);
         }
         if (rhs.fICMP) {
-            lhs->fICMP = Memory::NullCoalesce (lhs->fICMP).UnionBounds (*rhs.fICMP);
+            lhs->fICMP = NullCoalesce (lhs->fICMP).UnionBounds (*rhs.fICMP);
         }
         if (rhs.fTCP) {
-            lhs->fTCP = Memory::NullCoalesce (lhs->fTCP).UnionBounds (*rhs.fTCP);
+            lhs->fTCP = NullCoalesce (lhs->fTCP).UnionBounds (*rhs.fTCP);
         }
         if (rhs.fUDP) {
-            lhs->fUDP = Memory::NullCoalesce (lhs->fUDP).UnionBounds (*rhs.fUDP);
+            lhs->fUDP = NullCoalesce (lhs->fUDP).UnionBounds (*rhs.fUDP);
         }
     };
 }
+
 
 /*
  ********************************************************************************
@@ -117,33 +135,17 @@ const ObjectVariantMapper Model::Manufacturer::kMapper = [] () {
     return mapper;
 }();
 
-namespace {
-    void MergeSeen_ (Range<DateTime>* target2Update, const Range<DateTime>& timeToInclude)
-    {
-        // for now, ignore openness... @todo fix/preserve
-        RequireNotNull (target2Update);
-        if (target2Update->empty ()) {
-            *target2Update = timeToInclude;
-        }
-        else if (not timeToInclude.empty ()) {
-            *target2Update = Range<DateTime>{
-                min (target2Update->GetLowerBound (), timeToInclude.GetLowerBound ()),
-                max (target2Update->GetUpperBound (), timeToInclude.GetUpperBound ()),
-            };
-        }
-    }
-}
 /*
  ********************************************************************************
  ********************************** Model::Network ******************************
  ********************************************************************************
  */
-Network Network::Merge (const Network& databaseNetwork, const Network& priorityNetwork)
+Network Network::Merge (const Network& baseNetwork, const Network& priorityNetwork)
 {
-    Network merged = databaseNetwork;
-    // name from DB takes precedence
-    merged.fNetworkAddresses.AddAll (priorityNetwork.fNetworkAddresses);
+    Network merged = baseNetwork;
+    merged.fGUID   = priorityNetwork.fGUID;
     Memory::CopyToIf (&merged.fFriendlyName, priorityNetwork.fFriendlyName);
+    merged.fNetworkAddresses.AddAll (priorityNetwork.fNetworkAddresses);
     merged.fAttachedInterfaces.AddAll (priorityNetwork.fAttachedInterfaces);
     priorityNetwork.fGateways.Apply ([&] (auto inetAddr) {  if (not merged.fGateways.Contains (inetAddr)) {merged.fGateways += inetAddr;} });
     priorityNetwork.fDNSServers.Apply ([&] (auto inetAddr) {  if (not merged.fDNSServers.Contains (inetAddr)) {merged.fDNSServers += inetAddr;} });
@@ -156,14 +158,26 @@ Network Network::Merge (const Network& databaseNetwork, const Network& priorityN
     Memory::CopyToIf (&merged.fIDPersistent, priorityNetwork.fIDPersistent);
     Memory::CopyToIf (&merged.fHistoricalSnapshot, priorityNetwork.fHistoricalSnapshot);
 #if qDebug
-    Memory::CopyToIf (&merged.fDebugProps, priorityNetwork.fDebugProps);
+    if (priorityNetwork.fDebugProps) {
+        // copy sub-elements of debug props
+        Mapping<String, VariantValue> newProps = NullCoalesce (merged.fDebugProps);
+        for (auto i : *priorityNetwork.fDebugProps) {
+            newProps.Add (i);
+        }
+        merged.fDebugProps = newProps;
+    }
 #endif
     return merged;
 }
 
 Network Network::Rollup (const Network& rollupNetwork, const Network& instanceNetwork2Add)
 {
-    Network n = Merge (rollupNetwork, instanceNetwork2Add);
+    // Use seen.Ever() to decide which 'device' gets precedence in merging. Give the most
+    // recent device precedence
+    Network n = rollupNetwork.fSeen.GetUpperBound () < instanceNetwork2Add.fSeen.GetUpperBound ()
+                    ? Merge (rollupNetwork, instanceNetwork2Add)
+                    : Merge (instanceNetwork2Add, rollupNetwork);
+    n.fGUID   = rollupNetwork.fGUID; // regardless of dates, keep the rollupDevice GUID
     if (n.fAggregatesReversibly.has_value ()) {
         n.fAggregatesReversibly->Add (instanceNetwork2Add.fGUID);
     }
@@ -566,9 +580,8 @@ String Device::ToString () const
 Device Device::Merge (const Device& baseDevice, const Device& priorityDevice)
 {
     Device merged = baseDevice;
-    // NO---// name from baseDevice takes precedence
-    merged.name = priorityDevice.name;
-    merged.fGUID = priorityDevice.fGUID;
+    merged.name   = priorityDevice.name;
+    merged.fGUID  = priorityDevice.fGUID;
     Memory::AccumulateIf (&merged.fTypes, priorityDevice.fTypes);
     Memory::CopyToIf (&merged.fIcon, priorityDevice.fIcon);
     MergeSeen_ (&merged.fSeen, priorityDevice.fSeen);
@@ -585,7 +598,7 @@ Device Device::Merge (const Device& baseDevice, const Device& priorityDevice)
 #if qDebug
     if (priorityDevice.fDebugProps) {
         // copy sub-elements of debug props
-        Mapping<String, VariantValue> newProps = Memory::NullCoalesce (merged.fDebugProps);
+        Mapping<String, VariantValue> newProps = NullCoalesce (merged.fDebugProps);
         for (auto i : *priorityDevice.fDebugProps) {
             newProps.Add (i);
         }
@@ -599,10 +612,10 @@ Device Device::Rollup (const Device& rollupDevice, const Device& instanceDevice2
 {
     // Use seen.Ever() to decide which 'device' gets precedence in merging. Give the most
     // recent device precedence
-    Device d           = rollupDevice.fSeen.EverSeen ()->GetUpperBound () < instanceDevice2Add.fSeen.EverSeen ()->GetUpperBound ()
+    Device d = rollupDevice.fSeen.EverSeen ()->GetUpperBound () < instanceDevice2Add.fSeen.EverSeen ()->GetUpperBound ()
                    ? Merge (rollupDevice, instanceDevice2Add)
                    : Merge (instanceDevice2Add, rollupDevice);
-    d.fGUID = rollupDevice.fGUID; // regardless of dates, keep the rollupDevice GUID
+    d.fGUID  = rollupDevice.fGUID; // regardless of dates, keep the rollupDevice GUID
     if (d.fAggregatesReversibly.has_value ()) {
         d.fAggregatesReversibly->Add (instanceDevice2Add.fGUID);
     }

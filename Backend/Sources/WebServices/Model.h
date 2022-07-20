@@ -171,15 +171,15 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         Network () = default;
         Network (const Set<CIDR>& nas);
 
+        // @todo - WTF allocated ID - and one inherited from network interface (windows only) - CLARIFY - probably call OURs just fID (and change others in this module to match)
+        GUID fGUID;
+
+        optional<String> fFriendlyName; //tmphack - list of interfaces attached to network
+
         /*
          * This list of addresses will typically have one IPV4 and one IPV6 address
          */
         Set<CIDR> fNetworkAddresses;
-
-        optional<String> fFriendlyName; //tmphack - list of interfaces attached to network
-
-        // @todo - WTF allocated ID - and one inherited from network interface (windows only) - CLARIFY - probably call OURs just fID (and change others in this module to match)
-        GUID fGUID;
 
         Set<GUID> fAttachedInterfaces;
 
@@ -242,7 +242,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
         static const DataExchange::ObjectVariantMapper kMapper;
 
-        static Network Merge (const Network& databaseNetwork, const Network& dynamicallyDiscoveredNetwork);
+        static Network Merge (const Network& baseNetwork, const Network& priorityNetwork);
         static Network Rollup (const Network& rollupNetwork, const Network& instanceNetwork2Add);
     };
 
