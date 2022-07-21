@@ -12,6 +12,10 @@ must fix and restart the Builds AGAIN...
   (((TEST FIX)))
 
 
+---
+On 'aggregated reversibly' - add extra 'map' in devices response mapping that id to 'info' including EverSeen (and eventually source). And sort list by everseen (at leastin GUI).
+and show that everseen in GUI.
+
 ----
 my new precednce logic isnt great. Trouble is - takes a while to get good names from devices.
 So we revert to latest known name, instead of best found ever name.
@@ -20,15 +24,14 @@ best seen in debug builds were stuff like sonos speakers ahve bad names til the 
 gets better.
 
 Trouble is the Patch logic to compute derived names is done in discovery code, not in rolled up device code????
----
+
+	> MAYBE have 
+		names : [ name: x, quality-score: n ]
+		and name - a property that computes best?
+		on C++ side, and maybe - unclear - don't export alias names? Maybe useful to export them too for same reason - so differnt sources can better merge/pick names.
+		
 
 ---
-
-
-Why on hercules, I see Bedroom-Roku wiht OS 'Linux' but no icon? appears to not be setting
- the magic OS-CLASS-CATEGORY field or not getting rolled up properly?
-
-----
 	> WTF feature as important as NAMING devices - tags list!
 
 		(so can group by tags and and filter by tags) for nets and devices
@@ -49,7 +52,6 @@ Why on hercules, I see Bedroom-Roku wiht OS 'Linux' but no icon? appears to not 
 - REDO storage of seen IDateTimeRange code so actually stores date objects, not strings so dont need to moment
   all over the place to convert and compare.
   - REDUCE use of moment, and maybe eliminate in favor of luxon?
-
 
 - Have filters and customization sections in devices page shrinkable, and little button in top-right of table to pop it open to allow customization.
   And probably have a way to make more sections (and delete sections) and maybe revert to default (storing thise prefs in local-storage ui-prefs 
