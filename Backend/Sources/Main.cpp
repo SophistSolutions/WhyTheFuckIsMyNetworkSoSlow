@@ -41,21 +41,21 @@ namespace {
     {
         Thread::SuppressInterruptionInContext suppressCtx;
         DbgTrace (SDKSTR ("Fatal Error %s encountered"), msg);
-        Logger::Get ().Log (Logger::Priority::eCriticalError, L"Fatal Error: %s; Aborting...", Characters::SDKString2NarrowSDK (msg).c_str ());
-        Logger::Get ().Log (Logger::Priority::eCriticalError, L"Backtrace: %s", Debug::BackTrace::Capture ().c_str ());
+        Logger::sThe.Log (Logger::Priority::eCriticalError, L"Fatal Error: %s; Aborting...", Characters::SDKString2NarrowSDK (msg).c_str ());
+        Logger::sThe.Log (Logger::Priority::eCriticalError, L"Backtrace: %s", Debug::BackTrace::Capture ().c_str ());
         if (std::exception_ptr exc = std::current_exception ()) {
-            Logger::Get ().Log (Logger::Priority::eCriticalError, L"Uncaught exception: %s", Characters::ToString (exc).c_str ());
+            Logger::sThe.Log (Logger::Priority::eCriticalError, L"Uncaught exception: %s", Characters::ToString (exc).c_str ());
         }
-        Logger::Get ().Flush ();
+        Logger::sThe.Flush ();
         std::_Exit (EXIT_FAILURE); // skip
     }
     void FatalSignalHandler_ (Execution::SignalID signal) noexcept
     {
         Thread::SuppressInterruptionInContext suppressCtx;
         DbgTrace (L"Fatal Signal encountered: %s", Execution::SignalToName (signal).c_str ());
-        Logger::Get ().Log (Logger::Priority::eCriticalError, L"Fatal Signal: %s; Aborting...", Execution::SignalToName (signal).c_str ());
-        Logger::Get ().Log (Logger::Priority::eCriticalError, L"Backtrace: %s", Debug::BackTrace::Capture ().c_str ());
-        Logger::Get ().Flush ();
+        Logger::sThe.Log (Logger::Priority::eCriticalError, L"Fatal Signal: %s; Aborting...", Execution::SignalToName (signal).c_str ());
+        Logger::sThe.Log (Logger::Priority::eCriticalError, L"Backtrace: %s", Debug::BackTrace::Capture ().c_str ());
+        Logger::sThe.Flush ();
         std::_Exit (EXIT_FAILURE); // skip
     }
 }
@@ -131,16 +131,19 @@ int main (int argc, const char* argv[])
     /*
      *  Setup Logging to the OS logging facility.
      */
-    [[maybe_unused]] auto&& cleanup = Execution::Finally ([] () {
-        Logger::ShutdownSingleton (); // make sure Logger threads shutdown before the end of main (), and flush buffered messages
-    });
-#if qHas_Syslog
-    Logger::Get ().SetAppender (make_shared<Logger::SysLogAppender> (L"WhyTheFuckIsMyNetworkSoSlow"));
-#elif qPlatform_Windows
-    Logger::Get ().SetAppender (make_shared<Logger::WindowsEventLogAppender> (L"WhyTheFuckIsMyNetworkSoSlow"));
+#if __cpp_designated_initializers
+    Logger::Activator loggerActivation{Logger::Options{
+        .fLogBufferingEnabled         = true,
+        .fSuppressDuplicatesThreshold = 1min,
+    }};
+#else
+    Logger::Activator loggerActivation{Logger::Options{true, 15min}};
 #endif
-    Logger::Get ().SetBufferingEnabled (true);
-    Logger::Get ().SetSuppressDuplicates (1min);
+#if qHas_Syslog
+    Logger::sThe.SetAppender (make_shared<Logger::SysLogAppender> (L"WhyTheFuckIsMyNetworkSoSlow"));
+#elif qPlatform_Windows
+    Logger::sThe.SetAppender (make_shared<Logger::WindowsEventLogAppender> (L"WhyTheFuckIsMyNetworkSoSlow"));
+#endif
 
     /*
      *  Parse command line arguments, and start looking at options.
@@ -183,11 +186,11 @@ int main (int argc, const char* argv[])
             }
         }
         if (warningOnly) {
-            Logger::Get ().Log (Logger::Priority::eWarning, L"%s", exceptMsg.c_str ());
+            Logger::sThe.Log (Logger::Priority::eWarning, L"%s", exceptMsg.c_str ());
             cerr << "WARNING: " << exceptMsg.AsNarrowSDKString () << endl;
         }
         else {
-            Logger::Get ().Log (Logger::Priority::eError, L"%s", exceptMsg.c_str ());
+            Logger::sThe.Log (Logger::Priority::eError, L"%s", exceptMsg.c_str ());
             cerr << "FAILED: " << exceptMsg.AsNarrowSDKString () << endl;
             return EXIT_FAILURE;
         }
@@ -229,7 +232,7 @@ int main (int argc, const char* argv[])
     }
     catch (...) {
         String exceptMsg = Characters::ToString (current_exception ());
-        Logger::Get ().Log (Logger::Priority::eError, L"%s", exceptMsg.c_str ());
+        Logger::sThe.Log (Logger::Priority::eError, L"%s", exceptMsg.c_str ());
         cerr << "FAILED: " << exceptMsg.AsNarrowSDKString () << endl;
         return EXIT_FAILURE;
     }
