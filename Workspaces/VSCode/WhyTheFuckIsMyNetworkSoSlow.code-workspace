@@ -10,7 +10,9 @@
 			"optional": "cpp",
 			"execution": "cpp",
 			"forward_list": "cpp",
-			"list": "cpp"
+			"list": "cpp",
+			"*.ipp": "cpp",
+			"*.env": "cpp"
 		}
 	}
 }
