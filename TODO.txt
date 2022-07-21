@@ -5,7 +5,6 @@
 .... what I saw was for NAS8 device on hercules - saw stuff in openPorts that didnt exist in any aggregated device according to direct ws calls.
    testiung now i can can reproduce on windows.
 
-
 -----
 
 	also some weird bug with sqlite throwing error - about locked database - still not right - probably  
