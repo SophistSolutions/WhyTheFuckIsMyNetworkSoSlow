@@ -1,3 +1,18 @@
+	do controlled test I'm emitting all aggregtes reverisblies?
+
+	Seems I'm MISSING the current/latest one from list...
+
+.... what I saw was for NAS8 device on hercules - saw stuff in openPorts that didnt exist in any aggregated device according to direct ws calls.
+   testiung now i can can reproduce on windows.
+
+
+-----
+
+	also some weird bug with sqlite throwing error - about locked database - still not right - probably  
+	a stroika issue.
+
+
+----
 
 On 'aggregated reversibly' - add extra 'map' in devices response mapping that id to 'info' including EverSeen (and eventually source). And sort list by everseen (at leastin GUI).
 and show that everseen in GUI.
