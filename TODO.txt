@@ -1,30 +1,31 @@
-Why on hercules, I see Bedroom-Roku wiht OS 'Linux' but no icon? appears to not be setting
- the magic OS-CLASS-CATEGORY field or not getting rolled up properly?
+
+default ideltimer thread not shutting down properly on WTF on UNIX
+
+[0026][0000.541]	(NEW THREAD, index=0026 Real Thread ID=0x7efbf8652640)	(pthread_self=0x7efbf8652640)	<Thread::Rep_::ThreadMain_> {
+[0026][0000.550]		Adding thread index 26 to sRunningThreads_ ([ 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 6, 5, 4, 3, 2 ])
+[0004][0000.551]				{id: 0x7efbf8652640, index: 26, name: 'Default-Idle-Timer', status: Running} started
+[0004][0000.551]			} </Thread::Start>
+[0026][0000.552]		In Thread::Rep_::ThreadMain_ - set state to RUNNING for thread: {id: 0x7efbf8652640, index: 26, name: 'Default-Idle-Timer', status: Running}
+[0004][0000.553]			Logger::Log (Info, "WhyTheFuckIsMyNetworkSoSlow Service (version 1.0d18x) service started successfully")
+
+must fix and restart the Builds AGAIN...
+
 
 ----
-> Device
-livingRM-WAX610
+my new precednce logic isnt great. Trouble is - takes a while to get good names from devices.
+So we revert to latest known name, instead of best found ever name.
 
-	shows up with no device info about tytpe
+best seen in debug builds were stuff like sonos speakers ahve bad names til the active device gets its ssdp message, and then it 
+gets better.
 
-NETGREAR WIFI ACCESS POINTS NOT SHOWING UP AS NET INFORATRUCUTRE
-	9c:c9:eb:b8:01:df (netgear -3-floor)192.168.244.3
-     9c:c9:eb:9f:85:5f       livingRM-WAX610  192.168.244.4
+Trouble is the Patch logic to compute derived names is done in discovery code, not in rolled up device code????
+---
 
-	From SSDP:
-		SSDPInfo:{
-		USNs:[
-		0:"uuid:3da3c0e4-739e-4dfe-a71c-9cc9eb9f855f"
-		1:"uuid:3da3c0e4-739e-4dfe-a71c-9cc9eb9f855f::upnp:rootdevice"
-		2:"uuid:3da3c0e4-739e-4dfe-a71c-9cc9eb9f855f::urn:schemas-upnp-org:device:WLANAccessPointDevice:1"
-		]
-		deviceType2FriendlyNameMap:{
-		urn:schemas-upnp-org:device:WLANAccessPointDevice:1:"livingRM-WAX610"
-		}
-
-	Should be enough to show as network device (and maybe have category for wifi access point).
+---
 
 
+Why on hercules, I see Bedroom-Roku wiht OS 'Linux' but no icon? appears to not be setting
+ the magic OS-CLASS-CATEGORY field or not getting rolled up properly?
 
 ----
 	> WTF feature as important as NAMING devices - tags list!

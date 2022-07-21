@@ -9,6 +9,7 @@
 #include "Stroika/Foundation/Debug/BackTrace.h"
 #include "Stroika/Foundation/Debug/Fatal.h"
 #include "Stroika/Foundation/Execution/CommandLine.h"
+#include "Stroika/Foundation/Execution/IntervalTimer.h"
 #include "Stroika/Foundation/Execution/Module.h"
 #include "Stroika/Foundation/Execution/SignalHandlers.h"
 #include "Stroika/Foundation/Execution/Thread.h"
@@ -192,6 +193,8 @@ int main (int argc, const char* argv[])
         }
     }
 #endif
+
+    Execution::IntervalTimer::Manager::Activator intervalTimerMgrActivator;
 
     /*
      *  Create service handler instance.

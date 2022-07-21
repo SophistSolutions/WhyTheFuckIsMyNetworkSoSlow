@@ -51,7 +51,6 @@ void WTFAppServiceRep::MainLoop (const std::function<void ()>& startedCB)
     // Activator objects cause the discovery modules to start/stop so RAAI controls startup/shutdown even with exceptions
     // deviceMgr calls NetworkMgr so order here is important. And webserver can call either. Allowing destruction to shutdown guarantees proper ordering
     // of dependencies on shutdown
-
     Common::BLOBMgr::Activator                 blobMgrActivator;
     Discovery::NetworkInterfacesMgr::Activator networkInterfacesMgrActivator;
     Discovery::NetworksMgr::Activator          networkMgrActivator;
