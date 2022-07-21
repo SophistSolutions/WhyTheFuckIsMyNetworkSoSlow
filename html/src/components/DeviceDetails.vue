@@ -162,7 +162,7 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
 
       <div class="col"> 
         <div class="row" v-for=" [seenType, seenRange] in Object.entries(currentDevice.seen)" v-bind:key="seenType"> 
-          <div class="col">  {{moment(seenRange.lowerBound).fromNow()}} thru   {{moment(seenRange.upperBound).fromNow()}}</div>
+          <div class="col">{{moment(seenRange.lowerBound).fromNow()}} up until {{moment(seenRange.upperBound).fromNow()}}</div>
           <div class="col"><span v-if="seenType!='Ever'">via</span> {{seenType}}</div>
         </div>
       </div>
