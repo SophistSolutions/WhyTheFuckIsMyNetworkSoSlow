@@ -798,7 +798,7 @@ namespace {
                     Execution::ReThrow ();
                 }
                 catch (...) {
-                    Execution::Logger::Get ().LogIfNew (Execution::Logger::Priority::eError, 5min, L"%s", Characters::ToString (current_exception ()).c_str ());
+                    Execution::Logger::sThe.LogIfNew (Execution::Logger::Priority::eError, 5min, L"%s", Characters::ToString (current_exception ()).c_str ());
                 }
 
             nextTry:
@@ -858,7 +858,7 @@ namespace {
                     SSDP::Client::Listener::eAutoStart);
             }
             catch (...) {
-                Logger::Get ().Log (Logger::Priority::eError, L"Problem starting SSDP Listener - so that source of discovery will be unavailable: %s", Characters::ToString (current_exception ()).c_str ());
+                Logger::sThe.Log (Logger::Priority::eError, L"Problem starting SSDP Listener - so that source of discovery will be unavailable: %s", Characters::ToString (current_exception ()).c_str ());
             }
             try {
                 static const Time::Duration kReSearchInterval_{10min}; // not sure what interval makes sense
@@ -868,7 +868,7 @@ namespace {
             }
             catch (...) {
                 // only warning because searcher much less important - just helpful at very start of discovery
-                Logger::Get ().Log (Logger::Priority::eWarning, L"Problem starting SSDP Searcher - so that source of discovery will be unavailable: %s", Characters::ToString (current_exception ()).c_str ());
+                Logger::sThe.Log (Logger::Priority::eWarning, L"Problem starting SSDP Searcher - so that source of discovery will be unavailable: %s", Characters::ToString (current_exception ()).c_str ());
             }
         }
 
@@ -1135,7 +1135,7 @@ namespace {
                     Execution::ReThrow ();
                 }
                 catch (...) {
-                    Execution::Logger::Get ().LogIfNew (Execution::Logger::Priority::eError, 5min, L"%s", Characters::ToString (current_exception ()).c_str ());
+                    Execution::Logger::sThe.LogIfNew (Execution::Logger::Priority::eError, 5min, L"%s", Characters::ToString (current_exception ()).c_str ());
                 }
                 Execution::Sleep (1min); // unsure of right interval - maybe able to epoll or something so no actual polling needed - note no lock held here
             }
@@ -1323,7 +1323,7 @@ namespace {
                     Execution::ReThrow ();
                 }
                 catch (...) {
-                    Execution::Logger::Get ().LogIfNew (Execution::Logger::Priority::eError, 5min, L"%s", Characters::ToString (current_exception ()).c_str ());
+                    Execution::Logger::sThe.LogIfNew (Execution::Logger::Priority::eError, 5min, L"%s", Characters::ToString (current_exception ()).c_str ());
                 }
             }
         }
@@ -1430,7 +1430,7 @@ namespace {
                     Execution::ReThrow ();
                 }
                 catch (...) {
-                    Execution::Logger::Get ().LogIfNew (Execution::Logger::Priority::eError, 5min, L"%s", Characters::ToString (current_exception ()).c_str ());
+                    Execution::Logger::sThe.LogIfNew (Execution::Logger::Priority::eError, 5min, L"%s", Characters::ToString (current_exception ()).c_str ());
                 }
             }
         }

@@ -331,6 +331,7 @@ namespace {
         Execution::Thread::Ptr sDatabaseSyncThread_{};
 
         // the latest copy of what is in the DB (manually kept up to date)
+        // NOTE: These are all non-rolled up objects
         Synchronized<DeviceKeyedCollection_>  sDBDevices_;
         Synchronized<NetworkKeyedCollection_> sDBNetworks_;
 
@@ -667,7 +668,9 @@ Sequence<IntegratedModel::Device> IntegratedModel::Mgr::GetDevices () const
 
 optional<IntegratedModel::Device> IntegratedModel::Mgr::GetDevice (const GUID& id) const
 {
-    // first check rolled up networks, and then raw/unrolled up networks
+    // first check rolled up devices, and then raw/unrolled up devices
+    // NOTE - this doesn't check the 'dynamic' copy of the devices - it waits til those get migrated to the DB, once ever
+    // 30 seconds roughtly...
     auto result = RollupSummary_::GetRolledUpDevies ().fDevices.Lookup (id);
     if (not result.has_value ()) {
         result = DBAccess_::sDBDevices_.load ().Lookup (id);
