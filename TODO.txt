@@ -1,18 +1,4 @@
 
-default ideltimer thread not shutting down properly on WTF on UNIX
-
-[0026][0000.541]	(NEW THREAD, index=0026 Real Thread ID=0x7efbf8652640)	(pthread_self=0x7efbf8652640)	<Thread::Rep_::ThreadMain_> {
-[0026][0000.550]		Adding thread index 26 to sRunningThreads_ ([ 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 6, 5, 4, 3, 2 ])
-[0004][0000.551]				{id: 0x7efbf8652640, index: 26, name: 'Default-Idle-Timer', status: Running} started
-[0004][0000.551]			} </Thread::Start>
-[0026][0000.552]		In Thread::Rep_::ThreadMain_ - set state to RUNNING for thread: {id: 0x7efbf8652640, index: 26, name: 'Default-Idle-Timer', status: Running}
-[0004][0000.553]			Logger::Log (Info, "WhyTheFuckIsMyNetworkSoSlow Service (version 1.0d18x) service started successfully")
-
-must fix and restart the Builds AGAIN...
-  (((TEST FIX)))
-
-
----
 On 'aggregated reversibly' - add extra 'map' in devices response mapping that id to 'info' including EverSeen (and eventually source). And sort list by everseen (at leastin GUI).
 and show that everseen in GUI.
 
@@ -29,7 +15,7 @@ Trouble is the Patch logic to compute derived names is done in discovery code, n
 		names : [ name: x, quality-score: n ]
 		and name - a property that computes best?
 		on C++ side, and maybe - unclear - don't export alias names? Maybe useful to export them too for same reason - so differnt sources can better merge/pick names.
-		
+
 
 ---
 	> WTF feature as important as NAMING devices - tags list!
