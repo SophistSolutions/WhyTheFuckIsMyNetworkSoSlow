@@ -5,6 +5,20 @@
 .... what I saw was for NAS8 device on hercules - saw stuff in openPorts that didnt exist in any aggregated device according to direct ws calls.
    testiung now i can can reproduce on windows.
 
+    ((NOW HAVE ONE DB ENTRY - SO TEST NOW))
+
+	HAVE GOOD TEST RUNNING NOW
+			http://localhost/api/v1/devices/824c2971-5bf4-2c8a-16f0-57a5914d5c5b
+
+		maybe not
+		aggr reversibly	had 2 items for a while but now as 3;
+
+"4cbc2712-68b6-5aa8-67b1-1edadac0efa6",
+    "a5cef152-2b5c-8dea-ae27-dd12747e0812",
+    "e6a78a03-f2ba-d63f-4e1a-95c68ef77387"
+	 (( BE SURE WE HAVE LOGGING FOR ANY WRITE ERRORS USE Logger::sThe - now that it supposedly works))
+	 (((NO BUG REPRODUCED ON WINDOWS - SO TRY ADDING THE LOGGING)))
+
 ----
 
 On 'aggregated reversibly' - add extra 'map' in devices response mapping that id to 'info' including EverSeen (and eventually source). And sort list by everseen (at leastin GUI).

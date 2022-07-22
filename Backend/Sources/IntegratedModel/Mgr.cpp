@@ -15,6 +15,7 @@
 #include "Stroika/Foundation/Database/SQL/ORM/Versioning.h"
 #include "Stroika/Foundation/Database/SQL/SQLite.h"
 #include "Stroika/Foundation/Debug/TimingTrace.h"
+#include "Stroika/Foundation/Execution/Logger.h"
 #include "Stroika/Foundation/Execution/Sleep.h"
 #include "Stroika/Foundation/Execution/Synchronized.h"
 #include "Stroika/Foundation/IO/FileSystem/WellKnownLocations.h"
@@ -470,7 +471,8 @@ namespace {
                     Execution::ReThrow ();
                 }
                 catch (...) {
-                    DbgTrace (L"Ignoring (will retry in 30 seconds) exception in BackgroundDatabaseThread_ loop: %s", Characters::ToString (current_exception ()).c_str ());
+                    //DbgTrace (L"Ignoring (will retry in 30 seconds) exception in BackgroundDatabaseThread_ loop: %s", Characters::ToString (current_exception ()).c_str ());
+                    Logger::sThe.LogIfNew (Logger::Priority::eWarning, 1min, L"Database update: ignoring exception in BackgroundDatabaseThread_ loop (will retry in 30 seconds): %s", Characters::ToString (current_exception ()).c_str ());
                     Execution::Sleep (30s);
                 }
             }
