@@ -22,13 +22,13 @@ DOCKER_BUILD_EXTRAS_FOR_DEV_=\
 	--build-arg INCLUDE_OPENSSL=true \
 	--build-arg INCLUDE_HANDY_DEV_TOOLS=true \
 
-DOCKER_BUILD_EXTRAS_=\
+DOCKER_BUILD_EXTRAS_?=\
 
 build-images:
 ifeq (${DETECTED_HOST_OS},Linux)
-	docker build $(DOCKER_BUILD_EXTRAS_) -f Ubuntu-1804/Dockerfile -t sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804 .
-	docker build $(DOCKER_BUILD_EXTRAS_) -f Ubuntu-2004/Dockerfile -t sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004 .
-	docker build $(DOCKER_BUILD_EXTRAS_) -f Ubuntu-2204/Dockerfile -t sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204 .
+	docker build ${DOCKER_BUILD_EXTRAS_} -f Ubuntu-1804/Dockerfile -t sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804 .
+	docker build ${DOCKER_BUILD_EXTRAS_} -f Ubuntu-2004/Dockerfile -t sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004 .
+	docker build ${DOCKER_BUILD_EXTRAS_} -f Ubuntu-2204/Dockerfile -t sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204 .
 endif
 ifeq (Windows,$(findstring Windows,$(OS)))
 	docker build -f Windows-Cygwin-VS2k19/Dockerfile -t sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19 -m 2G .
@@ -70,7 +70,7 @@ endif
 
 dev-containers:
 ifeq (${DETECTED_HOST_OS},Linux)
-	DOCKER_BUILD_EXTRAS_=$(DOCKER_BUILD_EXTRAS_FOR_DEV_) make build-images
+	DOCKER_BUILD_EXTRAS_="$(DOCKER_BUILD_EXTRAS_FOR_DEV_)" make build-images
 	#cd ${StroikaRoot} && SANDBOX_FROM=/Sandbox CONTAINER_NAME=WTF-Dev-1804 CONTAINER_IMAGE=sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804 INCLUDE_EXTRA_PERSONAL_MOUNT_FILES=1 ECHO_DOCKER_COMMANDS=1 ScriptsLib/RunInDockerEnvironment
 	cd ${StroikaRoot} && SANDBOX_FROM=/Sandbox CONTAINER_NAME=WTF-Dev-2004 CONTAINER_IMAGE=sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004 INCLUDE_EXTRA_PERSONAL_MOUNT_FILES=1 EXTRA_DOCKER_ARGS="--publish 11222:22" ECHO_DOCKER_COMMANDS=1 ScriptsLib/RunInDockerEnvironment
 endif
