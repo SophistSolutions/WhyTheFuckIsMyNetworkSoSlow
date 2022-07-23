@@ -5,6 +5,7 @@ DEFAULT_GOAL := help
 
 VERSION=$(shell dos2unix < ../VERSION | xargs echo -n)
 VERSION_Final=$(shell $(StroikaRoot)ScriptsLib/ExtractVersionInformation ../VERSION FinalBuild)
+DETECTED_HOST_OS=$(shell ../ScriptsLib/DetectedHostOS)
 
 
 help:
