@@ -17,6 +17,7 @@ help:
 
 
 # You may want to comment these in to build WTF-Dev environment
+## @todo maybe cleaner to remove these build args and do WTF-DEV Dockerfile and have it import different bases and just add this stuff?
 DOCKER_BUILD_EXTRAS_FOR_DEV_=\
 	--build-arg INCLUDE_OPENSSL=true \
 	--build-arg INCLUDE_HANDY_DEV_TOOLS=true \
