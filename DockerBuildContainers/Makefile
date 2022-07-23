@@ -62,6 +62,6 @@ endif
 
 dev-containers:
 ifeq (${DETECTED_HOST_OS},Linux)
-	#cd ../ThirdPartyComponents/Stroika/StroikaRoot/ && SANDBOX_FROM=/Sandbox CONTAINER_NAME=WTF-Dev-1804 CONTAINER_IMAGE=sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804 INCLUDE_EXTRA_PERSONAL_MOUNT_FILES=1 ECHO_DOCKER_COMMANDS=1 ScriptsLib/RunInDockerEnvironment
-	cd ../ThirdPartyComponents/Stroika/StroikaRoot/ && SANDBOX_FROM=/Sandbox CONTAINER_NAME=Stroika-Dev-2004 CONTAINER_IMAGE=sophistsolutionsinc/stroika-dev-2004 INCLUDE_EXTRA_PERSONAL_MOUNT_FILES=1 EXTRA_DOCKER_ARGS="--publish 11222:22" ECHO_DOCKER_COMMANDS=1 ScriptsLib/RunInDockerEnvironment
+	#cd ${StroikaRoot} && SANDBOX_FROM=/Sandbox CONTAINER_NAME=WTF-Dev-1804 CONTAINER_IMAGE=sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804 INCLUDE_EXTRA_PERSONAL_MOUNT_FILES=1 ECHO_DOCKER_COMMANDS=1 ScriptsLib/RunInDockerEnvironment
+	cd ${StroikaRoot} && SANDBOX_FROM=/Sandbox CONTAINER_NAME=WTF-Dev-2004 CONTAINER_IMAGE=sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004 INCLUDE_EXTRA_PERSONAL_MOUNT_FILES=1 EXTRA_DOCKER_ARGS="--publish 11222:22" ECHO_DOCKER_COMMANDS=1 ScriptsLib/RunInDockerEnvironment
 endif
