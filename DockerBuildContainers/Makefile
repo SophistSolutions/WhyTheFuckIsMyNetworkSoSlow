@@ -16,7 +16,7 @@ help:
 
 
 build-images:
-ifeq ($(shell uname),Linux)
+ifeq (${DETECTED_HOST_OS},Linux)
 	docker build -f Ubuntu-1804/Dockerfile -t sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804 .
 	docker build -f Ubuntu-2004/Dockerfile -t sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004 .
 	docker build -f Ubuntu-2204/Dockerfile -t sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204 .
@@ -27,7 +27,7 @@ endif
 
 
 tag-images:
-ifeq ($(shell uname),Linux)
+ifeq (${DETECTED_HOST_OS},Linux)
 	docker tag sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804 sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804:$(VERSION)
 	docker tag sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004 sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004:$(VERSION)
 	docker tag sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004 sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204:$(VERSION)
@@ -39,7 +39,7 @@ endif
 
 push-images:
 	#if you get errors doing this (permission denied) make sure you ran docker login
-ifeq ($(shell uname),Linux)
+ifeq (${DETECTED_HOST_OS},Linux)
 	docker push sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804
 	docker push sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
 	docker push sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204
@@ -48,7 +48,7 @@ ifeq (Windows,$(findstring Windows,$(OS)))
 	docker push sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19
 endif
 ifeq ($(VERSION_Final),true)
-ifeq ($(shell uname),Linux)
+ifeq (${DETECTED_HOST_OS},Linux)
 	docker push sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804:$(VERSION)
 	docker push sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004:$(VERSION)
 	docker push sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204:$(VERSION)
@@ -60,9 +60,7 @@ endif
 
 
 dev-containers:
-ifeq ($(shell uname),Linux)
-	#cd .. && SANDBOX_FROM=/Sandbox CONTAINER_NAME=Stroika-Dev CONTAINER_IMAGE=sophistsolutionsinc/stroika-dev INCLUDE_EXTRA_PERSONAL_MOUNT_FILES=1 EXTRA_DOCKER_ARGS="--publish 10022:22" ECHO_DOCKER_COMMANDS=1 ScriptsLib/RunInDockerEnvironment
-	cd ../ThirdPartyComponents/Stroika/StroikaRoot/ && SANDBOX_FROM=/Sandbox CONTAINER_NAME=WTF-Dev-1804 CONTAINER_IMAGE=sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804 INCLUDE_EXTRA_PERSONAL_MOUNT_FILES=1 ECHO_DOCKER_COMMANDS=1 ScriptsLib/RunInDockerEnvironment
-	#cd .. && SANDBOX_FROM=/Sandbox CONTAINER_NAME=Stroika-Dev-2004 CONTAINER_IMAGE=sophistsolutionsinc/stroika-dev-2004 INCLUDE_EXTRA_PERSONAL_MOUNT_FILES=1 EXTRA_DOCKER_ARGS="--publish 10222:22" ECHO_DOCKER_COMMANDS=1 ScriptsLib/RunInDockerEnvironment
-	#cd .. && SANDBOX_FROM=/Sandbox CONTAINER_NAME=Stroika-Dev-2110 CONTAINER_IMAGE=sophistsolutionsinc/stroika-dev-2110 INCLUDE_EXTRA_PERSONAL_MOUNT_FILES=1 EXTRA_DOCKER_ARGS="--publish 10322:22" ECHO_DOCKER_COMMANDS=1 ScriptsLib/RunInDockerEnvironment
+ifeq (${DETECTED_HOST_OS},Linux)
+	#cd ../ThirdPartyComponents/Stroika/StroikaRoot/ && SANDBOX_FROM=/Sandbox CONTAINER_NAME=WTF-Dev-1804 CONTAINER_IMAGE=sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804 INCLUDE_EXTRA_PERSONAL_MOUNT_FILES=1 ECHO_DOCKER_COMMANDS=1 ScriptsLib/RunInDockerEnvironment
+	cd ../ThirdPartyComponents/Stroika/StroikaRoot/ && SANDBOX_FROM=/Sandbox CONTAINER_NAME=Stroika-Dev-2004 CONTAINER_IMAGE=sophistsolutionsinc/stroika-dev-2004 INCLUDE_EXTRA_PERSONAL_MOUNT_FILES=1 EXTRA_DOCKER_ARGS="--publish 11222:22" ECHO_DOCKER_COMMANDS=1 ScriptsLib/RunInDockerEnvironment
 endif
