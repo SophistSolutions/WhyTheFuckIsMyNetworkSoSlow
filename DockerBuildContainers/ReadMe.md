@@ -13,4 +13,4 @@ Just create one or more of these docker images, and run them as in:
 (used for LGP development - very optional)
 
 - `make dev-containers`
-- `for i in Stroika-Dev Stroika-Dev-1804 Stroika-Dev-2004 Stroika-Dev-2110 Stroika-Dev-2204; do docker start $i; docker exec -it $i sudo service ssh start; done`
+- `for i in WTF-Dev-2004; do docker start $i; docker exec -it $i sudo service ssh start; done`

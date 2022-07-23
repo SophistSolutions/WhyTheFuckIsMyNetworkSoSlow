@@ -16,11 +16,16 @@ help:
 	@echo "and first thing when you run docker image, cat ReadMe.md"
 
 
+# You may want to comment these in to build WTF-Dev environment
+DOCKER_BUILD_EXTRAS_=\
+	# --build-arg INCLUDE_OPENSSL=true \
+	# --build-arg INCLUDE_HANDY_DEV_TOOLS=true \
+
 build-images:
 ifeq (${DETECTED_HOST_OS},Linux)
-	docker build -f Ubuntu-1804/Dockerfile -t sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804 .
-	docker build -f Ubuntu-2004/Dockerfile -t sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004 .
-	docker build -f Ubuntu-2204/Dockerfile -t sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204 .
+	docker build $(DOCKER_BUILD_EXTRAS_) -f Ubuntu-1804/Dockerfile -t sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804 .
+	docker build $(DOCKER_BUILD_EXTRAS_) -f Ubuntu-2004/Dockerfile -t sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004 .
+	docker build $(DOCKER_BUILD_EXTRAS_) -f Ubuntu-2204/Dockerfile -t sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204 .
 endif
 ifeq (Windows,$(findstring Windows,$(OS)))
 	docker build -f Windows-Cygwin-VS2k19/Dockerfile -t sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19 -m 2G .
