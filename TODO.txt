@@ -1,3 +1,16 @@
+on hercules:
+3 07:42:35 Hercules WhyTheFuckIsMyNetworkSoSlow[1393880]: Database update: ignoring exception in BackgroundDatabaseThread_ loop (will retry in 30 seconds): Exception: Device or resource busy
+Jul 23 07:42:48 Hercules WhyTheFuckIsMyNetworkSoSlow[1393880]: Database update: ignoring exception in TransformURL2LocalStorage_: Device or resource busy
+Jul 23 07:43:05 Hercules WhyTheFuckIsMyNetworkSoSlow[1393880]: Database update: ignoring exception in BackgroundDatabaseThread_ loop (will retry in 30 seconds): SQLITE_ERROR: cannot start a transaction within a transaction
+Jul 23 07:43:49 Hercules WhyTheFuckIsMyNetworkSoSlow[1393880]: Database update: ignoring exception in TransformURL2LocalStorage_: Device or resource busy
+
+---
+not sure getting much written to DB...
+dbeuggiubg.
+--------------------------------------
+
+
+
 On 'aggregated reversibly' - add extra 'map' in devices response mapping that id to 'info' including EverSeen (and eventually source). And sort list by everseen (at leastin GUI).
 and show that everseen in GUI.
 
