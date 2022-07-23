@@ -17,9 +17,11 @@ help:
 
 
 # You may want to comment these in to build WTF-Dev environment
+DOCKER_BUILD_EXTRAS_FOR_DEV_=\
+	--build-arg INCLUDE_OPENSSL=true \
+	--build-arg INCLUDE_HANDY_DEV_TOOLS=true \
+
 DOCKER_BUILD_EXTRAS_=\
-	# --build-arg INCLUDE_OPENSSL=true \
-	# --build-arg INCLUDE_HANDY_DEV_TOOLS=true \
 
 build-images:
 ifeq (${DETECTED_HOST_OS},Linux)
@@ -67,6 +69,7 @@ endif
 
 dev-containers:
 ifeq (${DETECTED_HOST_OS},Linux)
+	DOCKER_BUILD_EXTRAS_=$(DOCKER_BUILD_EXTRAS_FOR_DEV_) make build-images
 	#cd ${StroikaRoot} && SANDBOX_FROM=/Sandbox CONTAINER_NAME=WTF-Dev-1804 CONTAINER_IMAGE=sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-1804 INCLUDE_EXTRA_PERSONAL_MOUNT_FILES=1 ECHO_DOCKER_COMMANDS=1 ScriptsLib/RunInDockerEnvironment
 	cd ${StroikaRoot} && SANDBOX_FROM=/Sandbox CONTAINER_NAME=WTF-Dev-2004 CONTAINER_IMAGE=sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004 INCLUDE_EXTRA_PERSONAL_MOUNT_FILES=1 EXTRA_DOCKER_ARGS="--publish 11222:22" ECHO_DOCKER_COMMANDS=1 ScriptsLib/RunInDockerEnvironment
 endif
