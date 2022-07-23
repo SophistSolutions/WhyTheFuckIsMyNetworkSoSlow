@@ -25,7 +25,7 @@ RUN npm install -g npm@latest
 ENV INCLUDE_OPENSSL $INCLUDE_OPENSSL
 RUN if [ "${INCLUDE_OPENSSL}" = true ]; then apt-get install -y openssh-server; fi
 ENV INCLUDE_HANDY_DEV_TOOLS $INCLUDE_HANDY_DEV_TOOLS
-RUN if [ "${INCLUDE_HANDY_DEV_TOOLS}" = true ]; then apt-get install -y clang-format curl vim apt-file iproute2 npm lldb; fi
+RUN if [ "${INCLUDE_HANDY_DEV_TOOLS}" = true ]; then apt-get install -y clang-format curl vim apt-file iproute2 lldb; fi
 
 RUN rm -f /Getting-Started-With-Stroika.md
 ADD Shared-Files/Getting-Started.md /
