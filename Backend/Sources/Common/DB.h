@@ -12,6 +12,7 @@
 #include "Stroika/Foundation/Database/SQL/ORM/Schema.h"
 #include "Stroika/Foundation/Database/SQL/ORM/TableConnection.h"
 #include "Stroika/Foundation/Execution/Thread.h"
+#include "Stroika/Foundation/Execution/TimeoutException.h"
 
 #include "OperationalStatistics.h"
 
@@ -46,11 +47,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
 
         static inline unique_lock<recursive_timed_mutex> mkAdvisoryLock (const Time::Duration& d = 1s)
         {
-            unique_lock<recursive_timed_mutex> lock{sAdvisoryMutex, d};
-            if (not lock.owns_lock ()) {
-                Execution::ThrowTimeOutException ();
-            }
-            return lock;
+            return Execution::UniqueLock (sAdvisoryMutex, d);
         }
 
     public:
