@@ -7,6 +7,19 @@ Jul 23 07:43:49 Hercules WhyTheFuckIsMyNetworkSoSlow[1393880]: Database update: 
 ---
 not sure getting much written to DB...
 dbeuggiubg.
+         >>> DEBUGGING AND MAYBE REWRING SOME OF DB CODE. MAYBE NEED TO USE LOCK around db access. Maybe keep separate tables in separee DBS (for re-entrancyy).
+
+		 COULD even automate that within ORM / Stroika layer someday if thats helpful?
+
+		 ...
+
+		 Could just use a single DB, wrapped in Syncrhonized<>.
+
+		 BUT - do I do RWSynchronized? MOSTLY do reads from DB, but occasionally do writes.
+		 BUT MAYBE avoid UpgradeLock since that maybe problematic.
+
+...
+
 --------------------------------------
 
 
