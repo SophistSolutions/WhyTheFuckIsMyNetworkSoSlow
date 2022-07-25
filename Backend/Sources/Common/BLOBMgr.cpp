@@ -185,6 +185,7 @@ GUID BLOBMgr::AddBLOB (const BLOB& b, const InternetMediaType& ct)
     if (!sConn_) {
         sConn_ = make_shared<DBConn_> ();
     }
+    unique_lock<recursive_timed_mutex> lock = DB::mkAdvisoryLock ();
     if (auto id = sConn_->Lookup (b, ct)) {
         return *id;
     }
@@ -216,6 +217,7 @@ GUID BLOBMgr::AddBLOBFromURL (const URI& url, bool recheckIfExpired)
     if (!sConn_) {
         sConn_ = make_shared<DBConn_> ();
     }
+    unique_lock<recursive_timed_mutex> lock = DB::mkAdvisoryLock ();
     sConn_->fBLOBURLs->AddOrUpdate (DBRecs_::BLOBURL_{url, guid});
     DbgTrace (L"Added blob mapping: %s maps to blobid %s", Characters::ToString (url).c_str (), Characters::ToString (guid).c_str ());
     return guid;
@@ -223,7 +225,7 @@ GUID BLOBMgr::AddBLOBFromURL (const URI& url, bool recheckIfExpired)
 
 optional<GUID> BLOBMgr::AsyncAddBLOBFromURL (const URI& url, bool recheckIfExpired)
 {
-    // create mapping of URL to guid, and if not presnt, add task to threadpool to AddBLOBFromURL and store mapping into mapping object
+    // create mapping of URL to guid, and if not present, add task to threadpool to AddBLOBFromURL and store mapping into mapping object
 
     // @todo add logic for checking if expired and refetch then too
     // Use Stroika HTTP-Cache object support to handle age/etag stuff automatically
@@ -233,8 +235,11 @@ optional<GUID> BLOBMgr::AsyncAddBLOBFromURL (const URI& url, bool recheckIfExpir
     }
 
     optional<GUID> storeGUID;
-    if (optional<DBRecs_::BLOBURL_> cachedURLObj = sConn_->fBLOBURLs->GetByID (url)) {
-        storeGUID = cachedURLObj->fBLOBID;
+    {
+        unique_lock<recursive_timed_mutex> lock = DB::mkAdvisoryLock ();
+        if (optional<DBRecs_::BLOBURL_> cachedURLObj = sConn_->fBLOBURLs->GetByID (url)) {
+            storeGUID = cachedURLObj->fBLOBID;
+        }
     }
     if (not storeGUID.has_value ()) {
         fThreadPool_.rwget ().rwref ()->AddTask ([=] () {
@@ -260,7 +265,8 @@ tuple<BLOB, InternetMediaType> BLOBMgr::GetBLOB (const GUID& id) const
     if (!sConn_) {
         sConn_ = make_shared<DBConn_> ();
     }
-    optional<DBRecs_::BLOB_> ob = sConn_->fBLOBs->GetByID (id);
+    unique_lock<recursive_timed_mutex> lock = DB::mkAdvisoryLock ();
+    optional<DBRecs_::BLOB_>           ob   = sConn_->fBLOBs->GetByID (id);
     if (ob) {
         return make_tuple (ob->fBLOB, ob->fContentType);
     }

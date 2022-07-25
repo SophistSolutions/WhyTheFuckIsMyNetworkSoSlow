@@ -18,6 +18,11 @@ dbeuggiubg.
 		 BUT - do I do RWSynchronized? MOSTLY do reads from DB, but occasionally do writes.
 		 BUT MAYBE avoid UpgradeLock since that maybe problematic.
 
+
+
+
+	EXPERIMENTING WIHT NEW LOCKING CODE on WINDOWS...
+
 ...
 
 --------------------------------------

@@ -69,6 +69,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         /**
          *  Queue up work - fetching that url, and store it when it becomes available; Return
          *  ID for BLOB if it already exists (even if its out of date - return the latest - even if new fetch request queued).
+         * 
+         *  This won't take too long checking, and may raise a timeout exception if it cannot answer at all quickly.
          */
         nonvirtual optional<GUID> AsyncAddBLOBFromURL (const URI& url, bool recheckIfExpired = true);
 
