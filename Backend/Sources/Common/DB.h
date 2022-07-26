@@ -76,49 +76,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
     };
 
     template <typename TABLE_CONNECTION>
-    auto mkOperationalStatisticsMgrProcessDBCmd ();
-    template <typename TABLE_CONNECTION>
-    auto mkOperationalStatisticsMgrProcessDBCmd ()
-    {
-        shared_ptr<OperationalStatisticsMgr::ProcessDBCmd> tmp; // use shared_ptr in lambda so copies of lambda share same object
-        auto                                               r = [=] (typename TABLE_CONNECTION::Operation op, const TABLE_CONNECTION* /*tableConn*/, const Statement* s, const exception_ptr& e) mutable noexcept {
-            // constexpr bool kTRACE_SQL_ = false;
-            constexpr bool kTRACE_SQL_ = true;
-            switch (op) {
-                case TABLE_CONNECTION::Operation::eStartingRead:
-                    RequireNotNull (s);
-                    if (kTRACE_SQL_) {
-                        DbgTrace (L"<Read: %s>", s->GetSQL (Statement::WhichSQLFlag::eExpanded).c_str ());
-                    }
-                    IgnoreExceptionsExceptThreadAbortForCall (tmp = make_shared<DB::ReadStatsContext> ());
-                    break;
-                case TABLE_CONNECTION::Operation::eCompletedRead:
-                    if (kTRACE_SQL_) {
-                        DbgTrace (L"</Read>");
-                    }
-                    tmp.reset ();
-                    break;
-                case TABLE_CONNECTION::Operation::eStartingWrite:
-                    RequireNotNull (s);
-                    if (kTRACE_SQL_) {
-                        DbgTrace (L"<Write: %s>", s->GetSQL (Statement::WhichSQLFlag::eExpanded).c_str ());
-                    }
-                    IgnoreExceptionsExceptThreadAbortForCall (tmp = make_shared<DB::WriteStatsContext> ());
-                    break;
-                case TABLE_CONNECTION::Operation::eCompletedWrite:
-                    if (kTRACE_SQL_) {
-                        DbgTrace (L"</Write>");
-                    }
-                    tmp.reset ();
-                    break;
-                case TABLE_CONNECTION::Operation::eNotifyError:
-                    DbgTrace (L"Captured error in TableConnection<>::DoExecute_: %s", Characters::ToString (e).c_str ());
-                    tmp->NoteError ();
-                    break;
-            }
-        };
-        return r;
-    }
+    auto mkOperationalStatisticsMgrProcessDBCmd ()  -> typename TABLE_CONNECTION::OpertionCallbackPtr;
 
 }
 

@@ -70,7 +70,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
      ********************************************************************************
      */
     template <typename TABLE_CONNECTION>
-    auto mkOperationalStatisticsMgrProcessDBCmd ()
+    auto mkOperationalStatisticsMgrProcessDBCmd () -> typename TABLE_CONNECTION::OpertionCallbackPtr
     {
         shared_ptr<OperationalStatisticsMgr::ProcessDBCmd> tmp; // use shared_ptr in lambda so copies of lambda share same object
         auto                                               r = [=] (typename TABLE_CONNECTION::Operation op, const TABLE_CONNECTION* /*tableConn*/, const Statement* s, const exception_ptr& e) mutable noexcept {
@@ -111,7 +111,6 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         };
         return r;
     }
-
 
 }
 
