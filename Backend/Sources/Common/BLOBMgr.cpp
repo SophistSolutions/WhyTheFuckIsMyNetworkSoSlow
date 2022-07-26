@@ -155,8 +155,10 @@ namespace {
         }
     };
 
-    // NB: Make on db-Connection per thread, so no need for locks
-    static thread_local shared_ptr<DBConn_> sConn_; // might want to shut these down on BLOBMgr::Activator::~Activator()?
+    // NB: Tried using thread-local DBConn_, which works somewhat, but internally SQLite doesn't support
+    // writes mixed with any other activities so this is a bit a waste. And it tends to be quick. So just use
+    // simple mutex locking...
+    static TimedSynchronized<shared_ptr<DBConn_>> sConn_; // might want to shut these down on BLOBMgr::Activator::~Activator()?
 
 }
 
@@ -168,11 +170,13 @@ namespace {
 BLOBMgr::Activator::Activator ()
 {
     BLOBMgr::sThe.fThreadPool_.store (make_unique<Execution::ThreadPool> (1, L"URLBLOBFetcher"_k));
+    sConn_.store (make_shared<DBConn_> ());
 }
 
 BLOBMgr::Activator::~Activator ()
 {
     BLOBMgr::sThe.fThreadPool_.store (nullptr);
+    sConn_.store (nullptr);
 }
 
 /*
@@ -182,15 +186,12 @@ BLOBMgr::Activator::~Activator ()
  */
 GUID BLOBMgr::AddBLOB (const BLOB& b, const InternetMediaType& ct)
 {
-    if (!sConn_) {
-        sConn_ = make_shared<DBConn_> ();
-    }
-    unique_lock<recursive_timed_mutex> lock = DB::mkAdvisoryLock ();
-    if (auto id = sConn_->Lookup (b, ct)) {
+    //unique_lock<recursive_timed_mutex> lock = DB::mkAdvisoryLock ();
+    if (auto id = sConn_.load (1s)->Lookup (b, ct)) {
         return *id;
     }
     GUID g = GUID::GenerateNew ();
-    sConn_->fBLOBs->AddNew (DBRecs_::BLOB_{g, b, ct});
+    sConn_.load (1s)->fBLOBs->AddNew (DBRecs_::BLOB_{g, b, ct});
     return g;
 }
 
@@ -214,11 +215,7 @@ GUID BLOBMgr::AddBLOBFromURL (const URI& url, bool recheckIfExpired)
     };
     auto data = fetchData (url);
     GUID guid = AddBLOB (data.first, data.second);
-    if (!sConn_) {
-        sConn_ = make_shared<DBConn_> ();
-    }
-    unique_lock<recursive_timed_mutex> lock = DB::mkAdvisoryLock ();
-    sConn_->fBLOBURLs->AddOrUpdate (DBRecs_::BLOBURL_{url, guid});
+    sConn_.load (1s)->fBLOBURLs->AddOrUpdate (DBRecs_::BLOBURL_{url, guid});
     DbgTrace (L"Added blob mapping: %s maps to blobid %s", Characters::ToString (url).c_str (), Characters::ToString (guid).c_str ());
     return guid;
 }
@@ -229,15 +226,10 @@ optional<GUID> BLOBMgr::AsyncAddBLOBFromURL (const URI& url, bool recheckIfExpir
 
     // @todo add logic for checking if expired and refetch then too
     // Use Stroika HTTP-Cache object support to handle age/etag stuff automatically
-
-    if (!sConn_) {
-        sConn_ = make_shared<DBConn_> ();
-    }
-
     optional<GUID> storeGUID;
     {
-        unique_lock<recursive_timed_mutex> lock = DB::mkAdvisoryLock ();
-        if (optional<DBRecs_::BLOBURL_> cachedURLObj = sConn_->fBLOBURLs->GetByID (url)) {
+        // unique_lock<recursive_timed_mutex> lock = DB::mkAdvisoryLock ();
+        if (optional<DBRecs_::BLOBURL_> cachedURLObj = sConn_.load (1s)->fBLOBURLs->GetByID (url)) {
             storeGUID = cachedURLObj->fBLOBID;
         }
     }
@@ -251,10 +243,7 @@ optional<GUID> BLOBMgr::AsyncAddBLOBFromURL (const URI& url, bool recheckIfExpir
 
 optional<GUID> BLOBMgr::Lookup (const URI& url)
 {
-    if (!sConn_) {
-        sConn_ = make_shared<DBConn_> ();
-    }
-    if (optional<DBRecs_::BLOBURL_> cachedURLObj = sConn_->fBLOBURLs->GetByID (url)) {
+    if (optional<DBRecs_::BLOBURL_> cachedURLObj = sConn_.load (1s)->fBLOBURLs->GetByID (url)) {
         return cachedURLObj->fBLOBID;
     }
     return nullopt;
@@ -262,11 +251,8 @@ optional<GUID> BLOBMgr::Lookup (const URI& url)
 
 tuple<BLOB, InternetMediaType> BLOBMgr::GetBLOB (const GUID& id) const
 {
-    if (!sConn_) {
-        sConn_ = make_shared<DBConn_> ();
-    }
-    unique_lock<recursive_timed_mutex> lock = DB::mkAdvisoryLock ();
-    optional<DBRecs_::BLOB_>           ob   = sConn_->fBLOBs->GetByID (id);
+    //    unique_lock<recursive_timed_mutex> lock = DB::mkAdvisoryLock ();
+    optional<DBRecs_::BLOB_> ob = sConn_.load (1s)->fBLOBs->GetByID (id);
     if (ob) {
         return make_tuple (ob->fBLOB, ob->fContentType);
     }

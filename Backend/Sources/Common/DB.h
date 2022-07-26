@@ -79,7 +79,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
     auto mkOperationalStatisticsMgrProcessDBCmd ()
     {
         shared_ptr<OperationalStatisticsMgr::ProcessDBCmd> tmp; // use shared_ptr in lambda so copies of lambda share same object
-        auto                                               r = [=] (typename TABLE_CONNECTION::Operation op, const TABLE_CONNECTION* /*tableConn*/, const Statement* /*s*/) mutable noexcept {
+        auto                                               r = [=] (typename TABLE_CONNECTION::Operation op, const TABLE_CONNECTION* /*tableConn*/, const Statement* /*s*/, const exception_ptr& e) mutable noexcept {
             switch (op) {
                 case TABLE_CONNECTION::Operation::eStartingRead:
                     IgnoreExceptionsExceptThreadAbortForCall (tmp = make_shared<DB::ReadStatsContext> ());
@@ -94,7 +94,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
                     tmp.reset ();
                     break;
                 case TABLE_CONNECTION::Operation::eNotifyError:
-                    Assert (tmp);
+                    DbgTrace (L"Captured error in TableConnection<>::DoExecute_: %s", Characters::ToString (e).c_str ());
                     tmp->NoteError ();
                     break;
             }
