@@ -80,26 +80,26 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
                 case TABLE_CONNECTION::Operation::eStartingRead:
                     RequireNotNull (s);
                     if (kTRACE_SQL_) {
-                        DbgTrace (L"<Read: %s>", s->GetSQL (Statement::WhichSQLFlag::eExpanded).c_str ());
+                        DbgTrace (L"<DBRead: %s>", s->GetSQL (Statement::WhichSQLFlag::eExpanded).c_str ());
                     }
                     IgnoreExceptionsExceptThreadAbortForCall (tmp = make_shared<DB::ReadStatsContext> ());
                     break;
                 case TABLE_CONNECTION::Operation::eCompletedRead:
                     if (kTRACE_SQL_) {
-                        DbgTrace (L"</Read>");
+                        DbgTrace (L"</DBRead>");
                     }
                     tmp.reset ();
                     break;
                 case TABLE_CONNECTION::Operation::eStartingWrite:
                     RequireNotNull (s);
                     if (kTRACE_SQL_) {
-                        DbgTrace (L"<Write: %s>", s->GetSQL (Statement::WhichSQLFlag::eExpanded).c_str ());
+                        DbgTrace (L"<DBWrite: %s>", s->GetSQL (Statement::WhichSQLFlag::eExpanded).c_str ());
                     }
                     IgnoreExceptionsExceptThreadAbortForCall (tmp = make_shared<DB::WriteStatsContext> ());
                     break;
                 case TABLE_CONNECTION::Operation::eCompletedWrite:
                     if (kTRACE_SQL_) {
-                        DbgTrace (L"</Write>");
+                        DbgTrace (L"</DBWrite>");
                     }
                     tmp.reset ();
                     break;
