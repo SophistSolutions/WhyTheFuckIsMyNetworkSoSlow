@@ -76,7 +76,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
     };
 
     template <typename TABLE_CONNECTION>
-    auto mkOperationalStatisticsMgrProcessDBCmd ()  -> typename TABLE_CONNECTION::OpertionCallbackPtr;
+    auto mkOperationalStatisticsMgrProcessDBCmd (bool traceSQL = false)  -> typename TABLE_CONNECTION::OpertionCallbackPtr;
 
 }
 
