@@ -18,7 +18,7 @@
 #include "Stroika/Foundation/Execution/Logger.h"
 #include "Stroika/Foundation/Execution/Sleep.h"
 #include "Stroika/Foundation/Execution/Synchronized.h"
-#include "Stroika/Foundation/Execution/TimeoutException.h"
+#include "Stroika/Foundation/Execution/TimeOutException.h"
 #include "Stroika/Foundation/IO/FileSystem/WellKnownLocations.h"
 
 #include "../Common/BLOBMgr.h"
