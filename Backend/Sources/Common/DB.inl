@@ -73,6 +73,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
     auto mkOperationalStatisticsMgrProcessDBCmd (bool traceSQL) -> typename TABLE_CONNECTION::OpertionCallbackPtr
     {
         shared_ptr<OperationalStatisticsMgr::ProcessDBCmd> tmp; // use shared_ptr in lambda so copies of lambda share same object
+        // @todo note - COULD use same shared_ptr object to store a Debug::TraceContextBumper object so we get /DBRead messages elided from log most of the time (when quick and /DBWrite).
         auto                                               r = [=] (typename TABLE_CONNECTION::Operation op, const TABLE_CONNECTION* /*tableConn*/, const Statement* s, const exception_ptr& e) mutable noexcept {
             switch (op) {
                 case TABLE_CONNECTION::Operation::eStartingRead:
