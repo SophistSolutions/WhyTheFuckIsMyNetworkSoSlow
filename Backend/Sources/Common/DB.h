@@ -67,6 +67,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         WriteStatsContext ();
     };
 
+    /**
+     *  Define callback function used for logging/reporting status in DB access code.
+     *  Set traceSQL = true here (or in particular calls for just those tables) to see logging of reads and writes.
+     */
     template <typename TABLE_CONNECTION>
     auto mkOperationalStatisticsMgrProcessDBCmd (bool traceSQL = false) -> typename TABLE_CONNECTION::OpertionCallbackPtr;
 
