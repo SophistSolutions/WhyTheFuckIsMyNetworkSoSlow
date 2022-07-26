@@ -43,14 +43,6 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         nonvirtual T AddOrMergeUpdate (ORM::TableConnection<T>* dbConnTable, const T& d);
 
     public:
-        static inline recursive_timed_mutex sAdvisoryMutex;
-
-        static inline unique_lock<recursive_timed_mutex> mkAdvisoryLock (const Time::Duration& d = 1s)
-        {
-            return Execution::UniqueLock (sAdvisoryMutex, d);
-        }
-
-    public:
         static ReadOnlyProperty<filesystem::path> pFileName;
 
     public:
