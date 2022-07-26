@@ -43,11 +43,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         nonvirtual T AddOrMergeUpdate (ORM::TableConnection<T>* dbConnTable, const T& d);
 
     public:
-        static inline recursive_timed_mutex sAdvisoryMutex;
-
         static inline unique_lock<recursive_timed_mutex> mkAdvisoryLock (const Time::Duration& d = 1s)
         {
-            return unique_lock<recursive_timed_mutex>{};    // SB no longer needed now that using WAL
+            return unique_lock<recursive_timed_mutex>{}; // SB no longer needed now that using WAL
             //return Execution::UniqueLock (sAdvisoryMutex, d);
         }
 
@@ -77,7 +75,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
     };
 
     template <typename TABLE_CONNECTION>
-    auto mkOperationalStatisticsMgrProcessDBCmd (bool traceSQL = false)  -> typename TABLE_CONNECTION::OpertionCallbackPtr;
+    auto mkOperationalStatisticsMgrProcessDBCmd (bool traceSQL = false) -> typename TABLE_CONNECTION::OpertionCallbackPtr;
 
 }
 

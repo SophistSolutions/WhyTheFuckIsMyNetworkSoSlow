@@ -186,7 +186,6 @@ BLOBMgr::Activator::~Activator ()
  */
 GUID BLOBMgr::AddBLOB (const BLOB& b, const InternetMediaType& ct)
 {
-    //unique_lock<recursive_timed_mutex> lock = DB::mkAdvisoryLock ();
     if (auto id = sConn_.rwget (1s).rwref ()->Lookup (b, ct)) {
         return *id;
     }
@@ -228,7 +227,6 @@ optional<GUID> BLOBMgr::AsyncAddBLOBFromURL (const URI& url, bool recheckIfExpir
     // Use Stroika HTTP-Cache object support to handle age/etag stuff automatically
     optional<GUID> storeGUID;
     {
-        // unique_lock<recursive_timed_mutex> lock = DB::mkAdvisoryLock ();
         if (optional<DBRecs_::BLOBURL_> cachedURLObj = sConn_.rwget (1s).rwref ()->fBLOBURLs->GetByID (url)) {
             storeGUID = cachedURLObj->fBLOBID;
         }
@@ -251,7 +249,6 @@ optional<GUID> BLOBMgr::Lookup (const URI& url)
 
 tuple<BLOB, InternetMediaType> BLOBMgr::GetBLOB (const GUID& id) const
 {
-    //    unique_lock<recursive_timed_mutex> lock = DB::mkAdvisoryLock ();
     optional<DBRecs_::BLOB_> ob = sConn_.rwget (1s).rwref ()->fBLOBs->GetByID (id);
     if (ob) {
         return make_tuple (ob->fBLOB, ob->fContentType);
