@@ -12,7 +12,7 @@
 #include "Stroika/Foundation/Database/SQL/ORM/Schema.h"
 #include "Stroika/Foundation/Database/SQL/ORM/TableConnection.h"
 #include "Stroika/Foundation/Execution/Thread.h"
-#include "Stroika/Foundation/Execution/TimeoutException.h"
+#include "Stroika/Foundation/Execution/TimeOutException.h"
 
 #include "OperationalStatistics.h"
 
