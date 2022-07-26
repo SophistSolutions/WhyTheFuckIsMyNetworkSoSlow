@@ -77,9 +77,6 @@ namespace {
                 return URI{nullopt, nullopt, L"/blob/" + g->ToString ()};
             }
         }
-        catch (const Execution::TimeOutException& e) {
-            Logger::sThe.LogIfNew (Logger::Priority::eWarning, 1min, L"Database update: ignoring ThrowTimeOutException in TransformURL2LocalStorage_: %s", Characters::ToString (e).c_str ());
-        }
         catch (const std::system_error& e) {
             Logger::sThe.LogIfNew (Logger::Priority::eWarning, 1min, L"Database update: ignoring exception in TransformURL2LocalStorage_: %s", Characters::ToString (e).c_str ());
             //DbgTrace (L"ignoring(1) %s", Characters::ToString (e).c_str ());

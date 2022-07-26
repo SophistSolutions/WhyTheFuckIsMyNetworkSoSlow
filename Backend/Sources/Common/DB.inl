@@ -14,6 +14,7 @@
 #include "Stroika/Foundation/Database/SQL/Transaction.h"
 #include "Stroika/Foundation/Debug/Assertions.h"
 #include "Stroika/Foundation/Debug/Trace.h"
+#include "Stroika/Foundation/Execution/Logger.h"
 
 namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
 
@@ -102,7 +103,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
                     tmp.reset ();
                     break;
                 case TABLE_CONNECTION::Operation::eNotifyError:
-                    DbgTrace (L"Captured error in TableConnection<>::DoExecute_: %s", Characters::ToString (e).c_str ());
+                    Execution::Logger::sThe.LogIfNew (Execution::Logger::Priority::eWarning, 1min, L"Database operation exception: %s", Characters::ToString (e).c_str ());
                     tmp->NoteError ();
                     break;
             }
