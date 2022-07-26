@@ -155,10 +155,9 @@ namespace {
         }
     };
 
-    // NB: Tried using thread-local DBConn_, which works somewhat, but internally SQLite doesn't support
-    // writes mixed with any other activities so this is a bit a waste. And it tends to be quick. So just use
-    // simple mutex locking...
-    static TimedSynchronized<shared_ptr<DBConn_>> sConn_; // might want to shut these down on BLOBMgr::Activator::~Activator()?
+    // Could use Synchronized<shared_ptr<DBConn_>> or thread_local, but if using thread_local, harder to set/unset in
+    // BLOBMgr::Activator CTOR/DTOR, and this is so fast, no need to allow multiple simultaneous readers
+    static Synchronized<shared_ptr<DBConn_>> sConn_; // Set/Unset in  BLOBMgr::Activator CTOR/DTOR
 
 }
 
@@ -186,11 +185,11 @@ BLOBMgr::Activator::~Activator ()
  */
 GUID BLOBMgr::AddBLOB (const BLOB& b, const InternetMediaType& ct)
 {
-    if (auto id = sConn_.rwget (1s).rwref ()->Lookup (b, ct)) {
+    if (auto id = sConn_.rwget ().rwref ()->Lookup (b, ct)) {
         return *id;
     }
     GUID g = GUID::GenerateNew ();
-    sConn_.rwget (1s).rwref ()->fBLOBs->AddNew (DBRecs_::BLOB_{g, b, ct});
+    sConn_.rwget ().rwref ()->fBLOBs->AddNew (DBRecs_::BLOB_{g, b, ct});
     return g;
 }
 
@@ -214,7 +213,7 @@ GUID BLOBMgr::AddBLOBFromURL (const URI& url, bool recheckIfExpired)
     };
     auto data = fetchData (url);
     GUID guid = AddBLOB (data.first, data.second);
-    sConn_.rwget (1s).rwref ()->fBLOBURLs->AddOrUpdate (DBRecs_::BLOBURL_{url, guid});
+    sConn_.rwget ().rwref ()->fBLOBURLs->AddOrUpdate (DBRecs_::BLOBURL_{url, guid});
     DbgTrace (L"Added blob mapping: %s maps to blobid %s", Characters::ToString (url).c_str (), Characters::ToString (guid).c_str ());
     return guid;
 }
@@ -227,7 +226,7 @@ optional<GUID> BLOBMgr::AsyncAddBLOBFromURL (const URI& url, bool recheckIfExpir
     // Use Stroika HTTP-Cache object support to handle age/etag stuff automatically
     optional<GUID> storeGUID;
     {
-        if (optional<DBRecs_::BLOBURL_> cachedURLObj = sConn_.rwget (1s).rwref ()->fBLOBURLs->GetByID (url)) {
+        if (optional<DBRecs_::BLOBURL_> cachedURLObj = sConn_.rwget ().rwref ()->fBLOBURLs->GetByID (url)) {
             storeGUID = cachedURLObj->fBLOBID;
         }
     }
@@ -241,7 +240,7 @@ optional<GUID> BLOBMgr::AsyncAddBLOBFromURL (const URI& url, bool recheckIfExpir
 
 optional<GUID> BLOBMgr::Lookup (const URI& url)
 {
-    if (optional<DBRecs_::BLOBURL_> cachedURLObj = sConn_.rwget (1s).rwref ()->fBLOBURLs->GetByID (url)) {
+    if (optional<DBRecs_::BLOBURL_> cachedURLObj = sConn_.rwget ().rwref ()->fBLOBURLs->GetByID (url)) {
         return cachedURLObj->fBLOBID;
     }
     return nullopt;
@@ -249,7 +248,7 @@ optional<GUID> BLOBMgr::Lookup (const URI& url)
 
 tuple<BLOB, InternetMediaType> BLOBMgr::GetBLOB (const GUID& id) const
 {
-    optional<DBRecs_::BLOB_> ob = sConn_.rwget (1s).rwref ()->fBLOBs->GetByID (id);
+    optional<DBRecs_::BLOB_> ob = sConn_.rwget ().rwref ()->fBLOBs->GetByID (id);
     if (ob) {
         return make_tuple (ob->fBLOB, ob->fContentType);
     }

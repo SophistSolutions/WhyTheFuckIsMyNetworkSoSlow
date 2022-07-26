@@ -43,13 +43,6 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         nonvirtual T AddOrMergeUpdate (ORM::TableConnection<T>* dbConnTable, const T& d);
 
     public:
-        static inline unique_lock<recursive_timed_mutex> mkAdvisoryLock (const Time::Duration& d = 1s)
-        {
-            return unique_lock<recursive_timed_mutex>{}; // SB no longer needed now that using WAL
-            //return Execution::UniqueLock (sAdvisoryMutex, d);
-        }
-
-    public:
         static ReadOnlyProperty<filesystem::path> pFileName;
 
     public:
