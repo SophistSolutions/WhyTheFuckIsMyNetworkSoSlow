@@ -187,11 +187,11 @@ BLOBMgr::Activator::~Activator ()
 GUID BLOBMgr::AddBLOB (const BLOB& b, const InternetMediaType& ct)
 {
     //unique_lock<recursive_timed_mutex> lock = DB::mkAdvisoryLock ();
-    if (auto id = sConn_.load (1s)->Lookup (b, ct)) {
+    if (auto id = sConn_.rwget (1s).rwref ()->Lookup (b, ct)) {
         return *id;
     }
     GUID g = GUID::GenerateNew ();
-    sConn_.load (1s)->fBLOBs->AddNew (DBRecs_::BLOB_{g, b, ct});
+    sConn_.rwget (1s).rwref ()->fBLOBs->AddNew (DBRecs_::BLOB_{g, b, ct});
     return g;
 }
 
@@ -215,7 +215,7 @@ GUID BLOBMgr::AddBLOBFromURL (const URI& url, bool recheckIfExpired)
     };
     auto data = fetchData (url);
     GUID guid = AddBLOB (data.first, data.second);
-    sConn_.load (1s)->fBLOBURLs->AddOrUpdate (DBRecs_::BLOBURL_{url, guid});
+    sConn_.rwget (1s).rwref ()->fBLOBURLs->AddOrUpdate (DBRecs_::BLOBURL_{url, guid});
     DbgTrace (L"Added blob mapping: %s maps to blobid %s", Characters::ToString (url).c_str (), Characters::ToString (guid).c_str ());
     return guid;
 }
@@ -229,7 +229,7 @@ optional<GUID> BLOBMgr::AsyncAddBLOBFromURL (const URI& url, bool recheckIfExpir
     optional<GUID> storeGUID;
     {
         // unique_lock<recursive_timed_mutex> lock = DB::mkAdvisoryLock ();
-        if (optional<DBRecs_::BLOBURL_> cachedURLObj = sConn_.load (1s)->fBLOBURLs->GetByID (url)) {
+        if (optional<DBRecs_::BLOBURL_> cachedURLObj = sConn_.rwget (1s).rwref ()->fBLOBURLs->GetByID (url)) {
             storeGUID = cachedURLObj->fBLOBID;
         }
     }
@@ -243,7 +243,7 @@ optional<GUID> BLOBMgr::AsyncAddBLOBFromURL (const URI& url, bool recheckIfExpir
 
 optional<GUID> BLOBMgr::Lookup (const URI& url)
 {
-    if (optional<DBRecs_::BLOBURL_> cachedURLObj = sConn_.load (1s)->fBLOBURLs->GetByID (url)) {
+    if (optional<DBRecs_::BLOBURL_> cachedURLObj = sConn_.rwget (1s).rwref ()->fBLOBURLs->GetByID (url)) {
         return cachedURLObj->fBLOBID;
     }
     return nullopt;
@@ -252,7 +252,7 @@ optional<GUID> BLOBMgr::Lookup (const URI& url)
 tuple<BLOB, InternetMediaType> BLOBMgr::GetBLOB (const GUID& id) const
 {
     //    unique_lock<recursive_timed_mutex> lock = DB::mkAdvisoryLock ();
-    optional<DBRecs_::BLOB_> ob = sConn_.load (1s)->fBLOBs->GetByID (id);
+    optional<DBRecs_::BLOB_> ob = sConn_.rwget (1s).rwref ()->fBLOBs->GetByID (id);
     if (ob) {
         return make_tuple (ob->fBLOB, ob->fContentType);
     }
