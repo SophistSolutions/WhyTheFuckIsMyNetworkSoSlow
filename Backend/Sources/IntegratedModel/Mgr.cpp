@@ -420,7 +420,7 @@ namespace {
                     if (networkTableConnection == nullptr) {
                         networkTableConnection = make_unique<SQL::ORM::TableConnection<IntegratedModel::Network>> (conn, kNetworkTableSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<IntegratedModel::Network>> ());
                         try {
-                            Debug::TimingTrace ttrc{L"...initial load of sDBNetworks_ from database ", 1};
+                            Debug::TimingTrace                 ttrc{L"...initial load of sDBNetworks_ from database ", 1};
                             unique_lock<recursive_timed_mutex> lock = BackendApp::Common::DB::mkAdvisoryLock ();
                             sDBNetworks_.store (NetworkKeyedCollection_{networkTableConnection->GetAll ()});
                         }
@@ -433,7 +433,7 @@ namespace {
                     if (deviceTableConnection == nullptr) {
                         deviceTableConnection = make_unique<SQL::ORM::TableConnection<IntegratedModel::Device>> (conn, kDeviceTableSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<IntegratedModel::Device>> ());
                         try {
-                            Debug::TimingTrace ttrc{L"...initial load of sDBDevices_ from database ", 1};
+                            Debug::TimingTrace                 ttrc{L"...initial load of sDBDevices_ from database ", 1};
                             unique_lock<recursive_timed_mutex> lock = BackendApp::Common::DB::mkAdvisoryLock ();
                             sDBDevices_.store (DeviceKeyedCollection_{deviceTableConnection->GetAll ()}); // pre-load in memory copy with whatever we had stored in the database
                         }
@@ -685,7 +685,7 @@ optional<IntegratedModel::Device> IntegratedModel::Mgr::GetDevice (const GUID& i
     // 30 seconds roughtly...
     auto result = RollupSummary_::GetRolledUpDevies ().fDevices.Lookup (id);
     if (not result.has_value ()) {
-        result                                  = DBAccess_::sDBDevices_.load ().Lookup (id);
+        result = DBAccess_::sDBDevices_.load ().Lookup (id);
         if (result) {
             result->fIDPersistent       = true;
             result->fHistoricalSnapshot = true;
