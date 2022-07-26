@@ -70,8 +70,12 @@ SQL::Connection::Ptr WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB::NewCon
     /*
      *  Software doing database accesses must handle busy timeout exceptions, but
      *  reducing thier frequency probably produces better, smoother operation.
+     * 
+     *  We get TONS of SQLITE_BUSY errors using the default JournalMode, but if you read
+     *  https://sqlite.org/wal.html, you will see WAL is recommended for multiple readers/writers on DB.
      */
     options.fBusyTimeout = 1s;
+    options.fJournalMode = JournalModeType::eWAL;
 
     auto conn = SQLite::Connection::New (options);
 
