@@ -95,10 +95,10 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
       Object.keys(currentDevice.value.attachedNetworks).forEach((element: any) => {
         const thisNWI = currentDevice.value.attachedNetworks[element] as INetworkAttachmentInfo;
         let netName = "?";
-        const thisNetObj : INetwork = store.getNetwork(element);
+        const thisNetObj: INetwork = store.getNetwork(element);
         if (thisNetObj) {
           netName = GetNetworkName(thisNetObj);
-          attachedFullNetworkObjects.push (thisNetObj);
+          attachedFullNetworkObjects.push(thisNetObj);
         }
         attachedNetworkInfo[element] = { ...thisNWI, name: netName };
       });
@@ -119,7 +119,8 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
 
 <template>
   <div v-if="currentDevice" class="q-pa-sm">
-    <Link2DetailsPage :link="'/#/device/' + currentDevice.id" v-if="props.includeLinkToDetailsPage" style="padding-top: 5px; float:right" />
+    <Link2DetailsPage :link="'/#/device/' + currentDevice.id" v-if="props.includeLinkToDetailsPage"
+      style="padding-top: 5px; float:right" />
 
     <div class="row">
       <div class="col-3">Name</div>
@@ -160,10 +161,14 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
     <div class="row" v-if="currentDevice.seen">
       <div class="col-3">Seen</div>
 
-      <div class="col"> 
-        <div class="row" v-for=" [seenType, seenRange] in Object.entries(currentDevice.seen)" v-bind:key="seenType"> 
-          <div class="col">{{moment(seenRange.lowerBound).fromNow()}} up until {{moment(seenRange.upperBound).fromNow()}}</div>
-          <div class="col"><span v-if="seenType!='Ever'">via</span> {{seenType}}</div>
+      <div class="col">
+        <div class="row" v-for=" [seenType, seenRange] in Object.entries(currentDevice.seen)" v-bind:key="seenType">
+          <div class="col no-wrap truncateWithElipsis" style="min-width: 18em; max-width: 24em">
+            <ReadOnlyTextWithHover
+              :message="moment(seenRange.lowerBound).fromNow() + ' up until ' + moment(seenRange.upperBound).fromNow()"
+              class="nowrap" />
+          </div>
+          <div class="col no-wrap truncateWithElipsis"><span v-if="seenType != 'Ever'">via</span> {{ seenType }}</div>
         </div>
       </div>
     </div>
@@ -185,14 +190,18 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
             </div>
             <div class="row" v-if="currentDevice.attachedNetworks[attachedNet.id].hardwareAddresses">
               <div class="col-1" />
-              <div class="col-4">Hardware Address(es)</div>
-              <div class="col no-wrap truncateWithElipsis"> {{ currentDevice.attachedNetworks[attachedNet.id].hardwareAddresses.join(", ") }}
+              <div class="col no-wrap truncateWithElipsis">Hardware Address(es)</div>
+              <div class="col no-wrap truncateWithElipsis">
+                <ReadOnlyTextWithHover
+                  :message="currentDevice.attachedNetworks[attachedNet.id].hardwareAddresses.join(', ')" />
               </div>
             </div>
             <div class="row" v-if="currentDevice.attachedNetworks[attachedNet.id].localAddresses">
               <div class="col-1" />
-              <div class="col-4">Network Address Binding(s)</div>
-              <div class="col no-wrap truncateWithElipsis"> {{ currentDevice.attachedNetworks[attachedNet.id].localAddresses.join(", ") }}
+              <div class="col no-wrap truncateWithElipsis">Network Address Binding(s)</div>
+              <div class="col no-wrap truncateWithElipsis">
+                <ReadOnlyTextWithHover
+                  :message="currentDevice.attachedNetworks[attachedNet.id].localAddresses.join(', ')" />
               </div>
             </div>
           </div>
@@ -208,10 +217,11 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
               height="20" width="20" />
           </div>
           <div class="col-1">{{ svc.name }}</div>
-          <div class="col"> <div class="row wrap"> <a v-for="l in svc.links" v-bind:href="l.href" v-bind:key="l.href"
-              class="list-items" target="_blank">{{
-                  l.href
-              }}</a></div>
+          <div class="col">
+            <div class="row wrap"> <a v-for="l in svc.links" v-bind:href="l.href" v-bind:key="l.href" class="list-items"
+                target="_blank">{{
+                    l.href
+                }}</a></div>
           </div>
         </div>
       </div>

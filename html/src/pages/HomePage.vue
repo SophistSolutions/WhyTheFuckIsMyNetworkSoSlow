@@ -130,7 +130,7 @@ let allDevices: ComputedRef<IDevice[]> = computed(() => store.getDevices);
             <div class="col">
               <router-link to="/networks">Networks</router-link> (active + favorites)
               <ul>
-                <li v-for="network in shownNetworksAsDisplayed" :key="network.id" class=" q-mb-md">
+                <li v-for="network in shownNetworksAsDisplayed" :key="network.id" class="q-mb-md">
                   <ReadOnlyTextWithHover :message="network.name" :link="network.link" />
                   <div v-if="network.internetInfo">
                     : {{ network.internetInfo }}
