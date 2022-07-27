@@ -163,7 +163,7 @@ Units 1=1 logical core">CPU-Usage</div>
               <div class="row" v-if="aboutData" title="Combined I/O rate (network+disk)">
                 <div class="col-3 truncateWithElipsis">IO Rate (read; write)</div>
                 <div class="col"
-                  v-if="aboutData.serverInfo.currentProcess.combinedIOReadRate != null && aboutData.serverInfo.currentProcess.combinedIOWriteRate != null">
+                  v-if="aboutData.serverInfo.currentProcess.combinedIOReadRate != undefined && aboutData.serverInfo.currentProcess.combinedIOWriteRate != undefined">
                   {{ prettyBytes(aboutData.serverInfo.currentProcess.combinedIOReadRate) }}/sec ;
                   {{ prettyBytes(aboutData.serverInfo.currentProcess.combinedIOWriteRate) }}/sec</div>
               </div>
