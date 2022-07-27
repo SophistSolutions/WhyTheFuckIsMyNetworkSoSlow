@@ -55,13 +55,19 @@ function wsAPIMsg(info: IAPIEndpoint, showShort: boolean): string {
     msg += `errors: ${info.errors}; `;
   }
   if (showShort) {
-    msg += `M ${info.medianWebServerConnections ?? "?"} connections (M ${info.medianRunningAPITasks ?? "?"} active API calls); `;
+    msg += `${info.medianWebServerConnections ?? "?"} connections`;
+    if (info.medianRunningAPITasks && info.medianRunningAPITasks > 0) {
+      msg += `(${info.medianRunningAPITasks ?? "?"} active API calls); `;
+    }
+    else {
+      msg += '; '
+    }
   }
   else {
     msg += `${info.medianWebServerConnections ?? "?"} Med connections (${info.medianProcessingWebServerConnections ?? "?"} active, and Med ${info.medianRunningAPITasks ?? "?"} active API calls); `;
   }
   if (showShort) {
-    msg += `M ${prettyPrintMSTime(info.medianDuration)}, max ${prettyPrintMSTime(info.maxDuration)}`
+    msg += `${prettyPrintMSTime(info.medianDuration)}, max ${prettyPrintMSTime(info.maxDuration)}`
   }
   else {
     msg += `Med ${prettyPrintMSTime(info.medianDuration)} call time,  max ${prettyPrintMSTime(info.maxDuration)} call time`
@@ -80,7 +86,7 @@ function dbStatsMsg(info: IDatabase, showShort: boolean): string {
     msg += `${info.reads} reads, ${info.writes} writes; `;
   }
   if (showShort) {
-    msg += `M ${prettyPrintMSTime(info.medianReadDuration)} reads, M ${prettyPrintMSTime(info.medianWriteDuration)} writes`;
+    msg += `${prettyPrintMSTime(info.medianReadDuration)} reads, ${prettyPrintMSTime(info.medianWriteDuration)} writes`;
   }
   else {
     msg += `Med ${prettyPrintMSTime(info.medianReadDuration)} read duration, Med ${prettyPrintMSTime(info.medianWriteDuration)} write duration`;
@@ -111,20 +117,20 @@ function dbStatsMsg(info: IDatabase, showShort: boolean): string {
     <div class="row q-pa-md justify-center">
 
       <!--App Description Overview-->
-      <q-card class="pageCard col-11 ">
-        <q-card-section>
+      <q-card class="pageCard col-11">
+        <q-card-section class="text-h6">
+          <span>Vision</span> <span style="font-style: italic; font-weight: normal;">(much not yet implemented)</span>
+        </q-card-section>
+        <q-card-section style="margin-left: 2em">
           Why The Fuck is My Network So Slow monitors your local network, and tracks over time what devices are on the
           network, and what traffic those devices generate. It also monitors the 'speed' of your various network links.
           It allows you to see what is normal behavior on your network, and notify you of interesting
           abberations, to help see why your network maybe sometimes slow.
         </q-card-section>
-        <q-card-section>
+        <q-card-section style="margin-left: 2em">
           Multiple WTF instances can be setup on different machines on a network to share information with each other,
           to
           help get a better multi-dimensional (and sometimes more consitent) view of your network.
-        </q-card-section>
-        <q-card-section style="margin-left: 1em; padding: 0; padding-bottom: 0; font-style: italic; font-weight: bold;">
-          (vision, not all implemented)
         </q-card-section>
       </q-card>
 
@@ -132,8 +138,8 @@ function dbStatsMsg(info: IDatabase, showShort: boolean): string {
       <q-card class="pageCard col-11" v-if="aboutData">
         <q-card-section>
           <div class="row">
-            <div class="col-2">WTF App</div>
-            <div class="col-10">
+            <div class="col-3 text-h6">WTF App</div>
+            <div class="col-9">
               <div class="row" v-if="aboutData">
                 <div class="col-3">Version</div>
                 <div class="col">{{ aboutData.applicationVersion }}</div>
@@ -154,8 +160,8 @@ Units 1=1 logical core">CPU-Usage</div>
                 <div class="col">{{ aboutData.serverInfo.currentProcess.averageCPUTimeUsed?.toFixed(2) || "?" }} CPUs
                 </div>
               </div>
-              <div class="row" v-if="aboutData">
-                <div class="col-3" title="Combined I/O rate (network+disk)">IO Rate (read; write)</div>
+              <div class="row" v-if="aboutData" title="Combined I/O rate (network+disk)">
+                <div class="col-3 truncateWithElipsis">IO Rate (read; write)</div>
                 <div class="col"
                   v-if="aboutData.serverInfo.currentProcess.combinedIOReadRate != null && aboutData.serverInfo.currentProcess.combinedIOWriteRate != null">
                   {{ prettyBytes(aboutData.serverInfo.currentProcess.combinedIOReadRate) }}/sec ;
@@ -202,29 +208,28 @@ Units 1=1 logical core">CPU-Usage</div>
         <q-card-section>
           <div>
             <div class="row" v-if="aboutData">
-              <div class="col-2">WTF Running on</div>
-              <div class="col-10">
+              <div class="col-3 text-h6">WTF Running on</div>
+              <div class="col-9">
                 <div class="row">
                   <div class="col-3">OS</div>
                   <div class="col"> {{ aboutData.serverInfo.currentMachine.operatingSystem.fullVersionedName }}</div>
                 </div>
-                <div class="row">
-                  <div class="col-3" title="How long has the machine (hosting the service) been running">Uptime</div>
+                <div class="row" title="How long has the machine (hosting the service) been running">
+                  <div class="col-3">Uptime</div>
                   <div class="col"> {{ moment.duration(aboutData.serverInfo.currentMachine.machineUptime).humanize() }}
                   </div>
                 </div>
-                <div class="row">
-                  <div class="col-3"
-                    title="How many threads in each (logical) processors Run-Q on average. 0 means no use, 1 means ALL cores fully used with no Q, and 2 means all cores fully utilized and each core with a Q length of 1">
+                <div class="row" title="How many threads in each (logical) processors Run-Q on average. 0 means no use, 1 means ALL cores fully used with no Q, and 2 means all cores fully utilized and each core with a Q length of 1">
+                  <div class="col-3">
                     Run-Q</div>
                   <div class="col" v-if="aboutData.serverInfo.currentMachine.runQLength != null"> {{
-                      aboutData.serverInfo.currentMachine.runQLength
+                      aboutData.serverInfo.currentMachine.runQLength?.toFixed(2) || "?"
                   }} threads</div>
                 </div>
-                <div class="row">
-                  <div class="col-3" title="Average CPU usage for the last 30 seconds for the entire machine hosting the service.
-Units 1=1 logical core">CPU-Usage</div>
-                  <div class="col" v-if="aboutData.serverInfo.currentMachine.runQLength != null"> {{
+                <div class="row" title="Average CPU usage for the last 30 seconds for the entire machine hosting the service.
+Units 1=1 logical core">
+                  <div class="col-3">CPU-Usage</div>
+                  <div class="col" v-if="aboutData.serverInfo.currentMachine.totalCPUUsage != null"> {{
                       aboutData.serverInfo.currentMachine.totalCPUUsage?.toFixed(2) || "?"
                   }} CPUs</div>
                 </div>
@@ -238,18 +243,18 @@ Units 1=1 logical core">CPU-Usage</div>
       <q-card class="pageCard col-11">
         <q-card-section>
           <div class="row">
-            <div class="col-2">
+            <div class="col-3 text-h6">
               Written by
             </div>
-            <div class="col-10">
+            <div class="col-9">
               <div class="row">
-                <div class="col-3">Lewis G. Pringle, Jr.</div>
+                <div class="col-4">Lewis G. Pringle, Jr.</div>
                 <div class="col"><a href="https://www.linkedin.com/in/lewispringle/" target="_new">LinkedIn</a> |
                   <a href="https://github.com/LewisPringle" target="_new">GitHub</a>
                 </div>
               </div>
               <div class="row">
-                <div class="col-3">Robert Lemos Pringle</div>
+                <div class="col-4">Robert Lemos Pringle</div>
                 <div class="col"><a href="https://github.com/robertpringle" target="_new">GitHub</a>
                 </div>
               </div>
@@ -262,10 +267,10 @@ Units 1=1 logical core">CPU-Usage</div>
       <q-card class="pageCard q-mt-md col-11">
         <q-card-section>
           <div class="row">
-            <div class="col-2">
+            <div class="col-3 text-h6">
               Report issues at
             </div>
-            <div class="col-10">
+            <div class="col-9">
               <a href="https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues" target="_new">github
                 issues</a>
             </div>
@@ -279,6 +284,11 @@ Units 1=1 logical core">CPU-Usage</div>
 </template>
 
 <style lang="scss" scoped>
+
+.text-h6 {
+  font-size: 11pt;
+  line-height: 15pt;
+}
 .pageCard {
   margin-bottom: 1.2em;
   max-width: 750px;
