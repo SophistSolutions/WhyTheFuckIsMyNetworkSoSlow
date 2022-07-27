@@ -72,7 +72,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
     template <typename TABLE_CONNECTION>
     auto mkOperationalStatisticsMgrProcessDBCmd (bool traceSQL) -> typename TABLE_CONNECTION::OpertionCallbackPtr
     {
-        shared_ptr<OperationalStatisticsMgr::ProcessDBCmd> tmp; // use shared_ptr in lambda so copies of lambda share same object
+        shared_ptr<OperationalStatisticsMgr::ProcessDBCmd>      tmp; // use shared_ptr in lambda so copies of lambda share same object
+        constexpr bool                                          kIncludeLastSQK_ = true;
+        conditional_t<kIncludeLastSQK_, optional<String>, void> lastSQL;
         // @todo note - COULD use same shared_ptr object to store a Debug::TraceContextBumper object so we get /DBRead messages elided from log most of the time (when quick and /DBWrite).
         auto r = [=] (typename TABLE_CONNECTION::Operation op, const TABLE_CONNECTION* /*tableConn*/, const Statement* s, const exception_ptr& e) mutable noexcept {
             switch (op) {
@@ -80,6 +82,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
                     RequireNotNull (s);
                     if (traceSQL) {
                         DbgTrace (L"<DBRead: %s>", s->GetSQL (Statement::WhichSQLFlag::eExpanded).c_str ());
+                    }
+                    if (kIncludeLastSQK_) {
+                        lastSQL = s->GetSQL (Statement::WhichSQLFlag::eExpanded);
                     }
                     IgnoreExceptionsExceptThreadAbortForCall (tmp = make_shared<DB::ReadStatsContext> ());
                     break;
@@ -94,6 +99,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
                     if (traceSQL) {
                         DbgTrace (L"<DBWrite: %s>", s->GetSQL (Statement::WhichSQLFlag::eExpanded).c_str ());
                     }
+                    if (kIncludeLastSQK_) {
+                        lastSQL = s->GetSQL (Statement::WhichSQLFlag::eExpanded);
+                    }
                     IgnoreExceptionsExceptThreadAbortForCall (tmp = make_shared<DB::WriteStatsContext> ());
                     break;
                 case TABLE_CONNECTION::Operation::eCompletedWrite:
@@ -103,7 +111,12 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
                     tmp.reset ();
                     break;
                 case TABLE_CONNECTION::Operation::eNotifyError:
-                    Execution::Logger::sThe.LogIfNew (Execution::Logger::Priority::eWarning, 1min, L"Database operation exception: %s", Characters::ToString (e).c_str ());
+                    if (kIncludeLastSQK_) {
+                        Execution::Logger::sThe.LogIfNew (Execution::Logger::Priority::eWarning, 1min, L"Database operation exception: %s (lastsql %s)", Characters::ToString (e).c_str (), Characters::ToString (lastSQL).c_str ());
+                    }
+                    else {
+                        Execution::Logger::sThe.LogIfNew (Execution::Logger::Priority::eWarning, 1min, L"Database operation exception: %s", Characters::ToString (e).c_str ());
+                    }
                     tmp->NoteError ();
                     break;
             }
