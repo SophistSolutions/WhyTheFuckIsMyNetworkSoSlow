@@ -41,6 +41,9 @@ function prettyPrintMSTime(time?: string) {
     return "?";
   }
   var m = moment.duration(time);
+  if (m.asMilliseconds () < 1.0) {
+    return (m.milliseconds() * 1000).toFixed(1) + "μs";
+  }
   return m.milliseconds().toFixed(1) + "ms";
 }
 function wsAPIMsg(info: IAPIEndpoint, showShort: boolean): string {
@@ -52,16 +55,16 @@ function wsAPIMsg(info: IAPIEndpoint, showShort: boolean): string {
     msg += `errors: ${info.errors}; `;
   }
   if (showShort) {
-    msg += `${info.medianWebServerConnections ?? "?"} connections (${info.medianRunningAPITasks ?? "?"} active API calls); `;
+    msg += `M ${info.medianWebServerConnections ?? "?"} connections (M ${info.medianRunningAPITasks ?? "?"} active API calls); `;
   }
   else {
-    msg += `${info.medianWebServerConnections ?? "?"} Q2 connections (${info.medianProcessingWebServerConnections ?? "?"} active, and ${info.medianRunningAPITasks ?? "?"} Q2 active API calls); `;
+    msg += `${info.medianWebServerConnections ?? "?"} Med connections (${info.medianProcessingWebServerConnections ?? "?"} active, and Med ${info.medianRunningAPITasks ?? "?"} active API calls); `;
   }
   if (showShort) {
-    msg += `${prettyPrintMSTime(info.medianDuration)}, max ${prettyPrintMSTime(info.maxDuration)}`
+    msg += `M ${prettyPrintMSTime(info.medianDuration)}, max ${prettyPrintMSTime(info.maxDuration)}`
   }
   else {
-    msg += `${prettyPrintMSTime(info.medianDuration)} Q2 call time,  ${prettyPrintMSTime(info.maxDuration)} max call time`
+    msg += `Med ${prettyPrintMSTime(info.medianDuration)} call time,  max ${prettyPrintMSTime(info.maxDuration)} call time`
   }
   return msg;
 }
@@ -76,10 +79,20 @@ function dbStatsMsg(info: IDatabase, showShort: boolean): string {
   if (!showShort) {
     msg += `${info.reads} reads, ${info.writes} writes; `;
   }
-  msg += `${prettyPrintMSTime(info.medianReadDuration)} reads, ${prettyPrintMSTime(info.medianWriteDuration)} writes`;
-  if (!showShort) {
+  if (showShort) {
+    msg += `M ${prettyPrintMSTime(info.medianReadDuration)} reads, M ${prettyPrintMSTime(info.medianWriteDuration)} writes`;
+  }
+  else {
+    msg += `Med ${prettyPrintMSTime(info.medianReadDuration)} read duration, Med ${prettyPrintMSTime(info.medianWriteDuration)} write duration`;
+  }
+  if (showShort) {
     if (info.maxDuration != undefined) {
-      msg += `; ${prettyPrintMSTime(info.maxDuration)} max; `;
+      msg += `; max ${prettyPrintMSTime(info.maxDuration)}`;
+    }
+  }
+  else {
+    if (info.maxDuration != undefined) {
+      msg += `; max ${prettyPrintMSTime(info.maxDuration)} I/O duration`;
     }
   }
   return msg;
@@ -172,7 +185,7 @@ Units 1=1 logical core">CPU-Usage</div>
               </div>
               <div class="row" v-if="aboutData">
                 <div class="col-3"
-                  title="Information about database: size on disk, median read/write times; hover for more like max read/write times">
+                  title="Information about database: size on disk, median read/write times over the last 5 minutes; hover for more details">
                   DB</div>
                 <div class="col" v-if="aboutData.serverInfo.database"
                   :title="dbStatsMsg(aboutData.serverInfo.database, false)"> {{
