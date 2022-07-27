@@ -36,7 +36,10 @@ onUnmounted(() => {
   clearInterval(polling);
 })
 
-function prettyPrintMSTime(time: string) {
+function prettyPrintMSTime(time?: string) {
+  if (time == undefined) {
+    return "?";
+  }
   var m = moment.duration(time);
   return m.milliseconds().toFixed(1) + "ms";
 }
@@ -49,16 +52,16 @@ function wsAPIMsg(info: IAPIEndpoint, showShort: boolean): string {
     msg += `errors: ${info.errors}; `;
   }
   if (showShort) {
-    msg += `${info.medianWebServerConnections} connections (${info.medianRunningAPITasks} active API calls); `;
+    msg += `${info.medianWebServerConnections ?? "?"} connections (${info.medianRunningAPITasks ?? "?"} active API calls); `;
   }
   else {
-    msg += `${info.medianWebServerConnections} Q2 connections (${info.medianProcessingWebServerConnections} active, and ${info.medianRunningAPITasks} Q2 active API calls); `;
+    msg += `${info.medianWebServerConnections ?? "?"} Q2 connections (${info.medianProcessingWebServerConnections ?? "?"} active, and ${info.medianRunningAPITasks ?? "?"} Q2 active API calls); `;
   }
   if (showShort) {
-  msg += `${prettyPrintMSTime(info.medianDuration)}, max ${prettyPrintMSTime(info.maxDuration)}`
+    msg += `${prettyPrintMSTime(info.medianDuration)}, max ${prettyPrintMSTime(info.maxDuration)}`
   }
   else {
-  msg += `${prettyPrintMSTime(info.medianDuration)} Q2 call time,  ${prettyPrintMSTime(info.maxDuration)} max call time`
+    msg += `${prettyPrintMSTime(info.medianDuration)} Q2 call time,  ${prettyPrintMSTime(info.maxDuration)} max call time`
   }
   return msg;
 }
@@ -75,14 +78,16 @@ function dbStatsMsg(info: IDatabase, showShort: boolean): string {
   }
   msg += `${prettyPrintMSTime(info.medianReadDuration)} reads, ${prettyPrintMSTime(info.medianWriteDuration)} writes`;
   if (!showShort) {
-    msg += `; ${prettyPrintMSTime(info.maxDuration)} max; `;
+    if (info.maxDuration != undefined) {
+      msg += `; ${prettyPrintMSTime(info.maxDuration)} max; `;
+    }
   }
   return msg;
 }
 </script>
 
 <template>
-  <q-page class="q-pa-md " v-if="aboutData">
+  <q-page class="q-pa-md">
 
     <div class="row text-h5">
       <div class="col">
@@ -111,7 +116,7 @@ function dbStatsMsg(info: IDatabase, showShort: boolean): string {
       </q-card>
 
       <!--App Stats-->
-      <q-card class="pageCard col-11">
+      <q-card class="pageCard col-11" v-if="aboutData">
         <q-card-section>
           <div class="row">
             <div class="col-2">WTF App</div>
@@ -180,7 +185,7 @@ Units 1=1 logical core">CPU-Usage</div>
       </q-card>
 
       <!--App Running on-->
-      <q-card class="pageCard col-11">
+      <q-card class="pageCard col-11" v-if="aboutData">
         <q-card-section>
           <div>
             <div class="row" v-if="aboutData">

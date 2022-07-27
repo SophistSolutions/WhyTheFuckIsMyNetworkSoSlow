@@ -12,8 +12,8 @@ export interface ICurrentMachine {
   totalCPUUsage?: number;
 }
 export interface IAPIEndpoint {
-  callsCompleted?: number;
-  errors?: number;
+  callsCompleted: number;
+  errors: number;
   maxDuration?: string;
   meanDuration?: string;
   medianDuration?: string;
