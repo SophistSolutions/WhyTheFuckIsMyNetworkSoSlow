@@ -519,9 +519,9 @@ const pagination = ref({
 }
 
 .detailsSection {
-  margin-top: 1em;
+  margin-top: -0.5em;
   margin-left: 2em;
-  margin-right: 1em;
+  margin-right: -1em;
   box-shadow: 4px 4px 8px 4px rgba(0, 0, 0, 0.2);
 }
 
