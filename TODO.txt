@@ -1,4 +1,23 @@
 
+just released on hercules - see why getting machine HERCULES duplicated 3 times
+	ONE aggregates	
+		96cc62f7-71bd-6985-48eb-90c51103fe28; 
+	ONE aggregates
+	    4b736dd9-438d-733d-0282-6cc892fb2cc9; 
+
+	these devices have no HARDARE ID
+		http://hercules.34churchstreet.sophists.com/#/device/4b736dd9-438d-733d-0282-6cc892fb2cc9
+		http://hercules.34churchstreet.sophists.com/#/device/96cc62f7-71bd-6985-48eb-90c51103fe28
+
+			(MAYBE FIXED SO THIS WONT HAPPEN ANYMORE BUT CANNOT REPRODUCE ON WINDOW - NOT SURE HOW TO REPRODUCE AT ALL...)
+
+---
+
+https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/33 -- SSDP LISTENR - IMPORANT CUZ HAPPENS ON REBOOT
+
+----
+
+
 On 'aggregated reversibly' - add extra 'map' in devices response mapping that id to 'info' including EverSeen (and eventually source). And sort list by everseen (at leastin GUI).
 and show that everseen in GUI.
 

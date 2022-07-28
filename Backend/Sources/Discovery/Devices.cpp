@@ -826,6 +826,12 @@ namespace {
                 }
             }
             newDev.fAttachedInterfaces = Set<GUID>{Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ().Select<GUID> ([] (auto iFace) { return iFace.fGUID; })};
+
+            if (newDev.GetHardwareAddresses ().empty ()) {
+                DbgTrace ("no hardware address, so returning no 'MyDevice'");
+                return nullopt;
+            }
+
             newDev.fGUID               = GUID::GenerateNew ();
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
             DbgTrace (L"returning: %s", Characters::ToString (newDev).c_str ());
