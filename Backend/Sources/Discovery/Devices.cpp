@@ -832,7 +832,7 @@ namespace {
                 return nullopt;
             }
 
-            newDev.fGUID               = GUID::GenerateNew ();
+            newDev.fGUID = GUID::GenerateNew ();
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
             DbgTrace (L"returning: %s", Characters::ToString (newDev).c_str ());
 #endif
