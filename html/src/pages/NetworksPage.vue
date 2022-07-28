@@ -427,9 +427,9 @@ const pagination = ref({
 }
 
 .detailsSection {
-  margin-top: -0.5em;
-  margin-left: 2em;
-  margin-right: -1em;
+  margin-top: -6pt;
+  margin-left: -6pt;
+  margin-right: -6pt;
   box-shadow: 4px 4px 8px 4px rgba(0, 0, 0, 0.2);
 }
 
