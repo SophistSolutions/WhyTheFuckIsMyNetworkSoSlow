@@ -1,3 +1,15 @@
+recent bug - 2022-07027:
+Jul 27 22:52:09 Hercules WhyTheFuckIsMyNetworkSoSlow[3390511]: Service starting...
+Jul 27 22:52:09 Hercules WhyTheFuckIsMyNetworkSoSlow[3390511]: WhyTheFuckIsMyNetworkSoSlow Service (version 1.0d18x) service started successfully
+Jul 27 22:52:11 Hercules systemd[1]: Started Why the Fuck is My Network So Slow.
+Jul 27 22:57:11 Hercules WhyTheFuckIsMyNetworkSoSlow[3390511]: Database operation exception: Exception: Device or resource busy (lastsql 'INSERT INTO BLOBURL (etag, blobid, uri) VALUES (NULL, x'33298ecf6f89a831964c35d233f0e502', 'http://…')
+
+(AND got some icons not showing up in web gui (like for sons .45 sub speaker))
+(really NONE of them showing up - HIGH PRIORITY - SAVE OF BLOBS just doesnt seem to work...)
+
+----
+
+
 	OCCASIONAL FAILURE ON SHUTDOWN (uninstall) on linux:
 	Jul 27 22:43:33 Hercules WhyTheFuckIsMyNetworkSoSlow[1523358]: Beginning service shutdown
 	Jul 27 22:43:36 Hercules WhyTheFuckIsMyNetworkSoSlow[1523358]: Service stopped normally
