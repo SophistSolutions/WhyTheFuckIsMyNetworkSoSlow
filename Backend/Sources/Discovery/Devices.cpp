@@ -20,6 +20,7 @@
 #include "Stroika/Foundation/Cryptography/Format.h"
 #include "Stroika/Foundation/Debug/TimingTrace.h"
 #include "Stroika/Foundation/Execution/Activity.h"
+#include "Stroika/Foundation/Execution/IntervalTimer.h"
 #include "Stroika/Foundation/Execution/Logger.h"
 #include "Stroika/Foundation/Execution/Sleep.h"
 #include "Stroika/Foundation/Execution/Synchronized.h"
@@ -851,10 +852,28 @@ namespace {
      */
     /*
      *  When constructed, push data as discovered into sDiscoveredDevices_
+     * 
+     *  Network connections can come and go, so this class must watch for changes and
+     *  periodically restart the listener/searchers.
      */
     class SSDPDeviceDiscoverer_ {
     public:
         SSDPDeviceDiscoverer_ ()
+            : fIntervalTimerAdder_{
+                [this] () {
+                    // @todo must be able to detect nework change, or reason to make this change
+                    // for now - just do if missing
+                      if (fListener_ == nullptr or fSearcher_ == nullptr) {
+                          IgnoreExceptionsExceptThreadAbortForCall (ConstructSearcherAndListener_ ());
+                      }
+                  },
+                1min}
+        {
+            IgnoreExceptionsExceptThreadAbortForCall (ConstructSearcherAndListener_ ());
+        }
+
+    private:
+        nonvirtual void ConstructSearcherAndListener_ ()
         {
             // SSDP can fail due to lack of permissions to bind to the appropriate sockets, or for example under WSL where we get protocol unsupported.
             // WARN to syslog, but no need to stop app
@@ -879,6 +898,7 @@ namespace {
         }
 
     private:
+        IntervalTimer::Adder               fIntervalTimerAdder_;
         unique_ptr<SSDP::Client::Listener> fListener_;
         unique_ptr<SSDP::Client::Search>   fSearcher_;
 

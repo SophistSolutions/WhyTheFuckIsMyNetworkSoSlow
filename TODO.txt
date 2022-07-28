@@ -1,3 +1,6 @@
+cached icons no longer working - see if true on local PC or only on hercules?
+
+----
 recent bug - 2022-07027:
 Jul 27 22:52:09 Hercules WhyTheFuckIsMyNetworkSoSlow[3390511]: Service starting...
 Jul 27 22:52:09 Hercules WhyTheFuckIsMyNetworkSoSlow[3390511]: WhyTheFuckIsMyNetworkSoSlow Service (version 1.0d18x) service started successfully
