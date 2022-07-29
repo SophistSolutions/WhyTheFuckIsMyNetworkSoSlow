@@ -860,14 +860,14 @@ namespace {
     public:
         SSDPDeviceDiscoverer_ ()
             : fIntervalTimerAdder_{
-                [this] () {
-                    // @todo must be able to detect nework change, or reason to make this change
-                    // for now - just do if missing
+                  [this] () {
+                      // @todo must be able to detect nework change, or reason to make this change
+                      // for now - just do if missing
                       if (fListener_ == nullptr or fSearcher_ == nullptr) {
                           IgnoreExceptionsExceptThreadAbortForCall (ConstructSearcherAndListener_ ());
                       }
                   },
-                1min}
+                  1min}
         {
             IgnoreExceptionsExceptThreadAbortForCall (ConstructSearcherAndListener_ ());
         }

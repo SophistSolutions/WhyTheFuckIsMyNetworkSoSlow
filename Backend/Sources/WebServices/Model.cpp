@@ -579,7 +579,7 @@ Device Device::Merge (const Device& baseDevice, const Device& priorityDevice)
     Memory::CopyToIf (&merged.fPresentationURL, priorityDevice.fPresentationURL);
     Memory::AccumulateIf (&merged.fAttachedNetworkInterfaces, priorityDevice.fAttachedNetworkInterfaces);
     Memory::CopyToIf (&merged.fOperatingSystem, priorityDevice.fOperatingSystem);
-    Memory::AccumulateIf (&merged.fAggregatesReversibly, priorityDevice.fAggregatesReversibly); // @todo UNSURE if this is right
+    Memory::AccumulateIf (&merged.fAggregatesReversibly, priorityDevice.fAggregatesReversibly);
     Memory::AccumulateIf (&merged.fAggregatesIrreversibly, priorityDevice.fAggregatesIrreversibly);
     Memory::CopyToIf (&merged.fIDPersistent, priorityDevice.fIDPersistent);
     Memory::CopyToIf (&merged.fHistoricalSnapshot, priorityDevice.fHistoricalSnapshot);
