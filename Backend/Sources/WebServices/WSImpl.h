@@ -25,6 +25,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
      */
     class WSImpl final : public IWSAPI {
     public:
+        WSImpl ();
+        virtual ~WSImpl () override = default;
+
+    public:
         virtual About                                                          GetAbout () const override;
         virtual tuple<Memory::BLOB, optional<DataExchange::InternetMediaType>> GetBLOB (const GUID& guid) const override;
         virtual Sequence<String>                                               GetDevices (const optional<DeviceSortParamters>& sort) const override;
@@ -43,9 +47,13 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
         virtual double                                                         Operation_DNS_CalculateScore () const override;
         virtual DataExchange::VariantValue                                     Operation_Scan_FullRescan (const String& deviceID) const override;
         virtual DataExchange::VariantValue                                     Operation_Scan_Scan (const String& addr) const override;
-    };
 
-    void TmpHackAssureStartedMonitoring ();
+    private:
+        struct Rep_;
+
+    private:
+        shared_ptr<Rep_> fRep_;
+    };
 
 }
 

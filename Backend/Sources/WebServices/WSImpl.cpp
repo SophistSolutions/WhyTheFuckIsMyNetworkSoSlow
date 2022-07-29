@@ -112,6 +112,14 @@ namespace {
  ************************************* WSImpl ***********************************
  ********************************************************************************
  */
+struct WSImpl::Rep_ {
+    MyCapturer_ fMyCapturer;
+};
+WSImpl::WSImpl ()
+    : fRep_ (make_shared<Rep_> ())
+{
+}
+
 About WSImpl::GetAbout () const
 {
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
@@ -140,27 +148,26 @@ About WSImpl::GetAbout () const
         ComponentInfo{L"sqlite"sv, String::FromASCII (SQLITE_VERSION), URI{"https://www.sqlite.org"}}
 #endif
     }};
-    auto               now = DateTime::Now ();
-    static MyCapturer_ sCapturer_;
-    auto               measurements = sCapturer_.pMostRecentMeasurements (); // capture results on a regular cadence with MyCapturer, and just report the latest stats
+    auto now          = DateTime::Now ();
+    auto measurements = fRep_->fMyCapturer.pMostRecentMeasurements (); // capture results on a regular cadence with MyCapturer, and just report the latest stats
 
-    CurrentMachine machineInfo = [now, &measurements] () {
+    CurrentMachine machineInfo = [this, now, &measurements] () {
         CurrentMachine    result;
         static const auto kOS_  = OperatingSystem{Configuration::GetSystemConfiguration_ActualOperatingSystem ().fTokenName, Configuration::GetSystemConfiguration_ActualOperatingSystem ().fPrettyNameWithVersionDetails};
         result.fOperatingSystem = kOS_;
         if (auto o = Configuration::GetSystemConfiguration_BootInformation ().fBootedAt) {
             result.fMachineUptime = now - *o;
         }
-        if (auto om = sCapturer_.fCPUInstrument.MeasurementAs<Instruments::CPU::Info> (measurements)) {
+        if (auto om = fRep_->fMyCapturer.fCPUInstrument.MeasurementAs<Instruments::CPU::Info> (measurements)) {
             result.fRunQLength    = om->fRunQLength;
             result.fTotalCPUUsage = om->fTotalCPUUsage;
         }
         return result;
     }();
 
-    CurrentProcess processInfo = [now, &measurements] () {
+    CurrentProcess processInfo = [this, now, &measurements] () {
         CurrentProcess result;
-        if (auto om = sCapturer_.fProcessInstrument.MeasurementAs<Instruments::Process::Info> (measurements)) {
+        if (auto om = fRep_->fMyCapturer.fProcessInstrument.MeasurementAs<Instruments::Process::Info> (measurements)) {
             Assert (om->size () == 1);
             Instruments::Process::ProcessType thisProcess = (*om)[Execution::GetCurrentProcessID ()];
             if (auto o = thisProcess.fProcessStartedAt) {

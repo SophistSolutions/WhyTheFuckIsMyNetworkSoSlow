@@ -73,6 +73,8 @@ SQL::Connection::Ptr WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB::NewCon
      * 
      *  We get TONS of SQLITE_BUSY errors using the default JournalMode, but if you read
      *  https://sqlite.org/wal.html, you will see WAL is recommended for multiple readers/writers on DB.
+     * 
+     *  NOTE - though much better, still not working well with these settings. Sometimes fails.
      */
     options.fBusyTimeout = 1ms;
     options.fJournalMode = JournalModeType::eWAL;
