@@ -36,19 +36,19 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
 
     public:
         /**
-         *  curl  http://localhost:8080/about
+         *  curl  http://localhost/api/v1/about
          */
         virtual About GetAbout () const = 0;
 
     public:
         /**
-         *  curl  http://localhost:8080/blob/{guid}
+         *  curl  http://localhost/api/v1/blob/{guid}
          */
-        virtual tuple<Memory::BLOB, DataExchange::InternetMediaType> GetBLOB (const GUID& guid) const = 0;
+        virtual tuple<Memory::BLOB, optional<DataExchange::InternetMediaType>> GetBLOB (const GUID& guid) const = 0;
 
     public:
         /**
-         *  curl  http://localhost:8080/devices
+         *  curl  http://localhost/api/v1/devices
          */
         virtual Sequence<String> GetDevices (const optional<DeviceSortParamters>& sort = {}) const         = 0;
         virtual Sequence<Device> GetDevices_Recurse (const optional<DeviceSortParamters>& sort = {}) const = 0;
@@ -56,7 +56,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
 
     public:
         /**
-         *  curl  http://localhost:8080/networks
+         *  curl  http://localhost/api/v1/networks
          */
         virtual Sequence<String>  GetNetworks () const                = 0;
         virtual Sequence<Network> GetNetworks_Recurse () const        = 0;
@@ -64,7 +64,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
 
     public:
         /**
-         *  curl  http://localhost:8080/network-interfaces
+         *  curl  http://localhost/api/v1/network-interfaces
          */
         virtual Collection<String>           GetNetworkInterfaces (bool filterRunningOnly) const         = 0;
         virtual Collection<NetworkInterface> GetNetworkInterfaces_Recurse (bool filterRunningOnly) const = 0;
@@ -72,45 +72,45 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
 
     public:
         /**
-         *  curl  http://localhost:8080/operations/ping
+         *  curl  http://localhost/api/v1/operations/ping
          *      return time to ping, or throw on failure
          */
         virtual double Operation_Ping (const String& address) const = 0;
 
     public:
         /**
-         *  curl  http://localhost:8080/operations/ping
+         *  curl  http://localhost/api/v1/operations/ping
          *      return time to ping, or throw on failure
          */
         virtual Operations::TraceRouteResults Operation_TraceRoute (const String& address, optional<bool> reverseDNSResults = {}) const = 0;
 
     public:
         /**
-         *  curl  http://localhost:8080/operations/dns/calculate-negative-lookup-time
+         *  curl  http://localhost/api/v1/operations/dns/calculate-negative-lookup-time
          */
         virtual Time::Duration Operation_DNS_CalculateNegativeLookupTime (optional<unsigned int> samples = {}) const = 0;
 
     public:
         /**
-         *  curl  http://localhost:8080/operations/dns/lookup
+         *  curl  http://localhost/api/v1/operations/dns/lookup
          */
         virtual Operations::DNSLookupResults Operation_DNS_Lookup (const String& name) const = 0;
 
     public:
         /**
-         *  curl  http://localhost:8080/operations/dns/calculate-score
+         *  curl  http://localhost/api/v1/operations/dns/calculate-score
          */
         virtual double Operation_DNS_CalculateScore () const = 0;
 
     public:
         /**
-         *  curl  http://localhost:8080/operations/scan/FullRescan?device=ID
+         *  curl  http://localhost/api/v1/operations/scan/FullRescan?device=ID
          */
         virtual DataExchange::VariantValue Operation_Scan_FullRescan (const String& deviceID) const = 0;
 
     public:
         /**
-         *  curl  http://localhost:8080/operations/scan/Scan?addr=addr
+         *  curl  http://localhost/api/v1/operations/scan/Scan?addr=addr
          *  note - addr may be DNS name or ip address.
          */
         virtual DataExchange::VariantValue Operation_Scan_Scan (const String& addr) const = 0;

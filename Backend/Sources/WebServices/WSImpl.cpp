@@ -212,7 +212,7 @@ About WSImpl::GetAbout () const
             dbStats}};
 }
 
-tuple<Memory::BLOB, DataExchange::InternetMediaType> WSImpl::GetBLOB (const GUID& guid) const
+tuple<Memory::BLOB, optional<DataExchange::InternetMediaType>> WSImpl::GetBLOB (const GUID& guid) const
 {
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
     return Common::BLOBMgr::sThe.GetBLOB (guid);

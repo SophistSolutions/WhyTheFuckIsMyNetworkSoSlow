@@ -41,9 +41,9 @@ namespace {
 
     namespace DBRecs_ {
         struct BLOB_ {
-            GUID              fID;
-            BLOB              fBLOB;
-            InternetMediaType fContentType;
+            GUID                        fID;
+            BLOB                        fBLOB;
+            optional<InternetMediaType> fContentType;
 
             static ObjectVariantMapper kMapper;
         };
@@ -60,10 +60,11 @@ namespace {
             mapper.AddCommonType<GUID> ();
             mapper.AddCommonType<BLOB> ();
             mapper.AddCommonType<InternetMediaType> ();
+            mapper.AddCommonType<optional<InternetMediaType>> ();
             mapper.AddClass<BLOB_> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
                 {L"id", StructFieldMetaInfo{&BLOB_::fID}},
                 {L"blob", StructFieldMetaInfo{&BLOB_::fBLOB}},
-                {L"contentType", StructFieldMetaInfo{&BLOB_::fContentType}},
+                {L"contentType", StructFieldMetaInfo{&BLOB_::fContentType}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             });
             return mapper;
         }();
@@ -103,11 +104,11 @@ namespace {
 #if __cpp_designated_initializers
             {.fName = L"id"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = L"randomblob(16)"sv},
             {.fName = L"blob"sv, .fRequired = true, .fVariantValueType = VariantValue::eBLOB},
-            {.fName = L"contentType"sv, .fRequired = true, .fVariantValueType = VariantValue::eString},
+            {.fName = L"contentType"sv, .fRequired = false, .fVariantValueType = VariantValue::eString},
 #else
             {L"id", nullopt, true, kRepresentIDAs_, nullopt, true, nullopt, L"randomblob(16)"sv},
             {L"blob", nullopt, true, VariantValue::eBLOB},
-            {L"contentType", nullopt, true, VariantValue::eString},
+            {L"contentType", nullopt, false, VariantValue::eString},
 #endif
         }};
 
@@ -142,11 +143,11 @@ namespace {
         shared_ptr<BLOBURLTableConnection_>                   fBLOBURLs;
         shared_ptr<SQL::Statement>                            fLookupBLOBByValueAndContentType;
 
-        optional<GUID> Lookup (const BLOB& b, const InternetMediaType& ct) const
+        optional<GUID> Lookup (const BLOB& b, const optional<InternetMediaType>& ct) const
         {
             fLookupBLOBByValueAndContentType->Reset ();
             fLookupBLOBByValueAndContentType->Bind (L"b"sv, b);
-            fLookupBLOBByValueAndContentType->Bind (L"ct"sv, ct.As<String> ());
+            fLookupBLOBByValueAndContentType->Bind (L"ct"sv, ct ? ct->As<String> () : VariantValue{});
             DB::ReadStatsContext readStats; // explicit stats cuz not read through TableORM code
             if (auto row = fLookupBLOBByValueAndContentType->GetNextRow ()) {
                 return row->Lookup (L"id"sv)->As<BLOB> ();
@@ -183,7 +184,7 @@ BLOBMgr::Activator::~Activator ()
  ************************* BackendApp::Common::BLOBMgr **************************
  ********************************************************************************
  */
-GUID BLOBMgr::AddBLOB (const BLOB& b, const InternetMediaType& ct)
+GUID BLOBMgr::AddBLOB (const BLOB& b, const optional<InternetMediaType>& ct)
 {
     if (auto id = sConn_.rwget ().rwref ()->Lookup (b, ct)) {
         return *id;
@@ -209,7 +210,7 @@ GUID BLOBMgr::AddBLOBFromURL (const URI& url, bool recheckIfExpired)
         options.fCache           = sHttpCache_;
         Connection::Ptr conn     = Connection::New (options);
         auto&&          response = conn.GET (url);
-        return make_pair (response.GetData (), response.GetContentType ().value_or (InternetMediaType{}));
+        return make_pair (response.GetData (), response.GetContentType ());
     };
     auto data = fetchData (url);
     GUID guid = AddBLOB (data.first, data.second);
@@ -246,7 +247,7 @@ optional<GUID> BLOBMgr::Lookup (const URI& url)
     return nullopt;
 }
 
-tuple<BLOB, InternetMediaType> BLOBMgr::GetBLOB (const GUID& id) const
+tuple<BLOB, optional<InternetMediaType>> BLOBMgr::GetBLOB (const GUID& id) const
 {
     optional<DBRecs_::BLOB_> ob = sConn_.rwget ().rwref ()->fBLOBs->GetByID (id);
     if (ob) {

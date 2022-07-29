@@ -209,9 +209,11 @@ public:
               Route{
                   L"api/v1/blob/(.+)"_RegEx,
                   [=] (Message* m, const String& id) {
-                      ActiveCallCounter_                                   acc{*this};
-                      tuple<Memory::BLOB, DataExchange::InternetMediaType> b = fWSAPI_->GetBLOB (id);
-                      m->rwResponse ().contentType                           = get<1> (b);
+                      ActiveCallCounter_                                             acc{*this};
+                      tuple<Memory::BLOB, optional<DataExchange::InternetMediaType>> b = fWSAPI_->GetBLOB (id);
+                      if (get<1> (b)) {
+                          m->rwResponse ().contentType = *get<1> (b);
+                      }
                       m->rwResponse ().write (get<0> (b));
                   }},
 

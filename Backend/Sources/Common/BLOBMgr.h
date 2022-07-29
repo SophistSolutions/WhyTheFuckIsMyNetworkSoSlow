@@ -56,7 +56,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         /**
          *  NOTE AddBLOB () may re-use a BLOB-ID of an existing entry if it was already identical.
          */
-        nonvirtual GUID AddBLOB (const BLOB& b, const InternetMediaType& ct);
+        nonvirtual GUID AddBLOB (const BLOB& b, const optional<InternetMediaType>& ct);
 
     public:
         /**
@@ -83,7 +83,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
     public:
         /**
          */
-        nonvirtual tuple<BLOB, InternetMediaType> GetBLOB (const GUID& id) const;
+        nonvirtual tuple<BLOB, optional<InternetMediaType>> GetBLOB (const GUID& id) const;
 
     private:
         Execution::Synchronized<unique_ptr<Execution::ThreadPool>> fThreadPool_;
