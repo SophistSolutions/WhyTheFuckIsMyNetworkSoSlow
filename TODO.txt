@@ -1,39 +1,30 @@
-cached icons no longer working - see if true on local PC or only on hercules?
+use activation strategy  capturer
+	((TEST REPEATEDD DEBUG MORE service restarts ON HERCULES))
+	
 
-----
-recent bug - 2022-07027:
-Jul 27 22:52:09 Hercules WhyTheFuckIsMyNetworkSoSlow[3390511]: Service starting...
-Jul 27 22:52:09 Hercules WhyTheFuckIsMyNetworkSoSlow[3390511]: WhyTheFuckIsMyNetworkSoSlow Service (version 1.0d18x) service started successfully
-Jul 27 22:52:11 Hercules systemd[1]: Started Why the Fuck is My Network So Slow.
-Jul 27 22:57:11 Hercules WhyTheFuckIsMyNetworkSoSlow[3390511]: Database operation exception: Exception: Device or resource busy (lastsql 'INSERT INTO BLOBURL (etag, blobid, uri) VALUES (NULL, x'33298ecf6f89a831964c35d233f0e502', 'http://…')
+  ---
+    
+  AND STILL GETETING (esp with debug build)
+  
+  8 23:43:59 Hercules systemd[1]: Started Why the Fuck is My Network So Slow.
+Jul 28 23:53:07 Hercules WhyTheFuckIsMyNetworkSoSlow[2106023]: Database operation exception: Exception: Device or resource busy (lastsql 'UPDATE Devices SET name='192.168.244.183', _other_fields_=x'7b0a202020202261747461636865644e6574776…')
+Jul 28 23:53:07 Hercules WhyTheFuckIsMyNetworkSoSlow[2106023]: Database update: ignoring exception in BackgroundDatabaseThread_ loop (will retry in 30 seconds): Exception: Device or resource busy
+Jul 28 23:53:37 Hercules WhyTheFuckIsMyNetworkSoSlow[2106023]: Database operation exception: Exception: Device or resource busy (lastsql 'UPDAT
 
-(AND got some icons not showing up in web gui (like for sons .45 sub speaker))
-(really NONE of them showing up - HIGH PRIORITY - SAVE OF BLOBS just doesnt seem to work...)
-
-----
-
-
-	OCCASIONAL FAILURE ON SHUTDOWN (uninstall) on linux:
-	Jul 27 22:43:33 Hercules WhyTheFuckIsMyNetworkSoSlow[1523358]: Beginning service shutdown
-	Jul 27 22:43:36 Hercules WhyTheFuckIsMyNetworkSoSlow[1523358]: Service stopped normally
-	Jul 27 22:43:38 Hercules WhyTheFuckIsMyNetworkSoSlow[1523358]: Fatal Signal: SIGSEGV; Aborting...
-	Jul 27 22:43:38 Hercules WhyTheFuckIsMyNetworkSoSlow[1523358]: Backtrace: ...
-																	3# ;
-																	4# ;
-																	5# ;
-	Jul 27 22:43:38 Hercules systemd[1]: whythefuckismynetworksoslow.service: Main process exited, code=exited, status=1/FAILURE
-	Jul 27 22:43:41 Hercules systemd[1]: whythefuckismynetworksoslow.service: Failed with result 'exit-code'.
-	Jul
+rare - but once it starts, it goes on indefnitely (on raspi, but on hercules, happens once and stops).
 ---
 
 https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/33 -- SSDP LISTENR - IMPORANT CUZ HAPPENS ON REBOOT
-
+	(TESTING FIX)
 ----
 
 
 On 'aggregated reversibly' - add extra 'map' in devices response mapping that id to 'info' including EverSeen (and eventually source). And sort list by everseen (at leastin GUI).
 and show that everseen in GUI.
 
+----
+	Find tooltip PLUGIN (like I had in HealthFrame/jquery) - so we get nicer formatted (at least wrapped) tooltips.
+	(e.g. in ReadOnlyText...component, and in about stats page)
 ----
 my new precednce logic isnt great. Trouble is - takes a while to get good names from devices.
 So we revert to latest known name, instead of best found ever name.
