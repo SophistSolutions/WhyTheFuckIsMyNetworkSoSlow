@@ -864,16 +864,16 @@ namespace {
                       // @todo must be able to detect nework change, or reason to make this change
                       // for now - just do if missing
                       if (fListener_ == nullptr or fSearcher_ == nullptr) {
-                          IgnoreExceptionsExceptThreadAbortForCall (ConstructSearcherAndListener_ ());
+                          IgnoreExceptionsExceptThreadAbortForCall (ConstructSearcherAndListener_ (true));
                       }
                   },
                   1min}
         {
-            IgnoreExceptionsExceptThreadAbortForCall (ConstructSearcherAndListener_ ());
+            IgnoreExceptionsExceptThreadAbortForCall (ConstructSearcherAndListener_ (false));
         }
 
     private:
-        nonvirtual void ConstructSearcherAndListener_ ()
+        nonvirtual void ConstructSearcherAndListener_ (bool notifyOfSuccess)
         {
             // SSDP can fail due to lack of permissions to bind to the appropriate sockets, or for example under WSL where we get protocol unsupported.
             // WARN to syslog, but no need to stop app
@@ -883,7 +883,7 @@ namespace {
                     SSDP::Client::Listener::eAutoStart);
             }
             catch (...) {
-                Logger::sThe.Log (Logger::Priority::eError, L"Problem starting SSDP Listener - so that source of discovery will be unavailable: %s", Characters::ToString (current_exception ()).c_str ());
+                Logger::sThe.Log (Logger::Priority::eError, L"Problem starting SSDP Listener - so that source of discovery will be (temporarily - will retry) unavailable: %s", Characters::ToString (current_exception ()).c_str ());
             }
             try {
                 static const Time::Duration kReSearchInterval_{10min}; // not sure what interval makes sense
@@ -893,7 +893,10 @@ namespace {
             }
             catch (...) {
                 // only warning because searcher much less important - just helpful at very start of discovery
-                Logger::sThe.Log (Logger::Priority::eWarning, L"Problem starting SSDP Searcher - so that source of discovery will be unavailable: %s", Characters::ToString (current_exception ()).c_str ());
+                Logger::sThe.Log (Logger::Priority::eWarning, L"Problem starting SSDP Searcher - so that source of discovery will be (temporarily - will retry) unavailable: %s", Characters::ToString (current_exception ()).c_str ());
+            }
+            if (fListener_ != nullptr and fSearcher_ != nullptr) {
+                Logger::sThe.Log (Logger::Priority::eInfo, L"(Re-)Started SSDP Listener and Searcher");
             }
         }
 
