@@ -1,6 +1,12 @@
 use activation strategy  capturer
 	((TEST REPEATEDD DEBUG MORE service restarts ON HERCULES))
-	
+
+----
+
+I think recent BLOBMGr changes not working with NULLS - I had them before and not anymore.
+When I look in database.
+
+Verify null contentType stuff is workign properly (THINK just not getting cached).
 
   ---
     
