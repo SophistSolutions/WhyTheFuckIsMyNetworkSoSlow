@@ -895,7 +895,8 @@ namespace {
                 // only warning because searcher much less important - just helpful at very start of discovery
                 Logger::sThe.Log (Logger::Priority::eWarning, L"Problem starting SSDP Searcher - so that source of discovery will be (temporarily - will retry) unavailable: %s", Characters::ToString (current_exception ()).c_str ());
             }
-            if (fListener_ != nullptr and fSearcher_ != nullptr) {
+            if (notifyOfSuccess and
+                fListener_ != nullptr and fSearcher_ != nullptr) {
                 Logger::sThe.Log (Logger::Priority::eInfo, L"(Re-)Started SSDP Listener and Searcher");
             }
         }
