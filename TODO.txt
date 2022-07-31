@@ -1,71 +1,6 @@
-
-I think recent BLOBMGr changes not working with NULLS - I had them before and not anymore.
-When I look in database.
-
-Verify null contentType stuff is workign properly (THINK just not getting cached).
-
-  ---
-  AND STILL GETETING (esp with debug build)
-  
-  8 23:43:59 Hercules systemd[1]: Started Why the Fuck is My Network So Slow.
-Jul 28 23:53:07 Hercules WhyTheFuckIsMyNetworkSoSlow[2106023]: Database operation exception: Exception: Device or resource busy (lastsql 'UPDATE Devices SET name='192.168.244.183', _other_fields_=x'7b0a202020202261747461636865644e6574776…')
-Jul 28 23:53:07 Hercules WhyTheFuckIsMyNetworkSoSlow[2106023]: Database update: ignoring exception in BackgroundDatabaseThread_ loop (will retry in 30 seconds): Exception: Device or resource busy
-Jul 28 23:53:37 Hercules WhyTheFuckIsMyNetworkSoSlow[2106023]: Database operation exception: Exception: Device or resource busy (lastsql 'UPDAT
-
-rare - but once it starts, it goes on indefnitely (on raspi, but on hercules, happens once and stops).
----
-
-https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/33 -- SSDP LISTENR - IMPORANT CUZ HAPPENS ON REBOOT
-	(TESTING FIX)
-----
-
-
-On 'aggregated reversibly' - add extra 'map' in devices response mapping that id to 'info' including EverSeen (and eventually source). And sort list by everseen (at leastin GUI).
-and show that everseen in GUI.
-
-----
-	Find tooltip PLUGIN (like I had in HealthFrame/jquery) - so we get nicer formatted (at least wrapped) tooltips.
-	(e.g. in ReadOnlyText...component, and in about stats page)
-----
-my new precednce logic isnt great. Trouble is - takes a while to get good names from devices.
-So we revert to latest known name, instead of best found ever name.
-
-best seen in debug builds were stuff like sonos speakers ahve bad names til the active device gets its ssdp message, and then it 
-gets better.
-
-Trouble is the Patch logic to compute derived names is done in discovery code, not in rolled up device code????
-
-	> MAYBE have 
-		names : [ name: x, quality-score: n ]
-		and name - a property that computes best?
-		on C++ side, and maybe - unclear - don't export alias names? Maybe useful to export them too for same reason - so differnt sources can better merge/pick names.
-
-
----
-	> WTF feature as important as NAMING devices - tags list!
-
-		(so can group by tags and and filter by tags) for nets and devices
-
-	+ need to mark nets/devicoes as favorites
-	  and take into account in sort.
-
-	+ and in combobox in ui for networks, only take top 10 (so we lose old nets ability to filter).
----
-
-+ Maybe add ability to mark devices as 'favorites' (star) - and have 'group by' section at top of 'favorites'?
-
-	   > WSAPI for augmenting device and network records (mainly patch to change the name)
-	     and implement by having AGGREGATE record for that guy - rollup-id-custom-xxx
-	     but not sure thats a good naming convetion cuz of multi machine rollups - unclear we
-	     want those rollups or not?
-	     
 - REDO storage of seen IDateTimeRange code so actually stores date objects, not strings so dont need to moment
   all over the place to convert and compare.
   - REDUCE use of moment, and maybe eliminate in favor of luxon?
-
-- Have filters and customization sections in devices page shrinkable, and little button in top-right of table to pop it open to allow customization.
-  And probably have a way to make more sections (and delete sections) and maybe revert to default (storing thise prefs in local-storage ui-prefs 
-  pinia store)
 
   - redo components like NetworkDetails and DeviceDetails taking object not ID as argument
     so fetches only (mostly or fully?) done in the parent component; 
@@ -182,12 +117,6 @@ then merge those two together.
 	   the same time - we have the nifo - its just a matter of digging it up) - and risky to wait
 	   cuz we could shutdown and or write to DB at any time without it making it plausible in the future
 	   to have teh device record with no hw address. Not fatal, but best if we can correct.
-
----
-
-	>> The order in which we merge devices (and networks) in rollup is essentially arbitrary.
-	For some things thats OK (those that accumulate) but those that replace
-	we need to be smarter (like name)
 
 ---
 
