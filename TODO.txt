@@ -1,148 +1,3 @@
-- REDO storage of seen IDateTimeRange code so actually stores date objects, not strings so dont need to moment
-  all over the place to convert and compare.
-  - REDUCE use of moment, and maybe eliminate in favor of luxon?
-
-  - redo components like NetworkDetails and DeviceDetails taking object not ID as argument
-    so fetches only (mostly or fully?) done in the parent component; 
-	NOT SURE ABOUT THIS? Unclear what is best/most useful/flexible. Maybe best if compoent takes
-	EITHER ID or object?
-
-+ Stroika WebServer framework feature to add: 503
-  - add some max # of queued up items in threadpool after whihc we generate 503.
-  - THEN - and related - change the throttling logic in GUI app, so if there is outstanding call,
-    we don't generate another. And similarly, if we see slow or 503 responses, increase delay (maybe rename the fetch store call to 
-	fetchIfNotTooBusy or take optioanl args saying how aggressive to be - more on initial load, and less on refreshes)
-
-+ Maybe add new Stroika framework "Extension-Language-Engine" wrapper on python or javascript or something.
-  Expose/hook extension language.
-
-  Then use that in Filters so you can write custom filters (like in wireshark) "
-	filter: s.lastSeen < now-5m && s.Manufacturer contains "apple"
-  (discuss with sterling - helpful for lots of purposes like maybe his photo app as well)
-
-
-+ Scan network traffic and keep track of how much data seen between device and internet and when first and most recent
-  data
-
-+	List of Devices UI has  FILTER by LastSeen - so you can see just 'last day'. But nice to have a GROUP by
-    as well, so INSTEAD of HIDING older stuff, just group by days last seen (not fully thought out).
-
-	Or Group by network (so stuff on wierd networks not fully gone, just off at the end)
-
-+ Add ability to "FAVORITE" or SAVE layouts/filter combos, and store in local storage, and ability to restore/save
-  in UI, so can easily open precombfingured set of viuews
-
-+ Need (X) to CLEAR search string when you type a search string like we currently have for the whole filters line.
-
------
-
-why some last-seen = 'blank'
-
-Filter on last-seen in recent time should INGORE blnak not include
-
-and why (most importnat for stroika) do I see timezone off - says 5 hours ago - is taht stroika regresion?
-
-
-http://localhost:8080/devices/6d7817af-b60c-0965-584d-e1787f6e0458
-reports 
-	lastSeenAt": "2022-02-04T11:16:50+00:00",
-	
-	so its NOT an html bug - its on backend code - sb that but -5... same bug with lastSSDPMessageRecivedAt so appears STROIKA bug.
-	
-...
-trying to rebuild with older stroika? to see when it occurred? 
-	trying stroika r1.
-	
-	
-		get full make working iwth msys (issue with npm not working)
-
-	----
-
-
-- Adjust ajax refrsh pattern so doesn't automatically
-  refetch so quickly if already slow getting responses.
-
-  (coild track total number of outstanding calls maybe)
-  in a global or vuex variable. And then use that 
-  - or better to create a vuex variable wihcih is
-  average response time for last 5 or 10 calls, and use 
-  that as a threshold to tweak rates of refresh in app
-  calls to vueex
-	
-	----
-	
-	and writeup short term todo on WTF eitherw ay
-	
-	
-	    > after that process fixed, do MINIAML background ping testing and collect stats for that and priovde
-	    API to fetch them.
-	    
-	    > THEN - when that is in place - hopeufully can get back to UI work (cuz have vue3)
-	    
-	    but either way get chart package working and show simple graph of the data.
-	    
-	    MAYBE as simple as once per hour ping www.google.com and track ping time.
-	    
-	    
-	   	ANOTHER design idea to writeup - have WSAPI to collect user percentption stats:
-	   	
-	   		> (timerange)
-	   		  (bad net ... good net) - # 1..5 maybe?
-	   		  
-	   	Another thing to capture - if on WIFI - wifi strlegnnt stats
-	   	
-	   	Then - show in data rollup all those data series next to one another.
-	   	
-	   	Maybe also collect DNS lookup times.
-	   	
-	   	
-
---------------
-
-http://localhost:8088/#/device/71c59b3c-db88-97fb-e70b-02cd6cf59100 and
-http://localhost:8088/#/device/6fd4fc40-9e43-5b61-cbaa-050d1272f5ff
-
-
-both rollup to two guys (maybe if we go fast enuf - can happen).
-So when making a run through - what a device rolls up to can change. SO - we must
-track what each device ID used to roll up to and if it can roll up to two dynamic devices
-then merge those two together.
-
-   --- SERVERAL BUGS here
-       - Must have rollup stuff return object with more info so we can quickly do other things
-	   - one is REMOVING things from previous runs of rollup when an object moved (so table mapping
-	   discoered ids to rollup ids and see if mapping changes)
-	   - one is debug why some devices appear quickly without hardware address (e..g)
-	   Found-Through-Network-SYN-Scan:true - we should be able to find its hardware address at
-	   the same time - we have the nifo - its just a matter of digging it up) - and risky to wait
-	   cuz we could shutdown and or write to DB at any time without it making it plausible in the future
-	   to have teh device record with no hw address. Not fatal, but best if we can correct.
-
----
-
-tmphack slow impl - instead build mapping table when constructing rollup
-	.... I thin kthis can be used to fix issue with merging devices/networks too when new info allows them to be merged(new info like getting the
-	deviceid))
-
-----
-
-- Might be useful to add firstSeenAt (like lastSeenAt) for devices and networks. MAYBE replace lastSeenAt with seen (range)
-
-	(when you hover over first seen/last seen, show full datetime (not summary 2 minutes ago)) in details page
-
-
----
->	Do same versioning/rollup crap I did for networks/devices to network-interfaces.
-
----
-
-display aggreates in netwowkr pages(maybe done but test when I have firstseenatat/lastseenat data range stuff) 
----
-revisit rollup code once UI works better to explore
- (hover text over aggregates to print thier date range(seen range) once I change lastSeen to
- a daterange))
-
-----
 - WRITEUP DESIGN DOC FOR OBJECT IDS
   fGUID on discovered db (and stored db).
 
@@ -164,14 +19,6 @@ when we add
 
 still should be able to capture MACADDRESS (but arent sometimes)
 
-
---get rolled up devices counts on backgorund db process to update sDB... devices - but should also grab/merge from dynamic stuff direcly?
-maye do with ifdef (?)
-
- ----
-
-- get building working on 1804 so can target raspberrypi
-
 ----
 
 -  THINK about the whole ID / MERGE problem (DETAILS THAT REMAIN - I HAVE FIRST PASS)
@@ -185,11 +32,6 @@ maye do with ifdef (?)
 	    raw data and incorporates it into local database (even longer term have
 		this run in background as convfigured set of devices)
 
-----
-
-- Search for TV on hercules.local and not found but TYPE TV is there. Search should match on TYPE
-  records
-
 ---
 
 - UI - networks  
@@ -200,10 +42,6 @@ maye do with ifdef (?)
  + PATCH support for DEVICES  
     - allow sepecify name and notes
 	- and display notes in addition to name
-
-
----
-	> Probably solve (stroika) data schema auto-update / migration problem, so easier as I update data model
 
 ---
 ONCE we have a STORAGE for devices, add command
@@ -246,29 +84,6 @@ maybe next is do PRIMITVE DB support - just writing out network and device ids, 
 report on devices no longer found.; Maaybe add DELETE API, so you can DELETE a Network, or other REST object
 (and if they are discovered they will come back) - but wil ldelete the stored/DB parts.
 
----- 
-
-
-- Debug/Polish CacheControl settings for static website.
-  I think the regexps are wrong and not matching the .js etc files
-  Look carefully at the various names
-  and CacheControl definitions/rules
-
-  and make sure we SET Cache-Control settings appoprirately for 
-  WSAPI (probably some default mechanism).
-  
-
-
-
-+ Writeup what I can remember of Johns advice about using / rewriting
-  app to use slices/vuex more...
-
-- (cleanup todo file)
-
-- tickets for a lot of whats here
-
-- then release---
-
 -----
 
 + then fix SPEED issue with web service static content (at least measure and see if reasonable)
@@ -280,12 +95,6 @@ report on devices no longer found.; Maaybe add DELETE API, so you can DELETE a N
 + fix make parallelel issue causes + make -j1 warning and slower build
   (seems just in building backend)
 
------
-
-Network Interaces SB shown in DETAILS page for DEVICE
-(only in that page)
-
-DIsplay JSON for attached interfaces. AND display pretty summary (upper case only in debug builds)
 
 -----
 
