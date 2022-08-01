@@ -1,72 +1,4 @@
-- WRITEUP DESIGN DOC FOR OBJECT IDS
-  fGUID on discovered db (and stored db).
-
-  fAggregates
-
-  when something is rolled up - KEY is that its rolled up UNIQUELY into one object
-
-  Rollup IDs are TRANSIENT. So need to mark objects as 'transient' or not (just advisory, may not always be useful)
-  And even non-transient objects may 'go away' (but when they do they generally get rolled up). Transient object ids should
-  not be cached or re-used across sessions.
-
-maybe flag to say 'disaggreatable' or rollup-undoable, or just list LIKE aggreates 'directly-aggregating' ... the items that can be
-diaggreated. Maybe 'temporarily-aggregating' is a better word for this.
-
-----------
-
-when we add
-                                tmp.fDebugProps.Add (L"Found-Through-Network-SYN-Scan", true);
-
-still should be able to capture MACADDRESS (but arent sometimes)
-
-----
-
--  THINK about the whole ID / MERGE problem (DETAILS THAT REMAIN - I HAVE FIRST PASS)
-	- Maybe add APIs for
-	  - LIST FORCEDMERGE/BREAKUP table, and add/delete
-	  - Force-Re-Run aggregation process (just to debug - shoulnt really ever be needed).
-	  - Forced-Expire (forced rollup of a set of devices - either by ids or date older than range).
-	  - DElete raw data (which causes re-rollup automatically) - either by ID or by date range.
-    - Longer term
-	  - API to MergeFrom - which takes URL of other device, and grabs all its
-	    raw data and incorporates it into local database (even longer term have
-		this run in background as convfigured set of devices)
-
----
-
-- UI - networks  
-   name - DEFAULTS to some combo of friendlyname and network addrs, but is editable
-
-   + allow PATCH ui on Network/ID/ ... name=new-name...
-
- + PATCH support for DEVICES  
-    - allow sepecify name and notes
-	- and display notes in addition to name
-
----
-ONCE we have a STORAGE for devices, add command
-to "DELETE DEVICE HISOTRY" and/or network/networinterface.
-
-(maybe delete device history > n days old)
-(maybe 'rollup device history > n days old)
-
-+ In About/AppData - include Database
-  size used, and in machine area, say 
-  space left on device where DB resides (or maybe just in one place say both numbers)
-
-+ Debug why RunQ number (on windows and
-  UNIX not printing what I expected))
-----
-
-	review ABOUT usage - capture set etc... not working the way I expected with regular update
-    BUT @todo updating HTML GUI to display
-	--- AND getting C++ to show the stuff immediately, not just after 30seconds. (Add doesnt update
-	but CTOR based add does - cleanup)
-	Maybe fix AddCaptureSet() to FORCE a single quick capture, not waiting duration seconds...
-
-
-	and review why on windows its shwing runq length=0
-	
+FINISH MIGRATING THESE TO https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues
 ----
 	NEXT IMPRTANT MILESTONE
 		> Collect ping stats to www.google.com from a given device
@@ -75,14 +7,6 @@ to "DELETE DEVICE HISOTRY" and/or network/networinterface.
 		> and select which networks to use stats from, and maybe go from tehre exploreing more 
 		> like differences between devices on same network etc)
 
-
----
-https://v3.vuejs.org/guide/migration/introduction.html#other-minor-changes
-----
-
-maybe next is do PRIMITVE DB support - just writing out network and device ids, and basic info, so we can 
-report on devices no longer found.; Maaybe add DELETE API, so you can DELETE a Network, or other REST object
-(and if they are discovered they will come back) - but wil ldelete the stored/DB parts.
 
 -----
 
@@ -95,13 +19,6 @@ report on devices no longer found.; Maaybe add DELETE API, so you can DELETE a N
 + fix make parallelel issue causes + make -j1 warning and slower build
   (seems just in building backend)
 
-
------
-
-	>>> ADD SORT ICONS FUNCTION SO TV comes before speaker, and
-	   add TICKET for issue that we want the hoever text to include all items
-	   and the elipsis has to operate over all of them.... Need some fancy component 
-	   todo this that agrggesates the text but inside it iterates and shows icons
 ---
 	Per-Device historical graphs that may make sense:
 
@@ -119,53 +36,15 @@ report on devices no longer found.; Maaybe add DELETE API, so you can DELETE a N
 			MAYBE START with just online-reachable (simple first graph idea) - and have option to add extra
 			overlays (line chart showing traffic level), and line chart showing (some?which) ping times
 			
----
-	Fix TV ICON/TYPE info for samsung TV (supprotig dial etc)
----
-	DEBUG INFO SSDP result shows as string not json
-		(mostly fixed but need change to stroika for rest (optional<string> arg to VariantValue))
 ----
 https://apps.apple.com/us/app/pluto-hud/id1544577573?mt=12 
 
 Hints about privacy policy
 
 ---
-when I get fix for input github action stuff working,
-do for stroika builds too
----
 
-https://dev.to/kanishkt123/runtime-environment-variables-with-github-actions-2if8
-
-figure out how to use the input param to build a specific branch
-but tricky cuz we checkout differnetly for differnt places, but maybe
-have the action RESET the GITHUB_SHA variable?
-
-----
-
-	IDEA:
-		ADD TO issues
-
-		COULD change the history thing I do on devices page so every update to filter goes into URL, NetworkAdapterNamesuse
-
-		uses REPLACE of the URL, so we never need to clear it in the router, just set the filter
-		values in UI to correspond to those in the navbar. Means you can save state of search
-		more easily to hand to someone else.
-
-----
-	Maybe add 'types' filter popup in devices page
----
->	almost ready for checkin - excep tfor comma in netwoks assocaited with a device line.
-
-	>>> IDEAS - FIRST maybe make array optional arg to ReadOnlyTextImte
-
-	>>> OR - create viewmodel that has array-based summary information. DISCUSS 
-		with john how to do that with view model tirggered on changes in devices.
-
-		MAYBE use WATCH, and then reactive array viewmodel (yes I think thats best)
-
-----
-
-	>> NEXT WTF release do UI project to rewrite so view-store are 'slices' and maintian lists instead of maps 
+	>> NEXT WTF release do UI project to rewrite so view-store are 'slices' and maintian
+	 lists instead of maps 
 	   to better reflect ui ordering choices.
 
 	   Do mapping from API-Model (keep wire model, api/business-model, and ui-model)
@@ -188,18 +67,6 @@ confusing thing in Networks and Devices views:
 	  John says Axios makes it easy to do this mapping; and even so should take a day
 	  so leave it for a later GUI work pass
 
----
- make -j 10 
-  for backend and html produces
-  ke[3]: warning: jobserver unavailable: using -j1.  Add '+' to parent make rule.
-make[3]: warning: jobserver unavailable: using -j1.  Add '+' to parent make rule.
-make[3]: warning: jobserver unavailable: using -j1.  Add '+' to parent make rule.
-
-----
-
-manifeacturer 'synonlogy with 
-http://192.168.244.83:5000/ssdp/desc-DSM-eth1.xml
-modelType = NAS
 ---
 - Include the device ICON in its name field (prepend or append? prepend. Old Devices API shows those icons.
   OR - maybe use that in the device type field? Not sure. Maybe that makes more sense to show icon
