@@ -88,6 +88,7 @@ PortScanResults Discovery::ScanPorts (const InternetAddress& ia, const optional<
         return results;
     }
 
+    constexpr PortType              kKerberos_ = 88; // and many other things
     static const Sequence<PortType> kBasicPorts_{
         WellKnownPorts::TCP::kSSH,
         WellKnownPorts::TCP::kHTTP,
@@ -100,6 +101,7 @@ PortScanResults Discovery::ScanPorts (const InternetAddress& ia, const optional<
         WellKnownPorts::TCP::kSIP,
         WellKnownPorts::TCP::kVNC,
         WellKnownPorts::TCP::kHTTPAlt,
+        kKerberos_,     // experiment and see how much this comes up
     };
     if (options and options->fStyle == ScanOptions::eRandomBasicOne) {
         static mt19937 sRng_{std::random_device{}()};
