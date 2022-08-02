@@ -84,44 +84,6 @@ consider rule - if name contains MACBOOKPRO AND manufacture from ethernet info i
 mark it as type PC.
 
 ----
-
-MacOS Installer
-----
-
-STROIKA do macos installer for samples
-and do macos installer for WTF
-	https://medium.com/swlh/the-easiest-way-to-build-macos-installer-for-your-application-34a11dd08744
-
-----
-
-	> Specially mark/categorize 
-	  devices by the percentage of scans 
-	  done of a network that the device is
-	  found on that network.
-
-	  For example - some devices are always tehre (router, printer etc).
-	  Some very occasionally (friends laptop when they visit
-	  ))
-	  Others maybe NEW (not seen before))
-	  Maybe something like	
-	  	FOR LAST DAY (PCT scans on this network)
-		FOR LAST MONTH (PCT scans on this network)
-		FOR LAST YEAR (PCT scans on this network)
-		- OR - better - some 2d smooth representation of how this pct changes over lengthing timespans
-
------
-
-On RaspbeerryPi - DEBUG build crashes on startup with stackoverflow - but release version seems to work fine
-	(ssdp works here though not on macos it appears)
-
-----
-
-	WTF - MacOS issues
-		>	it appears SSDP not working
-		>	need installer
-		>	need systemctl start functionality
-
-----
 	sudo systemctl stop whythefuckismynetworksoslow.service 
 		takes a long time (more than 10 seconds)
 		whythefuckismynetworksoslow.service: Control process exited, code=exited, status=1/FAILURE
@@ -134,43 +96,6 @@ On RaspbeerryPi - DEBUG build crashes on startup with stackoverflow - but releas
 ---
 
 	Switch to server side sorting before release (becaues it works better - smarter and easier to do smart there)
-
----
-
-Name	192.168.244.72
-ID	98929b6c-64c5-989a-669d-6e9e97989697
-Open Ports	tcp:139, tcp:22
-
-	But when I ssh to it I get no response.
-
-Name	192.168.244.28
-ID	98c79b9a-959b-97c5-9a64-956899c6c86e
-Open Ports	tcp:139, tcp:22, tcp:3389, tcp:443, tcp:5060, tcp:631, tcp:80
-	(MAYBE PORT THING FAILING STILL - port 22 NOT OPEN on this device)
-	(UNIX ISSUE)
-
-	AND
-
-		Name	192.168.244.92
-		ID	92956497-c999-9e68-9b6a-686d98699299
-		Open Ports	tcp:22
-		Manufacturers	Apple
-		Networks	{ "c6936b94-c6
-		(MAYBE OK)
-
-		192.168.244.92 SCAN with zemnap had alot of ports open
-		22/tcp    open     ssh             OpenSSH 8.1 (protocol 2.0)
-		88/tcp    open     kerberos-sec    Heimdal Kerberos (server time: 2020-09-02 00:34:58Z)
-		5900/tcp  open     vnc             Apple remote desktop vnc
-
-on device  192.168.244.44
-	8080/tcp open  http-proxy
-	GET and look at SERVER host
-
-on device
- a a2ec
- 192.168.244.13 - elizabeths iphone
- 62078/tcp open  iphone-sync?
 
 ---
 Guess more ports based on SSDP messages (urls in ssdp)
@@ -190,7 +115,7 @@ https://linuxconfig.org/how-to-determine-os-of-the-remote-host
 
 ----
 
-	>>> Icon for  MacOS
+	>>> Icon for MacOS
 
 ---
 
@@ -206,11 +131,6 @@ https://linuxconfig.org/how-to-determine-os-of-the-remote-host
 
 	>	CHeckboxes for features to turn on/off
 	
-
----
-add editable field for 'Notes'
-
-
 ----
 make editable area a COMPONENT so and new SINGLE-DEVICE page (or change this page into that hiding list and focusing on single device)
 then allow links to that single-device page
@@ -220,18 +140,6 @@ then allow links to that single-device page
 add CMD icons to devices page for 'scan more aggressively' 
 and maybe have space for scan speed status.
 
----
-
-arrow keys in devices list gui beae)
-
-
-----
-
-use trackingtimercontext prints around locks to assure locks dont ever take too long (or we see in logs)
-
-----
-
-consier addigng operator DurecationSectonsType converter for Duration and see if hten can assign 1min etc to DurationSecondsType;
 ----
 
 do a 'quietConnect() version that doesnt throw - but returns flag on failure to connect)
@@ -242,24 +150,6 @@ unique_ptr<exception> ())
 [0013][0761.416]		<WSImpl::GetDevices_Recurse (sort={searchTerms: [ {by: Address, ascending: true, }, {by: Type, ascending: true, }, {by: Priority, ascending: true, } ], compareNetwork: '192.168.244.0/24', })> {
 [0013][0761.439]		} </WSImpl::GetDevices_Recurse>
 [0013][0761.508]		ThreadPool::WaitForNextTask_ () pulled a new task from 'pending-tasks' to run on this thread, leaving pending-task-list-size = 0
-
-
-
-----
-	Build issue
-		> change html
-		> cd html
-		> make CONFIGURATION=XXX all
-		> cd..
-		> make same above
-		and I DONT see hte HTML changes
-
-		BUT - in the html dir - add a clobber, and I do see the changes
-	(MINOR)
-	(ISSUE ONLY ON WINDOWS and due to lack of symbolic links working with npm)
------
-
-https://github.com/mfontanini/libtins (look at this? Use? Maybe not needed)
 ----
 
 	> let run for a few days and try to connect with web browser.
