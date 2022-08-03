@@ -13,7 +13,8 @@
 			"list": "cpp",
 			"*.ipp": "cpp",
 			"*.env": "cpp",
-			"string": "cpp"
+			"string": "cpp",
+			"chrono": "cpp"
 		}
 	}
 }
