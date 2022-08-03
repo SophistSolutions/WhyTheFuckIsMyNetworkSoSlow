@@ -112,10 +112,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
                     break;
                 case TABLE_CONNECTION::Operation::eNotifyError:
                     if (kIncludeLastSQK_) {
-                        Execution::Logger::sThe.LogIfNew (Execution::Logger::Priority::eWarning, 1min, L"Database operation exception: %s (lastsql %s)", Characters::ToString (e).c_str (), Characters::ToString (lastSQL).c_str ());
+                        Execution::Logger::sThe.Log (Execution::Logger::Priority::eWarning, L"Database operation exception: %s (lastsql %s)", Characters::ToString (e).c_str (), Characters::ToString (lastSQL).c_str ());
                     }
                     else {
-                        Execution::Logger::sThe.LogIfNew (Execution::Logger::Priority::eWarning, 1min, L"Database operation exception: %s", Characters::ToString (e).c_str ());
+                        Execution::Logger::sThe.Log (Execution::Logger::Priority::eWarning, L"Database operation exception: %s", Characters::ToString (e).c_str ());
                     }
                     tmp->NoteError ();
                     break;

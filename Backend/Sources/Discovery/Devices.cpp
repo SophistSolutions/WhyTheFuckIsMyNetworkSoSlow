@@ -799,7 +799,7 @@ namespace {
                     Execution::ReThrow ();
                 }
                 catch (...) {
-                    Execution::Logger::sThe.LogIfNew (Execution::Logger::Priority::eError, 5min, L"%s", Characters::ToString (current_exception ()).c_str ());
+                    Execution::Logger::sThe.Log (Execution::Logger::Priority::eError, L"%s", Characters::ToString (current_exception ()).c_str ());
                 }
 
             nextTry:
@@ -1165,7 +1165,7 @@ namespace {
                     Execution::ReThrow ();
                 }
                 catch (...) {
-                    Execution::Logger::sThe.LogIfNew (Execution::Logger::Priority::eError, 5min, L"%s", Characters::ToString (current_exception ()).c_str ());
+                    Execution::Logger::sThe.Log (Execution::Logger::Priority::eError, L"%s", Characters::ToString (current_exception ()).c_str ());
                 }
                 Execution::Sleep (1min); // unsure of right interval - maybe able to epoll or something so no actual polling needed - note no lock held here
             }
@@ -1353,7 +1353,7 @@ namespace {
                     Execution::ReThrow ();
                 }
                 catch (...) {
-                    Execution::Logger::sThe.LogIfNew (Execution::Logger::Priority::eError, 5min, L"%s", Characters::ToString (current_exception ()).c_str ());
+                    Execution::Logger::sThe.Log (Execution::Logger::Priority::eError, L"%s", Characters::ToString (current_exception ()).c_str ());
                 }
             }
         }
@@ -1460,7 +1460,7 @@ namespace {
                     Execution::ReThrow ();
                 }
                 catch (...) {
-                    Execution::Logger::sThe.LogIfNew (Execution::Logger::Priority::eError, 5min, L"%s", Characters::ToString (current_exception ()).c_str ());
+                    Execution::Logger::sThe.Log (Execution::Logger::Priority::eError, L"%s", Characters::ToString (current_exception ()).c_str ());
                 }
             }
         }

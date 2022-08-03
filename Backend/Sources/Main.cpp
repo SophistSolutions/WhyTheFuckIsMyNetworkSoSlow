@@ -134,10 +134,10 @@ int main (int argc, const char* argv[])
 #if __cpp_designated_initializers
     Logger::Activator loggerActivation{Logger::Options{
         .fLogBufferingEnabled         = true,
-        .fSuppressDuplicatesThreshold = 1min,
+        .fSuppressDuplicatesThreshold = 5min,
     }};
 #else
-    Logger::Activator loggerActivation{Logger::Options{true, 15min}};
+    Logger::Activator loggerActivation{Logger::Options{true, 5min}};
 #endif
 #if qHas_Syslog
     Logger::sThe.SetAppender (make_shared<Logger::SysLogAppender> (L"WhyTheFuckIsMyNetworkSoSlow"));

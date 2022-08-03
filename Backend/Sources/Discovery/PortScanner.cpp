@@ -101,7 +101,7 @@ PortScanResults Discovery::ScanPorts (const InternetAddress& ia, const optional<
         WellKnownPorts::TCP::kSIP,
         WellKnownPorts::TCP::kVNC,
         WellKnownPorts::TCP::kHTTPAlt,
-        kKerberos_,     // experiment and see how much this comes up
+        kKerberos_, // experiment and see how much this comes up
     };
     if (options and options->fStyle == ScanOptions::eRandomBasicOne) {
         static mt19937 sRng_{std::random_device{}()};
