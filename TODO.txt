@@ -1,3 +1,20 @@
+https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/36 (aggregates summary info bug)
+
+	> add to devices/networks query optional parameter ids=[] (so /id equiv of ids=[thatid] except for returning in array format)
+	> add to devices/networks query optional parameter only-fields=[list of fields ] but document waht are required 
+	  and UNCLEAR if required to be speciifed - as args - probably yes for clarity?
+
+	  then in html, pinia, add API saying fetchAggregatesSummary([list of ids]) and then getter for same.
+	  Keep separeate lists from devices/networks for summary objects (may revisit).
+
+	  Must provider sort-by-seen-ever utility in javascript.
+
+	  THEN - we can ammend display code for netwrork/device details pages.
+
+
+----
+
+
 FINISH MIGRATING THESE TO https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues
 ----
 	NEXT IMPRTANT MILESTONE
