@@ -48,10 +48,10 @@ using namespace Stroika::Foundation::Memory;
 using namespace Stroika::Foundation::IO::Network;
 
 using DataExchange::ObjectVariantMapper;
-using Stroika:: Foundation::Common::GUID;
 using IO::Network::HTTP::ClientErrorException;
 using Stroika::Foundation::Common::ConstantProperty;
 using Stroika::Foundation::Common::EmptyObjectForSideEffects;
+using Stroika::Foundation::Common::GUID;
 using Stroika::Foundation::Time::Duration;
 
 using namespace Stroika::Frameworks::WebServer;
@@ -113,9 +113,6 @@ namespace {
         return mapper;
     }();
 }
-
-
-
 
 /*
  ********************************************************************************
@@ -237,11 +234,11 @@ public:
                   [=] (Message* m) {
                       constexpr bool                              kDefault_FilterRunningOnly_{true};
                       ActiveCallCounter_                          acc{*this};
-                      Mapping<String, DataExchange::VariantValue> args              = PickoutParamValues (&m->rwRequest ());
+                      Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (&m->rwRequest ());
 
                       DbgTrace (L"args=%s", Characters::ToString (args).c_str ());
-                      bool                                        filterRunningOnly = args.LookupValue (L"filter-only-running"sv, DataExchange::VariantValue{kDefault_FilterRunningOnly_}).As<bool> ();
-                      optional<DeviceSortParamters>               sort;
+                      bool                          filterRunningOnly = args.LookupValue (L"filter-only-running"sv, DataExchange::VariantValue{kDefault_FilterRunningOnly_}).As<bool> ();
+                      optional<DeviceSortParamters> sort;
                       if (auto o = args.Lookup (L"sort"sv)) {
                           ClientErrorException::TreatExceptionsAsClientError ([&] () {
                               sort = DeviceSortParamters::kMapper.ToObject<DeviceSortParamters> (DataExchange::Variant::JSON::Reader{}.Read (o->As<String> ()));
@@ -255,15 +252,15 @@ public:
                                                                                                                                               L"Invalid argument to query string sortBy"sv})};
                           });
                       }
-                      optional<Set<GUID>> restrict2IDs = nullopt;
-                      if (auto o = args.Lookup (L"restrict2ids"sv)) {
-                          restrict2IDs = kSequenceOfGUIDMapper_.ToObject<Set<GUID>> (DataExchange::Variant::JSON::Reader{}.Read (o->As<String> ()));
+                      optional<Set<GUID>> ids = nullopt;
+                      if (auto o = args.Lookup (L"ids"sv)) {
+                          ids = kSequenceOfGUIDMapper_.ToObject<Set<GUID>> (DataExchange::Variant::JSON::Reader{}.Read (o->As<String> ()));
                       }
                       if (args.LookupValue (L"recurse"sv, false).As<bool> ()) {
-                          WriteResponse (&m->rwResponse (), kDevices_, Device::kMapper.FromObject (fWSAPI_->GetDevices_Recurse (restrict2IDs, sort)));
+                          WriteResponse (&m->rwResponse (), kDevices_, Device::kMapper.FromObject (fWSAPI_->GetDevices_Recurse (ids, sort)));
                       }
                       else {
-                          WriteResponse (&m->rwResponse (), kDevices_, kBasicsMapper_.FromObject (fWSAPI_->GetDevices (restrict2IDs, sort)));
+                          WriteResponse (&m->rwResponse (), kDevices_, kBasicsMapper_.FromObject (fWSAPI_->GetDevices (ids, sort)));
                       }
                   }},
               Route{
@@ -299,15 +296,15 @@ public:
                   [=] (Message* m) {
                       ActiveCallCounter_                          acc{*this};
                       Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (&m->rwRequest ());
-                      optional<Set<GUID>>                    restrict2IDs = nullopt;
-                      if (auto o = args.Lookup (L"restrict2ids"sv)) {
-                          restrict2IDs = kSequenceOfGUIDMapper_.ToObject<Set<GUID>> (DataExchange::Variant::JSON::Reader{}.Read (o->As<String> ()));
+                      optional<Set<GUID>>                         ids  = nullopt;
+                      if (auto o = args.Lookup (L"ids"sv)) {
+                          ids = kSequenceOfGUIDMapper_.ToObject<Set<GUID>> (DataExchange::Variant::JSON::Reader{}.Read (o->As<String> ()));
                       }
                       if (args.LookupValue (L"recurse"sv, false).As<bool> ()) {
-                          WriteResponse (&m->rwResponse (), kNetworkInterfaces_, Network::kMapper.FromObject (fWSAPI_->GetNetworks_Recurse (restrict2IDs)));
+                          WriteResponse (&m->rwResponse (), kNetworkInterfaces_, Network::kMapper.FromObject (fWSAPI_->GetNetworks_Recurse (ids)));
                       }
                       else {
-                          WriteResponse (&m->rwResponse (), kNetworkInterfaces_, kBasicsMapper_.FromObject (fWSAPI_->GetNetworks (restrict2IDs)));
+                          WriteResponse (&m->rwResponse (), kNetworkInterfaces_, kBasicsMapper_.FromObject (fWSAPI_->GetNetworks (ids)));
                       }
                   }},
               Route{
@@ -499,7 +496,7 @@ const WebServiceMethodDescription WebServer::Rep_::kDevices_{
         L"Fetch the list of known devices for the currently connected network. By default, this list is sorted so the most interesting devices come first (like this machine is first)"sv,
         L"query-string: sort={[by: Address|Priority|Name|Type, ascending: true|false]+, compareNetwork?: CIDR|network-id}; sort=ARG is JSON encoded SearchTerm={by: string, ascending?: bool}, {searchTerms: SearchTerm[], compareNetwork: string}"sv,
         L"query-string: sortBy=Address|Priority|Name|Type sortAscending=true|false (requires sortBy); both are aliases for sort=...)"sv,
-        L"query-string: restrict2ids=[a,b,c] - optional - if omitted returns all)"sv,
+        L"query-string: ids=[a,b,c] - optional - if omitted returns all)"sv,
         L"Note: sorts are stable, so they can be combined one after the other. To get a GroupBy, just do the grouping as the final 'sort'."sv,
     },
 };
@@ -510,7 +507,7 @@ const WebServiceMethodDescription WebServer::Rep_::kNetworks_{
     {},
     Sequence<String>{L"curl http://localhost/api/v1/networks"sv, L"curl http://localhost/api/v1/networks?recurse=true"sv, L"curl http://localhost/api/v1/networks/{ID}"sv},
     Sequence<String>{L"Fetch the list of known Networks."sv,
-                     L"query-string: restrict2ids=[a,b,c] - optional - if omitted returns all)"sv,
+                     L"query-string: ids=[a,b,c] - optional - if omitted returns all)"sv,
                      L"@todo - in the future - add support for parameters to this fetch - which can be used to filter/subset etc"sv},
 };
 const WebServiceMethodDescription WebServer::Rep_::kNetworkInterfaces_{

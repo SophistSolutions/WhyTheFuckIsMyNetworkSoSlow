@@ -59,8 +59,8 @@ using namespace Stroika::Foundation::Traversal;
 using namespace Stroika::Frameworks;
 using namespace Stroika::Frameworks::UPnP;
 
-using Execution::RWSynchronized;
 using Execution::Logger;
+using Execution::RWSynchronized;
 using IO::Network::InternetAddress;
 using Stroika::Foundation::Common::GUID;
 using Stroika::Foundation::Common::KeyValuePair;
