@@ -268,7 +268,7 @@ let filteredExtendedNetworks: ComputedRef<object[]> = computed(() => {
         (i.internetServiceProvider == null ? " " : " (" + i.internetServiceProvider.name + ")"),
       devices: GetDeviceIDsInNetwork(i, allDevices.value).length,
       status: statusStr,
-      location: FormatLocation(i.geographicLocation),
+      location: FormatLocation(i.geographicLocation) ?? "?",
     };
     if (
       search.value === "" ||

@@ -124,7 +124,7 @@ let thisNetworksInterfaces = computed<INetworkInterface[]>(
     </div>
     <div class="row" v-if="currentNetwork.geographicLocation">
       <div class="col-3">Geographic Location</div>
-      <div class="col"> {{ FormatLocation(currentNetwork.geographicLocation) }} </div>
+      <div class="col"> {{ FormatLocation(currentNetwork.geographicLocation) ?? "?" }} </div>
     </div>
     <div class="row" v-if="currentNetwork.internetServiceProvider">
       <div class="col-3">Internet Service Provider</div>

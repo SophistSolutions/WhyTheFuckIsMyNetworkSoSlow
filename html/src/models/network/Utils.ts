@@ -84,12 +84,12 @@ export function GetDevicesForNetworkLink(
 
 /**
  *
- * @param l argument can be null, in which case this returns ""
+ * @param l argument can be null, in which case this returns null
  */
-export function FormatLocation(l?: IGeographicLocation): string {
+export function FormatLocation(l?: IGeographicLocation): string|null {
   let result: string = '';
   if (l == null) {
-    return result;
+    return null;
   }
   if (l.city != null) {
     result += l.city;

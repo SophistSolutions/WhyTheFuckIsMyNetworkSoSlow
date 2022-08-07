@@ -5,7 +5,6 @@ import moment from 'moment';
 import { IDevice } from "../models/device/IDevice";
 import { INetwork } from "../models/network/INetwork";
 import {
-  FormatLocation,
   GetDeviceIDsInNetwork,
   GetDevicesForNetworkLink,
   GetNetworkLink,
