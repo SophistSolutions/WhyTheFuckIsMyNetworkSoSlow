@@ -51,7 +51,7 @@ optional<String> BackendApp::Common::LookupEthernetMACAddressOUIFromPrefix (cons
         }
         catch (...) {
             using Execution::Logger;
-            Logger::sThe.Log (Logger::Priority::eError, L"Error encountered reading OSI-MAC-PREFIXES: %s", Characters::ToString (current_exception ()).c_str ());
+            Logger::sThe.Log (Logger::eError, L"Error encountered reading OSI-MAC-PREFIXES: %s", Characters::ToString (current_exception ()).c_str ());
         }
         return tmp;
     }();

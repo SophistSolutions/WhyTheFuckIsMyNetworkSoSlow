@@ -60,6 +60,7 @@ using namespace Stroika::Frameworks;
 using namespace Stroika::Frameworks::UPnP;
 
 using Execution::RWSynchronized;
+using Execution::Logger;
 using IO::Network::InternetAddress;
 using Stroika::Foundation::Common::GUID;
 using Stroika::Foundation::Common::KeyValuePair;
@@ -799,7 +800,7 @@ namespace {
                     Execution::ReThrow ();
                 }
                 catch (...) {
-                    Execution::Logger::sThe.Log (Execution::Logger::Priority::eError, L"%s", Characters::ToString (current_exception ()).c_str ());
+                    Logger::sThe.Log (Logger::eError, L"%s", Characters::ToString (current_exception ()).c_str ());
                 }
 
             nextTry:
@@ -883,7 +884,7 @@ namespace {
                     SSDP::Client::Listener::eAutoStart);
             }
             catch (...) {
-                Logger::sThe.Log (Logger::Priority::eError, L"Problem starting SSDP Listener - so that source of discovery will be (temporarily - will retry) unavailable: %s", Characters::ToString (current_exception ()).c_str ());
+                Logger::sThe.Log (Logger::eError, L"Problem starting SSDP Listener - so that source of discovery will be (temporarily - will retry) unavailable: %s", Characters::ToString (current_exception ()).c_str ());
             }
             try {
                 static const Time::Duration kReSearchInterval_{10min}; // not sure what interval makes sense
@@ -893,11 +894,11 @@ namespace {
             }
             catch (...) {
                 // only warning because searcher much less important - just helpful at very start of discovery
-                Logger::sThe.Log (Logger::Priority::eWarning, L"Problem starting SSDP Searcher - so that source of discovery will be (temporarily - will retry) unavailable: %s", Characters::ToString (current_exception ()).c_str ());
+                Logger::sThe.Log (Logger::eWarning, L"Problem starting SSDP Searcher - so that source of discovery will be (temporarily - will retry) unavailable: %s", Characters::ToString (current_exception ()).c_str ());
             }
             if (notifyOfSuccess and
                 fListener_ != nullptr and fSearcher_ != nullptr) {
-                Logger::sThe.Log (Logger::Priority::eInfo, L"(Re-)Started SSDP Listener and Searcher");
+                Logger::sThe.Log (Logger::eInfo, L"(Re-)Started SSDP Listener and Searcher");
             }
         }
 
@@ -1165,7 +1166,7 @@ namespace {
                     Execution::ReThrow ();
                 }
                 catch (...) {
-                    Execution::Logger::sThe.Log (Execution::Logger::Priority::eError, L"%s", Characters::ToString (current_exception ()).c_str ());
+                    Logger::sThe.Log (Logger::eError, L"%s", Characters::ToString (current_exception ()).c_str ());
                 }
                 Execution::Sleep (1min); // unsure of right interval - maybe able to epoll or something so no actual polling needed - note no lock held here
             }
@@ -1353,7 +1354,7 @@ namespace {
                     Execution::ReThrow ();
                 }
                 catch (...) {
-                    Execution::Logger::sThe.Log (Execution::Logger::Priority::eError, L"%s", Characters::ToString (current_exception ()).c_str ());
+                    Logger::sThe.Log (Logger::eError, L"%s", Characters::ToString (current_exception ()).c_str ());
                 }
             }
         }
@@ -1460,7 +1461,7 @@ namespace {
                     Execution::ReThrow ();
                 }
                 catch (...) {
-                    Execution::Logger::sThe.Log (Execution::Logger::Priority::eError, L"%s", Characters::ToString (current_exception ()).c_str ());
+                    Logger::sThe.Log (Logger::eError, L"%s", Characters::ToString (current_exception ()).c_str ());
                 }
             }
         }
