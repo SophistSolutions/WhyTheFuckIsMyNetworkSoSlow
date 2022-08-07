@@ -23,6 +23,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
     using Containers::Collection;
     using Containers::Sequence;
     using Stroika::Foundation::Common::GUID;
+    using Traversal::Iterable;
 
     /**
      */
@@ -50,16 +51,16 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
         /**
          *  curl  http://localhost/api/v1/devices
          */
-        virtual Sequence<String> GetDevices (const optional<DeviceSortParamters>& sort = {}) const         = 0;
-        virtual Sequence<Device> GetDevices_Recurse (const optional<DeviceSortParamters>& sort = {}) const = 0;
+        virtual Sequence<String> GetDevices (const optional<Set<GUID>>& restrict2IDs = nullopt, const optional<DeviceSortParamters>& sort = {}) const         = 0;
+        virtual Sequence<Device> GetDevices_Recurse (const optional<Set<GUID>>& restrict2IDs = nullopt, const optional<DeviceSortParamters>& sort = {}) const = 0;
         virtual Device           GetDevice (const String& id) const                                        = 0;
 
     public:
         /**
          *  curl  http://localhost/api/v1/networks
          */
-        virtual Sequence<String>  GetNetworks () const                = 0;
-        virtual Sequence<Network> GetNetworks_Recurse () const        = 0;
+        virtual Sequence<String>  GetNetworks (const optional<Set<GUID>>& restrict2IDs = nullopt) const       = 0;
+        virtual Sequence<Network> GetNetworks_Recurse (const optional<Set<GUID>>& restrict2IDs = nullopt) const = 0;
         virtual Network           GetNetwork (const String& id) const = 0;
 
     public:

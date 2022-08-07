@@ -225,18 +225,19 @@ tuple<Memory::BLOB, optional<DataExchange::InternetMediaType>> WSImpl::GetBLOB (
     return Common::BLOBMgr::sThe.GetBLOB (guid);
 }
 
-Sequence<String> WSImpl::GetDevices (const optional<DeviceSortParamters>& sort) const
+Sequence<String> WSImpl::GetDevices (const optional<Set<GUID>>& restrict2IDs, const optional<DeviceSortParamters>& sort) const
 {
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
     Sequence<String>                                result;
-    for (const BackendApp::WebServices::Device& n : GetDevices_Recurse (sort)) {
+    for (const BackendApp::WebServices::Device& n : GetDevices_Recurse (restrict2IDs, sort)) {
         result += Characters::ToString (n.fGUID);
     }
     return result;
 }
 
-Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const optional<DeviceSortParamters>& sort) const
+Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const optional<Set<GUID>>& restrict2IDs, const optional<DeviceSortParamters>& sort) const
 {
+    using BackendApp::WebServices::Device;
     Debug::TraceContextBumper                       ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::GetDevices_Recurse", L"sort=%s", Characters::ToString (sort).c_str ())};
     Debug::TimingTrace                              ttrc{L"WSImpl::GetDevices_Recurse", .1};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
@@ -280,7 +281,10 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
         }
     }
 
-    Sequence<BackendApp::WebServices::Device> devices = IntegratedModel::Mgr::sThe.GetDevices ();
+    Sequence<Device> devices = IntegratedModel::Mgr::sThe.GetDevices ();
+    if (restrict2IDs) {
+        devices = devices.Where ([&] (const Device& d) { return restrict2IDs->Contains (d.fGUID); });
+    }
 
     // Sort them
     for (const DeviceSortParamters::SearchTerm& st : searchTerms) {
@@ -405,14 +409,14 @@ Device WSImpl::GetDevice (const String& id) const
     Execution::Throw (ClientErrorException{L"no such id"sv});
 }
 
-Sequence<String> WSImpl::GetNetworks () const
+Sequence<String> WSImpl::GetNetworks (const optional<Set<GUID>>& restrict2IDs) const
 {
     Debug::TimingTrace                              ttrc{L"WSImpl::GetNetworks", 0.1};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
     return Sequence<String>{IntegratedModel::Mgr::sThe.GetNetworks ().Select<String> ([] (const auto& n) { return n.fGUID.ToString (); })};
 }
 
-Sequence<BackendApp::WebServices::Network> WSImpl::GetNetworks_Recurse () const
+Sequence<BackendApp::WebServices::Network> WSImpl::GetNetworks_Recurse (const optional<Set<GUID>>& restrict2IDs) const
 {
     Debug::TimingTrace                              ttrc{L"WSImpl::GetNetworks_Recurse", 0.1};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;

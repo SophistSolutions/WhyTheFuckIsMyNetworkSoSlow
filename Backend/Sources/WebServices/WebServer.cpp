@@ -47,6 +47,8 @@ using namespace Stroika::Foundation::Execution;
 using namespace Stroika::Foundation::Memory;
 using namespace Stroika::Foundation::IO::Network;
 
+using DataExchange::ObjectVariantMapper;
+using Stroika:: Foundation::Common::GUID;
 using IO::Network::HTTP::ClientErrorException;
 using Stroika::Foundation::Common::ConstantProperty;
 using Stroika::Foundation::Common::EmptyObjectForSideEffects;
@@ -74,7 +76,7 @@ namespace {
         optional<String>       API_ROOT;         // if specified takes precedence over DEFAULT_API_PORT
         optional<unsigned int> DEFAULT_API_PORT; // added to remote host used in web browser for accessing API
 
-        static const DataExchange::ObjectVariantMapper kMapper;
+        static const ObjectVariantMapper kMapper;
     };
     const WebServiceMethodDescription kGUIConfig_{
         L"config"sv,
@@ -84,13 +86,13 @@ namespace {
         Sequence<String>{},
         Sequence<String>{L"GUI config."sv},
     };
-    const DataExchange::ObjectVariantMapper Config_::kMapper = [] () {
-        DataExchange::ObjectVariantMapper mapper;
+    const ObjectVariantMapper Config_::kMapper = [] () {
+        ObjectVariantMapper mapper;
         mapper.AddCommonType<optional<String>> ();
         mapper.AddCommonType<optional<unsigned int>> ();
         mapper.AddClass<Config_> ({
-            DataExchange::ObjectVariantMapper::StructFieldInfo{L"API_ROOT", DataExchange::StructFieldMetaInfo{&Config_::API_ROOT}},
-            DataExchange::ObjectVariantMapper::StructFieldInfo{L"DEFAULT_API_PORT", DataExchange::StructFieldMetaInfo{&Config_::DEFAULT_API_PORT}},
+            ObjectVariantMapper::StructFieldInfo{L"API_ROOT", DataExchange::StructFieldMetaInfo{&Config_::API_ROOT}},
+            ObjectVariantMapper::StructFieldInfo{L"DEFAULT_API_PORT", DataExchange::StructFieldMetaInfo{&Config_::DEFAULT_API_PORT}},
         });
         return mapper;
     }();
@@ -102,14 +104,27 @@ namespace {
     }
 }
 
+namespace {
+    const ObjectVariantMapper kSequenceOfGUIDMapper_ = [] () {
+        using namespace BackendApp::Common;
+        ObjectVariantMapper mapper;
+        mapper.AddCommonType<GUID> ();
+        mapper.AddCommonType<Set<GUID>> ();
+        return mapper;
+    }();
+}
+
+
+
+
 /*
  ********************************************************************************
  ********************************** WebServer ***********************************
  ********************************************************************************
  */
 namespace {
-    const DataExchange::ObjectVariantMapper kBasicsMapper_ = [] () {
-        DataExchange::ObjectVariantMapper mapper;
+    const ObjectVariantMapper kBasicsMapper_ = [] () {
+        ObjectVariantMapper mapper;
         mapper.AddCommonType<Collection<String>> ();
         mapper.AddCommonType<Sequence<String>> ();
         return mapper;
@@ -223,6 +238,8 @@ public:
                       constexpr bool                              kDefault_FilterRunningOnly_{true};
                       ActiveCallCounter_                          acc{*this};
                       Mapping<String, DataExchange::VariantValue> args              = PickoutParamValues (&m->rwRequest ());
+
+                      DbgTrace (L"args=%s", Characters::ToString (args).c_str ());
                       bool                                        filterRunningOnly = args.LookupValue (L"filter-only-running"sv, DataExchange::VariantValue{kDefault_FilterRunningOnly_}).As<bool> ();
                       optional<DeviceSortParamters>               sort;
                       if (auto o = args.Lookup (L"sort"sv)) {
@@ -238,11 +255,15 @@ public:
                                                                                                                                               L"Invalid argument to query string sortBy"sv})};
                           });
                       }
+                      optional<Set<GUID>> restrict2IDs = nullopt;
+                      if (auto o = args.Lookup (L"restrict2ids"sv)) {
+                          restrict2IDs = kSequenceOfGUIDMapper_.ToObject<Set<GUID>> (DataExchange::Variant::JSON::Reader{}.Read (o->As<String> ()));
+                      }
                       if (args.LookupValue (L"recurse"sv, false).As<bool> ()) {
-                          WriteResponse (&m->rwResponse (), kDevices_, Device::kMapper.FromObject (fWSAPI_->GetDevices_Recurse (sort)));
+                          WriteResponse (&m->rwResponse (), kDevices_, Device::kMapper.FromObject (fWSAPI_->GetDevices_Recurse (restrict2IDs, sort)));
                       }
                       else {
-                          WriteResponse (&m->rwResponse (), kDevices_, kBasicsMapper_.FromObject (fWSAPI_->GetDevices (sort)));
+                          WriteResponse (&m->rwResponse (), kDevices_, kBasicsMapper_.FromObject (fWSAPI_->GetDevices (restrict2IDs, sort)));
                       }
                   }},
               Route{
@@ -278,11 +299,15 @@ public:
                   [=] (Message* m) {
                       ActiveCallCounter_                          acc{*this};
                       Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (&m->rwRequest ());
+                      optional<Set<GUID>>                    restrict2IDs = nullopt;
+                      if (auto o = args.Lookup (L"restrict2ids"sv)) {
+                          restrict2IDs = kSequenceOfGUIDMapper_.ToObject<Set<GUID>> (DataExchange::Variant::JSON::Reader{}.Read (o->As<String> ()));
+                      }
                       if (args.LookupValue (L"recurse"sv, false).As<bool> ()) {
-                          WriteResponse (&m->rwResponse (), kNetworkInterfaces_, Network::kMapper.FromObject (fWSAPI_->GetNetworks_Recurse ()));
+                          WriteResponse (&m->rwResponse (), kNetworkInterfaces_, Network::kMapper.FromObject (fWSAPI_->GetNetworks_Recurse (restrict2IDs)));
                       }
                       else {
-                          WriteResponse (&m->rwResponse (), kNetworkInterfaces_, kBasicsMapper_.FromObject (fWSAPI_->GetNetworks ()));
+                          WriteResponse (&m->rwResponse (), kNetworkInterfaces_, kBasicsMapper_.FromObject (fWSAPI_->GetNetworks (restrict2IDs)));
                       }
                   }},
               Route{
@@ -474,6 +499,7 @@ const WebServiceMethodDescription WebServer::Rep_::kDevices_{
         L"Fetch the list of known devices for the currently connected network. By default, this list is sorted so the most interesting devices come first (like this machine is first)"sv,
         L"query-string: sort={[by: Address|Priority|Name|Type, ascending: true|false]+, compareNetwork?: CIDR|network-id}; sort=ARG is JSON encoded SearchTerm={by: string, ascending?: bool}, {searchTerms: SearchTerm[], compareNetwork: string}"sv,
         L"query-string: sortBy=Address|Priority|Name|Type sortAscending=true|false (requires sortBy); both are aliases for sort=...)"sv,
+        L"query-string: restrict2ids=[a,b,c] - optional - if omitted returns all)"sv,
         L"Note: sorts are stable, so they can be combined one after the other. To get a GroupBy, just do the grouping as the final 'sort'."sv,
     },
 };
@@ -484,6 +510,7 @@ const WebServiceMethodDescription WebServer::Rep_::kNetworks_{
     {},
     Sequence<String>{L"curl http://localhost/api/v1/networks"sv, L"curl http://localhost/api/v1/networks?recurse=true"sv, L"curl http://localhost/api/v1/networks/{ID}"sv},
     Sequence<String>{L"Fetch the list of known Networks."sv,
+                     L"query-string: restrict2ids=[a,b,c] - optional - if omitted returns all)"sv,
                      L"@todo - in the future - add support for parameters to this fetch - which can be used to filter/subset etc"sv},
 };
 const WebServiceMethodDescription WebServer::Rep_::kNetworkInterfaces_{

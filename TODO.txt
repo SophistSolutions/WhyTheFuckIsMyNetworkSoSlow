@@ -1,6 +1,7 @@
 https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/36 (aggregates summary info bug)
 
 	> add to devices/networks query optional parameter ids=[] (so /id equiv of ids=[thatid] except for returning in array format)
+DONE
 	> add to devices/networks query optional parameter only-fields=[list of fields ] but document waht are required 
 	  and UNCLEAR if required to be speciifed - as args - probably yes for clarity?
 

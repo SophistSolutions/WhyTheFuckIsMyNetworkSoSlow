@@ -31,11 +31,11 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
     public:
         virtual About                                                          GetAbout () const override;
         virtual tuple<Memory::BLOB, optional<DataExchange::InternetMediaType>> GetBLOB (const GUID& guid) const override;
-        virtual Sequence<String>                                               GetDevices (const optional<DeviceSortParamters>& sort) const override;
-        virtual Sequence<Device>                                               GetDevices_Recurse (const optional<DeviceSortParamters>& sort) const override;
+        virtual Sequence<String>                                               GetDevices (const optional<Set<GUID>>& restrict2IDs, const optional<DeviceSortParamters>& sort) const override;
+        virtual Sequence<Device>                                               GetDevices_Recurse (const optional<Set<GUID>>& restrict2IDs, const optional<DeviceSortParamters>& sort) const override;
         virtual Device                                                         GetDevice (const String& id) const override;
-        virtual Sequence<String>                                               GetNetworks () const override;
-        virtual Sequence<Network>                                              GetNetworks_Recurse () const override;
+        virtual Sequence<String>                                               GetNetworks (const optional<Set<GUID>>& restrict2IDs) const override;
+        virtual Sequence<Network>                                              GetNetworks_Recurse (const optional<Set<GUID>>& restrict2IDs) const override;
         virtual Network                                                        GetNetwork (const String& id) const override;
         virtual Collection<String>                                             GetNetworkInterfaces (bool filterRunningOnly) const override;
         virtual Collection<NetworkInterface>                                   GetNetworkInterfaces_Recurse (bool filterRunningOnly) const override;
