@@ -5,60 +5,58 @@ const routes: RouteRecordRaw[] = [
     path: '/',
     name: 'Home',
     component: () => import('layouts/MainLayout.vue'),
-    children: [{ path: '', component: () => import('pages/HomePage.vue') }],
+    children: [
+      { path: '/', component: () => import('pages/HomePage.vue') },
+    ],
     meta: {
-      breadcrumbs: [{ text: "Home", exact: true, disabled: true,  }],
+      breadcrumbs: [{ text: 'Home', exact: true, disabled: true }],
       divderAfter: true,
-      showInDotDotDotMenu: true
+      showInDotDotDotMenu: true,
     },
-  },
-  {
-    path: '/sample',
-    name: 'Sample',
-    component: () => import('layouts/MainLayout.vue'),
-    children: [{ path: '', component: () => import('pages/IndexPage.vue') }],
   },
   {
     path: '/about',
     name: 'About',
     component: () => import('layouts/MainLayout.vue'),
-    children: [{ path: '', component: () => import('pages/AboutPage.vue') }],
+    children: [
+      { path: '/about', component: () => import('pages/AboutPage.vue') },
+    ],
     meta: {
       breadcrumbs: [
-        { text: "Home", href: "/#/" },
-        { text: "About", disabled: true },
+        { text: 'Home', href: '/#/' },
+        { text: 'About', disabled: true },
       ],
-      showInDotDotDotMenu: true
+      showInDotDotDotMenu: true,
     },
-},
-
-
-
-
+  },
   {
-    path: "/device/:id",
-    name: "Device",
+    path: '/device/:id',
+    name: 'Device',
     component: () => import('layouts/MainLayout.vue'),
-    children: [{ path: '', component: () => import('pages/DevicePage.vue') }],
+    children: [
+      { path: '/device/:id', component: () => import('pages/DevicePage.vue') },
+    ],
     meta: {
       breadcrumbs: [
-        { text: "Home", href: "/#/" },
-        { text: "Devices", href: "/#/devices" },
-        { text: "Device", disabled: true },
+        { text: 'Home', href: '/#/' },
+        { text: 'Devices', href: '/#/devices' },
+        { text: 'Device', disabled: true },
       ],
     },
   },
   {
-    path: "/devices",
-    name: "Devices",
+    path: '/devices',
+    name: 'Devices',
     component: () => import('layouts/MainLayout.vue'),
-    children: [{ path: '', component: () => import('pages/DevicesPage.vue') }],
+    children: [
+      { path: '/devices', component: () => import('pages/DevicesPage.vue') },
+    ],
     meta: {
       breadcrumbs: [
-        { text: "Home", href: "/#/" },
-        { text: "Devices", disabled: true },
+        { text: 'Home', href: '/#/' },
+        { text: 'Devices', disabled: true },
       ],
-      showInDotDotDotMenu: true
+      showInDotDotDotMenu: true,
     },
   },
   //   // @see https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/14
@@ -79,29 +77,31 @@ const routes: RouteRecordRaw[] = [
   //   // props: (route) => ({ selectedNetwork: route.query.selectedNetwork }),
   // },
   {
-    path: "/network/:id",
-    name: "Network",
+    path: '/network/:id',
+    name: 'Network',
     component: () => import('layouts/MainLayout.vue'),
-    children: [{ path: '', component: () => import('pages/NetworkPage.vue') }],
+    children: [
+      { path: '/network/:id', component: () => import('pages/NetworkPage.vue') },
+    ],
     meta: {
       breadcrumbs: [
-        { text: "Home", href: "/#/" },
-        { text: "Networks", href: "/#/networks" },
-        { text: "Network", disabled: true },
+        { text: 'Home', href: '/#/' },
+        { text: 'Networks', href: '/#/networks' },
+        { text: 'Network', disabled: true },
       ],
     },
   },
   {
-    path: "/networks",
-    name: "Networks",
+    path: '/networks',
+    name: 'Networks',
     component: () => import('layouts/MainLayout.vue'),
-    children: [{ path: '', component: () => import('pages/NetworksPage.vue') }],
+    children: [{ path: '/networks', component: () => import('pages/NetworksPage.vue') }],
     meta: {
       breadcrumbs: [
-        { text: "Home", href: "/#/" },
-        { text: "Networks", disabled: true },
+        { text: 'Home', href: '/#/' },
+        { text: 'Networks', disabled: true },
       ],
-      showInDotDotDotMenu: true
+      showInDotDotDotMenu: true,
     },
   },
   // {

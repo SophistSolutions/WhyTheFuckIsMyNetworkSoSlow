@@ -1,23 +1,16 @@
-https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/36 (aggregates summary info bug)
-
-	> add to devices/networks query optional parameter ids=[] (so /id equiv of ids=[thatid] except for returning in array format)
-DONE
-	> add to devices/networks query optional parameter only-fields=[list of fields ] but document waht are required 
-
-			(DEFER - since not clearly needed/helpful - tradeoff) ; can grab whole object.
-			  and UNCLEAR if required to be speciifed - as args - probably yes for clarity?
-			  add deferered ticket for this
 
 	  then in html, pinia, add API saying fetchAggregatesSummary([list of ids]) and then getter for same.
 	  Keep separeate lists from devices/networks for summary objects (may revisit).
 
 	  		Keep 'list of all active now' ids in pinia and object details list.
-\
 
+	???MAYBE more efficeint to do multiple GETS - one per rollup, only because this can generate NOT MODIFIED resutls for the most part - all but one.
+in which case dont even need new WSAPI I just added.
 
 	  Must provider sort-by-seen-ever utility in javascript.
 
 	  THEN - we can ammend display code for netwrork/device details pages.
+
 
 
 ----

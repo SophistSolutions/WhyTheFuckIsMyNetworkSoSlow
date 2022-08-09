@@ -43,12 +43,12 @@ let polling: undefined | NodeJS.Timeout;
 onMounted(() => {
   // first time check immediately, then more gradually for updates
   store.fetchNetworks([props.networkId]);
-  store.fetchDevices();
+  store.fetchActiveDevices();
   if (polling) {
     clearInterval(polling);
   }
   polling = setInterval(() => {
-    store.fetchDevices();
+    store.fetchActiveDevices();
     store.fetchNetworks([props.networkId]);
   }, 15 * 1000);
 })

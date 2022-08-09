@@ -28,10 +28,10 @@ let polling: undefined | NodeJS.Timeout;
 const kRefreshFrequencyInSeconds_: number = 15;
 
 onMounted(() => {
-  store.fetchDevices();
+  store.fetchActiveDevices();
   store.fetchAvailableNetworks();
   polling = setInterval(() => {
-    store.fetchDevices();
+    store.fetchActiveDevices();
     store.fetchAvailableNetworks();
   }, kRefreshFrequencyInSeconds_ * 1000);
 })

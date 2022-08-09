@@ -324,13 +324,13 @@ onMounted(() => {
   }
 
   // first time check quickly, then more gradually
-  store.fetchDevices();
+  store.fetchActiveDevices();
   store.fetchAvailableNetworks();
   if (polling) {
     clearInterval(polling);
   }
   polling = setInterval(() => {
-    store.fetchDevices();
+    store.fetchActiveDevices();
     store.fetchAvailableNetworks();
   }, 15 * 1000);
 

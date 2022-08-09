@@ -98,7 +98,7 @@ export const useNetStateStore = defineStore('Net-State-Store', {
     async fetchAboutInfo() {
       this.about = await fetchAboutInfo();
     },
-    async fetchDevices(searchSpecs?: ISortBy) {
+    async fetchActiveDevices(searchSpecs?: ISortBy) {
       this.devicesLoading.numberOfOutstandingLoadRequests++;
       try {
         const devices: IDevice[] = await fetchDevices(searchSpecs);
@@ -112,6 +112,9 @@ export const useNetStateStore = defineStore('Net-State-Store', {
     },
     async fetchDevice(id: string) {
       this.deviceDetails[id] = await fetchDevice(id);
+    },
+    async fetchDevices(ids: Array<string>) {
+      ids.forEach(async (i)=> this.deviceDetails[i] = await fetchDevice(i));
     },
     setSelectedNetwork(networkId: string) {
       this.selectedNetworkId = networkId;
