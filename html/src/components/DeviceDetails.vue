@@ -43,22 +43,28 @@ function localNetworkAddresses(): string[] {
   return addresses.filter((value, index, self) => self.indexOf(value) === index);
 }
 
+
+  function doFetches () {
+    store.fetchDevice(props.deviceId);
+    if (currentDevice.value) {
+      store.fetchNetworks(Object.keys(currentDevice.value.attachedNetworks));
+      if (currentDevice.value.aggregatesIrreversibly != null) {
+        store.fetchDevices(currentDevice.value.aggregatesIrreversibly);
+      }
+      if (currentDevice.value.aggregatesReversibly != null) {
+        store.fetchDevices(currentDevice.value.aggregatesReversibly);
+      }
+    }
+  };
+
 onMounted(() => {
+  doFetches ();
   // first time check immediately, then more gradually for updates
-  store.fetchDevice(props.deviceId);
-  if (currentDevice.value) {
-    store.fetchNetworks(Object.keys(currentDevice.value.attachedNetworks));
-  } else {
-    store.fetchAvailableNetworks();
-  }
   if (polling) {
     clearInterval(polling);
   }
   polling = setInterval(() => {
-    store.fetchDevice(props.deviceId);
-    if (currentDevice.value) {
-      store.fetchNetworks(Object.keys(currentDevice.value.attachedNetworks));
-    }
+    doFetches ();
   }, 15 * 1000);
 })
 
@@ -79,6 +85,44 @@ async function rescanSelectedDevice(): Promise<void> {
 const currentDevice = computed<IDevice | undefined>(
   () => store.getDevice(props.deviceId)
 )
+
+function SortDeviceIDsByMostRecentFirst_(ids: Array<string>): Array<string> {
+  let r: Array<string> = ids.filter(x => true);
+  r.sort((l, r) => {
+    let lSeen = store.getDevice(l)?.seen?.Ever;
+    let rSeen = store.getDevice(r)?.seen?.Ever;
+    if (lSeen?.upperBound == null) {
+      return 1;
+    }
+    if (rSeen?.upperBound == null) {
+      return -1;
+    }
+    return moment(rSeen.upperBound).diff(lSeen.upperBound);
+  });
+  return r;
+}
+
+function GetSubDeviceDisplay_(id: string, summaryOnly: boolean): string {
+  let r = store.getDevice(id);
+  let shortEverText: string | null = null;
+  let longEverText: string | null = null;
+  if (r != null) {
+    if (r && r.seen && r.seen['Ever']) {
+      const seenRange = r.seen.Ever;
+      if (seenRange.upperBound) {
+        shortEverText = moment(seenRange.upperBound).fromNow();
+      }
+      longEverText = moment(seenRange.lowerBound).fromNow() + ' up until ' + (shortEverText ?? "?");
+    }
+  }
+  if (summaryOnly && shortEverText != null) {
+    return shortEverText;
+  }
+  if (longEverText == null) {
+    return id;
+  }
+  return longEverText + "; ID: " + id;
+}
 
 
 interface IExtendedDevice extends IDevice {
@@ -244,16 +288,22 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
     <div class="row" v-if="currentDevice.aggregatesReversibly && currentDevice.aggregatesReversibly.length">
       <div class="col-3">Aggregates Reversibly</div>
       <div class="col">
-        <div class="row wrap"><span v-for="aggregate in currentDevice.aggregatesReversibly" v-bind:key="aggregate">
-            <ReadOnlyTextWithHover :message="aggregate" :link="'/#/device/' + aggregate" />;&nbsp;
+        <div class="row wrap"><span
+            v-for="aggregate in SortDeviceIDsByMostRecentFirst_(currentDevice.aggregatesReversibly)"
+            v-bind:key="aggregate" class="aggregatesItem">
+            <ReadOnlyTextWithHover :message="GetSubDeviceDisplay_(aggregate, true)"
+              :popup-title="GetSubDeviceDisplay_(aggregate, false)" :link="'/#/device/' + aggregate" />;&nbsp;
           </span></div>
       </div>
     </div>
     <div class="row" v-if="currentDevice.aggregatesIrreversibly && currentDevice.aggregatesIrreversibly.length">
       <div class="col-3">Aggregates Irreversibly</div>
       <div class="col">
-        <div class="row wrap"> <span v-for="aggregate in currentDevice.aggregatesIrreversibly" v-bind:key="aggregate">
-            <ReadOnlyTextWithHover :message="aggregate" />;&nbsp;
+        <div class="row wrap"> <span
+            v-for="aggregate in SortDeviceIDsByMostRecentFirst_(currentDevice.aggregatesIrreversibly)"
+            v-bind:key="aggregate" class="aggregatesItem">
+            <ReadOnlyTextWithHover :message="GetSubDeviceDisplay_(aggregate, true)"
+              :popup-title="GetSubDeviceDisplay_(aggregate, false)" />;&nbsp;
           </span></div>
       </div>
     </div>
@@ -278,5 +328,9 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
 
 .snapshot {
   font-style: italic;
+}
+
+.aggregatesItem {
+  min-width: 10em
 }
 </style>

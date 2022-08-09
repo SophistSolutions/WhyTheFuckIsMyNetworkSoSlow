@@ -47,12 +47,8 @@ onUnmounted(() => {
 
 const route = useRoute()
 
-let device: ComputedRef<IDevice> = computed(() => {
-  let r: IDevice = store.getDevice(route.params.id as string);
-  if (!r) {
-    r = { id: "INVALID", attachedNetworks: {}, name: "INVALID", attachedNetworkInterfaces: [], type: [] };
-  }
-  return r;
+let device: ComputedRef<IDevice | null> = computed(() => {
+  return store.getDevice(route.params.id as string);
 }
 );
 </script>

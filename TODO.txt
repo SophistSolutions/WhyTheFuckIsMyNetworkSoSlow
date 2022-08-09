@@ -11,6 +11,8 @@ in which case dont even need new WSAPI I just added.
 
 	  THEN - we can ammend display code for netwrork/device details pages.
 
+	  	did first draft for devices - now cleanup and do for networks
+
 
 
 ----
