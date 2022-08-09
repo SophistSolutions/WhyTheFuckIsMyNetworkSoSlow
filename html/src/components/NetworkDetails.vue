@@ -40,23 +40,6 @@ defineComponent({
 
 let polling: undefined | NodeJS.Timeout;
 
-onMounted(() => {
-  // first time check immediately, then more gradually for updates
-  store.fetchNetworks([props.networkId]);
-  store.fetchActiveDevices();
-  if (polling) {
-    clearInterval(polling);
-  }
-  polling = setInterval(() => {
-    store.fetchActiveDevices();
-    store.fetchNetworks([props.networkId]);
-  }, 15 * 1000);
-})
-
-onUnmounted(() => {
-  clearInterval(polling);
-})
-
 let allDevices: ComputedRef<IDevice[]> = computed(() => store.getDevices);
 
 let currentNetwork = computed<INetwork | undefined>(
@@ -87,11 +70,79 @@ let thisNetworksInterfaces = computed<INetworkInterface[]>(
     return result;
   }
 )
+
+function doFetches() {
+  store.fetchNetworks([props.networkId]);
+  store.fetchActiveDevices();
+  if (currentNetwork.value != null) {
+    if (currentNetwork.value.aggregatesIrreversibly != null) {
+      store.fetchNetworks(currentNetwork.value.aggregatesIrreversibly);
+    }
+    if (currentNetwork.value.aggregatesReversibly != null) {
+      store.fetchNetworks(currentNetwork.value.aggregatesReversibly);
+    }
+  }
+};
+
+onMounted(() => {
+  // first time check immediately, then more gradually for updates
+  doFetches();
+  if (polling) {
+    clearInterval(polling);
+  }
+  polling = setInterval(() => {
+    doFetches();
+  }, 15 * 1000);
+})
+
+onUnmounted(() => {
+  clearInterval(polling);
+})
+
+function SortNetworkIDsByMostRecentFirst_(ids: Array<string>): Array<string> {
+  let r: Array<string> = ids.filter(x => true);
+  r.sort((l, r) => {
+    let lSeen = store.getNetwork(l)?.seen;
+    let rSeen = store.getNetwork(r)?.seen;
+    if (lSeen?.upperBound == null) {
+      return 1;
+    }
+    if (rSeen?.upperBound == null) {
+      return -1;
+    }
+    return moment(rSeen.upperBound).diff(lSeen.upperBound);
+  });
+  return r;
+}
+
+function GetSubNetworkDisplay_(id: string, summaryOnly: boolean): string {
+  let r = store.getNetwork(id);
+  let shortEverText: string | null = null;
+  let longEverText: string | null = null;
+  if (r != null) {
+    if (r && r.seen && r.seen) {
+      const seenRange = r.seen
+      if (seenRange.upperBound) {
+        shortEverText = moment(seenRange.upperBound).fromNow();
+      }
+      longEverText = moment(seenRange.lowerBound).fromNow() + ' up until ' + (shortEverText ?? "?");
+    }
+  }
+  if (summaryOnly && shortEverText != null) {
+    return shortEverText;
+  }
+  if (longEverText == null) {
+    return id;
+  }
+  return longEverText + "; ID: " + id;
+}
+
 </script>
 
 <template>
   <div v-if="currentNetwork" class="q-pa-sm">
-    <Link2DetailsPage :link="'/#/network/' + currentNetwork.id" v-if="props.includeLinkToDetailsPage" style="padding-top: 5px; float:right" />
+    <Link2DetailsPage :link="'/#/network/' + currentNetwork.id" v-if="props.includeLinkToDetailsPage"
+      style="padding-top: 5px; float:right" />
 
     <div class="row">
       <div class="col-3">Name</div>
@@ -108,7 +159,9 @@ let thisNetworksInterfaces = computed<INetworkInterface[]>(
     </div>
     <div class="row" v-if="currentNetwork.seen">
       <div class="col-3">Seen</div>
-      <div class="col"> {{ moment(currentNetwork.seen.lowerBound).fromNow() }} up until {{ moment(currentNetwork.seen.upperBound).fromNow() }} </div>
+      <div class="col"> {{ moment(currentNetwork.seen.lowerBound).fromNow() }} up until {{
+          moment(currentNetwork.seen.upperBound).fromNow()
+      }} </div>
     </div>
     <div class="row">
       <div class="col-3">CIDRs</div>
@@ -133,16 +186,22 @@ let thisNetworksInterfaces = computed<INetworkInterface[]>(
     <div class="row" v-if="currentNetwork.aggregatesReversibly && currentNetwork.aggregatesReversibly.length">
       <div class="col-3">Aggregates Reversibly</div>
       <div class="col">
-        <div class="row wrap"><span v-for="aggregate in currentNetwork.aggregatesReversibly" v-bind:key="aggregate">
-            <ReadOnlyTextWithHover :message="aggregate" :link="'/#/network/' + aggregate" />;&nbsp;
+        <div class="row wrap"><span
+            v-for="aggregate in SortNetworkIDsByMostRecentFirst_(currentNetwork.aggregatesReversibly)"
+            v-bind:key="aggregate" class="aggregatesItem">
+            <ReadOnlyTextWithHover :message="GetSubNetworkDisplay_(aggregate, true)"
+              :popup-title="GetSubNetworkDisplay_(aggregate, false)" :link="'/#/network/' + aggregate" />;&nbsp;
           </span></div>
       </div>
     </div>
     <div class="row" v-if="currentNetwork.aggregatesIrreversibly && currentNetwork.aggregatesIrreversibly.length">
       <div class="col-3">Aggregates Irreversibly</div>
       <div class="col">
-        <div class="row wrap"><span v-for="aggregate in currentNetwork.aggregatesIrreversibly" v-bind:key="aggregate">
-            <ReadOnlyTextWithHover :message="aggregate" :link="'/#/network/' + aggregate" />;&nbsp;
+        <div class="row wrap"><span
+            v-for="aggregate in SortNetworkIDsByMostRecentFirst_(currentNetwork.aggregatesIrreversibly)"
+            v-bind:key="aggregate" class="aggregatesItem">
+            <ReadOnlyTextWithHover :message="GetSubNetworkDisplay_(aggregate, true)"
+              :popup-title="GetSubNetworkDisplay_(aggregate, false)" :link="'/#/network/' + aggregate" />;&nbsp;
           </span> </div>
       </div>
     </div>
@@ -170,5 +229,9 @@ let thisNetworksInterfaces = computed<INetworkInterface[]>(
 <style scoped lang="scss">
 .snapshot {
   font-style: italic;
+}
+
+.aggregatesItem {
+  min-width: 10em
 }
 </style>
