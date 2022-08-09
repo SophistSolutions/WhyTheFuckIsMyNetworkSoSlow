@@ -43,28 +43,27 @@ function localNetworkAddresses(): string[] {
   return addresses.filter((value, index, self) => self.indexOf(value) === index);
 }
 
-
-  function doFetches () {
-    store.fetchDevice(props.deviceId);
-    if (currentDevice.value) {
-      store.fetchNetworks(Object.keys(currentDevice.value.attachedNetworks));
-      if (currentDevice.value.aggregatesIrreversibly != null) {
-        store.fetchDevices(currentDevice.value.aggregatesIrreversibly);
-      }
-      if (currentDevice.value.aggregatesReversibly != null) {
-        store.fetchDevices(currentDevice.value.aggregatesReversibly);
-      }
+function doFetches() {
+  store.fetchDevice(props.deviceId);
+  if (currentDevice.value) {
+    store.fetchNetworks(Object.keys(currentDevice.value.attachedNetworks));
+    if (currentDevice.value.aggregatesIrreversibly != null) {
+      store.fetchDevices(currentDevice.value.aggregatesIrreversibly);
     }
-  };
+    if (currentDevice.value.aggregatesReversibly != null) {
+      store.fetchDevices(currentDevice.value.aggregatesReversibly);
+    }
+  }
+};
 
 onMounted(() => {
-  doFetches ();
+  doFetches();
   // first time check immediately, then more gradually for updates
   if (polling) {
     clearInterval(polling);
   }
   polling = setInterval(() => {
-    doFetches ();
+    doFetches();
   }, 15 * 1000);
 })
 
