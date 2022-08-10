@@ -14,6 +14,23 @@ in which case dont even need new WSAPI I just added.
 	  	did first draft for devices - now cleanup and do for networks
 
 
+--- shutdown triggered during REMOVE on hercules and raspi - both do this (after runnign a couple days)
+
+	ug 09 19:45:52 raspberrypi systemd[1]: Stopping Why the Fuck is My Network So Slow...
+	Aug 09 19:45:56 raspberrypi WhyTheFuckIsMyNetworkSoSlow[13800]: Beginning service shutdown
+	Aug 09 19:46:27 raspberrypi WhyTheFuckIsMyNetworkSoSlow-Backend[6717]: FAILED: Timeout Expired {errno: 110}
+	Aug 09 19:46:27 raspberrypi WhyTheFuckIsMyNetworkSoSlow[6717]: Timeout Expired {errno: 110}
+	Aug 09 19:46:30 raspberrypi systemd[1]: whythefuckismynetworksoslow.service: Control process exited, code=exited, status=1/FAILURE
+
+		COULD be regression in my recent logger changes.
+
+		Could be unrelated
+
+		Add 'ACTIVITY' object so I can see why is going on with the timeout.
+
+
+		AND REBUILD STROIKA.
+
 
 ----
 

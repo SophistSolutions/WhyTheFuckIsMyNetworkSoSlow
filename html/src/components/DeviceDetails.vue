@@ -277,13 +277,6 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
         <span v-if="currentDevice.openPorts">{{ currentDevice.openPorts.join(", ") }}</span>
       </div>
     </div>
-    <div class="row" v-if="currentDevice.attachedNetworkInterfaces">
-      <div class="col-3">ATTACHED NETWORK INTERFACES</div>
-      <div class="col">
-        <json-viewer :value="currentDevice.attachedNetworkInterfaces" :expand-depth="0" copyable sort
-          class="debugInfoJSONViewers" />
-      </div>
-    </div>
     <div class="row" v-if="currentDevice.aggregatesReversibly && currentDevice.aggregatesReversibly.length">
       <div class="col-3">Aggregates Reversibly</div>
       <div class="col">
@@ -304,6 +297,13 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
             <ReadOnlyTextWithHover :message="GetSubDeviceDisplay_(aggregate, true)"
               :popup-title="GetSubDeviceDisplay_(aggregate, false)" />;&nbsp;
           </span></div>
+      </div>
+    </div>
+    <div class="row" v-if="currentDevice.attachedNetworkInterfaces">
+      <div class="col-3">ATTACHED NETWORK INTERFACES</div>
+      <div class="col">
+        <json-viewer :value="currentDevice.attachedNetworkInterfaces" :expand-depth="0" copyable sort
+          class="debugInfoJSONViewers" />
       </div>
     </div>
     <div class="row" v-if="currentDevice.debugProps">
