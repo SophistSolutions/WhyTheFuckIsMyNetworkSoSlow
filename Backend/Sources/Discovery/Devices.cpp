@@ -1517,7 +1517,7 @@ namespace {
 
 Discovery::DevicesMgr::Activator::Activator ()
 {
-    DbgTrace (L"Discovery::DevicesMgr::Activator::Activator: activating device discovery");
+    Debug::TraceContextBumper ctx{L"Discovery::DevicesMgr::Activator::Activator"};
     Require (not IsActive_ ());
     if constexpr (kInclude_SSDP_Discoverer_) {
         sSSDPDeviceDiscoverer_ = make_unique<SSDPDeviceDiscoverer_> ();
@@ -1536,7 +1536,7 @@ Discovery::DevicesMgr::Activator::Activator ()
 
 Discovery::DevicesMgr::Activator::~Activator ()
 {
-    DbgTrace (L"Discovery::DevicesMgr::Activator::~Activator: deactivating device discovery");
+    Debug::TraceContextBumper ctx{L"Discovery::DevicesMgr::Activator::~Activator"};
     Require (IsActive_ ());
     if constexpr (kInclude_SSDP_Discoverer_) {
         sSSDPDeviceDiscoverer_.reset ();

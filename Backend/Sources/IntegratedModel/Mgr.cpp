@@ -647,12 +647,14 @@ namespace {
  */
 IntegratedModel::Mgr::Activator::Activator ()
 {
+    Debug::TraceContextBumper ctx{L"IntegratedModel::Mgr::Activator::Activator"};
     Require (DBAccess_::sDatabaseSyncThread_ == nullptr);
     DBAccess_::sDatabaseSyncThread_ = Thread::New (DBAccess_::BackgroundDatabaseThread_, Thread::eAutoStart, L"BackgroundDatabaseThread"sv);
 }
 
 IntegratedModel::Mgr::Activator::~Activator ()
 {
+    Debug::TraceContextBumper                        ctx{L"IntegratedModel::Mgr::Activator::~Activator"};
     Execution::Thread::SuppressInterruptionInContext suppressInterruption; // must complete this abort and wait for done - this cannot abort/throw
     DBAccess_::sDatabaseSyncThread_.AbortAndWaitForDone ();
 }

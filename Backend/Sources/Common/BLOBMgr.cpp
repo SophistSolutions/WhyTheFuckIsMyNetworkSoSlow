@@ -169,12 +169,14 @@ namespace {
  */
 BLOBMgr::Activator::Activator ()
 {
+    Debug::TraceContextBumper ctx{L"BLOBMgr::Activator::Activator"};
     BLOBMgr::sThe.fThreadPool_.store (make_unique<Execution::ThreadPool> (1, L"URLBLOBFetcher"_k));
     sConn_.store (make_shared<DBConn_> ());
 }
 
 BLOBMgr::Activator::~Activator ()
 {
+    Debug::TraceContextBumper ctx{L"BLOBMgr::Activator::~Activator"};
     BLOBMgr::sThe.fThreadPool_.store (nullptr);
     sConn_.store (nullptr);
 }
