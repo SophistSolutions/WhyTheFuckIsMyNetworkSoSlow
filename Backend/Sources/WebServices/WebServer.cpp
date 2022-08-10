@@ -425,14 +425,14 @@ public:
             ConnectionManager::Options { kMaxWebServerConcurrentConnections_, kMaxThreads_, Socket::BindFlags{true}, kDefaultResponseHeadersStaticSite_ }
     }
 #endif
-    // @todo use https://stroika.atlassian.net/browse/STK-929 flag when available so this is run immediately (so you see zero connections when you first start app instead of after 15 seconds)
     , fIntervalTimerAdder_{
           [this] () {
               OperationalStatisticsMgr::sThe.RecordActiveRunningTasksCount (fActiveCallCnt_);
               OperationalStatisticsMgr::sThe.RecordOpenConnectionCount (fConnectionMgr_.pConnections ().length ());
               OperationalStatisticsMgr::sThe.RecordActiveRunningTasksCount (fConnectionMgr_.pActiveConnections ().length ());
           },
-          15s}
+          15s,
+          IntervalTimer::Adder::eRunImmediately}
     {
         using Stroika::Frameworks::WebServer::DefaultFaultInterceptor;
         DefaultFaultInterceptor defaultHandler;
