@@ -272,7 +272,7 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
     <div class="row">
       <div class="col-3">Open Ports</div>
       <div class="col">
-        <q-btn class="smallBtnMargin" elevation="2" dense size="sm" @click="rescanSelectedDevice"
+        <q-btn class="smallBtnMargin" elevation="2" dense size="sm" @click="rescanSelectedDevice" v-if="currentDevice.historicalSnapshot != true"
           :disabled="isRescanning"> {{ isRescanning ? "**SCANNING**" : "Rescan" }} </q-btn>
         <span v-if="currentDevice.openPorts">{{ currentDevice.openPorts.join(", ") }}</span>
       </div>
