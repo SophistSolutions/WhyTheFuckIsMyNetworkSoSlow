@@ -223,12 +223,14 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
           <div class="col">
             <div class="row">
               <div class="col no-wrap truncateWithElipsis">
-                <ReadOnlyTextWithHover :message="
+                <ReadOnlyTextWithHover
+                  :message="currentDeviceDetails.attachedNetworks[attachedNet.id].name"
+                  :popupTitle="
                   currentDeviceDetails.attachedNetworks[attachedNet.id].name +
                   ' (' +
                   attachedNet.id +
-                  ')'
-                " :link="GetNetworkLink(attachedNet.id)" title="Network Name" />
+                  ')'" 
+                  :link="GetNetworkLink(attachedNet.id)" title="Network Name" />
               </div>
             </div>
             <div class="row" v-if="currentDevice.attachedNetworks[attachedNet.id].hardwareAddresses">
