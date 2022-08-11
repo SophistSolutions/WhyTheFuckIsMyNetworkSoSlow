@@ -205,7 +205,7 @@ function GetSubNetworkDisplay_(id: string, summaryOnly: boolean): string {
           </span> </div>
       </div>
     </div>
-    <div class="row"  v-if="currentNetwork.historicalSnapshot != true">
+    <div class="row" v-if="currentNetwork.historicalSnapshot != true">
       <div class="col-3">Devices</div>
       <div class="col"> <a :href="GetDevicesForNetworkLink(currentNetwork.id)">{{
           GetDeviceIDsInNetwork(currentNetwork, allDevices).length
