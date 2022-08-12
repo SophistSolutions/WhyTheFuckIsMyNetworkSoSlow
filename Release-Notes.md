@@ -8,6 +8,74 @@ High level summary of changes in WhyTheFuckIsMyNetworkSoSlow.
 
 ### START 1.0d18x DEV
 
+- Todo cleanup (moved more to using github issues)
+
+- html
+  - Lose html-react, html-vue2-vuetify2, html-vue3-vuetify3: if we need to revert to any of these technologiues, can find it in git history
+  - several improvements to home page: smarter check for what netowrks to list in home page, check active, show last time seen, link on devices sub-link to restruction in devices page to that network
+  - Home Page
+    - minor cleanups
+  - Devices
+    - cleanups to device details page, truncateWithElipsis, and sort networks in device details page
+    - minor cleanups to html code (better display in historical snapshots - and show fewer guids by default and hide buttosn that make no sense here)
+  - Misc
+    - Implemted html SortNetworks - so come in a better UI order (most recent top)
+    - new GetAttachedNetworksAsNetworks() utility - used to sort networks
+    - lose apparently unused icons in public/icnosna and updated favicon
+    - npm update/upgrade to latest
+    - minor html cleanups (FormatLocation)
+    - fixed https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/36 -  sort aggregated by date and show in text of label eversince (fistr draft for devcies)
+  - UI portability
+    - fixed display of buttons on tablet (html) - use q-btn for Link2DetailsPage.vue
+- Backend
+  - DB
+    - refactor - migrated DB code to its own module, so I can use for BLOBMgr
+    - update db name (version# so lose data from previous release)
+    - Lots of fiddling with SQLITE BUSY EXCEPTION  - logging etc.
+    - KEY FIX WAS using WAL, but also set:
+      ~~~
+        options.fBusyTimeout = 1ms;
+        options.fJournalMode = JournalModeType::eWAL;
+      ~~~
+  - BLOBMgr
+    - read/write from database
+    - tweak error catch/report in TransformURL2LocalStorage_, and fixed regression in TranslateURL2BLOBSTORAGE code - when Updated location of API - needed to update URL we redirect to!
+    - BLOB storage API (and database) makes contentType optional cuz missing from some URLs we try to cache
+  - Discovery
+    - network neighbor device discovery - throw away items with no network information (log still)
+    - updated default generation of network name to default to geoloc city, not adapter name
+    - improved SDSP/map to device types discovery code
+    - do not return MyDevice in discovery code if it has no hardware address/attached network. Probably no point in 'discovering'it in that case, and it causes problems with rollup
+    - support for retrying on SSDP startup failure (maybe done but need logging)
+    - Added kKerberos_ = 88 to portscan (experiment)
+  - IntegratedModel
+    - code cleanups and bug fixes on device rollup of attached networks (often had wrong ids)
+    - clarifed docs on Device Merge/Rollup and semantics on precedence. This hopefully fixes bugs with rollup not getting latest data; better merging of debug props; and static Synchronized<RolledUpDevices> sRolledUpDevices_; so hopefully no more bugs with rollup getting dups
+  - WSAPI
+    - sort by ePriority improved slightly so interesting items show more at the top
+    - store Capturer inside WSImpl object so started automatically when app starts, and shutdown automatically before end of main
+    - Added optional ids= parameter to GetDevices and GetNetworks WSAPIs
+  - Misc
+    - Use Stroika 2.1.3
+    - use new Execution::IntervalTimer::Manager::Activator
+    - use new Stroika Logger::Activator, and revisions to Logger API (more brevity and cleaner startup/shutdown)
+- Backend & HTML
+  - use new boot/configuraiton mechanims so on app startup, we automatically fetch a json config file from the build directory (can be filled in my C++ app without recompilign); and integrate  this with the rest of the startup app configuration stuff- refactored
+  - adjusted WSAPI path to include /api/v1/ at start of API code
+  - fold togetehr GUI and WS connection managers into one pool. CAN be separate, but really no need and probably simpler - at least to configure - if not separate (no more port 8080, just all on port 80)
+  - use database ORM operation hooks; then used that for new OperationalStatisticsMgr which provides stats for recent API call times and DB access times
+    and provided UI display of these in about page
+    - use new Stroika IntervalTimer code to peridocally check number of active WS tasks and added that to reprorted statistics (I think completiing new stats in about info project, except for UI)
+  - New 'seen' support - replaced lastSeen (in backend, datamodel, database, and GUI) with structured 
+    seen range and 'ever' alias for having these combined.
+  - OS Category
+    - Added majorOSCategory field to WSAPI OperatingSystem object; and used that instead of search through fullVersionedName for keywords in ComputeServiceTypeIconURL () - so more localized in C++ code (actuall stroika or OS data) categorization and just used in GUI: should allow omre cases of raspbian and ubuntu to now show with icons (testing)
+- Build System etc
+  - github actions switch to macos-latest
+  - Fixed docker container build
+    - Added optiopnal build  INCLUDE_OPENSSL and INCLUDE_HANDY_DEV_TOOLS in docker files (defaults off)
+
+
 ---
 
 ### 1.0d17 {2022-06-30}
