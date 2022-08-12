@@ -6,27 +6,21 @@ High level summary of changes in WhyTheFuckIsMyNetworkSoSlow.
 
 ## History
 
-### START 1.0d18x DEV
+###  1.0d18 {2022-08-12}
 
-- Todo cleanup (moved more to using github issues)
+#### TLDR
+- Use Stroika 2.1.3 (and react to many changes/new apis)
+- html about page shows connection/database statistics
+- BLOBS persisted
+- Various fixes to rollups and discovery
+- Default sort order better
+- Aggregated objects now organized/labeled better by date in UI
+- Docker container build improvements
+- Better stability/reliability
 
-- html
-  - Lose html-react, html-vue2-vuetify2, html-vue3-vuetify3: if we need to revert to any of these technologiues, can find it in git history
-  - several improvements to home page: smarter check for what netowrks to list in home page, check active, show last time seen, link on devices sub-link to restruction in devices page to that network
-  - Home Page
-    - minor cleanups
-  - Devices
-    - cleanups to device details page, truncateWithElipsis, and sort networks in device details page
-    - minor cleanups to html code (better display in historical snapshots - and show fewer guids by default and hide buttosn that make no sense here)
-  - Misc
-    - Implemted html SortNetworks - so come in a better UI order (most recent top)
-    - new GetAttachedNetworksAsNetworks() utility - used to sort networks
-    - lose apparently unused icons in public/icnosna and updated favicon
-    - npm update/upgrade to latest
-    - minor html cleanups (FormatLocation)
-    - fixed https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/36 -  sort aggregated by date and show in text of label eversince (fistr draft for devcies)
-  - UI portability
-    - fixed display of buttons on tablet (html) - use q-btn for Link2DetailsPage.vue
+#### Change-Details
+
+- Todo Cleanup (moved 1/2 to using github issues)
 - Backend
   - DB
     - refactor - migrated DB code to its own module, so I can use for BLOBMgr
@@ -59,6 +53,23 @@ High level summary of changes in WhyTheFuckIsMyNetworkSoSlow.
     - Use Stroika 2.1.3
     - use new Execution::IntervalTimer::Manager::Activator
     - use new Stroika Logger::Activator, and revisions to Logger API (more brevity and cleaner startup/shutdown)
+- html
+  - Lose html-react, html-vue2-vuetify2, html-vue3-vuetify3: if we need to revert to any of these technologiues, can find it in git history
+  - several improvements to home page: smarter check for what netowrks to list in home page, check active, show last time seen, link on devices sub-link to restruction in devices page to that network
+  - Home Page
+    - minor cleanups
+  - Devices
+    - cleanups to device details page, truncateWithElipsis, and sort networks in device details page
+    - minor cleanups to html code (better display in historical snapshots - and show fewer guids by default and hide buttosn that make no sense here)
+  - Misc
+    - Implemted html SortNetworks - so come in a better UI order (most recent top)
+    - new GetAttachedNetworksAsNetworks() utility - used to sort networks
+    - lose apparently unused icons in public/icnosna and updated favicon
+    - npm update/upgrade to latest
+    - minor html cleanups (FormatLocation)
+    - fixed https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/36 -  sort aggregated by date and show in text of label eversince (fistr draft for devcies)
+  - UI portability
+    - fixed display of buttons on tablet (html) - use q-btn for Link2DetailsPage.vue
 - Backend & HTML
   - use new boot/configuraiton mechanims so on app startup, we automatically fetch a json config file from the build directory (can be filled in my C++ app without recompilign); and integrate  this with the rest of the startup app configuration stuff- refactored
   - adjusted WSAPI path to include /api/v1/ at start of API code
@@ -74,7 +85,6 @@ High level summary of changes in WhyTheFuckIsMyNetworkSoSlow.
   - github actions switch to macos-latest
   - Fixed docker container build
     - Added optiopnal build  INCLUDE_OPENSSL and INCLUDE_HANDY_DEV_TOOLS in docker files (defaults off)
-
 
 ---
 
