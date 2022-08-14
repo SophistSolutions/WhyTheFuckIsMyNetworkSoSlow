@@ -1,3 +1,22 @@
+draft release for WTF, and then update github issues, and then recommence what is below
+
+
+----
+
+record not just geoloc for network, but its public ip (if any)
+
+---
+
+
+Sequence<String> WSImpl::GetNetworks (const optional<Set<GUID>>& ids) const
+{
+    Debug::TimingTrace                              ttrc{L"WSImpl::GetNetworks", 0.1};
+    Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
+    return Sequence<String>{IntegratedModel::Mgr::sThe.GetNetworks ().Select<String> ([] (const auto& n) { return n.fGUID.ToString (); })};
+}
+oops
+---
+
 FINISH MIGRATING THESE TO https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues
 ----
 	NEXT IMPRTANT MILESTONE
