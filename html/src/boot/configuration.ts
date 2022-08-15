@@ -50,7 +50,7 @@ export default boot(async (/* { app, router, ... } */) => {
       ':' +
       (DEFAULT_API_PORT ??
         kCompileTimeConfiguration.APP_DEFAULT_API_PORT ??
-        '8080');
+        '80');
   }
   gRuntimeConfiguration = {
     API_ROOT: API_ROOT ?? '',
