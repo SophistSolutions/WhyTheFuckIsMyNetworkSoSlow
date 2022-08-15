@@ -1,5 +1,8 @@
-draft release for WTF, and then update github issues, and then recommence what is below
+advisory cache hw addr to guid list when generating new guids for rollup devices and networks.
 
+----
+
+sort by date on devices page not working at all.
 
 ----
 
