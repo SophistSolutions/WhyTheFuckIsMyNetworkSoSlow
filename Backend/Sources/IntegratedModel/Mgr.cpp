@@ -241,7 +241,7 @@ namespace {
             }
             // If EITHER device has no hardware addresses, there is little to identify it, so roll it up with anything with the same IP address, by default
             if (hw1.empty () or hw2.empty ()) {
-                // then fold togehter if they have the same IP Addresses
+                // then fold together if they have the same IP Addresses
                 // return d1.GetInternetAddresses () == d2.GetInternetAddresses ();
                 return Set<InternetAddress>::Intersects (exisingRolledUpDevice.GetInternetAddresses (), d2.GetInternetAddresses ());
             }
