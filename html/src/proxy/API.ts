@@ -1,4 +1,4 @@
-import moment from 'moment';
+import { DateTime } from 'luxon';
 
 import { IDevice } from '../models/device/IDevice';
 import {
@@ -24,10 +24,62 @@ export async function fetchNetworks(): Promise<INetwork[]> {
     .catch((error) => Logger.error(error));
 }
 
+function jsonPatch2IDateRange_(d: IDateTimeRange) {
+  if (d.upperBound) {
+    d.upperBound = DateTime.fromISO(
+      d.upperBound as unknown as string
+    ).toJSDate();
+  }
+  if (d.lowerBound) {
+    d.lowerBound = DateTime.fromISO(
+      d.lowerBound as unknown as string
+    ).toJSDate();
+  }
+}
+// munge json in place to valid INetwork
+function jsonPatch2INetwork_(n: INetwork) {
+  if (n.seen) {
+    jsonPatch2IDateRange_(n.seen);
+  }
+}
+// munge json in place to valid IDevice
+function jsonPatch2IDevice_(d: IDevice) {
+  // fixup urls that are relative to be relative to the WSAPI
+  if (d.icon) {
+    d.icon = new URL(d.icon, gRuntimeConfiguration.API_ROOT);
+  }
+  // Compute the seen.Ever 'virtual field'
+  if (d.seen) {
+    let mn: Date | undefined;
+    let mx: Date | undefined;
+    for (const [key, value] of Object.entries(d.seen)) {
+      jsonPatch2IDateRange_(value);
+      if (mn == undefined) {
+        mn = value.lowerBound;
+      } else if (
+        value.lowerBound != undefined &&
+        value.lowerBound.getTime() - mn.getTime() < 0
+      ) {
+        mn = value.lowerBound;
+      }
+      if (mx == undefined) {
+        mx = value.upperBound;
+      } else if (
+        value.upperBound != undefined &&
+        value.upperBound.getTime() - mx.getTime() > 0
+      ) {
+        mx = value.upperBound;
+      }
+    }
+    d.seen.Ever = { lowerBound: mn, upperBound: mx };
+  }
+}
+
 export async function fetchNetwork(id: string): Promise<INetwork> {
   return fetch(`${gRuntimeConfiguration.API_ROOT}/api/v1/networks/${id}`)
     .then((response) => response.json())
     .then((data) => {
+      jsonPatch2INetwork_(data);
       return data;
     })
     .catch((error) => Logger.error(error));
@@ -88,33 +140,8 @@ export async function fetchDevices(
   )
     .then((response) => response.json())
     .then((data) => {
-      data.forEach((d: { icon: URL | string | null }) => {
-        // fixup urls that are relative to be relative to the WSAPI
-        if (d.icon) {
-          d.icon = new URL(d.icon, gRuntimeConfiguration.API_ROOT);
-        }
-      });
-      // Compute the seen.Ever 'virtual field'
-      data.forEach((d: { seen: { [key: string]: IDateTimeRange } }) => {
-        if (d.seen) {
-          let mn = null;
-          let mx = null;
-          for (const [key, value] of Object.entries(d.seen)) {
-            if (mn == null) {
-              mn = value.lowerBound;
-              mx = value.upperBound;
-            } else {
-              // @todo must fix to map to dates first
-              if (moment(value.lowerBound).diff(mn) < 0) {
-                mn = value.lowerBound;
-              }
-              if (moment(value.upperBound).diff(mx) > 0) {
-                mx = value.upperBound;
-              }
-            }
-          }
-          d.seen.Ever = { lowerBound: mn, upperBound: mx };
-        }
+      data.forEach((d: IDevice) => {
+        jsonPatch2IDevice_(d);
       });
       return data;
     })
@@ -128,30 +155,7 @@ export async function fetchDevice(id: string): Promise<IDevice> {
   return fetch(`${gRuntimeConfiguration.API_ROOT}/api/v1/devices/${id}`)
     .then((response) => response.json())
     .then((data) => {
-      // fixup urls that are relative to be relative to the WSAPI
-      if (data.icon) {
-        data.icon = new URL(data.icon, gRuntimeConfiguration.API_ROOT);
-      }
-      if (data.seen) {
-        let mn = null;
-        let mx = null;
-        for (const [key, value] of Object.entries(data.seen)) {
-          if (mn == null) {
-            mn = value.lowerBound;
-            mx = value.upperBound;
-          } else {
-            // @todo must fix to map to dates first
-            if (moment(value.lowerBound).diff(mn) < 0) {
-              mn = value.lowerBound;
-            }
-            if (moment(value.upperBound).diff(mx) > 0) {
-              mx = value.upperBound;
-            }
-          }
-        }
-        data.seen.Ever = { lowerBound: mn, upperBound: mx };
-      }
-      data.lastSeenAt = data.seen?.Ever?.upperBound;
+      jsonPatch2IDevice_(data);
       return data;
     })
     .then((data) => {

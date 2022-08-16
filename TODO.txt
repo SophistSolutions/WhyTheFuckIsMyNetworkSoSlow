@@ -4,10 +4,6 @@ advisory cache hw addr to guid list when generating new guids for rollup devices
 
 sort by date on devices page not working at all.
 
-----
-
-record not just geoloc for network, but its public ip (if any)
-
 ---
 
 

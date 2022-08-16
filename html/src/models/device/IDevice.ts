@@ -24,10 +24,10 @@ export interface IDevice {
   name: string;
   seen?: { [key: string]: IDateTimeRange };
   openPorts?: string[];
-  icon?: string;
+  icon?: URL;
   manufacturer?: IManufacturer;
   type: Array<DeviceTypeEnum | string>;
-  presentationURL?: string;
+  presentationURL?: URL;
   operatingSystem?: OperatingSystem;
   debugProps?: object;
 }
