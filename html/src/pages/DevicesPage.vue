@@ -166,7 +166,7 @@ function rowClicked(props: object) {
 
 let allAvailableNetworks: ComputedRef<INetwork[]> = computed(() => store.getAvailableNetworks);
 
-function mkTblHdr_(o: {name: string, field?: string, classes?: string, align?: string, sortable?: boolean, headerClasses?: string, label: string, headerStyle?:string}) {
+function mkTblHdr_(o: {name: string, classes?: string, align?: string, sortable?: boolean, headerClasses?: string, label: string, headerStyle?:string, sort?:any, field?:any}) {
   return {
     ...o,
     field: o.field ?? o.name,
@@ -192,6 +192,8 @@ const tableHeaders = ref([
     label: "Last Seen",
     classes: "truncateWithElipsis cellNoScribble",
     headerStyle: 'width: 9em; ',
+    field: row => row.seen?.Ever?.upperBound,
+
   }),
   mkTblHdr_({
     name: "manufacturerSummary",
