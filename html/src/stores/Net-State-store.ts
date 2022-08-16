@@ -86,6 +86,11 @@ export const useNetStateStore = defineStore('Net-State-Store', {
       this.networkInterfaces = await fetchNetworkInterfaces();
     },
     async fetchNetworks(ids: string[]) {
+      // primitive WSAPI throttling
+      if (this.devicesLoading.numberOfOutstandingLoadRequests > 2) {
+        console.log("Suppressing fetchNetworks due to WSAPI delays");
+        return;
+      }
       this.loadingNetworks.numberOfOutstandingLoadRequests++;
       try {
         ids.forEach(async (id) => this.networkDetails[id] = await fetchNetwork(id));
@@ -99,6 +104,11 @@ export const useNetStateStore = defineStore('Net-State-Store', {
       this.about = await fetchAboutInfo();
     },
     async fetchActiveDevices(searchSpecs?: ISortBy) {
+      // primitive WSAPI throttling
+      if (this.devicesLoading.numberOfOutstandingLoadRequests > 2) {
+        console.log("Suppressing fetchActiveDevices due to WSAPI delays");
+        return;
+      }
       this.devicesLoading.numberOfOutstandingLoadRequests++;
       try {
         const devices: IDevice[] = await fetchDevices(searchSpecs);
