@@ -511,6 +511,22 @@ namespace {
         RolledUpNetworks GetRolledUpNetworks (Time::DurationSecondsType allowedStaleness = 5.0);
 
         struct RolledUpDevices {
+            static GUID GenNewDeviceID_ (const String& hwAddress)
+            {
+                static Synchronized<Mapping<String, GUID>> sHWAddr2DeviceIDMap_;
+                auto                                       l = sHWAddr2DeviceIDMap_.rwget ();
+                if (auto o = l->Lookup (hwAddress)) {
+                    return *o;
+                }
+                GUID newRes = GUID::GenerateNew ();
+                l->Add (hwAddress, newRes);
+                return newRes;
+            }
+            static GUID GenNewDeviceID_ (const Set<String>& hwAddresses)
+            {
+                return GenNewDeviceID_ (*hwAddresses.First ());
+            }
+
             // @todo add much more here - different useful summaries of same info
             DeviceKeyedCollection_ fDevices;
         };
@@ -529,10 +545,6 @@ namespace {
             return sCache_.LookupValue (sCache_.Ago (allowedStaleness), [=] () -> RolledUpDevices {
                 Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...GetRolledUpDevies...cachefiller")};
                 Debug::TimingTrace        ttrc{L"GetRolledUpDevies...cachefiller", 1};
-                // sRolledUpDevices_: keep always across runs so we have consisent IDs (safe to use Synchronized cuz accessed from just this call,
-                // and always with consistent set of locks and short lived locks and no other app layer locks grabbed inside lock/copy)
-                // NOTE - we would NOT need to use Syncrhonized here if we used sCache_.fHoldWriteLockDuringCacheFill
-                static Synchronized<RolledUpDevices> sRolledUpDevices_;
 
                 auto rolledUpNetworks = GetRolledUpNetworks (allowedStaleness * 10.0); // longer allowedStaleness cuz we dont care much about this and the parts
                                                                                        // we look at really dont change
@@ -545,10 +557,15 @@ namespace {
                     return result;
                 };
 
+                // sRolledUpDevicesFromDB_: keep a cache of the rolled up devices as of our first load from the database, just
+                // as a slight performance tweek.
+                // NOTE - we would NOT need to use Syncrhonized here if we used sCache_.fHoldWriteLockDuringCacheFill
+                static Synchronized<RolledUpDevices> sRolledUpDevicesFromDB_;
+
                 // Start with the existing rolled up devices
                 // and then add in (should be done just once) the values from the database,
                 // and then keep adding any more recent discovery changes
-                RolledUpDevices result               = sRolledUpDevices_;
+                RolledUpDevices result               = sRolledUpDevicesFromDB_;
                 auto            doMergeOneIntoRollup = [&result, &mapAggregatedAttachments2Rollups] (const Device& d2MergeIn) {
                     // @todo slow/quadradic - may need to tweak
                     if (auto i = result.fDevices.First ([&d2MergeIn] (const auto& exisingRolledUpDevice) { return ShouldRollup_ (exisingRolledUpDevice, d2MergeIn); })) {
@@ -562,7 +579,7 @@ namespace {
                         Assert (not d2MergeIn.fAggregatesReversibly.has_value ());
                         Device newRolledUpDevice                = d2MergeIn;
                         newRolledUpDevice.fAggregatesReversibly = Set<GUID>{d2MergeIn.fGUID};
-                        newRolledUpDevice.fGUID                 = GUID::GenerateNew ();
+                        newRolledUpDevice.fGUID                 = RolledUpDevices::GenNewDeviceID_ (d2MergeIn.GetHardwareAddresses ());
                         newRolledUpDevice.fAttachedNetworks     = mapAggregatedAttachments2Rollups (newRolledUpDevice.fAttachedNetworks);
                         result.fDevices.Add (newRolledUpDevice);
                     }
@@ -573,11 +590,11 @@ namespace {
                         doMergeOneIntoRollup (rdi);
                         sDidMergeFromDatabase_ = true;
                     }
+                    sRolledUpDevicesFromDB_ = result;
                 }
                 for (const Device& d : DiscoveryWrapper_::GetDevices_ ()) {
                     doMergeOneIntoRollup (d);
                 }
-                sRolledUpDevices_ = result;
                 return result;
             });
         }
