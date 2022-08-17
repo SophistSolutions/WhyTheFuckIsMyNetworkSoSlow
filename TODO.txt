@@ -1,32 +1,4 @@
-advisory cache hw addr to guid list when generating new guids for rollup devices and networks.
 
-----
-
-sort by date on devices page not working at all.
-
----
-
-
-Sequence<String> WSImpl::GetNetworks (const optional<Set<GUID>>& ids) const
-{
-    Debug::TimingTrace                              ttrc{L"WSImpl::GetNetworks", 0.1};
-    Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
-    return Sequence<String>{IntegratedModel::Mgr::sThe.GetNetworks ().Select<String> ([] (const auto& n) { return n.fGUID.ToString (); })};
-}
-oops
----
-
-FINISH MIGRATING THESE TO https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues
-----
-	NEXT IMPRTANT MILESTONE
-		> Collect ping stats to www.google.com from a given device
-		> Show graph of ping time over time on the NETWORKS page for the NETWORK used
-		> Show a list of devices which collected statuistics for that network (typically one)
-		> and select which networks to use stats from, and maybe go from tehre exploreing more 
-		> like differences between devices on same network etc)
-
-
------
 
 + then fix SPEED issue with web service static content (at least measure and see if reasonable)
   (maybe in stk add flag saying READONLY and implement etags? maybe also support gzip

@@ -420,7 +420,21 @@ Sequence<String> WSImpl::GetNetworks (const optional<Set<GUID>>& ids) const
 {
     Debug::TimingTrace                              ttrc{L"WSImpl::GetNetworks", 0.1};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
-    return Sequence<String>{IntegratedModel::Mgr::sThe.GetNetworks ().Select<String> ([] (const auto& n) { return n.fGUID.ToString (); })};
+    if (ids) {
+        Sequence<String> result;
+        for (auto i : *ids) {
+            if (auto n = IntegratedModel::Mgr::sThe.GetNetwork (i)) {
+                result += n->fGUID.ToString ();
+            }
+            else {
+                // should drop on floor or throw? - but if throw whats the point of thie API taking guids and returning guids? Maybe none
+            }
+        }
+        return result;
+    }
+    else {
+        return Sequence<String>{IntegratedModel::Mgr::sThe.GetNetworks ().Select<String> ([] (const auto& n) { return n.fGUID.ToString (); })};
+    }
 }
 
 Sequence<BackendApp::WebServices::Network> WSImpl::GetNetworks_Recurse (const optional<Set<GUID>>& ids) const
