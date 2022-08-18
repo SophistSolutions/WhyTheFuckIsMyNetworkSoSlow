@@ -1316,6 +1316,7 @@ namespace {
                                 tmp.fOpenPorts = scanResults.fDiscoveredOpenPorts;
                                 PatchSeen_ (&tmp, scanResults);
                                 tmp.PatchDerivedFields ();
+                                // NOTE - at this point - we have no hardware address - could get from IO::Network::Neighbors API, but too costly, not worth while here
 #if qDebug
                                 tmp.fDebugProps.Add (L"Found-By-RandomWalkThroughSubnetDiscoverer_-At", DateTime::Now ());
 #endif
@@ -1577,7 +1578,8 @@ Collection<Discovery::Device> Discovery::DevicesMgr::GetActiveDevices (optional<
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
                                        DbgTrace (L"sDiscoveredDevices_: %s", Characters::ToString (sDiscoveredDevices_.load ()).c_str ());
 #endif
-                                       return sDiscoveredDevices_.load (); // intentionally object-spice
+                                       // NOTE - intentionally omit devices with no hardware addresses
+                                       return sDiscoveredDevices_.load ().Where ([] (const Discovery::Device& d) { return not d.GetHardwareAddresses ().empty (); }); // intentionally object-spice
                                    });
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
     DbgTrace (L"returns: %s", Characters::ToString (results).c_str ());
