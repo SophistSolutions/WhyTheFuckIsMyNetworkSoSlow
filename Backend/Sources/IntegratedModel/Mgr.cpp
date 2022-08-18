@@ -624,9 +624,6 @@ namespace {
                         Assert (not d2MergeIn.fAggregatesReversibly.has_value ());
                         Device newRolledUpDevice                = d2MergeIn;
                         newRolledUpDevice.fAggregatesReversibly = Set<GUID>{d2MergeIn.fGUID};
-                        if (d2MergeIn.GetHardwareAddresses ().empty ()) {
-                            DbgTrace (L"d2MergeIn=%s", Characters::ToString (d2MergeIn).c_str ());
-                        }
                         newRolledUpDevice.fGUID                 = RolledUpDevices::GenNewDeviceID_ (d2MergeIn.GetHardwareAddresses ());
                         newRolledUpDevice.fAttachedNetworks     = mapAggregatedAttachments2Rollups (newRolledUpDevice.fAttachedNetworks);
                         result.fDevices.Add (newRolledUpDevice);

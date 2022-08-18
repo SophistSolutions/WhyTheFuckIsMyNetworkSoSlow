@@ -1,3 +1,14 @@
+kDeviceIDCacheTableSchema_
+
+.. DO DBMgr DBAccess::Mgr class to do activate/dacitve
+and create DB (and upgrade) directly there, and start backgorund thread for partst
+that can run in background,but loading assocs https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/69
+must be done syncrhonously at startup
+
+===
+
+
+
 
 
 + then fix SPEED issue with web service static content (at least measure and see if reasonable)
