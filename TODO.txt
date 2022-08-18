@@ -8,6 +8,11 @@ must be done syncrhonously at startup
 ===
 
 
+ + Redo device fetching so we first just fetch device ids, and then fetch each device by id
+   into separate caches. This has the advanage of getting alot of 304s, I hope. And then eventually
+   switch to doing all the sorting server side (and filtering).
+
+----
 
 
 

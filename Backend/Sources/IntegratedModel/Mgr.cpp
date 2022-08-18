@@ -330,11 +330,17 @@ namespace {
 
         // the latest copy of what is in the DB (manually kept up to date)
         // NOTE: These are all non-rolled up objects
+        Synchronized<Mapping<String,GUID>>  sAdvisoryHWAddr2GUIDCache;
         Synchronized<DeviceKeyedCollection_>  sDBDevices_;
         Synchronized<NetworkKeyedCollection_> sDBNetworks_;
 
         namespace Private_ {
             constexpr VariantValue::Type kRepresentIDAs_ = VariantValue::Type::eBLOB; // else as string
+
+            struct HWAddr2GUIDElt_ {
+                String HWAddress;
+                GUID   DeviceID;
+            };
 
             /*
              *  Combined mapper for objects we write to the database. Contains all the objects mappers we need merged together,
@@ -343,6 +349,10 @@ namespace {
             const ConstantProperty<ObjectVariantMapper> kDBObjectMapper_{[] () {
                 ObjectVariantMapper mapper;
 
+                mapper.AddClass<HWAddr2GUIDElt_> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+                    {L"HWAddress", StructFieldMetaInfo{&HWAddr2GUIDElt_::HWAddress}},
+                    {L"DeviceID", StructFieldMetaInfo{&HWAddr2GUIDElt_::DeviceID}},
+                });
                 mapper += IntegratedModel::Device::kMapper;
                 mapper += IntegratedModel::Network::kMapper;
 
@@ -359,11 +369,7 @@ namespace {
                 Collection<Schema::Field>{
 #if __cpp_designated_initializers
                     {.fName = L"HWAddress"sv, .fRequired = true, .fIsKeyField = true},
-                    {
-                        .fName             = L"DeviceID"sv,
-                        .fRequired         = true,
-                        .fVariantValueType = kRepresentIDAs_,
-                    },
+                    {.fName = L"DeviceID"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_},
 #else
                     {L"HWAddress", nullopt, true, VariantValue::eString, nullopt, true},
                     {L"DeviceID", nullopt, true, kRepresentIDAs_, nullopt, false},
@@ -387,8 +393,7 @@ namespace {
                     {L"ID", L"id"sv, true, kRepresentIDAs_, nullopt, true, nullopt, L"randomblob(16)"sv},
                     {L"name", nullopt, false, VariantValue::eString},
 #endif
-                },
-                Schema::CatchAllField{}};
+                }};
             const Schema::Table kNetworkTableSchema_{
                 L"Networks"sv,
                 /*
@@ -419,15 +424,25 @@ namespace {
                 Traversal::Iterable<Database::SQL::ORM::Schema::Table>{Private_::kDeviceIDCacheTableSchema_, Private_::kDeviceTableSchema_, Private_::kNetworkTableSchema_}};
             SQL::Connection::Ptr   fDBConnectionPtr_{fDB_.NewConnection ()};
             Execution::Thread::Ptr fDatabaseSyncThread_{};
+            unique_ptr<SQL::ORM::TableConnection<Private_::HWAddr2GUIDElt_>> fHWAddr2GUIDCacheTableConnection_;
 
         public:
             Mgr_ ()
             {
                 Debug::TraceContextBumper ctx{L"IntegratedModel::{}::Mgr_::CTOR"};
+                fHWAddr2GUIDCacheTableConnection_ = make_unique<SQL::ORM::TableConnection<Private_::HWAddr2GUIDElt_>> (fDBConnectionPtr_, Private_::kDeviceIDCacheTableSchema_, Private_::kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<Private_::HWAddr2GUIDElt_>> ());
+                try {
+                    Debug::TimingTrace ttrc{L"...initial load of sDBNetworks_ from database ", 1};
+                    sAdvisoryHWAddr2GUIDCache.store (Mapping<String, GUID>{ fHWAddr2GUIDCacheTableConnection_->GetAll ().Select<KeyValuePair<String, GUID>> ([] (const auto& i) { return KeyValuePair<String, GUID>{i.HWAddress, i.DeviceID}; })});
+                }
+                catch (...) {
+                    Logger::sThe.Log (Logger::eError, L"Failed to load sAdvisoryHWAddr2GUIDCache from db: %s", Characters::ToString (current_exception ()).c_str ());
+                    Execution::ReThrow ();
+                }
                 Require (fDatabaseSyncThread_ == nullptr);
                 fDatabaseSyncThread_ = Thread::New ([this] () { BackgroundDatabaseThread_ (); }, Thread::eAutoStart, L"BackgroundDatabaseThread"sv);
             }
-            Mgr_ (const Mgr_&) = delete;
+            Mgr_ (const Mgr_&)            = delete;
             Mgr_& operator= (const Mgr_&) = delete;
             ~Mgr_ ()
             {
@@ -435,6 +450,25 @@ namespace {
                 Execution::Thread::SuppressInterruptionInContext suppressInterruption; // must complete this abort and wait for done - this cannot abort/throw
                 fDatabaseSyncThread_.AbortAndWaitForDone ();
             }
+            GUID GenNewDeviceID (const String& hwAddress)
+            {
+                Debug::TimingTrace ttrc{L"GenNewDeviceID", 0.001}; // sb very quick
+                auto               l = DBAccess_::sAdvisoryHWAddr2GUIDCache.rwget ();
+                if (auto o = l->Lookup (hwAddress)) {
+                    return *o;
+                }
+                GUID newRes = GUID::GenerateNew ();
+                l->Add (hwAddress, newRes);
+                fHWAddr2GUIDCacheTableConnection_->AddNew (Private_::HWAddr2GUIDElt_{hwAddress, newRes});
+                return newRes;
+            }
+            GUID GenNewDeviceID (const Set<String>& hwAddresses)
+            {
+                // consider if there is a better way to select which hwaddress to use
+                return hwAddresses.empty () ? GUID::GenerateNew () : GenNewDeviceID (*hwAddresses.First ());
+            }
+
+        private:
             void BackgroundDatabaseThread_ ()
             {
                 Debug::TraceContextBumper                                       ctx{L"BackgroundDatabaseThread_ loop"};
@@ -547,27 +581,6 @@ namespace {
         RolledUpNetworks GetRolledUpNetworks (Time::DurationSecondsType allowedStaleness = 5.0);
 
         struct RolledUpDevices {
-        private:
-            // https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/69
-            static inline Synchronized<Mapping<String, GUID>> sHWAddr2DeviceIDMap_;
-
-        public:
-            static GUID GenNewDeviceID_ (const String& hwAddress)
-            {
-                auto l = sHWAddr2DeviceIDMap_.rwget ();
-                if (auto o = l->Lookup (hwAddress)) {
-                    return *o;
-                }
-                GUID newRes = GUID::GenerateNew ();
-                l->Add (hwAddress, newRes);
-                return newRes;
-            }
-            static GUID GenNewDeviceID_ (const Set<String>& hwAddresses)
-            {
-                // consider if there is a better way to select which hwaddress to use
-                return hwAddresses.empty () ? GUID::GenerateNew () : GenNewDeviceID_ (*hwAddresses.First ());
-            }
-
         public:
             // @todo add much more here - different useful summaries of same info
             DeviceKeyedCollection_ fDevices;
@@ -621,16 +634,17 @@ namespace {
                         Assert (not d2MergeIn.fAggregatesReversibly.has_value ());
                         Device newRolledUpDevice                = d2MergeIn;
                         newRolledUpDevice.fAggregatesReversibly = Set<GUID>{d2MergeIn.fGUID};
-                        newRolledUpDevice.fGUID                 = RolledUpDevices::GenNewDeviceID_ (d2MergeIn.GetHardwareAddresses ());
+                        newRolledUpDevice.fGUID                 = DBAccess_::sMgr_->GenNewDeviceID (d2MergeIn.GetHardwareAddresses ());
+                        Assert (not result.fDevices.Contains (newRolledUpDevice.fGUID));
                         newRolledUpDevice.fAttachedNetworks     = mapAggregatedAttachments2Rollups (newRolledUpDevice.fAttachedNetworks);
                         result.fDevices.Add (newRolledUpDevice);
                     }
                 };
                 static bool sDidMergeFromDatabase_ = false; // no need to roll these up more than once
                 if (not sDidMergeFromDatabase_) {
+                    sDidMergeFromDatabase_ = true;
                     for (const auto& rdi : DBAccess_::sDBDevices_.load ()) {
                         doMergeOneIntoRollup (rdi);
-                        sDidMergeFromDatabase_ = true;
                     }
                     sRolledUpDevicesFromDB_ = result;
                 }
