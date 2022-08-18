@@ -328,156 +328,195 @@ namespace {
     namespace DBAccess_ {
         using namespace SQL::ORM;
 
-        constexpr VariantValue::Type kRepresentIDAs_ = VariantValue::Type::eBLOB; // else as string
-
-        Execution::Thread::Ptr sDatabaseSyncThread_{};
-
         // the latest copy of what is in the DB (manually kept up to date)
         // NOTE: These are all non-rolled up objects
         Synchronized<DeviceKeyedCollection_>  sDBDevices_;
         Synchronized<NetworkKeyedCollection_> sDBNetworks_;
 
-        /*
-         *  Combined mapper for objects we write to the database. Contains all the objects mappers we need merged together,
-         *  and any touchups on represenation we need (like writing GUID as BLOB rather than string).
-         */
-        const ConstantProperty<ObjectVariantMapper> kDBObjectMapper_{[] () {
-            ObjectVariantMapper mapper;
+        namespace Private_ {
+            constexpr VariantValue::Type kRepresentIDAs_ = VariantValue::Type::eBLOB; // else as string
 
-            mapper += IntegratedModel::Device::kMapper;
-            mapper += IntegratedModel::Network::kMapper;
-
-            // ONLY DO THIS FOR WHEN WRITING TO DB -- store GUIDs as BLOBs - at least for database interactions (cuz more efficient)
-            mapper.AddCommonType<GUID> (kRepresentIDAs_);
-
-            return mapper;
-        }};
-
-        const Schema::Table kDeviceTableSchema_{
-            L"Devices",
             /*
-             *  use the same names as the ObjectVariantMapper for simpler mapping, or specify an alternate name
-             *  for ID, just as an example.
+             *  Combined mapper for objects we write to the database. Contains all the objects mappers we need merged together,
+             *  and any touchups on represenation we need (like writing GUID as BLOB rather than string).
              */
-            Collection<Schema::Field>{
-#if __cpp_designated_initializers
-                /**
-                 *  For ID, generate random GUID (BLOB) automatically in database
-                 */
-                {.fName = L"ID"sv, .fVariantValueName = L"id"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = L"randomblob(16)"sv},
-                {.fName = L"name"sv, .fVariantValueType = VariantValue::eString},
-#else
-                {L"ID", L"id"sv, true, kRepresentIDAs_, nullopt, true, nullopt, L"randomblob(16)"sv},
-                {L"name", nullopt, false, VariantValue::eString},
-#endif
-            },
-            Schema::CatchAllField{}};
-        const Schema::Table kNetworkTableSchema_{
-            L"Networks",
-            /*
-             *  use the same names as the ObjectVariantMapper for simpler mapping, or specify an alternate name
-             *  for ID, just as an example.
-             */
-            Collection<Schema::Field>{
-#if __cpp_designated_initializers
-                /**
-                 *  For ID, generate random GUID (BLOB) automatically in database
-                 */
-                {.fName = L"ID"sv, .fVariantValueName = L"id"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = L"randomblob(16)"sv},
-                {.fName = L"friendlyName"sv, .fVariantValueType = VariantValue::eString},
-#else
-                {L"ID", L"id"sv, true, kRepresentIDAs_, nullopt, true, nullopt, L"randomblob(16)"sv},
-                {L"friendlyName", nullopt, false, VariantValue::eString},
-#endif
-            },
-            Schema::CatchAllField{}};
-        static_assert (kRepresentIDAs_ == VariantValue::eBLOB); // @todo to support string, just change '.fDefaultExpression'
+            const ConstantProperty<ObjectVariantMapper> kDBObjectMapper_{[] () {
+                ObjectVariantMapper mapper;
 
-        void BackgroundDatabaseThread_ ()
-        {
-            Debug::TraceContextBumper        ctx{L"BackgroundDatabaseThread_ loop"};
-            constexpr Configuration::Version kCurrentVersion_ = Configuration::Version{1, 0, Configuration::VersionStage::Alpha, 0};
-            BackendApp::Common::DB           db{
+                mapper += IntegratedModel::Device::kMapper;
+                mapper += IntegratedModel::Network::kMapper;
+
+                // ONLY DO THIS FOR WHEN WRITING TO DB -- store GUIDs as BLOBs - at least for database interactions (cuz more efficient)
+                mapper.AddCommonType<GUID> (kRepresentIDAs_);
+
+                return mapper;
+            }};
+
+            const Schema::Table kDeviceIDCacheTableSchema_{
+                L"DevicesIDCache"sv,
+                /*
+                 */
+                Collection<Schema::Field>{
+#if __cpp_designated_initializers
+                    {.fName = L"HWAddress"sv, .fRequired = true, .fIsKeyField = true},
+                    {
+                        .fName             = L"DeviceID"sv,
+                        .fRequired         = true,
+                        .fVariantValueType = kRepresentIDAs_,
+                    },
+#else
+                    {L"HWAddress", nullopt, true, VariantValue::eString, nullopt, true},
+                    {L"DeviceID", nullopt, true, kRepresentIDAs_, nullopt, false},
+#endif
+                },
+                Schema::CatchAllField{}};
+            const Schema::Table kDeviceTableSchema_{
+                L"Devices"sv,
+                /*
+                 *  use the same names as the ObjectVariantMapper for simpler mapping, or specify an alternate name
+                 *  for ID, just as an example.
+                 */
+                Collection<Schema::Field>{
+#if __cpp_designated_initializers
+                    /**
+                     *  For ID, generate random GUID (BLOB) automatically in database
+                     */
+                    {.fName = L"ID"sv, .fVariantValueName = L"id"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = L"randomblob(16)"sv},
+                    {.fName = L"name"sv, .fVariantValueType = VariantValue::eString},
+#else
+                    {L"ID", L"id"sv, true, kRepresentIDAs_, nullopt, true, nullopt, L"randomblob(16)"sv},
+                    {L"name", nullopt, false, VariantValue::eString},
+#endif
+                },
+                Schema::CatchAllField{}};
+            const Schema::Table kNetworkTableSchema_{
+                L"Networks"sv,
+                /*
+                 *  use the same names as the ObjectVariantMapper for simpler mapping, or specify an alternate name
+                 *  for ID, just as an example.
+                 */
+                Collection<Schema::Field>{
+#if __cpp_designated_initializers
+                    /**
+                     *  For ID, generate random GUID (BLOB) automatically in database
+                     */
+                    {.fName = L"ID"sv, .fVariantValueName = L"id"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = L"randomblob(16)"sv},
+                    {.fName = L"friendlyName"sv, .fVariantValueType = VariantValue::eString},
+#else
+                    {L"ID", L"id"sv, true, kRepresentIDAs_, nullopt, true, nullopt, L"randomblob(16)"sv},
+                    {L"friendlyName", nullopt, false, VariantValue::eString},
+#endif
+                },
+                Schema::CatchAllField{}};
+            static_assert (kRepresentIDAs_ == VariantValue::eBLOB); // @todo to support string, just change '.fDefaultExpression'
+        }
+
+        class Mgr_ {
+        private:
+            static constexpr Configuration::Version kCurrentVersion_ = Configuration::Version{1, 0, Configuration::VersionStage::Alpha, 0};
+            BackendApp::Common::DB                  db{
                 kCurrentVersion_,
-                Traversal::Iterable<Database::SQL::ORM::Schema::Table>{kDeviceTableSchema_, kNetworkTableSchema_}};
-            SQL::Connection::Ptr                                            conn;
-            unique_ptr<SQL::ORM::TableConnection<IntegratedModel::Device>>  deviceTableConnection;
-            unique_ptr<SQL::ORM::TableConnection<IntegratedModel::Network>> networkTableConnection;
-#if qDefaultTracingOn
-            bool madeItToEndOfLoadDBCode = false;
-#endif
-            while (true) {
-                try {
-                    if (conn == nullptr) {
-                        conn = db.NewConnection ();
-                    }
-                    // load networks before devices because devices depend on networks but not the reverse
-                    if (networkTableConnection == nullptr) {
-                        networkTableConnection = make_unique<SQL::ORM::TableConnection<IntegratedModel::Network>> (conn, kNetworkTableSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<IntegratedModel::Network>> ());
-                        try {
-                            Debug::TimingTrace ttrc{L"...initial load of sDBNetworks_ from database ", 1};
-                            sDBNetworks_.store (NetworkKeyedCollection_{networkTableConnection->GetAll ()});
-                        }
-                        catch (...) {
-                            DbgTrace (L"Probably important error reading database of old netowrks data: %s", Characters::ToString (current_exception ()).c_str ());
-                            networkTableConnection = nullptr; // so we re-fetch
-                            Execution::ReThrow ();
-                        }
-                    }
-                    if (deviceTableConnection == nullptr) {
-                        deviceTableConnection = make_unique<SQL::ORM::TableConnection<IntegratedModel::Device>> (conn, kDeviceTableSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<IntegratedModel::Device>> ());
-                        try {
-                            Debug::TimingTrace ttrc{L"...initial load of sDBDevices_ from database ", 1};
-                            sDBDevices_.store (DeviceKeyedCollection_{deviceTableConnection->GetAll ()}); // pre-load in memory copy with whatever we had stored in the database
-                        }
-                        catch (...) {
-                            DbgTrace (L"Probably important error reading database of old device data: %s", Characters::ToString (current_exception ()).c_str ());
-                            deviceTableConnection = nullptr; // so we re-fetch
-                            Execution::ReThrow ();
-                        }
-                    }
-#if qDefaultTracingOn
-                    if (not madeItToEndOfLoadDBCode) {
-                        DbgTrace (L"Completed initial database load of sDBDevices_ and sDBNetworks_");
-                        madeItToEndOfLoadDBCode = true;
-                    }
-#endif
-                    // periodically write the latest discovered data to the database
+                Traversal::Iterable<Database::SQL::ORM::Schema::Table>{Private_::kDeviceIDCacheTableSchema_, Private_::kDeviceTableSchema_, Private_::kNetworkTableSchema_}};
+            SQL::Connection::Ptr conn;
 
-                    // UPDATE sDBNetworks_ INCREMENTALLY to reflect reflect these merges
-                    for (auto ni : DiscoveryWrapper_::GetNetworks_ ()) {
-                        if (not kSupportPersistedNetworkInterfaces_) {
-                            ni.fAttachedInterfaces.clear ();
-                        }
-                        Assert (ni.fSeen); // don't track/write items which have never been seen
-                        auto rec2Update = db.AddOrMergeUpdate (networkTableConnection.get (), ni);
-                        sDBNetworks_.rwget ()->Add (rec2Update);
-                    }
-
-                    // UPDATE sDBDevices_ INCREMENTALLY to reflect reflect these merges
-                    for (auto di : DiscoveryWrapper_::GetDevices_ ()) {
-                        Assert (di.fSeen.EverSeen ());
-                        if (not kSupportPersistedNetworkInterfaces_) {
-                            di.fAttachedNetworkInterfaces = nullopt;
-                        }
-                        Assert (di.fSeen.EverSeen ()); // don't track/write items which have never been seen
-                        auto rec2Update = db.AddOrMergeUpdate (deviceTableConnection.get (), di);
-                        sDBDevices_.rwget ()->Add (rec2Update);
-                    }
-
-                    // only update periodically
-                    Execution::Sleep (30s);
+        public:
+            Mgr_ ()
+            {
+                Debug::TraceContextBumper ctx{L"IntegratedModel::{}::Mgr_::CTOR"};
+                Require (fDatabaseSyncThread_ == nullptr);
+                if (conn == nullptr) {
+                    conn = db.NewConnection ();
                 }
-                catch (const Thread::AbortException&) {
-                    Execution::ReThrow ();
-                }
-                catch (...) {
-                    //DbgTrace (L"Ignoring (will retry in 30 seconds) exception in BackgroundDatabaseThread_ loop: %s", Characters::ToString (current_exception ()).c_str ());
-                    Logger::sThe.Log (Logger::eWarning, L"Database update: ignoring exception in BackgroundDatabaseThread_ loop (will retry in 30 seconds): %s", Characters::ToString (current_exception ()).c_str ());
-                    Execution::Sleep (30s);
+                fDatabaseSyncThread_ = Thread::New ([this] () { BackgroundDatabaseThread_ (); }, Thread::eAutoStart, L"BackgroundDatabaseThread"sv);
+            }
+            Mgr_ (const Mgr_&) = delete;
+            Mgr_& operator= (const Mgr_&) = delete;
+            ~Mgr_ ()
+            {
+                Debug::TraceContextBumper                        ctx{L"IntegratedModel::{}::Mgr_::DTOR"};
+                Execution::Thread::SuppressInterruptionInContext suppressInterruption; // must complete this abort and wait for done - this cannot abort/throw
+                fDatabaseSyncThread_.AbortAndWaitForDone ();
+            }
+            Execution::Thread::Ptr fDatabaseSyncThread_{};
+            void                   BackgroundDatabaseThread_ ()
+            {
+                Debug::TraceContextBumper                                       ctx{L"BackgroundDatabaseThread_ loop"};
+                unique_ptr<SQL::ORM::TableConnection<IntegratedModel::Device>>  deviceTableConnection;
+                unique_ptr<SQL::ORM::TableConnection<IntegratedModel::Network>> networkTableConnection;
+#if qDefaultTracingOn
+                bool madeItToEndOfLoadDBCode = false;
+#endif
+                while (true) {
+                    try {
+                        // load networks before devices because devices depend on networks but not the reverse
+                        if (networkTableConnection == nullptr) {
+                            networkTableConnection = make_unique<SQL::ORM::TableConnection<IntegratedModel::Network>> (conn, Private_::kNetworkTableSchema_, Private_::kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<IntegratedModel::Network>> ());
+                            try {
+                                Debug::TimingTrace ttrc{L"...initial load of sDBNetworks_ from database ", 1};
+                                sDBNetworks_.store (NetworkKeyedCollection_{networkTableConnection->GetAll ()});
+                            }
+                            catch (...) {
+                                DbgTrace (L"Probably important error reading database of old netowrks data: %s", Characters::ToString (current_exception ()).c_str ());
+                                networkTableConnection = nullptr; // so we re-fetch
+                                Execution::ReThrow ();
+                            }
+                        }
+                        if (deviceTableConnection == nullptr) {
+                            deviceTableConnection = make_unique<SQL::ORM::TableConnection<IntegratedModel::Device>> (conn, Private_::kDeviceTableSchema_, Private_::kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<IntegratedModel::Device>> ());
+                            try {
+                                Debug::TimingTrace ttrc{L"...initial load of sDBDevices_ from database ", 1};
+                                sDBDevices_.store (DeviceKeyedCollection_{deviceTableConnection->GetAll ()}); // pre-load in memory copy with whatever we had stored in the database
+                            }
+                            catch (...) {
+                                DbgTrace (L"Probably important error reading database of old device data: %s", Characters::ToString (current_exception ()).c_str ());
+                                deviceTableConnection = nullptr; // so we re-fetch
+                                Execution::ReThrow ();
+                            }
+                        }
+#if qDefaultTracingOn
+                        if (not madeItToEndOfLoadDBCode) {
+                            DbgTrace (L"Completed initial database load of sDBDevices_ and sDBNetworks_");
+                            madeItToEndOfLoadDBCode = true;
+                        }
+#endif
+                        // periodically write the latest discovered data to the database
+
+                        // UPDATE sDBNetworks_ INCREMENTALLY to reflect reflect these merges
+                        for (auto ni : DiscoveryWrapper_::GetNetworks_ ()) {
+                            if (not kSupportPersistedNetworkInterfaces_) {
+                                ni.fAttachedInterfaces.clear ();
+                            }
+                            Assert (ni.fSeen); // don't track/write items which have never been seen
+                            auto rec2Update = db.AddOrMergeUpdate (networkTableConnection.get (), ni);
+                            sDBNetworks_.rwget ()->Add (rec2Update);
+                        }
+
+                        // UPDATE sDBDevices_ INCREMENTALLY to reflect reflect these merges
+                        for (auto di : DiscoveryWrapper_::GetDevices_ ()) {
+                            Assert (di.fSeen.EverSeen ());
+                            if (not kSupportPersistedNetworkInterfaces_) {
+                                di.fAttachedNetworkInterfaces = nullopt;
+                            }
+                            Assert (di.fSeen.EverSeen ()); // don't track/write items which have never been seen
+                            auto rec2Update = db.AddOrMergeUpdate (deviceTableConnection.get (), di);
+                            sDBDevices_.rwget ()->Add (rec2Update);
+                        }
+
+                        // only update periodically
+                        Execution::Sleep (30s);
+                    }
+                    catch (const Thread::AbortException&) {
+                        Execution::ReThrow ();
+                    }
+                    catch (...) {
+                        //DbgTrace (L"Ignoring (will retry in 30 seconds) exception in BackgroundDatabaseThread_ loop: %s", Characters::ToString (current_exception ()).c_str ());
+                        Logger::sThe.Log (Logger::eWarning, L"Database update: ignoring exception in BackgroundDatabaseThread_ loop (will retry in 30 seconds): %s", Characters::ToString (current_exception ()).c_str ());
+                        Execution::Sleep (30s);
+                    }
                 }
             }
-        }
+        };
+        optional<Mgr_> sMgr_;
     }
 }
 
@@ -511,10 +550,14 @@ namespace {
         RolledUpNetworks GetRolledUpNetworks (Time::DurationSecondsType allowedStaleness = 5.0);
 
         struct RolledUpDevices {
+        private:
+            // https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/69
+            static inline Synchronized<Mapping<String, GUID>> sHWAddr2DeviceIDMap_;
+
+        public:
             static GUID GenNewDeviceID_ (const String& hwAddress)
             {
-                static Synchronized<Mapping<String, GUID>> sHWAddr2DeviceIDMap_;
-                auto                                       l = sHWAddr2DeviceIDMap_.rwget ();
+                auto l = sHWAddr2DeviceIDMap_.rwget ();
                 if (auto o = l->Lookup (hwAddress)) {
                     return *o;
                 }
@@ -524,9 +567,11 @@ namespace {
             }
             static GUID GenNewDeviceID_ (const Set<String>& hwAddresses)
             {
-                return GenNewDeviceID_ (*hwAddresses.First ());
+                // consider if there is a better way to select which hwaddress to use
+                return hwAddresses.empty () ? GUID::GenerateNew (): GenNewDeviceID_ (*hwAddresses.First ());
             }
 
+        public:
             // @todo add much more here - different useful summaries of same info
             DeviceKeyedCollection_ fDevices;
         };
@@ -579,6 +624,9 @@ namespace {
                         Assert (not d2MergeIn.fAggregatesReversibly.has_value ());
                         Device newRolledUpDevice                = d2MergeIn;
                         newRolledUpDevice.fAggregatesReversibly = Set<GUID>{d2MergeIn.fGUID};
+                        if (d2MergeIn.GetHardwareAddresses ().empty ()) {
+                            DbgTrace (L"d2MergeIn=%s", Characters::ToString (d2MergeIn).c_str ());
+                        }
                         newRolledUpDevice.fGUID                 = RolledUpDevices::GenNewDeviceID_ (d2MergeIn.GetHardwareAddresses ());
                         newRolledUpDevice.fAttachedNetworks     = mapAggregatedAttachments2Rollups (newRolledUpDevice.fAttachedNetworks);
                         result.fDevices.Add (newRolledUpDevice);
@@ -665,15 +713,15 @@ namespace {
 IntegratedModel::Mgr::Activator::Activator ()
 {
     Debug::TraceContextBumper ctx{L"IntegratedModel::Mgr::Activator::Activator"};
-    Require (DBAccess_::sDatabaseSyncThread_ == nullptr);
-    DBAccess_::sDatabaseSyncThread_ = Thread::New (DBAccess_::BackgroundDatabaseThread_, Thread::eAutoStart, L"BackgroundDatabaseThread"sv);
+    Require (DBAccess_::sMgr_ == nullopt);
+    DBAccess_::sMgr_.emplace ();
 }
 
 IntegratedModel::Mgr::Activator::~Activator ()
 {
     Debug::TraceContextBumper                        ctx{L"IntegratedModel::Mgr::Activator::~Activator"};
     Execution::Thread::SuppressInterruptionInContext suppressInterruption; // must complete this abort and wait for done - this cannot abort/throw
-    DBAccess_::sDatabaseSyncThread_.AbortAndWaitForDone ();
+    DBAccess_::sMgr_ = nullopt;
 }
 
 /*
