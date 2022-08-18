@@ -414,19 +414,17 @@ namespace {
         class Mgr_ {
         private:
             static constexpr Configuration::Version kCurrentVersion_ = Configuration::Version{1, 0, Configuration::VersionStage::Alpha, 0};
-            BackendApp::Common::DB                  db{
+            BackendApp::Common::DB                  fDB_{
                 kCurrentVersion_,
                 Traversal::Iterable<Database::SQL::ORM::Schema::Table>{Private_::kDeviceIDCacheTableSchema_, Private_::kDeviceTableSchema_, Private_::kNetworkTableSchema_}};
-            SQL::Connection::Ptr conn;
+            SQL::Connection::Ptr   fDBConnectionPtr_{fDB_.NewConnection ()};
+            Execution::Thread::Ptr fDatabaseSyncThread_{};
 
         public:
             Mgr_ ()
             {
                 Debug::TraceContextBumper ctx{L"IntegratedModel::{}::Mgr_::CTOR"};
                 Require (fDatabaseSyncThread_ == nullptr);
-                if (conn == nullptr) {
-                    conn = db.NewConnection ();
-                }
                 fDatabaseSyncThread_ = Thread::New ([this] () { BackgroundDatabaseThread_ (); }, Thread::eAutoStart, L"BackgroundDatabaseThread"sv);
             }
             Mgr_ (const Mgr_&) = delete;
@@ -437,8 +435,7 @@ namespace {
                 Execution::Thread::SuppressInterruptionInContext suppressInterruption; // must complete this abort and wait for done - this cannot abort/throw
                 fDatabaseSyncThread_.AbortAndWaitForDone ();
             }
-            Execution::Thread::Ptr fDatabaseSyncThread_{};
-            void                   BackgroundDatabaseThread_ ()
+            void BackgroundDatabaseThread_ ()
             {
                 Debug::TraceContextBumper                                       ctx{L"BackgroundDatabaseThread_ loop"};
                 unique_ptr<SQL::ORM::TableConnection<IntegratedModel::Device>>  deviceTableConnection;
@@ -450,7 +447,7 @@ namespace {
                     try {
                         // load networks before devices because devices depend on networks but not the reverse
                         if (networkTableConnection == nullptr) {
-                            networkTableConnection = make_unique<SQL::ORM::TableConnection<IntegratedModel::Network>> (conn, Private_::kNetworkTableSchema_, Private_::kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<IntegratedModel::Network>> ());
+                            networkTableConnection = make_unique<SQL::ORM::TableConnection<IntegratedModel::Network>> (fDBConnectionPtr_, Private_::kNetworkTableSchema_, Private_::kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<IntegratedModel::Network>> ());
                             try {
                                 Debug::TimingTrace ttrc{L"...initial load of sDBNetworks_ from database ", 1};
                                 sDBNetworks_.store (NetworkKeyedCollection_{networkTableConnection->GetAll ()});
@@ -462,7 +459,7 @@ namespace {
                             }
                         }
                         if (deviceTableConnection == nullptr) {
-                            deviceTableConnection = make_unique<SQL::ORM::TableConnection<IntegratedModel::Device>> (conn, Private_::kDeviceTableSchema_, Private_::kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<IntegratedModel::Device>> ());
+                            deviceTableConnection = make_unique<SQL::ORM::TableConnection<IntegratedModel::Device>> (fDBConnectionPtr_, Private_::kDeviceTableSchema_, Private_::kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<IntegratedModel::Device>> ());
                             try {
                                 Debug::TimingTrace ttrc{L"...initial load of sDBDevices_ from database ", 1};
                                 sDBDevices_.store (DeviceKeyedCollection_{deviceTableConnection->GetAll ()}); // pre-load in memory copy with whatever we had stored in the database
@@ -487,7 +484,7 @@ namespace {
                                 ni.fAttachedInterfaces.clear ();
                             }
                             Assert (ni.fSeen); // don't track/write items which have never been seen
-                            auto rec2Update = db.AddOrMergeUpdate (networkTableConnection.get (), ni);
+                            auto rec2Update = fDB_.AddOrMergeUpdate (networkTableConnection.get (), ni);
                             sDBNetworks_.rwget ()->Add (rec2Update);
                         }
 
@@ -498,7 +495,7 @@ namespace {
                                 di.fAttachedNetworkInterfaces = nullopt;
                             }
                             Assert (di.fSeen.EverSeen ()); // don't track/write items which have never been seen
-                            auto rec2Update = db.AddOrMergeUpdate (deviceTableConnection.get (), di);
+                            auto rec2Update = fDB_.AddOrMergeUpdate (deviceTableConnection.get (), di);
                             sDBDevices_.rwget ()->Add (rec2Update);
                         }
 
@@ -568,7 +565,7 @@ namespace {
             static GUID GenNewDeviceID_ (const Set<String>& hwAddresses)
             {
                 // consider if there is a better way to select which hwaddress to use
-                return hwAddresses.empty () ? GUID::GenerateNew (): GenNewDeviceID_ (*hwAddresses.First ());
+                return hwAddresses.empty () ? GUID::GenerateNew () : GenNewDeviceID_ (*hwAddresses.First ());
             }
 
         public:
