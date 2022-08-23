@@ -330,9 +330,10 @@ namespace {
 
         // the latest copy of what is in the DB (manually kept up to date)
         // NOTE: These are all non-rolled up objects
-        Synchronized<Mapping<String,GUID>>  sAdvisoryHWAddr2GUIDCache;
-        Synchronized<DeviceKeyedCollection_>  sDBDevices_;
-        Synchronized<NetworkKeyedCollection_> sDBNetworks_;
+        Synchronized<Mapping<String, GUID>>          sAdvisoryHWAddr2GUIDCache;
+        Synchronized<Mapping<InternetAddress, GUID>> sAdvisoryExternalIPAddr2NetworkGUIDCache;
+        Synchronized<DeviceKeyedCollection_>         sDBDevices_;
+        Synchronized<NetworkKeyedCollection_>        sDBNetworks_;
 
         namespace Private_ {
             constexpr VariantValue::Type kRepresentIDAs_ = VariantValue::Type::eBLOB; // else as string
@@ -340,6 +341,11 @@ namespace {
             struct HWAddr2GUIDElt_ {
                 String HWAddress;
                 GUID   DeviceID;
+            };
+
+            struct ExternalIPAddr2NetGUIDElt_ {
+                InternetAddress ExternalNetworkAddress;
+                GUID            NetworkID;
             };
 
             /*
@@ -353,6 +359,11 @@ namespace {
                     {L"HWAddress", StructFieldMetaInfo{&HWAddr2GUIDElt_::HWAddress}},
                     {L"DeviceID", StructFieldMetaInfo{&HWAddr2GUIDElt_::DeviceID}},
                 });
+                mapper.AddClass<ExternalIPAddr2NetGUIDElt_> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+                    {L"ExternalNetworkAddress", StructFieldMetaInfo{&ExternalIPAddr2NetGUIDElt_::ExternalNetworkAddress}},
+                    {L"NetworkID", StructFieldMetaInfo{&ExternalIPAddr2NetGUIDElt_::NetworkID}},
+                });
+
                 mapper += IntegratedModel::Device::kMapper;
                 mapper += IntegratedModel::Network::kMapper;
 
@@ -374,8 +385,20 @@ namespace {
                     {L"HWAddress", nullopt, true, VariantValue::eString, nullopt, true},
                     {L"DeviceID", nullopt, true, kRepresentIDAs_, nullopt, false},
 #endif
-                },
-                Schema::CatchAllField{}};
+                }};
+            const Schema::Table kNetworkIDCacheTableSchema_{
+                L"NetworkIDCache"sv,
+                /*
+                 */
+                Collection<Schema::Field>{
+#if __cpp_designated_initializers
+                    {.fName = L"ExternalNetworkAddress"sv, .fRequired = true, .fIsKeyField = true},
+                    {.fName = L"NetworkID"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_},
+#else
+                    {L"ExternalNetworkAddress", nullopt, true, VariantValue::eString, nullopt, true},
+                    {L"NetworkID", nullopt, true, kRepresentIDAs_, nullopt, false},
+#endif
+                }};
             const Schema::Table kDeviceTableSchema_{
                 L"Devices"sv,
                 /*
@@ -393,7 +416,8 @@ namespace {
                     {L"ID", L"id"sv, true, kRepresentIDAs_, nullopt, true, nullopt, L"randomblob(16)"sv},
                     {L"name", nullopt, false, VariantValue::eString},
 #endif
-                }};
+                },
+                Schema::CatchAllField{}};
             const Schema::Table kNetworkTableSchema_{
                 L"Networks"sv,
                 /*
@@ -421,28 +445,40 @@ namespace {
             static constexpr Configuration::Version kCurrentVersion_ = Configuration::Version{1, 0, Configuration::VersionStage::Alpha, 0};
             BackendApp::Common::DB                  fDB_{
                 kCurrentVersion_,
-                Traversal::Iterable<Database::SQL::ORM::Schema::Table>{Private_::kDeviceIDCacheTableSchema_, Private_::kDeviceTableSchema_, Private_::kNetworkTableSchema_}};
-            SQL::Connection::Ptr   fDBConnectionPtr_{fDB_.NewConnection ()};
-            Execution::Thread::Ptr fDatabaseSyncThread_{};
-            unique_ptr<SQL::ORM::TableConnection<Private_::HWAddr2GUIDElt_>> fHWAddr2GUIDCacheTableConnection_;
+                Traversal::Iterable<Database::SQL::ORM::Schema::Table>{Private_::kDeviceIDCacheTableSchema_, Private_::kNetworkIDCacheTableSchema_, Private_::kDeviceTableSchema_, Private_::kNetworkTableSchema_}};
+            Synchronized<SQL::Connection::Ptr>                                          fDBConnectionPtr_{fDB_.NewConnection ()};
+            Execution::Thread::Ptr                                                      fDatabaseSyncThread_{};
+            unique_ptr<SQL::ORM::TableConnection<Private_::HWAddr2GUIDElt_>>            fHWAddr2GUIDCacheTableConnection_;
+            unique_ptr<SQL::ORM::TableConnection<Private_::ExternalIPAddr2NetGUIDElt_>> fExternalIPAddr2NetGUIDCacheTableConnection_;
 
         public:
             Mgr_ ()
             {
                 Debug::TraceContextBumper ctx{L"IntegratedModel::{}::Mgr_::CTOR"};
-                fHWAddr2GUIDCacheTableConnection_ = make_unique<SQL::ORM::TableConnection<Private_::HWAddr2GUIDElt_>> (fDBConnectionPtr_, Private_::kDeviceIDCacheTableSchema_, Private_::kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<Private_::HWAddr2GUIDElt_>> ());
+                fHWAddr2GUIDCacheTableConnection_            = make_unique<SQL::ORM::TableConnection<Private_::HWAddr2GUIDElt_>> (fDBConnectionPtr_, Private_::kDeviceIDCacheTableSchema_, Private_::kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<Private_::HWAddr2GUIDElt_>> ());
+                fExternalIPAddr2NetGUIDCacheTableConnection_ = make_unique<SQL::ORM::TableConnection<Private_::ExternalIPAddr2NetGUIDElt_>> (fDBConnectionPtr_, Private_::kNetworkIDCacheTableSchema_, Private_::kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<Private_::ExternalIPAddr2NetGUIDElt_>> ());
                 try {
-                    Debug::TimingTrace ttrc{L"...initial load of sDBNetworks_ from database ", 1};
-                    sAdvisoryHWAddr2GUIDCache.store (Mapping<String, GUID>{ fHWAddr2GUIDCacheTableConnection_->GetAll ().Select<KeyValuePair<String, GUID>> ([] (const auto& i) { return KeyValuePair<String, GUID>{i.HWAddress, i.DeviceID}; })});
+                    Debug::TimingTrace ttrc{L"...load of sAdvisoryHWAddr2GUIDCache from database ", 1};
+                    lock_guard         lock{this->fDBConnectionPtr_};
+                    sAdvisoryHWAddr2GUIDCache.store (Mapping<String, GUID>{fHWAddr2GUIDCacheTableConnection_->GetAll ().Select<KeyValuePair<String, GUID>> ([] (const auto& i) { return KeyValuePair<String, GUID>{i.HWAddress, i.DeviceID}; })});
                 }
                 catch (...) {
                     Logger::sThe.Log (Logger::eError, L"Failed to load sAdvisoryHWAddr2GUIDCache from db: %s", Characters::ToString (current_exception ()).c_str ());
                     Execution::ReThrow ();
                 }
+                try {
+                    Debug::TimingTrace ttrc{L"...load of sAdvisoryExternalIPAddr2NetworkGUIDCache from database ", 1};
+                    lock_guard         lock{this->fDBConnectionPtr_};
+                    sAdvisoryExternalIPAddr2NetworkGUIDCache.store (Mapping<InternetAddress, GUID>{fExternalIPAddr2NetGUIDCacheTableConnection_->GetAll ().Select<KeyValuePair<InternetAddress, GUID>> ([] (const auto& i) { return KeyValuePair<InternetAddress, GUID>{i.ExternalNetworkAddress, i.NetworkID}; })});
+                }
+                catch (...) {
+                    Logger::sThe.Log (Logger::eError, L"Failed to load sAdvisoryExternalIPAddr2NetworkGUIDCache from db: %s", Characters::ToString (current_exception ()).c_str ());
+                    Execution::ReThrow ();
+                }
                 Require (fDatabaseSyncThread_ == nullptr);
                 fDatabaseSyncThread_ = Thread::New ([this] () { BackgroundDatabaseThread_ (); }, Thread::eAutoStart, L"BackgroundDatabaseThread"sv);
             }
-            Mgr_ (const Mgr_&)            = delete;
+            Mgr_ (const Mgr_&) = delete;
             Mgr_& operator= (const Mgr_&) = delete;
             ~Mgr_ ()
             {
@@ -459,13 +495,41 @@ namespace {
                 }
                 GUID newRes = GUID::GenerateNew ();
                 l->Add (hwAddress, newRes);
-                fHWAddr2GUIDCacheTableConnection_->AddNew (Private_::HWAddr2GUIDElt_{hwAddress, newRes});
+                lock_guard lock{this->fDBConnectionPtr_};
+                try {
+                    fHWAddr2GUIDCacheTableConnection_->AddNew (Private_::HWAddr2GUIDElt_{hwAddress, newRes});
+                }
+                catch (...) {
+                    Logger::sThe.Log (Logger::eWarning, L"Ignoring error writing hwaddr2deviceid cache table: %s", Characters::ToString (current_exception ()).c_str ());
+                }
                 return newRes;
             }
             GUID GenNewDeviceID (const Set<String>& hwAddresses)
             {
                 // consider if there is a better way to select which hwaddress to use
                 return hwAddresses.empty () ? GUID::GenerateNew () : GenNewDeviceID (*hwAddresses.First ());
+            }
+            GUID GenNewNetworkID (const InternetAddress& externalAddress)
+            {
+                Debug::TimingTrace ttrc{L"GenNewNetworkID", 0.001}; // sb very quick
+                auto               l = DBAccess_::sAdvisoryExternalIPAddr2NetworkGUIDCache.rwget ();
+                if (auto o = l->Lookup (externalAddress)) {
+                    return *o;
+                }
+                GUID newRes = GUID::GenerateNew ();
+                l->Add (externalAddress, newRes);
+                lock_guard lock{this->fDBConnectionPtr_};
+                try {
+                    fExternalIPAddr2NetGUIDCacheTableConnection_->AddNew (Private_::ExternalIPAddr2NetGUIDElt_{externalAddress, newRes});
+                }
+                catch (...) {
+                    Logger::sThe.Log (Logger::eWarning, L"Ignoring error writing ipaddr2NetworkID cache table: %s", Characters::ToString (current_exception ()).c_str ());
+                }
+                return newRes;
+            }
+            GUID GenNewNetworkID (const optional<Set<InternetAddress>>& externalAddresses)
+            {
+                return (externalAddresses == nullopt or externalAddresses->empty ()) ? GUID::GenerateNew () : GenNewNetworkID (*externalAddresses->First ());
             }
 
         private:
@@ -484,10 +548,15 @@ namespace {
                             networkTableConnection = make_unique<SQL::ORM::TableConnection<IntegratedModel::Network>> (fDBConnectionPtr_, Private_::kNetworkTableSchema_, Private_::kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<IntegratedModel::Network>> ());
                             try {
                                 Debug::TimingTrace ttrc{L"...initial load of sDBNetworks_ from database ", 1};
-                                sDBNetworks_.store (NetworkKeyedCollection_{networkTableConnection->GetAll ()});
+                                auto               errorHandler = [] ([[maybe_unused]] const SQL::Statement::Row& r, const exception_ptr& e) -> optional<IntegratedModel::Network> {
+                                    // Just drop the record on the floor after logging
+                                    Logger::sThe.Log (Logger::eError, L"Error reading database of persisted network snapshot ('%s'): %s", Characters::ToString (r).c_str (), Characters::ToString (e).c_str ());
+                                    return nullopt;
+                                };
+                                sDBNetworks_.store (NetworkKeyedCollection_{networkTableConnection->GetAll (errorHandler)});
                             }
                             catch (...) {
-                                DbgTrace (L"Probably important error reading database of old netowrks data: %s", Characters::ToString (current_exception ()).c_str ());
+                                Logger::sThe.Log (Logger::eError, L"Probably important error reading database of old networks data: %s", Characters::ToString (current_exception ()).c_str ());
                                 networkTableConnection = nullptr; // so we re-fetch
                                 Execution::ReThrow ();
                             }
@@ -496,10 +565,15 @@ namespace {
                             deviceTableConnection = make_unique<SQL::ORM::TableConnection<IntegratedModel::Device>> (fDBConnectionPtr_, Private_::kDeviceTableSchema_, Private_::kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<IntegratedModel::Device>> ());
                             try {
                                 Debug::TimingTrace ttrc{L"...initial load of sDBDevices_ from database ", 1};
-                                sDBDevices_.store (DeviceKeyedCollection_{deviceTableConnection->GetAll ()}); // pre-load in memory copy with whatever we had stored in the database
+                                auto               errorHandler = [] ([[maybe_unused]] const SQL::Statement::Row& r, const exception_ptr& e) -> optional<IntegratedModel::Device> {
+                                    // Just drop the record on the floor after logging
+                                    Logger::sThe.Log (Logger::eError, L"Error reading database of persisted device snapshot ('%s'): %s", Characters::ToString (r).c_str (), Characters::ToString (e).c_str ());
+                                    return nullopt;
+                                };
+                                sDBDevices_.store (DeviceKeyedCollection_{deviceTableConnection->GetAll (errorHandler)}); // pre-load in memory copy with whatever we had stored in the database
                             }
                             catch (...) {
-                                DbgTrace (L"Probably important error reading database of old device data: %s", Characters::ToString (current_exception ()).c_str ());
+                                Logger::sThe.Log (Logger::eError, L"Probably important error reading database of old device data: %s", Characters::ToString (current_exception ()).c_str ());
                                 deviceTableConnection = nullptr; // so we re-fetch
                                 Execution::ReThrow ();
                             }
@@ -623,6 +697,8 @@ namespace {
                 RolledUpDevices result               = sRolledUpDevicesFromDB_;
                 auto            doMergeOneIntoRollup = [&result, &mapAggregatedAttachments2Rollups] (const Device& d2MergeIn) {
                     // @todo slow/quadradic - may need to tweak
+                    // NOTE - can use DBAccess_::sMgr_->GenNewDeviceID () as TRICK - since uses device id to 'index' / find right item more quickly
+                    // for large lists...
                     if (auto i = result.fDevices.First ([&d2MergeIn] (const auto& exisingRolledUpDevice) { return ShouldRollup_ (exisingRolledUpDevice, d2MergeIn); })) {
                         Device d2MergeInPatched            = d2MergeIn;
                         d2MergeInPatched.fAttachedNetworks = mapAggregatedAttachments2Rollups (d2MergeInPatched.fAttachedNetworks);
@@ -635,8 +711,12 @@ namespace {
                         Device newRolledUpDevice                = d2MergeIn;
                         newRolledUpDevice.fAggregatesReversibly = Set<GUID>{d2MergeIn.fGUID};
                         newRolledUpDevice.fGUID                 = DBAccess_::sMgr_->GenNewDeviceID (d2MergeIn.GetHardwareAddresses ());
-                        Assert (not result.fDevices.Contains (newRolledUpDevice.fGUID));
-                        newRolledUpDevice.fAttachedNetworks     = mapAggregatedAttachments2Rollups (newRolledUpDevice.fAttachedNetworks);
+                        if (result.fDevices.Contains (newRolledUpDevice.fGUID)) {
+                            // Should probably never happen, but since depends on data in database, program defensively
+                            Logger::sThe.Log (Logger::eWarning, L"Got rollup device ID from cache that is already in use: %s (for hardware addresses %s)", Characters::ToString (newRolledUpDevice.fGUID).c_str (), Characters::ToString (d2MergeIn.GetHardwareAddresses ()).c_str ());
+                            newRolledUpDevice.fGUID = GUID::GenerateNew ();
+                        }
+                        newRolledUpDevice.fAttachedNetworks = mapAggregatedAttachments2Rollups (newRolledUpDevice.fAttachedNetworks);
                         result.fDevices.Add (newRolledUpDevice);
                     }
                 };
@@ -691,7 +771,12 @@ namespace {
                     else {
                         Network newRolledUpNetwork               = net2MergeIn;
                         newRolledUpNetwork.fAggregatesReversibly = Set<GUID>{net2MergeIn.fGUID};
-                        newRolledUpNetwork.fGUID                 = GUID::GenerateNew ();
+                        newRolledUpNetwork.fGUID                 = DBAccess_::sMgr_->GenNewNetworkID (newRolledUpNetwork.fExternalAddresses);
+                        if (result.fNetworks.Contains (newRolledUpNetwork.fGUID)) {
+                            // Should probably never happen, but since depends on data in database, program defensively
+                            Logger::sThe.Log (Logger::eWarning, L"Got rollup network ID from cache that is already in use: %s (for external address %s)", Characters::ToString (newRolledUpNetwork.fGUID).c_str (), Characters::ToString (newRolledUpNetwork.fExternalAddresses).c_str ());
+                            newRolledUpNetwork.fGUID = GUID::GenerateNew ();
+                        }
                         result.fNetworks.Add (newRolledUpNetwork);
                     }
                 };
