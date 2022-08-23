@@ -538,9 +538,9 @@ namespace {
                 Debug::TraceContextBumper                                       ctx{L"BackgroundDatabaseThread_ loop"};
                 unique_ptr<SQL::ORM::TableConnection<IntegratedModel::Device>>  deviceTableConnection;
                 unique_ptr<SQL::ORM::TableConnection<IntegratedModel::Network>> networkTableConnection;
-#if qDefaultTracingOn
                 bool madeItToEndOfLoadDBCode = false;
-#endif
+                unsigned int                                                    netSnapshotsLoaded{};
+                unsigned int deviceSnapshotsLoaded{};
                 while (true) {
                     try {
                         // load networks before devices because devices depend on networks but not the reverse
@@ -553,7 +553,9 @@ namespace {
                                     Logger::sThe.Log (Logger::eError, L"Error reading database of persisted network snapshot ('%s'): %s", Characters::ToString (r).c_str (), Characters::ToString (e).c_str ());
                                     return nullopt;
                                 };
-                                sDBNetworks_.store (NetworkKeyedCollection_{networkTableConnection->GetAll (errorHandler)});
+                                auto all           = networkTableConnection->GetAll (errorHandler);
+                                netSnapshotsLoaded = static_cast<unsigned int> (all.size ());
+                                sDBNetworks_.store (NetworkKeyedCollection_{all});
                             }
                             catch (...) {
                                 Logger::sThe.Log (Logger::eError, L"Probably important error reading database of old networks data: %s", Characters::ToString (current_exception ()).c_str ());
@@ -570,7 +572,9 @@ namespace {
                                     Logger::sThe.Log (Logger::eError, L"Error reading database of persisted device snapshot ('%s'): %s", Characters::ToString (r).c_str (), Characters::ToString (e).c_str ());
                                     return nullopt;
                                 };
-                                sDBDevices_.store (DeviceKeyedCollection_{deviceTableConnection->GetAll (errorHandler)}); // pre-load in memory copy with whatever we had stored in the database
+                                auto all              = deviceTableConnection->GetAll (errorHandler);
+                                deviceSnapshotsLoaded = static_cast<unsigned int> (all.size ());
+                                sDBDevices_.store (DeviceKeyedCollection_{all}); // pre-load in memory copy with whatever we had stored in the database
                             }
                             catch (...) {
                                 Logger::sThe.Log (Logger::eError, L"Probably important error reading database of old device data: %s", Characters::ToString (current_exception ()).c_str ());
@@ -578,12 +582,10 @@ namespace {
                                 Execution::ReThrow ();
                             }
                         }
-#if qDefaultTracingOn
                         if (not madeItToEndOfLoadDBCode) {
-                            DbgTrace (L"Completed initial database load of sDBDevices_ and sDBNetworks_");
+                            Logger::sThe.Log (Logger::eInfo, L"Loaded %d network snapshots and %d device snapshots from database", netSnapshotsLoaded, deviceSnapshotsLoaded);
                             madeItToEndOfLoadDBCode = true;
                         }
-#endif
                         // periodically write the latest discovered data to the database
 
                         // UPDATE sDBNetworks_ INCREMENTALLY to reflect reflect these merges
