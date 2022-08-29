@@ -334,6 +334,7 @@ namespace {
         Synchronized<Mapping<InternetAddress, GUID>> sAdvisoryExternalIPAddr2NetworkGUIDCache;
         Synchronized<DeviceKeyedCollection_>         sDBDevices_;
         Synchronized<NetworkKeyedCollection_>        sDBNetworks_;
+        atomic<bool>                                  sFinishedInitialDBLoad_{false};
 
         namespace Private_ {
             constexpr VariantValue::Type kRepresentIDAs_ = VariantValue::Type::eBLOB; // else as string
@@ -538,7 +539,6 @@ namespace {
                 Debug::TraceContextBumper                                       ctx{L"BackgroundDatabaseThread_ loop"};
                 unique_ptr<SQL::ORM::TableConnection<IntegratedModel::Device>>  deviceTableConnection;
                 unique_ptr<SQL::ORM::TableConnection<IntegratedModel::Network>> networkTableConnection;
-                bool madeItToEndOfLoadDBCode = false;
                 unsigned int                                                    netSnapshotsLoaded{};
                 unsigned int deviceSnapshotsLoaded{};
                 while (true) {
@@ -582,9 +582,9 @@ namespace {
                                 Execution::ReThrow ();
                             }
                         }
-                        if (not madeItToEndOfLoadDBCode) {
+                        if (not sFinishedInitialDBLoad_) {
                             Logger::sThe.Log (Logger::eInfo, L"Loaded %d network snapshots and %d device snapshots from database", netSnapshotsLoaded, deviceSnapshotsLoaded);
-                            madeItToEndOfLoadDBCode = true;
+                            sFinishedInitialDBLoad_ = true;
                         }
                         // periodically write the latest discovered data to the database
 
@@ -722,14 +722,15 @@ namespace {
                         result.fDevices.Add (newRolledUpDevice);
                     }
                 };
-                static bool sDidMergeFromDatabase_ = false; // no need to roll these up more than once
-                if (not sDidMergeFromDatabase_) {
+                static bool sDidMergeFromDatabase_ = false; // no need to roll these up more than once, and be sure to do that one rollup after sFinishedInitialDBLoad_
+                if (not sDidMergeFromDatabase_ and DBAccess_::sFinishedInitialDBLoad_) {
                     sDidMergeFromDatabase_ = true;
                     for (const auto& rdi : DBAccess_::sDBDevices_.load ()) {
                         doMergeOneIntoRollup (rdi);
                     }
                     sRolledUpDevicesFromDB_ = result;
                 }
+
                 for (const Device& d : DiscoveryWrapper_::GetDevices_ ()) {
                     doMergeOneIntoRollup (d);
                 }
