@@ -94,9 +94,15 @@ SQL::Connection::Ptr WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB::NewCon
      *  We get TONS of SQLITE_BUSY errors using the default JournalMode, but if you read
      *  https://sqlite.org/wal.html, you will see WAL is recommended for multiple readers/writers on DB.
      * 
-     *  NOTE - though much better, still not working perfectly with these settings. Sometimes fails.
+     *  NOTE - though much better, still not working perfectly with these settings. Sometimes gets SQLITE_BUSY.
+     *  Our rollup code sometimes calls through to the database (from calling webservice thread), and we have background requests to add records
+     *  from the AddOrMergeUpdate () calls (another thread). These sometimes contend and at least on raspberrypi
+     *  the conflict can exceed 1 second. Don't want the timeout too long, cuz better to see warnings in the logs
+     *  than sluggish operation and no warnings.
+     *
+     *  As of 2022-09-08 experimenting with 2.5s;
      */
-    options.fBusyTimeout = 1s;
+    options.fBusyTimeout = 2.5s;
     options.fJournalMode = JournalModeType::eWAL2;
 
     auto conn = SQLite::Connection::New (options);
