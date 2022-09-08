@@ -78,7 +78,7 @@ namespace {
             }
         }
         catch (const std::system_error& e) {
-            Logger::sThe.Log (Logger::eError, L"Database update: ignoring exception in TransformURL2LocalStorage_: %s", Characters::ToString (e).c_str ());
+            Logger::sThe.Log (Logger::eWarning, L"Database update: ignoring exception in TransformURL2LocalStorage_: %s", Characters::ToString (e).c_str ());
             Assert (e.code () == errc::device_or_resource_busy); // this can happen talking to database (SQLITE_BUSY or SQLITE_LOCKED)
                                                                  // might be better to up timeout so more rare
         }
@@ -86,7 +86,7 @@ namespace {
             Execution::ReThrow ();
         }
         catch (...) {
-            Logger::sThe.Log (Logger::eError, L"Database update: ignoring exception in TransformURL2LocalStorage_: %s", Characters::ToString (current_exception ()).c_str ());
+            Logger::sThe.Log (Logger::eWarning, L"Database update: ignoring exception in TransformURL2LocalStorage_: %s", Characters::ToString (current_exception ()).c_str ());
             AssertNotReached ();
         }
         DbgTrace (L"Failed to cache url (%s) - so returning original", Characters::ToString (url).c_str ());
