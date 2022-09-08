@@ -96,7 +96,7 @@ SQL::Connection::Ptr WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB::NewCon
      * 
      *  NOTE - though much better, still not working perfectly with these settings. Sometimes fails.
      */
-    options.fBusyTimeout = 10ms;
+    options.fBusyTimeout = 1s;
     options.fJournalMode = JournalModeType::eWAL2;
 
     auto conn = SQLite::Connection::New (options);
