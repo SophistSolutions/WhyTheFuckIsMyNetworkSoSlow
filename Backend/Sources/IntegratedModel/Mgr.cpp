@@ -334,7 +334,7 @@ namespace {
         Synchronized<Mapping<InternetAddress, GUID>> sAdvisoryExternalIPAddr2NetworkGUIDCache;
         Synchronized<DeviceKeyedCollection_>         sDBDevices_;
         Synchronized<NetworkKeyedCollection_>        sDBNetworks_;
-        atomic<bool>                                  sFinishedInitialDBLoad_{false};
+        atomic<bool>                                 sFinishedInitialDBLoad_{false};
 
         namespace Private_ {
             constexpr VariantValue::Type kRepresentIDAs_ = VariantValue::Type::eBLOB; // else as string
@@ -540,7 +540,7 @@ namespace {
                 unique_ptr<SQL::ORM::TableConnection<IntegratedModel::Device>>  deviceTableConnection;
                 unique_ptr<SQL::ORM::TableConnection<IntegratedModel::Network>> networkTableConnection;
                 unsigned int                                                    netSnapshotsLoaded{};
-                unsigned int deviceSnapshotsLoaded{};
+                unsigned int                                                    deviceSnapshotsLoaded{};
                 while (true) {
                     try {
                         // load networks before devices because devices depend on networks but not the reverse

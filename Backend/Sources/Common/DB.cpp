@@ -101,6 +101,10 @@ SQL::Connection::Ptr WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB::NewCon
      *  than sluggish operation and no warnings.
      *
      *  As of 2022-09-08 experimenting with 2.5s;
+     * 
+     *  See https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/35
+     *  COULD possibly redo this using much smaller timeout if I used a SINGLE SHARED connection (in eMultiThreaded mode as above).
+     *  Unclear how that would affect checking on underlying statement objects (I think fine but need to review).
      */
     options.fBusyTimeout = 2.5s;
     options.fJournalMode = JournalModeType::eWAL2;
