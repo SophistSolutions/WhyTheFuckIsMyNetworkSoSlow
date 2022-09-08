@@ -197,6 +197,10 @@ int main (int argc, const char* argv[])
     }
 #endif
 
+    /*
+     * Several components use interval timers, and this allows those modules to run (but have timer service started/shutdown in a controlled
+     * fashion).
+     */
     Execution::IntervalTimer::Manager::Activator intervalTimerMgrActivator;
 
     /*
