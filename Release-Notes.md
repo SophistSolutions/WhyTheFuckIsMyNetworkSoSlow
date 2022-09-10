@@ -6,21 +6,37 @@ High level summary of changes in WhyTheFuckIsMyNetworkSoSlow.
 
 ## History
 
-### 1.0d19 Draft
+### 1.0d19 {2022-09-10}
+
+#### TLDR
+- Use Stroika 2.1.4
+- Better handle SQLLite BUSY exceptions (https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/35)
+- dont discover devices with no hardware address
+- re-use (where possible) rollup ids across runs (https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/69)
+- html
+  - use luxon to fix dates sorting issue and others
+  - primitive throttling of requests
+  - added network external address
+
+#### Change-Details
 
 - Backend
   - Common/database
     - https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/35 - SQLLite BUSY exceptions timeout changes and comments to ammeliorate
     - db v13
-    - https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/35 - reset  options.fBusyTimeout = 1s;
+    - https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/35 - reset  
+      ~~~
+      options.fBusyTimeout = 2.5s;
+      ~~~
+      and document much better choices with respect to this issue
   - WebService
     - fixed default port# used when no configuration
   - discovery
     - dont return devices with no hardware address
   - IntegrationMgr
     - refactor internals of DBAccess_ startup logic (newMgr code ) internal to IntegratedModel/Mgr.cpp
-    - refactored device rollup code slighlty, to avoid race/quirk (not traditional race) on startup - due to fact that we pick whihc guy to roll into randomly and there is an ambiguity if there are partial overlaps. ANd refactored GenNewDeviceID_ () subtorutine in preps for https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/69
-    - migrated GenNewDeviceID to DBAccess so we persist the db mapping (https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/69)
+    - refactored device rollup code slighlty, to avoid race/quirk (not traditional race) on startup - due to fact that we pick which guy to roll into randomly and there is an ambiguity if there are partial overlaps.
+    - https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/69: advisory cache hw addr to guid list when generating new guids for rollup devices and networks
     - better logging on bad rollup id merges; better logging/error recovery when bad load of devices from database
     - imporved startup logging about database load/read
     - Assure only one DB load for madeItToEndOfLoadDBCode (DBAccess code); 
