@@ -3,7 +3,7 @@
 This project's goal is to allow people (even with modest knowledge of network technology) to
 diagnose their own personal networks, to indicate network issues and to provide advice for improving network efficiency.
 
-> **_Note:_** - as of the current release, all you can really do effectively is to explore the devices present on your network (not doing much monitoring yet, except manually through the web API).
+> **_Note:_** - as of the current release, all you can really do effectively is to explore the devices present on your network (including history) (not doing much monitoring yet, except manually through the web API).
 
 - To test:
 
@@ -13,7 +13,7 @@ diagnose their own personal networks, to indicate network issues and to provide 
 
   - In a browser, visit:
     - <http://localhost/> (web-gui)
-    - <http://localhost:8080/> (web-api)
+    - <http://localhost/api> (web-api)
 
 - TODO items
   See <https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues>
