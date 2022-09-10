@@ -11,12 +11,12 @@ High level summary of changes in WhyTheFuckIsMyNetworkSoSlow.
 #### TLDR
 - Use Stroika 2.1.4
 - Better handle SQLLite BUSY exceptions (https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/35)
-- dont discover devices with no hardware address
-- re-use (where possible) rollup ids across runs (https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/69)
+- Dont discover devices with no hardware address
+- Re-use (where possible) rollup ids across runs (https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/69)
 - html
-  - use luxon to fix dates sorting issue and others
-  - primitive throttling of requests
-  - added network external address
+  - Use luxon to fix dates sorting issue etc
+  - Primitive throttling of requests
+  - Added network external address
 
 #### Change-Details
 
@@ -27,6 +27,7 @@ High level summary of changes in WhyTheFuckIsMyNetworkSoSlow.
     - https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/35 - reset  
       ~~~
       options.fBusyTimeout = 2.5s;
+      options.fJournalMode = JournalModeType::eWAL2;
       ~~~
       and document much better choices with respect to this issue
   - WebService
