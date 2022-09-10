@@ -6,6 +6,36 @@ High level summary of changes in WhyTheFuckIsMyNetworkSoSlow.
 
 ## History
 
+### 1.0d19 Draft
+
+- Backend
+  - Common/database
+    - https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/35 - SQLLite BUSY exceptions timeout changes and comments to ammeliorate
+    - db v13
+    - https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/35 - reset  options.fBusyTimeout = 1s;
+  - WebService
+    - fixed default port# used when no configuration
+  - discovery
+    - dont return devices with no hardware address
+  - IntegrationMgr
+    - refactor internals of DBAccess_ startup logic (newMgr code ) internal to IntegratedModel/Mgr.cpp
+    - refactored device rollup code slighlty, to avoid race/quirk (not traditional race) on startup - due to fact that we pick whihc guy to roll into randomly and there is an ambiguity if there are partial overlaps. ANd refactored GenNewDeviceID_ () subtorutine in preps for https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/69
+    - migrated GenNewDeviceID to DBAccess so we persist the db mapping (https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/69)
+    - better logging on bad rollup id merges; better logging/error recovery when bad load of devices from database
+    - imporved startup logging about database load/read
+    - Assure only one DB load for madeItToEndOfLoadDBCode (DBAccess code); 
+  - Stroika v2.1.4
+- html
+  - small cleanups to networks details view (mostly added exteranl address)
+  - use luxon in place of momentjs in a few places; and now API module/calls fills in dates as JS Date objects now (instead of strings); https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/42
+  - primitive throttling of requests so if too many requests outstanding, we just drop our fetchactive on the floor
+  - fixed lastSeenAt field in devices page so now sortable properly
+- Documentation
+  - README notes
+  
+----
+
+
 ###  1.0d18 {2022-08-12}
 
 #### TLDR
