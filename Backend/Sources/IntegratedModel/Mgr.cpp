@@ -159,8 +159,8 @@ namespace {
             // Fetch (UNSORTED) list of devices
             return Sequence<Device>{Discovery::DevicesMgr::sThe.GetActiveDevices ().Select<Device> ([] (const Discovery::Device& d) {
                 Device newDev;
-                newDev.fGUID = d.fGUID;
-                newDev.name  = d.name;
+                newDev.fGUID  = d.fGUID;
+                newDev.fNames = d.fNames;
                 if (not d.fTypes.empty ()) {
                     newDev.fTypes = d.fTypes; // leave missing if no discovered types
                 }
@@ -649,6 +649,10 @@ namespace {
                     if (i.fAggregatesIrreversibly and i.fAggregatesIrreversibly->Contains (netID)) {
                         return i.fGUID;
                     }
+                }
+                DbgTrace (L"Failed to find netID=%s", Characters::ToString (netID).c_str ());
+                for (const auto& i : fNetworks) {
+                    DbgTrace (L"rolledupNet=%s", Characters::ToString (i).c_str ());
                 }
                 AssertNotReached (); // because we guarantee each item rolled up exactly once
                 return netID;

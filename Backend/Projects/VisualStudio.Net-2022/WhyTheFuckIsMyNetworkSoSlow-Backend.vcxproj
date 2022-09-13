@@ -70,6 +70,7 @@
     <None Include="..\..\Sources\Common\InternetServiceProvider.inl" />
     <None Include="..\..\Sources\Common\Makefile" />
     <None Include="..\..\Sources\Common\OperationalStatistics.inl" />
+    <None Include="..\..\Sources\Common\PrioritizedName.inl" />
     <None Include="..\..\Sources\Discovery\Devices.inl" />
     <None Include="..\..\Sources\Discovery\Makefile" />
     <None Include="..\..\Sources\Discovery\NetworkInterfaces.inl" />
@@ -115,6 +116,7 @@
     <ClInclude Include="..\..\Sources\Common\GeoLocation.h" />
     <ClInclude Include="..\..\Sources\Common\InternetServiceProvider.h" />
     <ClInclude Include="..\..\Sources\Common\OperationalStatistics.h" />
+    <ClInclude Include="..\..\Sources\Common\PrioritizedName.h" />
     <ClInclude Include="..\..\Sources\Discovery\Devices.h" />
     <ClInclude Include="..\..\Sources\Discovery\NetworkInterfaces.h" />
     <ClInclude Include="..\..\Sources\Discovery\Networks.h" />

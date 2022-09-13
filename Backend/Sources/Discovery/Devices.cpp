@@ -193,7 +193,7 @@ String Discovery::Device::ToString () const
     StringBuilder sb;
     sb += L"{";
     sb += L"GUID: " + Characters::ToString (fGUID) + L", ";
-    sb += L"name: " + Characters::ToString (name) + L", ";
+    sb += L"names: " + Characters::ToString (fNames) + L", ";
     sb += L"icon: " + Characters::ToString (fIcon) + L", ";
     sb += L"manufacturer: " + Characters::ToString (fManufacturer) + L", ";
     sb += L"types: " + Characters::ToString (fTypes) + L", ";
@@ -286,8 +286,6 @@ namespace {
      *  Keep extra internal details about the discovered devices which we don't advertise outside this module.
      */
     struct DiscoveryInfo_ : Discovery::Device {
-
-        optional<String> fForcedName;
 
         struct SSDPInfo {
             optional<bool>          fAlive; // else Bye notification, or empty if neither -- probably replace with TIMINGS of last ALIVE, or Bye
@@ -426,13 +424,9 @@ namespace {
 #endif
 
             /*
-             *  Name Calculation
+             *  Names Calculation
              */
-            name.clear ();
-            if (fForcedName) {
-                name = *fForcedName;
-            }
-            else if (fSSDPInfo.has_value ()) {
+            if (fSSDPInfo.has_value ()) {
                 // Special hack for sonos speakers
                 if (fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_SpeakerGroup_) and
                     fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_ZonePlayer_)) {
@@ -444,50 +438,42 @@ namespace {
                         String speakerGroup = fSSDPInfo->fDeviceType2FriendlyNameMap[kDeviceType_SpeakerGroup_];
                         if (speakerGroup.empty ()) {
                             Assert (m2->length () >= 3); // because matched SPACE-SPACE.*
-                            name = m2->SubString (3);
+                            fNames.Add (m2->SubString (3), 100);
+#if qDebug
+                            fDebugProps.Add (L"SSDP-DeviceType2FriendlyName-SONOS-HACK-devicefriendlyname"sv, m2->SubString (3));
+#endif
                         }
                         else {
-                            name = speakerGroup + *m2;
-                        }
+                            fNames.Add (speakerGroup + *m2, 99);
 #if qDebug
-                        fDebugProps.Add (L"SSDP-DeviceType2FriendlyName-SONOS-HACK"sv, name);
+                            fDebugProps.Add (L"SSDP-DeviceType2FriendlyName-SONOS-HACK-speakergroup"sv, speakerGroup + *m2);
 #endif
+                        }
                     }
                 }
 
                 // pick any one of the friendly names, or the server name if we must
-                if (name.empty ()) {
-                    if (not fSSDPInfo->fDeviceType2FriendlyNameMap.empty ()) {
-                        name = fSSDPInfo->fDeviceType2FriendlyNameMap.Nth (0).fValue;
+                if (not fSSDPInfo->fDeviceType2FriendlyNameMap.empty ()) {
+                    fNames.Add (fSSDPInfo->fDeviceType2FriendlyNameMap.Nth (0).fValue, 95);
 #if qDebug
-                        fDebugProps.Add (L"SSDP-DeviceType2FriendlyName"sv, name);
+                    fDebugProps.Add (L"SSDP-DeviceType2FriendlyName"sv, fSSDPInfo->fDeviceType2FriendlyNameMap.Nth (0).fValue);
 #endif
-                    }
                 }
 
                 fPresentationURL = fSSDPInfo->fPresentationURL;
             }
-            if (name.empty ()) {
-                // try reverse dns lookup
-                for (const auto& i : GetInternetAddresses ()) {
-                    if (auto o = ReverseDNSLookup_ (i)) {
-                        name = *o;
+            // try reverse dns lookup
+            for (const auto& i : GetInternetAddresses ()) {
+                if (auto o = ReverseDNSLookup_ (i)) {
+                    fNames.Add (*o, 55);
 #if qDebug
-                        fDebugProps.Add (L"reverse-dns-name"sv, name);
+                    fDebugProps.Add (L"reverse-dns-name"sv, *o);
 #endif
-                        break;
-                    }
+                    break;
                 }
             }
-            if (name.empty ()) {
-                constexpr bool kUseFirstIPAddrIfUnknown_ = true;
-                if (kUseFirstIPAddrIfUnknown_) {
-                    name = GetPreferredDisplayInternetAddresses ().Join ();
-                }
-            }
-            if (name.empty ()) {
-                name = L"Unknown"sv;
-            }
+
+            fNames.Add (GetPreferredDisplayInternetAddresses ().Join (), 1); // default/backup name
 
             if (fSSDPInfo.has_value () and
                 (fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_SpeakerGroup_) or
@@ -626,9 +612,6 @@ namespace {
             if (not Discovery::Device::operator== (rhs)) {
                 return false;
             }
-            if (fForcedName != rhs.fForcedName) {
-                return false;
-            }
             if (fSSDPInfo != rhs.fSSDPInfo) {
                 return false;
             }
@@ -645,9 +628,6 @@ namespace {
         String ToString () const
         {
             StringBuilder sb = Discovery::Device::ToString ().SubString (0, -1);
-            if (fForcedName) {
-                sb += L"Forced-Name: " + Characters::ToString (fForcedName) + L", ";
-            }
             sb += L"SSDP-Info: " + Characters::ToString (fSSDPInfo) + L", ";
             sb += L"}";
             return sb.str ();
@@ -759,7 +739,6 @@ namespace {
                         }();
                         // copy most/all fields -- @todo cleanup - do more automatically - all but GUID??? Need merge??
                         di.fTypes           = thisDevice->fTypes;
-                        di.fForcedName      = thisDevice->fForcedName;
                         di.fThisDevice      = thisDevice->fThisDevice;
                         auto osInfo         = Configuration::GetSystemConfiguration_ActualOperatingSystem ();
                         di.fOperatingSystem = OperatingSystem{osInfo.fTokenName, osInfo.fPrettyNameWithVersionDetails};
@@ -816,7 +795,7 @@ namespace {
             DbgTrace (L"interfaces=%s", Characters::ToString (IO::Network::SystemInterfacesMgr{}.GetAll ()).c_str ());
 #endif
             DiscoveryInfo_ newDev;
-            newDev.fForcedName = Configuration::GetSystemConfiguration_ComputerNames ().fHostname;
+            newDev.fNames.Add (Configuration::GetSystemConfiguration_ComputerNames ().fHostname, 200);
             newDev.fTypes.Add (DeviceType::ePC); //tmphack @todo fix
             newDev.fThisDevice = true;
             SystemInterfacesMgr interfacesMgr;

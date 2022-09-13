@@ -24,6 +24,7 @@
 
 #include "../Common/GeoLocation.h"
 #include "../Common/InternetServiceProvider.h"
+#include "../Common/PrioritizedName.h"
 
 /**
  *
@@ -35,6 +36,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
     using Containers::Mapping;
     using Containers::Sequence;
     using Containers::Set;
+    using Containers::SortedCollection;
     using IO::Network::CIDR;
     using IO::Network::InternetAddress;
     using IO::Network::URI;
@@ -268,7 +270,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
         GUID fGUID;
 
-        String name;
+        Common::PrioritizedNames fNames;
 
         /**
          */

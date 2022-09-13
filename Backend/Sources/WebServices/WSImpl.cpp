@@ -353,7 +353,7 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
                     devices = devices.OrderBy ([st, sortCompareNetwork] (const BackendApp::WebServices::Device& lhs, const BackendApp::WebServices::Device& rhs) -> bool {
                         Assert (st.fAscending);
                         bool ascending = *st.fAscending;
-                        return ascending ? (lhs.name < rhs.name) : (lhs.name > rhs.name);
+                        return ascending ? (lhs.fNames.GetName () < rhs.fNames.GetName ()) : (lhs.fNames.GetName () > rhs.fNames.GetName ());
                     });
                 } break;
                 case DeviceSortParamters::SearchTerm::By::eType: {

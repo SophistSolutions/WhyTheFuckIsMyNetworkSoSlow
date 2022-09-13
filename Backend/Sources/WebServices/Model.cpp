@@ -511,6 +511,12 @@ const ObjectVariantMapper Device::kMapper = [] () {
     mapper.AddCommonType<optional<Set<GUID>>> ();
     mapper += SeenType::kMapper;
 
+    mapper.AddClass<Common::PrioritizedName> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+        {L"name"sv, StructFieldMetaInfo{&Common::PrioritizedName::fName}},
+        {L"priority"sv, StructFieldMetaInfo{&Common::PrioritizedName::fPriority}},
+    });
+    mapper.AddCommonType<Common::PrioritizedNames> (); // AddCommonType can be used on things that act like existing supported types
+
     mapper.AddCommonType<Range<DateTime>> (ObjectVariantMapper::RangeSerializerOptions{L"lowerBound"sv, L"upperBound"sv}); // lower-camel-case names happier in javascript?
 
     mapper.AddClass<NetworkAttachmentInfo> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
@@ -518,9 +524,47 @@ const ObjectVariantMapper Device::kMapper = [] () {
         {L"localAddresses", StructFieldMetaInfo{&NetworkAttachmentInfo::localAddresses}},
     });
     mapper.AddCommonType<Mapping<GUID, NetworkAttachmentInfo>> ();
+
     mapper.AddClass<Device> (initializer_list<ObjectVariantMapper::StructFieldInfo> {
         {L"id", StructFieldMetaInfo{&Device::fGUID}},
-            {L"name", StructFieldMetaInfo{&Device::name}},
+
+            //tmphack list name/names for bacward compat, then just names simple way
+            {L"name", StructFieldMetaInfo{&Device::fNames},
+             ObjectVariantMapper::TypeMappingDetails{
+                 typeid (Common::PrioritizedNames),
+                 ObjectVariantMapper::FromObjectMapperType<Common::PrioritizedNames>{[] (const ObjectVariantMapper&, const Common::PrioritizedNames* objOfType) -> VariantValue { return VariantValue{objOfType->GetName ()}; }},
+                 ObjectVariantMapper::ToObjectMapperType<Common::PrioritizedNames>{[] (const ObjectVariantMapper&, const VariantValue& d, Common::PrioritizedNames* into) -> void {
+                     into->Add (d.As<String> (), 1);
+                 }}}},
+            {L"names", StructFieldMetaInfo{&Device::fNames},
+             ObjectVariantMapper::TypeMappingDetails{
+                 typeid (Common::PrioritizedNames),
+                 ObjectVariantMapper::FromObjectMapperType<Common::PrioritizedNames>{[] (const ObjectVariantMapper& mapper, const Common::PrioritizedNames* fromObjOfTypeT) -> VariantValue {
+                     RequireNotNull (fromObjOfTypeT);
+                     Sequence<VariantValue> s;
+                     if (not fromObjOfTypeT->empty ()) {
+                         using T = Common::PrioritizedName;
+                         ObjectVariantMapper::FromObjectMapperType<T> valueMapper{mapper.FromObjectMapper<T> ()};
+                         for (const auto& i : *fromObjOfTypeT) {
+                             s.Append (mapper.FromObject<T> (valueMapper, i));
+                         }
+                     }
+                     return VariantValue{s};
+                 }},
+                 ObjectVariantMapper::ToObjectMapperType<Common::PrioritizedNames>{[] (const ObjectVariantMapper& mapper, const VariantValue& d, Common::PrioritizedNames* intoObjOfTypeT) -> void {
+                     RequireNotNull (intoObjOfTypeT);
+                     // Require (intoObjOfTypeT->empty ()); override to avoid this and use Add
+                     Sequence<VariantValue> s = d.As<Sequence<VariantValue>> ();
+                     if (not s.empty ()) {
+                         ObjectVariantMapper::ToObjectMapperType<Common::PrioritizedName> valueMapper{mapper.ToObjectMapper<Common::PrioritizedName> ()};
+                         for (const auto& i : s) {
+                             auto obj2Add = mapper.ToObject<Common::PrioritizedName> (valueMapper, i);
+                             intoObjOfTypeT->Add (obj2Add.fName, obj2Add.fPriority);
+                         }
+                     }
+                 }}}},
+            //{L"names", StructFieldMetaInfo{&Device::fNames}},
+
             {L"type", StructFieldMetaInfo{&Device::fTypes}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"seen", StructFieldMetaInfo{&Device::fSeen}},
             {L"openPorts", StructFieldMetaInfo{&Device::fOpenPorts}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
@@ -568,8 +612,10 @@ String Device::ToString () const
 Device Device::Merge (const Device& baseDevice, const Device& priorityDevice)
 {
     Device merged = baseDevice;
-    merged.name   = priorityDevice.name;
-    merged.fGUID  = priorityDevice.fGUID;
+    for (const auto& i : priorityDevice.fNames) {
+        merged.fNames.Add (i.fName, i.fPriority);
+    }
+    merged.fGUID = priorityDevice.fGUID;
     Memory::AccumulateIf (&merged.fTypes, priorityDevice.fTypes);
     Memory::CopyToIf (&merged.fIcon, priorityDevice.fIcon);
     MergeSeen_ (&merged.fSeen, priorityDevice.fSeen);
@@ -613,11 +659,6 @@ Device Device::Rollup (const Device& rollupDevice, const Device& instanceDevice2
     d.fAggregatesIrreversibly = nullopt;
     d.fIDPersistent           = false;
     d.fHistoricalSnapshot     = false;
-    // for rollup, names can come in any order, and dont pick last, pick best; fix so smarter!!! @todo --LGP 2021-08-30
-    // @todo respect preferRHS
-    if (not instanceDevice2Add.name.empty () and instanceDevice2Add.name[0].IsAlphabetic ()) {
-        d.name = instanceDevice2Add.name;
-    }
     return d;
 }
 

@@ -19,6 +19,8 @@
 
 #include "../WebServices/Model.h"
 
+#include "../Common/PrioritizedName.h"
+
 #include "Networks.h"
 
 /**
@@ -98,7 +100,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
      */
     struct Device {
         GUID                                 fGUID;
-        String                               name;
+        Common::PrioritizedNames             fNames;
         Set<DeviceType>                      fTypes;
         bool                                 fThisDevice{};
         Mapping<GUID, NetworkAttachmentInfo> fAttachedNetworks;
@@ -171,7 +173,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
             if (fGUID != rhs.fGUID) {
                 return false;
             }
-            if (name != rhs.name) {
+            if (fNames != rhs.fNames) {
                 return false;
             }
             if (fTypes != rhs.fTypes) {

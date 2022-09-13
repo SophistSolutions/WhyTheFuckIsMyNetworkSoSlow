@@ -88,6 +88,9 @@
     <None Include="..\..\Sources\Common\OperationalStatistics.inl">
       <Filter>Sources\Common</Filter>
     </None>
+    <None Include="..\..\Sources\Common\PrioritizedName.inl">
+      <Filter>Sources\Common</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Main.cpp">
@@ -201,6 +204,9 @@
       <Filter>Sources\Common</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\Common\OperationalStatistics.h">
+      <Filter>Sources\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\Common\PrioritizedName.h">
       <Filter>Sources\Common</Filter>
     </ClInclude>
   </ItemGroup>
