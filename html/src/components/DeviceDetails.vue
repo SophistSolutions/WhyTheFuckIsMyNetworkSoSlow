@@ -184,7 +184,7 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
     </div>
     <div class="row" v-if="currentDevice.icon">
       <div class="col-3">Icon</div>
-      <div class="col"> <img :src="currentDevice.icon" width="24" height="24" /></div>
+      <div class="col"> <img :src="currentDevice.icon.toString()" width="24" height="24" /></div>
     </div>
     <div class="row" v-if="currentDevice.manufacturer">
       <div class="col-3">Manufacturer</div>
