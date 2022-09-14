@@ -91,6 +91,9 @@
     <None Include="..\..\Sources\Common\PrioritizedName.inl">
       <Filter>Sources\Common</Filter>
     </None>
+    <None Include="..\..\Sources\WebServices\JSONPATCH.inl">
+      <Filter>Sources\WebServices</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Main.cpp">
@@ -150,6 +153,9 @@
     <ClCompile Include="..\..\Sources\Common\OperationalStatistics.cpp">
       <Filter>Sources\Common</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\WebServices\JSONPATCH.cpp">
+      <Filter>Sources\WebServices</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Service.h">
@@ -208,6 +214,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Common\PrioritizedName.h">
       <Filter>Sources\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\WebServices\JSONPATCH.h">
+      <Filter>Sources\WebServices</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

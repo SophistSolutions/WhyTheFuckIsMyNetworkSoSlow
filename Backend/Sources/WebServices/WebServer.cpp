@@ -269,6 +269,14 @@ public:
                       ActiveCallCounter_ acc{*this};
                       WriteResponse (&m->rwResponse (), kDevices_, Device::kMapper.FromObject (fWSAPI_->GetDevice (id)));
                   }},
+              Route{
+                  IO::Network::HTTP::MethodsRegEx::kPatch,
+                  L"api/v1/devices/(.+)"_RegEx,
+                  [=, this] (Message* m, const String& id) {
+                      ActiveCallCounter_ acc{*this};
+                      fWSAPI_->PatchDevice (id, JSONPATCH::OperationItemsType::kMapper.ToObject<JSONPATCH::OperationItemsType> (DataExchange::Variant::JSON::Reader{}.Read (m->rwRequest ().GetBody ())));
+                      m->rwResponse ().status = IO::Network::HTTP::StatusCodes::kNoContent;
+                  }},
 
               Route{
                   L"api/v1/network-interfaces(/?)"_RegEx,
@@ -413,26 +421,20 @@ public:
 #if __cpp_designated_initializers
     , fConnectionMgr_
     {
-        SocketAddresses (InternetAddresses_Any (), gAppConfiguration.Get ().WebServerPort.value_or (AppConfigurationType::kWebServerPort_Default)),
-            fWSRoutes_ + fStaticRoutes_,
-            ConnectionManager::Options { .fMaxConnections = kMaxWebServerConcurrentConnections_, .fMaxConcurrentlyHandledConnections = kMaxThreads_, .fBindFlags = Socket::BindFlags{.fSO_REUSEADDR = true}, .fDefaultResponseHeaders = kDefaultResponseHeadersStaticSite_ }
+        SocketAddresses (InternetAddresses_Any (), gAppConfiguration.Get ().WebServerPort.value_or (AppConfigurationType::kWebServerPort_Default)), fWSRoutes_ + fStaticRoutes_, ConnectionManager::Options { .fMaxConnections = kMaxWebServerConcurrentConnections_, .fMaxConcurrentlyHandledConnections = kMaxThreads_, .fBindFlags = Socket::BindFlags{.fSO_REUSEADDR = true}, .fDefaultResponseHeaders = kDefaultResponseHeadersStaticSite_ }
     }
 #else
     , fConnectionMgr_
     {
-        SocketAddresses (InternetAddresses_Any (), gAppConfiguration.Get ().WebServerPort.value_or (AppConfigurationType::kWebServerPort_Default)),
-            fWSRoutes_ + fStaticRoutes_,
-            ConnectionManager::Options { kMaxWebServerConcurrentConnections_, kMaxThreads_, Socket::BindFlags{true}, kDefaultResponseHeadersStaticSite_ }
+        SocketAddresses (InternetAddresses_Any (), gAppConfiguration.Get ().WebServerPort.value_or (AppConfigurationType::kWebServerPort_Default)), fWSRoutes_ + fStaticRoutes_, ConnectionManager::Options { kMaxWebServerConcurrentConnections_, kMaxThreads_, Socket::BindFlags{true}, kDefaultResponseHeadersStaticSite_ }
     }
 #endif
-    , fIntervalTimerAdder_{
-          [this] () {
-              OperationalStatisticsMgr::sThe.RecordActiveRunningTasksCount (fActiveCallCnt_);
-              OperationalStatisticsMgr::sThe.RecordOpenConnectionCount (fConnectionMgr_.pConnections ().length ());
-              OperationalStatisticsMgr::sThe.RecordActiveRunningTasksCount (fConnectionMgr_.pActiveConnections ().length ());
-          },
-          15s,
-          IntervalTimer::Adder::eRunImmediately}
+    , fIntervalTimerAdder_{[this] () {
+                               OperationalStatisticsMgr::sThe.RecordActiveRunningTasksCount (fActiveCallCnt_);
+                               OperationalStatisticsMgr::sThe.RecordOpenConnectionCount (fConnectionMgr_.pConnections ().length ());
+                               OperationalStatisticsMgr::sThe.RecordActiveRunningTasksCount (fConnectionMgr_.pActiveConnections ().length ());
+                           },
+                           15s, IntervalTimer::Adder::eRunImmediately}
     {
         using Stroika::Frameworks::WebServer::DefaultFaultInterceptor;
         DefaultFaultInterceptor defaultHandler;
@@ -483,7 +485,7 @@ const WebServiceMethodDescription WebServer::Rep_::kBlob_{
 };
 const WebServiceMethodDescription WebServer::Rep_::kDevices_{
     L"api/v1/devices"sv,
-    Set<String>{IO::Network::HTTP::Methods::kGet},
+    Set<String>{IO::Network::HTTP::Methods::kGet, IO::Network::HTTP::Methods::kPatch},
     DataExchange::InternetMediaTypes::kJSON,
     {},
     Sequence<String>{
@@ -492,14 +494,15 @@ const WebServiceMethodDescription WebServer::Rep_::kDevices_{
         L"curl 'http://localhost/api/v1/devices?recurse=true&sort=%7b\"searchTerms\":[%7b\"by\":\"Address\"%7d],\"compareNetwork\":\"192.168.244.0/24\"%7d'"sv,
         L"curl 'http://localhost/api/v1/devices?recurse=true&sort={\"searchTerms\":[{\"by\":\"Address\"},{\"by\":\"Priority\"}],\"compareNetwork\":\"192.168.244.0/24\"}'"sv,
         L"curl http://localhost/api/v1/devices?recurse=true&sortBy=Address&sortCompareNetwork=192.168.244.0/24"sv,
-        L"curl http://localhost/api/v1/devices/60c59f9c-9a69-c89e-9d99-99c7976869c5"sv},
+        L"curl http://localhost/api/v1/devices/60c59f9c-9a69-c89e-9d99-99c7976869c5"sv,
+        L"curl -v -X PATCH --output - -H \"Content-Type: application/json\" -d '[{\"op\":\"add\",\"path\":\"/userOverrides/name\",\"value\":\"PROTY\"}]' http://localhost/api/v1/devices/a1fe525c-6bb7-271a-0f57-70d50f889dd3"},
     Sequence<String>{
         L"Fetch the list of known devices for the currently connected network. By default, this list is sorted so the most interesting devices come first (like this machine is first)"sv,
         L"query-string: sort={[by: Address|Priority|Name|Type, ascending: true|false]+, compareNetwork?: CIDR|network-id}; sort=ARG is JSON encoded SearchTerm={by: string, ascending?: bool}, {searchTerms: SearchTerm[], compareNetwork: string}"sv,
         L"query-string: sortBy=Address|Priority|Name|Type sortAscending=true|false (requires sortBy); both are aliases for sort=...)"sv,
         L"query-string: ids=[a,b,c] - optional - if omitted returns all)"sv,
         L"Note: sorts are stable, so they can be combined one after the other. To get a GroupBy, just do the grouping as the final 'sort'."sv,
-    },
+        L"For PATCH API, only supported operations are 'add /userSettings/name' and 'delete /userSettings/name' (and more?)"sv},
 };
 const WebServiceMethodDescription WebServer::Rep_::kNetworks_{
     L"api/v1/networks"sv,

@@ -416,6 +416,12 @@ Device WSImpl::GetDevice (const String& id) const
     Execution::Throw (ClientErrorException{L"no such id"sv});
 }
 
+void WSImpl::PatchDevice (const String& id, const JSONPATCH::OperationItemsType& patchDoc) const
+{
+    // WHOLE API TBD... probably want to run patch on variant-value inside WS layer
+    DbgTrace (L"WSImpl::PatchDevice (%s, %s)", id.c_str (), Characters::ToString (patchDoc).c_str ());
+}
+
 Sequence<String> WSImpl::GetNetworks (const optional<Set<GUID>>& ids) const
 {
     Debug::TimingTrace                              ttrc{L"WSImpl::GetNetworks", 0.1};

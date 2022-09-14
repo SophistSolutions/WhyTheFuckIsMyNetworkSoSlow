@@ -34,6 +34,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
         virtual Sequence<String>                                               GetDevices (const optional<Set<GUID>>& ids, const optional<DeviceSortParamters>& sort) const override;
         virtual Sequence<Device>                                               GetDevices_Recurse (const optional<Set<GUID>>& ids, const optional<DeviceSortParamters>& sort) const override;
         virtual Device                                                         GetDevice (const String& id) const override;
+        virtual void                                                           PatchDevice (const String& id, const JSONPATCH::OperationItemsType& patchDoc) const override;
         virtual Sequence<String>                                               GetNetworks (const optional<Set<GUID>>& ids) const override;
         virtual Sequence<Network>                                              GetNetworks_Recurse (const optional<Set<GUID>>& ids) const override;
         virtual Network                                                        GetNetwork (const String& id) const override;

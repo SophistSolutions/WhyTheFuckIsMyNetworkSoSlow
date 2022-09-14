@@ -19,6 +19,7 @@ vpath %cpp $(SrcDir)
 
 Objs	=	\
 	$(ObjDir)IWSAPI${OBJ_SUFFIX}\
+	$(ObjDir)JSONPATCH${OBJ_SUFFIX}\
 	$(ObjDir)Model${OBJ_SUFFIX}\
 	$(ObjDir)WSImpl${OBJ_SUFFIX}\
 	$(ObjDir)WebServer${OBJ_SUFFIX}\

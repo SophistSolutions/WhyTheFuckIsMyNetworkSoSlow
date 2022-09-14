@@ -11,6 +11,7 @@
 #include "Stroika/Foundation/Containers/Sequence.h"
 #include "Stroika/Foundation/DataExchange/InternetMediaType.h"
 
+#include "JSONPATCH.h"
 #include "Model.h"
 
 /**
@@ -54,6 +55,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
         virtual Sequence<String> GetDevices (const optional<Set<GUID>>& ids = nullopt, const optional<DeviceSortParamters>& sort = {}) const         = 0;
         virtual Sequence<Device> GetDevices_Recurse (const optional<Set<GUID>>& ids = nullopt, const optional<DeviceSortParamters>& sort = {}) const = 0;
         virtual Device           GetDevice (const String& id) const                                                                                  = 0;
+        virtual void             PatchDevice (const String& id, const JSONPATCH::OperationItemsType& patchDoc) const                                 = 0;
 
     public:
         /**

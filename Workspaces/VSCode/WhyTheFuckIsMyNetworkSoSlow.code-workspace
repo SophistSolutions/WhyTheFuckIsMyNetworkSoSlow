@@ -14,7 +14,8 @@
 			"*.ipp": "cpp",
 			"*.env": "cpp",
 			"string": "cpp",
-			"chrono": "cpp"
+			"chrono": "cpp",
+			"initializer_list": "cpp"
 		}
 	}
 }
