@@ -378,6 +378,35 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
          */
         optional<bool> fHistoricalSnapshot;
 
+        /**
+         * per device settings specified externally (typically GUI user edit)
+         */
+        struct UserOverridesType {
+            /**
+             */
+            optional<String> fName;
+
+            /**
+             */
+            optional<Set<String>> fTags;
+
+            /**
+             * @todo consider but probably interpret the text as markdown.
+             */
+            optional<String> fNotes;
+
+            /**
+             *  @see Characters::ToString ();
+             */
+            nonvirtual String ToString () const;
+
+            static const DataExchange::ObjectVariantMapper kMapper;
+        };
+
+        /**
+         */
+        optional<UserOverridesType> fUserOverrides;
+
 #if qDebug
         optional<Mapping<String, DataExchange::VariantValue>> fDebugProps;
 #endif

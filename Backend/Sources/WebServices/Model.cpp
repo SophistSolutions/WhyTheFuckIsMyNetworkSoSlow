@@ -477,6 +477,41 @@ const DataExchange::ObjectVariantMapper Model::Device::SeenType::kMapper = [] ()
 
 /*
  ********************************************************************************
+ ********************** Model::Device::UserOverridesType ************************
+ ********************************************************************************
+ */
+String Model::Device::UserOverridesType::ToString () const
+{
+    Characters::StringBuilder sb;
+    sb += L"{";
+    if (fName) {
+        sb += L"fName: " + Characters::ToString (fName) + L", ";
+    }
+    if (fTags) {
+        sb += L"fTags: " + Characters::ToString (fTags) + L", ";
+    }
+    if (fNotes) {
+        sb += L"fNotes: " + Characters::ToString (fNotes);
+    }
+    sb += L"}";
+    return sb.str ();
+}
+
+const DataExchange::ObjectVariantMapper Model::Device::UserOverridesType::kMapper = [] () {
+    ObjectVariantMapper mapper;
+    mapper.AddCommonType<optional<String>> ();
+    mapper.AddCommonType<Set<String>> ();
+    mapper.AddCommonType<optional<Set<String>>> ();
+    mapper.AddClass<UserOverridesType> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+        {L"name"sv, StructFieldMetaInfo{&UserOverridesType::fName}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"tags"sv, StructFieldMetaInfo{&UserOverridesType::fTags}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"notes"sv, StructFieldMetaInfo{&UserOverridesType::fNotes}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+    });
+    return mapper;
+}();
+
+/*
+ ********************************************************************************
  ********************************* Model::Device ********************************
  ********************************************************************************
  */
@@ -510,6 +545,8 @@ const ObjectVariantMapper Device::kMapper = [] () {
     mapper.AddCommonType<Set<GUID>> ();
     mapper.AddCommonType<optional<Set<GUID>>> ();
     mapper += SeenType::kMapper;
+    mapper += UserOverridesType::kMapper;
+    mapper.AddCommonType<optional<UserOverridesType>> ();
 
     mapper.AddClass<Common::PrioritizedName> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
         {L"name"sv, StructFieldMetaInfo{&Common::PrioritizedName::fName}},
@@ -584,6 +621,8 @@ const ObjectVariantMapper Device::kMapper = [] () {
             {L"aggregatesIrreversibly"sv, StructFieldMetaInfo{&Device::fAggregatesIrreversibly}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"idIsPersistent"sv, StructFieldMetaInfo{&Device::fIDPersistent}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"historicalSnapshot"sv, StructFieldMetaInfo{&Device::fHistoricalSnapshot}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+            {L"userOverrides"sv, StructFieldMetaInfo{&Device::fUserOverrides}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+
 #if qDebug
             {L"debugProps", StructFieldMetaInfo{&Device::fDebugProps}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
 #endif
@@ -635,6 +674,7 @@ Device Device::Merge (const Device& baseDevice, const Device& priorityDevice)
     Memory::AccumulateIf (&merged.fAggregatesIrreversibly, priorityDevice.fAggregatesIrreversibly);
     Memory::CopyToIf (&merged.fIDPersistent, priorityDevice.fIDPersistent);
     Memory::CopyToIf (&merged.fHistoricalSnapshot, priorityDevice.fHistoricalSnapshot);
+    Memory::CopyToIf (&merged.fUserOverrides, priorityDevice.fUserOverrides); // for now, no need to look inside and accumulate because only one place can generate user-overrides - some special TBD database record - LGP 2022-09-14
 #if qDebug
     if (priorityDevice.fDebugProps) {
         // copy sub-elements of debug props
