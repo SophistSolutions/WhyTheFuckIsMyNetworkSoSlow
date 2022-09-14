@@ -718,6 +718,7 @@ namespace {
                             DiscoveryInfo_ tmp{};
                             tmp.fAttachedNetworks   = thisDevice->fAttachedNetworks;
                             tmp.fAttachedInterfaces = thisDevice->fAttachedInterfaces;
+                            tmp.fNames              = thisDevice->fNames;
                             if (optional<DiscoveryInfo_> oo = FindMatchingDevice_ (l, tmp)) {
                                 tmp = *oo; // merge
                                 tmp.fAttachedNetworks += thisDevice->fAttachedNetworks;
@@ -813,7 +814,7 @@ namespace {
                 return nullopt;
             }
 
-            newDev.fGUID = GUID::GenerateNew ();
+            // No need to set GUID - set in caller
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
             DbgTrace (L"returning: %s", Characters::ToString (newDev).c_str ());
 #endif
