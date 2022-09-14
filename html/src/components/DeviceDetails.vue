@@ -8,7 +8,6 @@ import { ComputeServiceTypeIconURL } from "../models/device/Utils";
 import { GetNetworkLink, GetNetworkName, GetServices, SortNetworks } from "../models/network/Utils";
 import { rescanDevice } from "../proxy/API";
 
-
 import ReadOnlyTextWithHover from '../components/ReadOnlyTextWithHover.vue';
 import Link2DetailsPage from '../components/Link2DetailsPage.vue';
 
