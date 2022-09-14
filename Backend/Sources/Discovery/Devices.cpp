@@ -453,7 +453,7 @@ namespace {
                 }
 
                 // pick any one of the friendly names, or the server name if we must
-                if (not fSSDPInfo->fDeviceType2FriendlyNameMap.empty ()) {
+                if (not fSSDPInfo->fDeviceType2FriendlyNameMap.empty () and not fSSDPInfo->fDeviceType2FriendlyNameMap.Nth (0).fValue.empty ()) {
                     fNames.Add (fSSDPInfo->fDeviceType2FriendlyNameMap.Nth (0).fValue, 95);
 #if qDebug
                     fDebugProps.Add (L"SSDP-DeviceType2FriendlyName"sv, fSSDPInfo->fDeviceType2FriendlyNameMap.Nth (0).fValue);
@@ -465,7 +465,7 @@ namespace {
             // try reverse dns lookup
             for (const auto& i : GetInternetAddresses ()) {
                 if (auto o = ReverseDNSLookup_ (i)) {
-                    fNames.Add (*o, 55);
+                    fNames.Add (*o, 96);
 #if qDebug
                     fDebugProps.Add (L"reverse-dns-name"sv, *o);
 #endif
