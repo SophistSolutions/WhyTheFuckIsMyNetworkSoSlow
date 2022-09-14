@@ -528,13 +528,16 @@ const ObjectVariantMapper Device::kMapper = [] () {
     mapper.AddClass<Device> (initializer_list<ObjectVariantMapper::StructFieldInfo> {
         {L"id", StructFieldMetaInfo{&Device::fGUID}},
 
+#if 0
             //tmphack list name/names for bacward compat, then just names simple way
             {L"name", StructFieldMetaInfo{&Device::fNames},
              ObjectVariantMapper::TypeMappingDetails{
                  typeid (Common::PrioritizedNames),
                  ObjectVariantMapper::FromObjectMapperType<Common::PrioritizedNames>{[] (const ObjectVariantMapper&, const Common::PrioritizedNames* objOfType) -> VariantValue { return VariantValue{objOfType->GetName ()}; }},
                  ObjectVariantMapper::ToObjectMapperType<Common::PrioritizedNames>{[] (const ObjectVariantMapper&, const VariantValue& d, Common::PrioritizedNames* into) -> void {
-                     into->Add (d.As<String> (), 1);
+                     if (not d.As<String> ().empty ()) {
+                         into->Add (d.As<String> (), 1);
+                     } 
                  }}}},
             {L"names", StructFieldMetaInfo{&Device::fNames},
              ObjectVariantMapper::TypeMappingDetails{
@@ -559,11 +562,14 @@ const ObjectVariantMapper Device::kMapper = [] () {
                          ObjectVariantMapper::ToObjectMapperType<Common::PrioritizedName> valueMapper{mapper.ToObjectMapper<Common::PrioritizedName> ()};
                          for (const auto& i : s) {
                              auto obj2Add = mapper.ToObject<Common::PrioritizedName> (valueMapper, i);
-                             intoObjOfTypeT->Add (obj2Add.fName, obj2Add.fPriority);
+                             if (not obj2Add.fName.empty ()) {
+                                 intoObjOfTypeT->Add (obj2Add.fName, obj2Add.fPriority);
+                             }
                          }
                      }
                  }}}},
-            //{L"names", StructFieldMetaInfo{&Device::fNames}},
+#endif
+            {L"names", StructFieldMetaInfo{&Device::fNames}},
 
             {L"type", StructFieldMetaInfo{&Device::fTypes}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"seen", StructFieldMetaInfo{&Device::fSeen}},

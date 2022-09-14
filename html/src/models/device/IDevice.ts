@@ -22,6 +22,7 @@ export interface IDevice {
   attachedNetworks: { [key: string]: INetworkAttachmentInfo };
   attachedNetworkInterfaces: string[];
   name: string;
+  names: { name: string, priority: number }[];
   seen?: { [key: string]: IDateTimeRange };
   openPorts?: string[];
   icon?: URL;

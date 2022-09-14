@@ -164,10 +164,14 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
   <div v-if="currentDevice" class="q-pa-sm">
     <Link2DetailsPage :link="'/#/device/' + currentDevice.id" v-if="props.includeLinkToDetailsPage"
       style="padding-top: 5px; float:right" />
-
     <div class="row">
       <div class="col-3">Name</div>
       <div class="col"> {{ currentDevice.name }} </div>
+    </div>
+    <div class="row" v-if="currentDevice.names.filter(m => m.priority > 1).length > 1">
+      <div class="col-3">Aliases</div>
+      <div class="col"> {{ currentDevice.names.filter(m => m.priority > 1).map (m => m.name).slice(1).join (", ") }}
+      </div>
     </div>
     <div class="row">
       <div class="col-3">ID</div>
@@ -186,13 +190,13 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
       <div class="col-3">Manufacturer</div>
       <div class="col">
         <span v-if="currentDevice.manufacturer.shortName || currentDevice.manufacturer.fullName">{{
-            currentDevice.manufacturer.shortName || currentDevice.manufacturer.fullName
+        currentDevice.manufacturer.shortName || currentDevice.manufacturer.fullName
         }}</span>
         <span v-if="currentDevice.manufacturer.webSiteURL">
           <span v-if="currentDevice.manufacturer.shortName || currentDevice.manufacturer.fullName">; </span>
           Link:
           <a :href="currentDevice.manufacturer.webSiteURL" target="_blank">{{
-              currentDevice.manufacturer.webSiteURL
+          currentDevice.manufacturer.webSiteURL
           }}</a>
         </span>
       </div>
@@ -223,14 +227,12 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
           <div class="col">
             <div class="row">
               <div class="col no-wrap truncateWithElipsis">
-                <ReadOnlyTextWithHover
-                  :message="currentDeviceDetails.attachedNetworks[attachedNet.id].name"
+                <ReadOnlyTextWithHover :message="currentDeviceDetails.attachedNetworks[attachedNet.id].name"
                   :popupTitle="
                   currentDeviceDetails.attachedNetworks[attachedNet.id].name +
                   ' (' +
                   attachedNet.id +
-                  ')'" 
-                  :link="GetNetworkLink(attachedNet.id)" title="Network Name" />
+                  ')'" :link="GetNetworkLink(attachedNet.id)" title="Network Name" />
               </div>
             </div>
             <div class="row" v-if="currentDevice.attachedNetworks[attachedNet.id].hardwareAddresses">
@@ -265,7 +267,7 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
           <div class="col">
             <div class="row wrap"> <a v-for="l in svc.links" v-bind:href="l.href" v-bind:key="l.href" class="list-items"
                 target="_blank">{{
-                    l.href
+                l.href
                 }}</a></div>
           </div>
         </div>
@@ -274,8 +276,9 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
     <div class="row">
       <div class="col-3">Open Ports</div>
       <div class="col">
-        <q-btn class="smallBtnMargin" elevation="2" dense size="sm" @click="rescanSelectedDevice" v-if="currentDevice.historicalSnapshot != true"
-          :disabled="isRescanning"> {{ isRescanning ? "**SCANNING**" : "Rescan" }} </q-btn>
+        <q-btn class="smallBtnMargin" elevation="2" dense size="sm" @click="rescanSelectedDevice"
+          v-if="currentDevice.historicalSnapshot != true" :disabled="isRescanning"> {{ isRescanning ? "**SCANNING**" :
+          "Rescan" }} </q-btn>
         <span v-if="currentDevice.openPorts">{{ currentDevice.openPorts.join(", ") }}</span>
       </div>
     </div>

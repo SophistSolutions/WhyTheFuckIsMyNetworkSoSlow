@@ -48,6 +48,10 @@ function jsonPatch2IDevice_(d: IDevice) {
   if (d.icon) {
     d.icon = new URL(d.icon, gRuntimeConfiguration.API_ROOT);
   }
+  // Compute the derived name field
+  if (d.names && d.names.length >= 1) {
+    d.name = d.names[0].name;
+  }
   // Compute the seen.Ever 'virtual field'
   if (d.seen) {
     let mn: Date | undefined;
