@@ -61,6 +61,19 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel {
 
     public:
         /**
+         *  If there are no user overrides (or the id is invalid) this will return nullopt.
+         */
+        nonvirtual std::optional<Device::UserOverridesType> GetDeviceUserSettings (const Common::GUID& id) const;
+
+    public:
+        /**
+         *  if the id is invalid, this will throw (id refers to a rolled up object id). If settings are nullopt, this
+         *  clears the user settings.
+         */
+        nonvirtual void SetDeviceUserSettings (const Common::GUID& id, const std::optional<Device::UserOverridesType>& settings);
+
+    public:
+        /**
          *  For the given id, which can be a rolledup or aggregated device id, return the corresponding
          *  dynamic device id, if any. Can return nullopt if none found.
          */

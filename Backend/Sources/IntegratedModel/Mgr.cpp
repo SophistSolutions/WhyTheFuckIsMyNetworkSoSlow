@@ -115,6 +115,11 @@ namespace {
 }
 
 namespace {
+    // @todo read/write from DB -
+    Synchronized<Mapping<GUID, IntegratedModel::Device::UserOverridesType>> sCachedDeviceUserSettings_;
+}
+
+namespace {
     /**
      *  Wrappers on the device manager APIs, that just fetch the discovered devices and convert to common
      *  integrated model (no datebase awareness)
@@ -710,7 +715,8 @@ namespace {
                         d2MergeInPatched.fAttachedNetworks = mapAggregatedAttachments2Rollups (d2MergeInPatched.fAttachedNetworks);
                         Device tmp                         = Device::Rollup (*i, d2MergeInPatched);
                         Assert (tmp.fGUID == i->fGUID); // rollup cannot change device ID
-                        result.fDevices.Add (tmp);      // update
+                        tmp.fUserOverrides = sCachedDeviceUserSettings_.cget ().cref ().Lookup (tmp.fGUID);
+                        result.fDevices.Add (tmp); // update
                     }
                     else {
                         Assert (not d2MergeIn.fAggregatesReversibly.has_value ());
@@ -723,6 +729,7 @@ namespace {
                             newRolledUpDevice.fGUID = GUID::GenerateNew ();
                         }
                         newRolledUpDevice.fAttachedNetworks = mapAggregatedAttachments2Rollups (newRolledUpDevice.fAttachedNetworks);
+                        newRolledUpDevice.fUserOverrides    = sCachedDeviceUserSettings_.cget ().cref ().Lookup (newRolledUpDevice.fGUID);
                         result.fDevices.Add (newRolledUpDevice);
                     }
                 };
@@ -850,6 +857,22 @@ optional<IntegratedModel::Device> IntegratedModel::Mgr::GetDevice (const GUID& i
         }
     }
     return result;
+}
+
+std::optional<IntegratedModel::Device::UserOverridesType> IntegratedModel::Mgr::GetDeviceUserSettings (const GUID& id) const
+{
+    return sCachedDeviceUserSettings_.cget ().cref ().Lookup (id);
+}
+
+void IntegratedModel::Mgr::SetDeviceUserSettings (const Common::GUID& id, const std::optional<IntegratedModel::Device::UserOverridesType>& settings)
+{
+    // first check if legit id, and then store
+    if (settings) {
+        sCachedDeviceUserSettings_.rwget ().rwref ().Add (id, *settings);
+    }
+    else {
+        sCachedDeviceUserSettings_.rwget ().rwref ().RemoveIf (id);
+    }
 }
 
 std::optional<GUID> IntegratedModel::Mgr::GetCorrespondingDynamicDeviceID (const GUID& id) const

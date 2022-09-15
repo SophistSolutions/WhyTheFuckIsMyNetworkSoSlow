@@ -418,8 +418,30 @@ Device WSImpl::GetDevice (const String& id) const
 
 void WSImpl::PatchDevice (const String& id, const JSONPATCH::OperationItemsType& patchDoc) const
 {
-    // WHOLE API TBD... probably want to run patch on variant-value inside WS layer
     DbgTrace (L"WSImpl::PatchDevice (%s, %s)", id.c_str (), Characters::ToString (patchDoc).c_str ());
+    GUID objID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
+    for (auto op : patchDoc) {
+        if (op.op == JSONPATCH::OperationType::eAdd) {
+            Device::UserOverridesType updateVal = IntegratedModel::Mgr::sThe.GetDeviceUserSettings (objID).value_or (Device::UserOverridesType{});
+            if (op.path == L"/userOverrides/name") {
+                updateVal.fName = op.value ? optional<String>{op.value->As<String> ()} : optional<String>{};
+            }
+            else if (op.path == L"/userOverrides/notes") {
+                updateVal.fNotes = op.value ? optional<String>{op.value->As<String> ()} : optional<String>{};
+            }
+            else if (op.path == L"/userOverrides/tags") {
+                // @todo much more complex cuz dont get/set array (though can) but also allow adding elt to tag array - adding a single tag, or deleting one
+                AssertNotImplemented ();
+                //updateVal.fTags = op.value ? optional<Set<String>>{op.value->As<String> ()} : optional<String>{};
+            }
+            if (updateVal.fName.has_value () or updateVal.fNotes.has_value () or updateVal.fTags.has_value ()) {
+                IntegratedModel::Mgr::sThe.SetDeviceUserSettings (objID, updateVal);
+            }
+            else {
+                IntegratedModel::Mgr::sThe.SetDeviceUserSettings (objID, nullopt);
+            }
+        }
+    }
 }
 
 Sequence<String> WSImpl::GetNetworks (const optional<Set<GUID>>& ids) const

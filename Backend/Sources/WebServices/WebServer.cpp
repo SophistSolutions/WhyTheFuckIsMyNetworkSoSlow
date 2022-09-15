@@ -502,7 +502,7 @@ const WebServiceMethodDescription WebServer::Rep_::kDevices_{
         L"query-string: sortBy=Address|Priority|Name|Type sortAscending=true|false (requires sortBy); both are aliases for sort=...)"sv,
         L"query-string: ids=[a,b,c] - optional - if omitted returns all)"sv,
         L"Note: sorts are stable, so they can be combined one after the other. To get a GroupBy, just do the grouping as the final 'sort'."sv,
-        L"For PATCH API, only supported operations are 'add /userSettings/name' and 'delete /userSettings/name' (and more?)"sv},
+        L"For PATCH API, only supported operations are 'add /userSettings/name' and 'delete /userSettings/name' (and /userSettings/tags, /userSettings/notes)"sv},
 };
 const WebServiceMethodDescription WebServer::Rep_::kNetworks_{
     L"api/v1/networks"sv,
