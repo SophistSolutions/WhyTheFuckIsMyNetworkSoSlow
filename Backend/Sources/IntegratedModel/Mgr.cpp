@@ -382,7 +382,6 @@ namespace {
 
                 return mapper;
             }};
-
             const Schema::Table kDeviceIDCacheTableSchema_{
                 L"DevicesIDCache"sv,
                 /*
@@ -784,6 +783,9 @@ namespace {
                         }
                         newRolledUpDevice.fAttachedNetworks = mapAggregatedAttachments2Rollups (newRolledUpDevice.fAttachedNetworks);
                         newRolledUpDevice.fUserOverrides    = DBAccess_::sMgr_->LookupUserSettings (newRolledUpDevice.fGUID);
+                        if (newRolledUpDevice.fUserOverrides && newRolledUpDevice.fUserOverrides->fName) {
+                            newRolledUpDevice.fNames.Add (*newRolledUpDevice.fUserOverrides->fName, 500);
+                        }
                         result.fDevices.Add (newRolledUpDevice);
                     }
                 };
