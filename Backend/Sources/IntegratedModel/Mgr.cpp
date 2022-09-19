@@ -712,7 +712,7 @@ namespace {
                 for (const auto& i : fNetworks) {
                     DbgTrace (L"rolledupNet=%s", Characters::ToString (i).c_str ());
                 }
-                AssertNotReached (); // because we guarantee each item rolled up exactly once
+                WeakAssert (false); // @todo fix - because we guarantee each item rolled up exactly once - but happens sometimes on change of network - I think due to outdated device records referring to newer network not yet in this cache...
                 return netID;
             };
         };
