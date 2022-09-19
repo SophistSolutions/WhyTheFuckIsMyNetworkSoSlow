@@ -421,25 +421,48 @@ void WSImpl::PatchDevice (const String& id, const JSONPATCH::OperationItemsType&
     DbgTrace (L"WSImpl::PatchDevice (%s, %s)", id.c_str (), Characters::ToString (patchDoc).c_str ());
     GUID objID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
     for (auto op : patchDoc) {
-        if (op.op == JSONPATCH::OperationType::eAdd) {
-            Device::UserOverridesType updateVal = IntegratedModel::Mgr::sThe.GetDeviceUserSettings (objID).value_or (Device::UserOverridesType{});
-            if (op.path == L"/userOverrides/name") {
-                updateVal.fName = op.value ? optional<String>{op.value->As<String> ()} : optional<String>{};
-            }
-            else if (op.path == L"/userOverrides/notes") {
-                updateVal.fNotes = op.value ? optional<String>{op.value->As<String> ()} : optional<String>{};
-            }
-            else if (op.path == L"/userOverrides/tags") {
-                // @todo much more complex cuz dont get/set array (though can) but also allow adding elt to tag array - adding a single tag, or deleting one
-                AssertNotImplemented ();
-                //updateVal.fTags = op.value ? optional<Set<String>>{op.value->As<String> ()} : optional<String>{};
-            }
-            if (updateVal.fName.has_value () or updateVal.fNotes.has_value () or updateVal.fTags.has_value ()) {
-                IntegratedModel::Mgr::sThe.SetDeviceUserSettings (objID, updateVal);
-            }
-            else {
-                IntegratedModel::Mgr::sThe.SetDeviceUserSettings (objID, nullopt);
-            }
+        switch (op.op) {
+            case JSONPATCH::OperationType::eAdd: {
+                Device::UserOverridesType updateVal = IntegratedModel::Mgr::sThe.GetDeviceUserSettings (objID).value_or (Device::UserOverridesType{});
+                if (not op.value) {
+                    Execution::Throw (ClientErrorException{L"JSON-Patch add requires a value"_k});
+                }
+                if (op.path == L"/userOverrides/name") {
+                    updateVal.fName = op.value->As<String> ();
+                }
+                else if (op.path == L"/userOverrides/notes") {
+                    updateVal.fNotes = op.value->As<String> ();
+                }
+                else if (op.path == L"/userOverrides/tags") {
+                    // for now only support replacing the whole array at a time
+                    updateVal.fTags = Set<String>{op.value->As<Sequence<VariantValue>> ().Select<String> ([] (auto i) { return i.As<String> (); })};
+                }
+                if (updateVal.fName.has_value () or updateVal.fNotes.has_value () or updateVal.fTags.has_value ()) {
+                    IntegratedModel::Mgr::sThe.SetDeviceUserSettings (objID, updateVal);
+                }
+                else {
+                    IntegratedModel::Mgr::sThe.SetDeviceUserSettings (objID, nullopt);
+                }
+            } break;
+            case JSONPATCH::OperationType::eRemove: {
+                Device::UserOverridesType updateVal = IntegratedModel::Mgr::sThe.GetDeviceUserSettings (objID).value_or (Device::UserOverridesType{});
+                if (op.path == L"/userOverrides/name") {
+                    updateVal.fName =  optional<String>{};
+                }
+                else if (op.path == L"/userOverrides/notes") {
+                    updateVal.fNotes = optional<String>{};
+                }
+                else if (op.path == L"/userOverrides/tags") {
+                    // for now only support replacing the whole array at a time
+                    updateVal.fTags = optional<Set<String>>{};
+                }
+                if (updateVal.fName.has_value () or updateVal.fNotes.has_value () or updateVal.fTags.has_value ()) {
+                    IntegratedModel::Mgr::sThe.SetDeviceUserSettings (objID, updateVal);
+                }
+                else {
+                    IntegratedModel::Mgr::sThe.SetDeviceUserSettings (objID, nullopt);
+                }
+            } break;
         }
     }
 }

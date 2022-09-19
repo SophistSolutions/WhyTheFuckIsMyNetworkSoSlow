@@ -495,7 +495,10 @@ const WebServiceMethodDescription WebServer::Rep_::kDevices_{
         L"curl 'http://localhost/api/v1/devices?recurse=true&sort={\"searchTerms\":[{\"by\":\"Address\"},{\"by\":\"Priority\"}],\"compareNetwork\":\"192.168.244.0/24\"}'"sv,
         L"curl http://localhost/api/v1/devices?recurse=true&sortBy=Address&sortCompareNetwork=192.168.244.0/24"sv,
         L"curl http://localhost/api/v1/devices/60c59f9c-9a69-c89e-9d99-99c7976869c5"sv,
-        L"curl -v -X PATCH --output - -H \"Content-Type: application/json\" -d '[{\"op\":\"add\",\"path\":\"/userOverrides/name\",\"value\":\"PROTY\"}]' http://localhost/api/v1/devices/a1fe525c-6bb7-271a-0f57-70d50f889dd3"},
+        L"curl -v -X PATCH --output - -H \"Content-Type: application/json\" -d '[{\"op\":\"add\",\"path\":\"/userOverrides/name\",\"value\":\"PROTY\"}]' http://localhost/api/v1/devices/a1fe525c-6bb7-271a-0f57-70d50f889dd3",
+        L"curl -v -X PATCH --output - -H \"Content-Type: application/json\" -d '[{\"op\":\"add\",\"path\":\"/userOverrides/notes\",\"value\":\"## Note1\\n##Note2\"}]' http://localhost/api/v1/devices/a1fe525c-6bb7-271a-0f57-70d50f889dd3",
+        L"curl -v -X PATCH --output - -H \"Content-Type: application/json\" -d '[{\"op\":\"add\",\"path\":\"/userOverrides/tags\",\"value\":[\"tag1\",\"tag2\"]}]' http://localhost/api/v1/devices/a1fe525c-6bb7-271a-0f57-70d50f889dd3",
+        L"curl -v -X PATCH --output - -H \"Content-Type: application/json\" -d '[{\"op\":\"remove\",\"path\":\"/userOverrides/tags\"}]' http://localhost/api/v1/devices/a1fe525c-6bb7-271a-0f57-70d50f889dd3"},
     Sequence<String>{
         L"Fetch the list of known devices for the currently connected network. By default, this list is sorted so the most interesting devices come first (like this machine is first)"sv,
         L"query-string: sort={[by: Address|Priority|Name|Type, ascending: true|false]+, compareNetwork?: CIDR|network-id}; sort=ARG is JSON encoded SearchTerm={by: string, ascending?: bool}, {searchTerms: SearchTerm[], compareNetwork: string}"sv,

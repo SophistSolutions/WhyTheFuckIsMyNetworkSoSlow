@@ -20,6 +20,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::JSONPATCH {
     using DataExchange::VariantValue;
 
     // SEE https://jsonpatch.com/
+    // SEE https://www.rfc-editor.org/rfc/rfc6902
 
     enum class OperationType {
         eAdd,
