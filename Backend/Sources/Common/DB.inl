@@ -66,7 +66,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
 
     /*
      ********************************************************************************
-     *********************** mkOperationalStatisticsMgrProcessDBCmd *****************
+     ********************* mkOperationalStatisticsMgrProcessDBCmd *******************
      ********************************************************************************
      */
     template <typename TABLE_CONNECTION>
