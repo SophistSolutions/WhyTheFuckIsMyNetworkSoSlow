@@ -321,6 +321,14 @@ public:
                       ActiveCallCounter_ acc{*this};
                       WriteResponse (&m->rwResponse (), kNetworks_, Network::kMapper.FromObject (fWSAPI_->GetNetwork (id)));
                   }},
+              Route{
+                  IO::Network::HTTP::MethodsRegEx::kPatch,
+                  L"api/v1/networks/(.+)"_RegEx,
+                  [=, this] (Message* m, const String& id) {
+                      ActiveCallCounter_ acc{*this};
+                      fWSAPI_->PatchNetwork (id, JSONPATCH::OperationItemsType::kMapper.ToObject<JSONPATCH::OperationItemsType> (DataExchange::Variant::JSON::Reader{}.Read (m->rwRequest ().GetBody ())));
+                      m->rwResponse ().status = IO::Network::HTTP::StatusCodes::kNoContent;
+                  }},
 
               Route{
                   L"api/v1/operations/ping"_RegEx,
@@ -512,10 +520,17 @@ const WebServiceMethodDescription WebServer::Rep_::kNetworks_{
     Set<String>{IO::Network::HTTP::Methods::kGet},
     DataExchange::InternetMediaTypes::kJSON,
     {},
-    Sequence<String>{L"curl http://localhost/api/v1/networks"sv, L"curl http://localhost/api/v1/networks?recurse=true"sv, L"curl http://localhost/api/v1/networks/{ID}"sv},
+    Sequence<String>{L"curl http://localhost/api/v1/networks"sv,
+                     L"curl http://localhost/api/v1/networks?recurse=true"sv,
+                     L"curl http://localhost/api/v1/networks/{ID}"sv,
+                     L"curl -v -X PATCH --output - -H \"Content-Type: application/json\" -d '[{\"op\":\"add\",\"path\":\"/userOverrides/name\",\"value\":\"34churchst\"}]' http://localhost/api/v1/networks/64a89b22-f724-d4f0-0485-fd225c9547fd",
+                     L"curl -v -X PATCH --output - -H \"Content-Type: application/json\" -d '[{\"op\":\"add\",\"path\":\"/userOverrides/notes\",\"value\":\"## Note1\\n##Note2\"}]' http://localhost/api/v1/networks/64a89b22-f724-d4f0-0485-fd225c9547fd",
+                     L"curl -v -X PATCH --output - -H \"Content-Type: application/json\" -d '[{\"op\":\"add\",\"path\":\"/userOverrides/tags\",\"value\":[\"tag1\",\"tag2\"]}]' http://localhost/api/v1/networks/64a89b22-f724-d4f0-0485-fd225c9547fd",
+                     L"curl -v -X PATCH --output - -H \"Content-Type: application/json\" -d '[{\"op\":\"remove\",\"path\":\"/userOverrides/tags\"}]' http://localhost/api/v1/networks/64a89b22-f724-d4f0-0485-fd225c9547fd"},
     Sequence<String>{L"Fetch the list of known Networks."sv,
                      L"query-string: ids=[a,b,c] - optional - if omitted returns all)"sv,
-                     L"@todo - in the future - add support for parameters to this fetch - which can be used to filter/subset etc"sv},
+                     L"@todo - in the future - add support for parameters to this fetch - which can be used to filter/subset etc"sv,
+                     L"For PATCH API, only supported operations are 'add /userSettings/name' and 'delete /userSettings/name' (and /userSettings/tags, /userSettings/notes)"sv},
 };
 const WebServiceMethodDescription WebServer::Rep_::kNetworkInterfaces_{
     L"api/v1/network-interfaces"sv,

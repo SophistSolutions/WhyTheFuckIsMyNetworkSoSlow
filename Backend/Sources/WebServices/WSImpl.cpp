@@ -447,7 +447,7 @@ void WSImpl::PatchDevice (const String& id, const JSONPATCH::OperationItemsType&
             case JSONPATCH::OperationType::eRemove: {
                 Device::UserOverridesType updateVal = IntegratedModel::Mgr::sThe.GetDeviceUserSettings (objID).value_or (Device::UserOverridesType{});
                 if (op.path == L"/userOverrides/name") {
-                    updateVal.fName =  optional<String>{};
+                    updateVal.fName = optional<String>{};
                 }
                 else if (op.path == L"/userOverrides/notes") {
                     updateVal.fNotes = optional<String>{};
@@ -518,6 +518,57 @@ Network WSImpl::GetNetwork (const String& id) const
         return *d;
     }
     Execution::Throw (ClientErrorException{L"no such id"sv});
+}
+
+void WSImpl::PatchNetwork (const String& id, const JSONPATCH::OperationItemsType& patchDoc) const
+{
+    DbgTrace (L"WSImpl::PatchNetwork (%s, %s)", id.c_str (), Characters::ToString (patchDoc).c_str ());
+    GUID objID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
+    for (auto op : patchDoc) {
+        switch (op.op) {
+            case JSONPATCH::OperationType::eAdd: {
+                Network::UserOverridesType updateVal = IntegratedModel::Mgr::sThe.GetNetworkUserSettings (objID).value_or (Network::UserOverridesType{});
+                if (not op.value) {
+                    Execution::Throw (ClientErrorException{L"JSON-Patch add requires a value"_k});
+                }
+                if (op.path == L"/userOverrides/name") {
+                    updateVal.fName = op.value->As<String> ();
+                }
+                else if (op.path == L"/userOverrides/notes") {
+                    updateVal.fNotes = op.value->As<String> ();
+                }
+                else if (op.path == L"/userOverrides/tags") {
+                    // for now only support replacing the whole array at a time
+                    updateVal.fTags = Set<String>{op.value->As<Sequence<VariantValue>> ().Select<String> ([] (auto i) { return i.As<String> (); })};
+                }
+                if (updateVal.fName.has_value () or updateVal.fNotes.has_value () or updateVal.fTags.has_value ()) {
+                    IntegratedModel::Mgr::sThe.SetNetworkUserSettings (objID, updateVal);
+                }
+                else {
+                    IntegratedModel::Mgr::sThe.SetNetworkUserSettings (objID, nullopt);
+                }
+            } break;
+            case JSONPATCH::OperationType::eRemove: {
+                Network::UserOverridesType updateVal = IntegratedModel::Mgr::sThe.GetNetworkUserSettings (objID).value_or (Network::UserOverridesType{});
+                if (op.path == L"/userOverrides/name") {
+                    updateVal.fName = optional<String>{};
+                }
+                else if (op.path == L"/userOverrides/notes") {
+                    updateVal.fNotes = optional<String>{};
+                }
+                else if (op.path == L"/userOverrides/tags") {
+                    // for now only support replacing the whole array at a time
+                    updateVal.fTags = optional<Set<String>>{};
+                }
+                if (updateVal.fName.has_value () or updateVal.fNotes.has_value () or updateVal.fTags.has_value ()) {
+                    IntegratedModel::Mgr::sThe.SetNetworkUserSettings (objID, updateVal);
+                }
+                else {
+                    IntegratedModel::Mgr::sThe.SetNetworkUserSettings (objID, nullopt);
+                }
+            } break;
+        }
+    }
 }
 
 Collection<String> WSImpl::GetNetworkInterfaces (bool filterRunningOnly) const

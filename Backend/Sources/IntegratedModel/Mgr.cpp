@@ -354,6 +354,11 @@ namespace {
                 Model::Device::UserOverridesType fUserSettings;
             };
 
+            struct ExternalNetworkUserSettingsElt_ {
+                GUID                              fNetworkID; // rolled up network id
+                Model::Network::UserOverridesType fUserSettings;
+            };
+
             /*
              *  Combined mapper for objects we write to the database. Contains all the objects mappers we need merged together,
              *  and any touchups on represenation we need (like writing GUID as BLOB rather than string).
@@ -363,6 +368,9 @@ namespace {
 
                 mapper += IntegratedModel::Device::kMapper;
                 mapper += IntegratedModel::Network::kMapper;
+
+                //tmphack need better way to make this context sensative!!! @todo SOON FIX
+                mapper.AddCommonType<Range<DateTime>> (ObjectVariantMapper::RangeSerializerOptions{L"lowerBound"sv, L"upperBound"sv}); // lower-camel-case names happier in javascript?
 
                 mapper.AddClass<HWAddr2GUIDElt_> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
                     {L"HWAddress", StructFieldMetaInfo{&HWAddr2GUIDElt_::HWAddress}},
@@ -376,13 +384,17 @@ namespace {
                     {L"UserSettings", StructFieldMetaInfo{&ExternalDeviceUserSettingsElt_::fUserSettings}},
                     {L"DeviceID", StructFieldMetaInfo{&ExternalDeviceUserSettingsElt_::fDeviceID}},
                 });
+                mapper.AddClass<ExternalNetworkUserSettingsElt_> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+                    {L"UserSettings", StructFieldMetaInfo{&ExternalNetworkUserSettingsElt_::fUserSettings}},
+                    {L"NetworkID", StructFieldMetaInfo{&ExternalNetworkUserSettingsElt_::fNetworkID}},
+                });
 
                 // ONLY DO THIS FOR WHEN WRITING TO DB -- store GUIDs as BLOBs - at least for database interactions (cuz probably more efficient)
                 mapper.AddCommonType<GUID> (kRepresentIDAs_);
 
                 return mapper;
             }};
-            const Schema::Table kDeviceIDCacheTableSchema_{
+            const Schema::Table                         kDeviceIDCacheTableSchema_{
                 L"DevicesIDCache"sv,
                 /*
                  */
@@ -417,6 +429,18 @@ namespace {
                     {.fName = L"DeviceID"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true},
 #else
                     {L"DeviceID", nullopt, true, kRepresentIDAs_, nullopt, true},
+#endif
+                },
+                Schema::CatchAllField{}};
+            const Schema::Table kNetworkUserSettingsSchema_{
+                L"NetworkUserSettings"sv,
+                /*
+                 */
+                Collection<Schema::Field>{
+#if __cpp_designated_initializers
+                    {.fName = L"NetworkID"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true},
+#else
+                    {L"NetworkID", nullopt, true, kRepresentIDAs_, nullopt, true},
 #endif
                 },
                 Schema::CatchAllField{}};
@@ -466,13 +490,15 @@ namespace {
             static constexpr Configuration::Version kCurrentVersion_ = Configuration::Version{1, 0, Configuration::VersionStage::Alpha, 0};
             BackendApp::Common::DB                  fDB_{
                 kCurrentVersion_,
-                Traversal::Iterable<Database::SQL::ORM::Schema::Table>{Private_::kDeviceIDCacheTableSchema_, Private_::kNetworkIDCacheTableSchema_, Private_::kDeviceTableSchema_, Private_::kDeviceUserSettingsSchema_, Private_::kNetworkTableSchema_}};
-            Synchronized<SQL::Connection::Ptr>                                                            fDBConnectionPtr_{fDB_.NewConnection ()};
-            Execution::Thread::Ptr                                                                        fDatabaseSyncThread_{};
-            unique_ptr<SQL::ORM::TableConnection<Private_::HWAddr2GUIDElt_>>                              fHWAddr2GUIDCacheTableConnection_;
-            unique_ptr<SQL::ORM::TableConnection<Private_::ExternalIPAddr2NetGUIDElt_>>                   fExternalIPAddr2NetGUIDCacheTableConnection_;
-            Synchronized<Mapping<GUID, IntegratedModel::Device::UserOverridesType>>                       fCachedDeviceUserSettings_;
-            Synchronized<unique_ptr<SQL::ORM::TableConnection<Private_::ExternalDeviceUserSettingsElt_>>> fDeviceUserSettingsTableConnection_;
+                Traversal::Iterable<Database::SQL::ORM::Schema::Table>{Private_::kDeviceIDCacheTableSchema_, Private_::kNetworkIDCacheTableSchema_, Private_::kDeviceTableSchema_, Private_::kDeviceUserSettingsSchema_, Private_::kNetworkTableSchema_, Private_::kNetworkUserSettingsSchema_}};
+            Synchronized<SQL::Connection::Ptr>                                                             fDBConnectionPtr_{fDB_.NewConnection ()};
+            Execution::Thread::Ptr                                                                         fDatabaseSyncThread_{};
+            unique_ptr<SQL::ORM::TableConnection<Private_::HWAddr2GUIDElt_>>                               fHWAddr2GUIDCacheTableConnection_;
+            unique_ptr<SQL::ORM::TableConnection<Private_::ExternalIPAddr2NetGUIDElt_>>                    fExternalIPAddr2NetGUIDCacheTableConnection_;
+            Synchronized<Mapping<GUID, IntegratedModel::Device::UserOverridesType>>                        fCachedDeviceUserSettings_;
+            Synchronized<unique_ptr<SQL::ORM::TableConnection<Private_::ExternalDeviceUserSettingsElt_>>>  fDeviceUserSettingsTableConnection_;
+            Synchronized<Mapping<GUID, IntegratedModel::Network::UserOverridesType>>                       fCachedNetworkUserSettings_;
+            Synchronized<unique_ptr<SQL::ORM::TableConnection<Private_::ExternalNetworkUserSettingsElt_>>> fNetworkUserSettingsTableConnection_;
 
         public:
             Mgr_ ()
@@ -481,6 +507,7 @@ namespace {
                 fHWAddr2GUIDCacheTableConnection_            = make_unique<SQL::ORM::TableConnection<Private_::HWAddr2GUIDElt_>> (fDBConnectionPtr_, Private_::kDeviceIDCacheTableSchema_, Private_::kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<Private_::HWAddr2GUIDElt_>> ());
                 fExternalIPAddr2NetGUIDCacheTableConnection_ = make_unique<SQL::ORM::TableConnection<Private_::ExternalIPAddr2NetGUIDElt_>> (fDBConnectionPtr_, Private_::kNetworkIDCacheTableSchema_, Private_::kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<Private_::ExternalIPAddr2NetGUIDElt_>> ());
                 fDeviceUserSettingsTableConnection_          = make_unique<SQL::ORM::TableConnection<Private_::ExternalDeviceUserSettingsElt_>> (fDBConnectionPtr_, Private_::kDeviceUserSettingsSchema_, Private_::kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<Private_::ExternalDeviceUserSettingsElt_>> ());
+                fNetworkUserSettingsTableConnection_         = make_unique<SQL::ORM::TableConnection<Private_::ExternalNetworkUserSettingsElt_>> (fDBConnectionPtr_, Private_::kNetworkUserSettingsSchema_, Private_::kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<Private_::ExternalNetworkUserSettingsElt_>> ());
 
                 try {
                     Debug::TimingTrace ttrc{L"...load of sAdvisoryHWAddr2GUIDCache from database ", 1};
@@ -507,6 +534,15 @@ namespace {
                 }
                 catch (...) {
                     Logger::sThe.Log (Logger::eError, L"Failed to load fCachedDeviceUserSettings_ from db: %s", Characters::ToString (current_exception ()).c_str ());
+                    Execution::ReThrow ();
+                }
+                try {
+                    Debug::TimingTrace ttrc{L"...load of fCachedNetworkUserSettings_ from database ", 1};
+                    lock_guard         lock{this->fDBConnectionPtr_};
+                    fCachedNetworkUserSettings_.store (Mapping<GUID, Model::Network::UserOverridesType>{fNetworkUserSettingsTableConnection_.rwget ().cref ()->GetAll ().Select<KeyValuePair<GUID, Model::Network::UserOverridesType>> ([] (const auto& i) { return KeyValuePair<GUID, Model::Network::UserOverridesType>{i.fNetworkID, i.fUserSettings}; })});
+                }
+                catch (...) {
+                    Logger::sThe.Log (Logger::eError, L"Failed to load fCachedNetworkUserSettings_ from db: %s", Characters::ToString (current_exception ()).c_str ());
                     Execution::ReThrow ();
                 }
 
@@ -566,9 +602,9 @@ namespace {
             {
                 return (externalAddresses == nullopt or externalAddresses->empty ()) ? GUID::GenerateNew () : GenNewNetworkID (*externalAddresses->First ());
             }
-            optional<Model::Device::UserOverridesType> LookupUserSettings (const GUID& guid) const
+            optional<Model::Device::UserOverridesType> LookupDevicesUserSettings (const GUID& guid) const
             {
-                Debug::TimingTrace ttrc{L"IntegratedModel...LookupUserSettings ()", 0.001};
+                Debug::TimingTrace ttrc{L"IntegratedModel...LookupDevicesUserSettings ()", 0.001};
                 return fCachedDeviceUserSettings_.cget ().cref ().Lookup (guid);
             }
             void SetDeviceUserSettings (const GUID& id, const std::optional<IntegratedModel::Device::UserOverridesType>& settings)
@@ -584,6 +620,26 @@ namespace {
                 else {
                     fDeviceUserSettingsTableConnection_.rwget ().cref ()->DeleteByID (id);
                     fCachedDeviceUserSettings_.rwget ().rwref ().RemoveIf (id);
+                }
+            }
+            optional<Model::Network::UserOverridesType> LookupNetworkUserSettings (const GUID& guid) const
+            {
+                Debug::TimingTrace ttrc{L"IntegratedModel...LookupNetworkUserSettings ()", 0.001};
+                return fCachedNetworkUserSettings_.cget ().cref ().Lookup (guid);
+            }
+            void SetNetworkUserSettings (const GUID& id, const std::optional<IntegratedModel::Network::UserOverridesType>& settings)
+            {
+                Debug::TimingTrace ttrc{L"IntegratedModel ... SetNetworkUserSettings", 0.1};
+                // first check if legit id, and then store
+                // @todo check if good id and throw if not...
+                auto lk = fCachedNetworkUserSettings_.rwget ();
+                if (settings) {
+                    fNetworkUserSettingsTableConnection_.rwget ().cref ()->AddOrUpdate (Private_::ExternalNetworkUserSettingsElt_{id, *settings});
+                    fCachedNetworkUserSettings_.rwget ().rwref ().Add (id, *settings);
+                }
+                else {
+                    fNetworkUserSettingsTableConnection_.rwget ().cref ()->DeleteByID (id);
+                    fCachedNetworkUserSettings_.rwget ().rwref ().RemoveIf (id);
                 }
             }
 
@@ -768,7 +824,7 @@ namespace {
                         d2MergeInPatched.fAttachedNetworks = mapAggregatedAttachments2Rollups (d2MergeInPatched.fAttachedNetworks);
                         Device tmp                         = Device::Rollup (*i, d2MergeInPatched);
                         Assert (tmp.fGUID == i->fGUID); // rollup cannot change device ID
-                        tmp.fUserOverrides = DBAccess_::sMgr_->LookupUserSettings (tmp.fGUID);
+                        // userSettings already added on first rollup
                         result.fDevices.Add (tmp); // update
                     }
                     else {
@@ -782,7 +838,7 @@ namespace {
                             newRolledUpDevice.fGUID = GUID::GenerateNew ();
                         }
                         newRolledUpDevice.fAttachedNetworks = mapAggregatedAttachments2Rollups (newRolledUpDevice.fAttachedNetworks);
-                        newRolledUpDevice.fUserOverrides    = DBAccess_::sMgr_->LookupUserSettings (newRolledUpDevice.fGUID);
+                        newRolledUpDevice.fUserOverrides    = DBAccess_::sMgr_->LookupDevicesUserSettings (newRolledUpDevice.fGUID);
                         if (newRolledUpDevice.fUserOverrides && newRolledUpDevice.fUserOverrides->fName) {
                             newRolledUpDevice.fNames.Add (*newRolledUpDevice.fUserOverrides->fName, 500);
                         }
@@ -846,6 +902,10 @@ namespace {
                             // Should probably never happen, but since depends on data in database, program defensively
                             Logger::sThe.Log (Logger::eWarning, L"Got rollup network ID from cache that is already in use: %s (for external address %s)", Characters::ToString (newRolledUpNetwork.fGUID).c_str (), Characters::ToString (newRolledUpNetwork.fExternalAddresses).c_str ());
                             newRolledUpNetwork.fGUID = GUID::GenerateNew ();
+                        }
+                        newRolledUpNetwork.fUserOverrides = DBAccess_::sMgr_->LookupNetworkUserSettings (newRolledUpNetwork.fGUID);
+                        if (newRolledUpNetwork.fUserOverrides && newRolledUpNetwork.fUserOverrides->fName) {
+                            //  newRolledUpNetwork.fNames.Add (*newRolledUpNetwork.fUserOverrides->fName, 500);
                         }
                         result.fNetworks.Add (newRolledUpNetwork);
                     }
@@ -917,7 +977,7 @@ optional<IntegratedModel::Device> IntegratedModel::Mgr::GetDevice (const GUID& i
 
 std::optional<IntegratedModel::Device::UserOverridesType> IntegratedModel::Mgr::GetDeviceUserSettings (const GUID& id) const
 {
-    return DBAccess_::sMgr_->LookupUserSettings (id);
+    return DBAccess_::sMgr_->LookupDevicesUserSettings (id);
 }
 
 void IntegratedModel::Mgr::SetDeviceUserSettings (const Common::GUID& id, const std::optional<IntegratedModel::Device::UserOverridesType>& settings)
@@ -962,6 +1022,16 @@ optional<IntegratedModel::Network> IntegratedModel::Mgr::GetNetwork (const GUID&
         }
     }
     return result;
+}
+
+std::optional<IntegratedModel::Network::UserOverridesType> IntegratedModel::Mgr::GetNetworkUserSettings (const GUID& id) const
+{
+    return DBAccess_::sMgr_->LookupNetworkUserSettings (id);
+}
+
+void IntegratedModel::Mgr::SetNetworkUserSettings (const Common::GUID& id, const std::optional<IntegratedModel::Network::UserOverridesType>& settings)
+{
+    DBAccess_::sMgr_->SetNetworkUserSettings (id, settings);
 }
 
 Collection<IntegratedModel::NetworkInterface> IntegratedModel::Mgr::GetNetworkInterfaces () const

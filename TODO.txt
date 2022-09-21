@@ -1,3 +1,9 @@
+look at rollup code for networks and see why dups of newparis in
+	networks-dups-of-newparis.json
+
+
+----
+
 kDeviceIDCacheTableSchema_
 
 .. DO DBMgr DBAccess::Mgr class to do activate/dacitve

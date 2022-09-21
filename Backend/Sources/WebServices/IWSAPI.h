@@ -61,9 +61,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
         /**
          *  curl  http://localhost/api/v1/networks
          */
-        virtual Sequence<String>  GetNetworks (const optional<Set<GUID>>& ids = nullopt) const         = 0;
-        virtual Sequence<Network> GetNetworks_Recurse (const optional<Set<GUID>>& ids = nullopt) const = 0;
-        virtual Network           GetNetwork (const String& id) const                                  = 0;
+        virtual Sequence<String>  GetNetworks (const optional<Set<GUID>>& ids = nullopt) const                         = 0;
+        virtual Sequence<Network> GetNetworks_Recurse (const optional<Set<GUID>>& ids = nullopt) const                 = 0;
+        virtual Network           GetNetwork (const String& id) const                                                  = 0;
+        virtual void              PatchNetwork (const String& id, const JSONPATCH::OperationItemsType& patchDoc) const = 0;
 
     public:
         /**

@@ -91,6 +91,19 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel {
 
     public:
         /**
+         *  If there are no user overrides (or the id is invalid) this will return nullopt.
+         */
+        nonvirtual std::optional<Network::UserOverridesType> GetNetworkUserSettings (const Common::GUID& id) const;
+
+    public:
+        /**
+         *  if the id is invalid, this will throw (id refers to a rolled up object id). If settings are nullopt, this
+         *  clears the user settings.
+         */
+        nonvirtual void SetNetworkUserSettings (const Common::GUID& id, const std::optional<Network::UserOverridesType>& settings);
+
+    public:
+        /**
          */
         nonvirtual Collection<NetworkInterface> GetNetworkInterfaces () const;
 

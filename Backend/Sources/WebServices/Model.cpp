@@ -161,6 +161,41 @@ const ObjectVariantMapper Model::Manufacturer::kMapper = [] () {
 
 /*
  ********************************************************************************
+ ********************** Model::Network::UserOverridesType ***********************
+ ********************************************************************************
+ */
+String Model::Network::UserOverridesType::ToString () const
+{
+    Characters::StringBuilder sb;
+    sb += L"{";
+    if (fName) {
+        sb += L"fName: " + Characters::ToString (fName) + L", ";
+    }
+    if (fTags) {
+        sb += L"fTags: " + Characters::ToString (fTags) + L", ";
+    }
+    if (fNotes) {
+        sb += L"fNotes: " + Characters::ToString (fNotes);
+    }
+    sb += L"}";
+    return sb.str ();
+}
+
+const DataExchange::ObjectVariantMapper Model::Network::UserOverridesType::kMapper = [] () {
+    ObjectVariantMapper mapper;
+    mapper.AddCommonType<optional<String>> ();
+    mapper.AddCommonType<Set<String>> ();
+    mapper.AddCommonType<optional<Set<String>>> ();
+    mapper.AddClass<UserOverridesType> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+        {L"name"sv, StructFieldMetaInfo{&UserOverridesType::fName}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"tags"sv, StructFieldMetaInfo{&UserOverridesType::fTags}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"notes"sv, StructFieldMetaInfo{&UserOverridesType::fNotes}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+    });
+    return mapper;
+}();
+
+/*
+ ********************************************************************************
  ********************************** Model::Network ******************************
  ********************************************************************************
  */
@@ -181,6 +216,7 @@ Network Network::Merge (const Network& baseNetwork, const Network& priorityNetwo
     Memory::AccumulateIf (&merged.fAggregatesIrreversibly, priorityNetwork.fAggregatesIrreversibly);
     Memory::CopyToIf (&merged.fIDPersistent, priorityNetwork.fIDPersistent);
     Memory::CopyToIf (&merged.fHistoricalSnapshot, priorityNetwork.fHistoricalSnapshot);
+    Memory::CopyToIf (&merged.fUserOverrides, priorityNetwork.fUserOverrides); // for now, no need to look inside and accumulate because only one place can generate user-overrides - some special TBD database record - LGP 2022-09-14
 #if qDebug
     if (priorityNetwork.fDebugProps) {
         // copy sub-elements of debug props
@@ -198,20 +234,21 @@ Network Network::Rollup (const Network& rollupNetwork, const Network& instanceNe
 {
     // Use seen.Ever() to decide which 'device' gets precedence in merging. Give the most
     // recent device precedence
-    Network n = rollupNetwork.fSeen.GetUpperBound () < instanceNetwork2Add.fSeen.GetUpperBound ()
-                    ? Merge (rollupNetwork, instanceNetwork2Add)
-                    : Merge (instanceNetwork2Add, rollupNetwork);
-    n.fGUID   = rollupNetwork.fGUID; // regardless of dates, keep the rollupDevice GUID
-    if (n.fAggregatesReversibly.has_value ()) {
-        n.fAggregatesReversibly->Add (instanceNetwork2Add.fGUID);
+    Network merged = rollupNetwork.fSeen.GetUpperBound () < instanceNetwork2Add.fSeen.GetUpperBound ()
+                         ? Merge (rollupNetwork, instanceNetwork2Add)
+                         : Merge (instanceNetwork2Add, rollupNetwork);
+    merged.fGUID   = rollupNetwork.fGUID; // regardless of dates, keep the rollupDevice GUID
+    if (merged.fAggregatesReversibly.has_value ()) {
+        merged.fAggregatesReversibly->Add (instanceNetwork2Add.fGUID);
     }
     else {
-        n.fAggregatesReversibly = Set<GUID>{instanceNetwork2Add.fGUID};
+        merged.fAggregatesReversibly = Set<GUID>{instanceNetwork2Add.fGUID};
     }
-    n.fAggregatesIrreversibly = nullopt;
-    n.fIDPersistent           = false;
-    n.fHistoricalSnapshot     = false;
-    return n;
+    merged.fAggregatesIrreversibly = nullopt;
+    merged.fIDPersistent           = false;
+    merged.fHistoricalSnapshot     = false;
+    Memory::CopyToIf (&merged.fUserOverrides, instanceNetwork2Add.fUserOverrides); // for now, no need to look inside and accumulate because only one place can generate user-overrides - some special TBD database record - LGP 2022-09-14
+    return instanceNetwork2Add;
 }
 
 String Network::ToString () const
@@ -250,7 +287,6 @@ const ObjectVariantMapper Network::kMapper = [] () {
     mapper.AddCommonType<optional<Set<InternetAddress>>> ();
     mapper.AddCommonType<Set<GUID>> ();
     mapper.AddCommonType<optional<Set<GUID>>> ();
-    // mapper.AddCommonType<Range<DateTime>> (ObjectVariantMapper::RangeSerializerOptions{L"lowerBound"sv, L"upperBound"sv}); // lower-camel-case names happier in javascript?
 
     if (true) {
         // looks better as an object, than as an array
@@ -287,6 +323,12 @@ const ObjectVariantMapper Network::kMapper = [] () {
     });
     mapper.AddCommonType<optional<GEOLocationInformation>> ();
 
+    mapper += UserOverridesType::kMapper;
+    mapper.AddCommonType<optional<UserOverridesType>> ();
+
+    // @todo maybe better to pass explicit objnect for seen below!!! Else this is kind of fragile...
+    mapper.AddCommonType<Range<DateTime>> (ObjectVariantMapper::RangeSerializerOptions{L"lowerBound"sv, L"upperBound"sv}); // lower-camel-case names happier in javascript?
+
     mapper.AddClass<Network> (initializer_list<ObjectVariantMapper::StructFieldInfo> {
         {L"friendlyName"sv, StructFieldMetaInfo{&Network::fFriendlyName}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"networkAddresses"sv, StructFieldMetaInfo{&Network::fNetworkAddresses}},
@@ -302,6 +344,7 @@ const ObjectVariantMapper Network::kMapper = [] () {
             {L"aggregatesIrreversibly"sv, StructFieldMetaInfo{&Network::fAggregatesIrreversibly}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"idIsPersistent"sv, StructFieldMetaInfo{&Network::fIDPersistent}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"historicalSnapshot"sv, StructFieldMetaInfo{&Network::fHistoricalSnapshot}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+            {L"userOverrides"sv, StructFieldMetaInfo{&Network::fUserOverrides}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
 #if qDebug
             {L"debugProps", StructFieldMetaInfo{&Network::fDebugProps}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
 #endif
@@ -643,9 +686,9 @@ const ObjectVariantMapper Device::kMapper = [] () {
                  }}}},
 #endif
             {L"names", StructFieldMetaInfo{&Device::fNames}},
-
             {L"type", StructFieldMetaInfo{&Device::fTypes}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"seen", StructFieldMetaInfo{&Device::fSeen}},
+            //            {L"seen", StructFieldMetaInfo{&Device::fSeen}, ObjectVariantMapper::MakeCommonSerializer<Range<DateTime>> (ObjectVariantMapper::RangeSerializerOptions{L"lowerBound"sv, L"upperBound"sv})},
             {L"openPorts", StructFieldMetaInfo{&Device::fOpenPorts}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"icon", StructFieldMetaInfo{&Device::fIcon}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"manufacturer", StructFieldMetaInfo{&Device::fManufacturer}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
