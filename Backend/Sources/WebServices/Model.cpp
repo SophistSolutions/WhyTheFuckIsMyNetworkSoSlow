@@ -32,6 +32,42 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model;
 
+namespace {
+    // lower-camel-case names happier in javascript?
+    const ObjectVariantMapper::TypeMappingDetails kDateRangeMapper_ = ObjectVariantMapper::MakeCommonSerializer<Range<DateTime>> (ObjectVariantMapper::RangeSerializerOptions{L"lowerBound"sv, L"upperBound"sv});
+
+#if kStroika_Version_FullVersion <= Stroika_Make_FULL_VERSION(2, 1, kStroika_Version_Stage_Release, 5, 1)
+    const ObjectVariantMapper::TypeMappingDetails kOptionalDateRangeMapper_ = [] () {
+        using T                                                                 = Range<DateTime>;
+        ObjectVariantMapper::FromObjectMapperType<optional<T>> fromObjectMapper = [] (const ObjectVariantMapper& mapper, const optional<T>* fromObjOfTypeT) -> VariantValue {
+            RequireNotNull (fromObjOfTypeT);
+            if (fromObjOfTypeT->has_value ()) {
+                return kDateRangeMapper_.FromObjectMapper<T> () (mapper, &**fromObjOfTypeT);
+            }
+            else {
+                return VariantValue{};
+            }
+        };
+        ObjectVariantMapper::ToObjectMapperType<optional<T>> toObjectMapper = [] (const ObjectVariantMapper& mapper, const VariantValue& d, optional<T>* intoObjOfTypeT) -> void {
+            RequireNotNull (intoObjOfTypeT);
+            if (d.GetType () == VariantValue::eNull) {
+                *intoObjOfTypeT = nullopt;
+            }
+            else {
+                // SEE https://stroika.atlassian.net/browse/STK-910
+                // fix here - I KNOW I have something there, but how to construct
+                T tmp;
+                kDateRangeMapper_.ToObjectMapper<T> () (mapper, d, &tmp);
+                *intoObjOfTypeT = tmp;
+            }
+        };
+        return ObjectVariantMapper::TypeMappingDetails{typeid (optional<T>), fromObjectMapper, toObjectMapper};
+    }();
+#else
+    const ObjectVariantMapper::TypeMappingDetails kOptionalDateRangeMapper_ = ObjectVariantMapper::MakeCommonSerializer<optional<Range<DateTime>>> (ObjectVariantMapper::OptionalSerializerOptions{kDateRangeMapper_});
+#endif
+}
+
 namespace Stroika::Foundation::DataExchange {
     template <>
     CIDR ObjectVariantMapper::ToObject (const ToObjectMapperType<CIDR>& toObjectMapper, const VariantValue& v) const
@@ -214,7 +250,7 @@ const ObjectVariantMapper Network::kMapper = [] () {
     mapper.AddCommonType<optional<Set<InternetAddress>>> ();
     mapper.AddCommonType<Set<GUID>> ();
     mapper.AddCommonType<optional<Set<GUID>>> ();
-    mapper.AddCommonType<Range<DateTime>> (ObjectVariantMapper::RangeSerializerOptions{L"lowerBound"sv, L"upperBound"sv}); // lower-camel-case names happier in javascript?
+    // mapper.AddCommonType<Range<DateTime>> (ObjectVariantMapper::RangeSerializerOptions{L"lowerBound"sv, L"upperBound"sv}); // lower-camel-case names happier in javascript?
 
     if (true) {
         // looks better as an object, than as an array
@@ -261,7 +297,7 @@ const ObjectVariantMapper Network::kMapper = [] () {
             {L"geographicLocation"sv, StructFieldMetaInfo{&Network::fGEOLocInformation}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"internetServiceProvider"sv, StructFieldMetaInfo{&Network::fInternetServiceProvider}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"id"sv, StructFieldMetaInfo{&Network::fGUID}},
-            {L"seen"sv, StructFieldMetaInfo{&Network::fSeen}},
+            {L"seen"sv, StructFieldMetaInfo{&Network::fSeen}, kDateRangeMapper_},
             {L"aggregatesReversibly"sv, StructFieldMetaInfo{&Network::fAggregatesReversibly}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"aggregatesIrreversibly"sv, StructFieldMetaInfo{&Network::fAggregatesIrreversibly}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"idIsPersistent"sv, StructFieldMetaInfo{&Network::fIDPersistent}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
@@ -466,11 +502,11 @@ const DataExchange::ObjectVariantMapper Model::Device::SeenType::kMapper = [] ()
     ObjectVariantMapper mapper;
     mapper.AddCommonType<Traversal::Range<DateTime>> ();
     mapper.AddClass<SeenType> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-        {L"ARP"sv, StructFieldMetaInfo{&SeenType::fARP}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"Collector"sv, StructFieldMetaInfo{&SeenType::fCollector}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"ICMP"sv, StructFieldMetaInfo{&SeenType::fICMP}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"UDP"sv, StructFieldMetaInfo{&SeenType::fUDP}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"TCP"sv, StructFieldMetaInfo{&SeenType::fTCP}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"ARP"sv, StructFieldMetaInfo{&SeenType::fARP}, kOptionalDateRangeMapper_, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"Collector"sv, StructFieldMetaInfo{&SeenType::fCollector}, kOptionalDateRangeMapper_, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"ICMP"sv, StructFieldMetaInfo{&SeenType::fICMP}, kOptionalDateRangeMapper_, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"UDP"sv, StructFieldMetaInfo{&SeenType::fUDP}, kOptionalDateRangeMapper_, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"TCP"sv, StructFieldMetaInfo{&SeenType::fTCP}, kOptionalDateRangeMapper_, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
     return mapper;
 }();
@@ -554,7 +590,7 @@ const ObjectVariantMapper Device::kMapper = [] () {
     });
     mapper.AddCommonType<Common::PrioritizedNames> (); // AddCommonType can be used on things that act like existing supported types
 
-    mapper.AddCommonType<Range<DateTime>> (ObjectVariantMapper::RangeSerializerOptions{L"lowerBound"sv, L"upperBound"sv}); // lower-camel-case names happier in javascript?
+    // mapper.AddCommonType<Range<DateTime>> (ObjectVariantMapper::RangeSerializerOptions{L"lowerBound"sv, L"upperBound"sv});
 
     mapper.AddClass<NetworkAttachmentInfo> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
         {L"hardwareAddresses", StructFieldMetaInfo{&NetworkAttachmentInfo::hardwareAddresses}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
