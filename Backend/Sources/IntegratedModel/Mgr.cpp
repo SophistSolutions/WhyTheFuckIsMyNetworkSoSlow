@@ -764,7 +764,7 @@ namespace {
                         return i.fGUID;
                     }
                 }
-                DbgTrace (L"Failed to find netID=%s", Characters::ToString (netID).c_str ());
+                Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"Failed to find netID=%s", Characters::ToString (netID).c_str ())};
                 for (const auto& i : fNetworks) {
                     DbgTrace (L"rolledupNet=%s", Characters::ToString (i).c_str ());
                 }
