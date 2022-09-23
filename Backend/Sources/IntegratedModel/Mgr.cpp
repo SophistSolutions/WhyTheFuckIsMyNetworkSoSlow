@@ -900,6 +900,13 @@ namespace {
                         newRolledUpNetwork.fGUID                 = DBAccess_::sMgr_->GenNewNetworkID (newRolledUpNetwork.fExternalAddresses);
                         if (result.fNetworks.Contains (newRolledUpNetwork.fGUID)) {
                             // Should probably never happen, but since depends on data in database, program defensively
+
+                            // at this point we have a net2MergeIn that said 'no' to ShouldRollup to all existing networks we've rolled up before
+                            // and yet somehow, result contains a network that used our ID?
+                            auto shouldntRollUpButTookOurIDNet = Memory::ValueOf (result.fNetworks.Lookup (newRolledUpNetwork.fGUID));
+                            DbgTrace (L"shouldntRollUpButTookOurIDNet=%s", Characters::ToString (shouldntRollUpButTookOurIDNet).c_str ());
+                            DbgTrace (L"net2MergeIn=%s", Characters::ToString (net2MergeIn).c_str ());
+                            Assert (not ShouldRollup_ (shouldntRollUpButTookOurIDNet, net2MergeIn));
                             Logger::sThe.Log (Logger::eWarning, L"Got rollup network ID from cache that is already in use: %s (for external address %s)", Characters::ToString (newRolledUpNetwork.fGUID).c_str (), Characters::ToString (newRolledUpNetwork.fExternalAddresses).c_str ());
                             newRolledUpNetwork.fGUID = GUID::GenerateNew ();
                         }
