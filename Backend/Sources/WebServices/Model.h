@@ -209,7 +209,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         optional<Common::InternetServiceProvider> fInternetServiceProvider;
 
         /**
-         *   // NOTE - COULD USE DisjointRange<> - WOULD make more sense but maybe not worth the work
+         *   NOTE - COULD USE DisjointRange<> - WOULD make more sense but maybe not worth the work
          */
         Range<DateTime> fSeen;
 

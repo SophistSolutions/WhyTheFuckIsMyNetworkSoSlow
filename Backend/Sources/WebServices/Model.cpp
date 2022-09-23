@@ -326,9 +326,6 @@ const ObjectVariantMapper Network::kMapper = [] () {
     mapper += UserOverridesType::kMapper;
     mapper.AddCommonType<optional<UserOverridesType>> ();
 
-    // @todo maybe better to pass explicit objnect for seen below!!! Else this is kind of fragile...
-    mapper.AddCommonType<Range<DateTime>> (ObjectVariantMapper::RangeSerializerOptions{L"lowerBound"sv, L"upperBound"sv}); // lower-camel-case names happier in javascript?
-
     mapper.AddClass<Network> (initializer_list<ObjectVariantMapper::StructFieldInfo> {
         {L"friendlyName"sv, StructFieldMetaInfo{&Network::fFriendlyName}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"networkAddresses"sv, StructFieldMetaInfo{&Network::fNetworkAddresses}},
@@ -633,8 +630,6 @@ const ObjectVariantMapper Device::kMapper = [] () {
     });
     mapper.AddCommonType<Common::PrioritizedNames> (); // AddCommonType can be used on things that act like existing supported types
 
-    // mapper.AddCommonType<Range<DateTime>> (ObjectVariantMapper::RangeSerializerOptions{L"lowerBound"sv, L"upperBound"sv});
-
     mapper.AddClass<NetworkAttachmentInfo> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
         {L"hardwareAddresses", StructFieldMetaInfo{&NetworkAttachmentInfo::hardwareAddresses}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"localAddresses", StructFieldMetaInfo{&NetworkAttachmentInfo::localAddresses}},
@@ -688,7 +683,6 @@ const ObjectVariantMapper Device::kMapper = [] () {
             {L"names", StructFieldMetaInfo{&Device::fNames}},
             {L"type", StructFieldMetaInfo{&Device::fTypes}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"seen", StructFieldMetaInfo{&Device::fSeen}},
-            //            {L"seen", StructFieldMetaInfo{&Device::fSeen}, ObjectVariantMapper::MakeCommonSerializer<Range<DateTime>> (ObjectVariantMapper::RangeSerializerOptions{L"lowerBound"sv, L"upperBound"sv})},
             {L"openPorts", StructFieldMetaInfo{&Device::fOpenPorts}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"icon", StructFieldMetaInfo{&Device::fIcon}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"manufacturer", StructFieldMetaInfo{&Device::fManufacturer}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
