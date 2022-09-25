@@ -283,6 +283,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 #endif
 
         /**
+         */
+        nonvirtual GUID ComputeProbablyUniqueIDForNetwork () const;
+
+        /**
          *  @see Characters::ToString ();
          */
         nonvirtual String ToString () const;

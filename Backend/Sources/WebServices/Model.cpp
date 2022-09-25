@@ -6,6 +6,8 @@
 #include "Stroika/Foundation/Characters/ToString.h"
 #include "Stroika/Foundation/Containers/Collection.h"
 #include "Stroika/Foundation/Containers/Set.h"
+#include "Stroika/Foundation/Cryptography/Digest/Algorithm/MD5.h"
+#include "Stroika/Foundation/Cryptography/Digest/Digester.h"
 #include "Stroika/Foundation/DataExchange/Variant/JSON/Writer.h"
 #include "Stroika/Foundation/IO/Network/CIDR.h"
 #include "Stroika/Foundation/IO/Network/InternetAddress.h"
@@ -249,7 +251,78 @@ Network Network::Rollup (const Network& rollupNetwork, const Network& instanceNe
     merged.fIDPersistent           = false;
     merged.fHistoricalSnapshot     = false;
     Memory::CopyToIf (&merged.fUserOverrides, instanceNetwork2Add.fUserOverrides); // for now, no need to look inside and accumulate because only one place can generate user-overrides - some special TBD database record - LGP 2022-09-14
-    return instanceNetwork2Add;
+    return merged;
+}
+
+GUID Network::ComputeProbablyUniqueIDForNetwork () const
+{
+    // LOGIC UP TIL 2022-09-25
+#if 0
+            /*
+             *  A network is not a super-well defined concept, so deciding if two instances of a network refer to the same
+             *  network is a bit of a judgement call.
+             * 
+             *  BUt a few key things probably make sense:
+             *      >   Same ISP
+             *      >   Same GeoLoc (with exceptions)
+             *      >   Same IPv4 CIDR
+             *      >   Same Gateway addresses
+             * 
+             *  Things we allow to differ:
+             *      >   details of any IP-v6 network addresses (if there were IPV4 CIDRs agreed upon).
+             * 
+             *  At least thats by best guess to start as of 2021-08-29
+             */
+#endif
+    // combine hardare addresses of gateway with gateway address, and external ip address (and hash)
+    // into a single ID that probably mostly uniquely ids a network.
+
+    // note - if external id floats, this will change, and it will look like a new network. NOT SURE best to include
+    // network id, but often a good idea, and not hard to add records allowing combine of networks (more of a PITA than
+    // other way where we didn't include and had to force separate).
+    StringBuilder sb;
+    if (fExternalAddresses and fExternalAddresses->size () > 1) {
+        for (const InternetAddress& i : SortedSet<InternetAddress>{*fExternalAddresses}) {
+            sb += i.As<String> ();
+        }
+    }
+    else if (fExternalAddresses and fExternalAddresses->size () == 1) {
+        for (const InternetAddress& i : *fExternalAddresses) {
+            sb += i.As<String> ();
+        }
+    }
+    sb += L"/";
+    for (const CIDR& i : fNetworkAddresses) {
+        sb += i.As<String> ();
+    }
+    sb += L"/";
+    if (fGateways.size () > 1) {
+        for (const InternetAddress& i : SortedSet<InternetAddress>{fGateways}) {
+            sb += i.As<String> ();
+        }
+    }
+    else {
+        for (const InternetAddress& i : fGateways) {
+            sb += i.As<String> ();
+        }
+    }
+    sb += L"/";
+    if (fGatewayHardwareAddresses.size () > 1) {
+        for (const String& i : SortedSet<String>{fGatewayHardwareAddresses}) {
+            sb += i;
+        }
+    }
+    else {
+        for (const String& i : fGatewayHardwareAddresses) {
+            sb += i;
+        }
+    }
+#if kStroika_Version_FullVersion <= Stroika_Make_FULL_VERSION(2, 1, kStroika_Version_Stage_Release, 5, 1)
+    return Cryptography::Digest::ComputeDigest<Cryptography::Digest::Algorithm::MD5> ((const std::byte*)sb.begin (), (const std::byte*)sb.end ());
+#else
+    // Could use other algorithms, but easiest to stick with MD5 for compat with 2.1.5 Stroika
+    return Cryptography::Digest::ComputeDigest<Cryptography::Digest::Algorithm::MD5> (sb.str ());
+#endif
 }
 
 String Network::ToString () const

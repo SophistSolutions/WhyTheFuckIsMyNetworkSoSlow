@@ -251,10 +251,13 @@ namespace {
         }
         bool ShouldRollup_ (const Network& exisingRolledUpNet, const Network& n2)
         {
-            if ((exisingRolledUpNet.fAggregatesIrreversibly and exisingRolledUpNet.fAggregatesIrreversibly->Contains (n2.fGUID)) or (exisingRolledUpNet.fAggregatesIrreversibly and exisingRolledUpNet.fAggregatesIrreversibly->Contains (n2.fGUID))) {
+            if ((exisingRolledUpNet.fAggregatesIrreversibly and exisingRolledUpNet.fAggregatesIrreversibly->Contains (n2.fGUID)) or (exisingRolledUpNet.fAggregatesReversibly and exisingRolledUpNet.fAggregatesReversibly->Contains (n2.fGUID))) {
                 // we retry the same 'discovered' networks repeatedly and re-roll them up
                 return true;
             }
+            return exisingRolledUpNet.ComputeProbablyUniqueIDForNetwork () == n2.ComputeProbablyUniqueIDForNetwork ();
+#if 0
+            // THIS LOGIC EQUIV MOVED TO ComputeProbablyUniqueIDForNetwork - now much different - but may want to revisit some of this...
             /*
              *  A network is not a super-well defined concept, so deciding if two instances of a network refer to the same
              *  network is a bit of a judgement call.
@@ -321,6 +324,7 @@ namespace {
                 }
             }
             return true;
+#endif
         }
     }
 }
@@ -331,23 +335,37 @@ namespace {
 
         // the latest copy of what is in the DB (manually kept up to date)
         // NOTE: These are all non-rolled up objects
-        Synchronized<Mapping<String, GUID>>          sAdvisoryHWAddr2GUIDCache;
-        Synchronized<Mapping<InternetAddress, GUID>> sAdvisoryExternalIPAddr2NetworkGUIDCache;
-        Synchronized<DeviceKeyedCollection_>         sDBDevices_;
-        Synchronized<NetworkKeyedCollection_>        sDBNetworks_;
-        atomic<bool>                                 sFinishedInitialDBLoad_{false};
+        Synchronized<Mapping<String, GUID>>   sAdvisoryHWAddr2GUIDCache;
+        Synchronized<Mapping<GUID, GUID>>     sAdvisoryGuessedRollupID2NetworkGUIDCache;
+        Synchronized<DeviceKeyedCollection_>  sDBDevices_;
+        Synchronized<NetworkKeyedCollection_> sDBNetworks_;
+        atomic<bool>                          sFinishedInitialDBLoad_{false};
 
         namespace Private_ {
-            constexpr VariantValue::Type kRepresentIDAs_ = VariantValue::Type::eBLOB; // else as string
+            //constexpr VariantValue::Type kRepresentIDAs_ = VariantValue::Type::eBLOB;     // probably more performant
+            constexpr VariantValue::Type kRepresentIDAs_ = VariantValue::Type::eString; // more readable in DB tool
 
+            String GenRandomIDString_ (VariantValue::Type t)
+            {
+                switch (t) {
+                    case VariantValue::Type::eString:
+                        return L"randomblob (16)";
+                    case VariantValue::Type::eBLOB:
+                        // https://stackoverflow.com/questions/10104662/is-there-uid-datatype-in-sqlite-if-yes-then-how-to-generate-value-for-that
+                        return L"select substr(u,1,8)||'-'||substr(u,9,4)||'-4'||substr(u,13,3)|| '-' || v || substr (u, 17, 3) || '-' || substr (u, 21, 12) from (select lower (hex (randomblob (16))) as u, substr ('89ab', abs (random ()) % 4 + 1, 1) as v) ";
+                    default:
+                        RequireNotReached ();
+                        return L"";
+                }
+            }
             struct HWAddr2GUIDElt_ {
                 String HWAddress;
                 GUID   DeviceID;
             };
 
-            struct ExternalIPAddr2NetGUIDElt_ {
-                InternetAddress ExternalNetworkAddress;
-                GUID            NetworkID;
+            struct GuessedRollupID2NetGUIDElt_ {
+                GUID ProbablyUniqueIDForNetwork;
+                GUID NetworkID;
             };
 
             struct ExternalDeviceUserSettingsElt_ {
@@ -377,9 +395,9 @@ namespace {
                     {L"HWAddress", StructFieldMetaInfo{&HWAddr2GUIDElt_::HWAddress}},
                     {L"DeviceID", StructFieldMetaInfo{&HWAddr2GUIDElt_::DeviceID}},
                 });
-                mapper.AddClass<ExternalIPAddr2NetGUIDElt_> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-                    {L"ExternalNetworkAddress", StructFieldMetaInfo{&ExternalIPAddr2NetGUIDElt_::ExternalNetworkAddress}},
-                    {L"NetworkID", StructFieldMetaInfo{&ExternalIPAddr2NetGUIDElt_::NetworkID}},
+                mapper.AddClass<GuessedRollupID2NetGUIDElt_> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+                    {L"ProbablyUniqueIDForNetwork", StructFieldMetaInfo{&GuessedRollupID2NetGUIDElt_::ProbablyUniqueIDForNetwork}},
+                    {L"NetworkID", StructFieldMetaInfo{&GuessedRollupID2NetGUIDElt_::NetworkID}},
                 });
                 mapper.AddClass<ExternalDeviceUserSettingsElt_> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
                     {L"UserSettings", StructFieldMetaInfo{&ExternalDeviceUserSettingsElt_::fUserSettings}},
@@ -414,10 +432,10 @@ namespace {
                  */
                 Collection<Schema::Field>{
 #if __cpp_designated_initializers
-                    {.fName = L"ExternalNetworkAddress"sv, .fRequired = true, .fIsKeyField = true},
+                    {.fName = L"ProbablyUniqueIDForNetwork"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true},
                     {.fName = L"NetworkID"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_},
 #else
-                    {L"ExternalNetworkAddress", nullopt, true, VariantValue::eString, nullopt, true},
+                    {L"ProbablyUniqueIDForNetwork", nullopt, true, kRepresentIDAs_, nullopt, true},
                     {L"NetworkID", nullopt, true, kRepresentIDAs_, nullopt, false},
 #endif
                 }};
@@ -456,10 +474,10 @@ namespace {
                     /**
                      *  For ID, generate random GUID (BLOB) automatically in database
                      */
-                    {.fName = L"ID"sv, .fVariantValueName = L"id"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = L"randomblob(16)"sv},
+                    {.fName = L"ID"sv, .fVariantValueName = L"id"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = Private_::GenRandomIDString_ (kRepresentIDAs_)},
                     {.fName = L"name"sv, .fVariantValueType = VariantValue::eString},
 #else
-                    {L"ID", L"id"sv, true, kRepresentIDAs_, nullopt, true, nullopt, L"randomblob(16)"sv},
+                    {L"ID", L"id"sv, true, kRepresentIDAs_, nullopt, true, nullopt, Private_::GenRandomIDString_ (kRepresentIDAs_)},
                     {L"name", nullopt, false, VariantValue::eString},
 #endif
                 },
@@ -478,12 +496,11 @@ namespace {
                     {.fName = L"ID"sv, .fVariantValueName = L"id"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = L"randomblob(16)"sv},
                     {.fName = L"friendlyName"sv, .fVariantValueType = VariantValue::eString},
 #else
-                    {L"ID", L"id"sv, true, kRepresentIDAs_, nullopt, true, nullopt, L"randomblob(16)"sv},
+                    {L"ID", L"id"sv, true, kRepresentIDAs_, nullopt, true, nullopt, Private_::GenRandomIDString_ (kRepresentIDAs_)},
                     {L"friendlyName", nullopt, false, VariantValue::eString},
 #endif
                 },
                 Schema::CatchAllField{}};
-            static_assert (kRepresentIDAs_ == VariantValue::eBLOB); // @todo to support string, just change '.fDefaultExpression'
         }
 
         class Mgr_ {
@@ -495,7 +512,7 @@ namespace {
             Synchronized<SQL::Connection::Ptr>                                                             fDBConnectionPtr_{fDB_.NewConnection ()};
             Execution::Thread::Ptr                                                                         fDatabaseSyncThread_{};
             unique_ptr<SQL::ORM::TableConnection<Private_::HWAddr2GUIDElt_>>                               fHWAddr2GUIDCacheTableConnection_;
-            unique_ptr<SQL::ORM::TableConnection<Private_::ExternalIPAddr2NetGUIDElt_>>                    fExternalIPAddr2NetGUIDCacheTableConnection_;
+            unique_ptr<SQL::ORM::TableConnection<Private_::GuessedRollupID2NetGUIDElt_>>                   fGuessedRollupID2NetGUIDCacheTableConnection_;
             Synchronized<Mapping<GUID, IntegratedModel::Device::UserOverridesType>>                        fCachedDeviceUserSettings_;
             Synchronized<unique_ptr<SQL::ORM::TableConnection<Private_::ExternalDeviceUserSettingsElt_>>>  fDeviceUserSettingsTableConnection_;
             Synchronized<Mapping<GUID, IntegratedModel::Network::UserOverridesType>>                       fCachedNetworkUserSettings_;
@@ -505,10 +522,10 @@ namespace {
             Mgr_ ()
             {
                 Debug::TraceContextBumper ctx{L"IntegratedModel::{}::Mgr_::CTOR"};
-                fHWAddr2GUIDCacheTableConnection_            = make_unique<SQL::ORM::TableConnection<Private_::HWAddr2GUIDElt_>> (fDBConnectionPtr_, Private_::kDeviceIDCacheTableSchema_, Private_::kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<Private_::HWAddr2GUIDElt_>> ());
-                fExternalIPAddr2NetGUIDCacheTableConnection_ = make_unique<SQL::ORM::TableConnection<Private_::ExternalIPAddr2NetGUIDElt_>> (fDBConnectionPtr_, Private_::kNetworkIDCacheTableSchema_, Private_::kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<Private_::ExternalIPAddr2NetGUIDElt_>> ());
-                fDeviceUserSettingsTableConnection_          = make_unique<SQL::ORM::TableConnection<Private_::ExternalDeviceUserSettingsElt_>> (fDBConnectionPtr_, Private_::kDeviceUserSettingsSchema_, Private_::kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<Private_::ExternalDeviceUserSettingsElt_>> ());
-                fNetworkUserSettingsTableConnection_         = make_unique<SQL::ORM::TableConnection<Private_::ExternalNetworkUserSettingsElt_>> (fDBConnectionPtr_, Private_::kNetworkUserSettingsSchema_, Private_::kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<Private_::ExternalNetworkUserSettingsElt_>> ());
+                fHWAddr2GUIDCacheTableConnection_             = make_unique<SQL::ORM::TableConnection<Private_::HWAddr2GUIDElt_>> (fDBConnectionPtr_, Private_::kDeviceIDCacheTableSchema_, Private_::kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<Private_::HWAddr2GUIDElt_>> ());
+                fGuessedRollupID2NetGUIDCacheTableConnection_ = make_unique<SQL::ORM::TableConnection<Private_::GuessedRollupID2NetGUIDElt_>> (fDBConnectionPtr_, Private_::kNetworkIDCacheTableSchema_, Private_::kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<Private_::GuessedRollupID2NetGUIDElt_>> ());
+                fDeviceUserSettingsTableConnection_           = make_unique<SQL::ORM::TableConnection<Private_::ExternalDeviceUserSettingsElt_>> (fDBConnectionPtr_, Private_::kDeviceUserSettingsSchema_, Private_::kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<Private_::ExternalDeviceUserSettingsElt_>> ());
+                fNetworkUserSettingsTableConnection_          = make_unique<SQL::ORM::TableConnection<Private_::ExternalNetworkUserSettingsElt_>> (fDBConnectionPtr_, Private_::kNetworkUserSettingsSchema_, Private_::kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<Private_::ExternalNetworkUserSettingsElt_>> ());
 
                 try {
                     Debug::TimingTrace ttrc{L"...load of sAdvisoryHWAddr2GUIDCache from database ", 1};
@@ -520,12 +537,12 @@ namespace {
                     Execution::ReThrow ();
                 }
                 try {
-                    Debug::TimingTrace ttrc{L"...load of sAdvisoryExternalIPAddr2NetworkGUIDCache from database ", 1};
+                    Debug::TimingTrace ttrc{L"...load of sAdvisoryGuessedRollupID2NetworkGUIDCache from database ", 1};
                     lock_guard         lock{this->fDBConnectionPtr_};
-                    sAdvisoryExternalIPAddr2NetworkGUIDCache.store (Mapping<InternetAddress, GUID>{fExternalIPAddr2NetGUIDCacheTableConnection_->GetAll ().Select<KeyValuePair<InternetAddress, GUID>> ([] (const auto& i) { return KeyValuePair<InternetAddress, GUID>{i.ExternalNetworkAddress, i.NetworkID}; })});
+                    sAdvisoryGuessedRollupID2NetworkGUIDCache.store (Mapping<GUID, GUID>{fGuessedRollupID2NetGUIDCacheTableConnection_->GetAll ().Select<KeyValuePair<GUID, GUID>> ([] (const auto& i) { return KeyValuePair<GUID, GUID>{i.ProbablyUniqueIDForNetwork, i.NetworkID}; })});
                 }
                 catch (...) {
-                    Logger::sThe.Log (Logger::eError, L"Failed to load sAdvisoryExternalIPAddr2NetworkGUIDCache from db: %s", Characters::ToString (current_exception ()).c_str ());
+                    Logger::sThe.Log (Logger::eError, L"Failed to load sAdvisoryGuessedRollupID2NetworkGUIDCache from db: %s", Characters::ToString (current_exception ()).c_str ());
                     Execution::ReThrow ();
                 }
                 try {
@@ -581,27 +598,23 @@ namespace {
                 // consider if there is a better way to select which hwaddress to use
                 return hwAddresses.empty () ? GUID::GenerateNew () : GenNewDeviceID (*hwAddresses.First ());
             }
-            GUID GenNewNetworkID (const InternetAddress& externalAddress)
+            GUID GenNewNetworkID (const GUID& probablyUniqueIDForNetwork)
             {
                 Debug::TimingTrace ttrc{L"GenNewNetworkID", 0.001}; // sb very quick
-                auto               l = DBAccess_::sAdvisoryExternalIPAddr2NetworkGUIDCache.rwget ();
-                if (auto o = l->Lookup (externalAddress)) {
+                auto               l = DBAccess_::sAdvisoryGuessedRollupID2NetworkGUIDCache.rwget ();
+                if (auto o = l->Lookup (probablyUniqueIDForNetwork)) {
                     return *o;
                 }
                 GUID newRes = GUID::GenerateNew ();
-                l->Add (externalAddress, newRes);
+                l->Add (probablyUniqueIDForNetwork, newRes);
                 lock_guard lock{this->fDBConnectionPtr_};
                 try {
-                    fExternalIPAddr2NetGUIDCacheTableConnection_->AddNew (Private_::ExternalIPAddr2NetGUIDElt_{externalAddress, newRes});
+                    fGuessedRollupID2NetGUIDCacheTableConnection_->AddNew (Private_::GuessedRollupID2NetGUIDElt_{probablyUniqueIDForNetwork, newRes});
                 }
                 catch (...) {
                     Logger::sThe.Log (Logger::eWarning, L"Ignoring error writing ipaddr2NetworkID cache table: %s", Characters::ToString (current_exception ()).c_str ());
                 }
                 return newRes;
-            }
-            GUID GenNewNetworkID (const optional<Set<InternetAddress>>& externalAddresses)
-            {
-                return (externalAddresses == nullopt or externalAddresses->empty ()) ? GUID::GenerateNew () : GenNewNetworkID (*externalAddresses->First ());
             }
             optional<Model::Device::UserOverridesType> LookupDevicesUserSettings (const GUID& guid) const
             {
@@ -892,13 +905,12 @@ namespace {
                     // @todo slow/quadradic - may need to tweak
                     if (auto i = result.fNetworks.Find ([&net2MergeIn] (auto const& exisingRolledUpNet) { return ShouldRollup_ (exisingRolledUpNet, net2MergeIn); })) {
                         // then merge this into that item
-                        // @todo think out order of params and better document order of params!
                         result.fNetworks.Add (Network::Rollup (*i, net2MergeIn));
                     }
                     else {
                         Network newRolledUpNetwork               = net2MergeIn;
                         newRolledUpNetwork.fAggregatesReversibly = Set<GUID>{net2MergeIn.fGUID};
-                        newRolledUpNetwork.fGUID                 = DBAccess_::sMgr_->GenNewNetworkID (newRolledUpNetwork.fExternalAddresses);
+                        newRolledUpNetwork.fGUID                 = DBAccess_::sMgr_->GenNewNetworkID (newRolledUpNetwork.ComputeProbablyUniqueIDForNetwork ());
                         if (result.fNetworks.Contains (newRolledUpNetwork.fGUID)) {
                             // Should probably never happen, but since depends on data in database, program defensively
 
