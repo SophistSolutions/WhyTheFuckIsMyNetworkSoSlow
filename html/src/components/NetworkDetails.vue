@@ -172,8 +172,12 @@ function GetSubNetworkDisplay_(id: string, summaryOnly: boolean): string {
       <div class="col"> {{ currentNetwork.DNSServers.join(", ") }} </div>
     </div>
     <div class="row" v-if="currentNetwork.gateways && currentNetwork.gateways.length">
-      <div class="col-3">Gateway{{currentNetwork.gateways.length>=2?"s":""}}</div>
+      <div class="col-3">Gateway (IP){{currentNetwork.gateways.length>=2?"s":""}}</div>
       <div class="col"> {{ currentNetwork.gateways.join(", ") }} </div>
+    </div>
+    <div class="row" v-if="currentNetwork.gatewayHardwareAddresses && currentNetwork.gatewayHardwareAddresses.length">
+      <div class="col-3">Gateway (Hardware){{currentNetwork.gatewayHardwareAddresses.length>=2?"s":""}}</div>
+      <div class="col"> {{ currentNetwork.gatewayHardwareAddresses.join(", ") }} </div>
     </div>
     <div class="row" v-if="currentNetwork.externalAddresses && currentNetwork.externalAddresses.length">
       <div class="col-3">External Address{{currentNetwork.externalAddresses.length>=2?"es":""}}</div>

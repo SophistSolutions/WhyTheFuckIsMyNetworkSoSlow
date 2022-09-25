@@ -12,6 +12,7 @@ export interface INetwork {
   attachedInterfaces: string[]; // MOSTLY IGNORED - but keep around cuz maybe handy in debugging
   externalAddresses: string[];
   gateways: string[];
+  gatewayHardwareAddresses: string[];
   geographicLocation?: IGeographicLocation;
   internetServiceProvider: IInternetServiceProvider;
   networkAddresses: string[];
