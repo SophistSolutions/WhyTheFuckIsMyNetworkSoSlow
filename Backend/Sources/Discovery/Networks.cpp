@@ -15,8 +15,10 @@
 #include "Stroika/Foundation/Cryptography/Digest/Algorithm/MD5.h"
 #include "Stroika/Foundation/Cryptography/Format.h"
 #include "Stroika/Foundation/DataExchange/Variant/JSON/Reader.h"
+#include "Stroika/Foundation/Execution/IntervalTimer.h"
 #include "Stroika/Foundation/IO/Network/Interface.h"
 #include "Stroika/Foundation/IO/Network/LinkMonitor.h"
+#include "Stroika/Foundation/IO/Network/Neighbors.h"
 #include "Stroika/Foundation/IO/Network/Transfer/Connection.h"
 
 #include "NetworkInterfaces.h"
@@ -31,6 +33,8 @@ using namespace Stroika::Foundation::Containers;
 using namespace Stroika::Foundation::IO::Network;
 
 using DataExchange::VariantValue;
+using Execution::IntervalTimer;
+using Execution::Synchronized;
 using IO::Network::URI;
 using Stroika::Foundation::Common::GUID;
 
@@ -96,13 +100,37 @@ String Discovery::Network::ToString () const
     sb += L"IP-Address: " + Characters::ToString (fNetworkAddresses) + L", ";
     sb += L"Friendly-Name: " + Characters::ToString (fFriendlyName) + L", ";
     sb += L"Gateways: " + Characters::ToString (fGateways) + L", ";
+    sb += L"GatewayHardwareAddresses: " + Characters::ToString (fGatewayHardwareAddresses) + L", ";
     sb += L"DNS-Servers: " + Characters::ToString (fDNSServers) + L", ";
     sb += L"Attached-Network-Interfaces: " + Characters::ToString (fAttachedNetworkInterfaces) + L", ";
 #if qDebug
-    sb += L"fDebugProps: " + Characters::ToString (fDebugProps) + L", ";
+    sb += L"DebugProps: " + Characters::ToString (fDebugProps) + L", ";
 #endif
     sb += L"}";
     return sb.str ();
+}
+
+namespace {
+    // when monitors code improved (https://stroika.atlassian.net/browse/STK-937)
+    // fix this to use a shared intstance - shared with devices montitor
+    Synchronized<Collection<NeighborsMonitor::Neighbor>> sCachedNeighbors_;
+    struct KeepCachedMonitorsUpToDate_ {
+        NeighborsMonitor fMonitor_{};
+        void             DoOnce ()
+        {
+            sCachedNeighbors_.store (fMonitor_.GetNeighbors ());
+        }
+    };
+    KeepCachedMonitorsUpToDate_ sKeepCachedMonitorsUpToDate_;
+    optional<String>            LookupHardwareAddress_ (const InternetAddress& ia)
+    {
+        for (auto i : sCachedNeighbors_.load ()) {
+            if (i.fInternetAddress == ia) {
+                return i.fHardwareAddress;
+            }
+        }
+        return nullopt;
+    }
 }
 
 /*
@@ -113,13 +141,15 @@ String Discovery::Network::ToString () const
 namespace {
     constexpr Time::DurationSecondsType kDefaultItemCacheLifetime_{20};
     bool                                sActive_{false};
+    unique_ptr<IntervalTimer::Adder>    sIntervalTimerAdder_;
 }
 
 Discovery::NetworksMgr::Activator::Activator ()
 {
     DbgTrace (L"Discovery::NetworksMgr::Activator::Activator: activating network discovery");
     Require (not sActive_);
-    sActive_ = true;
+    sActive_             = true;
+    sIntervalTimerAdder_ = make_unique<IntervalTimer::Adder> ([] () { sKeepCachedMonitorsUpToDate_.DoOnce (); }, 1min, IntervalTimer::Adder::eRunImmediately);
 }
 
 Discovery::NetworksMgr::Activator::~Activator ()
@@ -127,6 +157,7 @@ Discovery::NetworksMgr::Activator::~Activator ()
     DbgTrace (L"Discovery::NetworksMgr::Activator::~Activator: deactivating network discovery");
     Require (sActive_);
     sActive_ = false;
+    sIntervalTimerAdder_.release ();
     // @todo must shutdown any background threads
 }
 
@@ -149,7 +180,7 @@ namespace {
             Require (nw->fGUID == GUID{});
             auto existingNWsLock = sExistingNetworks_.rwget ();
             for (const Network& nwi : existingNWsLock.load ()) {
-                if (nwi.fGateways.SetEquals (nw->fGateways) and nwi.fNetworkAddresses.SetEquals (nw->fNetworkAddresses)) {
+                if (nwi.fGateways == nw->fGateways and nwi.fNetworkAddresses.SetEquals (nw->fNetworkAddresses)) {
                     nw->fGUID = nwi.fGUID;
                     return;
                 }
@@ -219,18 +250,16 @@ namespace {
                 }
                 if (not nw.fNetworkAddresses.empty ()) {
                     if (i.fGateways) {
-                        for (const auto& gw : *i.fGateways) {
-                            if (not nw.fGateways.Contains (gw)) {
-                                nw.fGateways.Append (gw);
+                        for (const InternetAddress& gw : *i.fGateways) {
+                            nw.fGateways += gw;
+                            // @todo add HW addr or gateway - if that address is there now.
+                            if (auto hwa = LookupHardwareAddress_ (gw)) {
+                                nw.fGatewayHardwareAddresses += *hwa;
                             }
                         }
                     }
                     if (i.fDNSServers) {
-                        for (const auto& dnss : *i.fDNSServers) {
-                            if (not nw.fDNSServers.Contains (dnss)) {
-                                nw.fDNSServers.Append (dnss);
-                            }
-                        }
+                        nw.fDNSServers += *i.fDNSServers;
                     }
                     nw.fAttachedNetworkInterfaces += i.fGUID;
 

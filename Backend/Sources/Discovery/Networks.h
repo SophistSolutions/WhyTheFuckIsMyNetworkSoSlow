@@ -59,8 +59,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
 
         Set<GUID> fAttachedNetworkInterfaces;
 
-        Sequence<InternetAddress> fGateways;
-        Sequence<InternetAddress> fDNSServers;
+        Set<InternetAddress> fGateways;
+        Set<String>          fGatewayHardwareAddresses;
+
+        Set<InternetAddress> fDNSServers;
 
         // whatsmyip
         optional<Set<InternetAddress>> fExternalAddresses;

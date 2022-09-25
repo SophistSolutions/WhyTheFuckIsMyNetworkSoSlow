@@ -176,6 +176,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         // @todo - WTF allocated ID - and one inherited from network interface (windows only) - CLARIFY - probably call OURs just fID (and change others in this module to match)
         GUID fGUID;
 
+        /**
+         */
         optional<String> fFriendlyName; //tmphack - list of interfaces attached to network
 
         /*
@@ -183,17 +185,27 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
          */
         Set<CIDR> fNetworkAddresses;
 
+        /**
+         */
         Set<GUID> fAttachedInterfaces;
 
         /**
-         *  Sequence<> instead of Set<> because order matters for gateways (?) - or maybe can not be more than one?
+         *  Once used Sequence<> instead of Set<>, because for some purposes, order matters. But for the most part, not
+         *  how we treat gateways, so ignore order, and use Set<>
          */
-        Sequence<InternetAddress> fGateways;
+        Set<InternetAddress> fGateways;
 
         /**
-         *  Sequence<> instead of Set<> because order matters for DNS servers.
+         *  hardware addresses of all gateways on this network. This together with the gateway addresses, can be used
+         *  to fingerprint a network.
          */
-        Sequence<InternetAddress> fDNSServers;
+        Set<String> fGatewayHardwareAddresses;
+
+        /**
+         *  Could be Sequence<> instead of Set<> because order matters for DNS servers. But use set cuz we don't lookup
+         *  and we could easily combine from different sources. Set good enuf for now.
+         */
+        Set<InternetAddress> fDNSServers;
 
         // PROBABLY idnetify same network - by default - as hash of default gateway's macaddr - or at least look at that to compare...
         // thogh that doesnt quite work cuz if you cahnge router, you need o call it the same network.... It's just a big clue... Not sure how
@@ -204,8 +216,12 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         // whatsmyip
         optional<Set<InternetAddress>> fExternalAddresses;
 
+        /**
+         */
         optional<Common::GEOLocationInformation> fGEOLocInformation;
 
+        /**
+         */
         optional<Common::InternetServiceProvider> fInternetServiceProvider;
 
         /**

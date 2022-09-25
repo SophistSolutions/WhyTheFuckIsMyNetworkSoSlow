@@ -206,7 +206,8 @@ Network Network::Merge (const Network& baseNetwork, const Network& priorityNetwo
     Memory::CopyToIf (&merged.fFriendlyName, priorityNetwork.fFriendlyName);
     merged.fNetworkAddresses.AddAll (priorityNetwork.fNetworkAddresses);
     merged.fAttachedInterfaces.AddAll (priorityNetwork.fAttachedInterfaces);
-    priorityNetwork.fGateways.Apply ([&] (auto inetAddr) {  if (not merged.fGateways.Contains (inetAddr)) {merged.fGateways += inetAddr;} });
+    merged.fGateways += priorityNetwork.fGateways;
+    merged.fGatewayHardwareAddresses += priorityNetwork.fGatewayHardwareAddresses;
     priorityNetwork.fDNSServers.Apply ([&] (auto inetAddr) {  if (not merged.fDNSServers.Contains (inetAddr)) {merged.fDNSServers += inetAddr;} });
     Memory::AccumulateIf (&merged.fExternalAddresses, priorityNetwork.fExternalAddresses);
     Memory::CopyToIf (&merged.fGEOLocInformation, priorityNetwork.fGEOLocInformation);
@@ -260,6 +261,7 @@ String Network::ToString () const
     sb += L"GUID: " + Characters::ToString (fGUID) + L", ";
     sb += L"Attached-Interfaces: " + Characters::ToString (fAttachedInterfaces) + L", ";
     sb += L"Gateways: " + Characters::ToString (fGateways) + L", ";
+    sb += L"GatewayHardwareAddresses: " + Characters::ToString (fGatewayHardwareAddresses) + L", ";
     sb += L"DNS-Servers: " + Characters::ToString (fDNSServers) + L", ";
     sb += L"Seen: " + Characters::ToString (fSeen) + L", ";
     sb += L"Aggregates-Reversibly: " + Characters::ToString (fAggregatesReversibly) + L", ";
@@ -331,6 +333,7 @@ const ObjectVariantMapper Network::kMapper = [] () {
             {L"networkAddresses"sv, StructFieldMetaInfo{&Network::fNetworkAddresses}},
             {L"attachedInterfaces"sv, StructFieldMetaInfo{&Network::fAttachedInterfaces}},
             {L"gateways"sv, StructFieldMetaInfo{&Network::fGateways}},
+            {L"gatewayHardwareAddresses"sv, StructFieldMetaInfo{&Network::fGatewayHardwareAddresses}},
             {L"DNSServers"sv, StructFieldMetaInfo{&Network::fDNSServers}},
             {L"externalAddresses"sv, StructFieldMetaInfo{&Network::fExternalAddresses}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"geographicLocation"sv, StructFieldMetaInfo{&Network::fGEOLocInformation}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},

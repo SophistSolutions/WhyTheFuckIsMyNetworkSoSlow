@@ -3,6 +3,9 @@ look at rollup code for networks and see why dups of newparis in
 
 
 
+>>	NEtwork > Gateways should be array of object {hardare-address, ip-address not just i[addr as we have now]}
+>>>>GenNewNetworkID(should use hardare-address of default gateway, not ip address, because thats more uniqiue!!!)
+
 	                return (externalAddresses == nullopt or externalAddresses->empty ()) ? GUID::GenerateNew () : GenNewNetworkID (*externalAddresses->First ());
 
 		Not good enuf cuz easy for two nets to overlap on one random address and then the re-used ID gets messed up.
@@ -11,6 +14,11 @@ look at rollup code for networks and see why dups of newparis in
 		... 
 
 		ALSO - PROBABLY now a good time to add feature to UserSettings (forceIntoRollupClass field)
+
+
+		.... WORKING ON ....
+				REDO KEY FOR SAVING NETWORK -> GUILD MAP to key off DEVICE ID associated with a network (which is the defivce id of the primary gatewaye)
+					first step - REDO data structure 'external addresses' so instead of ip addresses its {ipaddress: x, hardware address: y}
 
 ----
 

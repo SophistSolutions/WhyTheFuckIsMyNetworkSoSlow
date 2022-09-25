@@ -131,16 +131,17 @@ namespace {
             Sequence<Network>  result;
             for (const Discovery::Network& n : Discovery::NetworksMgr::sThe.CollectActiveNetworks ()) {
                 Network nw{n.fNetworkAddresses};
-                nw.fGUID                    = n.fGUID;
-                nw.fFriendlyName            = n.fFriendlyName;
-                nw.fNetworkAddresses        = n.fNetworkAddresses;
-                nw.fAttachedInterfaces      = n.fAttachedNetworkInterfaces;
-                nw.fDNSServers              = n.fDNSServers;
-                nw.fGateways                = n.fGateways;
-                nw.fExternalAddresses       = n.fExternalAddresses;
-                nw.fGEOLocInformation       = n.fGEOLocInfo;
-                nw.fInternetServiceProvider = n.fISP;
-                nw.fSeen                    = Range<DateTime>{now, now}; // discovered now, when rolled up, expand timeframe
+                nw.fGUID                     = n.fGUID;
+                nw.fFriendlyName             = n.fFriendlyName;
+                nw.fNetworkAddresses         = n.fNetworkAddresses;
+                nw.fAttachedInterfaces       = n.fAttachedNetworkInterfaces;
+                nw.fDNSServers               = n.fDNSServers;
+                nw.fGateways                 = n.fGateways;
+                nw.fGatewayHardwareAddresses = n.fGatewayHardwareAddresses;
+                nw.fExternalAddresses        = n.fExternalAddresses;
+                nw.fGEOLocInformation        = n.fGEOLocInfo;
+                nw.fInternetServiceProvider  = n.fISP;
+                nw.fSeen                     = Range<DateTime>{now, now}; // discovered now, when rolled up, expand timeframe
 #if qDebug
                 if (not n.fDebugProps.empty ()) {
                     nw.fDebugProps = n.fDebugProps;
