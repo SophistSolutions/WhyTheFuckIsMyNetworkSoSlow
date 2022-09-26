@@ -20,6 +20,7 @@
 #include "Stroika/Foundation/Characters/StringBuilder.h"
 #include "Stroika/Foundation/Characters/ToString.h"
 #include "Stroika/Foundation/Configuration/SystemConfiguration.h"
+#include "Stroika/Foundation/Containers/Sequence.h"
 #include "Stroika/Foundation/Containers/Set.h"
 #include "Stroika/Foundation/Database/SQL/SQLite.h"
 #include "Stroika/Foundation/Debug/TimingTrace.h"
@@ -418,7 +419,7 @@ Device WSImpl::GetDevice (const String& id) const
 
 void WSImpl::PatchDevice (const String& id, const JSONPATCH::OperationItemsType& patchDoc) const
 {
-    DbgTrace (L"WSImpl::PatchDevice (%s, %s)", id.c_str (), Characters::ToString (patchDoc).c_str ());
+    DbgTrace (L"WSImpl::PatchDevice (%s, %s)", Characters::ToString (id).c_str (), Characters::ToString (patchDoc).c_str ());
     GUID objID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
     for (auto op : patchDoc) {
         switch (op.op) {
@@ -435,7 +436,7 @@ void WSImpl::PatchDevice (const String& id, const JSONPATCH::OperationItemsType&
                 }
                 else if (op.path == L"/userOverrides/tags") {
                     // for now only support replacing the whole array at a time
-                    updateVal.fTags = Set<String>{op.value->As<Sequence<VariantValue>> ().Select<String> ([] (auto i) { return i.As<String> (); })};
+                    updateVal.fTags = Set<String>{op.value->As<Sequence<VariantValue>> ().Select<String> ([] (const VariantValue& vv) { return vv.As<String> (); })};
                 }
                 if (updateVal.fName.has_value () or updateVal.fNotes.has_value () or updateVal.fTags.has_value ()) {
                     IntegratedModel::Mgr::sThe.SetDeviceUserSettings (objID, updateVal);
@@ -539,7 +540,7 @@ void WSImpl::PatchNetwork (const String& id, const JSONPATCH::OperationItemsType
                 }
                 else if (op.path == L"/userOverrides/tags") {
                     // for now only support replacing the whole array at a time
-                    updateVal.fTags = Set<String>{op.value->As<Sequence<VariantValue>> ().Select<String> ([] (auto i) { return i.As<String> (); })};
+                    updateVal.fTags = Set<String>{op.value->As<Sequence<VariantValue>> ().Select<String> ([] (const VariantValue& vv) { return vv.As<String> (); })};
                 }
                 if (updateVal.fName.has_value () or updateVal.fNotes.has_value () or updateVal.fTags.has_value ()) {
                     IntegratedModel::Mgr::sThe.SetNetworkUserSettings (objID, updateVal);

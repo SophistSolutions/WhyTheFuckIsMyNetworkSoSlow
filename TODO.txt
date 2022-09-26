@@ -2,6 +2,22 @@
 
 		ALSO - PROBABLY now a good time to add feature to UserSettings (forceIntoRollupClass field)
 
+
+
+---\
+
+	+ Lose ID-Cache tables in backend (recently added) -and just use the UserSettings tables for the same purpose (a field
+		saying map thi common id /rollup helper id for networks and something an aggregates for 
+		devices - or aggregates for both)
+
+		This signifcantly cahnges/simplifes startup logic - must load all devices etc on startup.
+		
+
+-- 
+RETURN TO	
+  https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/39 and finish
+   then return to 
+	https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/milestone/2
 ----
 
 kDeviceIDCacheTableSchema_
