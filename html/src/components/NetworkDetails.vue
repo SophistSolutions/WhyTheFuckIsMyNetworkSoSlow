@@ -146,7 +146,7 @@ function GetSubNetworkDisplay_(id: string, summaryOnly: boolean): string {
 
     <div class="row">
       <div class="col-3">Name</div>
-      <div class="col"> {{ GetNetworkName(currentNetwork) }} </div>
+      <div class="col"> {{ currentNetwork.names.length > 0? currentNetwork.names[0].name: "" }} </div>
     </div>
     <div class="row" v-if="currentNetwork.names.filter(m => m.priority > 1).length > 1">
       <div class="col-3">Aliases</div>
