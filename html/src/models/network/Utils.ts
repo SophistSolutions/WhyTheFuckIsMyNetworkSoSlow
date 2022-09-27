@@ -16,7 +16,12 @@ export function GetNetworkName(n: INetwork): string {
     addresses = n.networkAddresses;
   }
   const preferredName = n.names.length > 0? n.names[0].name: "";
-  return preferredName + ' {' + addresses.join(', ') + '}';
+  let name = preferredName;
+  // allow user set names to be shown as is, but for lower priority names, fold the best name with the CIDR
+  if (n.names.length == 0 || n.names[0].priority < 500) {
+    name += ' {' + addresses.join(', ') + '}';
+  }
+  return name;
 }
 
 export function SortNetworks(nws: INetwork[]) {

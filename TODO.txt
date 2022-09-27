@@ -2,11 +2,9 @@ rewrite RollupDevices way I did for rollupNetworks (except not sure we want fing
 
 ----
 
-
 		ALSO - PROBABLY now a good time to add feature to UserSettings (forceIntoRollupClass field)
 		> add fForceAggregatesFingerprint and forceaggregates/disaggregates ID. (rethink details)
 		.. then use that in rollup and when changes for re-compute
-
 
 ---\
 
@@ -16,6 +14,9 @@ rewrite RollupDevices way I did for rollupNetworks (except not sure we want fing
 
 		This signifcantly cahnges/simplifes startup logic - must load all devices etc on startup.
 		(UNSURE ABOUT THIS - MAYBE)
+
+		THINK OUT CAREFULLY. WANT WHEN NETWORK GOES AWAY FOR THIS CACHE/MAP TO GO AWAY. DONT WANT ANY EMPTY rollup networks.
+		ALSO - in some ways nice if user table only contains user specifiied data. But maybe still OK/simpler that way.
 
 -- 
 RETURN TO	
