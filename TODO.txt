@@ -20,7 +20,7 @@ rewrite RollupDevices way I did for rollupNetworks (except not sure we want fing
 
 -- 
 RETURN TO	
-  https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/39 and finish
+  https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/39 and finish (proabbly just UI side)
    then return to 
 	https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/milestone/2
 ----
