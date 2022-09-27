@@ -1,13 +1,4 @@
-+ add 'names' to Networks (like with devices) so can pay attention to friendly name change for network like 
-we do for devices.
-	(did service, still todo ui and then remove old freindlyname field from WSAPI)
-
-
-----
-
-
 rewrite RollupDevices way I did for rollupNetworks (except not sure we want fingerprint).
-
 
 ----
 

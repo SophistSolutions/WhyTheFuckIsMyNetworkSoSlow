@@ -56,7 +56,6 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
     struct Network {
         Set<CIDR>                fNetworkAddresses;
         GUID                     fGUID;
-        optional<String>         fFriendlyName;
         Common::PrioritizedNames fNames;
 
         Set<GUID> fAttachedNetworkInterfaces;

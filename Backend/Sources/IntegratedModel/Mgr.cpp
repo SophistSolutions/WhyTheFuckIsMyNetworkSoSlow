@@ -132,7 +132,6 @@ namespace {
             for (const Discovery::Network& n : Discovery::NetworksMgr::sThe.CollectActiveNetworks ()) {
                 Network nw{n.fNetworkAddresses};
                 nw.fGUID                     = n.fGUID;
-                nw.fFriendlyName             = n.fFriendlyName;
                 nw.fNames                    = n.fNames;
                 nw.fNetworkAddresses         = n.fNetworkAddresses;
                 nw.fAttachedInterfaces       = n.fAttachedNetworkInterfaces;
@@ -701,7 +700,7 @@ namespace {
             /**
              *  This returns the current rolled up network objects.
              */
-            const NetworkKeyedCollection_& GetNetworks () const
+            NetworkKeyedCollection_ GetNetworks () const
             {
                 return fRolledUpNetworks_;
             }
@@ -715,7 +714,7 @@ namespace {
                 if (auto r = fMapAggregatedNetID2RollupID_.Lookup (netID)) {
                     return *r;
                 }
-                Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"Failed to find netID=%s", Characters::ToString (netID).c_str ())};
+                Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"MapAggregatedNetID2ItsRollupID failed to find netID=%s", Characters::ToString (netID).c_str ())};
                 for (const auto& i : fRolledUpNetworks_) {
                     DbgTrace (L"rolledupNet=%s", Characters::ToString (i).c_str ());
                 }
@@ -809,7 +808,7 @@ namespace {
                 }
                 newRolledUpNetwork.fUserOverrides = DBAccess_::sMgr_->LookupNetworkUserSettings (newRolledUpNetwork.fGUID);
                 if (newRolledUpNetwork.fUserOverrides && newRolledUpNetwork.fUserOverrides->fName) {
-                    //  newRolledUpNetwork.fNames.Add (*newRolledUpNetwork.fUserOverrides->fName, 500);
+                    newRolledUpNetwork.fNames.Add (*newRolledUpNetwork.fUserOverrides->fName, 500);
                 }
                 fRolledUpNetworks_.Add (newRolledUpNetwork);
                 fMapAggregatedNetID2RollupID_.Add (net2MergeIn.fGUID, newRolledUpNetwork.fGUID);

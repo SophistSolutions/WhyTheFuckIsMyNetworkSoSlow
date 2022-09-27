@@ -98,7 +98,6 @@ String Discovery::Network::ToString () const
     sb += L"{";
     sb += L"GUID: " + Characters::ToString (fGUID) + L", ";
     sb += L"IP-Address: " + Characters::ToString (fNetworkAddresses) + L", ";
-    sb += L"Friendly-Name: " + Characters::ToString (fFriendlyName) + L", ";
     sb += L"Names: " + Characters::ToString (fNames) + L", ";
     sb += L"Gateways: " + Characters::ToString (fGateways) + L", ";
     sb += L"GatewayHardwareAddresses: " + Characters::ToString (fGatewayHardwareAddresses) + L", ";
@@ -282,7 +281,6 @@ namespace {
                         genProperNetworkID (&nw);
                     }
 
-                    nw.fFriendlyName = i.fFriendlyName;  // if multiple, pick arbitrarily
                     nw.fNames.Add (i.fFriendlyName, 25); // unsure how to sort out priorities and/or dups if same net on multiple interfaces...
 
 #if qDebug
@@ -305,8 +303,7 @@ namespace {
         // geoloc
         for (Iterator<Network> nwi = accumResults.begin (); nwi != accumResults.end (); ++nwi) {
             if (nwi->fGEOLocInfo and nwi->fGEOLocInfo->fCity) {
-                Network nw       = *nwi;
-                nw.fFriendlyName = nwi->fGEOLocInfo->fCity;
+                Network nw = *nwi;
                 nw.fNames.Add (*nwi->fGEOLocInfo->fCity, 50);
                 accumResults.Update (nwi, nw, &nwi);
             }

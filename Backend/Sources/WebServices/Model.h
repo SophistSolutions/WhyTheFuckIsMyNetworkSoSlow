@@ -183,9 +183,6 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
         /**
          */
-        optional<String> fFriendlyName; //tmphack - list of interfaces attached to network
-
-        // REPLACING FRIENDLYNAME
         Common::PrioritizedNames fNames;
 
         /*

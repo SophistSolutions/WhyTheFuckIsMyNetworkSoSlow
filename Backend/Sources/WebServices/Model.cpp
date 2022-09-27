@@ -205,7 +205,6 @@ Network Network::Merge (const Network& baseNetwork, const Network& priorityNetwo
 {
     Network merged = baseNetwork;
     merged.fGUID   = priorityNetwork.fGUID;
-    Memory::CopyToIf (&merged.fFriendlyName, priorityNetwork.fFriendlyName);
     for (const auto& i : priorityNetwork.fNames) {
         merged.fNames.Add (i.fName, i.fPriority);
     }
@@ -334,7 +333,6 @@ String Network::ToString () const
     Characters::StringBuilder sb;
     sb += L"{";
     sb += L"Network-Addresses: " + Characters::ToString (fNetworkAddresses) + L", ";
-    sb += L"Friendly-Name: " + Characters::ToString (fFriendlyName) + L", ";
     sb += L"Names: " + Characters::ToString (fNames) + L", ";
     sb += L"GUID: " + Characters::ToString (fGUID) + L", ";
     sb += L"Attached-Interfaces: " + Characters::ToString (fAttachedInterfaces) + L", ";
@@ -409,8 +407,7 @@ const ObjectVariantMapper Network::kMapper = [] () {
     mapper.AddCommonType<optional<UserOverridesType>> ();
 
     mapper.AddClass<Network> (initializer_list<ObjectVariantMapper::StructFieldInfo> {
-        {L"friendlyName"sv, StructFieldMetaInfo{&Network::fFriendlyName}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-            {L"names"sv, StructFieldMetaInfo{&Network::fNames}},
+        {L"names"sv, StructFieldMetaInfo{&Network::fNames}},
             {L"networkAddresses"sv, StructFieldMetaInfo{&Network::fNetworkAddresses}},
             {L"attachedInterfaces"sv, StructFieldMetaInfo{&Network::fAttachedInterfaces}},
             {L"gateways"sv, StructFieldMetaInfo{&Network::fGateways}},
