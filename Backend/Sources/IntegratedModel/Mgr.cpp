@@ -249,83 +249,6 @@ namespace {
             // unclear if above test should be if EITHER set is empty, maybe then do if timeframes very close?
             return false;
         }
-        bool ShouldRollup_ (const Network& exisingRolledUpNet, const Network& n2)
-        {
-            if ((exisingRolledUpNet.fAggregatesIrreversibly and exisingRolledUpNet.fAggregatesIrreversibly->Contains (n2.fGUID)) or (exisingRolledUpNet.fAggregatesReversibly and exisingRolledUpNet.fAggregatesReversibly->Contains (n2.fGUID))) {
-                // we retry the same 'discovered' networks repeatedly and re-roll them up
-                return true;
-            }
-            return exisingRolledUpNet.ComputeProbablyUniqueIDForNetwork () == n2.ComputeProbablyUniqueIDForNetwork ();
-#if 0
-            // THIS LOGIC EQUIV MOVED TO ComputeProbablyUniqueIDForNetwork - now much different - but may want to revisit some of this...
-            /*
-             *  A network is not a super-well defined concept, so deciding if two instances of a network refer to the same
-             *  network is a bit of a judgement call.
-             * 
-             *  BUt a few key things probably make sense:
-             *      >   Same ISP
-             *      >   Same GeoLoc (with exceptions)
-             *      >   Same IPv4 CIDR
-             *      >   Same Gateway addresses
-             * 
-             *  Things we allow to differ:
-             *      >   details of any IP-v6 network addresses (if there were IPV4 CIDRs agreed upon).
-             * 
-             *  At least thats by best guess to start as of 2021-08-29
-             */
-            if (exisingRolledUpNet.fInternetServiceProvider != n2.fInternetServiceProvider) {
-                return false;
-            }
-            {
-                // Hughsnet makes geoloc information comparison ineffective (frequently generates many different locations depending on when you try)
-                // @todo add mobile networks like verizon wireless
-                bool networkAllowedToChangeGeoLoc = false;
-                if (exisingRolledUpNet.fInternetServiceProvider == kHughsNet_ISP_) {
-                    networkAllowedToChangeGeoLoc = true;
-                }
-                if (not networkAllowedToChangeGeoLoc and exisingRolledUpNet.fGEOLocInformation != n2.fGEOLocInformation) {
-                    return false;
-                }
-            }
-            if (exisingRolledUpNet.fGateways != n2.fGateways) {
-                // for some reason, gateway list sometimes contains IPv4 only, and sometimes IPv4 and IPv6 addresses
-                // treat the list the same if the gateway list ipv4s at least are the same (and non-empty)
-                // if IPv4 CIDRs same (and non-empty), then ignore differences in IPv4 addressses
-                Set<InternetAddress> ipv4s1{exisingRolledUpNet.fGateways.Where ([] (const InternetAddress& i) { return i.GetAddressFamily () == InternetAddress::AddressFamily::V4; })};
-                Set<InternetAddress> ipv4s2{n2.fGateways.Where ([] (const InternetAddress& i) { return i.GetAddressFamily () == InternetAddress::AddressFamily::V4; })};
-                if (ipv4s1 != ipv4s2) {
-                    return false;
-                }
-                // If we got here, they differ in IPv6 (or other) address. If they matched on IPV4 (not trivially - because there were none)
-                // ignore the (ipv6) differences
-                if (ipv4s1.empty ()) {
-                    return false;
-                }
-            }
-            if (exisingRolledUpNet.fNetworkAddresses != n2.fNetworkAddresses) {
-                // if IPv4 CIDRs same (and non-empty), then ignore differences in IPv4 addressses
-                Set<CIDR> ipv4s1{exisingRolledUpNet.fNetworkAddresses.Where ([] (const auto& i) { return i.GetBaseInternetAddress ().GetAddressFamily () == InternetAddress::AddressFamily::V4; })};
-                Set<CIDR> ipv4s2{n2.fNetworkAddresses.Where ([] (const auto& i) { return i.GetBaseInternetAddress ().GetAddressFamily () == InternetAddress::AddressFamily::V4; })};
-                // However, sometimes we have PRIVATE (internal) networks that float their addresses, like WSL etc) so if both private, and
-                // have same name, then treat that as a rollup too
-                if (not ipv4s1.empty ()) {
-                    if (
-                        exisingRolledUpNet.fFriendlyName == n2.fFriendlyName and exisingRolledUpNet.fNetworkAddresses.All ([] (const auto& i) { return i.GetBaseInternetAddress ().IsPrivateAddress (); }) and n2.fNetworkAddresses.All ([] (const auto& i) { return i.GetBaseInternetAddress ().IsPrivateAddress (); })) {
-                        return true;
-                    }
-                }
-                if (ipv4s1 != ipv4s2) {
-                    return false;
-                }
-                // If we got here, they differ in IPv6 (or other) address. If they matched on IPV4 (not trivially - because there were none)
-                // ignore the (ipv6) differences
-                if (ipv4s1.empty ()) {
-                    return false;
-                }
-            }
-            return true;
-#endif
-        }
     }
 }
 
@@ -667,6 +590,11 @@ namespace {
                 unsigned int                                                    deviceSnapshotsLoaded{};
                 while (true) {
                     try {
+
+                        ///&&& next step is move the netwroktabeleconttection to instance var store new sDBNetworks_IMMUTABLE object with stuff from first pass - not from this loop, but from
+                        // startup logic - done once...
+                        // NOTE - must assure web services starteda fter this - maybe with mutext/check or something else....
+
                         // load networks before devices because devices depend on networks but not the reverse
                         if (networkTableConnection == nullptr) {
                             networkTableConnection = make_unique<SQL::ORM::TableConnection<IntegratedModel::Network>> (fDBConnectionPtr_, Private_::kNetworkTableSchema_, Private_::kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<IntegratedModel::Network>> ());
@@ -721,8 +649,9 @@ namespace {
                                 ni.fAttachedInterfaces.clear ();
                             }
                             Assert (ni.fSeen); // don't track/write items which have never been seen
-                            auto rec2Update = fDB_.AddOrMergeUpdate (networkTableConnection.get (), ni);
-                            sDBNetworks_.rwget ()->Add (rec2Update);
+                                               //                            auto rec2Update = fDB_.AddOrMergeUpdate (networkTableConnection.get (), ni);
+                            networkTableConnection->AddOrUpdate (ni);
+                            sDBNetworks_.rwget ()->Add (ni);
                         }
 
                         // UPDATE sDBDevices_ INCREMENTALLY to reflect reflect these merges
@@ -760,33 +689,194 @@ namespace {
         using namespace RollupCommon_;
 
         struct RolledUpNetworks {
-            // @todo add much more here - different useful summaries of same info
-            NetworkKeyedCollection_ fNetworks;
+        public:
+            RolledUpNetworks ()                        = default;
+            RolledUpNetworks (const RolledUpNetworks&) = default;
+            RolledUpNetworks (RolledUpNetworks&&)      = default;
+            RolledUpNetworks& operator= (RolledUpNetworks&&) = default;
+            RolledUpNetworks& operator= (const RolledUpNetworks&) = default;
 
-            //tmphack slow impl - instead build mapping table when constructing rollup
-            // of networkinfo
-            // @todo define struct for NetworksRollup (and devices) that has above map, and the REVERSE ID map
-            // (individual 2 rollup), and then provide funciton to map a set of IDs to their rolled up IDs
-            // AND DOCUMENT WHY GUARNATEED UNIQUE - IF AS I THINK IT IS - CUZ each item goes in one rollup)
+        public:
+            /**
+             *  This returns the current rolled up network objects.
+             */
+            const NetworkKeyedCollection_& GetNetworks () const
+            {
+                return fRolledUpNetworks_;
+            }
+
+        public:
+            /**
+             *  Given an aggregated network id, map to the correspoding rollup ID (todo do we need to handle missing case)
+             */
             auto MapAggregatedNetID2ItsRollupID (const GUID& netID) -> GUID
             {
-                for (const auto& i : fNetworks) {
-                    if (i.fAggregatesReversibly and i.fAggregatesReversibly->Contains (netID)) {
-                        return i.fGUID;
-                    }
-                    if (i.fAggregatesIrreversibly and i.fAggregatesIrreversibly->Contains (netID)) {
-                        return i.fGUID;
-                    }
+                if (auto r = fMapAggregatedNetID2RollupID_.Lookup (netID)) {
+                    return *r;
                 }
                 Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"Failed to find netID=%s", Characters::ToString (netID).c_str ())};
-                for (const auto& i : fNetworks) {
+                for (const auto& i : fRolledUpNetworks_) {
                     DbgTrace (L"rolledupNet=%s", Characters::ToString (i).c_str ());
                 }
                 WeakAssert (false); // @todo fix - because we guarantee each item rolled up exactly once - but happens sometimes on change of network - I think due to outdated device records referring to newer network not yet in this cache...
                 return netID;
             };
+
+        public:
+            /**
+             *  Modify this set of rolled up networks with this net2MergeIn. If we've seen this network before (by ID)
+             *  possibly remove it from some rollup, and possibly even remove that (if now empty) rollup.
+             *
+             *  But typically this will just update the record for an existing rollup.
+             */
+            void MergeIn (const Network& net2MergeIn)
+            {
+                fRawNetworks_ += net2MergeIn;
+                MergeIn_ (net2MergeIn);
+            }
+
+        public:
+            /**
+             *  RecomputeAll ()
+             *  Call this when the rules have changed (use settings or some such) - so we recompute the rollups.
+             *  NOTE - this counts on (for now DBAccess_::sMgr_->GenNewNetworkID) - to figure out how to name rollup ids, which is why
+             *  external data changes could affect it. Also soon there will be entries i user settigns tha tmgiht get paid attention to.
+             */
+            nonvirtual void RecomputeAll ()
+            {
+                RecomputeAll_ ();
+            }
+
+        private:
+            void MergeIn_ (const Network& net2MergeIn)
+            {
+                Network::FingerprintType net2MergeInFingerprint = net2MergeIn.GenerateFingerprintFromProperties ();
+                if (auto formerRollupID = fMapFingerprint2RollupID.Lookup (net2MergeInFingerprint)) {
+                    auto alreadyRolledUpNetwork = Memory::ValueOf (fRolledUpNetworks_.Lookup (*formerRollupID)); // must be in list because we keep those in sync here in this class
+                    // Quick case - fingerprint for net2MergeIn in a rolled up network. See if that still matches...
+                    Assert (alreadyRolledUpNetwork.fAggregatesFingerprints); // cuz always set in rolled up networks
+                    if (alreadyRolledUpNetwork.fAggregatesFingerprints->Contains (net2MergeInFingerprint)) {
+                        // then we rollup to this same rollup network - very common case - so just re-rollup, and we are done
+                        AddIn_ (alreadyRolledUpNetwork, net2MergeIn, net2MergeInFingerprint);
+                    }
+                    else {
+                        // this means we USED to rollup to one network, and NOW must rollup to another, so remove from old network
+                        // and add to new one. COULD POSSIBLY do this otherwise sometimes, but in general very hard so KISS for now (rare)
+                        RecomputeAll_ ();
+                    }
+                }
+                else {
+                    // if this network was already present, it was in a different rollup. We COULD POSSIBLY SOMETIMES just patch that
+                    // but for now KISS, and recomputeall
+                    if (fMapAggregatedNetID2RollupID_.ContainsKey (net2MergeIn.fGUID)) {
+                        RecomputeAll_ ();
+                    }
+                    else {
+                        AddNewIn_ (net2MergeIn, net2MergeInFingerprint);
+                    }
+                }
+            }
+            void AddIn_ (const Network& addNet2MergeFromThisRollup, const Network& net2MergeIn, const Network::FingerprintType& net2MergeInFingerprint)
+            {
+                Assert (net2MergeIn.GenerateFingerprintFromProperties () == net2MergeInFingerprint); // provided to avoid cost of recompute
+                Network newRolledUpNetwork = Network::Rollup (addNet2MergeFromThisRollup, net2MergeIn);
+                Assert (addNet2MergeFromThisRollup.fAggregatesFingerprints == newRolledUpNetwork.fAggregatesFingerprints); // spot check - should be same...
+                fRolledUpNetworks_.Add (newRolledUpNetwork);
+                fMapAggregatedNetID2RollupID_.Add (net2MergeIn.fGUID, newRolledUpNetwork.fGUID);
+                fMapFingerprint2RollupID.Add (net2MergeInFingerprint, newRolledUpNetwork.fGUID);
+            }
+            void AddNewIn_ (const Network& net2MergeIn, const Network::FingerprintType& net2MergeInFingerprint)
+            {
+                Assert (net2MergeIn.GenerateFingerprintFromProperties () == net2MergeInFingerprint); // provided to avoid cost of recompute
+                Network newRolledUpNetwork                 = net2MergeIn;
+                newRolledUpNetwork.fAggregatesReversibly   = Set<GUID>{net2MergeIn.fGUID};
+                newRolledUpNetwork.fAggregatesFingerprints = Set<Network::FingerprintType>{net2MergeInFingerprint};
+
+                // @todo fix this code so each time through we UPDATE DBAccess_::sMgr_ with latest 'fingerprint' of each dynamic network
+                newRolledUpNetwork.fGUID = DBAccess_::sMgr_->GenNewNetworkID (net2MergeInFingerprint);
+                if (fRolledUpNetworks_.Contains (newRolledUpNetwork.fGUID)) {
+                    // Should probably never happen, but since depends on data in database, program defensively
+
+                    // at this point we have a net2MergeIn that said 'no' to ShouldRollup to all existing networks we've rolled up before
+                    // and yet somehow, result contains a network that used our ID?
+                    auto shouldntRollUpButTookOurIDNet = Memory::ValueOf (fRolledUpNetworks_.Lookup (newRolledUpNetwork.fGUID));
+                    DbgTrace (L"shouldntRollUpButTookOurIDNet=%s", Characters::ToString (shouldntRollUpButTookOurIDNet).c_str ());
+                    DbgTrace (L"net2MergeIn=%s", Characters::ToString (net2MergeIn).c_str ());
+                    //Assert (not ShouldRollup_ (shouldntRollUpButTookOurIDNet, net2MergeIn));
+                    Logger::sThe.Log (Logger::eWarning, L"Got rollup network ID from cache that is already in use: %s (for external address %s)", Characters::ToString (newRolledUpNetwork.fGUID).c_str (), Characters::ToString (newRolledUpNetwork.fExternalAddresses).c_str ());
+                    newRolledUpNetwork.fGUID = GUID::GenerateNew ();
+                }
+                newRolledUpNetwork.fUserOverrides = DBAccess_::sMgr_->LookupNetworkUserSettings (newRolledUpNetwork.fGUID);
+                if (newRolledUpNetwork.fUserOverrides && newRolledUpNetwork.fUserOverrides->fName) {
+                    //  newRolledUpNetwork.fNames.Add (*newRolledUpNetwork.fUserOverrides->fName, 500);
+                }
+                fRolledUpNetworks_.Add (newRolledUpNetwork);
+                fMapAggregatedNetID2RollupID_.Add (net2MergeIn.fGUID, newRolledUpNetwork.fGUID);
+
+                // is this guarnateed unique?
+                fMapFingerprint2RollupID.Add (net2MergeInFingerprint, newRolledUpNetwork.fGUID);
+            }
+            void RecomputeAll_ ()
+            {
+                fRolledUpNetworks_.clear ();
+                fMapAggregatedNetID2RollupID_.clear ();
+                fMapFingerprint2RollupID.clear ();
+                for (const auto& ni : fRawNetworks_) {
+                    MergeIn_ (ni);
+                }
+            }
+
+        private:
+            NetworkKeyedCollection_                 fRawNetworks_; // used for RecomuteAll_
+            NetworkKeyedCollection_                 fRolledUpNetworks_;
+            Mapping<GUID, GUID>                     fMapAggregatedNetID2RollupID_; // each aggregate netid is mapped to at most one rollup id)
+            Mapping<Network::FingerprintType, GUID> fMapFingerprint2RollupID;      // each fingerprint can map to at most one rollup...
         };
-        RolledUpNetworks GetRolledUpNetworks (Time::DurationSecondsType allowedStaleness = 5.0);
+
+        /// DRAFT NOTES ON WHEN I NEED TO INVALIATE ROLLEDUP NETWORKS.
+        /// INVALIDATE IF 'UserSettings' change, which might cause different rollups (this includes fingerprint to guid map)
+        /// INVALIUDATE IF a network changes its fingerprint (so this only applies to active networks - or really networks created since db load)
+        ///
+        RolledUpNetworks GetRolledUpNetworks (Time::DurationSecondsType allowedStaleness = 5.0)
+        {
+            Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...GetRolledUpNetworks")};
+            Debug::TimingTrace        ttrc{L"GetRolledUpNetworks", 1};
+            // SynchronizedCallerStalenessCache object just assures one rollup RUNS internally at a time, and
+            // that two calls in rapid succession, the second call re-uses the previous value
+            static Cache::SynchronizedCallerStalenessCache<void, RolledUpNetworks> sCache_;
+            // Disable fHoldWriteLockDuringCacheFill due to https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/23
+            // See also
+            //      https://stroika.atlassian.net/browse/STK-906 - possible enhancement to this configuration to work better avoiding
+            //      See https://stroika.atlassian.net/browse/STK-907 - about needing some new mechanism in Stroika for deadlock detection/avoidance.
+            // sCache_.fHoldWriteLockDuringCacheFill = true; // so only one call to filler lambda at a time
+            return sCache_.LookupValue (sCache_.Ago (allowedStaleness), [] () -> RolledUpNetworks {
+                /*
+                 *  DEADLOCK NOTE
+                 *      Since this can be called while rolling up DEVICES, its important that this code not call anything involving device rollup since
+                 *      that could trigger a deadlock.
+                 */
+                Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...GetRolledUpNetworks...cachefiller")};
+                Debug::TimingTrace        ttrc{L"GetRolledUpNetworks...cachefiller", 1};
+
+                static Synchronized<RolledUpNetworks> sRolledUpNetworks_; // because sCache_.fHoldWriteLockDuringCacheFill = false, we must use Synchronized statics here
+                // Start with the existing rolled up devices
+                // and then add in (should be done just once) the values from the database,
+                // and then keep adding any more recent discovery changes
+                RolledUpNetworks result                 = sRolledUpNetworks_;
+                static bool      sDidMergeFromDatabase_ = false; // no need to roll these up more than once
+                if (not sDidMergeFromDatabase_) {
+                    for (const auto& rdi : DBAccess_::sDBNetworks_.load ()) {
+                        result.MergeIn (rdi);
+                        sDidMergeFromDatabase_ = true; // trick to make sure database had finished loading sDBNetworks_ (should restructure so more clear)
+                    }
+                }
+                for (const Network& d : DiscoveryWrapper_::GetNetworks_ ()) {
+                    result.MergeIn (d);
+                }
+                sRolledUpNetworks_ = result;
+                return result;
+            });
+        }
 
         struct RolledUpDevices {
         public:
@@ -875,76 +965,6 @@ namespace {
             });
         }
 
-        RolledUpNetworks GetRolledUpNetworks (Time::DurationSecondsType allowedStaleness)
-        {
-            Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...GetRolledUpNetworks")};
-            Debug::TimingTrace        ttrc{L"GetRolledUpNetworks", 1};
-            // SynchronizedCallerStalenessCache object just assures one rollup RUNS internally at a time, and
-            // that two calls in rapid succession, the second call re-uses the previous value
-            static Cache::SynchronizedCallerStalenessCache<void, RolledUpNetworks> sCache_;
-            // Disable this cache setting due to https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/23
-            // See also
-            //      https://stroika.atlassian.net/browse/STK-906 - possible enhancement to this configuration to work better avoiding
-            //      See https://stroika.atlassian.net/browse/STK-907 - about needing some new mechanism in Stroika for deadlock detection/avoidance.
-            // sCache_.fHoldWriteLockDuringCacheFill = true; // so only one call to filler lambda at a time
-            return sCache_.LookupValue (sCache_.Ago (allowedStaleness), [] () -> RolledUpNetworks {
-                /*
-                 *  DEADLOCK NOTE
-                 *      Since this can be called while rolling up DEVICES, its important that this code not call anything involving device rollup since
-                 *      that could trigger a deadlock.
-                 */
-                Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...GetRolledUpNetworks...cachefiller")};
-                Debug::TimingTrace        ttrc{L"GetRolledUpNetworks...cachefiller", 1};
-
-                static RolledUpNetworks sRolledUpNetworks_;
-                // Start with the existing rolled up devices
-                // and then add in (should be done just once) the values from the database,
-                // and then keep adding any more recent discovery changes
-                RolledUpNetworks result               = sRolledUpNetworks_;
-                auto             doMergeOneIntoRollup = [&result] (const Network& net2MergeIn) {
-                    // @todo slow/quadradic - may need to tweak
-                    if (auto i = result.fNetworks.Find ([&net2MergeIn] (auto const& exisingRolledUpNet) { return ShouldRollup_ (exisingRolledUpNet, net2MergeIn); })) {
-                        // then merge this into that item
-                        result.fNetworks.Add (Network::Rollup (*i, net2MergeIn));
-                    }
-                    else {
-                        Network newRolledUpNetwork               = net2MergeIn;
-                        newRolledUpNetwork.fAggregatesReversibly = Set<GUID>{net2MergeIn.fGUID};
-                        newRolledUpNetwork.fGUID                 = DBAccess_::sMgr_->GenNewNetworkID (newRolledUpNetwork.ComputeProbablyUniqueIDForNetwork ());
-                        if (result.fNetworks.Contains (newRolledUpNetwork.fGUID)) {
-                            // Should probably never happen, but since depends on data in database, program defensively
-
-                            // at this point we have a net2MergeIn that said 'no' to ShouldRollup to all existing networks we've rolled up before
-                            // and yet somehow, result contains a network that used our ID?
-                            auto shouldntRollUpButTookOurIDNet = Memory::ValueOf (result.fNetworks.Lookup (newRolledUpNetwork.fGUID));
-                            DbgTrace (L"shouldntRollUpButTookOurIDNet=%s", Characters::ToString (shouldntRollUpButTookOurIDNet).c_str ());
-                            DbgTrace (L"net2MergeIn=%s", Characters::ToString (net2MergeIn).c_str ());
-                            Assert (not ShouldRollup_ (shouldntRollUpButTookOurIDNet, net2MergeIn));
-                            Logger::sThe.Log (Logger::eWarning, L"Got rollup network ID from cache that is already in use: %s (for external address %s)", Characters::ToString (newRolledUpNetwork.fGUID).c_str (), Characters::ToString (newRolledUpNetwork.fExternalAddresses).c_str ());
-                            newRolledUpNetwork.fGUID = GUID::GenerateNew ();
-                        }
-                        newRolledUpNetwork.fUserOverrides = DBAccess_::sMgr_->LookupNetworkUserSettings (newRolledUpNetwork.fGUID);
-                        if (newRolledUpNetwork.fUserOverrides && newRolledUpNetwork.fUserOverrides->fName) {
-                            //  newRolledUpNetwork.fNames.Add (*newRolledUpNetwork.fUserOverrides->fName, 500);
-                        }
-                        result.fNetworks.Add (newRolledUpNetwork);
-                    }
-                };
-                static bool sDidMergeFromDatabase_ = false; // no need to roll these up more than once
-                if (not sDidMergeFromDatabase_) {
-                    for (const auto& rdi : DBAccess_::sDBNetworks_.load ()) {
-                        doMergeOneIntoRollup (rdi);
-                        sDidMergeFromDatabase_ = true;
-                    }
-                }
-                for (const Network& d : DiscoveryWrapper_::GetNetworks_ ()) {
-                    doMergeOneIntoRollup (d);
-                }
-                sRolledUpNetworks_ = result;
-                return result;
-            });
-        }
-
     }
 }
 
@@ -1027,13 +1047,13 @@ Sequence<IntegratedModel::Network> IntegratedModel::Mgr::GetNetworks () const
 {
     Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"IntegratedModel::Mgr::GetNetworks")};
     Debug::TimingTrace        ttrc{L"IntegratedModel::Mgr::GetNetworks", 0.1};
-    return Sequence<IntegratedModel::Network>{RollupSummary_::GetRolledUpNetworks ().fNetworks};
+    return Sequence<IntegratedModel::Network>{RollupSummary_::GetRolledUpNetworks ().GetNetworks ()};
 }
 
 optional<IntegratedModel::Network> IntegratedModel::Mgr::GetNetwork (const GUID& id) const
 {
     // first check rolled up networks, and then raw/unrolled up networks
-    auto result = RollupSummary_::GetRolledUpNetworks ().fNetworks.Lookup (id);
+    auto result = RollupSummary_::GetRolledUpNetworks ().GetNetworks ().Lookup (id);
     if (not result.has_value ()) {
         result = DBAccess_::sDBNetworks_.load ().Lookup (id);
         if (result) {

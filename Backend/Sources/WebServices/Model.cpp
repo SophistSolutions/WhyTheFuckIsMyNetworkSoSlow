@@ -217,6 +217,7 @@ Network Network::Merge (const Network& baseNetwork, const Network& priorityNetwo
     MergeSeen_ (&merged.fSeen, priorityNetwork.fSeen);
     Memory::AccumulateIf (&merged.fAggregatesReversibly, priorityNetwork.fAggregatesReversibly); // @todo consider if this is right way to combine
     Memory::AccumulateIf (&merged.fAggregatesIrreversibly, priorityNetwork.fAggregatesIrreversibly);
+    Memory::AccumulateIf (&merged.fAggregatesFingerprints, priorityNetwork.fAggregatesFingerprints);
     Memory::CopyToIf (&merged.fIDPersistent, priorityNetwork.fIDPersistent);
     Memory::CopyToIf (&merged.fHistoricalSnapshot, priorityNetwork.fHistoricalSnapshot);
     Memory::CopyToIf (&merged.fUserOverrides, priorityNetwork.fUserOverrides); // for now, no need to look inside and accumulate because only one place can generate user-overrides - some special TBD database record - LGP 2022-09-14
@@ -254,7 +255,7 @@ Network Network::Rollup (const Network& rollupNetwork, const Network& instanceNe
     return merged;
 }
 
-GUID Network::ComputeProbablyUniqueIDForNetwork () const
+Network::FingerprintType Network::GenerateFingerprintFromProperties () const
 {
     // LOGIC UP TIL 2022-09-25
 #if 0
@@ -339,6 +340,7 @@ String Network::ToString () const
     sb += L"Seen: " + Characters::ToString (fSeen) + L", ";
     sb += L"Aggregates-Reversibly: " + Characters::ToString (fAggregatesReversibly) + L", ";
     sb += L"Aggregates-Irreverisbly: " + Characters::ToString (fAggregatesIrreversibly) + L", ";
+    sb += L"Aggregates-Fingerprints: " + Characters::ToString (fAggregatesFingerprints) + L", ";
     sb += L"IDPersistent: " + Characters::ToString (fIDPersistent) + L", ";
     sb += L"HistoricalSnapshot: " + Characters::ToString (fHistoricalSnapshot) + L", ";
     sb += L"}";
@@ -415,6 +417,7 @@ const ObjectVariantMapper Network::kMapper = [] () {
             {L"seen"sv, StructFieldMetaInfo{&Network::fSeen}, kDateRangeMapper_},
             {L"aggregatesReversibly"sv, StructFieldMetaInfo{&Network::fAggregatesReversibly}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"aggregatesIrreversibly"sv, StructFieldMetaInfo{&Network::fAggregatesIrreversibly}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+            {L"aggregatesFingerprints"sv, StructFieldMetaInfo{&Network::fAggregatesFingerprints}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"idIsPersistent"sv, StructFieldMetaInfo{&Network::fIDPersistent}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"historicalSnapshot"sv, StructFieldMetaInfo{&Network::fHistoricalSnapshot}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"userOverrides"sv, StructFieldMetaInfo{&Network::fUserOverrides}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},

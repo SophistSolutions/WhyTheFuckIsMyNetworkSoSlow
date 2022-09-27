@@ -170,8 +170,13 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
         /**
          */
-        Network () = default;
+        Network ()                   = default;
+        Network (Network&& src)      = default;
+        Network (const Network& src) = default;
         Network (const Set<CIDR>& nas);
+
+        nonvirtual Network& operator= (Network&& rhs) = default;
+        nonvirtual Network& operator= (const Network& rhs) = default;
 
         // @todo - WTF allocated ID - and one inherited from network interface (windows only) - CLARIFY - probably call OURs just fID (and change others in this module to match)
         GUID fGUID;
@@ -239,6 +244,15 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
          */
         optional<Set<GUID>> fAggregatesIrreversibly;
 
+        using FingerprintType = GUID;
+
+        /**
+         *  If present, this is the union of all fingerprints combined into this network. This is dynamically determined
+         *  (a computed property) of the given network. That means if a network (dynamic and still running) changes any properties
+         *  its GenerateFingerprintFromProperties () may change.
+         */
+        optional<Set<FingerprintType>> fAggregatesFingerprints;
+
         /**
          *  this ID is stored in the database
          */
@@ -266,6 +280,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
              */
             optional<String> fNotes;
 
+            // @todo probably have AddFingerprint/RemoveFingerprint/AddID/RemoveID optional<set<guid>>> here so user can customize what gets rolled into this net.
+
             /**
              *  @see Characters::ToString ();
              */
@@ -284,7 +300,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
         /**
          */
-        nonvirtual GUID ComputeProbablyUniqueIDForNetwork () const;
+        nonvirtual FingerprintType GenerateFingerprintFromProperties () const;
 
         /**
          *  @see Characters::ToString ();
