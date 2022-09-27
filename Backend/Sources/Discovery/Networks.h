@@ -15,6 +15,7 @@
 
 #include "../Common/GeoLocation.h"
 #include "../Common/InternetServiceProvider.h"
+#include "../Common/PrioritizedName.h"
 
 /**
  *
@@ -53,9 +54,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
      *  If you have an IPv4 and IPv6 network they maybe merged into a single logical network
      */
     struct Network {
-        Set<CIDR>        fNetworkAddresses;
-        GUID             fGUID;
-        optional<String> fFriendlyName;
+        Set<CIDR>                fNetworkAddresses;
+        GUID                     fGUID;
+        optional<String>         fFriendlyName;
+        Common::PrioritizedNames fNames;
 
         Set<GUID> fAttachedNetworkInterfaces;
 

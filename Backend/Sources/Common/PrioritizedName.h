@@ -9,6 +9,7 @@
 #include "Stroika/Foundation/Characters/String.h"
 #include "Stroika/Foundation/Common/Compare.h"
 #include "Stroika/Foundation/Containers/SortedCollection.h"
+#include "Stroika/Foundation/DataExchange/ObjectVariantMapper.h"
 
 /**
  *
@@ -56,6 +57,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         nonvirtual String GetName () const;
         using SortedCollection<PrioritizedName>::Add;
         nonvirtual void Add (const String& name, unsigned int priority);
+
+        static const DataExchange::ObjectVariantMapper kMapper;
     };
 
 }

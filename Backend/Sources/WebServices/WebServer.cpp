@@ -309,10 +309,10 @@ public:
                           ids = kSequenceOfGUIDMapper_.ToObject<Set<GUID>> (DataExchange::Variant::JSON::Reader{}.Read (o->As<String> ()));
                       }
                       if (args.LookupValue (L"recurse"sv, false).As<bool> ()) {
-                          WriteResponse (&m->rwResponse (), kNetworkInterfaces_, Network::kMapper.FromObject (fWSAPI_->GetNetworks_Recurse (ids)));
+                          WriteResponse (&m->rwResponse (), kNetworks_, Network::kMapper.FromObject (fWSAPI_->GetNetworks_Recurse (ids)));
                       }
                       else {
-                          WriteResponse (&m->rwResponse (), kNetworkInterfaces_, kBasicsMapper_.FromObject (fWSAPI_->GetNetworks (ids)));
+                          WriteResponse (&m->rwResponse (), kNetworks_, kBasicsMapper_.FromObject (fWSAPI_->GetNetworks (ids)));
                       }
                   }},
               Route{

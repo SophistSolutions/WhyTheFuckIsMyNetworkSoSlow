@@ -1,7 +1,19 @@
++ add 'names' to Networks (like with devices) so can pay attention to friendly name change for network like 
+we do for devices.
+
+
+----
+
+
+rewrite RollupDevices way I did for rollupNetworks (except not sure we want fingerprint).
+
+
+----
 
 
 		ALSO - PROBABLY now a good time to add feature to UserSettings (forceIntoRollupClass field)
-
+		> add fForceAggregatesFingerprint and forceaggregates/disaggregates ID. (rethink details)
+		.. then use that in rollup and when changes for re-compute
 
 
 ---\
@@ -11,7 +23,7 @@
 		devices - or aggregates for both)
 
 		This signifcantly cahnges/simplifes startup logic - must load all devices etc on startup.
-		
+		(UNSURE ABOUT THIS - MAYBE)
 
 -- 
 RETURN TO	

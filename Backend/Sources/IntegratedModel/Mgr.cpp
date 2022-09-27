@@ -133,6 +133,7 @@ namespace {
                 Network nw{n.fNetworkAddresses};
                 nw.fGUID                     = n.fGUID;
                 nw.fFriendlyName             = n.fFriendlyName;
+                nw.fNames                    = n.fNames;
                 nw.fNetworkAddresses         = n.fNetworkAddresses;
                 nw.fAttachedInterfaces       = n.fAttachedNetworkInterfaces;
                 nw.fDNSServers               = n.fDNSServers;

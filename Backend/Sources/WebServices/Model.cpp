@@ -206,6 +206,9 @@ Network Network::Merge (const Network& baseNetwork, const Network& priorityNetwo
     Network merged = baseNetwork;
     merged.fGUID   = priorityNetwork.fGUID;
     Memory::CopyToIf (&merged.fFriendlyName, priorityNetwork.fFriendlyName);
+    for (const auto& i : priorityNetwork.fNames) {
+        merged.fNames.Add (i.fName, i.fPriority);
+    }
     merged.fNetworkAddresses.AddAll (priorityNetwork.fNetworkAddresses);
     merged.fAttachedInterfaces.AddAll (priorityNetwork.fAttachedInterfaces);
     merged.fGateways += priorityNetwork.fGateways;
@@ -332,6 +335,7 @@ String Network::ToString () const
     sb += L"{";
     sb += L"Network-Addresses: " + Characters::ToString (fNetworkAddresses) + L", ";
     sb += L"Friendly-Name: " + Characters::ToString (fFriendlyName) + L", ";
+    sb += L"Names: " + Characters::ToString (fNames) + L", ";
     sb += L"GUID: " + Characters::ToString (fGUID) + L", ";
     sb += L"Attached-Interfaces: " + Characters::ToString (fAttachedInterfaces) + L", ";
     sb += L"Gateways: " + Characters::ToString (fGateways) + L", ";
@@ -364,6 +368,7 @@ const ObjectVariantMapper Network::kMapper = [] () {
     mapper.AddCommonType<optional<Set<InternetAddress>>> ();
     mapper.AddCommonType<Set<GUID>> ();
     mapper.AddCommonType<optional<Set<GUID>>> ();
+    mapper += Common::PrioritizedNames::kMapper;
 
     if (true) {
         // looks better as an object, than as an array
@@ -405,6 +410,7 @@ const ObjectVariantMapper Network::kMapper = [] () {
 
     mapper.AddClass<Network> (initializer_list<ObjectVariantMapper::StructFieldInfo> {
         {L"friendlyName"sv, StructFieldMetaInfo{&Network::fFriendlyName}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+            {L"names"sv, StructFieldMetaInfo{&Network::fNames}},
             {L"networkAddresses"sv, StructFieldMetaInfo{&Network::fNetworkAddresses}},
             {L"attachedInterfaces"sv, StructFieldMetaInfo{&Network::fAttachedInterfaces}},
             {L"gateways"sv, StructFieldMetaInfo{&Network::fGateways}},
@@ -702,12 +708,7 @@ const ObjectVariantMapper Device::kMapper = [] () {
     mapper += SeenType::kMapper;
     mapper += UserOverridesType::kMapper;
     mapper.AddCommonType<optional<UserOverridesType>> ();
-
-    mapper.AddClass<Common::PrioritizedName> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-        {L"name"sv, StructFieldMetaInfo{&Common::PrioritizedName::fName}},
-        {L"priority"sv, StructFieldMetaInfo{&Common::PrioritizedName::fPriority}},
-    });
-    mapper.AddCommonType<Common::PrioritizedNames> (); // AddCommonType can be used on things that act like existing supported types
+    mapper += Common::PrioritizedNames::kMapper;
 
     mapper.AddClass<NetworkAttachmentInfo> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
         {L"hardwareAddresses", StructFieldMetaInfo{&NetworkAttachmentInfo::hardwareAddresses}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},

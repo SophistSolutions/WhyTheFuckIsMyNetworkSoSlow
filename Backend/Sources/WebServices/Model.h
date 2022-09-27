@@ -185,6 +185,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
          */
         optional<String> fFriendlyName; //tmphack - list of interfaces attached to network
 
+        // REPLACING FRIENDLYNAME
+        Common::PrioritizedNames fNames;
+
         /*
          * This list of addresses will typically have one IPV4 and one IPV6 address
          */
