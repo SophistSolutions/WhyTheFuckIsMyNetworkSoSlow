@@ -818,6 +818,7 @@ namespace {
             }
             void RecomputeAll_ ()
             {
+                Debug::TraceContextBumper ctx{"{}...RolledUpNetworks::RecomputeAll_"};
                 fRolledUpNetworks_.clear ();
                 fMapAggregatedNetID2RollupID_.clear ();
                 fMapFingerprint2RollupID.clear ();
