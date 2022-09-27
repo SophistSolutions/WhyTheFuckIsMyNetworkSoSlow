@@ -1,5 +1,6 @@
 + add 'names' to Networks (like with devices) so can pay attention to friendly name change for network like 
 we do for devices.
+	(did service, still todo ui and then remove old freindlyname field from WSAPI)
 
 
 ----
@@ -397,10 +398,6 @@ Similarly look for netbios:
 
 * fix empty device record - no name, no addresses - nothing? Not sure where that comes from
   (windows only)
-
-* use network interfaces 'friendlyname' to suggest default freindlyname for networks.
-  (can be done in GUI - for network - from attachedInterfcae, lookup list of 'friendlynames')
-
 
 *	UNIX not showing dns Servers
    cat /etc/resolve.conf (look for nameservers)

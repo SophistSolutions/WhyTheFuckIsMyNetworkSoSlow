@@ -15,7 +15,8 @@ export function GetNetworkName(n: INetwork): string {
   if (addresses.length === 0) {
     addresses = n.networkAddresses;
   }
-  return n.friendlyName + ' {' + addresses.join(', ') + '}';
+  const preferredName = n.names.length > 0? n.names[0].name: "";
+  return preferredName + ' {' + addresses.join(', ') + '}';
 }
 
 export function SortNetworks(nws: INetwork[]) {

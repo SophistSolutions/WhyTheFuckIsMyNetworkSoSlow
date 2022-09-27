@@ -148,14 +148,15 @@ function GetSubNetworkDisplay_(id: string, summaryOnly: boolean): string {
       <div class="col-3">Name</div>
       <div class="col"> {{ GetNetworkName(currentNetwork) }} </div>
     </div>
+    <div class="row" v-if="currentNetwork.names.filter(m => m.priority > 1).length > 1">
+      <div class="col-3">Aliases</div>
+      <div class="col"> {{ currentNetwork.names.filter(m => m.priority > 1).map (m => m.name).slice(1).join (", ") }}
+      </div>
+    </div>
     <div class="row">
       <div class="col-3">ID</div>
       <div class="col"> {{ currentNetwork.id }} <span class="snapshot"
           v-if="currentNetwork.historicalSnapshot == true">{snapshot}</span></div>
-    </div>
-    <div class="row">
-      <div class="col-3">Friendly Name</div>
-      <div class="col"> {{ currentNetwork.friendlyName }} </div>
     </div>
     <div class="row" v-if="currentNetwork.seen">
       <div class="col-3">Seen</div>
@@ -171,16 +172,12 @@ function GetSubNetworkDisplay_(id: string, summaryOnly: boolean): string {
       <div class="col-3">DNS Server{{currentNetwork.DNSServers.length>=2?"s":""}}</div>
       <div class="col"> {{ currentNetwork.DNSServers.join(", ") }} </div>
     </div>
-    <div class="row" v-if="currentNetwork.gateways && currentNetwork.gateways.length">
-      <div class="col-3">Gateway (IP){{currentNetwork.gateways.length>=2?"s":""}}</div>
-      <div class="col"> {{ currentNetwork.gateways.join(", ") }} </div>
-    </div>
-    <div class="row" v-if="currentNetwork.gatewayHardwareAddresses && currentNetwork.gatewayHardwareAddresses.length">
-      <div class="col-3">Gateway (Hardware){{currentNetwork.gatewayHardwareAddresses.length>=2?"s":""}}</div>
-      <div class="col"> {{ currentNetwork.gatewayHardwareAddresses.join(", ") }} </div>
+    <div class="row" v-if="(currentNetwork.gateways && currentNetwork.gateways.length) || (currentNetwork.gatewayHardwareAddresses && currentNetwork.gatewayHardwareAddresses.length)">
+      <div class="col-3">Gateway{{((currentNetwork.gateways?.length>=2)||(currentNetwork.gatewayHardwareAddresses?.length>=2))?"s":""}} (IP / Hardware)</div>
+      <div class="col"> {{ currentNetwork.gateways?.join(", ") }} / {{ currentNetwork.gatewayHardwareAddresses?.join(", ") }} </div>
     </div>
     <div class="row" v-if="currentNetwork.externalAddresses && currentNetwork.externalAddresses.length">
-      <div class="col-3">External Address{{currentNetwork.externalAddresses.length>=2?"es":""}}</div>
+      <div class="col-3">External IP Address{{currentNetwork.externalAddresses.length>=2?"es":""}}</div>
       <div class="col"> {{ currentNetwork.externalAddresses.join(", ") }} </div>
     </div>
     <div class="row" v-if="currentNetwork.geographicLocation">
