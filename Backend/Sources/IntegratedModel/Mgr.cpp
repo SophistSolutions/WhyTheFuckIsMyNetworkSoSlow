@@ -555,7 +555,7 @@ namespace {
                     fCachedDeviceUserSettings_.rwget ().rwref ().Add (id, *settings);
                 }
                 else {
-                    fDeviceUserSettingsTableConnection_.rwget ().cref ()->DeleteByID (id);
+                    fDeviceUserSettingsTableConnection_.rwget ().cref ()->Delete (id);
                     fCachedDeviceUserSettings_.rwget ().rwref ().RemoveIf (id);
                 }
             }
@@ -575,7 +575,7 @@ namespace {
                     fCachedNetworkUserSettings_.rwget ().rwref ().Add (id, *settings);
                 }
                 else {
-                    fNetworkUserSettingsTableConnection_.rwget ().cref ()->DeleteByID (id);
+                    fNetworkUserSettingsTableConnection_.rwget ().cref ()->Delete (id);
                     fCachedNetworkUserSettings_.rwget ().rwref ().RemoveIf (id);
                 }
             }

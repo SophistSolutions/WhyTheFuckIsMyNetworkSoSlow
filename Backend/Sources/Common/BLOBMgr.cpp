@@ -229,7 +229,7 @@ optional<GUID> BLOBMgr::AsyncAddBLOBFromURL (const URI& url, bool recheckIfExpir
     // Use Stroika HTTP-Cache object support to handle age/etag stuff automatically
     optional<GUID> storeGUID;
     {
-        if (optional<DBRecs_::BLOBURL_> cachedURLObj = sConn_.rwget ().rwref ()->fBLOBURLs->GetByID (url)) {
+        if (optional<DBRecs_::BLOBURL_> cachedURLObj = sConn_.rwget ().rwref ()->fBLOBURLs->Get (url)) {
             storeGUID = cachedURLObj->fBLOBID;
         }
     }
@@ -243,7 +243,7 @@ optional<GUID> BLOBMgr::AsyncAddBLOBFromURL (const URI& url, bool recheckIfExpir
 
 optional<GUID> BLOBMgr::Lookup (const URI& url)
 {
-    if (optional<DBRecs_::BLOBURL_> cachedURLObj = sConn_.rwget ().rwref ()->fBLOBURLs->GetByID (url)) {
+    if (optional<DBRecs_::BLOBURL_> cachedURLObj = sConn_.rwget ().rwref ()->fBLOBURLs->Get (url)) {
         return cachedURLObj->fBLOBID;
     }
     return nullopt;
@@ -251,7 +251,7 @@ optional<GUID> BLOBMgr::Lookup (const URI& url)
 
 tuple<BLOB, optional<InternetMediaType>> BLOBMgr::GetBLOB (const GUID& id) const
 {
-    optional<DBRecs_::BLOB_> ob = sConn_.rwget ().rwref ()->fBLOBs->GetByID (id);
+    optional<DBRecs_::BLOB_> ob = sConn_.rwget ().rwref ()->fBLOBs->Get (id);
     if (ob) {
         return make_tuple (ob->fBLOB, ob->fContentType);
     }
