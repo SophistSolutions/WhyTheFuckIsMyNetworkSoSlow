@@ -31,7 +31,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         RequireNotNull (dbConnTable);
         SQL::Transaction t{dbConnTable->pConnection ()->mkTransaction ()};
         std::optional<T> result;
-        if (auto dbObj = dbConnTable->GetByID (d.fGUID)) {
+        if (auto dbObj = dbConnTable->Get (d.fGUID)) {
             result = T::Merge (*dbObj, d);
             dbConnTable->Update (*result);
         }
