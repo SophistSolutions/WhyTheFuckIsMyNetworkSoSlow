@@ -1,7 +1,5 @@
 
-rewrite RollupDevices way I did for rollupNetworks (except not sure we want fingerprint).
 
-----
 
 		ALSO - PROBABLY now a good time to add feature to UserSettings (forceIntoRollupClass field)
 		> add fForceAggregatesFingerprint and forceaggregates/disaggregates ID. (rethink details)
