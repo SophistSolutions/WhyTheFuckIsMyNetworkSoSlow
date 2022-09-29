@@ -714,7 +714,7 @@ namespace {
             /**
              *  Given an aggregated network id, map to the correspoding rollup ID (todo do we need to handle missing case)
              */
-            auto MapAggregatedNetID2ItsRollupID (const GUID& netID) -> GUID
+            auto MapAggregatedNetID2ItsRollupID (const GUID& netID) const -> GUID
             {
                 if (auto r = fMapAggregatedNetID2RollupID_.Lookup (netID)) {
                     return *r;
@@ -725,7 +725,7 @@ namespace {
                 }
                 WeakAssert (false); // @todo fix - because we guarantee each item rolled up exactly once - but happens sometimes on change of network - I think due to outdated device records referring to newer network not yet in this cache...
                 return netID;
-            };
+            }
 
         public:
             /**
@@ -762,7 +762,7 @@ namespace {
                     Assert (alreadyRolledUpNetwork.fAggregatesFingerprints); // cuz always set in rolled up networks
                     if (alreadyRolledUpNetwork.fAggregatesFingerprints->Contains (net2MergeInFingerprint)) {
                         // then we rollup to this same rollup network - very common case - so just re-rollup, and we are done
-                        AddIn_ (alreadyRolledUpNetwork, net2MergeIn, net2MergeInFingerprint);
+                        AddUpdateIn_ (alreadyRolledUpNetwork, net2MergeIn, net2MergeInFingerprint);
                     }
                     else {
                         // this means we USED to rollup to one network, and NOW must rollup to another, so remove from old network
@@ -781,7 +781,7 @@ namespace {
                     }
                 }
             }
-            void AddIn_ (const Network& addNet2MergeFromThisRollup, const Network& net2MergeIn, const Network::FingerprintType& net2MergeInFingerprint)
+            void AddUpdateIn_ (const Network& addNet2MergeFromThisRollup, const Network& net2MergeIn, const Network::FingerprintType& net2MergeInFingerprint)
             {
                 Assert (net2MergeIn.GenerateFingerprintFromProperties () == net2MergeInFingerprint); // provided to avoid cost of recompute
                 Network newRolledUpNetwork = Network::Rollup (addNet2MergeFromThisRollup, net2MergeIn);
@@ -839,7 +839,7 @@ namespace {
             Mapping<Network::FingerprintType, GUID> fMapFingerprint2RollupID;      // each fingerprint can map to at most one rollup...
         };
 
-        Synchronized<RolledUpNetworks> sRolledUpNetworks_; // because sCache_.fHoldWriteLockDuringCacheFill = false, we must use Synchronized statics here
+        Synchronized<RolledUpNetworks> sRolledUpNetworks_;
 
         /// DRAFT NOTES ON WHEN I NEED TO INVALIATE ROLLEDUP NETWORKS.
         /// INVALIDATE IF 'UserSettings' change, which might cause different rollups (this includes fingerprint to guid map)
@@ -880,16 +880,116 @@ namespace {
                 for (const Network& d : DiscoveryWrapper_::GetNetworks_ ()) {
                     result.MergeIn (d);
                 }
-                sRolledUpNetworks_ = result;
+                sRolledUpNetworks_ = result; // save here so we can update rollup networks instead of creating anew each time
                 return result;
             });
         }
 
         struct RolledUpDevices {
         public:
+            RolledUpDevices ()                       = default;
+            RolledUpDevices (const RolledUpDevices&) = default;
+            RolledUpDevices (RolledUpDevices&&)      = default;
+            RolledUpDevices& operator= (const RolledUpDevices&) = default;
+            RolledUpDevices& operator= (RolledUpDevices&&) = default;
+
+        public:
+            /**
+             *  This returns the current rolled up device objects.
+             */
+            DeviceKeyedCollection_ GetDevices () const
+            {
+                return fRolledUpDevices;
+            }
+
+        public:
+            void MergeIn (const Device& d, const RolledUpNetworks& useRolledUpNetworks)
+            {
+                fRawDevices_ += d;
+                MergeIn_ (d, useRolledUpNetworks);
+            }
+
+        private:
+            void MergeIn_ (const Device& d2MergeIn, const RolledUpNetworks& useRolledUpNetworks)
+            {
+                // see if it still should be rolled up in the place it was last rolled up as a shortcut
+                if (optional<GUID> prevRollupID = fRaw2RollupIDMap_.Lookup (d2MergeIn.fGUID)) {
+                    Device rollupDevice = Memory::ValueOf (fRolledUpDevices.Lookup (*prevRollupID)); // must be there cuz in sync with fRaw2RollupIDMap_
+                    if (RollupCommon_::ShouldRollup_ (rollupDevice, d2MergeIn)) {
+                        MergeInUpdate_ (rollupDevice, d2MergeIn, useRolledUpNetworks);
+                    }
+                    else {
+                        // rollup changed, so recompute all
+                        RecomputeAll_ (useRolledUpNetworks);
+                    }
+                }
+                else {
+                    // then see if it SHOULD be rolled into an existing rollup device, or if we should create a new one
+                    if (auto i = fRolledUpDevices.First ([&d2MergeIn] (const auto& exisingRolledUpDevice) { return ShouldRollup_ (exisingRolledUpDevice, d2MergeIn); })) {
+                        MergeInUpdate_ (*i, d2MergeIn, useRolledUpNetworks);
+                    }
+                    else {
+                        MergeInNew_ (d2MergeIn, useRolledUpNetworks);
+                    }
+                }
+            }
+            void MergeInUpdate_ (const Device& rollupDevice, const Device& newDevice2MergeIn, const RolledUpNetworks& useRolledUpNetworks)
+            {
+                Device d2MergeInPatched            = newDevice2MergeIn;
+                d2MergeInPatched.fAttachedNetworks = MapAggregatedAttachments2Rollups_ (useRolledUpNetworks, d2MergeInPatched.fAttachedNetworks);
+                Device tmp                         = Device::Rollup (rollupDevice, d2MergeInPatched);
+                Assert (tmp.fGUID == rollupDevice.fGUID); // rollup cannot change device ID
+                // userSettings already added on first rollup
+                fRolledUpDevices += tmp;
+                fRaw2RollupIDMap_.Add (newDevice2MergeIn.fGUID, tmp.fGUID);
+            }
+            void MergeInNew_ (const Device& d2MergeIn, const RolledUpNetworks& useRolledUpNetworks)
+            {
+                Assert (not d2MergeIn.fAggregatesReversibly.has_value ());
+                Device newRolledUpDevice                = d2MergeIn;
+                newRolledUpDevice.fAggregatesReversibly = Set<GUID>{d2MergeIn.fGUID};
+                newRolledUpDevice.fGUID                 = DBAccess_::sMgr_->GenNewDeviceID (d2MergeIn.GetHardwareAddresses ());
+                if (GetDevices ().Contains (newRolledUpDevice.fGUID)) {
+                    // Should probably never happen, but since depends on data in database, program defensively
+                    Logger::sThe.Log (Logger::eWarning, L"Got rollup device ID from cache that is already in use: %s (for hardware addresses %s)", Characters::ToString (newRolledUpDevice.fGUID).c_str (), Characters::ToString (d2MergeIn.GetHardwareAddresses ()).c_str ());
+                    newRolledUpDevice.fGUID = GUID::GenerateNew ();
+                }
+                newRolledUpDevice.fAttachedNetworks = MapAggregatedAttachments2Rollups_ (useRolledUpNetworks, newRolledUpDevice.fAttachedNetworks);
+                newRolledUpDevice.fUserOverrides    = DBAccess_::sMgr_->LookupDevicesUserSettings (newRolledUpDevice.fGUID);
+                if (newRolledUpDevice.fUserOverrides && newRolledUpDevice.fUserOverrides->fName) {
+                    newRolledUpDevice.fNames.Add (*newRolledUpDevice.fUserOverrides->fName, 500);
+                }
+                fRolledUpDevices += newRolledUpDevice;
+                fRaw2RollupIDMap_.Add (d2MergeIn.fGUID, newRolledUpDevice.fGUID);
+            }
+            void RecomputeAll_ (const RolledUpNetworks& useRolledUpNetworks)
+            {
+                fRolledUpDevices.clear ();
+                fRaw2RollupIDMap_.clear ();
+                for (const auto& di : fRawDevices_) {
+                    MergeIn_ (di, useRolledUpNetworks);
+                }
+            }
+            auto MapAggregatedAttachments2Rollups_ (const RolledUpNetworks& useRolledUpNetworks, const Mapping<GUID, NetworkAttachmentInfo>& nats) -> Mapping<GUID, NetworkAttachmentInfo>
+            {
+                Mapping<GUID, NetworkAttachmentInfo> result;
+                for (const auto& ni : nats) {
+                    result.Add (useRolledUpNetworks.MapAggregatedNetID2ItsRollupID (ni.fKey), ni.fValue);
+                }
+                return result;
+            };
+
+        private:
             // @todo add much more here - different useful summaries of same info
-            DeviceKeyedCollection_ fDevices;
+            DeviceKeyedCollection_ fRolledUpDevices;
+            DeviceKeyedCollection_ fRawDevices_;
+            Mapping<GUID, GUID>    fRaw2RollupIDMap_; // each aggregate deviceid is mapped to at most one rollup id)
         };
+
+        // sRolledUpDevicesFromDB_: keep a cache of the rolled up devices as of our first load from the database, just
+        // as a slight performance tweek.
+        Synchronized<RolledUpDevices> sRolledUpDevicesFromDB_;
+
         RolledUpDevices GetRolledUpDevies (Time::DurationSecondsType allowedStaleness = 10.0)
         {
             Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...GetRolledUpDevies")};
@@ -909,65 +1009,21 @@ namespace {
                 auto rolledUpNetworks = GetRolledUpNetworks (allowedStaleness * 10.0); // longer allowedStaleness cuz we dont care much about this and the parts
                                                                                        // we look at really dont change
 
-                auto mapAggregatedAttachments2Rollups = [&] (const Mapping<GUID, NetworkAttachmentInfo>& nats) -> Mapping<GUID, NetworkAttachmentInfo> {
-                    Mapping<GUID, NetworkAttachmentInfo> result;
-                    for (const auto& ni : nats) {
-                        result.Add (rolledUpNetworks.MapAggregatedNetID2ItsRollupID (ni.fKey), ni.fValue);
-                    }
-                    return result;
-                };
-
-                // sRolledUpDevicesFromDB_: keep a cache of the rolled up devices as of our first load from the database, just
-                // as a slight performance tweek.
-                // NOTE - we would NOT need to use Syncrhonized here if we used sCache_.fHoldWriteLockDuringCacheFill
-                static Synchronized<RolledUpDevices> sRolledUpDevicesFromDB_;
-
                 // Start with the existing rolled up devices
                 // and then add in (should be done just once) the values from the database,
                 // and then keep adding any more recent discovery changes
-                RolledUpDevices result               = sRolledUpDevicesFromDB_;
-                auto            doMergeOneIntoRollup = [&result, &mapAggregatedAttachments2Rollups] (const Device& d2MergeIn) {
-                    // @todo slow/quadradic - may need to tweak
-                    // NOTE - can use DBAccess_::sMgr_->GenNewDeviceID () as TRICK - since uses device id to 'index' / find right item more quickly
-                    // for large lists...
-                    if (auto i = result.fDevices.First ([&d2MergeIn] (const auto& exisingRolledUpDevice) { return ShouldRollup_ (exisingRolledUpDevice, d2MergeIn); })) {
-                        Device d2MergeInPatched            = d2MergeIn;
-                        d2MergeInPatched.fAttachedNetworks = mapAggregatedAttachments2Rollups (d2MergeInPatched.fAttachedNetworks);
-                        Device tmp                         = Device::Rollup (*i, d2MergeInPatched);
-                        Assert (tmp.fGUID == i->fGUID); // rollup cannot change device ID
-                        // userSettings already added on first rollup
-                        result.fDevices.Add (tmp); // update
-                    }
-                    else {
-                        Assert (not d2MergeIn.fAggregatesReversibly.has_value ());
-                        Device newRolledUpDevice                = d2MergeIn;
-                        newRolledUpDevice.fAggregatesReversibly = Set<GUID>{d2MergeIn.fGUID};
-                        newRolledUpDevice.fGUID                 = DBAccess_::sMgr_->GenNewDeviceID (d2MergeIn.GetHardwareAddresses ());
-                        if (result.fDevices.Contains (newRolledUpDevice.fGUID)) {
-                            // Should probably never happen, but since depends on data in database, program defensively
-                            Logger::sThe.Log (Logger::eWarning, L"Got rollup device ID from cache that is already in use: %s (for hardware addresses %s)", Characters::ToString (newRolledUpDevice.fGUID).c_str (), Characters::ToString (d2MergeIn.GetHardwareAddresses ()).c_str ());
-                            newRolledUpDevice.fGUID = GUID::GenerateNew ();
-                        }
-                        newRolledUpDevice.fAttachedNetworks = mapAggregatedAttachments2Rollups (newRolledUpDevice.fAttachedNetworks);
-                        newRolledUpDevice.fUserOverrides    = DBAccess_::sMgr_->LookupDevicesUserSettings (newRolledUpDevice.fGUID);
-                        if (newRolledUpDevice.fUserOverrides && newRolledUpDevice.fUserOverrides->fName) {
-                            newRolledUpDevice.fNames.Add (*newRolledUpDevice.fUserOverrides->fName, 500);
-                        }
-                        result.fDevices.Add (newRolledUpDevice);
-                    }
-                };
-                static bool sDidMergeFromDatabase_ = false; // no need to roll these up more than once, and be sure to do that one rollup after sFinishedInitialDBLoad_
+                RolledUpDevices result                 = sRolledUpDevicesFromDB_;
+                static bool     sDidMergeFromDatabase_ = false; // no need to roll these up more than once, and be sure to do that one rollup after sFinishedInitialDBLoad_
                 if (not sDidMergeFromDatabase_ and DBAccess_::sFinishedInitialDBLoad_) {
                     sDidMergeFromDatabase_ = true;
                     for (const auto& rdi : DBAccess_::sDBDevices_.load ()) {
-                        doMergeOneIntoRollup (rdi);
+                        result.MergeIn (rdi, rolledUpNetworks);
                     }
-                    sRolledUpDevicesFromDB_ = result;
                 }
-
                 for (const Device& d : DiscoveryWrapper_::GetDevices_ ()) {
-                    doMergeOneIntoRollup (d);
+                    result.MergeIn (d, rolledUpNetworks);
                 }
+                sRolledUpDevicesFromDB_ = result; // save here so we can update new rollup devices in place usually
                 return result;
             });
         }
@@ -1003,7 +1059,7 @@ Sequence<IntegratedModel::Device> IntegratedModel::Mgr::GetDevices () const
 {
     Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"IntegratedModel::Mgr::GetDevices")};
     Debug::TimingTrace        ttrc{L"IntegratedModel::Mgr::GetDevices", .1};
-    return Sequence<IntegratedModel::Device>{RollupSummary_::GetRolledUpDevies ().fDevices};
+    return Sequence<IntegratedModel::Device>{RollupSummary_::GetRolledUpDevies ().GetDevices ()};
 }
 
 optional<IntegratedModel::Device> IntegratedModel::Mgr::GetDevice (const GUID& id) const
@@ -1011,7 +1067,7 @@ optional<IntegratedModel::Device> IntegratedModel::Mgr::GetDevice (const GUID& i
     // first check rolled up devices, and then raw/unrolled up devices
     // NOTE - this doesn't check the 'dynamic' copy of the devices - it waits til those get migrated to the DB, once ever
     // 30 seconds roughtly...
-    auto result = RollupSummary_::GetRolledUpDevies ().fDevices.Lookup (id);
+    auto result = RollupSummary_::GetRolledUpDevies ().GetDevices ().Lookup (id);
     if (not result.has_value ()) {
         result = DBAccess_::sDBDevices_.load ().Lookup (id);
         if (result) {
@@ -1038,7 +1094,7 @@ std::optional<GUID> IntegratedModel::Mgr::GetCorrespondingDynamicDeviceID (const
     if (dynamicDevices.Contains (id)) {
         return id;
     }
-    auto thisRolledUpDevice = RollupSummary_::GetRolledUpDevies ().fDevices.Lookup (id);
+    auto thisRolledUpDevice = RollupSummary_::GetRolledUpDevies ().GetDevices ().Lookup (id);
     if (thisRolledUpDevice and thisRolledUpDevice->fAggregatesReversibly) {
         // then find the dynamic device corresponding to this rollup, which will be (as of 2022-06-22) in the aggregates reversibly list
         if (auto ff = thisRolledUpDevice->fAggregatesReversibly->First ([&] (const GUID& d) -> bool { return dynamicDevices.Contains (d); })) {
