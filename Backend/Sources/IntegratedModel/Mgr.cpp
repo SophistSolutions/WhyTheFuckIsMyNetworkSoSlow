@@ -490,7 +490,7 @@ namespace {
                 Require (fDatabaseSyncThread_ == nullptr);
                 fDatabaseSyncThread_ = Thread::New ([this] () { BackgroundDatabaseThread_ (); }, Thread::eAutoStart, L"BackgroundDatabaseThread"sv);
             }
-            Mgr_ (const Mgr_&) = delete;
+            Mgr_ (const Mgr_&)            = delete;
             Mgr_& operator= (const Mgr_&) = delete;
             ~Mgr_ ()
             {
@@ -544,19 +544,23 @@ namespace {
                 Debug::TimingTrace ttrc{L"IntegratedModel...LookupDevicesUserSettings ()", 0.001};
                 return fCachedDeviceUserSettings_.cget ().cref ().Lookup (guid);
             }
-            void SetDeviceUserSettings (const GUID& id, const std::optional<IntegratedModel::Device::UserOverridesType>& settings)
+            bool SetDeviceUserSettings (const GUID& id, const std::optional<IntegratedModel::Device::UserOverridesType>& settings)
             {
                 Debug::TimingTrace ttrc{L"IntegratedModel ... SetDeviceUserSettings", 0.1};
                 // first check if legit id, and then store
                 // @todo check if good id and throw if not...
                 auto lk = fCachedDeviceUserSettings_.rwget ();
                 if (settings) {
-                    fDeviceUserSettingsTableConnection_.rwget ().cref ()->AddOrUpdate (Private_::ExternalDeviceUserSettingsElt_{id, *settings});
-                    fCachedDeviceUserSettings_.rwget ().rwref ().Add (id, *settings);
+                    if (fCachedDeviceUserSettings_.cget ().cref ().Lookup (id) != settings) {
+                        fDeviceUserSettingsTableConnection_.rwget ().cref ()->AddOrUpdate (Private_::ExternalDeviceUserSettingsElt_{id, *settings});
+                        fCachedDeviceUserSettings_.rwget ().rwref ().Add (id, *settings);
+                        return true;
+                    }
+                    return false;
                 }
                 else {
                     fDeviceUserSettingsTableConnection_.rwget ().cref ()->Delete (id);
-                    fCachedDeviceUserSettings_.rwget ().rwref ().RemoveIf (id);
+                    return fCachedDeviceUserSettings_.rwget ().rwref ().RemoveIf (id);
                 }
             }
             optional<Model::Network::UserOverridesType> LookupNetworkUserSettings (const GUID& guid) const
@@ -695,10 +699,10 @@ namespace {
 
         struct RolledUpNetworks {
         public:
-            RolledUpNetworks ()                        = default;
-            RolledUpNetworks (const RolledUpNetworks&) = default;
-            RolledUpNetworks (RolledUpNetworks&&)      = default;
-            RolledUpNetworks& operator= (RolledUpNetworks&&) = default;
+            RolledUpNetworks ()                                   = default;
+            RolledUpNetworks (const RolledUpNetworks&)            = default;
+            RolledUpNetworks (RolledUpNetworks&&)                 = default;
+            RolledUpNetworks& operator= (RolledUpNetworks&&)      = default;
             RolledUpNetworks& operator= (const RolledUpNetworks&) = default;
 
         public:
@@ -887,11 +891,11 @@ namespace {
 
         struct RolledUpDevices {
         public:
-            RolledUpDevices ()                       = default;
-            RolledUpDevices (const RolledUpDevices&) = default;
-            RolledUpDevices (RolledUpDevices&&)      = default;
+            RolledUpDevices ()                                  = default;
+            RolledUpDevices (const RolledUpDevices&)            = default;
+            RolledUpDevices (RolledUpDevices&&)                 = default;
             RolledUpDevices& operator= (const RolledUpDevices&) = default;
-            RolledUpDevices& operator= (RolledUpDevices&&) = default;
+            RolledUpDevices& operator= (RolledUpDevices&&)      = default;
 
         public:
             /**
@@ -907,6 +911,12 @@ namespace {
             {
                 fRawDevices_ += d;
                 MergeIn_ (d, useRolledUpNetworks);
+            }
+
+        public:
+            void RecomputeAll (const RolledUpNetworks& useRolledUpNetworks)
+            {
+                RecomputeAll_ (useRolledUpNetworks);
             }
 
         private:
@@ -1085,7 +1095,9 @@ std::optional<IntegratedModel::Device::UserOverridesType> IntegratedModel::Mgr::
 
 void IntegratedModel::Mgr::SetDeviceUserSettings (const Common::GUID& id, const std::optional<IntegratedModel::Device::UserOverridesType>& settings)
 {
-    DBAccess_::sMgr_->SetDeviceUserSettings (id, settings);
+    if (DBAccess_::sMgr_->SetDeviceUserSettings (id, settings)) {
+        RollupSummary_::sRolledUpDevicesFromDB_.rwget ().rwref ().RecomputeAll (RollupSummary_::GetRolledUpNetworks ());
+    }
 }
 
 std::optional<GUID> IntegratedModel::Mgr::GetCorrespondingDynamicDeviceID (const GUID& id) const
