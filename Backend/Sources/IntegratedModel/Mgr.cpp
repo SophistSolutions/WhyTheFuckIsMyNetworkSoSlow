@@ -99,10 +99,6 @@ namespace {
 }
 
 namespace {
-    const BackendApp::Common::InternetServiceProvider kHughsNet_ISP_{L"Hughes Network Systems"sv};
-}
-
-namespace {
     struct Device_Key_Extractor_ {
         GUID operator() (const IntegratedModel::Device& t) const { return t.fGUID; };
     };
@@ -123,6 +119,87 @@ namespace {
         using IntegratedModel::Device;
         using IntegratedModel::Network;
         using IntegratedModel::NetworkAttachmentInfo;
+
+        static Network Discovery2Model_ (const Discovery::Network& n)
+        {
+            Network nw{n.fNetworkAddresses};
+            nw.fGUID                     = n.fGUID;
+            nw.fNames                    = n.fNames;
+            nw.fNetworkAddresses         = n.fNetworkAddresses;
+            nw.fAttachedInterfaces       = n.fAttachedNetworkInterfaces;
+            nw.fDNSServers               = n.fDNSServers;
+            nw.fGateways                 = n.fGateways;
+            nw.fGatewayHardwareAddresses = n.fGatewayHardwareAddresses;
+            nw.fExternalAddresses        = n.fExternalAddresses;
+            nw.fGEOLocInformation        = n.fGEOLocInfo;
+            nw.fInternetServiceProvider  = n.fISP;
+#if qDebug
+            if (not n.fDebugProps.empty ()) {
+                nw.fDebugProps = n.fDebugProps;
+            }
+#endif
+            return nw;
+        }
+        static Device Discovery2Model_ (const Discovery::Device& d)
+        {
+            Device newDev;
+            newDev.fGUID  = d.fGUID;
+            newDev.fNames = d.fNames;
+            if (not d.fTypes.empty ()) {
+                newDev.fTypes = d.fTypes; // leave missing if no discovered types
+            }
+            newDev.fSeen.fARP       = d.fSeen.fARP;
+            newDev.fSeen.fCollector = d.fSeen.fCollector;
+            newDev.fSeen.fICMP      = d.fSeen.fICMP;
+            newDev.fSeen.fTCP       = d.fSeen.fTCP;
+            newDev.fSeen.fUDP       = d.fSeen.fUDP;
+            Assert (newDev.fSeen.EverSeen ()); // for now don't allow 'discovering' a device without having some initial data for some activity
+            newDev.fOpenPorts = d.fOpenPorts;
+            for (const auto& i : d.fAttachedNetworks) {
+                constexpr bool            kIncludeLinkLocalAddresses_{Discovery::kIncludeLinkLocalAddressesInDiscovery};
+                constexpr bool            kIncludeMulticastAddreses_{Discovery::kIncludeMulticastAddressesInDiscovery};
+                Sequence<InternetAddress> addrs2Report;
+                for (const auto& li : i.fValue.localAddresses) {
+                    if (not kIncludeLinkLocalAddresses_ and li.IsLinkLocalAddress ()) {
+                        continue;
+                    }
+                    if (not kIncludeMulticastAddreses_ and li.IsMulticastAddress ()) {
+                        continue;
+                    }
+                    addrs2Report += li;
+                }
+                newDev.fAttachedNetworks.Add (i.fKey, NetworkAttachmentInfo{i.fValue.hardwareAddresses, addrs2Report});
+            }
+            newDev.fAttachedNetworkInterfaces = d.fAttachedInterfaces; // @todo must merge += (but only when merging across differnt discoverers/networks)
+            newDev.fPresentationURL           = d.fPresentationURL;
+            newDev.fManufacturer              = d.fManufacturer;
+            newDev.fIcon                      = TransformURL2LocalStorage_ (d.fIcon);
+            newDev.fOperatingSystem           = d.fOperatingSystem;
+#if qDebug
+            if (not d.fDebugProps.empty ()) {
+                newDev.fDebugProps = d.fDebugProps;
+            }
+            {
+                // List OUI names for each hardware address (and explicit missing for those we cannot lookup)
+                using VariantValue = DataExchange::VariantValue;
+                Mapping<String, VariantValue> t;
+                for (const auto& i : d.fAttachedNetworks) {
+                    for (const auto& hwa : i.fValue.hardwareAddresses) {
+                        auto o = BackendApp::Common::LookupEthernetMACAddressOUIFromPrefix (hwa);
+                        t.Add (hwa, o ? VariantValue{*o} : VariantValue{});
+                    }
+                }
+                if (not t.empty ()) {
+                    if (not newDev.fDebugProps.has_value ()) {
+                        newDev.fDebugProps = Mapping<String, VariantValue>{};
+                    }
+                    newDev.fDebugProps->Add (L"MACAddr2OUINames", VariantValue{t});
+                }
+            }
+#endif
+            Assert (newDev.fSeen.EverSeen ()); // maybe won't always require but look into any cases like this and probably remove them...
+            return newDev;
+        }
         // Map all the 'Discovery::Network' objects to 'Model::Network' objects.
         Sequence<Network> GetNetworks_ ()
         {
@@ -130,23 +207,8 @@ namespace {
             DateTime           now = DateTime::Now ();
             Sequence<Network>  result;
             for (const Discovery::Network& n : Discovery::NetworksMgr::sThe.CollectActiveNetworks ()) {
-                Network nw{n.fNetworkAddresses};
-                nw.fGUID                     = n.fGUID;
-                nw.fNames                    = n.fNames;
-                nw.fNetworkAddresses         = n.fNetworkAddresses;
-                nw.fAttachedInterfaces       = n.fAttachedNetworkInterfaces;
-                nw.fDNSServers               = n.fDNSServers;
-                nw.fGateways                 = n.fGateways;
-                nw.fGatewayHardwareAddresses = n.fGatewayHardwareAddresses;
-                nw.fExternalAddresses        = n.fExternalAddresses;
-                nw.fGEOLocInformation        = n.fGEOLocInfo;
-                nw.fInternetServiceProvider  = n.fISP;
-                nw.fSeen                     = Range<DateTime>{now, now}; // discovered now, when rolled up, expand timeframe
-#if qDebug
-                if (not n.fDebugProps.empty ()) {
-                    nw.fDebugProps = n.fDebugProps;
-                }
-#endif
+                Network nw = Discovery2Model_ (n);
+                nw.fSeen   = Range<DateTime>{now, now}; // discovered now, when rolled up, expand timeframe
                 result += nw;
             }
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
@@ -159,63 +221,7 @@ namespace {
             Debug::TimingTrace ttrc{L"DiscoveryWrapper_::GetDevices_", .1};
             // Fetch (UNSORTED) list of devices
             return Sequence<Device>{Discovery::DevicesMgr::sThe.GetActiveDevices ().Select<Device> ([] (const Discovery::Device& d) {
-                Device newDev;
-                newDev.fGUID  = d.fGUID;
-                newDev.fNames = d.fNames;
-                if (not d.fTypes.empty ()) {
-                    newDev.fTypes = d.fTypes; // leave missing if no discovered types
-                }
-                newDev.fSeen.fARP       = d.fSeen.fARP;
-                newDev.fSeen.fCollector = d.fSeen.fCollector;
-                newDev.fSeen.fICMP      = d.fSeen.fICMP;
-                newDev.fSeen.fTCP       = d.fSeen.fTCP;
-                newDev.fSeen.fUDP       = d.fSeen.fUDP;
-                Assert (newDev.fSeen.EverSeen ()); // for now don't allow 'discovering' a device without having some initial data for some activity
-                newDev.fOpenPorts = d.fOpenPorts;
-                for (const auto& i : d.fAttachedNetworks) {
-                    constexpr bool            kIncludeLinkLocalAddresses_{Discovery::kIncludeLinkLocalAddressesInDiscovery};
-                    constexpr bool            kIncludeMulticastAddreses_{Discovery::kIncludeMulticastAddressesInDiscovery};
-                    Sequence<InternetAddress> addrs2Report;
-                    for (const auto& li : i.fValue.localAddresses) {
-                        if (not kIncludeLinkLocalAddresses_ and li.IsLinkLocalAddress ()) {
-                            continue;
-                        }
-                        if (not kIncludeMulticastAddreses_ and li.IsMulticastAddress ()) {
-                            continue;
-                        }
-                        addrs2Report += li;
-                    }
-                    newDev.fAttachedNetworks.Add (i.fKey, NetworkAttachmentInfo{i.fValue.hardwareAddresses, addrs2Report});
-                }
-                newDev.fAttachedNetworkInterfaces = d.fAttachedInterfaces; // @todo must merge += (but only when merging across differnt discoverers/networks)
-                newDev.fPresentationURL           = d.fPresentationURL;
-                newDev.fManufacturer              = d.fManufacturer;
-                newDev.fIcon                      = TransformURL2LocalStorage_ (d.fIcon);
-                newDev.fOperatingSystem           = d.fOperatingSystem;
-#if qDebug
-                if (not d.fDebugProps.empty ()) {
-                    newDev.fDebugProps = d.fDebugProps;
-                }
-                {
-                    // List OUI names for each hardware address (and explicit missing for those we cannot lookup)
-                    using VariantValue = DataExchange::VariantValue;
-                    Mapping<String, VariantValue> t;
-                    for (const auto& i : d.fAttachedNetworks) {
-                        for (const auto& hwa : i.fValue.hardwareAddresses) {
-                            auto o = BackendApp::Common::LookupEthernetMACAddressOUIFromPrefix (hwa);
-                            t.Add (hwa, o ? VariantValue{*o} : VariantValue{});
-                        }
-                    }
-                    if (not t.empty ()) {
-                        if (not newDev.fDebugProps.has_value ()) {
-                            newDev.fDebugProps = Mapping<String, VariantValue>{};
-                        }
-                        newDev.fDebugProps->Add (L"MACAddr2OUINames", VariantValue{t});
-                    }
-                }
-#endif
-                Assert (newDev.fSeen.EverSeen ()); // maybe won't always require but look into any cases like this and probably remove them...
-                return newDev;
+                return Discovery2Model_ (d);
             })};
         }
     }
@@ -490,7 +496,7 @@ namespace {
                 Require (fDatabaseSyncThread_ == nullptr);
                 fDatabaseSyncThread_ = Thread::New ([this] () { BackgroundDatabaseThread_ (); }, Thread::eAutoStart, L"BackgroundDatabaseThread"sv);
             }
-            Mgr_ (const Mgr_&)            = delete;
+            Mgr_ (const Mgr_&) = delete;
             Mgr_& operator= (const Mgr_&) = delete;
             ~Mgr_ ()
             {
@@ -699,10 +705,10 @@ namespace {
 
         struct RolledUpNetworks {
         public:
-            RolledUpNetworks ()                                   = default;
-            RolledUpNetworks (const RolledUpNetworks&)            = default;
-            RolledUpNetworks (RolledUpNetworks&&)                 = default;
-            RolledUpNetworks& operator= (RolledUpNetworks&&)      = default;
+            RolledUpNetworks ()                        = default;
+            RolledUpNetworks (const RolledUpNetworks&) = default;
+            RolledUpNetworks (RolledUpNetworks&&)      = default;
+            RolledUpNetworks& operator= (RolledUpNetworks&&) = default;
             RolledUpNetworks& operator= (const RolledUpNetworks&) = default;
 
         public:
@@ -891,11 +897,11 @@ namespace {
 
         struct RolledUpDevices {
         public:
-            RolledUpDevices ()                                  = default;
-            RolledUpDevices (const RolledUpDevices&)            = default;
-            RolledUpDevices (RolledUpDevices&&)                 = default;
+            RolledUpDevices ()                       = default;
+            RolledUpDevices (const RolledUpDevices&) = default;
+            RolledUpDevices (RolledUpDevices&&)      = default;
             RolledUpDevices& operator= (const RolledUpDevices&) = default;
-            RolledUpDevices& operator= (RolledUpDevices&&)      = default;
+            RolledUpDevices& operator= (RolledUpDevices&&) = default;
 
         public:
             /**

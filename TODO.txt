@@ -4,6 +4,7 @@
 		ALSO - PROBABLY now a good time to add feature to UserSettings (forceIntoRollupClass field)
 		> add fForceAggregatesFingerprint and forceaggregates/disaggregates ID. (rethink details)
 		.. then use that in rollup and when changes for re-compute
+				(must amend rollup logic)
 
 ---\
 
