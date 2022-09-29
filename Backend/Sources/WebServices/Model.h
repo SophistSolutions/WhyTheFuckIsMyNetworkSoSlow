@@ -481,6 +481,28 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
              */
             optional<String> fNotes;
 
+#if __cpp_impl_three_way_comparison < 201711
+            bool operator== (const UserOverridesType& rhs) const
+            {
+                if (fName != rhs.fName) {
+                    return false;
+                }
+                if (fTags != rhs.fTags) {
+                    return false;
+                }
+                if (fNotes != rhs.fNotes) {
+                    return false;
+                }
+                return true;
+            }
+            bool operator!= (const UserOverridesType& rhs) const
+            {
+                return not(*this == rhs);
+            }
+#else
+            auto operator<=> (const UserOverridesType&) const = default;
+#endif
+
             /**
              *  @see Characters::ToString ();
              */
