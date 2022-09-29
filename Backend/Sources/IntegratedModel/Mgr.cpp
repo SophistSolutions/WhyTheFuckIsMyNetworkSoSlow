@@ -564,19 +564,24 @@ namespace {
                 Debug::TimingTrace ttrc{L"IntegratedModel...LookupNetworkUserSettings ()", 0.001};
                 return fCachedNetworkUserSettings_.cget ().cref ().Lookup (guid);
             }
-            void SetNetworkUserSettings (const GUID& id, const std::optional<IntegratedModel::Network::UserOverridesType>& settings)
+            // return true if changed
+            bool SetNetworkUserSettings (const GUID& id, const std::optional<IntegratedModel::Network::UserOverridesType>& settings)
             {
                 Debug::TimingTrace ttrc{L"IntegratedModel ... SetNetworkUserSettings", 0.1};
                 // first check if legit id, and then store
                 // @todo check if good id and throw if not...
                 auto lk = fCachedNetworkUserSettings_.rwget ();
                 if (settings) {
-                    fNetworkUserSettingsTableConnection_.rwget ().cref ()->AddOrUpdate (Private_::ExternalNetworkUserSettingsElt_{id, *settings});
-                    fCachedNetworkUserSettings_.rwget ().rwref ().Add (id, *settings);
+                    if (fCachedNetworkUserSettings_.cget ().cref ().Lookup (id) != settings) {
+                        fNetworkUserSettingsTableConnection_.rwget ().cref ()->AddOrUpdate (Private_::ExternalNetworkUserSettingsElt_{id, *settings});
+                        fCachedNetworkUserSettings_.rwget ().rwref ().Add (id, *settings);
+                        return true;
+                    }
+                    return false;
                 }
                 else {
                     fNetworkUserSettingsTableConnection_.rwget ().cref ()->Delete (id);
-                    fCachedNetworkUserSettings_.rwget ().rwref ().RemoveIf (id);
+                    return fCachedNetworkUserSettings_.rwget ().rwref ().RemoveIf (id);
                 }
             }
 
@@ -834,6 +839,8 @@ namespace {
             Mapping<Network::FingerprintType, GUID> fMapFingerprint2RollupID;      // each fingerprint can map to at most one rollup...
         };
 
+        Synchronized<RolledUpNetworks> sRolledUpNetworks_; // because sCache_.fHoldWriteLockDuringCacheFill = false, we must use Synchronized statics here
+
         /// DRAFT NOTES ON WHEN I NEED TO INVALIATE ROLLEDUP NETWORKS.
         /// INVALIDATE IF 'UserSettings' change, which might cause different rollups (this includes fingerprint to guid map)
         /// INVALIUDATE IF a network changes its fingerprint (so this only applies to active networks - or really networks created since db load)
@@ -859,7 +866,6 @@ namespace {
                 Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...GetRolledUpNetworks...cachefiller")};
                 Debug::TimingTrace        ttrc{L"GetRolledUpNetworks...cachefiller", 1};
 
-                static Synchronized<RolledUpNetworks> sRolledUpNetworks_; // because sCache_.fHoldWriteLockDuringCacheFill = false, we must use Synchronized statics here
                 // Start with the existing rolled up devices
                 // and then add in (should be done just once) the values from the database,
                 // and then keep adding any more recent discovery changes
@@ -1072,7 +1078,9 @@ std::optional<IntegratedModel::Network::UserOverridesType> IntegratedModel::Mgr:
 
 void IntegratedModel::Mgr::SetNetworkUserSettings (const Common::GUID& id, const std::optional<IntegratedModel::Network::UserOverridesType>& settings)
 {
-    DBAccess_::sMgr_->SetNetworkUserSettings (id, settings);
+    if (DBAccess_::sMgr_->SetNetworkUserSettings (id, settings)) {
+        RollupSummary_::sRolledUpNetworks_.rwget ().rwref ().RecomputeAll ();
+    }
 }
 
 Collection<IntegratedModel::NetworkInterface> IntegratedModel::Mgr::GetNetworkInterfaces () const
