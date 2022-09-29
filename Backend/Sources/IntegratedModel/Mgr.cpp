@@ -765,6 +765,7 @@ namespace {
         private:
             void MergeIn_ (const Network& net2MergeIn)
             {
+                // @todo https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/75 - fix corner case
                 Network::FingerprintType net2MergeInFingerprint = net2MergeIn.GenerateFingerprintFromProperties ();
                 if (auto formerRollupID = fMapFingerprint2RollupID.Lookup (net2MergeInFingerprint)) {
                     auto alreadyRolledUpNetwork = Memory::ValueOf (fRolledUpNetworks_.Lookup (*formerRollupID)); // must be in list because we keep those in sync here in this class
@@ -843,7 +844,7 @@ namespace {
             }
 
         private:
-            NetworkKeyedCollection_                 fRawNetworks_; // used for RecomuteAll_
+            NetworkKeyedCollection_                 fRawNetworks_; // used for RecomputeAll_
             NetworkKeyedCollection_                 fRolledUpNetworks_;
             Mapping<GUID, GUID>                     fMapAggregatedNetID2RollupID_; // each aggregate netid is mapped to at most one rollup id)
             Mapping<Network::FingerprintType, GUID> fMapFingerprint2RollupID;      // each fingerprint can map to at most one rollup...
