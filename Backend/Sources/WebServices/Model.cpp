@@ -295,6 +295,27 @@ Network::FingerprintType Network::GenerateFingerprintFromProperties () const
              *  At least thats by best guess to start as of 2021-08-29
              */
 #endif
+    auto useCIDRs = [] (const Set<CIDR>& ias) {
+        // for some reason, gateway list sometimes contains IPv4 only, and sometimes IPv4 and IPv6 addresses
+        // treat the list the same if the gateway list ipv4s at least are the same (and non-empty)
+        // if IPv4 CIDRs same (and non-empty), then ignore differences in IPv4 addressses
+        Set<CIDR> ipv4s{ias.Where ([] (const CIDR& i) { return i.GetBaseInternetAddress ().GetAddressFamily () == InternetAddress::AddressFamily::V4; })};
+
+        // If we got here, they differ in IPv6 (or other) address. If they matched on IPV4 (not trivially - because there were none)
+        // ignore the (ipv6) differences
+        return ipv4s.empty () ? ias : ipv4s;
+    };
+    auto useAddresses = [] (const Set<InternetAddress>& ias) {
+        // for some reason, gateway list sometimes contains IPv4 only, and sometimes IPv4 and IPv6 addresses
+        // treat the list the same if the gateway list ipv4s at least are the same (and non-empty)
+        // if IPv4 CIDRs same (and non-empty), then ignore differences in IPv4 addressses
+        Set<InternetAddress> ipv4s{ias.Where ([] (const InternetAddress& i) { return i.GetAddressFamily () == InternetAddress::AddressFamily::V4; })};
+
+        // If we got here, they differ in IPv6 (or other) address. If they matched on IPV4 (not trivially - because there were none)
+        // ignore the (ipv6) differences
+        return ipv4s.empty () ? ias : ipv4s;
+    };
+
     // combine hardare addresses of gateway with gateway address, and external ip address (and hash)
     // into a single ID that probably mostly uniquely ids a network.
 
@@ -303,7 +324,7 @@ Network::FingerprintType Network::GenerateFingerprintFromProperties () const
     // other way where we didn't include and had to force separate).
     StringBuilder sb;
     if (fExternalAddresses and fExternalAddresses->size () > 1) {
-        for (const InternetAddress& i : SortedSet<InternetAddress>{*fExternalAddresses}) {
+        for (const InternetAddress& i : SortedSet<InternetAddress>{useAddresses (*fExternalAddresses)}) {
             sb += i.As<String> ();
         }
     }
@@ -313,12 +334,12 @@ Network::FingerprintType Network::GenerateFingerprintFromProperties () const
         }
     }
     sb += L"/";
-    for (const CIDR& i : fNetworkAddresses) {
+    for (const CIDR& i : useCIDRs (fNetworkAddresses)) {
         sb += i.As<String> ();
     }
     sb += L"/";
     if (fGateways.size () > 1) {
-        for (const InternetAddress& i : SortedSet<InternetAddress>{fGateways}) {
+        for (const InternetAddress& i : SortedSet<InternetAddress>{useAddresses (fGateways)}) {
             sb += i.As<String> ();
         }
     }
