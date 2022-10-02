@@ -171,10 +171,10 @@ String Model::Network::UserOverridesType::ToString () const
     Characters::StringBuilder sb;
     sb += L"{";
     if (fName) {
-        sb += L"fName: " + Characters::ToString (fName) + L", ";
+        sb += L"Name: " + Characters::ToString (fName) + L", ";
     }
     if (fTags) {
-        sb += L"fTags: " + Characters::ToString (fTags) + L", ";
+        sb += L"Tags: " + Characters::ToString (fTags) + L", ";
     }
     if (fNotes) {
         sb += L"fNotes: " + Characters::ToString (fNotes);
@@ -447,7 +447,7 @@ String NetworkInterface::ToString () const
 {
     Characters::StringBuilder sb;
     sb += L"{";
-    sb += L"fGUID: " + Characters::ToString (fGUID) + L", ";
+    sb += L"GUID: " + Characters::ToString (fGUID) + L", ";
     sb += Interface::ToString ().SafeSubString (1, -1);
     sb += L"}";
     return sb.str ();
@@ -594,7 +594,6 @@ optional<Range<DateTime>> Model::Device::SeenType::EverSeen () const
             result = fTCP;
         }
     }
-
     if (fUDP) {
         if (result) {
             result = result->UnionBounds (*fUDP);
@@ -610,12 +609,12 @@ String Model::Device::SeenType::ToString () const
 {
     Characters::StringBuilder sb;
     sb += L"{";
-    sb += L"fARP: " + Characters::ToString (fARP) + L", ";
+    sb += L"ARP: " + Characters::ToString (fARP) + L", ";
 
-    sb += L"fCollector: " + Characters::ToString (fCollector) + L", ";
-    sb += L"fICMP: " + Characters::ToString (fICMP) + L", ";
-    sb += L"fTCP: " + Characters::ToString (fTCP) + L", ";
-    sb += L"fUDP: " + Characters::ToString (fUDP) + L", ";
+    sb += L"Collector: " + Characters::ToString (fCollector) + L", ";
+    sb += L"ICMP: " + Characters::ToString (fICMP) + L", ";
+    sb += L"TCP: " + Characters::ToString (fTCP) + L", ";
+    sb += L"UDP: " + Characters::ToString (fUDP) + L", ";
     sb += L"}";
     return sb.str ();
 }
@@ -643,10 +642,10 @@ String Model::Device::UserOverridesType::ToString () const
     Characters::StringBuilder sb;
     sb += L"{";
     if (fName) {
-        sb += L"fName: " + Characters::ToString (fName) + L", ";
+        sb += L"Name: " + Characters::ToString (fName) + L", ";
     }
     if (fTags) {
-        sb += L"fTags: " + Characters::ToString (fTags) + L", ";
+        sb += L"Tags: " + Characters::ToString (fTags) + L", ";
     }
     if (fNotes) {
         sb += L"fNotes: " + Characters::ToString (fNotes);
@@ -995,11 +994,11 @@ String About::APIServerInfo::CurrentProcess::ToString () const
 {
     Characters::StringBuilder sb;
     sb += L"{";
-    sb += L"fProcessUptime: " + Characters::ToString (fProcessUptime) + L", ";
-    sb += L"fAverageCPUTimeUsed: " + Characters::ToString (fAverageCPUTimeUsed) + L", ";
-    sb += L"fWorkingOrResidentSetSize: " + Characters::ToString (fWorkingOrResidentSetSize) + L", ";
-    sb += L"fCombinedIOReadRate: " + Characters::ToString (fCombinedIOReadRate) + L", ";
-    sb += L"fCombinedIOWriteRate: " + Characters::ToString (fCombinedIOWriteRate) + L", ";
+    sb += L"ProcessUptime: " + Characters::ToString (fProcessUptime) + L", ";
+    sb += L"AverageCPUTimeUsed: " + Characters::ToString (fAverageCPUTimeUsed) + L", ";
+    sb += L"WorkingOrResidentSetSize: " + Characters::ToString (fWorkingOrResidentSetSize) + L", ";
+    sb += L"CombinedIOReadRate: " + Characters::ToString (fCombinedIOReadRate) + L", ";
+    sb += L"CombinedIOWriteRate: " + Characters::ToString (fCombinedIOWriteRate) + L", ";
     sb += L"}";
     return sb.str ();
 }
@@ -1008,14 +1007,14 @@ String About::APIServerInfo::APIEndpoint::ToString () const
 {
     Characters::StringBuilder sb;
     sb += L"{";
-    sb += L"fCallsCompleted: " + Characters::ToString (fCallsCompleted) + L", ";
-    sb += L"fErrors: " + Characters::ToString (fErrors) + L", ";
-    sb += L"fMedianDuration: " + Characters::ToString (fMedianDuration) + L", ";
-    sb += L"fMeanDuration: " + Characters::ToString (fMeanDuration) + L", ";
-    sb += L"fMaxDuration: " + Characters::ToString (fMaxDuration) + L", ";
-    sb += L"fMedianWebServerConnections: " + Characters::ToString (fMedianWebServerConnections) + L", ";
-    sb += L"fMedianProcessingWebServerConnections: " + Characters::ToString (fMedianProcessingWebServerConnections) + L", ";
-    sb += L"fMedianRunningAPITasks: " + Characters::ToString (fMedianRunningAPITasks) + L", ";
+    sb += L"CallsCompleted: " + Characters::ToString (fCallsCompleted) + L", ";
+    sb += L"Errors: " + Characters::ToString (fErrors) + L", ";
+    sb += L"MedianDuration: " + Characters::ToString (fMedianDuration) + L", ";
+    sb += L"MeanDuration: " + Characters::ToString (fMeanDuration) + L", ";
+    sb += L"MaxDuration: " + Characters::ToString (fMaxDuration) + L", ";
+    sb += L"MedianWebServerConnections: " + Characters::ToString (fMedianWebServerConnections) + L", ";
+    sb += L"MedianProcessingWebServerConnections: " + Characters::ToString (fMedianProcessingWebServerConnections) + L", ";
+    sb += L"MedianRunningAPITasks: " + Characters::ToString (fMedianRunningAPITasks) + L", ";
     sb += L"}";
     return sb.str ();
 }
@@ -1024,15 +1023,15 @@ String About::APIServerInfo::Database::ToString () const
 {
     Characters::StringBuilder sb;
     sb += L"{";
-    sb += L"fReads: " + Characters::ToString (fReads) + L", ";
-    sb += L"fWrites: " + Characters::ToString (fWrites) + L", ";
-    sb += L"fErrors: " + Characters::ToString (fErrors) + L", ";
-    sb += L"fMeanReadDuration: " + Characters::ToString (fMeanReadDuration) + L", ";
-    sb += L"fMeanReadDuration: " + Characters::ToString (fMedianReadDuration) + L", ";
-    sb += L"fMeanWriteDuration: " + Characters::ToString (fMeanWriteDuration) + L", ";
-    sb += L"fMeanWriteDuration: " + Characters::ToString (fMedianWriteDuration) + L", ";
-    sb += L"fMaxDuration: " + Characters::ToString (fMaxDuration) + L", ";
-    sb += L"fFileSize: " + Characters::ToString (fFileSize) + L", ";
+    sb += L"Reads: " + Characters::ToString (fReads) + L", ";
+    sb += L"Writes: " + Characters::ToString (fWrites) + L", ";
+    sb += L"Errors: " + Characters::ToString (fErrors) + L", ";
+    sb += L"MeanReadDuration: " + Characters::ToString (fMeanReadDuration) + L", ";
+    sb += L"MeanReadDuration: " + Characters::ToString (fMedianReadDuration) + L", ";
+    sb += L"MeanWriteDuration: " + Characters::ToString (fMeanWriteDuration) + L", ";
+    sb += L"MeanWriteDuration: " + Characters::ToString (fMedianWriteDuration) + L", ";
+    sb += L"MaxDuration: " + Characters::ToString (fMaxDuration) + L", ";
+    sb += L"FileSize: " + Characters::ToString (fFileSize) + L", ";
     sb += L"}";
     return sb.str ();
 }
