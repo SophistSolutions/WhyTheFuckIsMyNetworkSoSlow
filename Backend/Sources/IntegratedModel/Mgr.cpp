@@ -727,7 +727,7 @@ namespace {
             /**
              *  Given an aggregated network id, map to the correspoding rollup ID (todo do we need to handle missing case)
              */
-            auto MapAggregatedNetID2ItsRollupID (const GUID& netID) const -> GUID
+            nonvirtual auto MapAggregatedNetID2ItsRollupID (const GUID& netID) const -> GUID
             {
                 if (auto r = fMapAggregatedNetID2RollupID_.Lookup (netID)) {
                     return *r;
@@ -747,7 +747,7 @@ namespace {
              *
              *  But typically this will just update the record for an existing rollup.
              */
-            void MergeIn (const Network& net2MergeIn)
+            nonvirtual void MergeIn (const Network& net2MergeIn)
             {
                 fRawNetworks_ += net2MergeIn;
                 MergeIn_ (net2MergeIn);
@@ -1000,7 +1000,6 @@ namespace {
             };
 
         private:
-            // @todo add much more here - different useful summaries of same info
             DeviceKeyedCollection_ fRolledUpDevices;
             DeviceKeyedCollection_ fRawDevices_;
             Mapping<GUID, GUID>    fRaw2RollupIDMap_; // each aggregate deviceid is mapped to at most one rollup id)
