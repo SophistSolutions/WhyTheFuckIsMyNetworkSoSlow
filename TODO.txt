@@ -6,6 +6,14 @@
 		.. then use that in rollup and when changes for re-compute
 				(must amend rollup logic)
 
+
+
+				IN progress
+				added fields
+				must add patch logic and docs examples
+				and must then pay attention to in rollup (instead of other guy in device itself?) and recompute
+				the rollup device aggregates feilds and assure raw device ones (and raw net ones) always empty when written to db
+
 ---\
 
 	+ Lose ID-Cache tables in backend (recently added) -and just use the UserSettings tables for the same purpose (a field
