@@ -177,7 +177,19 @@ String Model::Network::UserOverridesType::ToString () const
         sb += L"Tags: " + Characters::ToString (fTags) + L", ";
     }
     if (fNotes) {
-        sb += L"fNotes: " + Characters::ToString (fNotes);
+        sb += L"Notes: " + Characters::ToString (fNotes);
+    }
+    if (fAggregateNetworks) {
+        sb += L"AggregateNetworks: " + Characters::ToString (fAggregateNetworks);
+    }
+    if (fDontAggregateNetworks) {
+        sb += L"DontAggregateNetworks: " + Characters::ToString (fDontAggregateNetworks);
+    }
+    if (fAggregateFingerprint) {
+        sb += L"AggregateFingerprint: " + Characters::ToString (fAggregateFingerprint);
+    }
+    if (fDontAggregateFingerprint) {
+        sb += L"DontAggregateFingerprint: " + Characters::ToString (fDontAggregateFingerprint);
     }
     sb += L"}";
     return sb.str ();
@@ -188,10 +200,16 @@ const DataExchange::ObjectVariantMapper Model::Network::UserOverridesType::kMapp
     mapper.AddCommonType<optional<String>> ();
     mapper.AddCommonType<Set<String>> ();
     mapper.AddCommonType<optional<Set<String>>> ();
+    mapper.AddCommonType<Set<GUID>> ();
+    mapper.AddCommonType<optional<Set<GUID>>> ();
     mapper.AddClass<UserOverridesType> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
         {L"name"sv, StructFieldMetaInfo{&UserOverridesType::fName}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"tags"sv, StructFieldMetaInfo{&UserOverridesType::fTags}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"notes"sv, StructFieldMetaInfo{&UserOverridesType::fNotes}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"aggregateNetworks"sv, StructFieldMetaInfo{&UserOverridesType::fAggregateNetworks}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"dontAggregateNetworks"sv, StructFieldMetaInfo{&UserOverridesType::fDontAggregateNetworks}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"aggregateFingerprint"sv, StructFieldMetaInfo{&UserOverridesType::fAggregateFingerprint}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"dontAggregateFingerprint"sv, StructFieldMetaInfo{&UserOverridesType::fDontAggregateFingerprint}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
     return mapper;
 }();
@@ -648,7 +666,13 @@ String Model::Device::UserOverridesType::ToString () const
         sb += L"Tags: " + Characters::ToString (fTags) + L", ";
     }
     if (fNotes) {
-        sb += L"fNotes: " + Characters::ToString (fNotes);
+        sb += L"Notes: " + Characters::ToString (fNotes);
+    }
+    if (fAggregateDevices) {
+        sb += L"AggregateDevices: " + Characters::ToString (fAggregateDevices);
+    }
+    if (fDontAggregateDevices) {
+        sb += L"DontAggregateDevices: " + Characters::ToString (fDontAggregateDevices);
     }
     sb += L"}";
     return sb.str ();
@@ -659,10 +683,14 @@ const DataExchange::ObjectVariantMapper Model::Device::UserOverridesType::kMappe
     mapper.AddCommonType<optional<String>> ();
     mapper.AddCommonType<Set<String>> ();
     mapper.AddCommonType<optional<Set<String>>> ();
+    mapper.AddCommonType<Set<GUID>> ();
+    mapper.AddCommonType<optional<Set<GUID>>> ();
     mapper.AddClass<UserOverridesType> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
         {L"name"sv, StructFieldMetaInfo{&UserOverridesType::fName}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"tags"sv, StructFieldMetaInfo{&UserOverridesType::fTags}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"notes"sv, StructFieldMetaInfo{&UserOverridesType::fNotes}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"aggregateDevices"sv, StructFieldMetaInfo{&UserOverridesType::fAggregateDevices}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"dontAggregateDevices"sv, StructFieldMetaInfo{&UserOverridesType::fDontAggregateDevices}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
     return mapper;
 }();

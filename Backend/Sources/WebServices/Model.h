@@ -280,7 +280,11 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
              */
             optional<String> fNotes;
 
-            // @todo probably have AddFingerprint/RemoveFingerprint/AddID/RemoveID optional<set<guid>>> here so user can customize what gets rolled into this net.
+            // AddFingerprint/RemoveFingerprint/AddID/RemoveID optional<set<guid>>> here so user can customize what gets rolled into this net.
+            optional<Set<GUID>>            fAggregateNetworks;
+            optional<Set<GUID>>            fDontAggregateNetworks;
+            optional<Set<FingerprintType>> fAggregateFingerprint;
+            optional<Set<FingerprintType>> fDontAggregateFingerprint;
 
 #if __cpp_impl_three_way_comparison < 201711
             bool operator== (const UserOverridesType& rhs) const
@@ -292,6 +296,18 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
                     return false;
                 }
                 if (fNotes != rhs.fNotes) {
+                    return false;
+                }
+                if (fAggregateNetworks != rhs.fAggregateNetworks) {
+                    return false;
+                }
+                if (fDontAggregateNetworks != rhs.fDontAggregateNetworks) {
+                    return false;
+                }
+                if (fAggregateFingerprint != rhs.fAggregateFingerprint) {
+                    return false;
+                }
+                if (fDontAggregateFingerprint != rhs.fDontAggregateFingerprint) {
                     return false;
                 }
                 return true;
@@ -481,6 +497,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
              */
             optional<String> fNotes;
 
+            // /AddID/RemoveID optional<set<guid>>> here so user can customize what gets rolled into this device.
+            optional<Set<GUID>> fAggregateDevices;
+            optional<Set<GUID>> fDontAggregateDevices;
+
 #if __cpp_impl_three_way_comparison < 201711
             bool operator== (const UserOverridesType& rhs) const
             {
@@ -491,6 +511,12 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
                     return false;
                 }
                 if (fNotes != rhs.fNotes) {
+                    return false;
+                }
+                if (fAggregateDevices != rhs.fAggregateDevices) {
+                    return false;
+                }
+                if (fDontAggregateDevices != rhs.fDontAggregateDevices) {
                     return false;
                 }
                 return true;
