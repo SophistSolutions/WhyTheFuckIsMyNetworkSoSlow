@@ -440,8 +440,8 @@ namespace {
                 Traversal::Iterable<Database::SQL::ORM::Schema::Table>{Private_::kDeviceIDCacheTableSchema_, Private_::kNetworkIDCacheTableSchema_, Private_::kDeviceTableSchema_, Private_::kDeviceUserSettingsSchema_, Private_::kNetworkTableSchema_, Private_::kNetworkUserSettingsSchema_}};
             Synchronized<SQL::Connection::Ptr>                                                             fDBConnectionPtr_{fDB_.NewConnection ()};
             Execution::Thread::Ptr                                                                         fDatabaseSyncThread_{};
-            unique_ptr<SQL::ORM::TableConnection<Private_::HWAddr2GUIDElt_>>                               fHWAddr2GUIDCacheTableConnection_;
-            unique_ptr<SQL::ORM::TableConnection<Private_::GuessedRollupID2NetGUIDElt_>>                   fGuessedRollupID2NetGUIDCacheTableConnection_;
+            Synchronized<unique_ptr<SQL::ORM::TableConnection<Private_::HWAddr2GUIDElt_>>>                 fHWAddr2GUIDCacheTableConnection_;
+            Synchronized<unique_ptr<SQL::ORM::TableConnection<Private_::GuessedRollupID2NetGUIDElt_>>>     fGuessedRollupID2NetGUIDCacheTableConnection_;
             Synchronized<Mapping<GUID, IntegratedModel::Device::UserOverridesType>>                        fCachedDeviceUserSettings_;
             Synchronized<unique_ptr<SQL::ORM::TableConnection<Private_::ExternalDeviceUserSettingsElt_>>>  fDeviceUserSettingsTableConnection_;
             Synchronized<Mapping<GUID, IntegratedModel::Network::UserOverridesType>>                       fCachedNetworkUserSettings_;
@@ -459,7 +459,7 @@ namespace {
                 try {
                     Debug::TimingTrace ttrc{L"...load of sAdvisoryHWAddr2GUIDCache from database ", 1};
                     lock_guard         lock{this->fDBConnectionPtr_};
-                    sAdvisoryHWAddr2GUIDCache.store (Mapping<String, GUID>{fHWAddr2GUIDCacheTableConnection_->GetAll ().Select<KeyValuePair<String, GUID>> ([] (const auto& i) { return KeyValuePair<String, GUID>{i.HWAddress, i.DeviceID}; })});
+                    sAdvisoryHWAddr2GUIDCache.store (Mapping<String, GUID>{fHWAddr2GUIDCacheTableConnection_.rwget ().rwref ()->GetAll ().Select<KeyValuePair<String, GUID>> ([] (const auto& i) { return KeyValuePair<String, GUID>{i.HWAddress, i.DeviceID}; })});
                 }
                 catch (...) {
                     Logger::sThe.Log (Logger::eError, L"Failed to load sAdvisoryHWAddr2GUIDCache from db: %s", Characters::ToString (current_exception ()).c_str ());
@@ -468,7 +468,7 @@ namespace {
                 try {
                     Debug::TimingTrace ttrc{L"...load of sAdvisoryGuessedRollupID2NetworkGUIDCache from database ", 1};
                     lock_guard         lock{this->fDBConnectionPtr_};
-                    sAdvisoryGuessedRollupID2NetworkGUIDCache.store (Mapping<GUID, GUID>{fGuessedRollupID2NetGUIDCacheTableConnection_->GetAll ().Select<KeyValuePair<GUID, GUID>> ([] (const auto& i) { return KeyValuePair<GUID, GUID>{i.ProbablyUniqueIDForNetwork, i.NetworkID}; })});
+                    sAdvisoryGuessedRollupID2NetworkGUIDCache.store (Mapping<GUID, GUID>{fGuessedRollupID2NetGUIDCacheTableConnection_.rwget ().rwref ()->GetAll ().Select<KeyValuePair<GUID, GUID>> ([] (const auto& i) { return KeyValuePair<GUID, GUID>{i.ProbablyUniqueIDForNetwork, i.NetworkID}; })});
                 }
                 catch (...) {
                     Logger::sThe.Log (Logger::eError, L"Failed to load sAdvisoryGuessedRollupID2NetworkGUIDCache from db: %s", Characters::ToString (current_exception ()).c_str ());
@@ -515,7 +515,7 @@ namespace {
                 l->Add (hwAddress, newRes);
                 lock_guard lock{this->fDBConnectionPtr_};
                 try {
-                    fHWAddr2GUIDCacheTableConnection_->AddNew (Private_::HWAddr2GUIDElt_{hwAddress, newRes});
+                    fHWAddr2GUIDCacheTableConnection_.rwget ().rwref ()->AddNew (Private_::HWAddr2GUIDElt_{hwAddress, newRes});
                 }
                 catch (...) {
                     Logger::sThe.Log (Logger::eWarning, L"Ignoring error writing hwaddr2deviceid cache table: %s", Characters::ToString (current_exception ()).c_str ());
@@ -538,7 +538,7 @@ namespace {
                 l->Add (probablyUniqueIDForNetwork, newRes);
                 lock_guard lock{this->fDBConnectionPtr_};
                 try {
-                    fGuessedRollupID2NetGUIDCacheTableConnection_->AddNew (Private_::GuessedRollupID2NetGUIDElt_{probablyUniqueIDForNetwork, newRes});
+                    fGuessedRollupID2NetGUIDCacheTableConnection_.rwget ().rwref ()->AddNew (Private_::GuessedRollupID2NetGUIDElt_{probablyUniqueIDForNetwork, newRes});
                 }
                 catch (...) {
                     Logger::sThe.Log (Logger::eWarning, L"Ignoring error writing ipaddr2NetworkID cache table: %s", Characters::ToString (current_exception ()).c_str ());
@@ -555,7 +555,8 @@ namespace {
                 Debug::TimingTrace ttrc{L"IntegratedModel ... SetDeviceUserSettings", 0.1};
                 // first check if legit id, and then store
                 // @todo check if good id and throw if not...
-                auto lk = fCachedDeviceUserSettings_.rwget ();
+                auto       lk = fCachedDeviceUserSettings_.rwget ();
+                lock_guard lock{this->fDBConnectionPtr_};
                 if (settings) {
                     if (fCachedDeviceUserSettings_.cget ().cref ().Lookup (id) != settings) {
                         fDeviceUserSettingsTableConnection_.rwget ().cref ()->AddOrUpdate (Private_::ExternalDeviceUserSettingsElt_{id, *settings});
@@ -665,6 +666,7 @@ namespace {
                             }
                             Assert (ni.fSeen); // don't track/write items which have never been seen
                                                //                            auto rec2Update = fDB_.AddOrMergeUpdate (networkTableConnection.get (), ni);
+                            lock_guard lock{this->fDBConnectionPtr_};
                             networkTableConnection->AddOrUpdate (ni);
                             sDBNetworks_.rwget ()->Add (ni);
                         }
@@ -677,7 +679,8 @@ namespace {
                             }
                             Assert (di.fSeen.EverSeen ());         // don't track/write items which have never been seen
                             Assert (di.fUserOverrides == nullopt); // tracked on rollup devices, not snapshot devices
-                            auto rec2Update = fDB_.AddOrMergeUpdate (deviceTableConnection.get (), di);
+                            lock_guard lock{this->fDBConnectionPtr_};
+                            auto       rec2Update = fDB_.AddOrMergeUpdate (deviceTableConnection.get (), di);
                             sDBDevices_.rwget ()->Add (rec2Update);
                         }
 
