@@ -1,12 +1,27 @@
 
 
 
+		for network- allow saying 'rollup any with this gateway hardware adddress.
+			idea	
+				we have several charnia nets, differing based on ip addr of external address
+		
+			+ added data - next	
+				add WSAPI example and test
+				add code to actually roll these up
+		
+		
 		ALSO - PROBABLY now a good time to add feature to UserSettings (forceIntoRollupClass field)
 		> add fForceAggregatesFingerprint and forceaggregates/disaggregates ID. (rethink details)
 		.. then use that in rollup and when changes for re-compute
 				(must amend rollup logic)
 
 
+---
+another bug with network rollup - seems when external address disappears, rollups sort of change. maybe not a bug. weird case
+cuz has same guid. I THINK I need to change the DISCOVERY code to generate a new GUID in that case???
+
+
+---
 
 				IN progress
 				added fields

@@ -191,6 +191,9 @@ String Model::Network::UserOverridesType::ToString () const
     if (fDontAggregateFingerprint) {
         sb += L"DontAggregateFingerprint: " + Characters::ToString (fDontAggregateFingerprint);
     }
+    if (fAggregateHardwareAddresses) {
+        sb += L"AggregateHardwareAddresses: " + Characters::ToString (fAggregateHardwareAddresses);
+    }
     sb += L"}";
     return sb.str ();
 }
@@ -210,6 +213,7 @@ const DataExchange::ObjectVariantMapper Model::Network::UserOverridesType::kMapp
         {L"dontAggregateNetworks"sv, StructFieldMetaInfo{&UserOverridesType::fDontAggregateNetworks}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"aggregateFingerprint"sv, StructFieldMetaInfo{&UserOverridesType::fAggregateFingerprint}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"dontAggregateFingerprint"sv, StructFieldMetaInfo{&UserOverridesType::fDontAggregateFingerprint}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"aggregateHardwareAddresses"sv, StructFieldMetaInfo{&UserOverridesType::fAggregateHardwareAddresses}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
     return mapper;
 }();
@@ -221,6 +225,9 @@ const DataExchange::ObjectVariantMapper Model::Network::UserOverridesType::kMapp
  */
 Network Network::Merge (const Network& baseNetwork, const Network& priorityNetwork)
 {
+    // Note: items that are atomic can be copied with CopyToIf (handles optional part)
+    // Items that are structured, if (most of the time) you want to just conditionally replace the ones
+    // that are present, iterate and copy2if or add subelements.
     Network merged = baseNetwork;
     merged.fGUID   = priorityNetwork.fGUID;
     for (const auto& i : priorityNetwork.fNames) {
@@ -230,7 +237,7 @@ Network Network::Merge (const Network& baseNetwork, const Network& priorityNetwo
     merged.fAttachedInterfaces.AddAll (priorityNetwork.fAttachedInterfaces);
     merged.fGateways += priorityNetwork.fGateways;
     merged.fGatewayHardwareAddresses += priorityNetwork.fGatewayHardwareAddresses;
-    priorityNetwork.fDNSServers.Apply ([&] (auto inetAddr) {  if (not merged.fDNSServers.Contains (inetAddr)) {merged.fDNSServers += inetAddr;} });
+    priorityNetwork.fDNSServers.Apply ([&] (auto inetAddr) {  merged.fDNSServers += inetAddr; });
     Memory::AccumulateIf (&merged.fExternalAddresses, priorityNetwork.fExternalAddresses);
     Memory::CopyToIf (&merged.fGEOLocInformation, priorityNetwork.fGEOLocInformation);
     Memory::CopyToIf (&merged.fInternetServiceProvider, priorityNetwork.fInternetServiceProvider);

@@ -285,6 +285,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
             optional<Set<GUID>>            fDontAggregateNetworks;
             optional<Set<FingerprintType>> fAggregateFingerprint;
             optional<Set<FingerprintType>> fDontAggregateFingerprint;
+            optional<Set<String>>          fAggregateHardwareAddresses;
 
 #if __cpp_impl_three_way_comparison < 201711
             bool operator== (const UserOverridesType& rhs) const
@@ -308,6 +309,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
                     return false;
                 }
                 if (fDontAggregateFingerprint != rhs.fDontAggregateFingerprint) {
+                    return false;
+                }
+                if (fAggregateHardwareAddresses != rhs.fAggregateHardwareAddresses) {
                     return false;
                 }
                 return true;
