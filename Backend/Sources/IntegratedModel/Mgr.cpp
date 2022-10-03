@@ -133,6 +133,7 @@ namespace {
             nw.fExternalAddresses        = n.fExternalAddresses;
             nw.fGEOLocInformation        = n.fGEOLocInfo;
             nw.fInternetServiceProvider  = n.fISP;
+            nw.fSeen                     = n.fSeen;
 #if qDebug
             if (not n.fDebugProps.empty ()) {
                 nw.fDebugProps = n.fDebugProps;
@@ -204,11 +205,9 @@ namespace {
         Sequence<Network> GetNetworks_ ()
         {
             Debug::TimingTrace ttrc{L"DiscoveryWrapper_::GetNetworks_", 0.1};
-            DateTime           now = DateTime::Now ();
             Sequence<Network>  result;
             for (const Discovery::Network& n : Discovery::NetworksMgr::sThe.CollectActiveNetworks ()) {
                 Network nw = Discovery2Model_ (n);
-                nw.fSeen   = Range<DateTime>{now, now}; // discovered now, when rolled up, expand timeframe
                 result += nw;
             }
 #if USE_NOISY_TRACE_IN_THIS_MODULE_

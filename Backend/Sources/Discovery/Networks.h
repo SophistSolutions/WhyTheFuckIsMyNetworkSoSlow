@@ -12,6 +12,8 @@
 #include "Stroika/Foundation/Containers/Set.h"
 #include "Stroika/Foundation/IO/Network/CIDR.h"
 #include "Stroika/Foundation/IO/Network/InternetAddress.h"
+#include "Stroika/Foundation/Time/DateTime.h"
+#include "Stroika/Foundation/Traversal/Range.h"
 
 #include "../Common/GeoLocation.h"
 #include "../Common/InternetServiceProvider.h"
@@ -34,6 +36,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
     using IO::Network::CIDR;
     using IO::Network::InternetAddress;
     using Stroika::Foundation::Common::GUID;
+    using Time::DateTime;
+    using Traversal::Range;
 
     using namespace BackendApp::Common;
 
@@ -57,6 +61,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
         Set<CIDR>                fNetworkAddresses;
         GUID                     fGUID;
         Common::PrioritizedNames fNames;
+        Range<DateTime>          fSeen;
 
         Set<GUID> fAttachedNetworkInterfaces;
 

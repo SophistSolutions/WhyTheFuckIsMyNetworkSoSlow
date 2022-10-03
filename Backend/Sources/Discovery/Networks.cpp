@@ -99,6 +99,7 @@ String Discovery::Network::ToString () const
     sb += L"GUID: " + Characters::ToString (fGUID) + L", ";
     sb += L"IP-Address: " + Characters::ToString (fNetworkAddresses) + L", ";
     sb += L"Names: " + Characters::ToString (fNames) + L", ";
+    sb += L"Seen: " + Characters::ToString (fSeen) + L", ";
     sb += L"Gateways: " + Characters::ToString (fGateways) + L", ";
     sb += L"GatewayHardwareAddresses: " + Characters::ToString (fGatewayHardwareAddresses) + L", ";
     sb += L"DNS-Servers: " + Characters::ToString (fDNSServers) + L", ";
@@ -174,18 +175,21 @@ namespace {
 #endif
         Require (sActive_);
 
-        auto genProperNetworkID = [] (Network* nw) {
+        auto genProperNetworkIDAndSeen = [] (Network* nw) {
             static Execution::Synchronized<Collection<Network>> sExistingNetworks_;
             RequireNotNull (nw);
             Require (nw->fGUID == GUID{});
             auto existingNWsLock = sExistingNetworks_.rwget ();
             for (const Network& nwi : existingNWsLock.load ()) {
-                if (nwi.fGateways == nw->fGateways and nwi.fNetworkAddresses.SetEquals (nw->fNetworkAddresses)) {
+                if (nwi.fGateways == nw->fGateways and nwi.fNetworkAddresses == nw->fNetworkAddresses) {
                     nw->fGUID = nwi.fGUID;
+                    nw->fSeen = nwi.fSeen;
                     return;
                 }
             }
             nw->fGUID = GUID::GenerateNew ();
+            auto now  = Time::DateTime::Now ();
+            nw->fSeen  = Range<DateTime>{now, now};
             existingNWsLock->Add (*nw);
         };
         auto genCIDRsFromBindings = [] (const Iterable<CIDR>& bindings) -> Set<CIDR> {
@@ -278,8 +282,9 @@ namespace {
                     // the real ethernet adapter).
                     // -- LGP 2018-12-16
                     if (nw.fGUID == GUID{}) {
-                        genProperNetworkID (&nw);
+                        genProperNetworkIDAndSeen (&nw);
                     }
+                    nw.fSeen = nw.fSeen.Extend (Time::DateTime::Now ());
 
                     nw.fNames.Add (i.fFriendlyName, 25); // unsure how to sort out priorities and/or dups if same net on multiple interfaces...
 
