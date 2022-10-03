@@ -189,7 +189,7 @@ namespace {
             }
             nw->fGUID = GUID::GenerateNew ();
             auto now  = Time::DateTime::Now ();
-            nw->fSeen  = Range<DateTime>{now, now};
+            nw->fSeen = Range<DateTime>{now, now};
             existingNWsLock->Add (*nw);
         };
         auto genCIDRsFromBindings = [] (const Iterable<CIDR>& bindings) -> Set<CIDR> {
