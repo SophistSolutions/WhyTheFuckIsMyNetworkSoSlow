@@ -237,7 +237,7 @@ Network Network::Merge (const Network& baseNetwork, const Network& priorityNetwo
     merged.fAttachedInterfaces.AddAll (priorityNetwork.fAttachedInterfaces);
     merged.fGateways += priorityNetwork.fGateways;
     merged.fGatewayHardwareAddresses += priorityNetwork.fGatewayHardwareAddresses;
-    priorityNetwork.fDNSServers.Apply ([&] (auto inetAddr) {  merged.fDNSServers += inetAddr; });
+    priorityNetwork.fDNSServers.Apply ([&] (auto inetAddr) { merged.fDNSServers += inetAddr; });
     Memory::AccumulateIf (&merged.fExternalAddresses, priorityNetwork.fExternalAddresses);
     Memory::CopyToIf (&merged.fGEOLocInformation, priorityNetwork.fGEOLocInformation);
     Memory::CopyToIf (&merged.fInternetServiceProvider, priorityNetwork.fInternetServiceProvider);
