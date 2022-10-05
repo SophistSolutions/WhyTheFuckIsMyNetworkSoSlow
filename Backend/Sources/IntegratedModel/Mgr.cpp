@@ -495,7 +495,7 @@ namespace {
                 Require (fDatabaseSyncThread_ == nullptr);
                 fDatabaseSyncThread_ = Thread::New ([this] () { BackgroundDatabaseThread_ (); }, Thread::eAutoStart, L"BackgroundDatabaseThread"sv);
             }
-            Mgr_ (const Mgr_&) = delete;
+            Mgr_ (const Mgr_&)            = delete;
             Mgr_& operator= (const Mgr_&) = delete;
             ~Mgr_ ()
             {
@@ -707,10 +707,10 @@ namespace {
 
         struct RolledUpNetworks {
         public:
-            RolledUpNetworks ()                        = default;
-            RolledUpNetworks (const RolledUpNetworks&) = default;
-            RolledUpNetworks (RolledUpNetworks&&)      = default;
-            RolledUpNetworks& operator= (RolledUpNetworks&&) = default;
+            RolledUpNetworks ()                                   = default;
+            RolledUpNetworks (const RolledUpNetworks&)            = default;
+            RolledUpNetworks (RolledUpNetworks&&)                 = default;
+            RolledUpNetworks& operator= (RolledUpNetworks&&)      = default;
             RolledUpNetworks& operator= (const RolledUpNetworks&) = default;
 
         public:
@@ -746,10 +746,19 @@ namespace {
              *
              *  But typically this will just update the record for an existing rollup.
              */
-            nonvirtual void MergeIn (const Network& net2MergeIn)
+            nonvirtual void MergeIn (const Iterable<Network>& nets2MergeIn)
             {
-                fRawNetworks_ += net2MergeIn;
-                MergeIn_ (net2MergeIn);
+                fRawNetworks_ += nets2MergeIn;
+                bool anyFailed = false;
+                for (const Network& n : nets2MergeIn) {
+                    if (MergeIn_ (n) == PassFailType_::eFail) {
+                        anyFailed = true;
+                        break;
+                    }
+                }
+                if (anyFailed) {
+                    RecomputeAll_ ();
+                }
             }
 
         public:
@@ -765,34 +774,75 @@ namespace {
             }
 
         private:
-            void MergeIn_ (const Network& net2MergeIn)
+            enum class PassFailType_ { ePass,
+                                       eFail };
+            // if fails simple merge, returns false, so must call recomputeall
+            PassFailType_ MergeIn_ (const Network& net2MergeIn)
             {
                 // @todo https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/75 - fix corner case
-                Network::FingerprintType net2MergeInFingerprint = net2MergeIn.GenerateFingerprintFromProperties ();
-                if (auto formerRollupID = fMapFingerprint2RollupID.Lookup (net2MergeInFingerprint)) {
-                    auto alreadyRolledUpNetwork = Memory::ValueOf (fRolledUpNetworks_.Lookup (*formerRollupID)); // must be in list because we keep those in sync here in this class
-                    // Quick case - fingerprint for net2MergeIn in a rolled up network. See if that still matches...
-                    Assert (alreadyRolledUpNetwork.fAggregatesFingerprints); // cuz always set in rolled up networks
-                    if (alreadyRolledUpNetwork.fAggregatesFingerprints->Contains (net2MergeInFingerprint)) {
+                Network::FingerprintType net2MergeInFingerprint      = net2MergeIn.GenerateFingerprintFromProperties ();
+                const auto [oShouldRollIntoNet, shouldInvalidateAll] = ShouldRollupInto_ (net2MergeIn, net2MergeInFingerprint);
+                if (shouldInvalidateAll == PassFailType_::ePass) {
+                    if (oShouldRollIntoNet) {
                         // then we rollup to this same rollup network - very common case - so just re-rollup, and we are done
-                        AddUpdateIn_ (alreadyRolledUpNetwork, net2MergeIn, net2MergeInFingerprint);
-                    }
-                    else {
-                        // this means we USED to rollup to one network, and NOW must rollup to another, so remove from old network
-                        // and add to new one. COULD POSSIBLY do this otherwise sometimes, but in general very hard so KISS for now (rare)
-                        RecomputeAll_ ();
-                    }
-                }
-                else {
-                    // if this network was already present, it was in a different rollup. We COULD POSSIBLY SOMETIMES just patch that
-                    // but for now KISS, and recomputeall
-                    if (fMapAggregatedNetID2RollupID_.ContainsKey (net2MergeIn.fGUID)) {
-                        RecomputeAll_ ();
+                        AddUpdateIn_ (*oShouldRollIntoNet, net2MergeIn, net2MergeInFingerprint);
                     }
                     else {
                         AddNewIn_ (net2MergeIn, net2MergeInFingerprint);
                     }
+                    return PassFailType_::ePass;
                 }
+                return PassFailType_::eFail;
+            }
+            // Find the appropriate network to merge net2MergeIn into from our existing networks (using whatever keys we have to make this often quicker)
+            // This can be slow for the case of a network change. And it can refer to a different rollup network than it used to.
+            // second part of tuple returned is 'revalidateAll' - force recompute of whole rollup
+            tuple<optional<Network>, PassFailType_> ShouldRollupInto_ (const Network& net2MergeIn, const Network::FingerprintType& net2MergeInFingerprint)
+            {
+                auto formerRollupID = fMapFingerprint2RollupID.Lookup (net2MergeInFingerprint);
+                if (formerRollupID) {
+                    auto alreadyRolledUpNetwork = Memory::ValueOf (fRolledUpNetworks_.Lookup (*formerRollupID)); // must be in list because we keep those in sync here in this class
+                    Assert (alreadyRolledUpNetwork.fAggregatesFingerprints);                                     // cuz always set in rolled up networks
+                    if (ShouldRollupInto_ (net2MergeIn, net2MergeInFingerprint, alreadyRolledUpNetwork)) {
+                        return make_tuple (alreadyRolledUpNetwork, PassFailType_::ePass);
+                    }
+                }
+                // SEARCH FULL LIST of already rolled up networks to find the right network to roll into; if we already had rolled into a
+                // different one, don't bother cuz have to recompute anyhow
+                if (not formerRollupID.has_value ()) {
+                    for (const auto& ri : fRolledUpNetworks_) {
+                        if (ShouldRollupInto_ (net2MergeIn, net2MergeInFingerprint, ri)) {
+                            return make_tuple (ri, PassFailType_::ePass);
+                        }
+                    }
+                }
+                return make_tuple (nullopt, PassFailType_::eFail);
+            }
+            bool ShouldRollupInto_ (const Network& net2MergeIn, const Network::FingerprintType& net2MergeInFingerprint, const Network& targetRollup)
+            {
+                // check aggregates not necessarily from user settings
+                if (targetRollup.fAggregatesFingerprints and targetRollup.fAggregatesFingerprints->Contains (net2MergeInFingerprint)) {
+                    return true;
+                }
+                if (targetRollup.fAggregatesReversibly and targetRollup.fAggregatesReversibly->Contains (net2MergeIn.fGUID)) {
+                    return true;
+                }
+                if (targetRollup.fAggregatesIrreversibly and targetRollup.fAggregatesIrreversibly->Contains (net2MergeIn.fGUID)) {
+                    return true;
+                }
+                // lose these checks if rollup combines them
+                if (auto riu = targetRollup.fUserOverrides) {
+                    if (riu->fAggregateFingerprint and riu->fAggregateFingerprint->Contains (net2MergeInFingerprint)) {
+                        return true;
+                    }
+                    if (riu->fAggregateHardwareAddresses and riu->fAggregateHardwareAddresses->Intersects (net2MergeIn.fGatewayHardwareAddresses)) {
+                        return true;
+                    }
+                    if (riu->fAggregateNetworks and riu->fAggregateNetworks->Contains (net2MergeIn.fGUID)) {
+                        return true;
+                    }
+                }
+                return false;
             }
             void AddUpdateIn_ (const Network& addNet2MergeFromThisRollup, const Network& net2MergeIn, const Network::FingerprintType& net2MergeInFingerprint)
             {
@@ -841,7 +891,9 @@ namespace {
                 fMapAggregatedNetID2RollupID_.clear ();
                 fMapFingerprint2RollupID.clear ();
                 for (const auto& ni : fRawNetworks_) {
-                    MergeIn_ (ni);
+                    if ( MergeIn_ (ni) == PassFailType_::eFail) {
+                        AddNewIn_ (ni, ni.GenerateFingerprintFromProperties ());
+                    }
                 }
             }
 
@@ -885,14 +937,11 @@ namespace {
                 RolledUpNetworks result                 = sRolledUpNetworks_;
                 static bool      sDidMergeFromDatabase_ = false; // no need to roll these up more than once
                 if (not sDidMergeFromDatabase_) {
-                    for (const auto& rdi : DBAccess_::sDBNetworks_.load ()) {
-                        result.MergeIn (rdi);
-                        sDidMergeFromDatabase_ = true; // trick to make sure database had finished loading sDBNetworks_ (should restructure so more clear)
-                    }
+                    auto dbNets = DBAccess_::sDBNetworks_.load ();
+                    result.MergeIn (dbNets);
+                    sDidMergeFromDatabase_ = not dbNets.empty (); // trick to make sure database had finished loading sDBNetworks_ (should restructure so more clear)
                 }
-                for (const Network& d : DiscoveryWrapper_::GetNetworks_ ()) {
-                    result.MergeIn (d);
-                }
+                result.MergeIn (DiscoveryWrapper_::GetNetworks_ ());
                 sRolledUpNetworks_ = result; // save here so we can update rollup networks instead of creating anew each time
                 return result;
             });
@@ -900,11 +949,11 @@ namespace {
 
         struct RolledUpDevices {
         public:
-            RolledUpDevices ()                       = default;
-            RolledUpDevices (const RolledUpDevices&) = default;
-            RolledUpDevices (RolledUpDevices&&)      = default;
+            RolledUpDevices ()                                  = default;
+            RolledUpDevices (const RolledUpDevices&)            = default;
+            RolledUpDevices (RolledUpDevices&&)                 = default;
             RolledUpDevices& operator= (const RolledUpDevices&) = default;
-            RolledUpDevices& operator= (RolledUpDevices&&) = default;
+            RolledUpDevices& operator= (RolledUpDevices&&)      = default;
 
         public:
             /**
