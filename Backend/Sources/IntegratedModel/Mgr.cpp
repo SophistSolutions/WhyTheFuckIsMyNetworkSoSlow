@@ -717,7 +717,7 @@ namespace {
             /**
              *  This returns the current rolled up network objects.
              */
-            NetworkKeyedCollection_ GetNetworks () const
+            nonvirtual NetworkKeyedCollection_ GetNetworks () const
             {
                 return fRolledUpNetworks_;
             }

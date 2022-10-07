@@ -117,7 +117,7 @@ struct WSImpl::Rep_ {
     MyCapturer_ fMyCapturer;
 };
 WSImpl::WSImpl ()
-    : fRep_ (make_shared<Rep_> ())
+    : fRep_{make_shared<Rep_> ()}
 {
 }
 
