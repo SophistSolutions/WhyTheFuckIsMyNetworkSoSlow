@@ -1,4 +1,7 @@
 
+Do user setting so all networks with device address 70:97:41:94:1a:00
+are Chania rollup. Debug getting that to work well (from webservices).
+
 
 
 		for network- allow saying 'rollup any with this gateway hardware adddress.
