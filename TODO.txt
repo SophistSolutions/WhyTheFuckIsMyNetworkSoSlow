@@ -1,3 +1,8 @@
+restructyure cacche code for nets and devices so static members of rollups with invalidate method.
+THEN - change static data cache to be otpional. ANd on first run, load in the empties and store in that rollup. But add
+method so we also track non-empty ones (ones that aggregate). So we can just return those. Maybe GetAllRolledUp and GetAllActiveRolledUp()
+
+
 
 Do user setting so all networks with device address 70:97:41:94:1a:00
 are Chania rollup. Debug getting that to work well (from webservices).

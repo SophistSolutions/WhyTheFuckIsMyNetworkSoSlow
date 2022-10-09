@@ -227,37 +227,6 @@ namespace {
 }
 
 namespace {
-    namespace RollupCommon_ {
-        using IntegratedModel::Device;
-        using IntegratedModel::Network;
-        using IntegratedModel::NetworkAttachmentInfo;
-        bool ShouldRollup_ (const Device& exisingRolledUpDevice, const Device& d2)
-        {
-            if ((exisingRolledUpDevice.fAggregatesIrreversibly and exisingRolledUpDevice.fAggregatesIrreversibly->Contains (d2.fGUID)) or (exisingRolledUpDevice.fAggregatesIrreversibly and exisingRolledUpDevice.fAggregatesIrreversibly->Contains (d2.fGUID))) {
-                // we retry the same 'discovered' networks repeatedly and re-roll them up.
-                // mostly this is handled by having the same hardware addresses, but sometimes (like for main discovered device)
-                // MAY not yet / always have network interface). And besides, this check cheaper/faster probably.
-                return true;
-            }
-            // very rough first draft. Later add database stored 'exceptions' and/or rules tables to augment this logic
-            auto hw1 = exisingRolledUpDevice.GetHardwareAddresses ();
-            auto hw2 = d2.GetHardwareAddresses ();
-            if (Set<String>::Intersects (hw1, hw2)) {
-                return true;
-            }
-            // If EITHER device has no hardware addresses, there is little to identify it, so roll it up with anything with the same IP address, by default
-            if (hw1.empty () or hw2.empty ()) {
-                // then fold together if they have the same IP Addresses
-                // return d1.GetInternetAddresses () == d2.GetInternetAddresses ();
-                return Set<InternetAddress>::Intersects (exisingRolledUpDevice.GetInternetAddresses (), d2.GetInternetAddresses ());
-            }
-            // unclear if above test should be if EITHER set is empty, maybe then do if timeframes very close?
-            return false;
-        }
-    }
-}
-
-namespace {
     namespace DBAccess_ {
         using namespace SQL::ORM;
 
@@ -495,7 +464,7 @@ namespace {
                 Require (fDatabaseSyncThread_ == nullptr);
                 fDatabaseSyncThread_ = Thread::New ([this] () { BackgroundDatabaseThread_ (); }, Thread::eAutoStart, L"BackgroundDatabaseThread"sv);
             }
-            Mgr_ (const Mgr_&)            = delete;
+            Mgr_ (const Mgr_&) = delete;
             Mgr_& operator= (const Mgr_&) = delete;
             ~Mgr_ ()
             {
@@ -503,7 +472,7 @@ namespace {
                 Execution::Thread::SuppressInterruptionInContext suppressInterruption; // must complete this abort and wait for done - this cannot abort/throw
                 fDatabaseSyncThread_.AbortAndWaitForDone ();
             }
-            GUID GenNewDeviceID (const String& hwAddress)
+            nonvirtual GUID GenNewDeviceID (const String& hwAddress)
             {
                 Debug::TimingTrace ttrc{L"GenNewDeviceID", 0.001}; // sb very quick
                 auto               l = DBAccess_::sAdvisoryHWAddr2GUIDCache.rwget ();
@@ -521,12 +490,12 @@ namespace {
                 }
                 return newRes;
             }
-            GUID GenNewDeviceID (const Set<String>& hwAddresses)
+            nonvirtual GUID GenNewDeviceID (const Set<String>& hwAddresses)
             {
                 // consider if there is a better way to select which hwaddress to use
                 return hwAddresses.empty () ? GUID::GenerateNew () : GenNewDeviceID (*hwAddresses.First ());
             }
-            GUID GenNewNetworkID (const GUID& probablyUniqueIDForNetwork)
+            nonvirtual GUID GenNewNetworkID (const GUID& probablyUniqueIDForNetwork)
             {
                 Debug::TimingTrace ttrc{L"GenNewNetworkID", 0.001}; // sb very quick
                 auto               l = DBAccess_::sAdvisoryGuessedRollupID2NetworkGUIDCache.rwget ();
@@ -544,12 +513,12 @@ namespace {
                 }
                 return newRes;
             }
-            optional<Model::Device::UserOverridesType> LookupDevicesUserSettings (const GUID& guid) const
+            nonvirtual optional<Model::Device::UserOverridesType> LookupDevicesUserSettings (const GUID& guid) const
             {
                 Debug::TimingTrace ttrc{L"IntegratedModel...LookupDevicesUserSettings ()", 0.001};
                 return fCachedDeviceUserSettings_.cget ().cref ().Lookup (guid);
             }
-            bool SetDeviceUserSettings (const GUID& id, const std::optional<IntegratedModel::Device::UserOverridesType>& settings)
+            nonvirtual bool SetDeviceUserSettings (const GUID& id, const std::optional<IntegratedModel::Device::UserOverridesType>& settings)
             {
                 Debug::TimingTrace ttrc{L"IntegratedModel ... SetDeviceUserSettings", 0.1};
                 // first check if legit id, and then store
@@ -569,13 +538,13 @@ namespace {
                     return fCachedDeviceUserSettings_.rwget ().rwref ().RemoveIf (id);
                 }
             }
-            optional<Model::Network::UserOverridesType> LookupNetworkUserSettings (const GUID& guid) const
+            nonvirtual optional<Model::Network::UserOverridesType> LookupNetworkUserSettings (const GUID& guid) const
             {
                 Debug::TimingTrace ttrc{L"IntegratedModel...LookupNetworkUserSettings ()", 0.001};
                 return fCachedNetworkUserSettings_.cget ().cref ().Lookup (guid);
             }
             // return true if changed
-            bool SetNetworkUserSettings (const GUID& id, const std::optional<IntegratedModel::Network::UserOverridesType>& settings)
+            nonvirtual bool SetNetworkUserSettings (const GUID& id, const std::optional<IntegratedModel::Network::UserOverridesType>& settings)
             {
                 Debug::TimingTrace ttrc{L"IntegratedModel ... SetNetworkUserSettings", 0.1};
                 // first check if legit id, and then store
@@ -703,14 +672,17 @@ namespace {
 
 namespace {
     namespace RollupSummary_ {
-        using namespace RollupCommon_;
+
+        using IntegratedModel::Device;
+        using IntegratedModel::Network;
+        using IntegratedModel::NetworkAttachmentInfo;
 
         struct RolledUpNetworks {
         public:
-            RolledUpNetworks ()                                   = default;
-            RolledUpNetworks (const RolledUpNetworks&)            = default;
-            RolledUpNetworks (RolledUpNetworks&&)                 = default;
-            RolledUpNetworks& operator= (RolledUpNetworks&&)      = default;
+            RolledUpNetworks ()                        = default;
+            RolledUpNetworks (const RolledUpNetworks&) = default;
+            RolledUpNetworks (RolledUpNetworks&&)      = default;
+            RolledUpNetworks& operator= (RolledUpNetworks&&) = default;
             RolledUpNetworks& operator= (const RolledUpNetworks&) = default;
 
         public:
@@ -771,6 +743,71 @@ namespace {
             nonvirtual void RecomputeAll ()
             {
                 RecomputeAll_ ();
+            }
+
+        public:
+            // INTERNALLY SYNCRHONIZED
+            /// DRAFT NOTES ON WHEN I NEED TO INVALIATE ROLLEDUP NETWORKS.
+            /// INVALIDATE IF 'UserSettings' change, which might cause different rollups (this includes fingerprint to guid map)
+            ///
+            static RolledUpNetworks GetCached (Time::DurationSecondsType allowedStaleness = 5.0)
+            {
+                Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...RolledUpNetworks::GetCached")};
+                Debug::TimingTrace        ttrc{L"RolledUpNetworks::GetCached", 1};
+                // SynchronizedCallerStalenessCache object just assures one rollup RUNS internally at a time, and
+                // that two calls in rapid succession, the second call re-uses the previous value
+                static Cache::SynchronizedCallerStalenessCache<void, RolledUpNetworks> sCache_;
+                // Disable fHoldWriteLockDuringCacheFill due to https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/23
+                // See also
+                //      https://stroika.atlassian.net/browse/STK-906 - possible enhancement to this configuration to work better avoiding
+                //      See https://stroika.atlassian.net/browse/STK-907 - about needing some new mechanism in Stroika for deadlock detection/avoidance.
+                // sCache_.fHoldWriteLockDuringCacheFill = true; // so only one call to filler lambda at a time
+                return sCache_.LookupValue (sCache_.Ago (allowedStaleness), [] () -> RolledUpNetworks {
+                    /*
+                     *  DEADLOCK NOTE
+                     *      Since this can be called while rolling up DEVICES, its important that this code not call anything involving device rollup since
+                     *      that could trigger a deadlock.
+                     */
+                    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...RolledUpNetworks::GetCached...cachefiller")};
+                    Debug::TimingTrace        ttrc{L"RolledUpNetworks::GetCached...cachefiller", 1};
+
+                    // Start with the existing rolled up objects
+                    // and merge in any more recent discovery changes
+                    RolledUpNetworks result = [] () {
+                        auto lk = sRolledUpNetworks_.rwget ();
+                        if (not lk.cref ().has_value ()) {
+                            if (not DBAccess_::sFinishedInitialDBLoad_) {
+                                // Design Choice - could return non-standardized rollup IDs if DB not loaded, but then those IDs would
+                                // disappear later in the run, leading to possible client confusion. Best to just not say anything til DB loaded
+                                // Could ALSO do 2 stage DB load - critical stuff for IDs, and the detailed DB records. All we need is first
+                                // stage for here...
+                                Execution::Throw (HTTP::Exception{HTTP::StatusCodes::kServiceUnavailable, L"Database not yet loaded"_k});
+                            }
+                            RolledUpNetworks initialDBNets;
+                            // @todo add more stuff here - empty preset rules from DB
+                            // merge two tables - ID to fingerprint and user settings tables and store those in this rollup early
+                            // maybe make CTOR for rolledupnetworks take in ital DB netwworks and rules, and have copyis CTOR taking orig networks and new rules?
+                            initialDBNets.MergeIn (DBAccess_::sDBNetworks_.load ());
+                            lk.store (initialDBNets);
+                        }
+                        return Memory::ValueOf (lk.load ());
+                    }();
+                    // not sure we want to allow this? @todo consider throwing here or asserting out cuz nets rollup IDs would change after this
+                    result.MergeIn (DiscoveryWrapper_::GetNetworks_ ());
+                    sRolledUpNetworks_ = result; // save here so we can update rollup networks instead of creating anew each time
+                    return result;
+                });
+            }
+
+        public:
+            // INTERNALLY SYNCRHONIZED
+            static void InvalidateCache ()
+            {
+                auto lk = sRolledUpNetworks_.rwget ();
+                if (lk->has_value ()) {
+                    lk.rwref ()->RecomputeAll ();
+                }
+                // else OK if not yet loaded, nothing to invalidate
             }
 
         private:
@@ -891,7 +928,7 @@ namespace {
                 fMapAggregatedNetID2RollupID_.clear ();
                 fMapFingerprint2RollupID.clear ();
                 for (const auto& ni : fRawNetworks_) {
-                    if ( MergeIn_ (ni) == PassFailType_::eFail) {
+                    if (MergeIn_ (ni) == PassFailType_::eFail) {
                         AddNewIn_ (ni, ni.GenerateFingerprintFromProperties ());
                     }
                 }
@@ -902,77 +939,37 @@ namespace {
             NetworkKeyedCollection_                 fRolledUpNetworks_;
             Mapping<GUID, GUID>                     fMapAggregatedNetID2RollupID_; // each aggregate netid is mapped to at most one rollup id)
             Mapping<Network::FingerprintType, GUID> fMapFingerprint2RollupID;      // each fingerprint can map to at most one rollup...
+        private:
+            static Synchronized<optional<RolledUpNetworks>> sRolledUpNetworks_;
         };
-
-        Synchronized<RolledUpNetworks> sRolledUpNetworks_;
-
-        /// DRAFT NOTES ON WHEN I NEED TO INVALIATE ROLLEDUP NETWORKS.
-        /// INVALIDATE IF 'UserSettings' change, which might cause different rollups (this includes fingerprint to guid map)
-        /// INVALIUDATE IF a network changes its fingerprint (so this only applies to active networks - or really networks created since db load)
-        ///
-        RolledUpNetworks GetRolledUpNetworks (Time::DurationSecondsType allowedStaleness = 5.0)
-        {
-            Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...GetRolledUpNetworks")};
-            Debug::TimingTrace        ttrc{L"GetRolledUpNetworks", 1};
-            // SynchronizedCallerStalenessCache object just assures one rollup RUNS internally at a time, and
-            // that two calls in rapid succession, the second call re-uses the previous value
-            static Cache::SynchronizedCallerStalenessCache<void, RolledUpNetworks> sCache_;
-            // Disable fHoldWriteLockDuringCacheFill due to https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/23
-            // See also
-            //      https://stroika.atlassian.net/browse/STK-906 - possible enhancement to this configuration to work better avoiding
-            //      See https://stroika.atlassian.net/browse/STK-907 - about needing some new mechanism in Stroika for deadlock detection/avoidance.
-            // sCache_.fHoldWriteLockDuringCacheFill = true; // so only one call to filler lambda at a time
-            return sCache_.LookupValue (sCache_.Ago (allowedStaleness), [] () -> RolledUpNetworks {
-                /*
-                 *  DEADLOCK NOTE
-                 *      Since this can be called while rolling up DEVICES, its important that this code not call anything involving device rollup since
-                 *      that could trigger a deadlock.
-                 */
-                Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...GetRolledUpNetworks...cachefiller")};
-                Debug::TimingTrace        ttrc{L"GetRolledUpNetworks...cachefiller", 1};
-
-                // Start with the existing rolled up devices
-                // and then add in (should be done just once) the values from the database,
-                // and then keep adding any more recent discovery changes
-                RolledUpNetworks result                 = sRolledUpNetworks_;
-                static bool      sDidMergeFromDatabase_ = false; // no need to roll these up more than once
-                if (not sDidMergeFromDatabase_) {
-                    auto dbNets = DBAccess_::sDBNetworks_.load ();
-                    result.MergeIn (dbNets);
-                    sDidMergeFromDatabase_ = not dbNets.empty (); // trick to make sure database had finished loading sDBNetworks_ (should restructure so more clear)
-                }
-                result.MergeIn (DiscoveryWrapper_::GetNetworks_ ());
-                sRolledUpNetworks_ = result; // save here so we can update rollup networks instead of creating anew each time
-                return result;
-            });
-        }
+        Synchronized<optional<RolledUpNetworks>> RolledUpNetworks::sRolledUpNetworks_;
 
         struct RolledUpDevices {
         public:
-            RolledUpDevices ()                                  = default;
-            RolledUpDevices (const RolledUpDevices&)            = default;
-            RolledUpDevices (RolledUpDevices&&)                 = default;
+            RolledUpDevices ()                       = default;
+            RolledUpDevices (const RolledUpDevices&) = default;
+            RolledUpDevices (RolledUpDevices&&)      = default;
             RolledUpDevices& operator= (const RolledUpDevices&) = default;
-            RolledUpDevices& operator= (RolledUpDevices&&)      = default;
+            RolledUpDevices& operator= (RolledUpDevices&&) = default;
 
         public:
             /**
              *  This returns the current rolled up device objects.
              */
-            DeviceKeyedCollection_ GetDevices () const
+            nonvirtual DeviceKeyedCollection_ GetDevices () const
             {
                 return fRolledUpDevices;
             }
 
         public:
-            void MergeIn (const Device& d, const RolledUpNetworks& useRolledUpNetworks)
+            nonvirtual void MergeIn (const Device& d, const RolledUpNetworks& useRolledUpNetworks)
             {
                 fRawDevices_ += d;
                 MergeIn_ (d, useRolledUpNetworks);
             }
 
         public:
-            void RecomputeAll (const RolledUpNetworks& useRolledUpNetworks)
+            nonvirtual void RecomputeAll (const RolledUpNetworks& useRolledUpNetworks)
             {
                 RecomputeAll_ (useRolledUpNetworks);
             }
@@ -983,7 +980,7 @@ namespace {
                 // see if it still should be rolled up in the place it was last rolled up as a shortcut
                 if (optional<GUID> prevRollupID = fRaw2RollupIDMap_.Lookup (d2MergeIn.fGUID)) {
                     Device rollupDevice = Memory::ValueOf (fRolledUpDevices.Lookup (*prevRollupID)); // must be there cuz in sync with fRaw2RollupIDMap_
-                    if (RollupCommon_::ShouldRollup_ (rollupDevice, d2MergeIn)) {
+                    if (ShouldRollup_ (rollupDevice, d2MergeIn)) {
                         MergeInUpdate_ (rollupDevice, d2MergeIn, useRolledUpNetworks);
                     }
                     else {
@@ -1046,6 +1043,29 @@ namespace {
                 }
                 return result;
             };
+            static bool ShouldRollup_ (const Device& exisingRolledUpDevice, const Device& d2)
+            {
+                if ((exisingRolledUpDevice.fAggregatesIrreversibly and exisingRolledUpDevice.fAggregatesIrreversibly->Contains (d2.fGUID)) or (exisingRolledUpDevice.fAggregatesIrreversibly and exisingRolledUpDevice.fAggregatesIrreversibly->Contains (d2.fGUID))) {
+                    // we retry the same 'discovered' networks repeatedly and re-roll them up.
+                    // mostly this is handled by having the same hardware addresses, but sometimes (like for main discovered device)
+                    // MAY not yet / always have network interface). And besides, this check cheaper/faster probably.
+                    return true;
+                }
+                // very rough first draft. Later add database stored 'exceptions' and/or rules tables to augment this logic
+                auto hw1 = exisingRolledUpDevice.GetHardwareAddresses ();
+                auto hw2 = d2.GetHardwareAddresses ();
+                if (Set<String>::Intersects (hw1, hw2)) {
+                    return true;
+                }
+                // If EITHER device has no hardware addresses, there is little to identify it, so roll it up with anything with the same IP address, by default
+                if (hw1.empty () or hw2.empty ()) {
+                    // then fold together if they have the same IP Addresses
+                    // return d1.GetInternetAddresses () == d2.GetInternetAddresses ();
+                    return Set<InternetAddress>::Intersects (exisingRolledUpDevice.GetInternetAddresses (), d2.GetInternetAddresses ());
+                }
+                // unclear if above test should be if EITHER set is empty, maybe then do if timeframes very close?
+                return false;
+            }
 
         private:
             DeviceKeyedCollection_ fRolledUpDevices;
@@ -1073,8 +1093,8 @@ namespace {
                 Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...GetRolledUpDevies...cachefiller")};
                 Debug::TimingTrace        ttrc{L"GetRolledUpDevies...cachefiller", 1};
 
-                auto rolledUpNetworks = GetRolledUpNetworks (allowedStaleness * 10.0); // longer allowedStaleness cuz we dont care much about this and the parts
-                                                                                       // we look at really dont change
+                auto rolledUpNetworks = RolledUpNetworks::GetCached (allowedStaleness * 10.0); // longer allowedStaleness cuz we dont care much about this and the parts
+                                                                                               // we look at really dont change
 
                 // Start with the existing rolled up devices
                 // and then add in (should be done just once) the values from the database,
@@ -1082,10 +1102,11 @@ namespace {
                 RolledUpDevices result                 = sRolledUpDevicesFromDB_;
                 static bool     sDidMergeFromDatabase_ = false; // no need to roll these up more than once, and be sure to do that one rollup after sFinishedInitialDBLoad_
                 if (not sDidMergeFromDatabase_ and DBAccess_::sFinishedInitialDBLoad_) {
-                    sDidMergeFromDatabase_ = true;
+                    result = RolledUpDevices{}; // always start with empty from database
                     for (const auto& rdi : DBAccess_::sDBDevices_.load ()) {
                         result.MergeIn (rdi, rolledUpNetworks);
                     }
+                    sDidMergeFromDatabase_ = true;
                 }
                 for (const Device& d : DiscoveryWrapper_::GetDevices_ ()) {
                     result.MergeIn (d, rolledUpNetworks);
@@ -1153,7 +1174,7 @@ std::optional<IntegratedModel::Device::UserOverridesType> IntegratedModel::Mgr::
 void IntegratedModel::Mgr::SetDeviceUserSettings (const Common::GUID& id, const std::optional<IntegratedModel::Device::UserOverridesType>& settings)
 {
     if (DBAccess_::sMgr_->SetDeviceUserSettings (id, settings)) {
-        RollupSummary_::sRolledUpDevicesFromDB_.rwget ().rwref ().RecomputeAll (RollupSummary_::GetRolledUpNetworks ());
+        RollupSummary_::sRolledUpDevicesFromDB_.rwget ().rwref ().RecomputeAll (RollupSummary_::RolledUpNetworks::GetCached ());
     }
 }
 
@@ -1179,13 +1200,13 @@ Sequence<IntegratedModel::Network> IntegratedModel::Mgr::GetNetworks () const
 {
     Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"IntegratedModel::Mgr::GetNetworks")};
     Debug::TimingTrace        ttrc{L"IntegratedModel::Mgr::GetNetworks", 0.1};
-    return Sequence<IntegratedModel::Network>{RollupSummary_::GetRolledUpNetworks ().GetNetworks ()};
+    return Sequence<IntegratedModel::Network>{RollupSummary_::RolledUpNetworks::GetCached ().GetNetworks ()};
 }
 
 optional<IntegratedModel::Network> IntegratedModel::Mgr::GetNetwork (const GUID& id) const
 {
     // first check rolled up networks, and then raw/unrolled up networks
-    auto result = RollupSummary_::GetRolledUpNetworks ().GetNetworks ().Lookup (id);
+    auto result = RollupSummary_::RolledUpNetworks::GetCached ().GetNetworks ().Lookup (id);
     if (not result.has_value ()) {
         result = DBAccess_::sDBNetworks_.load ().Lookup (id);
         if (result) {
@@ -1204,7 +1225,7 @@ std::optional<IntegratedModel::Network::UserOverridesType> IntegratedModel::Mgr:
 void IntegratedModel::Mgr::SetNetworkUserSettings (const Common::GUID& id, const std::optional<IntegratedModel::Network::UserOverridesType>& settings)
 {
     if (DBAccess_::sMgr_->SetNetworkUserSettings (id, settings)) {
-        RollupSummary_::sRolledUpNetworks_.rwget ().rwref ().RecomputeAll ();
+        RollupSummary_::RolledUpNetworks::InvalidateCache ();
     }
 }
 
