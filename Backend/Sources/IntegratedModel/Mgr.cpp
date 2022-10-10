@@ -746,10 +746,10 @@ namespace {
             }
 
         public:
-            // INTERNALLY SYNCRHONIZED
-            /// DRAFT NOTES ON WHEN I NEED TO INVALIATE ROLLEDUP NETWORKS.
-            /// INVALIDATE IF 'UserSettings' change, which might cause different rollups (this includes fingerprint to guid map)
-            ///
+            /**
+             * INTERNALLY SYNCRHONIZED
+             * INVALIDATE IF 'UserSettings' change, which might cause different rollups (this includes fingerprint to guid map)
+             */
             static RolledUpNetworks GetCached (Time::DurationSecondsType allowedStaleness = 5.0)
             {
                 Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...RolledUpNetworks::GetCached")};
@@ -962,10 +962,19 @@ namespace {
             }
 
         public:
-            nonvirtual void MergeIn (const Device& d, const RolledUpNetworks& useRolledUpNetworks)
+            nonvirtual void MergeIn (const Iterable<Device>& devices2MergeIn, const RolledUpNetworks& useRolledUpNetworks)
             {
-                fRawDevices_ += d;
-                MergeIn_ (d, useRolledUpNetworks);
+                fRawDevices_ += devices2MergeIn;
+                bool anyFailed = false;
+                for (const Device& d : devices2MergeIn) {
+                    if (MergeIn_ (d, useRolledUpNetworks) == PassFailType_::eFail) {
+                        anyFailed = true;
+                        break;
+                    }
+                }
+                if (anyFailed) {
+                    RecomputeAll_ (useRolledUpNetworks);
+                }
             }
 
         public:
@@ -974,18 +983,80 @@ namespace {
                 RecomputeAll_ (useRolledUpNetworks);
             }
 
+        public:
+            static RolledUpDevices GetCached (Time::DurationSecondsType allowedStaleness = 10.0)
+            {
+                Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...RolledUpDevices::GetCached")};
+                Debug::TimingTrace        ttrc{L"...RolledUpDevices::GetCached", 1};
+                // SynchronizedCallerStalenessCache object just assures one rollup RUNS internally at a time, and
+                // that two calls in rapid succession, the second call re-uses the previous value
+                static Cache::SynchronizedCallerStalenessCache<void, RolledUpDevices> sCache_;
+                // Disable this cache setting due to https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/23
+                // See also
+                //      https://stroika.atlassian.net/browse/STK-906 - possible enhancement to this configuration to work better avoiding
+                //      See https://stroika.atlassian.net/browse/STK-907 - about needing some new mechanism in Stroika for deadlock detection/avoidance.
+                // sCache_.fHoldWriteLockDuringCacheFill = true; // so only one call to filler lambda at a time
+                return sCache_.LookupValue (sCache_.Ago (allowedStaleness), [=] () -> RolledUpDevices {
+                    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...RolledUpDevices::GetCached...cachefiller")};
+                    Debug::TimingTrace        ttrc{L"RolledUpDevices::GetCached...cachefiller", 1};
+
+                    auto rolledUpNetworks = RolledUpNetworks::GetCached (allowedStaleness * 3.0); // longer allowedStaleness cuz we dont care much about this and the parts
+                                                                                                  // we look at really dont change
+
+                    // Start with the existing rolled up objects
+                    // and merge in any more recent discovery changes
+                    RolledUpDevices result = [&] () {
+                        auto lk = sRolledUpDevicesSoFar_.rwget ();
+                        if (not lk.cref ().has_value ()) {
+                            if (not DBAccess_::sFinishedInitialDBLoad_) {
+                                // Design Choice - could return non-standardized rollup IDs if DB not loaded, but then those IDs would
+                                // disappear later in the run, leading to possible client confusion. Best to just not say anything til DB loaded
+                                // Could ALSO do 2 stage DB load - critical stuff for IDs, and the detailed DB records. All we need is first
+                                // stage for here...
+                                Execution::Throw (HTTP::Exception{HTTP::StatusCodes::kServiceUnavailable, L"Database not yet loaded"_k});
+                            }
+                            RolledUpDevices initialDBDevices;
+                            // @todo add more stuff here - empty preset rules from DB
+                            // merge two tables - ID to fingerprint and user settings tables and store those in this rollup early
+                            // maybe make CTOR for rolledupnetworks take in ital DB netwworks and rules, and have copyis CTOR taking orig networks and new rules?
+                            initialDBDevices.MergeIn (DBAccess_::sDBDevices_.load (), rolledUpNetworks);
+                            lk.store (initialDBDevices);
+                        }
+                        return Memory::ValueOf (lk.load ());
+                    }();
+                    // not sure we want to allow this? @todo consider throwing here or asserting out cuz nets rollup IDs would change after this
+                    result.MergeIn (DiscoveryWrapper_::GetDevices_ (), rolledUpNetworks);
+                    sRolledUpDevicesSoFar_ = result; // save here so we can update rollup networks instead of creating anew each time
+                    return result;
+                });
+            }
+
+        public:
+            // INTERNALLY SYNCRHONIZED
+            static void InvalidateCache ()
+            {
+                auto lk = sRolledUpDevicesSoFar_.rwget ();
+                if (lk->has_value ()) {
+                    lk.rwref ()->RecomputeAll (RollupSummary_::RolledUpNetworks::GetCached ());
+                }
+                // else OK if not yet loaded, nothing to invalidate
+            }
+
         private:
-            void MergeIn_ (const Device& d2MergeIn, const RolledUpNetworks& useRolledUpNetworks)
+            enum class PassFailType_ { ePass,
+                                       eFail };
+            // if fails simple merge, returns false, so must call recomputeall
+            PassFailType_ MergeIn_ (const Device& d2MergeIn, const RolledUpNetworks& useRolledUpNetworks)
             {
                 // see if it still should be rolled up in the place it was last rolled up as a shortcut
                 if (optional<GUID> prevRollupID = fRaw2RollupIDMap_.Lookup (d2MergeIn.fGUID)) {
                     Device rollupDevice = Memory::ValueOf (fRolledUpDevices.Lookup (*prevRollupID)); // must be there cuz in sync with fRaw2RollupIDMap_
                     if (ShouldRollup_ (rollupDevice, d2MergeIn)) {
                         MergeInUpdate_ (rollupDevice, d2MergeIn, useRolledUpNetworks);
+                        return PassFailType_::ePass;
                     }
                     else {
-                        // rollup changed, so recompute all
-                        RecomputeAll_ (useRolledUpNetworks);
+                        return PassFailType_::eFail; // rollup changed, so recompute all
                     }
                 }
                 else {
@@ -996,6 +1067,7 @@ namespace {
                     else {
                         MergeInNew_ (d2MergeIn, useRolledUpNetworks);
                     }
+                    return PassFailType_::ePass;
                 }
             }
             void MergeInUpdate_ (const Device& rollupDevice, const Device& newDevice2MergeIn, const RolledUpNetworks& useRolledUpNetworks)
@@ -1032,7 +1104,9 @@ namespace {
                 fRolledUpDevices.clear ();
                 fRaw2RollupIDMap_.clear ();
                 for (const auto& di : fRawDevices_) {
-                    MergeIn_ (di, useRolledUpNetworks);
+                    if (MergeIn_ (di, useRolledUpNetworks) == PassFailType_::eFail) {
+                        Assert (false); //nyi - or maybe just bug since we have mapping so device goes into two different rollups?
+                    }
                 }
             }
             auto MapAggregatedAttachments2Rollups_ (const RolledUpNetworks& useRolledUpNetworks, const Mapping<GUID, NetworkAttachmentInfo>& nats) -> Mapping<GUID, NetworkAttachmentInfo>
@@ -1071,50 +1145,12 @@ namespace {
             DeviceKeyedCollection_ fRolledUpDevices;
             DeviceKeyedCollection_ fRawDevices_;
             Mapping<GUID, GUID>    fRaw2RollupIDMap_; // each aggregate deviceid is mapped to at most one rollup id)
+
+            // sRolledUpDevicesSoFar_: keep a cache of the rolled up devices so far, just
+            // as a slight performance tweek
+            static Synchronized<optional<RolledUpDevices>> sRolledUpDevicesSoFar_;
         };
-
-        // sRolledUpDevicesFromDB_: keep a cache of the rolled up devices as of our first load from the database, just
-        // as a slight performance tweek.
-        Synchronized<RolledUpDevices> sRolledUpDevicesFromDB_;
-
-        RolledUpDevices GetRolledUpDevies (Time::DurationSecondsType allowedStaleness = 10.0)
-        {
-            Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...GetRolledUpDevies")};
-            Debug::TimingTrace        ttrc{L"GetRolledUpDevies", 1};
-            // SynchronizedCallerStalenessCache object just assures one rollup RUNS internally at a time, and
-            // that two calls in rapid succession, the second call re-uses the previous value
-            static Cache::SynchronizedCallerStalenessCache<void, RolledUpDevices> sCache_;
-            // Disable this cache setting due to https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/23
-            // See also
-            //      https://stroika.atlassian.net/browse/STK-906 - possible enhancement to this configuration to work better avoiding
-            //      See https://stroika.atlassian.net/browse/STK-907 - about needing some new mechanism in Stroika for deadlock detection/avoidance.
-            // sCache_.fHoldWriteLockDuringCacheFill = true; // so only one call to filler lambda at a time
-            return sCache_.LookupValue (sCache_.Ago (allowedStaleness), [=] () -> RolledUpDevices {
-                Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...GetRolledUpDevies...cachefiller")};
-                Debug::TimingTrace        ttrc{L"GetRolledUpDevies...cachefiller", 1};
-
-                auto rolledUpNetworks = RolledUpNetworks::GetCached (allowedStaleness * 10.0); // longer allowedStaleness cuz we dont care much about this and the parts
-                                                                                               // we look at really dont change
-
-                // Start with the existing rolled up devices
-                // and then add in (should be done just once) the values from the database,
-                // and then keep adding any more recent discovery changes
-                RolledUpDevices result                 = sRolledUpDevicesFromDB_;
-                static bool     sDidMergeFromDatabase_ = false; // no need to roll these up more than once, and be sure to do that one rollup after sFinishedInitialDBLoad_
-                if (not sDidMergeFromDatabase_ and DBAccess_::sFinishedInitialDBLoad_) {
-                    result = RolledUpDevices{}; // always start with empty from database
-                    for (const auto& rdi : DBAccess_::sDBDevices_.load ()) {
-                        result.MergeIn (rdi, rolledUpNetworks);
-                    }
-                    sDidMergeFromDatabase_ = true;
-                }
-                for (const Device& d : DiscoveryWrapper_::GetDevices_ ()) {
-                    result.MergeIn (d, rolledUpNetworks);
-                }
-                sRolledUpDevicesFromDB_ = result; // save here so we can update new rollup devices in place usually
-                return result;
-            });
-        }
+        Synchronized<optional<RolledUpDevices>> RolledUpDevices::sRolledUpDevicesSoFar_;
 
     }
 }
@@ -1147,7 +1183,7 @@ Sequence<IntegratedModel::Device> IntegratedModel::Mgr::GetDevices () const
 {
     Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"IntegratedModel::Mgr::GetDevices")};
     Debug::TimingTrace        ttrc{L"IntegratedModel::Mgr::GetDevices", .1};
-    return Sequence<IntegratedModel::Device>{RollupSummary_::GetRolledUpDevies ().GetDevices ()};
+    return Sequence<IntegratedModel::Device>{RollupSummary_::RolledUpDevices::GetCached ().GetDevices ()};
 }
 
 optional<IntegratedModel::Device> IntegratedModel::Mgr::GetDevice (const GUID& id) const
@@ -1155,7 +1191,7 @@ optional<IntegratedModel::Device> IntegratedModel::Mgr::GetDevice (const GUID& i
     // first check rolled up devices, and then raw/unrolled up devices
     // NOTE - this doesn't check the 'dynamic' copy of the devices - it waits til those get migrated to the DB, once ever
     // 30 seconds roughtly...
-    auto result = RollupSummary_::GetRolledUpDevies ().GetDevices ().Lookup (id);
+    auto result = RollupSummary_::RolledUpDevices::GetCached ().GetDevices ().Lookup (id);
     if (not result.has_value ()) {
         result = DBAccess_::sDBDevices_.load ().Lookup (id);
         if (result) {
@@ -1174,7 +1210,7 @@ std::optional<IntegratedModel::Device::UserOverridesType> IntegratedModel::Mgr::
 void IntegratedModel::Mgr::SetDeviceUserSettings (const Common::GUID& id, const std::optional<IntegratedModel::Device::UserOverridesType>& settings)
 {
     if (DBAccess_::sMgr_->SetDeviceUserSettings (id, settings)) {
-        RollupSummary_::sRolledUpDevicesFromDB_.rwget ().rwref ().RecomputeAll (RollupSummary_::RolledUpNetworks::GetCached ());
+        RollupSummary_::RolledUpDevices::InvalidateCache ();
     }
 }
 
@@ -1184,7 +1220,7 @@ std::optional<GUID> IntegratedModel::Mgr::GetCorrespondingDynamicDeviceID (const
     if (dynamicDevices.Contains (id)) {
         return id;
     }
-    auto thisRolledUpDevice = RollupSummary_::GetRolledUpDevies ().GetDevices ().Lookup (id);
+    auto thisRolledUpDevice = RollupSummary_::RolledUpDevices::GetCached ().GetDevices ().Lookup (id);
     if (thisRolledUpDevice and thisRolledUpDevice->fAggregatesReversibly) {
         // then find the dynamic device corresponding to this rollup, which will be (as of 2022-06-22) in the aggregates reversibly list
         if (auto ff = thisRolledUpDevice->fAggregatesReversibly->First ([&] (const GUID& d) -> bool { return dynamicDevices.Contains (d); })) {
