@@ -1,6 +1,7 @@
-restructyure cacche code for nets and devices so static members of rollups with invalidate method.
-THEN - change static data cache to be otpional. ANd on first run, load in the empties and store in that rollup. But add
-method so we also track non-empty ones (ones that aggregate). So we can just return those. Maybe GetAllRolledUp and GetAllActiveRolledUp()
+Rollup Code for Nets/Devices:
+
+	 on first run, load in the empties and store in that rollup. But add
+	method so we also track non-empty ones (ones that aggregate). So we can just return those. Maybe GetAllRolledUp and GetAllActiveRolledUp()
 
 	.... mostly above done but still fix startup code to load initial values from DB before trying rollup
 

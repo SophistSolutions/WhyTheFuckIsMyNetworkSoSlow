@@ -679,7 +679,10 @@ namespace {
 
         struct RolledUpNetworks {
         public:
-            RolledUpNetworks ()                        = default;
+            RolledUpNetworks (const Iterable<Network>& nets2MergeIn)
+            {
+                MergeIn (nets2MergeIn);
+            }
             RolledUpNetworks (const RolledUpNetworks&) = default;
             RolledUpNetworks (RolledUpNetworks&&)      = default;
             RolledUpNetworks& operator= (RolledUpNetworks&&) = default;
@@ -782,13 +785,11 @@ namespace {
                                 // Could ALSO do 2 stage DB load - critical stuff for IDs, and the detailed DB records. All we need is first
                                 // stage for here...
                                 Execution::Throw (HTTP::Exception{HTTP::StatusCodes::kServiceUnavailable, L"Database not yet loaded"_k});
-                            }
-                            RolledUpNetworks initialDBNets;
+                            };
                             // @todo add more stuff here - empty preset rules from DB
                             // merge two tables - ID to fingerprint and user settings tables and store those in this rollup early
                             // maybe make CTOR for rolledupnetworks take in ital DB netwworks and rules, and have copyis CTOR taking orig networks and new rules?
-                            initialDBNets.MergeIn (DBAccess_::sDBNetworks_.load ());
-                            lk.store (initialDBNets);
+                            lk.store (RolledUpNetworks{DBAccess_::sDBNetworks_.load ()});
                         }
                         return Memory::ValueOf (lk.load ());
                     }();
@@ -946,7 +947,10 @@ namespace {
 
         struct RolledUpDevices {
         public:
-            RolledUpDevices ()                       = default;
+            RolledUpDevices (const Iterable<Device>& devices2MergeIn, const RolledUpNetworks& useRolledUpNetworks)
+            {
+                MergeIn (devices2MergeIn, useRolledUpNetworks);
+            }
             RolledUpDevices (const RolledUpDevices&) = default;
             RolledUpDevices (RolledUpDevices&&)      = default;
             RolledUpDevices& operator= (const RolledUpDevices&) = default;
@@ -1015,11 +1019,10 @@ namespace {
                                 // stage for here...
                                 Execution::Throw (HTTP::Exception{HTTP::StatusCodes::kServiceUnavailable, L"Database not yet loaded"_k});
                             }
-                            RolledUpDevices initialDBDevices;
                             // @todo add more stuff here - empty preset rules from DB
                             // merge two tables - ID to fingerprint and user settings tables and store those in this rollup early
                             // maybe make CTOR for rolledupnetworks take in ital DB netwworks and rules, and have copyis CTOR taking orig networks and new rules?
-                            initialDBDevices.MergeIn (DBAccess_::sDBDevices_.load (), rolledUpNetworks);
+                            RolledUpDevices initialDBDevices{DBAccess_::sDBDevices_.load (), rolledUpNetworks};
                             lk.store (initialDBDevices);
                         }
                         return Memory::ValueOf (lk.load ());
