@@ -6,6 +6,17 @@ Rollup Code for Nets/Devices:
 	settings, and can have one or other. OTHER is just the network fingerprint we sometimes use. DONT bother initializing data strucutres
 	with those, but use them in the current guessid way with the current warnings about overlap.
 
+	WAS:
+				+ Lose ID-Cache tables in backend (recently added) -and just use the UserSettings tables for the same purpose (a field
+					saying map thi common id /rollup helper id for networks and something an aggregates for 
+					devices - or aggregates for both)
+
+					This signifcantly cahnges/simplifes startup logic - must load all devices etc on startup.
+					(UNSURE ABOUT THIS - MAYBE)
+
+					THINK OUT CAREFULLY. WANT WHEN NETWORK GOES AWAY FOR THIS CACHE/MAP TO GO AWAY. DONT WANT ANY EMPTY rollup networks.
+					ALSO - in some ways nice if user table only contains user specifiied data. But maybe still OK/simpler that way.
+
 	++ AUTO EXTRACT STUFF LIKE NAMES FROM usersettings (add method to apply) - instaeda of manaully settig fNames.Add () in many
 	places.
 
@@ -13,32 +24,6 @@ Rollup Code for Nets/Devices:
 		> add fForceAggregatesFingerprint and forceaggregates/disaggregates ID. (rethink details)
 		.. then use that in rollup and when changes for re-compute
 				(must amend rollup logic)
-
-
----
-another bug with network rollup - seems when external address disappears, rollups sort of change. maybe not a bug. weird case
-cuz has same guid. I THINK I need to change the DISCOVERY code to generate a new GUID in that case???
-
-
----
-
-				IN progress
-				added fields
-				must add patch logic and docs examples
-				and must then pay attention to in rollup (instead of other guy in device itself?) and recompute
-				the rollup device aggregates feilds and assure raw device ones (and raw net ones) always empty when written to db
-
----\
-
-	+ Lose ID-Cache tables in backend (recently added) -and just use the UserSettings tables for the same purpose (a field
-		saying map thi common id /rollup helper id for networks and something an aggregates for 
-		devices - or aggregates for both)
-
-		This signifcantly cahnges/simplifes startup logic - must load all devices etc on startup.
-		(UNSURE ABOUT THIS - MAYBE)
-
-		THINK OUT CAREFULLY. WANT WHEN NETWORK GOES AWAY FOR THIS CACHE/MAP TO GO AWAY. DONT WANT ANY EMPTY rollup networks.
-		ALSO - in some ways nice if user table only contains user specifiied data. But maybe still OK/simpler that way.
 
 -- 
 RETURN TO	
