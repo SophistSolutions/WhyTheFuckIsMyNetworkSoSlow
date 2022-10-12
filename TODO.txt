@@ -5,6 +5,17 @@ Rollup Code for Nets/Devices:
 
 	.... mostly above done but still fix startup code to load initial values from DB before trying rollup
 
+	not sure I need to remove empty ones and not sure I can construct rollup networks without any legit data.
+	may need second structure.
+
+
+++ Simplify data strucutres written to db, so one user settings table, but extra column for not user settings but remembered 
+settings, and can have one or other. OTHER is just the network fingerprint we sometimes use. DONT bother initializing data strucutres
+with those, but use them in the current guessid way with the current warnings about overlap.
+
+++ AUTO EXTRACT STUFF LIKE NAMES FROM usersettings (add method to apply) - instaeda of manaully settig fNames.Add () in many
+  places.
+
 Do user setting so all networks with device address 70:97:41:94:1a:00
 are Chania rollup. Debug getting that to work well (from webservices).
 

@@ -265,7 +265,7 @@ Network Network::Rollup (const Network& rollupNetwork, const Network& instanceNe
 {
     // Use seen.Ever() to decide which 'device' gets precedence in merging. Give the most
     // recent device precedence
-    Network merged = rollupNetwork.fSeen.GetUpperBound () < instanceNetwork2Add.fSeen.GetUpperBound ()
+    Network merged = (rollupNetwork.fSeen.empty () or rollupNetwork.fSeen.GetUpperBound () < instanceNetwork2Add.fSeen.GetUpperBound ())
                          ? Merge (rollupNetwork, instanceNetwork2Add)
                          : Merge (instanceNetwork2Add, rollupNetwork);
     merged.fGUID   = rollupNetwork.fGUID; // regardless of dates, keep the rollupDevice GUID

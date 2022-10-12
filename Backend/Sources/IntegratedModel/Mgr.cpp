@@ -513,6 +513,11 @@ namespace {
                 }
                 return newRes;
             }
+            nonvirtual Mapping<GUID, Model::Device::UserOverridesType> GetDeviceUserSettings () const
+            {
+                Debug::TimingTrace ttrc{L"IntegratedModel...LookupDevicesUserSettings ()", 0.001};
+                return fCachedDeviceUserSettings_.cget ().cref ();
+            }
             nonvirtual optional<Model::Device::UserOverridesType> LookupDevicesUserSettings (const GUID& guid) const
             {
                 Debug::TimingTrace ttrc{L"IntegratedModel...LookupDevicesUserSettings ()", 0.001};
@@ -537,6 +542,11 @@ namespace {
                     fDeviceUserSettingsTableConnection_.rwget ().cref ()->Delete (id);
                     return fCachedDeviceUserSettings_.rwget ().rwref ().RemoveIf (id);
                 }
+            }
+            nonvirtual Mapping<GUID, Model::Network::UserOverridesType> GetNetworkUserSettings () const
+            {
+                Debug::TimingTrace ttrc{L"IntegratedModel...GetNetworkUserSettings ()", 0.001};
+                return fCachedNetworkUserSettings_.cget ().cref ();
             }
             nonvirtual optional<Model::Network::UserOverridesType> LookupNetworkUserSettings (const GUID& guid) const
             {
@@ -679,8 +689,19 @@ namespace {
 
         struct RolledUpNetworks {
         public:
-            RolledUpNetworks (const Iterable<Network>& nets2MergeIn)
+            RolledUpNetworks (const Iterable<Network>& nets2MergeIn, const Mapping<GUID, Network::UserOverridesType>& userOverrides)
             {
+                fStarterRollups_ = userOverrides.Select<Network> (
+                    [] (const auto& guid2UOTPair) -> Network {
+                        Network nw;
+                        nw.fGUID          = guid2UOTPair.fKey;
+                        nw.fUserOverrides = guid2UOTPair.fValue;
+                        if (nw.fUserOverrides and nw.fUserOverrides->fName) {
+                            nw.fNames.Add (*nw.fUserOverrides->fName, 500);
+                        }
+                        return nw;
+                    });
+                fRolledUpNetworks_ = fStarterRollups_;
                 MergeIn (nets2MergeIn);
             }
             RolledUpNetworks (const RolledUpNetworks&) = default;
@@ -789,7 +810,7 @@ namespace {
                             // @todo add more stuff here - empty preset rules from DB
                             // merge two tables - ID to fingerprint and user settings tables and store those in this rollup early
                             // maybe make CTOR for rolledupnetworks take in ital DB netwworks and rules, and have copyis CTOR taking orig networks and new rules?
-                            lk.store (RolledUpNetworks{DBAccess_::sDBNetworks_.load ()});
+                            lk.store (RolledUpNetworks{DBAccess_::sDBNetworks_.load (), DBAccess_::sMgr_->GetNetworkUserSettings ()});
                         }
                         return Memory::ValueOf (lk.load ());
                     }();
@@ -840,7 +861,6 @@ namespace {
                 auto formerRollupID = fMapFingerprint2RollupID.Lookup (net2MergeInFingerprint);
                 if (formerRollupID) {
                     auto alreadyRolledUpNetwork = Memory::ValueOf (fRolledUpNetworks_.Lookup (*formerRollupID)); // must be in list because we keep those in sync here in this class
-                    Assert (alreadyRolledUpNetwork.fAggregatesFingerprints);                                     // cuz always set in rolled up networks
                     if (ShouldRollupInto_ (net2MergeIn, net2MergeInFingerprint, alreadyRolledUpNetwork)) {
                         return make_tuple (alreadyRolledUpNetwork, PassFailType_::ePass);
                     }
@@ -928,6 +948,7 @@ namespace {
                 fRolledUpNetworks_.clear ();
                 fMapAggregatedNetID2RollupID_.clear ();
                 fMapFingerprint2RollupID.clear ();
+                fRolledUpNetworks_ += fStarterRollups_;
                 for (const auto& ni : fRawNetworks_) {
                     if (MergeIn_ (ni) == PassFailType_::eFail) {
                         AddNewIn_ (ni, ni.GenerateFingerprintFromProperties ());
@@ -937,6 +958,7 @@ namespace {
 
         private:
             NetworkKeyedCollection_                 fRawNetworks_; // used for RecomputeAll_
+            NetworkKeyedCollection_                 fStarterRollups_;
             NetworkKeyedCollection_                 fRolledUpNetworks_;
             Mapping<GUID, GUID>                     fMapAggregatedNetID2RollupID_; // each aggregate netid is mapped to at most one rollup id)
             Mapping<Network::FingerprintType, GUID> fMapFingerprint2RollupID;      // each fingerprint can map to at most one rollup...
