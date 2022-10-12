@@ -676,7 +676,7 @@ namespace {
                 }
             }
         };
-        optional<Mgr_> sMgr_;
+        optional<Mgr_> sMgr_; // constructed on module activation
     }
 }
 
@@ -687,6 +687,9 @@ namespace {
         using IntegratedModel::Network;
         using IntegratedModel::NetworkAttachmentInfo;
 
+        /**
+         *  Data structure representing a copy of currently rolled up networks data (copyable).
+         */
         struct RolledUpNetworks {
         public:
             RolledUpNetworks (const Iterable<Network>& nets2MergeIn, const Mapping<GUID, Network::UserOverridesType>& userOverrides)
@@ -893,7 +896,7 @@ namespace {
                     if (riu->fAggregateFingerprint and riu->fAggregateFingerprint->Contains (net2MergeInFingerprint)) {
                         return true;
                     }
-                    if (riu->fAggregateHardwareAddresses and riu->fAggregateHardwareAddresses->Intersects (net2MergeIn.fGatewayHardwareAddresses)) {
+                    if (riu->fAggregateGatewayHardwareAddresses and riu->fAggregateGatewayHardwareAddresses->Intersects (net2MergeIn.fGatewayHardwareAddresses)) {
                         return true;
                     }
                     if (riu->fAggregateNetworks and riu->fAggregateNetworks->Contains (net2MergeIn.fGUID)) {
@@ -967,10 +970,24 @@ namespace {
         };
         Synchronized<optional<RolledUpNetworks>> RolledUpNetworks::sRolledUpNetworks_;
 
+        /**
+         *  Data structure representing a copy of currently rolled up devices data (copyable).
+         */
         struct RolledUpDevices {
         public:
-            RolledUpDevices (const Iterable<Device>& devices2MergeIn, const RolledUpNetworks& useRolledUpNetworks)
+            RolledUpDevices (const Iterable<Device>& devices2MergeIn, const Mapping<GUID, Device::UserOverridesType>& userOverrides, const RolledUpNetworks& useRolledUpNetworks)
             {
+                fStarterRollups_ = userOverrides.Select<Device> (
+                    [] (const auto& guid2UOTPair) -> Device {
+                        Device d;
+                        d.fGUID          = guid2UOTPair.fKey;
+                        d.fUserOverrides = guid2UOTPair.fValue;
+                        if (d.fUserOverrides and d.fUserOverrides->fName) {
+                            d.fNames.Add (*d.fUserOverrides->fName, 500);
+                        }
+                        return d;
+                    });
+                fRolledUpDevices = fStarterRollups_;
                 MergeIn (devices2MergeIn, useRolledUpNetworks);
             }
             RolledUpDevices (const RolledUpDevices&) = default;
@@ -1044,7 +1061,7 @@ namespace {
                             // @todo add more stuff here - empty preset rules from DB
                             // merge two tables - ID to fingerprint and user settings tables and store those in this rollup early
                             // maybe make CTOR for rolledupnetworks take in ital DB netwworks and rules, and have copyis CTOR taking orig networks and new rules?
-                            RolledUpDevices initialDBDevices{DBAccess_::sDBDevices_.load (), rolledUpNetworks};
+                            RolledUpDevices initialDBDevices{DBAccess_::sDBDevices_.load (), DBAccess_::sMgr_->GetDeviceUserSettings (), rolledUpNetworks};
                             lk.store (initialDBDevices);
                         }
                         return Memory::ValueOf (lk.load ());
@@ -1128,6 +1145,7 @@ namespace {
             {
                 fRolledUpDevices.clear ();
                 fRaw2RollupIDMap_.clear ();
+                fRolledUpDevices += fStarterRollups_;
                 for (const auto& di : fRawDevices_) {
                     if (MergeIn_ (di, useRolledUpNetworks) == PassFailType_::eFail) {
                         Assert (false); //nyi - or maybe just bug since we have mapping so device goes into two different rollups?
@@ -1167,6 +1185,7 @@ namespace {
             }
 
         private:
+            DeviceKeyedCollection_ fStarterRollups_;
             DeviceKeyedCollection_ fRolledUpDevices;
             DeviceKeyedCollection_ fRawDevices_;
             Mapping<GUID, GUID>    fRaw2RollupIDMap_; // each aggregate deviceid is mapped to at most one rollup id)

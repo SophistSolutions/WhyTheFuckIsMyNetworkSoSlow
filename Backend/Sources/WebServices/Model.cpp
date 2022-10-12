@@ -191,8 +191,8 @@ String Model::Network::UserOverridesType::ToString () const
     if (fDontAggregateFingerprint) {
         sb += L"DontAggregateFingerprint: " + Characters::ToString (fDontAggregateFingerprint);
     }
-    if (fAggregateHardwareAddresses) {
-        sb += L"AggregateHardwareAddresses: " + Characters::ToString (fAggregateHardwareAddresses);
+    if (fAggregateGatewayHardwareAddresses) {
+        sb += L"AggregateGatewayHardwareAddresses: " + Characters::ToString (fAggregateGatewayHardwareAddresses);
     }
     sb += L"}";
     return sb.str ();
@@ -213,7 +213,7 @@ const DataExchange::ObjectVariantMapper Model::Network::UserOverridesType::kMapp
         {L"dontAggregateNetworks"sv, StructFieldMetaInfo{&UserOverridesType::fDontAggregateNetworks}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"aggregateFingerprint"sv, StructFieldMetaInfo{&UserOverridesType::fAggregateFingerprint}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"dontAggregateFingerprint"sv, StructFieldMetaInfo{&UserOverridesType::fDontAggregateFingerprint}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"aggregateHardwareAddresses"sv, StructFieldMetaInfo{&UserOverridesType::fAggregateHardwareAddresses}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"aggregateGatewayHardwareAddresses"sv, StructFieldMetaInfo{&UserOverridesType::fAggregateGatewayHardwareAddresses}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
     return mapper;
 }();

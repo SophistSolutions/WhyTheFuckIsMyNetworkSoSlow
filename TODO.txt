@@ -1,35 +1,14 @@
 Rollup Code for Nets/Devices:
 
-	 on first run, load in the empties and store in that rollup. But add
-	method so we also track non-empty ones (ones that aggregate). So we can just return those. Maybe GetAllRolledUp and GetAllActiveRolledUp()
+	+	review code - using MergeIn_ for recompute all logic not sure right when we have conflict.
 
-	.... mostly above done but still fix startup code to load initial values from DB before trying rollup
+	++ Simplify data strucutres written to db, so one user settings table, but extra column for not user settings but remembered 
+	settings, and can have one or other. OTHER is just the network fingerprint we sometimes use. DONT bother initializing data strucutres
+	with those, but use them in the current guessid way with the current warnings about overlap.
 
-	not sure I need to remove empty ones and not sure I can construct rollup networks without any legit data.
-	may need second structure.
+	++ AUTO EXTRACT STUFF LIKE NAMES FROM usersettings (add method to apply) - instaeda of manaully settig fNames.Add () in many
+	places.
 
-
-++ Simplify data strucutres written to db, so one user settings table, but extra column for not user settings but remembered 
-settings, and can have one or other. OTHER is just the network fingerprint we sometimes use. DONT bother initializing data strucutres
-with those, but use them in the current guessid way with the current warnings about overlap.
-
-++ AUTO EXTRACT STUFF LIKE NAMES FROM usersettings (add method to apply) - instaeda of manaully settig fNames.Add () in many
-  places.
-
-Do user setting so all networks with device address 70:97:41:94:1a:00
-are Chania rollup. Debug getting that to work well (from webservices).
-
-
-
-		for network- allow saying 'rollup any with this gateway hardware adddress.
-			idea	
-				we have several charnia nets, differing based on ip addr of external address
-		
-			+ added data - next	
-				add WSAPI example and test
-				add code to actually roll these up
-		
-		
 		ALSO - PROBABLY now a good time to add feature to UserSettings (forceIntoRollupClass field)
 		> add fForceAggregatesFingerprint and forceaggregates/disaggregates ID. (rethink details)
 		.. then use that in rollup and when changes for re-compute
