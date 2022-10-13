@@ -747,9 +747,11 @@ namespace {
                     return *r;
                 }
                 Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"MapAggregatedNetID2ItsRollupID failed to find netID=%s", Characters::ToString (netID).c_str ())};
+#if qDebug
                 for (const auto& i : fRolledUpNetworks_) {
                     DbgTrace (L"rolledupNet=%s", Characters::ToString (i).c_str ());
                 }
+#endif
                 WeakAssert (false); // @todo fix - because we guarantee each item rolled up exactly once - but happens sometimes on change of network - I think due to outdated device records referring to newer network not yet in this cache...
                 return netID;
             }
