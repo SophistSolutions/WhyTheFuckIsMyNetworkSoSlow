@@ -33,7 +33,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
      */
     class DB {
     public:
+        DB () = delete;
         DB (Version targetDBVersion, const Iterable<ORM::Schema::Table>& tables);
+        DB (const DB&) = default;
+        DB (DB&&)      = default;
 
     public:
         nonvirtual SQL::Connection::Ptr NewConnection ();
