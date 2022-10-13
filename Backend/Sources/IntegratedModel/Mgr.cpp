@@ -819,7 +819,7 @@ namespace {
                     }();
                     // not sure we want to allow this? @todo consider throwing here or asserting out cuz nets rollup IDs would change after this
                     result.MergeIn (DiscoveryWrapper_::GetNetworks_ ());
-                    sRolledUpNetworks_ = result; // save here so we can update rollup networks instead of creating anew each time
+                    sRolledUpNetworks_.store (result); // save here so we can update rollup networks instead of creating anew each time
                     return result;
                 });
             }
@@ -1068,7 +1068,7 @@ namespace {
                     }();
                     // not sure we want to allow this? @todo consider throwing here or asserting out cuz nets rollup IDs would change after this
                     result.MergeIn (DiscoveryWrapper_::GetDevices_ (), rolledUpNetworks);
-                    sRolledUpDevicesSoFar_ = result; // save here so we can update rollup networks instead of creating anew each time
+                    sRolledUpDevicesSoFar_.store (result); // save here so we can update rollup networks instead of creating anew each time
                     return result;
                 });
             }
