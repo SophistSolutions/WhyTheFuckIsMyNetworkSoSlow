@@ -1,4 +1,65 @@
+airplane-greece2boston-2022-10-02
+
+
+
+ curl -v -X PATCH --output - -H "Content-Type: application/json" -d '[{"op":"add","path":"/userOverrides/name","value":"airplane-greece2boston-2022-10-02"}]' http://localhost/api/v1/networks/340ceb50-e337-7669-4d5a-5c6f7a03dbb6
+
+ issue is when we recompute we dont get the auto-add of the fingerprint rule. So new item created.
+
+
+>>> maybe fix is to add 'temporary in ram' usersettings for these assocs? No. Cuz then on restart it fails.
+>>> MAYBE ALL the fake fingerprint rules I cons up MUST be created through consed up user assoc rule? 
+
+
+
+
+
+
+hibernate on airplane, and wakeup PC at home, and confused about networks. Need to treat after wakeup
+as new set of discovered devices/new session. (and net networks)
+
+
+---
++ Create network through usersettings. Then delete it. Its creation causes add to startNetworks in rollup (on restart).
+But the reset doesn't re-remove it, so it stays forever (til next app restart).
+
+----
+PATCH of 
+curl -v -X PATCH --output - -H "Content-Type: application/json" -d '[{"op":"add","path":"/userOverrides/aggregateGatewayHardwareAddresses","value":["70:97:41:94:1a:00"]}]' http://localhost/api/v1/networks/e59ab2d7-09aa-fa02-f030-0d973526d
+c8f
+Or similar with bad path should raise error of some sort
+
+
+340ceb50-e337-7669-4d5a-5c6f7a03dbb6
+
+
+{
+    "UserSettings" : {
+        "aggregateGatewayHardwareAddresses" : [
+            "00:e0:4b:22:96:d9"
+        ],
+        "name" : "airplane-greece2boston-2022-10-02"
+    }
+}
+
+d4a16729-ba16-5c2f-6187-0925a2f7025d
+{
+    "UserSettings" : {
+        "aggregateGatewayHardwareAddresses" : [
+            "70:97:41:94:1a:00"
+        ],
+        "name" : "Chania"
+    }
+}
+
+
+
+
 Rollup Code for Nets/Devices:
+
++ SET of user settings (stuff that could affect rollup) must re-rollup all networks/devices.
+  for example, setting name ADDS name ( I THINK) - and setting rollup hardware address doesnt delete all the
+  existing rollups, just affects future rollups.
 
 	+	review code - using MergeIn_ for recompute all logic not sure right when we have conflict.
 
@@ -19,11 +80,6 @@ Rollup Code for Nets/Devices:
 
 	++ AUTO EXTRACT STUFF LIKE NAMES FROM usersettings (add method to apply) - instaeda of manaully settig fNames.Add () in many
 	places.
-
-		ALSO - PROBABLY now a good time to add feature to UserSettings (forceIntoRollupClass field)
-		> add fForceAggregatesFingerprint and forceaggregates/disaggregates ID. (rethink details)
-		.. then use that in rollup and when changes for re-compute
-				(must amend rollup logic)
 
 -- 
 RETURN TO	
