@@ -722,6 +722,22 @@ namespace {
             }
 
         public:
+            nonvirtual void ResetUserOverrides (const Mapping<GUID, Network::UserOverridesType>& userOverrides)
+            {
+                fStarterRollups_ = userOverrides.Select<Network> (
+                    [] (const auto& guid2UOTPair) -> Network {
+                        Network nw;
+                        nw.fGUID          = guid2UOTPair.fKey;
+                        nw.fUserOverrides = guid2UOTPair.fValue;
+                        if (nw.fUserOverrides and nw.fUserOverrides->fName) {
+                            nw.fNames.Add (*nw.fUserOverrides->fName, 500);
+                        }
+                        return nw;
+                    });
+                RecomputeAll_ ();
+            }
+
+        public:
             /**
              *  Given an aggregated network id, map to the correspoding rollup ID (todo do we need to handle missing case)
              */
@@ -758,18 +774,6 @@ namespace {
                 if (anyFailed) {
                     RecomputeAll_ ();
                 }
-            }
-
-        public:
-            /**
-             *  RecomputeAll ()
-             *  Call this when the rules have changed (use settings or some such) - so we recompute the rollups.
-             *  NOTE - this counts on (for now DBAccess_::sMgr_->GenNewNetworkID) - to figure out how to name rollup ids, which is why
-             *  external data changes could affect it. Also soon there will be entries i user settigns tha tmgiht get paid attention to.
-             */
-            nonvirtual void RecomputeAll ()
-            {
-                RecomputeAll_ ();
             }
 
         public:
@@ -830,7 +834,7 @@ namespace {
             {
                 auto lk = sRolledUpNetworks_.rwget ();
                 if (lk->has_value ()) {
-                    lk.rwref ()->RecomputeAll ();
+                    lk.rwref ()->ResetUserOverrides (DBAccess_::sMgr_->GetNetworkUserSettings ());
                 }
                 // else OK if not yet loaded, nothing to invalidate
             }
@@ -1005,6 +1009,22 @@ namespace {
             }
 
         public:
+            nonvirtual void ResetUserOverrides (const Mapping<GUID, Device::UserOverridesType>& userOverrides, const RolledUpNetworks& useRolledUpNetworks)
+            {
+                fStarterRollups_ = userOverrides.Select<Device> (
+                    [] (const auto& guid2UOTPair) -> Device {
+                        Device d;
+                        d.fGUID          = guid2UOTPair.fKey;
+                        d.fUserOverrides = guid2UOTPair.fValue;
+                        if (d.fUserOverrides and d.fUserOverrides->fName) {
+                            d.fNames.Add (*d.fUserOverrides->fName, 500);
+                        }
+                        return d;
+                    });
+                RecomputeAll_ (useRolledUpNetworks);
+            }
+
+        public:
             nonvirtual void MergeIn (const Iterable<Device>& devices2MergeIn, const RolledUpNetworks& useRolledUpNetworks)
             {
                 fRawDevices_ += devices2MergeIn;
@@ -1018,12 +1038,6 @@ namespace {
                 if (anyFailed) {
                     RecomputeAll_ (useRolledUpNetworks);
                 }
-            }
-
-        public:
-            nonvirtual void RecomputeAll (const RolledUpNetworks& useRolledUpNetworks)
-            {
-                RecomputeAll_ (useRolledUpNetworks);
             }
 
         public:
@@ -1079,7 +1093,7 @@ namespace {
             {
                 auto lk = sRolledUpDevicesSoFar_.rwget ();
                 if (lk->has_value ()) {
-                    lk.rwref ()->RecomputeAll (RollupSummary_::RolledUpNetworks::GetCached ());
+                    lk.rwref ()->ResetUserOverrides (DBAccess_::sMgr_->GetDeviceUserSettings (), RollupSummary_::RolledUpNetworks::GetCached ());
                 }
                 // else OK if not yet loaded, nothing to invalidate
             }
