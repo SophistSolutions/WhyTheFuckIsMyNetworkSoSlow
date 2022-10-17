@@ -120,27 +120,6 @@ namespace {
         using IntegratedModel::Network;
         using IntegratedModel::NetworkAttachmentInfo;
 
-        static Network Discovery2Model_ (const Discovery::Network& n)
-        {
-            Network nw{n.fNetworkAddresses};
-            nw.fGUID                     = n.fGUID;
-            nw.fNames                    = n.fNames;
-            nw.fNetworkAddresses         = n.fNetworkAddresses;
-            nw.fAttachedInterfaces       = n.fAttachedNetworkInterfaces;
-            nw.fDNSServers               = n.fDNSServers;
-            nw.fGateways                 = n.fGateways;
-            nw.fGatewayHardwareAddresses = n.fGatewayHardwareAddresses;
-            nw.fExternalAddresses        = n.fExternalAddresses;
-            nw.fGEOLocInformation        = n.fGEOLocInfo;
-            nw.fInternetServiceProvider  = n.fISP;
-            nw.fSeen                     = n.fSeen;
-#if qDebug
-            if (not n.fDebugProps.empty ()) {
-                nw.fDebugProps = n.fDebugProps;
-            }
-#endif
-            return nw;
-        }
         static Device Discovery2Model_ (const Discovery::Device& d)
         {
             Device newDev;
@@ -201,20 +180,29 @@ namespace {
             Assert (newDev.fSeen.EverSeen ()); // maybe won't always require but look into any cases like this and probably remove them...
             return newDev;
         }
-        // Map all the 'Discovery::Network' objects to 'Model::Network' objects.
-        Sequence<Network> GetNetworks_ ()
+        static Network Discovery2Model_ (const Discovery::Network& n)
         {
-            Debug::TimingTrace ttrc{L"DiscoveryWrapper_::GetNetworks_", 0.1};
-            Sequence<Network>  result;
-            for (const Discovery::Network& n : Discovery::NetworksMgr::sThe.CollectActiveNetworks ()) {
-                Network nw = Discovery2Model_ (n);
-                result += nw;
+            Network nw{n.fNetworkAddresses};
+            nw.fGUID                     = n.fGUID;
+            nw.fNames                    = n.fNames;
+            nw.fNetworkAddresses         = n.fNetworkAddresses;
+            nw.fAttachedInterfaces       = n.fAttachedNetworkInterfaces;
+            nw.fDNSServers               = n.fDNSServers;
+            nw.fGateways                 = n.fGateways;
+            nw.fGatewayHardwareAddresses = n.fGatewayHardwareAddresses;
+            nw.fExternalAddresses        = n.fExternalAddresses;
+            nw.fGEOLocInformation        = n.fGEOLocInfo;
+            nw.fInternetServiceProvider  = n.fISP;
+            nw.fSeen                     = n.fSeen;
+#if qDebug
+            if (not n.fDebugProps.empty ()) {
+                nw.fDebugProps = n.fDebugProps;
             }
-#if USE_NOISY_TRACE_IN_THIS_MODULE_
-            DbgTrace (L"returns: %s", Characters::ToString (result).c_str ());
 #endif
-            return result;
+            return nw;
         }
+
+        // Map all the 'Discovery::Device' objects to 'Model::Device' objects.
         Sequence<Device> GetDevices_ ()
         {
             Debug::TimingTrace ttrc{L"DiscoveryWrapper_::GetDevices_", .1};
@@ -223,461 +211,489 @@ namespace {
                 return Discovery2Model_ (d);
             })};
         }
+        // Map all the 'Discovery::Network' objects to 'Model::Network' objects.
+        Sequence<Network> GetNetworks_ ()
+        {
+            Debug::TimingTrace ttrc{L"DiscoveryWrapper_::GetNetworks_", 0.1};
+            Sequence<Network>  result = Sequence<Network>{Discovery::NetworksMgr::sThe.CollectActiveNetworks ().Select<Network> ([] (const Discovery::Network& n) {
+                return Discovery2Model_ (n);
+            })};
+#if USE_NOISY_TRACE_IN_THIS_MODULE_
+            DbgTrace (L"returns: %s", Characters::ToString (result).c_str ());
+#endif
+            return result;
+        }
     }
 }
 
 namespace {
-    namespace DBAccess_ {
-        using namespace SQL::ORM;
+    /**
+     *  Wrapper on Database access all goes in this DBAccess::Mgr_ module
+     */
+    class DBAccessMgr_ {
+        using Schema_Table         = SQL::ORM::Schema::Table;
+        using Schema_Field         = SQL::ORM::Schema::Field;
+        using Schema_CatchAllField = SQL::ORM::Schema::CatchAllField;
+
+    public:
+        DBAccessMgr_ ()
+        {
+            Debug::TraceContextBumper ctx{L"IntegratedModel::{}::Mgr_::CTOR"};
+            fHWAddr2GUIDCacheTableConnection_             = make_unique<SQL::ORM::TableConnection<HWAddr2GUIDElt_>> (fDBConnectionPtr_, kDeviceIDCacheTableSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<HWAddr2GUIDElt_>> ());
+            fGuessedRollupID2NetGUIDCacheTableConnection_ = make_unique<SQL::ORM::TableConnection<GuessedRollupID2NetGUIDElt_>> (fDBConnectionPtr_, kNetworkIDCacheTableSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<GuessedRollupID2NetGUIDElt_>> ());
+            fDeviceUserSettingsTableConnection_           = make_unique<SQL::ORM::TableConnection<ExternalDeviceUserSettingsElt_>> (fDBConnectionPtr_, kDeviceUserSettingsSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<ExternalDeviceUserSettingsElt_>> ());
+            fNetworkUserSettingsTableConnection_          = make_unique<SQL::ORM::TableConnection<ExternalNetworkUserSettingsElt_>> (fDBConnectionPtr_, kNetworkUserSettingsSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<ExternalNetworkUserSettingsElt_>> ());
+
+            try {
+                Debug::TimingTrace ttrc{L"...load of fAdvisoryHWAddr2GUIDCache_ from database ", 1};
+                lock_guard         lock{this->fDBConnectionPtr_};
+                fAdvisoryHWAddr2GUIDCache_.store (Mapping<String, GUID>{fHWAddr2GUIDCacheTableConnection_.rwget ().rwref ()->GetAll ().Select<KeyValuePair<String, GUID>> ([] (const auto& i) { return KeyValuePair<String, GUID>{i.HWAddress, i.DeviceID}; })});
+            }
+            catch (...) {
+                Logger::sThe.Log (Logger::eError, L"Failed to load fAdvisoryHWAddr2GUIDCache_ from db: %s", Characters::ToString (current_exception ()).c_str ());
+                Execution::ReThrow ();
+            }
+            try {
+                Debug::TimingTrace ttrc{L"...load of fAdvisoryGuessedRollupID2NetworkGUIDCache_ from database ", 1};
+                lock_guard         lock{this->fDBConnectionPtr_};
+                fAdvisoryGuessedRollupID2NetworkGUIDCache_.store (Mapping<GUID, GUID>{fGuessedRollupID2NetGUIDCacheTableConnection_.rwget ().rwref ()->GetAll ().Select<KeyValuePair<GUID, GUID>> ([] (const auto& i) { return KeyValuePair<GUID, GUID>{i.ProbablyUniqueIDForNetwork, i.NetworkID}; })});
+            }
+            catch (...) {
+                Logger::sThe.Log (Logger::eError, L"Failed to load fAdvisoryGuessedRollupID2NetworkGUIDCache_ from db: %s", Characters::ToString (current_exception ()).c_str ());
+                Execution::ReThrow ();
+            }
+            try {
+                Debug::TimingTrace ttrc{L"...load of fCachedDeviceUserSettings_ from database ", 1};
+                lock_guard         lock{this->fDBConnectionPtr_};
+                fCachedDeviceUserSettings_.store (Mapping<GUID, Model::Device::UserOverridesType>{fDeviceUserSettingsTableConnection_.rwget ().cref ()->GetAll ().Select<KeyValuePair<GUID, Model::Device::UserOverridesType>> ([] (const auto& i) { return KeyValuePair<GUID, Model::Device::UserOverridesType>{i.fDeviceID, i.fUserSettings}; })});
+            }
+            catch (...) {
+                Logger::sThe.Log (Logger::eError, L"Failed to load fCachedDeviceUserSettings_ from db: %s", Characters::ToString (current_exception ()).c_str ());
+                Execution::ReThrow ();
+            }
+            try {
+                Debug::TimingTrace ttrc{L"...load of fCachedNetworkUserSettings_ from database ", 1};
+                lock_guard         lock{this->fDBConnectionPtr_};
+                fCachedNetworkUserSettings_.store (Mapping<GUID, Model::Network::UserOverridesType>{fNetworkUserSettingsTableConnection_.rwget ().cref ()->GetAll ().Select<KeyValuePair<GUID, Model::Network::UserOverridesType>> ([] (const auto& i) { return KeyValuePair<GUID, Model::Network::UserOverridesType>{i.fNetworkID, i.fUserSettings}; })});
+            }
+            catch (...) {
+                Logger::sThe.Log (Logger::eError, L"Failed to load fCachedNetworkUserSettings_ from db: %s", Characters::ToString (current_exception ()).c_str ());
+                Execution::ReThrow ();
+            }
+
+            Require (fDatabaseSyncThread_ == nullptr);
+            fDatabaseSyncThread_ = Thread::New ([this] () { BackgroundDatabaseThread_ (); }, Thread::eAutoStart, L"BackgroundDatabaseThread"sv);
+        }
+        DBAccessMgr_ (const DBAccessMgr_&) = delete;
+        DBAccessMgr_& operator= (const DBAccessMgr_&) = delete;
+        ~DBAccessMgr_ ()
+        {
+            Debug::TraceContextBumper                        ctx{L"IntegratedModel::{}::DBAccessMgr_::DTOR"};
+            Execution::Thread::SuppressInterruptionInContext suppressInterruption; // must complete this abort and wait for done - this cannot abort/throw
+            fDatabaseSyncThread_.AbortAndWaitForDone ();
+        }
+        nonvirtual GUID GenNewDeviceID (const String& hwAddress)
+        {
+            Debug::TimingTrace ttrc{L"GenNewDeviceID", 0.001}; // sb very quick
+            auto               l = fAdvisoryHWAddr2GUIDCache_.rwget ();
+            if (auto o = l->Lookup (hwAddress)) {
+                return *o;
+            }
+            GUID newRes = GUID::GenerateNew ();
+            l->Add (hwAddress, newRes);
+            lock_guard lock{this->fDBConnectionPtr_};
+            try {
+                fHWAddr2GUIDCacheTableConnection_.rwget ().rwref ()->AddNew (HWAddr2GUIDElt_{hwAddress, newRes});
+            }
+            catch (...) {
+                Logger::sThe.Log (Logger::eWarning, L"Ignoring error writing hwaddr2deviceid cache table: %s", Characters::ToString (current_exception ()).c_str ());
+            }
+            return newRes;
+        }
+        nonvirtual GUID GenNewDeviceID (const Set<String>& hwAddresses)
+        {
+            // consider if there is a better way to select which hwaddress to use
+            return hwAddresses.empty () ? GUID::GenerateNew () : GenNewDeviceID (*hwAddresses.First ());
+        }
+        nonvirtual GUID GenNewNetworkID (const GUID& probablyUniqueIDForNetwork)
+        {
+            Debug::TimingTrace ttrc{L"GenNewNetworkID", 0.001}; // sb very quick
+            auto               l = fAdvisoryGuessedRollupID2NetworkGUIDCache_.rwget ();
+            if (auto o = l->Lookup (probablyUniqueIDForNetwork)) {
+                return *o;
+            }
+            GUID newRes = GUID::GenerateNew ();
+            l->Add (probablyUniqueIDForNetwork, newRes);
+            lock_guard lock{this->fDBConnectionPtr_};
+            try {
+                fGuessedRollupID2NetGUIDCacheTableConnection_.rwget ().rwref ()->AddNew (GuessedRollupID2NetGUIDElt_{probablyUniqueIDForNetwork, newRes});
+            }
+            catch (...) {
+                Logger::sThe.Log (Logger::eWarning, L"Ignoring error writing ipaddr2NetworkID cache table: %s", Characters::ToString (current_exception ()).c_str ());
+            }
+            return newRes;
+        }
+        nonvirtual Mapping<GUID, Model::Device::UserOverridesType> GetDeviceUserSettings () const
+        {
+            Debug::TimingTrace ttrc{L"IntegratedModel...LookupDevicesUserSettings ()", 0.001};
+            return fCachedDeviceUserSettings_.cget ().cref ();
+        }
+        nonvirtual optional<Model::Device::UserOverridesType> LookupDevicesUserSettings (const GUID& guid) const
+        {
+            Debug::TimingTrace ttrc{L"IntegratedModel...LookupDevicesUserSettings ()", 0.001};
+            return fCachedDeviceUserSettings_.cget ().cref ().Lookup (guid);
+        }
+        nonvirtual bool SetDeviceUserSettings (const GUID& id, const std::optional<IntegratedModel::Device::UserOverridesType>& settings)
+        {
+            Debug::TimingTrace ttrc{L"IntegratedModel ... SetDeviceUserSettings", 0.1};
+            // first check if legit id, and then store
+            // @todo check if good id and throw if not...
+            auto       lk = fCachedDeviceUserSettings_.rwget ();
+            lock_guard lock{this->fDBConnectionPtr_};
+            if (settings) {
+                if (fCachedDeviceUserSettings_.cget ().cref ().Lookup (id) != settings) {
+                    fDeviceUserSettingsTableConnection_.rwget ().cref ()->AddOrUpdate (ExternalDeviceUserSettingsElt_{id, *settings});
+                    fCachedDeviceUserSettings_.rwget ().rwref ().Add (id, *settings);
+                    return true;
+                }
+                return false;
+            }
+            else {
+                fDeviceUserSettingsTableConnection_.rwget ().cref ()->Delete (id);
+                return fCachedDeviceUserSettings_.rwget ().rwref ().RemoveIf (id);
+            }
+        }
+        nonvirtual Mapping<GUID, Model::Network::UserOverridesType> GetNetworkUserSettings () const
+        {
+            Debug::TimingTrace ttrc{L"IntegratedModel...GetNetworkUserSettings ()", 0.001};
+            return fCachedNetworkUserSettings_.cget ().cref ();
+        }
+        nonvirtual optional<Model::Network::UserOverridesType> LookupNetworkUserSettings (const GUID& guid) const
+        {
+            Debug::TimingTrace ttrc{L"IntegratedModel...LookupNetworkUserSettings ()", 0.001};
+            return fCachedNetworkUserSettings_.cget ().cref ().Lookup (guid);
+        }
+        // return true if changed
+        nonvirtual bool SetNetworkUserSettings (const GUID& id, const std::optional<IntegratedModel::Network::UserOverridesType>& settings)
+        {
+            Debug::TimingTrace ttrc{L"IntegratedModel ... SetNetworkUserSettings", 0.1};
+            // first check if legit id, and then store
+            // @todo check if good id and throw if not...
+            auto lk = fCachedNetworkUserSettings_.rwget ();
+            if (settings) {
+                if (fCachedNetworkUserSettings_.cget ().cref ().Lookup (id) != settings) {
+                    fNetworkUserSettingsTableConnection_.rwget ().cref ()->AddOrUpdate (ExternalNetworkUserSettingsElt_{id, *settings});
+                    fCachedNetworkUserSettings_.rwget ().rwref ().Add (id, *settings);
+                    return true;
+                }
+                return false;
+            }
+            else {
+                fNetworkUserSettingsTableConnection_.rwget ().cref ()->Delete (id);
+                return fCachedNetworkUserSettings_.rwget ().rwref ().RemoveIf (id);
+            }
+        }
+        nonvirtual DeviceKeyedCollection_ GetRawDevices () const
+        {
+            return fDBDevices_;
+        }
+        nonvirtual NetworkKeyedCollection_ GetRawNetworks () const
+        {
+            return fDBNetworks_;
+        }
+        nonvirtual bool GetFinishedInitialDBLoad () const
+        {
+            return fFinishedInitialDBLoad_;
+        }
+
+    private:
+        //constexpr VariantValue::Type kRepresentIDAs_ = VariantValue::Type::eBLOB;     // probably more performant
+        static constexpr VariantValue::Type kRepresentIDAs_ = VariantValue::Type::eString; // more readable in DB tool
+
+        static String GenRandomIDString_ (VariantValue::Type t)
+        {
+            switch (t) {
+                case VariantValue::Type::eString:
+                    return L"randomblob (16)";
+                case VariantValue::Type::eBLOB:
+                    // https://stackoverflow.com/questions/10104662/is-there-uid-datatype-in-sqlite-if-yes-then-how-to-generate-value-for-that
+                    return L"select substr(u,1,8)||'-'||substr(u,9,4)||'-4'||substr(u,13,3)|| '-' || v || substr (u, 17, 3) || '-' || substr (u, 21, 12) from (select lower (hex (randomblob (16))) as u, substr ('89ab', abs (random ()) % 4 + 1, 1) as v) ";
+                default:
+                    RequireNotReached ();
+                    return L"";
+            }
+        }
+        struct HWAddr2GUIDElt_ {
+            String HWAddress;
+            GUID   DeviceID;
+        };
+
+        struct GuessedRollupID2NetGUIDElt_ {
+            GUID ProbablyUniqueIDForNetwork;
+            GUID NetworkID;
+        };
+
+        struct ExternalDeviceUserSettingsElt_ {
+            GUID                             fDeviceID; // rolled up device id
+            Model::Device::UserOverridesType fUserSettings;
+        };
+
+        struct ExternalNetworkUserSettingsElt_ {
+            GUID                              fNetworkID; // rolled up network id
+            Model::Network::UserOverridesType fUserSettings;
+        };
+
+        /*
+         *  Combined mapper for objects we write to the database. Contains all the objects mappers we need merged together,
+         *  and any touchups on represenation we need (like writing GUID as BLOB rather than string).
+         */
+        static inline const ConstantProperty<ObjectVariantMapper> kDBObjectMapper_{[] () {
+            ObjectVariantMapper mapper;
+
+            mapper += IntegratedModel::Device::kMapper;
+            mapper += IntegratedModel::Network::kMapper;
+
+            //tmphack need better way to make this context sensative!!! @todo SOON FIX
+            mapper.AddCommonType<Range<DateTime>> (ObjectVariantMapper::RangeSerializerOptions{L"lowerBound"sv, L"upperBound"sv}); // lower-camel-case names happier in javascript?
+
+            mapper.AddClass<HWAddr2GUIDElt_> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+                {L"HWAddress", StructFieldMetaInfo{&HWAddr2GUIDElt_::HWAddress}},
+                {L"DeviceID", StructFieldMetaInfo{&HWAddr2GUIDElt_::DeviceID}},
+            });
+            mapper.AddClass<GuessedRollupID2NetGUIDElt_> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+                {L"ProbablyUniqueIDForNetwork", StructFieldMetaInfo{&GuessedRollupID2NetGUIDElt_::ProbablyUniqueIDForNetwork}},
+                {L"NetworkID", StructFieldMetaInfo{&GuessedRollupID2NetGUIDElt_::NetworkID}},
+            });
+            mapper.AddClass<ExternalDeviceUserSettingsElt_> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+                {L"UserSettings", StructFieldMetaInfo{&ExternalDeviceUserSettingsElt_::fUserSettings}},
+                {L"DeviceID", StructFieldMetaInfo{&ExternalDeviceUserSettingsElt_::fDeviceID}},
+            });
+            mapper.AddClass<ExternalNetworkUserSettingsElt_> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+                {L"UserSettings", StructFieldMetaInfo{&ExternalNetworkUserSettingsElt_::fUserSettings}},
+                {L"NetworkID", StructFieldMetaInfo{&ExternalNetworkUserSettingsElt_::fNetworkID}},
+            });
+
+            // ONLY DO THIS FOR WHEN WRITING TO DB -- store GUIDs as BLOBs - at least for database interactions (cuz probably more efficient)
+            mapper.AddCommonType<GUID> (kRepresentIDAs_);
+
+            return mapper;
+        }};
+        static inline const Schema_Table                          kDeviceIDCacheTableSchema_{
+            L"DevicesIDCache"sv,
+            /*
+             */
+            Collection<Schema_Field>{
+#if __cpp_designated_initializers
+                {.fName = L"HWAddress"sv, .fRequired = true, .fIsKeyField = true},
+                {.fName = L"DeviceID"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_},
+#else
+                {L"HWAddress", nullopt, true, VariantValue::eString, nullopt, true},
+                {L"DeviceID", nullopt, true, kRepresentIDAs_, nullopt, false},
+#endif
+            }};
+        static inline const Schema_Table kNetworkIDCacheTableSchema_{
+            L"NetworkIDCache"sv,
+            /*
+             */
+            Collection<Schema_Field>{
+#if __cpp_designated_initializers
+                {.fName = L"ProbablyUniqueIDForNetwork"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true},
+                {.fName = L"NetworkID"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_},
+#else
+                {L"ProbablyUniqueIDForNetwork", nullopt, true, kRepresentIDAs_, nullopt, true},
+                {L"NetworkID", nullopt, true, kRepresentIDAs_, nullopt, false},
+#endif
+            }};
+        static inline const Schema_Table kDeviceUserSettingsSchema_{
+            L"DeviceUserSettings"sv,
+            /*
+             */
+            Collection<Schema_Field>{
+#if __cpp_designated_initializers
+                {.fName = L"DeviceID"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true},
+#else
+                {L"DeviceID", nullopt, true, kRepresentIDAs_, nullopt, true},
+#endif
+            },
+            Schema_CatchAllField{}};
+        static inline const Schema_Table kNetworkUserSettingsSchema_{
+            L"NetworkUserSettings"sv,
+            /*
+             */
+            Collection<Schema_Field>{
+#if __cpp_designated_initializers
+                {.fName = L"NetworkID"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true},
+#else
+                {L"NetworkID", nullopt, true, kRepresentIDAs_, nullopt, true},
+#endif
+            },
+            Schema_CatchAllField{}};
+        static inline const Schema_Table kDeviceTableSchema_{
+            L"Devices"sv,
+            /*
+             *  use the same names as the ObjectVariantMapper for simpler mapping, or specify an alternate name
+             *  for ID, just as an example.
+             */
+            Collection<Schema_Field>{
+#if __cpp_designated_initializers
+                /**
+                     *  For ID, generate random GUID (BLOB) automatically in database
+                     */
+                {.fName = L"ID"sv, .fVariantValueName = L"id"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = GenRandomIDString_ (kRepresentIDAs_)},
+                {.fName = L"name"sv, .fVariantValueType = VariantValue::eString},
+#else
+                {L"ID", L"id"sv, true, kRepresentIDAs_, nullopt, true, nullopt, GenRandomIDString_ (kRepresentIDAs_)},
+                {L"name", nullopt, false, VariantValue::eString},
+#endif
+            },
+            Schema_CatchAllField{}};
+        static inline const Schema_Table kNetworkTableSchema_{
+            L"Networks"sv,
+            /*
+             *  use the same names as the ObjectVariantMapper for simpler mapping, or specify an alternate name
+             *  for ID, just as an example.
+             */
+            Collection<Schema_Field>{
+#if __cpp_designated_initializers
+                /**
+                     *  For ID, generate random GUID (BLOB) automatically in database
+                     */
+                {.fName = L"ID"sv, .fVariantValueName = L"id"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = L"randomblob(16)"sv},
+                {.fName = L"friendlyName"sv, .fVariantValueType = VariantValue::eString},
+#else
+                {L"ID", L"id"sv, true, kRepresentIDAs_, nullopt, true, nullopt, GenRandomIDString_ (kRepresentIDAs_)},
+                {L"friendlyName", nullopt, false, VariantValue::eString},
+#endif
+            },
+            Schema_CatchAllField{}};
+
+    private:
+        static constexpr Configuration::Version kCurrentVersion_ = Configuration::Version{1, 0, Configuration::VersionStage::Alpha, 0};
+        BackendApp::Common::DB                  fDB_{
+            kCurrentVersion_,
+            Traversal::Iterable<Schema_Table>{kDeviceIDCacheTableSchema_, kNetworkIDCacheTableSchema_, kDeviceTableSchema_, kDeviceUserSettingsSchema_, kNetworkTableSchema_, kNetworkUserSettingsSchema_}};
+        Synchronized<SQL::Connection::Ptr>                                                   fDBConnectionPtr_{fDB_.NewConnection ()};
+        Execution::Thread::Ptr                                                               fDatabaseSyncThread_{};
+        Synchronized<unique_ptr<SQL::ORM::TableConnection<HWAddr2GUIDElt_>>>                 fHWAddr2GUIDCacheTableConnection_;
+        Synchronized<unique_ptr<SQL::ORM::TableConnection<GuessedRollupID2NetGUIDElt_>>>     fGuessedRollupID2NetGUIDCacheTableConnection_;
+        Synchronized<Mapping<GUID, IntegratedModel::Device::UserOverridesType>>              fCachedDeviceUserSettings_;
+        Synchronized<unique_ptr<SQL::ORM::TableConnection<ExternalDeviceUserSettingsElt_>>>  fDeviceUserSettingsTableConnection_;
+        Synchronized<Mapping<GUID, IntegratedModel::Network::UserOverridesType>>             fCachedNetworkUserSettings_;
+        Synchronized<unique_ptr<SQL::ORM::TableConnection<ExternalNetworkUserSettingsElt_>>> fNetworkUserSettingsTableConnection_;
 
         // the latest copy of what is in the DB (manually kept up to date)
         // NOTE: These are all non-rolled up objects
-        Synchronized<Mapping<String, GUID>>   sAdvisoryHWAddr2GUIDCache;
-        Synchronized<Mapping<GUID, GUID>>     sAdvisoryGuessedRollupID2NetworkGUIDCache;
-        Synchronized<DeviceKeyedCollection_>  sDBDevices_;
-        Synchronized<NetworkKeyedCollection_> sDBNetworks_;
-        atomic<bool>                          sFinishedInitialDBLoad_{false};
+        Synchronized<Mapping<String, GUID>> fAdvisoryHWAddr2GUIDCache_;
+        Synchronized<Mapping<GUID, GUID>>   fAdvisoryGuessedRollupID2NetworkGUIDCache_;
 
-        namespace Private_ {
-            //constexpr VariantValue::Type kRepresentIDAs_ = VariantValue::Type::eBLOB;     // probably more performant
-            constexpr VariantValue::Type kRepresentIDAs_ = VariantValue::Type::eString; // more readable in DB tool
+        Synchronized<DeviceKeyedCollection_> fDBDevices_;
 
-            String GenRandomIDString_ (VariantValue::Type t)
-            {
-                switch (t) {
-                    case VariantValue::Type::eString:
-                        return L"randomblob (16)";
-                    case VariantValue::Type::eBLOB:
-                        // https://stackoverflow.com/questions/10104662/is-there-uid-datatype-in-sqlite-if-yes-then-how-to-generate-value-for-that
-                        return L"select substr(u,1,8)||'-'||substr(u,9,4)||'-4'||substr(u,13,3)|| '-' || v || substr (u, 17, 3) || '-' || substr (u, 21, 12) from (select lower (hex (randomblob (16))) as u, substr ('89ab', abs (random ()) % 4 + 1, 1) as v) ";
-                    default:
-                        RequireNotReached ();
-                        return L"";
-                }
-            }
-            struct HWAddr2GUIDElt_ {
-                String HWAddress;
-                GUID   DeviceID;
-            };
+        Synchronized<NetworkKeyedCollection_> fDBNetworks_;
+        atomic<bool>                          fFinishedInitialDBLoad_{false};
 
-            struct GuessedRollupID2NetGUIDElt_ {
-                GUID ProbablyUniqueIDForNetwork;
-                GUID NetworkID;
-            };
-
-            struct ExternalDeviceUserSettingsElt_ {
-                GUID                             fDeviceID; // rolled up device id
-                Model::Device::UserOverridesType fUserSettings;
-            };
-
-            struct ExternalNetworkUserSettingsElt_ {
-                GUID                              fNetworkID; // rolled up network id
-                Model::Network::UserOverridesType fUserSettings;
-            };
-
-            /*
-             *  Combined mapper for objects we write to the database. Contains all the objects mappers we need merged together,
-             *  and any touchups on represenation we need (like writing GUID as BLOB rather than string).
-             */
-            const ConstantProperty<ObjectVariantMapper> kDBObjectMapper_{[] () {
-                ObjectVariantMapper mapper;
-
-                mapper += IntegratedModel::Device::kMapper;
-                mapper += IntegratedModel::Network::kMapper;
-
-                //tmphack need better way to make this context sensative!!! @todo SOON FIX
-                mapper.AddCommonType<Range<DateTime>> (ObjectVariantMapper::RangeSerializerOptions{L"lowerBound"sv, L"upperBound"sv}); // lower-camel-case names happier in javascript?
-
-                mapper.AddClass<HWAddr2GUIDElt_> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-                    {L"HWAddress", StructFieldMetaInfo{&HWAddr2GUIDElt_::HWAddress}},
-                    {L"DeviceID", StructFieldMetaInfo{&HWAddr2GUIDElt_::DeviceID}},
-                });
-                mapper.AddClass<GuessedRollupID2NetGUIDElt_> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-                    {L"ProbablyUniqueIDForNetwork", StructFieldMetaInfo{&GuessedRollupID2NetGUIDElt_::ProbablyUniqueIDForNetwork}},
-                    {L"NetworkID", StructFieldMetaInfo{&GuessedRollupID2NetGUIDElt_::NetworkID}},
-                });
-                mapper.AddClass<ExternalDeviceUserSettingsElt_> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-                    {L"UserSettings", StructFieldMetaInfo{&ExternalDeviceUserSettingsElt_::fUserSettings}},
-                    {L"DeviceID", StructFieldMetaInfo{&ExternalDeviceUserSettingsElt_::fDeviceID}},
-                });
-                mapper.AddClass<ExternalNetworkUserSettingsElt_> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-                    {L"UserSettings", StructFieldMetaInfo{&ExternalNetworkUserSettingsElt_::fUserSettings}},
-                    {L"NetworkID", StructFieldMetaInfo{&ExternalNetworkUserSettingsElt_::fNetworkID}},
-                });
-
-                // ONLY DO THIS FOR WHEN WRITING TO DB -- store GUIDs as BLOBs - at least for database interactions (cuz probably more efficient)
-                mapper.AddCommonType<GUID> (kRepresentIDAs_);
-
-                return mapper;
-            }};
-            const Schema::Table                         kDeviceIDCacheTableSchema_{
-                L"DevicesIDCache"sv,
-                /*
-                 */
-                Collection<Schema::Field>{
-#if __cpp_designated_initializers
-                    {.fName = L"HWAddress"sv, .fRequired = true, .fIsKeyField = true},
-                    {.fName = L"DeviceID"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_},
-#else
-                    {L"HWAddress", nullopt, true, VariantValue::eString, nullopt, true},
-                    {L"DeviceID", nullopt, true, kRepresentIDAs_, nullopt, false},
-#endif
-                }};
-            const Schema::Table kNetworkIDCacheTableSchema_{
-                L"NetworkIDCache"sv,
-                /*
-                 */
-                Collection<Schema::Field>{
-#if __cpp_designated_initializers
-                    {.fName = L"ProbablyUniqueIDForNetwork"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true},
-                    {.fName = L"NetworkID"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_},
-#else
-                    {L"ProbablyUniqueIDForNetwork", nullopt, true, kRepresentIDAs_, nullopt, true},
-                    {L"NetworkID", nullopt, true, kRepresentIDAs_, nullopt, false},
-#endif
-                }};
-            const Schema::Table kDeviceUserSettingsSchema_{
-                L"DeviceUserSettings"sv,
-                /*
-                 */
-                Collection<Schema::Field>{
-#if __cpp_designated_initializers
-                    {.fName = L"DeviceID"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true},
-#else
-                    {L"DeviceID", nullopt, true, kRepresentIDAs_, nullopt, true},
-#endif
-                },
-                Schema::CatchAllField{}};
-            const Schema::Table kNetworkUserSettingsSchema_{
-                L"NetworkUserSettings"sv,
-                /*
-                 */
-                Collection<Schema::Field>{
-#if __cpp_designated_initializers
-                    {.fName = L"NetworkID"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true},
-#else
-                    {L"NetworkID", nullopt, true, kRepresentIDAs_, nullopt, true},
-#endif
-                },
-                Schema::CatchAllField{}};
-            const Schema::Table kDeviceTableSchema_{
-                L"Devices"sv,
-                /*
-                 *  use the same names as the ObjectVariantMapper for simpler mapping, or specify an alternate name
-                 *  for ID, just as an example.
-                 */
-                Collection<Schema::Field>{
-#if __cpp_designated_initializers
-                    /**
-                     *  For ID, generate random GUID (BLOB) automatically in database
-                     */
-                    {.fName = L"ID"sv, .fVariantValueName = L"id"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = Private_::GenRandomIDString_ (kRepresentIDAs_)},
-                    {.fName = L"name"sv, .fVariantValueType = VariantValue::eString},
-#else
-                    {L"ID", L"id"sv, true, kRepresentIDAs_, nullopt, true, nullopt, Private_::GenRandomIDString_ (kRepresentIDAs_)},
-                    {L"name", nullopt, false, VariantValue::eString},
-#endif
-                },
-                Schema::CatchAllField{}};
-            const Schema::Table kNetworkTableSchema_{
-                L"Networks"sv,
-                /*
-                 *  use the same names as the ObjectVariantMapper for simpler mapping, or specify an alternate name
-                 *  for ID, just as an example.
-                 */
-                Collection<Schema::Field>{
-#if __cpp_designated_initializers
-                    /**
-                     *  For ID, generate random GUID (BLOB) automatically in database
-                     */
-                    {.fName = L"ID"sv, .fVariantValueName = L"id"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = L"randomblob(16)"sv},
-                    {.fName = L"friendlyName"sv, .fVariantValueType = VariantValue::eString},
-#else
-                    {L"ID", L"id"sv, true, kRepresentIDAs_, nullopt, true, nullopt, Private_::GenRandomIDString_ (kRepresentIDAs_)},
-                    {L"friendlyName", nullopt, false, VariantValue::eString},
-#endif
-                },
-                Schema::CatchAllField{}};
-        }
-
-        class Mgr_ {
-        private:
-            static constexpr Configuration::Version kCurrentVersion_ = Configuration::Version{1, 0, Configuration::VersionStage::Alpha, 0};
-            BackendApp::Common::DB                  fDB_{
-                kCurrentVersion_,
-                Traversal::Iterable<Database::SQL::ORM::Schema::Table>{Private_::kDeviceIDCacheTableSchema_, Private_::kNetworkIDCacheTableSchema_, Private_::kDeviceTableSchema_, Private_::kDeviceUserSettingsSchema_, Private_::kNetworkTableSchema_, Private_::kNetworkUserSettingsSchema_}};
-            Synchronized<SQL::Connection::Ptr>                                                             fDBConnectionPtr_{fDB_.NewConnection ()};
-            Execution::Thread::Ptr                                                                         fDatabaseSyncThread_{};
-            Synchronized<unique_ptr<SQL::ORM::TableConnection<Private_::HWAddr2GUIDElt_>>>                 fHWAddr2GUIDCacheTableConnection_;
-            Synchronized<unique_ptr<SQL::ORM::TableConnection<Private_::GuessedRollupID2NetGUIDElt_>>>     fGuessedRollupID2NetGUIDCacheTableConnection_;
-            Synchronized<Mapping<GUID, IntegratedModel::Device::UserOverridesType>>                        fCachedDeviceUserSettings_;
-            Synchronized<unique_ptr<SQL::ORM::TableConnection<Private_::ExternalDeviceUserSettingsElt_>>>  fDeviceUserSettingsTableConnection_;
-            Synchronized<Mapping<GUID, IntegratedModel::Network::UserOverridesType>>                       fCachedNetworkUserSettings_;
-            Synchronized<unique_ptr<SQL::ORM::TableConnection<Private_::ExternalNetworkUserSettingsElt_>>> fNetworkUserSettingsTableConnection_;
-
-        public:
-            Mgr_ ()
-            {
-                Debug::TraceContextBumper ctx{L"IntegratedModel::{}::Mgr_::CTOR"};
-                fHWAddr2GUIDCacheTableConnection_             = make_unique<SQL::ORM::TableConnection<Private_::HWAddr2GUIDElt_>> (fDBConnectionPtr_, Private_::kDeviceIDCacheTableSchema_, Private_::kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<Private_::HWAddr2GUIDElt_>> ());
-                fGuessedRollupID2NetGUIDCacheTableConnection_ = make_unique<SQL::ORM::TableConnection<Private_::GuessedRollupID2NetGUIDElt_>> (fDBConnectionPtr_, Private_::kNetworkIDCacheTableSchema_, Private_::kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<Private_::GuessedRollupID2NetGUIDElt_>> ());
-                fDeviceUserSettingsTableConnection_           = make_unique<SQL::ORM::TableConnection<Private_::ExternalDeviceUserSettingsElt_>> (fDBConnectionPtr_, Private_::kDeviceUserSettingsSchema_, Private_::kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<Private_::ExternalDeviceUserSettingsElt_>> ());
-                fNetworkUserSettingsTableConnection_          = make_unique<SQL::ORM::TableConnection<Private_::ExternalNetworkUserSettingsElt_>> (fDBConnectionPtr_, Private_::kNetworkUserSettingsSchema_, Private_::kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<Private_::ExternalNetworkUserSettingsElt_>> ());
-
+    private:
+        void BackgroundDatabaseThread_ ()
+        {
+            Debug::TraceContextBumper                                       ctx{L"BackgroundDatabaseThread_ loop"};
+            unique_ptr<SQL::ORM::TableConnection<IntegratedModel::Device>>  deviceTableConnection;
+            unique_ptr<SQL::ORM::TableConnection<IntegratedModel::Network>> networkTableConnection;
+            unsigned int                                                    netSnapshotsLoaded{};
+            unsigned int                                                    deviceSnapshotsLoaded{};
+            while (true) {
                 try {
-                    Debug::TimingTrace ttrc{L"...load of sAdvisoryHWAddr2GUIDCache from database ", 1};
-                    lock_guard         lock{this->fDBConnectionPtr_};
-                    sAdvisoryHWAddr2GUIDCache.store (Mapping<String, GUID>{fHWAddr2GUIDCacheTableConnection_.rwget ().rwref ()->GetAll ().Select<KeyValuePair<String, GUID>> ([] (const auto& i) { return KeyValuePair<String, GUID>{i.HWAddress, i.DeviceID}; })});
-                }
-                catch (...) {
-                    Logger::sThe.Log (Logger::eError, L"Failed to load sAdvisoryHWAddr2GUIDCache from db: %s", Characters::ToString (current_exception ()).c_str ());
-                    Execution::ReThrow ();
-                }
-                try {
-                    Debug::TimingTrace ttrc{L"...load of sAdvisoryGuessedRollupID2NetworkGUIDCache from database ", 1};
-                    lock_guard         lock{this->fDBConnectionPtr_};
-                    sAdvisoryGuessedRollupID2NetworkGUIDCache.store (Mapping<GUID, GUID>{fGuessedRollupID2NetGUIDCacheTableConnection_.rwget ().rwref ()->GetAll ().Select<KeyValuePair<GUID, GUID>> ([] (const auto& i) { return KeyValuePair<GUID, GUID>{i.ProbablyUniqueIDForNetwork, i.NetworkID}; })});
-                }
-                catch (...) {
-                    Logger::sThe.Log (Logger::eError, L"Failed to load sAdvisoryGuessedRollupID2NetworkGUIDCache from db: %s", Characters::ToString (current_exception ()).c_str ());
-                    Execution::ReThrow ();
-                }
-                try {
-                    Debug::TimingTrace ttrc{L"...load of fCachedDeviceUserSettings_ from database ", 1};
-                    lock_guard         lock{this->fDBConnectionPtr_};
-                    fCachedDeviceUserSettings_.store (Mapping<GUID, Model::Device::UserOverridesType>{fDeviceUserSettingsTableConnection_.rwget ().cref ()->GetAll ().Select<KeyValuePair<GUID, Model::Device::UserOverridesType>> ([] (const auto& i) { return KeyValuePair<GUID, Model::Device::UserOverridesType>{i.fDeviceID, i.fUserSettings}; })});
-                }
-                catch (...) {
-                    Logger::sThe.Log (Logger::eError, L"Failed to load fCachedDeviceUserSettings_ from db: %s", Characters::ToString (current_exception ()).c_str ());
-                    Execution::ReThrow ();
-                }
-                try {
-                    Debug::TimingTrace ttrc{L"...load of fCachedNetworkUserSettings_ from database ", 1};
-                    lock_guard         lock{this->fDBConnectionPtr_};
-                    fCachedNetworkUserSettings_.store (Mapping<GUID, Model::Network::UserOverridesType>{fNetworkUserSettingsTableConnection_.rwget ().cref ()->GetAll ().Select<KeyValuePair<GUID, Model::Network::UserOverridesType>> ([] (const auto& i) { return KeyValuePair<GUID, Model::Network::UserOverridesType>{i.fNetworkID, i.fUserSettings}; })});
-                }
-                catch (...) {
-                    Logger::sThe.Log (Logger::eError, L"Failed to load fCachedNetworkUserSettings_ from db: %s", Characters::ToString (current_exception ()).c_str ());
-                    Execution::ReThrow ();
-                }
+                    ///&&& next step is move the netwroktabeleconttection to instance var store new fDBNetworks _IMMUTABLE object with stuff from first pass - not from this loop, but from
+                    // startup logic - done once...
+                    // NOTE - must assure web services starteda fter this - maybe with mutext/check or something else....
 
-                Require (fDatabaseSyncThread_ == nullptr);
-                fDatabaseSyncThread_ = Thread::New ([this] () { BackgroundDatabaseThread_ (); }, Thread::eAutoStart, L"BackgroundDatabaseThread"sv);
-            }
-            Mgr_ (const Mgr_&) = delete;
-            Mgr_& operator= (const Mgr_&) = delete;
-            ~Mgr_ ()
-            {
-                Debug::TraceContextBumper                        ctx{L"IntegratedModel::{}::Mgr_::DTOR"};
-                Execution::Thread::SuppressInterruptionInContext suppressInterruption; // must complete this abort and wait for done - this cannot abort/throw
-                fDatabaseSyncThread_.AbortAndWaitForDone ();
-            }
-            nonvirtual GUID GenNewDeviceID (const String& hwAddress)
-            {
-                Debug::TimingTrace ttrc{L"GenNewDeviceID", 0.001}; // sb very quick
-                auto               l = DBAccess_::sAdvisoryHWAddr2GUIDCache.rwget ();
-                if (auto o = l->Lookup (hwAddress)) {
-                    return *o;
-                }
-                GUID newRes = GUID::GenerateNew ();
-                l->Add (hwAddress, newRes);
-                lock_guard lock{this->fDBConnectionPtr_};
-                try {
-                    fHWAddr2GUIDCacheTableConnection_.rwget ().rwref ()->AddNew (Private_::HWAddr2GUIDElt_{hwAddress, newRes});
-                }
-                catch (...) {
-                    Logger::sThe.Log (Logger::eWarning, L"Ignoring error writing hwaddr2deviceid cache table: %s", Characters::ToString (current_exception ()).c_str ());
-                }
-                return newRes;
-            }
-            nonvirtual GUID GenNewDeviceID (const Set<String>& hwAddresses)
-            {
-                // consider if there is a better way to select which hwaddress to use
-                return hwAddresses.empty () ? GUID::GenerateNew () : GenNewDeviceID (*hwAddresses.First ());
-            }
-            nonvirtual GUID GenNewNetworkID (const GUID& probablyUniqueIDForNetwork)
-            {
-                Debug::TimingTrace ttrc{L"GenNewNetworkID", 0.001}; // sb very quick
-                auto               l = DBAccess_::sAdvisoryGuessedRollupID2NetworkGUIDCache.rwget ();
-                if (auto o = l->Lookup (probablyUniqueIDForNetwork)) {
-                    return *o;
-                }
-                GUID newRes = GUID::GenerateNew ();
-                l->Add (probablyUniqueIDForNetwork, newRes);
-                lock_guard lock{this->fDBConnectionPtr_};
-                try {
-                    fGuessedRollupID2NetGUIDCacheTableConnection_.rwget ().rwref ()->AddNew (Private_::GuessedRollupID2NetGUIDElt_{probablyUniqueIDForNetwork, newRes});
-                }
-                catch (...) {
-                    Logger::sThe.Log (Logger::eWarning, L"Ignoring error writing ipaddr2NetworkID cache table: %s", Characters::ToString (current_exception ()).c_str ());
-                }
-                return newRes;
-            }
-            nonvirtual Mapping<GUID, Model::Device::UserOverridesType> GetDeviceUserSettings () const
-            {
-                Debug::TimingTrace ttrc{L"IntegratedModel...LookupDevicesUserSettings ()", 0.001};
-                return fCachedDeviceUserSettings_.cget ().cref ();
-            }
-            nonvirtual optional<Model::Device::UserOverridesType> LookupDevicesUserSettings (const GUID& guid) const
-            {
-                Debug::TimingTrace ttrc{L"IntegratedModel...LookupDevicesUserSettings ()", 0.001};
-                return fCachedDeviceUserSettings_.cget ().cref ().Lookup (guid);
-            }
-            nonvirtual bool SetDeviceUserSettings (const GUID& id, const std::optional<IntegratedModel::Device::UserOverridesType>& settings)
-            {
-                Debug::TimingTrace ttrc{L"IntegratedModel ... SetDeviceUserSettings", 0.1};
-                // first check if legit id, and then store
-                // @todo check if good id and throw if not...
-                auto       lk = fCachedDeviceUserSettings_.rwget ();
-                lock_guard lock{this->fDBConnectionPtr_};
-                if (settings) {
-                    if (fCachedDeviceUserSettings_.cget ().cref ().Lookup (id) != settings) {
-                        fDeviceUserSettingsTableConnection_.rwget ().cref ()->AddOrUpdate (Private_::ExternalDeviceUserSettingsElt_{id, *settings});
-                        fCachedDeviceUserSettings_.rwget ().rwref ().Add (id, *settings);
-                        return true;
-                    }
-                    return false;
-                }
-                else {
-                    fDeviceUserSettingsTableConnection_.rwget ().cref ()->Delete (id);
-                    return fCachedDeviceUserSettings_.rwget ().rwref ().RemoveIf (id);
-                }
-            }
-            nonvirtual Mapping<GUID, Model::Network::UserOverridesType> GetNetworkUserSettings () const
-            {
-                Debug::TimingTrace ttrc{L"IntegratedModel...GetNetworkUserSettings ()", 0.001};
-                return fCachedNetworkUserSettings_.cget ().cref ();
-            }
-            nonvirtual optional<Model::Network::UserOverridesType> LookupNetworkUserSettings (const GUID& guid) const
-            {
-                Debug::TimingTrace ttrc{L"IntegratedModel...LookupNetworkUserSettings ()", 0.001};
-                return fCachedNetworkUserSettings_.cget ().cref ().Lookup (guid);
-            }
-            // return true if changed
-            nonvirtual bool SetNetworkUserSettings (const GUID& id, const std::optional<IntegratedModel::Network::UserOverridesType>& settings)
-            {
-                Debug::TimingTrace ttrc{L"IntegratedModel ... SetNetworkUserSettings", 0.1};
-                // first check if legit id, and then store
-                // @todo check if good id and throw if not...
-                auto lk = fCachedNetworkUserSettings_.rwget ();
-                if (settings) {
-                    if (fCachedNetworkUserSettings_.cget ().cref ().Lookup (id) != settings) {
-                        fNetworkUserSettingsTableConnection_.rwget ().cref ()->AddOrUpdate (Private_::ExternalNetworkUserSettingsElt_{id, *settings});
-                        fCachedNetworkUserSettings_.rwget ().rwref ().Add (id, *settings);
-                        return true;
-                    }
-                    return false;
-                }
-                else {
-                    fNetworkUserSettingsTableConnection_.rwget ().cref ()->Delete (id);
-                    return fCachedNetworkUserSettings_.rwget ().rwref ().RemoveIf (id);
-                }
-            }
-
-        private:
-            void BackgroundDatabaseThread_ ()
-            {
-                Debug::TraceContextBumper                                       ctx{L"BackgroundDatabaseThread_ loop"};
-                unique_ptr<SQL::ORM::TableConnection<IntegratedModel::Device>>  deviceTableConnection;
-                unique_ptr<SQL::ORM::TableConnection<IntegratedModel::Network>> networkTableConnection;
-                unsigned int                                                    netSnapshotsLoaded{};
-                unsigned int                                                    deviceSnapshotsLoaded{};
-                while (true) {
-                    try {
-
-                        ///&&& next step is move the netwroktabeleconttection to instance var store new sDBNetworks_IMMUTABLE object with stuff from first pass - not from this loop, but from
-                        // startup logic - done once...
-                        // NOTE - must assure web services starteda fter this - maybe with mutext/check or something else....
-
-                        // load networks before devices because devices depend on networks but not the reverse
-                        if (networkTableConnection == nullptr) {
-                            networkTableConnection = make_unique<SQL::ORM::TableConnection<IntegratedModel::Network>> (fDBConnectionPtr_, Private_::kNetworkTableSchema_, Private_::kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<IntegratedModel::Network>> ());
-                            try {
-                                Debug::TimingTrace ttrc{L"...initial load of sDBNetworks_ from database ", 1};
-                                auto               errorHandler = [] ([[maybe_unused]] const SQL::Statement::Row& r, const exception_ptr& e) -> optional<IntegratedModel::Network> {
-                                    // Just drop the record on the floor after logging
-                                    Logger::sThe.Log (Logger::eError, L"Error reading database of persisted network snapshot ('%s'): %s", Characters::ToString (r).c_str (), Characters::ToString (e).c_str ());
-                                    return nullopt;
-                                };
-                                auto all           = networkTableConnection->GetAll (errorHandler);
-                                netSnapshotsLoaded = static_cast<unsigned int> (all.size ());
-                                sDBNetworks_.store (NetworkKeyedCollection_{all});
-                            }
-                            catch (...) {
-                                Logger::sThe.Log (Logger::eError, L"Probably important error reading database of old networks data: %s", Characters::ToString (current_exception ()).c_str ());
-                                networkTableConnection = nullptr; // so we re-fetch
-                                Execution::ReThrow ();
-                            }
+                    // load networks before devices because devices depend on networks but not the reverse
+                    if (networkTableConnection == nullptr) {
+                        networkTableConnection = make_unique<SQL::ORM::TableConnection<IntegratedModel::Network>> (fDBConnectionPtr_, kNetworkTableSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<IntegratedModel::Network>> ());
+                        try {
+                            Debug::TimingTrace ttrc{L"...initial load of fDBNetworks_ from database ", 1};
+                            auto               errorHandler = [] ([[maybe_unused]] const SQL::Statement::Row& r, const exception_ptr& e) -> optional<IntegratedModel::Network> {
+                                // Just drop the record on the floor after logging
+                                Logger::sThe.Log (Logger::eError, L"Error reading database of persisted network snapshot ('%s'): %s", Characters::ToString (r).c_str (), Characters::ToString (e).c_str ());
+                                return nullopt;
+                            };
+                            auto all           = networkTableConnection->GetAll (errorHandler);
+                            netSnapshotsLoaded = static_cast<unsigned int> (all.size ());
+                            fDBNetworks_.store (NetworkKeyedCollection_{all});
                         }
-                        if (deviceTableConnection == nullptr) {
-                            deviceTableConnection = make_unique<SQL::ORM::TableConnection<IntegratedModel::Device>> (fDBConnectionPtr_, Private_::kDeviceTableSchema_, Private_::kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<IntegratedModel::Device>> ());
-                            try {
-                                Debug::TimingTrace ttrc{L"...initial load of sDBDevices_ from database ", 1};
-                                auto               errorHandler = [] ([[maybe_unused]] const SQL::Statement::Row& r, const exception_ptr& e) -> optional<IntegratedModel::Device> {
-                                    // Just drop the record on the floor after logging
-                                    Logger::sThe.Log (Logger::eError, L"Error reading database of persisted device snapshot ('%s'): %s", Characters::ToString (r).c_str (), Characters::ToString (e).c_str ());
-                                    return nullopt;
-                                };
-                                auto all = deviceTableConnection->GetAll (errorHandler);
+                        catch (...) {
+                            Logger::sThe.Log (Logger::eError, L"Probably important error reading database of old networks data: %s", Characters::ToString (current_exception ()).c_str ());
+                            networkTableConnection = nullptr; // so we re-fetch
+                            Execution::ReThrow ();
+                        }
+                    }
+                    if (deviceTableConnection == nullptr) {
+                        deviceTableConnection = make_unique<SQL::ORM::TableConnection<IntegratedModel::Device>> (fDBConnectionPtr_, kDeviceTableSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<IntegratedModel::Device>> ());
+                        try {
+                            Debug::TimingTrace ttrc{L"...initial load of fDBDevices_ from database ", 1};
+                            auto               errorHandler = [] ([[maybe_unused]] const SQL::Statement::Row& r, const exception_ptr& e) -> optional<IntegratedModel::Device> {
+                                // Just drop the record on the floor after logging
+                                Logger::sThe.Log (Logger::eError, L"Error reading database of persisted device snapshot ('%s'): %s", Characters::ToString (r).c_str (), Characters::ToString (e).c_str ());
+                                return nullopt;
+                            };
+                            auto all = deviceTableConnection->GetAll (errorHandler);
 #if qDebug
-                                all.Apply ([] (const Model::Device& d) { Assert (!d.fUserOverrides); }); // tracked on rollup devices, not snapshot devices
+                            all.Apply ([] (const Model::Device& d) { Assert (!d.fUserOverrides); }); // tracked on rollup devices, not snapshot devices
 #endif
-                                deviceSnapshotsLoaded = static_cast<unsigned int> (all.size ());
-                                sDBDevices_.store (DeviceKeyedCollection_{all}); // pre-load in memory copy with whatever we had stored in the database
-                            }
-                            catch (...) {
-                                Logger::sThe.Log (Logger::eError, L"Probably important error reading database of old device data: %s", Characters::ToString (current_exception ()).c_str ());
-                                deviceTableConnection = nullptr; // so we re-fetch
-                                Execution::ReThrow ();
-                            }
+                            deviceSnapshotsLoaded = static_cast<unsigned int> (all.size ());
+                            fDBDevices_.store (DeviceKeyedCollection_{all}); // pre-load in memory copy with whatever we had stored in the database
                         }
-                        if (not sFinishedInitialDBLoad_) {
-                            Logger::sThe.Log (Logger::eInfo, L"Loaded %d network snapshots and %d device snapshots from database", netSnapshotsLoaded, deviceSnapshotsLoaded);
-                            sFinishedInitialDBLoad_ = true;
+                        catch (...) {
+                            Logger::sThe.Log (Logger::eError, L"Probably important error reading database of old device data: %s", Characters::ToString (current_exception ()).c_str ());
+                            deviceTableConnection = nullptr; // so we re-fetch
+                            Execution::ReThrow ();
                         }
-                        // periodically write the latest discovered data to the database
-
-                        // UPDATE sDBNetworks_ INCREMENTALLY to reflect reflect these merges
-                        for (auto ni : DiscoveryWrapper_::GetNetworks_ ()) {
-                            if (not kSupportPersistedNetworkInterfaces_) {
-                                ni.fAttachedInterfaces.clear ();
-                            }
-                            Assert (ni.fSeen); // don't track/write items which have never been seen
-                                               //                            auto rec2Update = fDB_.AddOrMergeUpdate (networkTableConnection.get (), ni);
-                            lock_guard lock{this->fDBConnectionPtr_};
-                            networkTableConnection->AddOrUpdate (ni);
-                            sDBNetworks_.rwget ()->Add (ni);
-                        }
-
-                        // UPDATE sDBDevices_ INCREMENTALLY to reflect reflect these merges
-                        for (auto di : DiscoveryWrapper_::GetDevices_ ()) {
-                            Assert (di.fSeen.EverSeen ());
-                            if (not kSupportPersistedNetworkInterfaces_) {
-                                di.fAttachedNetworkInterfaces = nullopt;
-                            }
-                            Assert (di.fSeen.EverSeen ());         // don't track/write items which have never been seen
-                            Assert (di.fUserOverrides == nullopt); // tracked on rollup devices, not snapshot devices
-                            lock_guard lock{this->fDBConnectionPtr_};
-                            auto       rec2Update = fDB_.AddOrMergeUpdate (deviceTableConnection.get (), di);
-                            sDBDevices_.rwget ()->Add (rec2Update);
-                        }
-
-                        // only update periodically
-                        Execution::Sleep (30s);
                     }
-                    catch (const Thread::AbortException&) {
-                        Execution::ReThrow ();
+                    if (not fFinishedInitialDBLoad_) {
+                        Logger::sThe.Log (Logger::eInfo, L"Loaded %d network snapshots and %d device snapshots from database", netSnapshotsLoaded, deviceSnapshotsLoaded);
+                        fFinishedInitialDBLoad_ = true;
                     }
-                    catch (...) {
-                        //DbgTrace (L"Ignoring (will retry in 30 seconds) exception in BackgroundDatabaseThread_ loop: %s", Characters::ToString (current_exception ()).c_str ());
-                        Logger::sThe.Log (Logger::eWarning, L"Database update: ignoring exception in BackgroundDatabaseThread_ loop (will retry in 30 seconds): %s", Characters::ToString (current_exception ()).c_str ());
-                        Execution::Sleep (30s);
+                    // periodically write the latest discovered data to the database
+
+                    // UPDATE fDBNetworks_ INCREMENTALLY to reflect reflect these merges
+                    for (auto ni : DiscoveryWrapper_::GetNetworks_ ()) {
+                        if (not kSupportPersistedNetworkInterfaces_) {
+                            ni.fAttachedInterfaces.clear ();
+                        }
+                        Assert (ni.fSeen); // don't track/write items which have never been seen
+                                           //                            auto rec2Update = fDB_.AddOrMergeUpdate (networkTableConnection.get (), ni);
+                        lock_guard lock{this->fDBConnectionPtr_};
+                        networkTableConnection->AddOrUpdate (ni);
+                        fDBNetworks_.rwget ()->Add (ni);
                     }
+
+                    // UPDATE fDBDevices_ INCREMENTALLY to reflect reflect these merges
+                    for (auto di : DiscoveryWrapper_::GetDevices_ ()) {
+                        Assert (di.fSeen.EverSeen ());
+                        if (not kSupportPersistedNetworkInterfaces_) {
+                            di.fAttachedNetworkInterfaces = nullopt;
+                        }
+                        Assert (di.fSeen.EverSeen ());         // don't track/write items which have never been seen
+                        Assert (di.fUserOverrides == nullopt); // tracked on rollup devices, not snapshot devices
+                        lock_guard lock{this->fDBConnectionPtr_};
+                        auto       rec2Update = fDB_.AddOrMergeUpdate (deviceTableConnection.get (), di);
+                        fDBDevices_.rwget ()->Add (rec2Update);
+                    }
+
+                    // only update periodically
+                    Execution::Sleep (30s);
+                }
+                catch (const Thread::AbortException&) {
+                    Execution::ReThrow ();
+                }
+                catch (...) {
+                    //DbgTrace (L"Ignoring (will retry in 30 seconds) exception in BackgroundDatabaseThread_ loop: %s", Characters::ToString (current_exception ()).c_str ());
+                    Logger::sThe.Log (Logger::eWarning, L"Database update: ignoring exception in BackgroundDatabaseThread_ loop (will retry in 30 seconds): %s", Characters::ToString (current_exception ()).c_str ());
+                    Execution::Sleep (30s);
                 }
             }
-        };
-        optional<Mgr_> sMgr_; // constructed on module activation
-    }
+        }
+    };
+    optional<DBAccessMgr_> sDBAccessMgr_; // constructed on module activation
+
 }
 
 namespace {
@@ -809,7 +825,7 @@ namespace {
                     RolledUpNetworks result = [] () {
                         auto lk = sRolledUpNetworks_.rwget ();
                         if (not lk.cref ().has_value ()) {
-                            if (not DBAccess_::sFinishedInitialDBLoad_) {
+                            if (not sDBAccessMgr_->GetFinishedInitialDBLoad ()) {
                                 // Design Choice - could return non-standardized rollup IDs if DB not loaded, but then those IDs would
                                 // disappear later in the run, leading to possible client confusion. Best to just not say anything til DB loaded
                                 // Could ALSO do 2 stage DB load - critical stuff for IDs, and the detailed DB records. All we need is first
@@ -819,7 +835,7 @@ namespace {
                             // @todo add more stuff here - empty preset rules from DB
                             // merge two tables - ID to fingerprint and user settings tables and store those in this rollup early
                             // maybe make CTOR for rolledupnetworks take in ital DB netwworks and rules, and have copyis CTOR taking orig networks and new rules?
-                            lk.store (RolledUpNetworks{DBAccess_::sDBNetworks_.load (), DBAccess_::sMgr_->GetNetworkUserSettings ()});
+                            lk.store (RolledUpNetworks{sDBAccessMgr_->GetRawNetworks (), sDBAccessMgr_->GetNetworkUserSettings ()});
                         }
                         return Memory::ValueOf (lk.load ());
                     }();
@@ -836,7 +852,7 @@ namespace {
             {
                 auto lk = sRolledUpNetworks_.rwget ();
                 if (lk->has_value ()) {
-                    lk.rwref ()->ResetUserOverrides (DBAccess_::sMgr_->GetNetworkUserSettings ());
+                    lk.rwref ()->ResetUserOverrides (sDBAccessMgr_->GetNetworkUserSettings ());
                 }
                 // else OK if not yet loaded, nothing to invalidate
             }
@@ -927,8 +943,8 @@ namespace {
                 newRolledUpNetwork.fAggregatesReversibly   = Set<GUID>{net2MergeIn.fGUID};
                 newRolledUpNetwork.fAggregatesFingerprints = Set<Network::FingerprintType>{net2MergeInFingerprint};
 
-                // @todo fix this code so each time through we UPDATE DBAccess_::sMgr_ with latest 'fingerprint' of each dynamic network
-                newRolledUpNetwork.fGUID = DBAccess_::sMgr_->GenNewNetworkID (net2MergeInFingerprint);
+                // @todo fix this code so each time through we UPDATE sDBAccessMgr_ with latest 'fingerprint' of each dynamic network
+                newRolledUpNetwork.fGUID = sDBAccessMgr_->GenNewNetworkID (net2MergeInFingerprint);
                 if (fRolledUpNetworks_.Contains (newRolledUpNetwork.fGUID)) {
                     // Should probably never happen, but since depends on data in database, program defensively
 
@@ -941,7 +957,7 @@ namespace {
                     Logger::sThe.Log (Logger::eWarning, L"Got rollup network ID from cache that is already in use: %s (for external address %s)", Characters::ToString (newRolledUpNetwork.fGUID).c_str (), Characters::ToString (newRolledUpNetwork.fExternalAddresses).c_str ());
                     newRolledUpNetwork.fGUID = GUID::GenerateNew ();
                 }
-                newRolledUpNetwork.fUserOverrides = DBAccess_::sMgr_->LookupNetworkUserSettings (newRolledUpNetwork.fGUID);
+                newRolledUpNetwork.fUserOverrides = sDBAccessMgr_->LookupNetworkUserSettings (newRolledUpNetwork.fGUID);
                 if (newRolledUpNetwork.fUserOverrides && newRolledUpNetwork.fUserOverrides->fName) {
                     newRolledUpNetwork.fNames.Add (*newRolledUpNetwork.fUserOverrides->fName, 500);
                 }
@@ -1067,7 +1083,7 @@ namespace {
                     RolledUpDevices result = [&] () {
                         auto lk = sRolledUpDevicesSoFar_.rwget ();
                         if (not lk.cref ().has_value ()) {
-                            if (not DBAccess_::sFinishedInitialDBLoad_) {
+                            if (not sDBAccessMgr_->GetFinishedInitialDBLoad ()) {
                                 // Design Choice - could return non-standardized rollup IDs if DB not loaded, but then those IDs would
                                 // disappear later in the run, leading to possible client confusion. Best to just not say anything til DB loaded
                                 // Could ALSO do 2 stage DB load - critical stuff for IDs, and the detailed DB records. All we need is first
@@ -1077,7 +1093,7 @@ namespace {
                             // @todo add more stuff here - empty preset rules from DB
                             // merge two tables - ID to fingerprint and user settings tables and store those in this rollup early
                             // maybe make CTOR for rolledupnetworks take in ital DB netwworks and rules, and have copyis CTOR taking orig networks and new rules?
-                            RolledUpDevices initialDBDevices{DBAccess_::sDBDevices_.load (), DBAccess_::sMgr_->GetDeviceUserSettings (), rolledUpNetworks};
+                            RolledUpDevices initialDBDevices{sDBAccessMgr_->GetRawDevices (), sDBAccessMgr_->GetDeviceUserSettings (), rolledUpNetworks};
                             lk.store (initialDBDevices);
                         }
                         return Memory::ValueOf (lk.load ());
@@ -1095,7 +1111,7 @@ namespace {
             {
                 auto lk = sRolledUpDevicesSoFar_.rwget ();
                 if (lk->has_value ()) {
-                    lk.rwref ()->ResetUserOverrides (DBAccess_::sMgr_->GetDeviceUserSettings (), RollupSummary_::RolledUpNetworks::GetCached ());
+                    lk.rwref ()->ResetUserOverrides (sDBAccessMgr_->GetDeviceUserSettings (), RollupSummary_::RolledUpNetworks::GetCached ());
                 }
                 // else OK if not yet loaded, nothing to invalidate
             }
@@ -1143,14 +1159,14 @@ namespace {
                 Assert (not d2MergeIn.fAggregatesReversibly.has_value ());
                 Device newRolledUpDevice                = d2MergeIn;
                 newRolledUpDevice.fAggregatesReversibly = Set<GUID>{d2MergeIn.fGUID};
-                newRolledUpDevice.fGUID                 = DBAccess_::sMgr_->GenNewDeviceID (d2MergeIn.GetHardwareAddresses ());
+                newRolledUpDevice.fGUID                 = sDBAccessMgr_->GenNewDeviceID (d2MergeIn.GetHardwareAddresses ());
                 if (GetDevices ().Contains (newRolledUpDevice.fGUID)) {
                     // Should probably never happen, but since depends on data in database, program defensively
                     Logger::sThe.Log (Logger::eWarning, L"Got rollup device ID from cache that is already in use: %s (for hardware addresses %s)", Characters::ToString (newRolledUpDevice.fGUID).c_str (), Characters::ToString (d2MergeIn.GetHardwareAddresses ()).c_str ());
                     newRolledUpDevice.fGUID = GUID::GenerateNew ();
                 }
                 newRolledUpDevice.fAttachedNetworks = MapAggregatedAttachments2Rollups_ (useRolledUpNetworks, newRolledUpDevice.fAttachedNetworks);
-                newRolledUpDevice.fUserOverrides    = DBAccess_::sMgr_->LookupDevicesUserSettings (newRolledUpDevice.fGUID);
+                newRolledUpDevice.fUserOverrides    = sDBAccessMgr_->LookupDevicesUserSettings (newRolledUpDevice.fGUID);
                 if (newRolledUpDevice.fUserOverrides && newRolledUpDevice.fUserOverrides->fName) {
                     newRolledUpDevice.fNames.Add (*newRolledUpDevice.fUserOverrides->fName, 500);
                 }
@@ -1223,15 +1239,15 @@ namespace {
 IntegratedModel::Mgr::Activator::Activator ()
 {
     Debug::TraceContextBumper ctx{L"IntegratedModel::Mgr::Activator::Activator"};
-    Require (DBAccess_::sMgr_ == nullopt);
-    DBAccess_::sMgr_.emplace ();
+    Require (sDBAccessMgr_ == nullopt);
+    sDBAccessMgr_.emplace ();
 }
 
 IntegratedModel::Mgr::Activator::~Activator ()
 {
     Debug::TraceContextBumper                        ctx{L"IntegratedModel::Mgr::Activator::~Activator"};
     Execution::Thread::SuppressInterruptionInContext suppressInterruption; // must complete this abort and wait for done - this cannot abort/throw
-    DBAccess_::sMgr_ = nullopt;
+    sDBAccessMgr_ = nullopt;
 }
 
 /*
@@ -1253,8 +1269,7 @@ optional<IntegratedModel::Device> IntegratedModel::Mgr::GetDevice (const GUID& i
     // 30 seconds roughtly...
     auto result = RollupSummary_::RolledUpDevices::GetCached ().GetDevices ().Lookup (id);
     if (not result.has_value ()) {
-        result = DBAccess_::sDBDevices_.load ().Lookup (id);
-        if (result) {
+        if (result = sDBAccessMgr_->GetRawDevices ().Lookup (id)) {
             result->fIDPersistent       = true;
             result->fHistoricalSnapshot = true;
         }
@@ -1264,12 +1279,12 @@ optional<IntegratedModel::Device> IntegratedModel::Mgr::GetDevice (const GUID& i
 
 std::optional<IntegratedModel::Device::UserOverridesType> IntegratedModel::Mgr::GetDeviceUserSettings (const GUID& id) const
 {
-    return DBAccess_::sMgr_->LookupDevicesUserSettings (id);
+    return sDBAccessMgr_->LookupDevicesUserSettings (id);
 }
 
 void IntegratedModel::Mgr::SetDeviceUserSettings (const Common::GUID& id, const std::optional<IntegratedModel::Device::UserOverridesType>& settings)
 {
-    if (DBAccess_::sMgr_->SetDeviceUserSettings (id, settings)) {
+    if (sDBAccessMgr_->SetDeviceUserSettings (id, settings)) {
         RollupSummary_::RolledUpDevices::InvalidateCache ();
     }
 }
@@ -1304,7 +1319,7 @@ optional<IntegratedModel::Network> IntegratedModel::Mgr::GetNetwork (const GUID&
     // first check rolled up networks, and then raw/unrolled up networks
     auto result = RollupSummary_::RolledUpNetworks::GetCached ().GetNetworks ().Lookup (id);
     if (not result.has_value ()) {
-        result = DBAccess_::sDBNetworks_.load ().Lookup (id);
+        result = sDBAccessMgr_->GetRawNetworks ().Lookup (id);
         if (result) {
             result->fIDPersistent       = true;
             result->fHistoricalSnapshot = true;
@@ -1315,12 +1330,12 @@ optional<IntegratedModel::Network> IntegratedModel::Mgr::GetNetwork (const GUID&
 
 std::optional<IntegratedModel::Network::UserOverridesType> IntegratedModel::Mgr::GetNetworkUserSettings (const GUID& id) const
 {
-    return DBAccess_::sMgr_->LookupNetworkUserSettings (id);
+    return sDBAccessMgr_->LookupNetworkUserSettings (id);
 }
 
 void IntegratedModel::Mgr::SetNetworkUserSettings (const Common::GUID& id, const std::optional<IntegratedModel::Network::UserOverridesType>& settings)
 {
-    if (DBAccess_::sMgr_->SetNetworkUserSettings (id, settings)) {
+    if (sDBAccessMgr_->SetNetworkUserSettings (id, settings)) {
         RollupSummary_::RolledUpNetworks::InvalidateCache ();
     }
 }

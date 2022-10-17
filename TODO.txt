@@ -9,6 +9,9 @@ airplane-greece2boston-2022-10-02
 
 >>> maybe fix is to add 'temporary in ram' usersettings for these assocs? No. Cuz then on restart it fails.
 >>> MAYBE ALL the fake fingerprint rules I cons up MUST be created through consed up user assoc rule? 
+		... THINK GOING FOR THIS
+		THEN - must have system POLICY about DELETING OLD UNINTERSTING objects from DB (those with no associated records, or just old rollups - or maybe save just the
+		rollups as rollups - no longer disaggregatable).
 
 
 
