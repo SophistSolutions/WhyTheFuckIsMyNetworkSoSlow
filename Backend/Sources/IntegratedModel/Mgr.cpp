@@ -249,11 +249,11 @@ namespace {
         DBAccessMgr_ ()
         {
             Debug::TraceContextBumper ctx{L"IntegratedModel::{}::Mgr_::CTOR"};
+            // @todo lose the try catch on indiviaul make table connections!!!! Or do for all!
             fHWAddr2GUIDCacheTableConnection_             = make_unique<SQL::ORM::TableConnection<HWAddr2GUIDElt_>> (fDBConnectionPtr_, kDeviceIDCacheTableSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<HWAddr2GUIDElt_>> ());
             fGuessedRollupID2NetGUIDCacheTableConnection_ = make_unique<SQL::ORM::TableConnection<GuessedRollupID2NetGUIDElt_>> (fDBConnectionPtr_, kNetworkIDCacheTableSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<GuessedRollupID2NetGUIDElt_>> ());
             fDeviceUserSettingsTableConnection_           = make_unique<SQL::ORM::TableConnection<ExternalDeviceUserSettingsElt_>> (fDBConnectionPtr_, kDeviceUserSettingsSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<ExternalDeviceUserSettingsElt_>> ());
             fNetworkUserSettingsTableConnection_          = make_unique<SQL::ORM::TableConnection<ExternalNetworkUserSettingsElt_>> (fDBConnectionPtr_, kNetworkUserSettingsSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<ExternalNetworkUserSettingsElt_>> ());
-
             try {
                 Debug::TimingTrace ttrc{L"...load of fAdvisoryHWAddr2GUIDCache_ from database ", 1};
                 lock_guard         lock{this->fDBConnectionPtr_};
