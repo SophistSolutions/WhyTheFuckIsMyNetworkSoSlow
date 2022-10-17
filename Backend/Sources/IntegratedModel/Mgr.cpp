@@ -120,7 +120,7 @@ namespace {
         using IntegratedModel::Network;
         using IntegratedModel::NetworkAttachmentInfo;
 
-        static Device Discovery2Model_ (const Discovery::Device& d)
+        Device Discovery2Model_ (const Discovery::Device& d)
         {
             Device newDev;
             newDev.fGUID  = d.fGUID;
@@ -180,7 +180,7 @@ namespace {
             Assert (newDev.fSeen.EverSeen ()); // maybe won't always require but look into any cases like this and probably remove them...
             return newDev;
         }
-        static Network Discovery2Model_ (const Discovery::Network& n)
+        Network Discovery2Model_ (const Discovery::Network& n)
         {
             Network nw{n.fNetworkAddresses};
             nw.fGUID                     = n.fGUID;
@@ -202,7 +202,11 @@ namespace {
             return nw;
         }
 
-        // Map all the 'Discovery::Device' objects to 'Model::Device' objects.
+        /**
+         * Map all the 'Discovery::Device' objects to 'Model::Device' objects.
+         *
+         *  \note   \em Thread-Safety   <a href="Thread-Safety.md#Internally-Synchronized-Thread-Safety">Internally-Synchronized-Thread-Safety</a>
+         */
         Sequence<Device> GetDevices_ ()
         {
             Debug::TimingTrace ttrc{L"DiscoveryWrapper_::GetDevices_", .1};
@@ -211,7 +215,11 @@ namespace {
                 return Discovery2Model_ (d);
             })};
         }
-        // Map all the 'Discovery::Network' objects to 'Model::Network' objects.
+        /**
+         * Map all the 'Discovery::Network' objects to 'Model::Network' objects.
+         *
+         *  \note   \em Thread-Safety   <a href="Thread-Safety.md#Internally-Synchronized-Thread-Safety">Internally-Synchronized-Thread-Safety</a>
+         */
         Sequence<Network> GetNetworks_ ()
         {
             Debug::TimingTrace ttrc{L"DiscoveryWrapper_::GetNetworks_", 0.1};
@@ -229,6 +237,8 @@ namespace {
 namespace {
     /**
      *  Wrapper on Database access all goes in this DBAccess::Mgr_ module
+     *
+     *  \note   \em Thread-Safety   <a href="Thread-Safety.md#Internally-Synchronized-Thread-Safety">Internally-Synchronized-Thread-Safety</a>
      */
     class DBAccessMgr_ {
         using Schema_Table         = SQL::ORM::Schema::Table;
@@ -705,6 +715,8 @@ namespace {
 
         /**
          *  Data structure representing a copy of currently rolled up networks data (copyable).
+         *
+         *  \note   \em Thread-Safety   <a href="Thread-Safety.md#C++-Standard-Thread-Safety">C++-Standard-Thread-Safety</a>
          */
         struct RolledUpNetworks {
         public:
@@ -796,8 +808,9 @@ namespace {
 
         public:
             /**
-             * INTERNALLY SYNCRHONIZED
              * INVALIDATE IF 'UserSettings' change, which might cause different rollups (this includes fingerprint to guid map)
+             *
+             *  \note   \em Thread-Safety   <a href="Thread-Safety.md#Internally-Synchronized-Thread-Safety">Internally-Synchronized-Thread-Safety</a>
              */
             static RolledUpNetworks GetCached (Time::DurationSecondsType allowedStaleness = 5.0)
             {
@@ -847,7 +860,9 @@ namespace {
             }
 
         public:
-            // INTERNALLY SYNCRHONIZED
+            /**
+             *  \note   \em Thread-Safety   <a href="Thread-Safety.md#Internally-Synchronized-Thread-Safety">Internally-Synchronized-Thread-Safety</a>
+             */
             static void InvalidateCache ()
             {
                 auto lk = sRolledUpNetworks_.rwget ();
@@ -994,6 +1009,8 @@ namespace {
 
         /**
          *  Data structure representing a copy of currently rolled up devices data (copyable).
+         *
+         *  \note   \em Thread-Safety   <a href="Thread-Safety.md#C++-Standard-Thread-Safety">C++-Standard-Thread-Safety</a>
          */
         struct RolledUpDevices {
         public:
@@ -1059,6 +1076,9 @@ namespace {
             }
 
         public:
+            /**
+             *  \note   \em Thread-Safety   <a href="Thread-Safety.md#Internally-Synchronized-Thread-Safety">Internally-Synchronized-Thread-Safety</a>
+             */
             static RolledUpDevices GetCached (Time::DurationSecondsType allowedStaleness = 10.0)
             {
                 Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...RolledUpDevices::GetCached")};
@@ -1106,7 +1126,9 @@ namespace {
             }
 
         public:
-            // INTERNALLY SYNCRHONIZED
+            /**
+             *  \note   \em Thread-Safety   <a href="Thread-Safety.md#Internally-Synchronized-Thread-Safety">Internally-Synchronized-Thread-Safety</a>
+             */
             static void InvalidateCache ()
             {
                 auto lk = sRolledUpDevicesSoFar_.rwget ();
