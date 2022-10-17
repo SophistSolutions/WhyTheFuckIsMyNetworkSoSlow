@@ -260,7 +260,7 @@ namespace {
                 fAdvisoryHWAddr2GUIDCache_.store (Mapping<String, GUID>{fHWAddr2GUIDCacheTableConnection_.rwget ().rwref ()->GetAll ().Select<KeyValuePair<String, GUID>> ([] (const auto& i) { return KeyValuePair<String, GUID>{i.HWAddress, i.DeviceID}; })});
             }
             catch (...) {
-                Logger::sThe.Log (Logger::eError, L"Failed to load fAdvisoryHWAddr2GUIDCache_ from db: %s", Characters::ToString (current_exception ()).c_str ());
+                Logger::sThe.Log (Logger::eCriticalError, L"Failed to load fAdvisoryHWAddr2GUIDCache_ from db: %s", Characters::ToString (current_exception ()).c_str ());
                 Execution::ReThrow ();
             }
             try {
@@ -269,7 +269,7 @@ namespace {
                 fAdvisoryGuessedRollupID2NetworkGUIDCache_.store (Mapping<GUID, GUID>{fGuessedRollupID2NetGUIDCacheTableConnection_.rwget ().rwref ()->GetAll ().Select<KeyValuePair<GUID, GUID>> ([] (const auto& i) { return KeyValuePair<GUID, GUID>{i.ProbablyUniqueIDForNetwork, i.NetworkID}; })});
             }
             catch (...) {
-                Logger::sThe.Log (Logger::eError, L"Failed to load fAdvisoryGuessedRollupID2NetworkGUIDCache_ from db: %s", Characters::ToString (current_exception ()).c_str ());
+                Logger::sThe.Log (Logger::eCriticalError, L"Failed to load fAdvisoryGuessedRollupID2NetworkGUIDCache_ from db: %s", Characters::ToString (current_exception ()).c_str ());
                 Execution::ReThrow ();
             }
             try {
@@ -278,7 +278,7 @@ namespace {
                 fCachedDeviceUserSettings_.store (Mapping<GUID, Model::Device::UserOverridesType>{fDeviceUserSettingsTableConnection_.rwget ().cref ()->GetAll ().Select<KeyValuePair<GUID, Model::Device::UserOverridesType>> ([] (const auto& i) { return KeyValuePair<GUID, Model::Device::UserOverridesType>{i.fDeviceID, i.fUserSettings}; })});
             }
             catch (...) {
-                Logger::sThe.Log (Logger::eError, L"Failed to load fCachedDeviceUserSettings_ from db: %s", Characters::ToString (current_exception ()).c_str ());
+                Logger::sThe.Log (Logger::eCriticalError, L"Failed to load fCachedDeviceUserSettings_ from db: %s", Characters::ToString (current_exception ()).c_str ());
                 Execution::ReThrow ();
             }
             try {
@@ -287,7 +287,23 @@ namespace {
                 fCachedNetworkUserSettings_.store (Mapping<GUID, Model::Network::UserOverridesType>{fNetworkUserSettingsTableConnection_.rwget ().cref ()->GetAll ().Select<KeyValuePair<GUID, Model::Network::UserOverridesType>> ([] (const auto& i) { return KeyValuePair<GUID, Model::Network::UserOverridesType>{i.fNetworkID, i.fUserSettings}; })});
             }
             catch (...) {
-                Logger::sThe.Log (Logger::eError, L"Failed to load fCachedNetworkUserSettings_ from db: %s", Characters::ToString (current_exception ()).c_str ());
+                Logger::sThe.Log (Logger::eCriticalError, L"Failed to load fCachedNetworkUserSettings_ from db: %s", Characters::ToString (current_exception ()).c_str ());
+                Execution::ReThrow ();
+            }
+            try {
+                Debug::TimingTrace ttrc{L"...open fDeviceTableConnection_ from database ", 1};
+                fDeviceTableConnection_ = make_unique<SQL::ORM::TableConnection<IntegratedModel::Device>> (fDBConnectionPtr_, kDeviceTableSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<IntegratedModel::Device>> ());
+            }
+            catch (...) {
+                Logger::sThe.Log (Logger::eCriticalError, L"Failed to open fDeviceTableConnection_ from db: %s", Characters::ToString (current_exception ()).c_str ());
+                Execution::ReThrow ();
+            }
+            try {
+                Debug::TimingTrace ttrc{L"...open fNetworkTableConnection_ from database ", 1};
+                fNetworkTableConnection_ = make_unique<SQL::ORM::TableConnection<IntegratedModel::Network>> (fDBConnectionPtr_, kNetworkTableSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<IntegratedModel::Network>> ());
+            }
+            catch (...) {
+                Logger::sThe.Log (Logger::eCriticalError, L"Failed to open fNetworkTableConnection_ from db: %s", Characters::ToString (current_exception ()).c_str ());
                 Execution::ReThrow ();
             }
 
@@ -590,6 +606,8 @@ namespace {
         Synchronized<unique_ptr<SQL::ORM::TableConnection<ExternalDeviceUserSettingsElt_>>>  fDeviceUserSettingsTableConnection_;
         Synchronized<Mapping<GUID, IntegratedModel::Network::UserOverridesType>>             fCachedNetworkUserSettings_;
         Synchronized<unique_ptr<SQL::ORM::TableConnection<ExternalNetworkUserSettingsElt_>>> fNetworkUserSettingsTableConnection_;
+        unique_ptr<SQL::ORM::TableConnection<IntegratedModel::Device>>                       fDeviceTableConnection_;  // only accessed from a background database thread
+        unique_ptr<SQL::ORM::TableConnection<IntegratedModel::Network>>                      fNetworkTableConnection_; // ''
 
         // the latest copy of what is in the DB (manually kept up to date)
         // NOTE: These are all non-rolled up objects
@@ -604,20 +622,15 @@ namespace {
     private:
         void BackgroundDatabaseThread_ ()
         {
-            Debug::TraceContextBumper                                       ctx{L"BackgroundDatabaseThread_ loop"};
-            unique_ptr<SQL::ORM::TableConnection<IntegratedModel::Device>>  deviceTableConnection;
-            unique_ptr<SQL::ORM::TableConnection<IntegratedModel::Network>> networkTableConnection;
-            unsigned int                                                    netSnapshotsLoaded{};
-            unsigned int                                                    deviceSnapshotsLoaded{};
+            Debug::TraceContextBumper ctx{L"BackgroundDatabaseThread_ loop"};
+            optional<unsigned int>    netSnapshotsLoaded{};
+            optional<unsigned int>    deviceSnapshotsLoaded{};
             while (true) {
                 try {
-                    ///&&& next step is move the netwroktabeleconttection to instance var store new fDBNetworks _IMMUTABLE object with stuff from first pass - not from this loop, but from
-                    // startup logic - done once...
-                    // NOTE - must assure web services starteda fter this - maybe with mutext/check or something else....
+                    // @todo Consider if we should do this logic in CTOR so we can lose the flag saying if we've started up...
 
                     // load networks before devices because devices depend on networks but not the reverse
-                    if (networkTableConnection == nullptr) {
-                        networkTableConnection = make_unique<SQL::ORM::TableConnection<IntegratedModel::Network>> (fDBConnectionPtr_, kNetworkTableSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<IntegratedModel::Network>> ());
+                    if (not netSnapshotsLoaded.has_value ()) {
                         try {
                             Debug::TimingTrace ttrc{L"...initial load of fDBNetworks_ from database ", 1};
                             auto               errorHandler = [] ([[maybe_unused]] const SQL::Statement::Row& r, const exception_ptr& e) -> optional<IntegratedModel::Network> {
@@ -625,18 +638,16 @@ namespace {
                                 Logger::sThe.Log (Logger::eError, L"Error reading database of persisted network snapshot ('%s'): %s", Characters::ToString (r).c_str (), Characters::ToString (e).c_str ());
                                 return nullopt;
                             };
-                            auto all           = networkTableConnection->GetAll (errorHandler);
+                            auto all           = fNetworkTableConnection_->GetAll (errorHandler);
                             netSnapshotsLoaded = static_cast<unsigned int> (all.size ());
                             fDBNetworks_.store (NetworkKeyedCollection_{all});
                         }
                         catch (...) {
                             Logger::sThe.Log (Logger::eError, L"Probably important error reading database of old networks data: %s", Characters::ToString (current_exception ()).c_str ());
-                            networkTableConnection = nullptr; // so we re-fetch
                             Execution::ReThrow ();
                         }
                     }
-                    if (deviceTableConnection == nullptr) {
-                        deviceTableConnection = make_unique<SQL::ORM::TableConnection<IntegratedModel::Device>> (fDBConnectionPtr_, kDeviceTableSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<IntegratedModel::Device>> ());
+                    if (not deviceSnapshotsLoaded.has_value ()) {
                         try {
                             Debug::TimingTrace ttrc{L"...initial load of fDBDevices_ from database ", 1};
                             auto               errorHandler = [] ([[maybe_unused]] const SQL::Statement::Row& r, const exception_ptr& e) -> optional<IntegratedModel::Device> {
@@ -644,7 +655,7 @@ namespace {
                                 Logger::sThe.Log (Logger::eError, L"Error reading database of persisted device snapshot ('%s'): %s", Characters::ToString (r).c_str (), Characters::ToString (e).c_str ());
                                 return nullopt;
                             };
-                            auto all = deviceTableConnection->GetAll (errorHandler);
+                            auto all = fDeviceTableConnection_->GetAll (errorHandler);
 #if qDebug
                             all.Apply ([] (const Model::Device& d) { Assert (!d.fUserOverrides); }); // tracked on rollup devices, not snapshot devices
 #endif
@@ -653,12 +664,13 @@ namespace {
                         }
                         catch (...) {
                             Logger::sThe.Log (Logger::eError, L"Probably important error reading database of old device data: %s", Characters::ToString (current_exception ()).c_str ());
-                            deviceTableConnection = nullptr; // so we re-fetch
                             Execution::ReThrow ();
                         }
                     }
                     if (not fFinishedInitialDBLoad_) {
-                        Logger::sThe.Log (Logger::eInfo, L"Loaded %d network snapshots and %d device snapshots from database", netSnapshotsLoaded, deviceSnapshotsLoaded);
+                        Assert (deviceSnapshotsLoaded);
+                        Assert (netSnapshotsLoaded);
+                        Logger::sThe.Log (Logger::eInfo, L"Loaded %d network snapshots and %d device snapshots from database", *netSnapshotsLoaded, *deviceSnapshotsLoaded);
                         fFinishedInitialDBLoad_ = true;
                     }
                     // periodically write the latest discovered data to the database
@@ -669,9 +681,9 @@ namespace {
                             ni.fAttachedInterfaces.clear ();
                         }
                         Assert (ni.fSeen); // don't track/write items which have never been seen
-                                           //                            auto rec2Update = fDB_.AddOrMergeUpdate (networkTableConnection.get (), ni);
+                                           //                            auto rec2Update = fDB_.AddOrMergeUpdate (fNetworkTableConnection_.get (), ni);
                         lock_guard lock{this->fDBConnectionPtr_};
-                        networkTableConnection->AddOrUpdate (ni);
+                        fNetworkTableConnection_->AddOrUpdate (ni);
                         fDBNetworks_.rwget ()->Add (ni);
                     }
 
@@ -684,7 +696,7 @@ namespace {
                         Assert (di.fSeen.EverSeen ());         // don't track/write items which have never been seen
                         Assert (di.fUserOverrides == nullopt); // tracked on rollup devices, not snapshot devices
                         lock_guard lock{this->fDBConnectionPtr_};
-                        auto       rec2Update = fDB_.AddOrMergeUpdate (deviceTableConnection.get (), di);
+                        auto       rec2Update = fDB_.AddOrMergeUpdate (fDeviceTableConnection_.get (), di);
                         fDBDevices_.rwget ()->Add (rec2Update);
                     }
 
