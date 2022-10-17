@@ -563,8 +563,8 @@ namespace {
             Collection<Schema_Field>{
 #if __cpp_designated_initializers
                 /**
-                     *  For ID, generate random GUID (BLOB) automatically in database
-                     */
+                 *  For ID, generate random GUID (BLOB) automatically in database
+                 */
                 {.fName = L"ID"sv, .fVariantValueName = L"id"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = GenRandomIDString_ (kRepresentIDAs_)},
                 {.fName = L"name"sv, .fVariantValueType = VariantValue::eString},
 #else
@@ -597,7 +597,8 @@ namespace {
         static constexpr Configuration::Version kCurrentVersion_ = Configuration::Version{1, 0, Configuration::VersionStage::Alpha, 0};
         BackendApp::Common::DB                  fDB_{
             kCurrentVersion_,
-            Traversal::Iterable<Schema_Table>{kDeviceIDCacheTableSchema_, kNetworkIDCacheTableSchema_, kDeviceTableSchema_, kDeviceUserSettingsSchema_, kNetworkTableSchema_, kNetworkUserSettingsSchema_}};
+            Traversal::Iterable<Schema_Table>{
+                kDeviceIDCacheTableSchema_, kNetworkIDCacheTableSchema_, kDeviceTableSchema_, kDeviceUserSettingsSchema_, kNetworkTableSchema_, kNetworkUserSettingsSchema_}};
         Synchronized<SQL::Connection::Ptr>                                                   fDBConnectionPtr_{fDB_.NewConnection ()};
         Execution::Thread::Ptr                                                               fDatabaseSyncThread_{};
         Synchronized<unique_ptr<SQL::ORM::TableConnection<HWAddr2GUIDElt_>>>                 fHWAddr2GUIDCacheTableConnection_;
@@ -608,16 +609,14 @@ namespace {
         Synchronized<unique_ptr<SQL::ORM::TableConnection<ExternalNetworkUserSettingsElt_>>> fNetworkUserSettingsTableConnection_;
         unique_ptr<SQL::ORM::TableConnection<IntegratedModel::Device>>                       fDeviceTableConnection_;  // only accessed from a background database thread
         unique_ptr<SQL::ORM::TableConnection<IntegratedModel::Network>>                      fNetworkTableConnection_; // ''
+        Synchronized<DeviceKeyedCollection_>                                                 fDBDevices_;              // mirror database contents in RAM
+        Synchronized<NetworkKeyedCollection_>                                                fDBNetworks_;             // ''
+        atomic<bool>                                                                         fFinishedInitialDBLoad_{false};
 
         // the latest copy of what is in the DB (manually kept up to date)
         // NOTE: These are all non-rolled up objects
         Synchronized<Mapping<String, GUID>> fAdvisoryHWAddr2GUIDCache_;
         Synchronized<Mapping<GUID, GUID>>   fAdvisoryGuessedRollupID2NetworkGUIDCache_;
-
-        Synchronized<DeviceKeyedCollection_> fDBDevices_;
-
-        Synchronized<NetworkKeyedCollection_> fDBNetworks_;
-        atomic<bool>                          fFinishedInitialDBLoad_{false};
 
     private:
         void BackgroundDatabaseThread_ ()
