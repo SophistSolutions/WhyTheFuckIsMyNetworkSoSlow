@@ -249,11 +249,12 @@ namespace {
         DBAccessMgr_ ()
         {
             Debug::TraceContextBumper ctx{L"IntegratedModel::{}::Mgr_::CTOR"};
-            // @todo lose the try catch on indiviaul make table connections!!!! Or do for all!
             fHWAddr2GUIDCacheTableConnection_             = make_unique<SQL::ORM::TableConnection<HWAddr2GUIDElt_>> (fDBConnectionPtr_, kDeviceIDCacheTableSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<HWAddr2GUIDElt_>> ());
             fGuessedRollupID2NetGUIDCacheTableConnection_ = make_unique<SQL::ORM::TableConnection<GuessedRollupID2NetGUIDElt_>> (fDBConnectionPtr_, kNetworkIDCacheTableSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<GuessedRollupID2NetGUIDElt_>> ());
             fDeviceUserSettingsTableConnection_           = make_unique<SQL::ORM::TableConnection<ExternalDeviceUserSettingsElt_>> (fDBConnectionPtr_, kDeviceUserSettingsSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<ExternalDeviceUserSettingsElt_>> ());
             fNetworkUserSettingsTableConnection_          = make_unique<SQL::ORM::TableConnection<ExternalNetworkUserSettingsElt_>> (fDBConnectionPtr_, kNetworkUserSettingsSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<ExternalNetworkUserSettingsElt_>> ());
+            fDeviceTableConnection_                       = make_unique<SQL::ORM::TableConnection<IntegratedModel::Device>> (fDBConnectionPtr_, kDeviceTableSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<IntegratedModel::Device>> ());
+            fNetworkTableConnection_                      = make_unique<SQL::ORM::TableConnection<IntegratedModel::Network>> (fDBConnectionPtr_, kNetworkTableSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<IntegratedModel::Network>> ());
             try {
                 Debug::TimingTrace ttrc{L"...load of fAdvisoryHWAddr2GUIDCache_ from database ", 1};
                 lock_guard         lock{this->fDBConnectionPtr_};
@@ -288,22 +289,6 @@ namespace {
             }
             catch (...) {
                 Logger::sThe.Log (Logger::eCriticalError, L"Failed to load fCachedNetworkUserSettings_ from db: %s", Characters::ToString (current_exception ()).c_str ());
-                Execution::ReThrow ();
-            }
-            try {
-                Debug::TimingTrace ttrc{L"...open fDeviceTableConnection_ from database ", 1};
-                fDeviceTableConnection_ = make_unique<SQL::ORM::TableConnection<IntegratedModel::Device>> (fDBConnectionPtr_, kDeviceTableSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<IntegratedModel::Device>> ());
-            }
-            catch (...) {
-                Logger::sThe.Log (Logger::eCriticalError, L"Failed to open fDeviceTableConnection_ from db: %s", Characters::ToString (current_exception ()).c_str ());
-                Execution::ReThrow ();
-            }
-            try {
-                Debug::TimingTrace ttrc{L"...open fNetworkTableConnection_ from database ", 1};
-                fNetworkTableConnection_ = make_unique<SQL::ORM::TableConnection<IntegratedModel::Network>> (fDBConnectionPtr_, kNetworkTableSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<IntegratedModel::Network>> ());
-            }
-            catch (...) {
-                Logger::sThe.Log (Logger::eCriticalError, L"Failed to open fNetworkTableConnection_ from db: %s", Characters::ToString (current_exception ()).c_str ());
                 Execution::ReThrow ();
             }
 
