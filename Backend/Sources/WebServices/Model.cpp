@@ -901,7 +901,7 @@ Device Device::Rollup (const Device& rollupDevice, const Device& instanceDevice2
 {
     // Use seen.Ever() to decide which 'device' gets precedence in merging. Give the most
     // recent device precedence
-    Device d = rollupDevice.fSeen.EverSeen ()->GetUpperBound () < instanceDevice2Add.fSeen.EverSeen ()->GetUpperBound ()
+    Device d = (rollupDevice.fSeen.EverSeen () == nullopt or rollupDevice.fSeen.EverSeen ()->GetUpperBound () < instanceDevice2Add.fSeen.EverSeen ()->GetUpperBound ())
                    ? Merge (rollupDevice, instanceDevice2Add)
                    : Merge (instanceDevice2Add, rollupDevice);
     d.fGUID  = rollupDevice.fGUID; // regardless of dates, keep the rollupDevice GUID

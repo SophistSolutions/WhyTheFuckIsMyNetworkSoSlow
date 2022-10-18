@@ -33,6 +33,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
      */
     class DB {
     public:
+        //constexpr VariantValue::Type kRepresentIDAs_ = VariantValue::Type::eBLOB;     // probably more performant
+        static constexpr VariantValue::Type kRepresentIDAs_ = VariantValue::Type::eString; // more readable in DB tool
+
+    public:
         DB () = delete;
         DB (Version targetDBVersion, const Iterable<ORM::Schema::Table>& tables);
         DB (const DB&) = default;

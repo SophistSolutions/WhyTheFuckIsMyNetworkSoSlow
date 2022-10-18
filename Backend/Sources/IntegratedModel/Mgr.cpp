@@ -241,38 +241,22 @@ namespace {
      *  \note   \em Thread-Safety   <a href="Thread-Safety.md#Internally-Synchronized-Thread-Safety">Internally-Synchronized-Thread-Safety</a>
      */
     class DBAccessMgr_ {
+    private:
         using Schema_Table         = SQL::ORM::Schema::Table;
         using Schema_Field         = SQL::ORM::Schema::Field;
         using Schema_CatchAllField = SQL::ORM::Schema::CatchAllField;
+
+    private:
+        static constexpr auto kRepresentIDAs_ = BackendApp::Common::DB::kRepresentIDAs_;
 
     public:
         DBAccessMgr_ ()
         {
             Debug::TraceContextBumper ctx{L"IntegratedModel::{}::Mgr_::CTOR"};
-            fHWAddr2GUIDCacheTableConnection_             = make_unique<SQL::ORM::TableConnection<HWAddr2GUIDElt_>> (fDBConnectionPtr_, kDeviceIDCacheTableSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<HWAddr2GUIDElt_>> ());
-            fGuessedRollupID2NetGUIDCacheTableConnection_ = make_unique<SQL::ORM::TableConnection<GuessedRollupID2NetGUIDElt_>> (fDBConnectionPtr_, kNetworkIDCacheTableSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<GuessedRollupID2NetGUIDElt_>> ());
-            fDeviceUserSettingsTableConnection_           = make_unique<SQL::ORM::TableConnection<ExternalDeviceUserSettingsElt_>> (fDBConnectionPtr_, kDeviceUserSettingsSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<ExternalDeviceUserSettingsElt_>> ());
-            fNetworkUserSettingsTableConnection_          = make_unique<SQL::ORM::TableConnection<ExternalNetworkUserSettingsElt_>> (fDBConnectionPtr_, kNetworkUserSettingsSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<ExternalNetworkUserSettingsElt_>> ());
-            fDeviceTableConnection_                       = make_unique<SQL::ORM::TableConnection<IntegratedModel::Device>> (fDBConnectionPtr_, kDeviceTableSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<IntegratedModel::Device>> ());
-            fNetworkTableConnection_                      = make_unique<SQL::ORM::TableConnection<IntegratedModel::Network>> (fDBConnectionPtr_, kNetworkTableSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<IntegratedModel::Network>> ());
-            try {
-                Debug::TimingTrace ttrc{L"...load of fAdvisoryHWAddr2GUIDCache_ from database ", 1};
-                lock_guard         lock{this->fDBConnectionPtr_};
-                fAdvisoryHWAddr2GUIDCache_.store (Mapping<String, GUID>{fHWAddr2GUIDCacheTableConnection_.rwget ().rwref ()->GetAll ().Select<KeyValuePair<String, GUID>> ([] (const auto& i) { return KeyValuePair<String, GUID>{i.HWAddress, i.DeviceID}; })});
-            }
-            catch (...) {
-                Logger::sThe.Log (Logger::eCriticalError, L"Failed to load fAdvisoryHWAddr2GUIDCache_ from db: %s", Characters::ToString (current_exception ()).c_str ());
-                Execution::ReThrow ();
-            }
-            try {
-                Debug::TimingTrace ttrc{L"...load of fAdvisoryGuessedRollupID2NetworkGUIDCache_ from database ", 1};
-                lock_guard         lock{this->fDBConnectionPtr_};
-                fAdvisoryGuessedRollupID2NetworkGUIDCache_.store (Mapping<GUID, GUID>{fGuessedRollupID2NetGUIDCacheTableConnection_.rwget ().rwref ()->GetAll ().Select<KeyValuePair<GUID, GUID>> ([] (const auto& i) { return KeyValuePair<GUID, GUID>{i.ProbablyUniqueIDForNetwork, i.NetworkID}; })});
-            }
-            catch (...) {
-                Logger::sThe.Log (Logger::eCriticalError, L"Failed to load fAdvisoryGuessedRollupID2NetworkGUIDCache_ from db: %s", Characters::ToString (current_exception ()).c_str ());
-                Execution::ReThrow ();
-            }
+            fDeviceUserSettingsTableConnection_  = make_unique<SQL::ORM::TableConnection<ExternalDeviceUserSettingsElt_>> (fDBConnectionPtr_, kDeviceUserSettingsSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<ExternalDeviceUserSettingsElt_>> ());
+            fNetworkUserSettingsTableConnection_ = make_unique<SQL::ORM::TableConnection<ExternalNetworkUserSettingsElt_>> (fDBConnectionPtr_, kNetworkUserSettingsSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<ExternalNetworkUserSettingsElt_>> ());
+            fDeviceTableConnection_              = make_unique<SQL::ORM::TableConnection<IntegratedModel::Device>> (fDBConnectionPtr_, kDeviceTableSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<IntegratedModel::Device>> ());
+            fNetworkTableConnection_             = make_unique<SQL::ORM::TableConnection<IntegratedModel::Network>> (fDBConnectionPtr_, kNetworkTableSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<IntegratedModel::Network>> ());
             try {
                 Debug::TimingTrace ttrc{L"...load of fCachedDeviceUserSettings_ from database ", 1};
                 lock_guard         lock{this->fDBConnectionPtr_};
@@ -303,45 +287,27 @@ namespace {
             Execution::Thread::SuppressInterruptionInContext suppressInterruption; // must complete this abort and wait for done - this cannot abort/throw
             fDatabaseSyncThread_.AbortAndWaitForDone ();
         }
-        nonvirtual GUID GenNewDeviceID (const String& hwAddress)
+
+        nonvirtual GUID GenNewDeviceID (const Set<String>& hwAddresses)
         {
-            Debug::TimingTrace ttrc{L"GenNewDeviceID", 0.001}; // sb very quick
-            auto               l = fAdvisoryHWAddr2GUIDCache_.rwget ();
-            if (auto o = l->Lookup (hwAddress)) {
-                return *o;
-            }
             GUID newRes = GUID::GenerateNew ();
-            l->Add (hwAddress, newRes);
-            lock_guard lock{this->fDBConnectionPtr_};
-            try {
-                fHWAddr2GUIDCacheTableConnection_.rwget ().rwref ()->AddNew (HWAddr2GUIDElt_{hwAddress, newRes});
+            if (hwAddresses.empty ()) {
+                WeakAssert (false);
             }
-            catch (...) {
-                Logger::sThe.Log (Logger::eWarning, L"Ignoring error writing hwaddr2deviceid cache table: %s", Characters::ToString (current_exception ()).c_str ());
+            else {
+                Model::Device::UserOverridesType tmp;
+                tmp.fAggregateDeviceHardwareAddresses = hwAddresses;
+                SetDeviceUserSettings (newRes, tmp);
             }
             return newRes;
         }
-        nonvirtual GUID GenNewDeviceID (const Set<String>& hwAddresses)
-        {
-            // consider if there is a better way to select which hwaddress to use
-            return hwAddresses.empty () ? GUID::GenerateNew () : GenNewDeviceID (*hwAddresses.First ());
-        }
         nonvirtual GUID GenNewNetworkID (const GUID& probablyUniqueIDForNetwork)
         {
-            Debug::TimingTrace ttrc{L"GenNewNetworkID", 0.001}; // sb very quick
-            auto               l = fAdvisoryGuessedRollupID2NetworkGUIDCache_.rwget ();
-            if (auto o = l->Lookup (probablyUniqueIDForNetwork)) {
-                return *o;
-            }
-            GUID newRes = GUID::GenerateNew ();
-            l->Add (probablyUniqueIDForNetwork, newRes);
-            lock_guard lock{this->fDBConnectionPtr_};
-            try {
-                fGuessedRollupID2NetGUIDCacheTableConnection_.rwget ().rwref ()->AddNew (GuessedRollupID2NetGUIDElt_{probablyUniqueIDForNetwork, newRes});
-            }
-            catch (...) {
-                Logger::sThe.Log (Logger::eWarning, L"Ignoring error writing ipaddr2NetworkID cache table: %s", Characters::ToString (current_exception ()).c_str ());
-            }
+            Debug::TimingTrace                ttrc{L"GenNewNetworkID", 0.001}; // sb very quick
+            GUID                              newRes = GUID::GenerateNew ();
+            Model::Network::UserOverridesType tmp;
+            tmp.fAggregateFingerprint = Set<GUID>{probablyUniqueIDForNetwork};
+            SetNetworkUserSettings (newRes, tmp);
             return newRes;
         }
         nonvirtual Mapping<GUID, Model::Device::UserOverridesType> GetDeviceUserSettings () const
@@ -418,9 +384,6 @@ namespace {
         }
 
     private:
-        //constexpr VariantValue::Type kRepresentIDAs_ = VariantValue::Type::eBLOB;     // probably more performant
-        static constexpr VariantValue::Type kRepresentIDAs_ = VariantValue::Type::eString; // more readable in DB tool
-
         static String GenRandomIDString_ (VariantValue::Type t)
         {
             switch (t) {
@@ -434,15 +397,6 @@ namespace {
                     return L"";
             }
         }
-        struct HWAddr2GUIDElt_ {
-            String HWAddress;
-            GUID   DeviceID;
-        };
-
-        struct GuessedRollupID2NetGUIDElt_ {
-            GUID ProbablyUniqueIDForNetwork;
-            GUID NetworkID;
-        };
 
         struct ExternalDeviceUserSettingsElt_ {
             GUID                             fDeviceID; // rolled up device id
@@ -467,14 +421,6 @@ namespace {
             //tmphack need better way to make this context sensative!!! @todo SOON FIX
             mapper.AddCommonType<Range<DateTime>> (ObjectVariantMapper::RangeSerializerOptions{L"lowerBound"sv, L"upperBound"sv}); // lower-camel-case names happier in javascript?
 
-            mapper.AddClass<HWAddr2GUIDElt_> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-                {L"HWAddress", StructFieldMetaInfo{&HWAddr2GUIDElt_::HWAddress}},
-                {L"DeviceID", StructFieldMetaInfo{&HWAddr2GUIDElt_::DeviceID}},
-            });
-            mapper.AddClass<GuessedRollupID2NetGUIDElt_> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-                {L"ProbablyUniqueIDForNetwork", StructFieldMetaInfo{&GuessedRollupID2NetGUIDElt_::ProbablyUniqueIDForNetwork}},
-                {L"NetworkID", StructFieldMetaInfo{&GuessedRollupID2NetGUIDElt_::NetworkID}},
-            });
             mapper.AddClass<ExternalDeviceUserSettingsElt_> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
                 {L"UserSettings", StructFieldMetaInfo{&ExternalDeviceUserSettingsElt_::fUserSettings}},
                 {L"DeviceID", StructFieldMetaInfo{&ExternalDeviceUserSettingsElt_::fDeviceID}},
@@ -485,37 +431,11 @@ namespace {
             });
 
             // ONLY DO THIS FOR WHEN WRITING TO DB -- store GUIDs as BLOBs - at least for database interactions (cuz probably more efficient)
-            mapper.AddCommonType<GUID> (kRepresentIDAs_);
+            mapper.AddCommonType<GUID> (BackendApp::Common::DB::kRepresentIDAs_);
 
             return mapper;
         }};
-        static inline const Schema_Table                          kDeviceIDCacheTableSchema_{
-            L"DevicesIDCache"sv,
-            /*
-             */
-            Collection<Schema_Field>{
-#if __cpp_designated_initializers
-                {.fName = L"HWAddress"sv, .fRequired = true, .fIsKeyField = true},
-                {.fName = L"DeviceID"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_},
-#else
-                {L"HWAddress", nullopt, true, VariantValue::eString, nullopt, true},
-                {L"DeviceID", nullopt, true, kRepresentIDAs_, nullopt, false},
-#endif
-            }};
-        static inline const Schema_Table kNetworkIDCacheTableSchema_{
-            L"NetworkIDCache"sv,
-            /*
-             */
-            Collection<Schema_Field>{
-#if __cpp_designated_initializers
-                {.fName = L"ProbablyUniqueIDForNetwork"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true},
-                {.fName = L"NetworkID"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_},
-#else
-                {L"ProbablyUniqueIDForNetwork", nullopt, true, kRepresentIDAs_, nullopt, true},
-                {L"NetworkID", nullopt, true, kRepresentIDAs_, nullopt, false},
-#endif
-            }};
-        static inline const Schema_Table kDeviceUserSettingsSchema_{
+        static inline const Schema_Table                          kDeviceUserSettingsSchema_{
             L"DeviceUserSettings"sv,
             /*
              */
@@ -583,11 +503,9 @@ namespace {
         BackendApp::Common::DB                  fDB_{
             kCurrentVersion_,
             Traversal::Iterable<Schema_Table>{
-                kDeviceIDCacheTableSchema_, kNetworkIDCacheTableSchema_, kDeviceTableSchema_, kDeviceUserSettingsSchema_, kNetworkTableSchema_, kNetworkUserSettingsSchema_}};
+                kDeviceTableSchema_, kDeviceUserSettingsSchema_, kNetworkTableSchema_, kNetworkUserSettingsSchema_}};
         Synchronized<SQL::Connection::Ptr>                                                   fDBConnectionPtr_{fDB_.NewConnection ()};
         Execution::Thread::Ptr                                                               fDatabaseSyncThread_{};
-        Synchronized<unique_ptr<SQL::ORM::TableConnection<HWAddr2GUIDElt_>>>                 fHWAddr2GUIDCacheTableConnection_;
-        Synchronized<unique_ptr<SQL::ORM::TableConnection<GuessedRollupID2NetGUIDElt_>>>     fGuessedRollupID2NetGUIDCacheTableConnection_;
         Synchronized<Mapping<GUID, IntegratedModel::Device::UserOverridesType>>              fCachedDeviceUserSettings_;
         Synchronized<unique_ptr<SQL::ORM::TableConnection<ExternalDeviceUserSettingsElt_>>>  fDeviceUserSettingsTableConnection_;
         Synchronized<Mapping<GUID, IntegratedModel::Network::UserOverridesType>>             fCachedNetworkUserSettings_;
@@ -601,7 +519,6 @@ namespace {
         // the latest copy of what is in the DB (manually kept up to date)
         // NOTE: These are all non-rolled up objects
         Synchronized<Mapping<String, GUID>> fAdvisoryHWAddr2GUIDCache_;
-        Synchronized<Mapping<GUID, GUID>>   fAdvisoryGuessedRollupID2NetworkGUIDCache_;
 
     private:
         void BackgroundDatabaseThread_ ()
