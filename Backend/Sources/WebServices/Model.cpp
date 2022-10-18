@@ -702,6 +702,9 @@ String Model::Device::UserOverridesType::ToString () const
     if (fDontAggregateDevices) {
         sb += L"DontAggregateDevices: " + Characters::ToString (fDontAggregateDevices);
     }
+    if (fAggregateDeviceHardwareAddresses) {
+        sb += L"AggregateDeviceHardwareAddresses: " + Characters::ToString (fAggregateDeviceHardwareAddresses);
+    }
     sb += L"}";
     return sb.str ();
 }
@@ -719,6 +722,7 @@ const DataExchange::ObjectVariantMapper Model::Device::UserOverridesType::kMappe
         {L"notes"sv, StructFieldMetaInfo{&UserOverridesType::fNotes}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"aggregateDevices"sv, StructFieldMetaInfo{&UserOverridesType::fAggregateDevices}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"dontAggregateDevices"sv, StructFieldMetaInfo{&UserOverridesType::fDontAggregateDevices}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"aggregateDeviceHardwareAddresses"sv, StructFieldMetaInfo{&UserOverridesType::fAggregateDeviceHardwareAddresses}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
     return mapper;
 }();

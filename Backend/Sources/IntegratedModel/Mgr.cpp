@@ -1210,25 +1210,32 @@ namespace {
                 }
                 return result;
             };
-            static bool ShouldRollup_ (const Device& exisingRolledUpDevice, const Device& d2)
+            static bool ShouldRollup_ (const Device& exisingRolledUpDevice, const Device& d2PotentiallyMergeIn)
             {
-                if ((exisingRolledUpDevice.fAggregatesIrreversibly and exisingRolledUpDevice.fAggregatesIrreversibly->Contains (d2.fGUID)) or (exisingRolledUpDevice.fAggregatesIrreversibly and exisingRolledUpDevice.fAggregatesIrreversibly->Contains (d2.fGUID))) {
+                if ((exisingRolledUpDevice.fAggregatesIrreversibly and exisingRolledUpDevice.fAggregatesIrreversibly->Contains (d2PotentiallyMergeIn.fGUID)) or (exisingRolledUpDevice.fAggregatesIrreversibly and exisingRolledUpDevice.fAggregatesIrreversibly->Contains (d2PotentiallyMergeIn.fGUID))) {
                     // we retry the same 'discovered' networks repeatedly and re-roll them up.
                     // mostly this is handled by having the same hardware addresses, but sometimes (like for main discovered device)
                     // MAY not yet / always have network interface). And besides, this check cheaper/faster probably.
                     return true;
                 }
                 // very rough first draft. Later add database stored 'exceptions' and/or rules tables to augment this logic
-                auto hw1 = exisingRolledUpDevice.GetHardwareAddresses ();
-                auto hw2 = d2.GetHardwareAddresses ();
-                if (Set<String>::Intersects (hw1, hw2)) {
+                Set<String> existingRollupHWAddresses             = exisingRolledUpDevice.GetHardwareAddresses ();
+                Set<String> d2PotentiallyMergeInHardwareAddresses = d2PotentiallyMergeIn.GetHardwareAddresses ();
+                if (Set<String>::Intersects (existingRollupHWAddresses, d2PotentiallyMergeInHardwareAddresses)) {
                     return true;
                 }
+                if (auto userSettings = exisingRolledUpDevice.fUserOverrides) {
+                    if (userSettings->fAggregateDeviceHardwareAddresses) {
+                        if (userSettings->fAggregateDeviceHardwareAddresses->Intersects (d2PotentiallyMergeInHardwareAddresses)) {
+                            return true;
+                        }
+                    }
+                }
                 // If EITHER device has no hardware addresses, there is little to identify it, so roll it up with anything with the same IP address, by default
-                if (hw1.empty () or hw2.empty ()) {
+                if (existingRollupHWAddresses.empty () or d2PotentiallyMergeInHardwareAddresses.empty ()) {
                     // then fold together if they have the same IP Addresses
                     // return d1.GetInternetAddresses () == d2.GetInternetAddresses ();
-                    return Set<InternetAddress>::Intersects (exisingRolledUpDevice.GetInternetAddresses (), d2.GetInternetAddresses ());
+                    return Set<InternetAddress>::Intersects (exisingRolledUpDevice.GetInternetAddresses (), d2PotentiallyMergeIn.GetInternetAddresses ());
                 }
                 // unclear if above test should be if EITHER set is empty, maybe then do if timeframes very close?
                 return false;

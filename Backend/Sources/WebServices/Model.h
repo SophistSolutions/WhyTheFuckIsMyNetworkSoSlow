@@ -505,6 +505,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
             optional<Set<GUID>> fAggregateDevices;
             optional<Set<GUID>> fDontAggregateDevices;
 
+            // Automatically merge into this device anything with the given device hardware address
+            optional<Set<String>> fAggregateDeviceHardwareAddresses;
 #if __cpp_impl_three_way_comparison < 201711
             bool operator== (const UserOverridesType& rhs) const
             {
@@ -521,6 +523,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
                     return false;
                 }
                 if (fDontAggregateDevices != rhs.fDontAggregateDevices) {
+                    return false;
+                }
+                if (fAggregateDeviceHardwareAddresses != rhs.fAggregateDeviceHardwareAddresses) {
                     return false;
                 }
                 return true;
