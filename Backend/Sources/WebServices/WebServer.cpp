@@ -216,11 +216,11 @@ public:
 
               Route{
                   L"api/v1/about"_RegEx,
-                  mkRequestHandler (kAbout_, About::kMapper, function<About (void)>{[=, this] () { ActiveCallCounter_ acc{*this}; return fWSAPI_->GetAbout (); }})},
+                  mkRequestHandler (kAbout_, About::kMapper, function<About (void)>{[this] () { ActiveCallCounter_ acc{*this}; return fWSAPI_->GetAbout (); }})},
 
               Route{
                   L"api/v1/blob/(.+)"_RegEx,
-                  [=, this] (Message* m, const String& id) {
+                  [this] (Message* m, const String& id) {
                       ActiveCallCounter_                                             acc{*this};
                       tuple<Memory::BLOB, optional<DataExchange::InternetMediaType>> b = fWSAPI_->GetBLOB (id);
                       if (get<1> (b)) {
@@ -231,7 +231,7 @@ public:
 
               Route{
                   L"api/v1/devices(/?)"_RegEx,
-                  [=, this] (Message* m) {
+                  [this] (Message* m) {
                       constexpr bool                              kDefault_FilterRunningOnly_{true};
                       ActiveCallCounter_                          acc{*this};
                       Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (&m->rwRequest ());
@@ -265,14 +265,14 @@ public:
                   }},
               Route{
                   L"api/v1/devices/(.+)"_RegEx,
-                  [=, this] (Message* m, const String& id) {
+                  [this] (Message* m, const String& id) {
                       ActiveCallCounter_ acc{*this};
                       WriteResponse (&m->rwResponse (), kDevices_, Device::kMapper.FromObject (fWSAPI_->GetDevice (id)));
                   }},
               Route{
                   IO::Network::HTTP::MethodsRegEx::kPatch,
                   L"api/v1/devices/(.+)"_RegEx,
-                  [=, this] (Message* m, const String& id) {
+                  [this] (Message* m, const String& id) {
                       ActiveCallCounter_ acc{*this};
                       fWSAPI_->PatchDevice (id, JSONPATCH::OperationItemsType::kMapper.ToObject<JSONPATCH::OperationItemsType> (DataExchange::Variant::JSON::Reader{}.Read (m->rwRequest ().GetBody ())));
                       m->rwResponse ().status = IO::Network::HTTP::StatusCodes::kNoContent;
@@ -280,7 +280,7 @@ public:
 
               Route{
                   L"api/v1/network-interfaces(/?)"_RegEx,
-                  [=, this] (Message* m) {
+                  [this] (Message* m) {
                       ActiveCallCounter_                          acc{*this};
                       constexpr bool                              kDefault_FilterRunningOnly_{true};
                       Mapping<String, DataExchange::VariantValue> args              = PickoutParamValues (&m->rwRequest ());
@@ -294,14 +294,14 @@ public:
                   }},
               Route{
                   L"api/v1/network-interfaces/(.+)"_RegEx,
-                  [=, this] (Message* m, const String& id) {
+                  [this] (Message* m, const String& id) {
                       ActiveCallCounter_ acc{*this};
                       WriteResponse (&m->rwResponse (), kNetworkInterfaces_, NetworkInterface::kMapper.FromObject (fWSAPI_->GetNetworkInterface (id)));
                   }},
 
               Route{
                   L"api/v1/networks(/?)"_RegEx,
-                  [=, this] (Message* m) {
+                  [this] (Message* m) {
                       ActiveCallCounter_                          acc{*this};
                       Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (&m->rwRequest ());
                       optional<Set<GUID>>                         ids  = nullopt;
@@ -317,14 +317,14 @@ public:
                   }},
               Route{
                   L"api/v1/networks/(.+)"_RegEx,
-                  [=, this] (Message* m, const String& id) {
+                  [this] (Message* m, const String& id) {
                       ActiveCallCounter_ acc{*this};
                       WriteResponse (&m->rwResponse (), kNetworks_, Network::kMapper.FromObject (fWSAPI_->GetNetwork (id)));
                   }},
               Route{
                   IO::Network::HTTP::MethodsRegEx::kPatch,
                   L"api/v1/networks/(.+)"_RegEx,
-                  [=, this] (Message* m, const String& id) {
+                  [this] (Message* m, const String& id) {
                       ActiveCallCounter_ acc{*this};
                       fWSAPI_->PatchNetwork (id, JSONPATCH::OperationItemsType::kMapper.ToObject<JSONPATCH::OperationItemsType> (DataExchange::Variant::JSON::Reader{}.Read (m->rwRequest ().GetBody ())));
                       m->rwResponse ().status = IO::Network::HTTP::StatusCodes::kNoContent;
@@ -332,7 +332,7 @@ public:
 
               Route{
                   L"api/v1/operations/ping"_RegEx,
-                  [=, this] (Message* m) {
+                  [ this] (Message* m) {
                       ActiveCallCounter_                          acc{*this};
                       Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (&m->rwRequest ());
                       if (auto address = args.Lookup (L"target"sv)) {
@@ -345,7 +345,7 @@ public:
                   }},
               Route{
                   L"api/v1/operations/traceroute"_RegEx,
-                  [=, this] (Message* m) {
+                  [this] (Message* m) {
                       ActiveCallCounter_                          acc{*this};
                       Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (&m->rwRequest ());
                       optional<bool>                              reverseDNSResult;
@@ -362,7 +362,7 @@ public:
                   }},
               Route{
                   L"api/v1/operations/dns/calculate-negative-lookup-time"_RegEx,
-                  [=, this] (Message* m) {
+                  [this] (Message* m) {
                       ActiveCallCounter_ acc{*this};
                       ExpectedMethod (m->request, kOperations_);
                       optional<unsigned int>                      samples;
@@ -374,7 +374,7 @@ public:
                   }},
               Route{
                   L"api/v1/operations/dns/lookup"_RegEx,
-                  [=, this] (Message* m) {
+                  [ this] (Message* m) {
                       ActiveCallCounter_ acc{*this};
                       ExpectedMethod (m->request, kOperations_);
                       String                                      name;
@@ -389,14 +389,14 @@ public:
                   }},
               Route{
                   L"api/v1/operations/dns/calculate-score"_RegEx,
-                  [=, this] (Message* m) {
+                  [this] (Message* m) {
                       ActiveCallCounter_ acc{*this};
                       ExpectedMethod (m->request, kOperations_);
                       WriteResponse (&m->rwResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_DNS_CalculateScore ()));
                   }},
               Route{
                   L"api/v1/operations/scan/FullRescan"_RegEx,
-                  [=, this] (Message* m) {
+                  [this] (Message* m) {
                       ActiveCallCounter_                          acc{*this};
                       Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (&m->rwRequest ());
                       ExpectedMethod (m->request, kOperations_);
@@ -409,7 +409,7 @@ public:
                   }},
               Route{
                   L"api/v1/operations/scan/Scan"_RegEx,
-                  [=, this] (Message* m) {
+                  [this] (Message* m) {
                       ActiveCallCounter_                          acc{*this};
                       Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (&m->rwRequest ());
                       ExpectedMethod (m->request, kOperations_);
