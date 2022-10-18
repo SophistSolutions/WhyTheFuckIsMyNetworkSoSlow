@@ -332,7 +332,7 @@ public:
 
               Route{
                   L"api/v1/operations/ping"_RegEx,
-                  [ this] (Message* m) {
+                  [this] (Message* m) {
                       ActiveCallCounter_                          acc{*this};
                       Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (&m->rwRequest ());
                       if (auto address = args.Lookup (L"target"sv)) {
@@ -374,7 +374,7 @@ public:
                   }},
               Route{
                   L"api/v1/operations/dns/lookup"_RegEx,
-                  [ this] (Message* m) {
+                  [this] (Message* m) {
                       ActiveCallCounter_ acc{*this};
                       ExpectedMethod (m->request, kOperations_);
                       String                                      name;
