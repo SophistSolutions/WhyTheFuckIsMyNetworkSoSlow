@@ -31,6 +31,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         RequireNotNull (dbConnTable);
         SQL::Transaction t{dbConnTable->pConnection ()->mkTransaction ()};
         std::optional<T> result;
+        using DataExchange::VariantValue;
         Assert (kRepresentIDAs_ == VariantValue::Type::eString or kRepresentIDAs_ == VariantValue::Type::eBLOB);
         VariantValue id = kRepresentIDAs_ == VariantValue::Type::eString ? VariantValue{d.fGUID.As<String> ()} : VariantValue{d.fGUID.As<Memory::BLOB> ()};
         if (auto dbObj = dbConnTable->Get (id)) {
