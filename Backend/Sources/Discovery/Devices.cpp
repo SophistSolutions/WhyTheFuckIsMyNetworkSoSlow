@@ -1176,6 +1176,7 @@ namespace {
             static constexpr Activity kDiscovering_THIS_{L"discovering by random scans"sv};
 
             static constexpr auto kMinTimeBetweenScans_{5s};
+            static constexpr auto kOnErrorTimeBetweenScans_{30s};
 
             //constexpr auto               kAllowedNetworkStaleness_ = 1min;
             constexpr Time::DurationSecondsType kAllowedNetworkStaleness_ = 60;
@@ -1191,16 +1192,21 @@ namespace {
             double sizeFactor{1};                       // (DOESNT APPEAR NEEDED) - use more bloom filter bits than needed for full set, cuz otherwise get too many collisions as adding
             double maxFalsePositivesAllowed      = .5;  // bloom filter stops working well if much past this probability limit
             double maxFractionOfAddrSpaceScanned = .75; // our algorithm wastes alot of time computing random numbers past this limit
+
+            chrono::time_point rateLimiterWaitUntil = chrono::steady_clock::now ();
             while (true) {
                 try {
                     DeclareActivity da{&kDiscovering_THIS_};
+
+                    Execution::SleepUntil (Time::time_point2DurationSeconds (rateLimiterWaitUntil));
+                    rateLimiterWaitUntil = chrono::steady_clock::now () + kMinTimeBetweenScans_;
 
                     // Keep scanning the given range til we're (mostly) done
                     if (not scanAddressRange) {
                         Sequence<Discovery::Network> activeNetworks = Discovery::NetworksMgr::sThe.CollectActiveNetworks (kAllowedNetworkStaleness_);
                         if (activeNetworks.empty ()) {
                             DbgTrace (L"No active network, so postponing random device address scan");
-                            Execution::Sleep (30s); // importanT no locks held here
+                            rateLimiterWaitUntil = chrono::steady_clock::now () + kOnErrorTimeBetweenScans_;
                             continue;
                         }
                         // Scanning really only works for IPv4 since too large a range otherwise
@@ -1223,7 +1229,7 @@ namespace {
                     if (not scanAddressRange) {
                         // try again later
                         DbgTrace (L"No active IPV4 network, so postponing random device address scan");
-                        Execution::Sleep (30s);
+                        rateLimiterWaitUntil = chrono::steady_clock::now () + kOnErrorTimeBetweenScans_;
                         continue;
                     }
                     AssertNotNull (addressesProbablyUsed);
@@ -1252,7 +1258,7 @@ namespace {
                         DbgTrace (L"addressesProbablyUsed.GetStatistics ()=%s", Characters::ToString (bloomFilterStats).c_str ());
                         addressesProbablyUsed.reset ();
                         scanAddressRange.reset ();
-                        Execution::Sleep (1s);
+                        rateLimiterWaitUntil = chrono::steady_clock::now () + 15s;
                         continue;
                     }
                     Assert (selected);
@@ -1327,7 +1333,6 @@ namespace {
                         }
                         if (need2CheckAddr) {
                             runPingCheck (ia);
-                            Execution::Sleep (kMinTimeBetweenScans_);
                         }
                     }
                 }
@@ -1336,6 +1341,7 @@ namespace {
                 }
                 catch (...) {
                     Logger::sThe.Log (Logger::eError, L"%s", Characters::ToString (current_exception ()).c_str ());
+                    rateLimiterWaitUntil = chrono::steady_clock::now () + 30s;
                 }
             }
         }
@@ -1539,7 +1545,6 @@ Discovery::DevicesMgr::Activator::~Activator ()
  **************************** Discovery::DevicesMgr *****************************
  ********************************************************************************
  */
-
 DevicesMgr DevicesMgr::sThe;
 
 Collection<Discovery::Device> Discovery::DevicesMgr::GetActiveDevices (optional<Time::DurationSecondsType> allowedStaleness) const
