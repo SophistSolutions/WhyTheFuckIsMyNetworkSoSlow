@@ -858,27 +858,33 @@ namespace {
         {
             // SSDP can fail due to lack of permissions to bind to the appropriate sockets, or for example under WSL where we get protocol unsupported.
             // WARN to syslog, but no need to stop app
-            try {
-                fListener_ = make_unique<SSDP::Client::Listener> (
-                    [this] (const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); },
-                    SSDP::Client::Listener::eAutoStart);
+            if (fListener_ == nullptr) {
+                try {
+                    fListener_ = make_unique<SSDP::Client::Listener> (
+                        [this] (const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); },
+                        SSDP::Client::Listener::eAutoStart);
+                    if (notifyOfSuccess) {
+                        Logger::sThe.Log (Logger::eInfo, L"(Re-)Started SSDP Listener");
+                    }
+                }
+                catch (...) {
+                    Logger::sThe.Log (Logger::eError, L"Problem starting SSDP Listener - so that source of discovery will be (temporarily - will retry) unavailable: %s", Characters::ToString (current_exception ()).c_str ());
+                }
             }
-            catch (...) {
-                Logger::sThe.Log (Logger::eError, L"Problem starting SSDP Listener - so that source of discovery will be (temporarily - will retry) unavailable: %s", Characters::ToString (current_exception ()).c_str ());
-            }
-            try {
-                static const Time::Duration kReSearchInterval_{10min}; // not sure what interval makes sense
-                fSearcher_ = make_unique<SSDP::Client::Search> (
-                    [this] (const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); },
-                    SSDP::Client::Search::kRootDevice, kReSearchInterval_);
-            }
-            catch (...) {
-                // only warning because searcher much less important - just helpful at very start of discovery
-                Logger::sThe.Log (Logger::eWarning, L"Problem starting SSDP Searcher - so that source of discovery will be (temporarily - will retry) unavailable: %s", Characters::ToString (current_exception ()).c_str ());
-            }
-            if (notifyOfSuccess and
-                fListener_ != nullptr and fSearcher_ != nullptr) {
-                Logger::sThe.Log (Logger::eInfo, L"(Re-)Started SSDP Listener and Searcher");
+            if (fSearcher_ == nullptr) {
+                try {
+                    static const Time::Duration kReSearchInterval_{10min}; // not sure what interval makes sense
+                    fSearcher_ = make_unique<SSDP::Client::Search> (
+                        [this] (const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); },
+                        SSDP::Client::Search::kRootDevice, kReSearchInterval_);
+                    if (notifyOfSuccess) {
+                        Logger::sThe.Log (Logger::eInfo, L"(Re-)Started SSDP Searcher");
+                    }
+                }
+                catch (...) {
+                    // only warning because searcher much less important - just helpful at very start of discovery
+                    Logger::sThe.Log (Logger::eWarning, L"Problem starting SSDP Searcher - so that source of discovery will be (temporarily - will retry) unavailable: %s", Characters::ToString (current_exception ()).c_str ());
+                }
             }
         }
 
