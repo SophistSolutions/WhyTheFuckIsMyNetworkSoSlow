@@ -542,6 +542,10 @@ void WSImpl::PatchNetwork (const String& id, const JSONPATCH::OperationItemsType
                     // for now only support replacing the whole array at a time
                     updateVal.fTags = Set<String>{op.value->As<Sequence<VariantValue>> ().Select<String> ([] (const VariantValue& vv) { return vv.As<String> (); })};
                 }
+                else if (op.path == L"/userOverrides/aggregateFingerprint") {
+                    // for now only support replacing the whole array at a time
+                    updateVal.fAggregateFingerprint = Set<GUID>{op.value->As<Sequence<VariantValue>> ().Select<GUID> ([] (const VariantValue& vv) { return vv.As<String> (); })};
+                }
                 else if (op.path == L"/userOverrides/aggregateGatewayHardwareAddresses") {
                     // for now only support replacing the whole array at a time
                     updateVal.fAggregateGatewayHardwareAddresses = Set<String>{op.value->As<Sequence<VariantValue>> ().Select<String> ([] (const VariantValue& vv) { return vv.As<String> (); })};
@@ -565,8 +569,11 @@ void WSImpl::PatchNetwork (const String& id, const JSONPATCH::OperationItemsType
                     // for now only support replacing the whole array at a time
                     updateVal.fTags = optional<Set<String>>{};
                 }
+                else if (op.path == L"/userOverrides/aggregateFingerprint") {
+                    updateVal.fAggregateFingerprint = nullopt;
+                }
                 else if (op.path == L"/userOverrides/aggregateGatewayHardwareAddresses") {
-                    updateVal.fAggregateGatewayHardwareAddresses = optional<Set<String>>{};
+                    updateVal.fAggregateGatewayHardwareAddresses = nullopt;
                 }
                 if (updateVal.fName or updateVal.fNotes or updateVal.fTags or updateVal.fAggregateGatewayHardwareAddresses) {
                     IntegratedModel::Mgr::sThe.SetNetworkUserSettings (objID, updateVal);

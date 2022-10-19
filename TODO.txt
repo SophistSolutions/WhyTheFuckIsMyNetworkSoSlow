@@ -1,3 +1,12 @@
+
+	ALSO - must debug why we get two copies of Sudbury network with the new code as well!
+
+			... review in detail how rollup done. SOME of it cuz at least one record with no hardware address and some with hardware address
+			of gateway.
+
+			BUT ALSO - it appears we CAN get overlapping and random assignment between rollups, which isn't great.
+
+
 airplane-greece2boston-2022-10-02
 
 
