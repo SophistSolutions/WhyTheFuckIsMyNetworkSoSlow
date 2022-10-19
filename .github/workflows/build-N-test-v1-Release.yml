@@ -199,7 +199,7 @@ jobs:
           cd WhyTheFuckIsMyNetworkSoSlow
           make all
       - name: Archive Build Results
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.displayTargetName }} Installers
           path: |
@@ -224,7 +224,7 @@ jobs:
             extra_config_args: --apply-default-release-flags
             includeInDevBranchBuilds: true
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: ${{ env.COMMIT_ID2BUILD }}
       - name: Checkout submodules
@@ -256,7 +256,7 @@ jobs:
         run: |
           df -h
       - name: Archive Installers Results
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.displayTargetName }} Installers
           path: |
@@ -347,7 +347,7 @@ jobs:
           docker stop buildContainer
           docker cp buildContainer:WhyTheFuckIsMyNetworkSoSlow/Builds/${{ matrix.config_name }}/ $ARTIFACTS_DIR 2> /dev/null
       - name: Archive Installer Results
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.displayTargetName }} Installers
           path: |
