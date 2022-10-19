@@ -81,6 +81,8 @@ namespace {
 PortScanResults Discovery::ScanPorts (const InternetAddress& ia, const optional<ScanOptions>& options)
 {
     PortScanResults results{};
+    Activity        scanningThisAddress{Characters::Format (L"scanning ports on %s", Characters::ToString (ia).c_str ())};
+    DeclareActivity da{&scanningThisAddress};
 
     if (options and options->fStyle == ScanOptions::eQuick) {
         ICMPPingScan_ (ia, &results);
