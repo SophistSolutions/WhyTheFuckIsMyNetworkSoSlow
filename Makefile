@@ -103,6 +103,9 @@ endif
 build-root:
 	@$(StroikaRoot)ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) Making BuildRoot:
 	@export MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1)) && cd ThirdPartyComponents/Stroika/StroikaRoot && ./ScriptsLib/MakeBuildRoot ../../../
+ifneq ($(findstring $(DETECTED_HOST_OS),MSYS-Cygwin),)
+	@$(MAKE) --silent Builds/__AUTOMATIC_MAKE_PROEJCT_FILES__
+endif
 
 apply-configurations-to-vscode:
 	@$(StroikaRoot)ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "Applying configuration(s) to vscode:"
@@ -110,7 +113,7 @@ apply-configurations-to-vscode:
 		MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1)) $(StroikaRoot)ScriptsLib/ApplyConfiguration --only-vscode $$i;\
 	done
 
-list-configurations list-configuration-tags:
+list-configurations list-configuration-tags project-files:
 	@$(MAKE) --directory ThirdPartyComponents/Stroika/StroikaRoot --silent CONFIGURATION_TAGS="$(CONFIGURATION_TAGS)" $@
 
 clean clobber:
@@ -140,6 +143,12 @@ else
 	@$(MAKE) --directory ThirdPartyComponents --no-print-directory $@ MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
 endif
 
+ifneq ($(findstring $(DETECTED_HOST_OS),MSYS-Cygwin),)
+# SEE https://stroika.atlassian.net/browse/STK-940
+Builds/__AUTOMATIC_MAKE_PROEJCT_FILES__:
+	@make project-files
+	@touch Builds/__AUTOMATIC_MAKE_PROEJCT_FILES__
+endif
 
 .PHONY: installers installer-deb installer-rpm installer-wix
 installers installer-deb installer-rpm installer-wix:   $(TARGETEXE)
