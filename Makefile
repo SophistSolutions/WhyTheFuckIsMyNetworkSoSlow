@@ -113,14 +113,14 @@ apply-configurations-to-vscode:
 		MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1)) $(StroikaRoot)ScriptsLib/ApplyConfiguration --only-vscode $$i;\
 	done
 
-list-configurations list-configuration-tags project-files:
+list-configurations list-configuration-tags:
 	@$(MAKE) --directory ThirdPartyComponents/Stroika/StroikaRoot --silent CONFIGURATION_TAGS="$(CONFIGURATION_TAGS)" $@
 
-# project-files:
-# 	@$(MAKE) --directory $(StroikaRoot) --silent CONFIGURATION_TAGS="$(CONFIGURATION_TAGS)" $@
-# 	@rm -f Workspaces/VisualStudio.Net/Microsoft.Cpp.stroika.user.props
-# 	@#NB: Better for symbolic link to use relative paths, since Visual Studio.Net happiear about interpretting these
-# 	@cd Workspaces/VisualStudio.Net; $(StroikaRoot)/ScriptsLib/MakeSymbolicLink ../ThirdPartyComponents/Stroika/StroikaRoot/Workspaces/VisualStudio.Net/Microsoft.Cpp.stroika.user.props
+project-files:
+	@$(MAKE) --directory $(StroikaRoot) --silent CONFIGURATION_TAGS="$(CONFIGURATION_TAGS)" $@
+	@#Workaround https://stroika.atlassian.net/browse/STK-943
+	@cd Workspaces/VisualStudio.Net; rm -f Microsoft.Cpp.stroika.ConfigurationBased.props; $(StroikaRoot)/ScriptsLib/MakeSymbolicLink ../../ThirdPartyComponents/Stroika/StroikaRoot/Workspaces/VisualStudio.Net/Microsoft.Cpp.stroika.ConfigurationBased.props
+	@cd Workspaces/VisualStudio.Net; rm -f Microsoft.Cpp.stroika.user.props; $(StroikaRoot)/ScriptsLib/MakeSymbolicLink ../../ThirdPartyComponents/Stroika/StroikaRoot/Workspaces/VisualStudio.Net/Microsoft.Cpp.stroika.user.props
 
 clean clobber:
 ifeq ($(CONFIGURATION),)
