@@ -28,7 +28,7 @@ APPLY_CONFIGS=$(or \
 
 all:
 	@$(StroikaRoot)ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "Building WhyTheFuckIsMyNetworkSoSlow all{$(CONFIGURATION)}:"
-	@$(MAKE) -silent ConfigurationFiles MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
+	@$(MAKE) -silent IntermediateFiles/ASSURE_DEFAULT_CONFIGURATIONS_BUILT MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
 ifeq ($(CONFIGURATION),)
 	@#Cannot use APPLY_CONFIGS here because ConfigurationFiles may have changed and evaluated before here
 	@for i in `$(StroikaRoot)ScriptsLib/GetConfigurations --config-tags "$(CONFIGURATION_TAGS)" --all-default` ; do\
@@ -43,8 +43,10 @@ else
 endif
 
 
-ConfigurationFiles:
+IntermediateFiles/ASSURE_DEFAULT_CONFIGURATIONS_BUILT:
+ifeq ($(shell $(StroikaRoot)ScriptsLib/GetConfigurations --quiet),)
 	@$(MAKE) -silent default-configurations MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
+endif
 
 
 STROIKA_CONFIG_PARAMS_COMMON=
@@ -65,8 +67,8 @@ endif
 
 .PHONY: default-configurations
 default-configurations:
-	@make -s build-root
-	@$(StroikaRoot)ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) Configuring:
+	@if [ ! -d ConfigurationFiles ] ; then $(MAKE) --silent build-root; fi
+	@$(StroikaRoot)ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) Configuring...
 ifeq ($(DETECTED_HOST_OS), Darwin)
 	@(export MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1)) && cd $(StroikaRoot) && ./configure Debug --build-by-default $(DETECTED_HOST_OS) --config-tag Unix $(STROIKA_CONFIG_PARAMS_COMMON) $(STROIKA_CONFIG_PARAMS_DEBUG));
 	@(export MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1)) && cd $(StroikaRoot) && ./configure Release --build-by-default $(DETECTED_HOST_OS) --config-tag Unix $(STROIKA_CONFIG_PARAMS_COMMON) $(STROIKA_CONFIG_PARAMS_RELEASE));
@@ -104,8 +106,8 @@ endif
 	done
 
 build-root:
-	@$(StroikaRoot)ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) Making BuildRoot:
-	@export MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1)) && cd ThirdPartyComponents/Stroika/StroikaRoot && ./ScriptsLib/MakeBuildRoot ../../../
+	@$(StroikaRoot)ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) Making BuildRoot...
+	@export MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1)) && cd $(StroikaRoot) && ./ScriptsLib/MakeBuildRoot ../../../
 
 apply-configurations-to-vscode:
 	@$(StroikaRoot)ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "Applying configuration(s) to vscode:"
@@ -113,8 +115,8 @@ apply-configurations-to-vscode:
 		MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1)) $(StroikaRoot)ScriptsLib/ApplyConfiguration --only-vscode $$i;\
 	done
 
-list-configurations list-configuration-tags:
-	@$(MAKE) --directory ThirdPartyComponents/Stroika/StroikaRoot --silent CONFIGURATION_TAGS="$(CONFIGURATION_TAGS)" $@
+list-configurations list-configuration-tags apply-configurations apply-configuration apply-configurations-if-needed reconfigure:
+	@$(MAKE) --directory $(StroikaRoot) --silent CONFIGURATION_TAGS="$(CONFIGURATION_TAGS)" $@
 
 project-files:
 	@$(MAKE) --directory $(StroikaRoot) --silent CONFIGURATION_TAGS="$(CONFIGURATION_TAGS)" $@
