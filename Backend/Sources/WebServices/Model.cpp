@@ -166,6 +166,11 @@ const ObjectVariantMapper Model::Manufacturer::kMapper = [] () {
  ********************** Model::Network::UserOverridesType ***********************
  ********************************************************************************
  */
+bool Model::Network::UserOverridesType::IsNonTrivial () const
+{
+    return fName or fTags or fNotes or fAggregateNetworks or fDontAggregateNetworks or fAggregateFingerprints or fDontAggregateFingerprints or fAggregateGatewayHardwareAddresses;
+}
+
 String Model::Network::UserOverridesType::ToString () const
 {
     Characters::StringBuilder sb;
@@ -185,11 +190,11 @@ String Model::Network::UserOverridesType::ToString () const
     if (fDontAggregateNetworks) {
         sb += L"DontAggregateNetworks: " + Characters::ToString (fDontAggregateNetworks);
     }
-    if (fAggregateFingerprint) {
-        sb += L"AggregateFingerprint: " + Characters::ToString (fAggregateFingerprint);
+    if (fAggregateFingerprints) {
+        sb += L"AggregateFingerprints: " + Characters::ToString (fAggregateFingerprints);
     }
-    if (fDontAggregateFingerprint) {
-        sb += L"DontAggregateFingerprint: " + Characters::ToString (fDontAggregateFingerprint);
+    if (fDontAggregateFingerprints) {
+        sb += L"DontAggregateFingerprints: " + Characters::ToString (fDontAggregateFingerprints);
     }
     if (fAggregateGatewayHardwareAddresses) {
         sb += L"AggregateGatewayHardwareAddresses: " + Characters::ToString (fAggregateGatewayHardwareAddresses);
@@ -211,8 +216,8 @@ const DataExchange::ObjectVariantMapper Model::Network::UserOverridesType::kMapp
         {L"notes"sv, StructFieldMetaInfo{&UserOverridesType::fNotes}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"aggregateNetworks"sv, StructFieldMetaInfo{&UserOverridesType::fAggregateNetworks}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"dontAggregateNetworks"sv, StructFieldMetaInfo{&UserOverridesType::fDontAggregateNetworks}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"aggregateFingerprint"sv, StructFieldMetaInfo{&UserOverridesType::fAggregateFingerprint}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"dontAggregateFingerprint"sv, StructFieldMetaInfo{&UserOverridesType::fDontAggregateFingerprint}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"aggregateFingerprints"sv, StructFieldMetaInfo{&UserOverridesType::fAggregateFingerprints}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"dontAggregateFingerprints"sv, StructFieldMetaInfo{&UserOverridesType::fDontAggregateFingerprints}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"aggregateGatewayHardwareAddresses"sv, StructFieldMetaInfo{&UserOverridesType::fAggregateGatewayHardwareAddresses}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
     return mapper;
@@ -683,6 +688,11 @@ const DataExchange::ObjectVariantMapper Model::Device::SeenType::kMapper = [] ()
  ********************** Model::Device::UserOverridesType ************************
  ********************************************************************************
  */
+bool Model::Device::UserOverridesType::IsNonTrivial () const
+{
+    return fName or fTags or fNotes or fAggregateDevices or fDontAggregateDevices or fAggregateDeviceHardwareAddresses;
+}
+
 String Model::Device::UserOverridesType::ToString () const
 {
     Characters::StringBuilder sb;

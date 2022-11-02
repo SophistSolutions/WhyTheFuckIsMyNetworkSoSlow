@@ -306,7 +306,7 @@ namespace {
             Debug::TimingTrace                ttrc{L"GenNewNetworkID", 0.001}; // sb very quick
             GUID                              newRes = GUID::GenerateNew ();
             Model::Network::UserOverridesType tmp;
-            tmp.fAggregateFingerprint = Set<GUID>{probablyUniqueIDForNetwork};
+            tmp.fAggregateFingerprints = Set<GUID>{probablyUniqueIDForNetwork};
             SetNetworkUserSettings (newRes, tmp);
             return newRes;
         }
@@ -487,8 +487,8 @@ namespace {
             Collection<Schema_Field>{
 #if __cpp_designated_initializers
                 /**
-                     *  For ID, generate random GUID (BLOB) automatically in database
-                     */
+                 *  For ID, generate random GUID (BLOB) automatically in database
+                 */
                 {.fName = L"ID"sv, .fVariantValueName = L"id"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = L"randomblob(16)"sv},
                 {.fName = L"friendlyName"sv, .fVariantValueType = VariantValue::eString},
 #else
@@ -809,6 +809,12 @@ namespace {
             // Find the appropriate network to merge net2MergeIn into from our existing networks (using whatever keys we have to make this often quicker)
             // This can be slow for the case of a network change. And it can refer to a different rollup network than it used to.
             // second part of tuple returned is 'revalidateAll' - force recompute of whole rollup
+
+            // @todo NOTE - a net COULD be directed to rollup into one network due to fingerprint and another due to matching gateway hardware ID
+            // RESOLVE this by agreeing that hardwareGatewayID takes PRECEDENCE.
+            //
+            // And consider it a DATA ERROR (need code to assure cannot happen) - for the same hardare ID to appear in two rollup networks match rules
+            // or the same (any type of rollup rule) to appear in differnt high level user settings)
             tuple<optional<Network>, PassFailType_> ShouldRollupInto_ (const Network& net2MergeIn, const Network::FingerprintType& net2MergeInFingerprint)
             {
                 auto formerRollupID = fMapFingerprint2RollupID.Lookup (net2MergeInFingerprint);
@@ -831,6 +837,9 @@ namespace {
             }
             bool ShouldRollupInto_ (const Network& net2MergeIn, const Network::FingerprintType& net2MergeInFingerprint, const Network& targetRollup)
             {
+                // @todo NO LONGER PAY ATTENTION TO faggarates... stuff - just use fUserOverrides
+
+
                 // check aggregates not necessarily from user settings
                 if (targetRollup.fAggregatesFingerprints and targetRollup.fAggregatesFingerprints->Contains (net2MergeInFingerprint)) {
                     return true;
@@ -843,7 +852,7 @@ namespace {
                 }
                 // lose these checks if rollup combines them
                 if (auto riu = targetRollup.fUserOverrides) {
-                    if (riu->fAggregateFingerprint and riu->fAggregateFingerprint->Contains (net2MergeInFingerprint)) {
+                    if (riu->fAggregateFingerprints and riu->fAggregateFingerprints->Contains (net2MergeInFingerprint)) {
                         return true;
                     }
                     if (riu->fAggregateGatewayHardwareAddresses and riu->fAggregateGatewayHardwareAddresses->Intersects (net2MergeIn.fGatewayHardwareAddresses)) {

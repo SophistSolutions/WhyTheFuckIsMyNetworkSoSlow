@@ -283,8 +283,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
             // AddFingerprint/RemoveFingerprint/AddID/RemoveID optional<set<guid>>> here so user can customize what gets rolled into this net.
             optional<Set<GUID>>            fAggregateNetworks;
             optional<Set<GUID>>            fDontAggregateNetworks;
-            optional<Set<FingerprintType>> fAggregateFingerprint;
-            optional<Set<FingerprintType>> fDontAggregateFingerprint;
+            optional<Set<FingerprintType>> fAggregateFingerprints;
+            optional<Set<FingerprintType>> fDontAggregateFingerprints;
             optional<Set<String>>          fAggregateGatewayHardwareAddresses;
 
 #if __cpp_impl_three_way_comparison < 201711
@@ -305,10 +305,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
                 if (fDontAggregateNetworks != rhs.fDontAggregateNetworks) {
                     return false;
                 }
-                if (fAggregateFingerprint != rhs.fAggregateFingerprint) {
+                if (fAggregateFingerprints != rhs.fAggregateFingerprints) {
                     return false;
                 }
-                if (fDontAggregateFingerprint != rhs.fDontAggregateFingerprint) {
+                if (fDontAggregateFingerprints != rhs.fDontAggregateFingerprints) {
                     return false;
                 }
                 if (fAggregateGatewayHardwareAddresses != rhs.fAggregateGatewayHardwareAddresses) {
@@ -323,6 +323,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 #else
             auto operator<=> (const UserOverridesType&) const = default;
 #endif
+
+            nonvirtual bool IsNonTrivial () const;
+
             /**
              *  @see Characters::ToString ();
              */
@@ -537,6 +540,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 #else
             auto operator<=> (const UserOverridesType&) const = default;
 #endif
+
+            nonvirtual bool IsNonTrivial () const;
 
             /**
              *  @see Characters::ToString ();

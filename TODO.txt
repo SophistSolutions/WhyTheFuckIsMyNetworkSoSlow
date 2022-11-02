@@ -1,10 +1,60 @@
+e59ab2d7-09aa-fa02-f030-0d973526dc8f
+	{
+		"UserSettings" : {
+			"aggregateGatewayHardwareAddresses" : [
+				"70:97:41:94:1a:00"
+			],
+			"name" : "Chania"
+		}
+	}
+0f7d1c2e-3b14-07a0-e444-5b83f67debd7
+	{
+		"UserSettings" : {
+			"aggregateGatewayHardwareAddresses" : [
+				"e0:3f:49:e3:1c:a8"
+			],
+			"name" : "34 Church Street"
+		}
+	}
+d4784d78-3bcc-5973-bb9f-3e3a7275d7d5
+{
+    "UserSettings" : {
+        "aggregateFingerprints" : [
+            "ae2c8b83-a5e9-30c3-f23b-cc147d82246a"
+        ],
+SB			"aggregateGatewayHardwareAddresses" : [
+				"34:4d:ea:94:4a:94"
+			],
+        "name" : "Athens-Apartment-2022-10"
+    }
+}
 
+
+----
+>>> Review code cehcking in. I think its mostly OK. But verify I do a sensible job producing same answer incremntally as when starting up from scratch.
+  And handling CONFLICTS in specs. Been a while - must consider.
+
+----
+
+sporadic spinning issue on hercules (1.0 CPU); build from github actions doe sthis (but maybe not immediately).
+TEST build from my source code with logging on.
+
+	---
+	from commandline - assure if I delete record from usersettings, it disappears from aggregated networks too immediately.and from database
+	
+	---
 	ALSO - must debug why we get two copies of Sudbury network with the new code as well!
 
 			... review in detail how rollup done. SOME of it cuz at least one record with no hardware address and some with hardware address
 			of gateway.
 
 			BUT ALSO - it appears we CAN get overlapping and random assignment between rollups, which isn't great.
+
+
+			WORKING ON THIS - SEEMS ON SURFACE NOT A BUG. JUST SET userOverrides.aggregateFingerprints
+				but thats not working rihgt, so debug
+
+			thogh names make no sense, try adding to local windows server (and then delete)
 
 
 airplane-greece2boston-2022-10-02

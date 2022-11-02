@@ -438,7 +438,10 @@ void WSImpl::PatchDevice (const String& id, const JSONPATCH::OperationItemsType&
                     // for now only support replacing the whole array at a time
                     updateVal.fTags = Set<String>{op.value->As<Sequence<VariantValue>> ().Select<String> ([] (const VariantValue& vv) { return vv.As<String> (); })};
                 }
-                if (updateVal.fName.has_value () or updateVal.fNotes.has_value () or updateVal.fTags.has_value ()) {
+                else {
+                    Execution::Throw (ClientErrorException{L"JSON-Patch add of unsupported op.path"_k});
+                }
+                if (updateVal.IsNonTrivial ()) {
                     IntegratedModel::Mgr::sThe.SetDeviceUserSettings (objID, updateVal);
                 }
                 else {
@@ -457,7 +460,10 @@ void WSImpl::PatchDevice (const String& id, const JSONPATCH::OperationItemsType&
                     // for now only support replacing the whole array at a time
                     updateVal.fTags = optional<Set<String>>{};
                 }
-                if (updateVal.fName.has_value () or updateVal.fNotes.has_value () or updateVal.fTags.has_value ()) {
+                else {
+                    Execution::Throw (ClientErrorException{L"JSON-Patch remove of unsupported op.path"_k});
+                }
+                if (updateVal.IsNonTrivial ()) {
                     IntegratedModel::Mgr::sThe.SetDeviceUserSettings (objID, updateVal);
                 }
                 else {
@@ -542,15 +548,18 @@ void WSImpl::PatchNetwork (const String& id, const JSONPATCH::OperationItemsType
                     // for now only support replacing the whole array at a time
                     updateVal.fTags = Set<String>{op.value->As<Sequence<VariantValue>> ().Select<String> ([] (const VariantValue& vv) { return vv.As<String> (); })};
                 }
-                else if (op.path == L"/userOverrides/aggregateFingerprint") {
+                else if (op.path == L"/userOverrides/aggregateFingerprints") {
                     // for now only support replacing the whole array at a time
-                    updateVal.fAggregateFingerprint = Set<GUID>{op.value->As<Sequence<VariantValue>> ().Select<GUID> ([] (const VariantValue& vv) { return vv.As<String> (); })};
+                    updateVal.fAggregateFingerprints = Set<GUID>{op.value->As<Sequence<VariantValue>> ().Select<GUID> ([] (const VariantValue& vv) { return vv.As<String> (); })};
                 }
                 else if (op.path == L"/userOverrides/aggregateGatewayHardwareAddresses") {
                     // for now only support replacing the whole array at a time
                     updateVal.fAggregateGatewayHardwareAddresses = Set<String>{op.value->As<Sequence<VariantValue>> ().Select<String> ([] (const VariantValue& vv) { return vv.As<String> (); })};
                 }
-                if (updateVal.fName or updateVal.fNotes or updateVal.fTags or updateVal.fAggregateGatewayHardwareAddresses) {
+                else {
+                    Execution::Throw (ClientErrorException{L"JSON-Patch add of unsupported op.path"_k});
+                }
+                if (updateVal.IsNonTrivial ()) {
                     IntegratedModel::Mgr::sThe.SetNetworkUserSettings (objID, updateVal);
                 }
                 else {
@@ -569,13 +578,16 @@ void WSImpl::PatchNetwork (const String& id, const JSONPATCH::OperationItemsType
                     // for now only support replacing the whole array at a time
                     updateVal.fTags = optional<Set<String>>{};
                 }
-                else if (op.path == L"/userOverrides/aggregateFingerprint") {
-                    updateVal.fAggregateFingerprint = nullopt;
+                else if (op.path == L"/userOverrides/aggregateFingerprints") {
+                    updateVal.fAggregateFingerprints = nullopt;
                 }
                 else if (op.path == L"/userOverrides/aggregateGatewayHardwareAddresses") {
                     updateVal.fAggregateGatewayHardwareAddresses = nullopt;
                 }
-                if (updateVal.fName or updateVal.fNotes or updateVal.fTags or updateVal.fAggregateGatewayHardwareAddresses) {
+                else {
+                    Execution::Throw (ClientErrorException{L"JSON-Patch remove of unsupported op.path"_k});
+                }
+                if (updateVal.IsNonTrivial ()) {
                     IntegratedModel::Mgr::sThe.SetNetworkUserSettings (objID, updateVal);
                 }
                 else {
