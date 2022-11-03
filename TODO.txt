@@ -89,6 +89,10 @@ SB			"aggregateGatewayHardwareAddresses" : [
     }
 }
 
+----
+
+	Once I restructure html code (maybe before) to separately fetch each network (and other object) by ID, I can 
+	redo teh atttachedNetworks field of a device to be JUST the ID, not a mapping of ID to a few interesting key values.
 
 ----
 >>> Review code cehcking in. I think its mostly OK. But verify I do a sensible job producing same answer incremntally as when starting up from scratch.

@@ -466,9 +466,38 @@ String NetworkInterface::ToString () const
     Characters::StringBuilder sb;
     sb += L"{";
     sb += L"GUID: " + Characters::ToString (fGUID) + L", ";
+    if (fAggregatesReversibly) {
+        sb += L"fAggregatesReversibly: " + Characters::ToString (fAggregatesReversibly) + L", ";
+    }
+    if (fAggregatesIrreversibly) {
+        sb += L"fAggregatesIrreversibly: " + Characters::ToString (fAggregatesIrreversibly) + L", ";
+    }
     sb += Interface::ToString ().SafeSubString (1, -1);
     sb += L"}";
     return sb.str ();
+}
+
+auto NetworkInterface::GenerateFingerprintFromProperties () const -> FingerprintType
+{
+    StringBuilder sb;
+    sb += fInternalInterfaceID;
+    sb += L"/";
+    sb += fFriendlyName;
+    sb += L"/";
+    if (fDescription) {
+        sb += *fDescription;
+    }
+    sb += L"/";
+    if (fType) {
+        sb += Configuration::DefaultNames<NetworkInterface::Type>::k.GetName (*fType);
+    }
+    sb += L"/";
+    if (fHardwareAddress) {
+        sb += *fHardwareAddress;
+    }
+    sb += L"/";
+    // Could use other algorithms, but easiest to stick with MD5 for compat with 2.1.5 Stroika
+    return Cryptography::Digest::ComputeDigest<Cryptography::Digest::Algorithm::MD5> (sb.str ());
 }
 
 const ObjectVariantMapper NetworkInterface::kMapper = [] () {
@@ -517,6 +546,9 @@ const ObjectVariantMapper NetworkInterface::kMapper = [] () {
     mapper.AddCommonType<Set<NetworkInterface::Status>> ();
     mapper.AddCommonType<optional<Set<NetworkInterface::Status>>> ();
 
+    mapper.AddCommonType<Set<GUID>> ();
+    mapper.AddCommonType<optional<Set<GUID>>> ();
+
     {
         mapper.AddClass<NetworkInterface> (initializer_list<ObjectVariantMapper::StructFieldInfo> {
             {L"platformInterfaceID", StructFieldMetaInfo{&NetworkInterface::fInternalInterfaceID}},
@@ -534,6 +566,8 @@ const ObjectVariantMapper NetworkInterface::kMapper = [] () {
                 {L"DNSServers", StructFieldMetaInfo{&NetworkInterface::fDNSServers}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
                 {L"wirelessInformation", StructFieldMetaInfo{&NetworkInterface::fWirelessInfo}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
                 {L"status", StructFieldMetaInfo{&NetworkInterface::fStatus}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+                {L"aggregatesReversibly"sv, StructFieldMetaInfo{&NetworkInterface::fAggregatesReversibly}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+                {L"aggregatesIrreversibly"sv, StructFieldMetaInfo{&NetworkInterface::fAggregatesIrreversibly}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
 #if qDebug
                 {L"debugProps", StructFieldMetaInfo{&NetworkInterface::fDebugProps}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
 #endif
@@ -541,9 +575,6 @@ const ObjectVariantMapper NetworkInterface::kMapper = [] () {
         // StructFieldMetaInfo{} doesn't work with nested members - https://stackoverflow.com/questions/1929887/is-pointer-to-inner-struct-member-forbidden
         ObjectVariantMapper::TypeMappingDetails originalTypeMapper = *mapper.GetTypeMappingRegistry ().Lookup (typeid (NetworkInterface));
         mapper.Add<NetworkInterface> (
-            // Do base mappings, and map
-            //      {L"boundAddressRanges", StructFieldMetaInfo{offsetof (NetworkInterface, fBindings.fAddressRanges), typeid (NetworkInterface::fBindings.fAddressRanges)}},
-            //      {L"boundAddresses", StructFieldMetaInfo{offsetof (NetworkInterface, fBindings.fAddresses), typeid (NetworkInterface::fBindings.fAddressRanges)}},
             [=] (const ObjectVariantMapper& mapper, const NetworkInterface* obj) -> VariantValue {
                 Mapping<String, VariantValue> resultMap = originalTypeMapper.fFromObjectMapper (mapper, obj).As<Mapping<String, VariantValue>> ();
                 resultMap.Add (L"boundAddressRanges", mapper.FromObject (obj->fBindings.fAddressRanges));
@@ -564,6 +595,12 @@ const ObjectVariantMapper NetworkInterface::kMapper = [] () {
     mapper.AddCommonType<Collection<NetworkInterface>> ();
     return mapper;
 }();
+
+NetworkInterface NetworkInterface::Rollup (const NetworkInterface& rollupNetwork, const NetworkInterface& instanceNetwork2Add)
+{
+    AssertNotImplemented ();
+    return rollupNetwork;
+}
 
 /*
  ********************************************************************************

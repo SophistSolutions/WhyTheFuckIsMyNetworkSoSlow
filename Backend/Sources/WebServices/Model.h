@@ -152,6 +152,24 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
          */
         GUID fGUID;
 
+        /**
+         * This NetworkInterface summary represents an aggregation of the following NetworkInterface objects.
+         */
+        optional<Set<GUID>> fAggregatesReversibly;
+
+        /**
+         *  So far NYI, but idea is we automatically rollup some old stuff and store that as a new record in the DB.
+         */
+        optional<Set<GUID>> fAggregatesIrreversibly;
+
+        using FingerprintType = GUID;
+
+        /**
+         *  This returns a property that can be used for object identity - if two networkinterfaces have the same fingerprint
+         *  they can usefully be throught of as the same (MAYBE need to augment this with ID of device they come from?).
+         */
+        nonvirtual FingerprintType GenerateFingerprintFromProperties () const;
+
 #if qDebug
         optional<Mapping<String, DataExchange::VariantValue>> fDebugProps;
 #endif
@@ -162,6 +180,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         nonvirtual String ToString () const;
 
         static const DataExchange::ObjectVariantMapper kMapper;
+
+        static NetworkInterface Rollup (const NetworkInterface& rollupNetwork, const NetworkInterface& instanceNetwork2Add);
     };
 
     /**

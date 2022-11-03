@@ -119,6 +119,7 @@ namespace {
         using IntegratedModel::Device;
         using IntegratedModel::Network;
         using IntegratedModel::NetworkAttachmentInfo;
+        using IntegratedModel::NetworkInterface;
 
         Device Discovery2Model_ (const Discovery::Device& d)
         {
@@ -201,6 +202,17 @@ namespace {
 #endif
             return nw;
         }
+        NetworkInterface Discovery2Model_ (const Discovery::NetworkInterface& n)
+        {
+            NetworkInterface nwi{n};
+            nwi.fGUID = n.fGUID;
+            if constexpr (qDebug) {
+                if (not n.fDebugProps.empty ()) {
+                    nwi.fDebugProps = n.fDebugProps;
+                }
+            }
+            return nwi;
+        }
 
         /**
          * Map all the 'Discovery::Device' objects to 'Model::Device' objects.
@@ -226,6 +238,24 @@ namespace {
             Sequence<Network>  result = Sequence<Network>{Discovery::NetworksMgr::sThe.CollectActiveNetworks ().Select<Network> ([] (const Discovery::Network& n) {
                 return Discovery2Model_ (n);
             })};
+#if USE_NOISY_TRACE_IN_THIS_MODULE_
+            DbgTrace (L"returns: %s", Characters::ToString (result).c_str ());
+#endif
+            return result;
+        }
+
+        /**
+         * Map all the 'Discovery::NetworkInterface' objects to 'Model::NetworkInterface' objects.
+         *
+         *  \note   \em Thread-Safety   <a href="Thread-Safety.md#Internally-Synchronized-Thread-Safety">Internally-Synchronized-Thread-Safety</a>
+         */
+        Sequence<NetworkInterface> GetNetworkInterfaces_ ()
+        {
+            Debug::TimingTrace         ttrc{L"DiscoveryWrapper_::GetNetworkInterfaces_", 0.1};
+            Sequence<NetworkInterface> result = Sequence<NetworkInterface>{Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ().Select<NetworkInterface> ([] (const Discovery::NetworkInterface& n) {
+                return Discovery2Model_ (n);
+            })};
+
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
             DbgTrace (L"returns: %s", Characters::ToString (result).c_str ());
 #endif
@@ -1292,15 +1322,10 @@ void IntegratedModel::Mgr::SetNetworkUserSettings (const Common::GUID& id, const
 
 Collection<IntegratedModel::NetworkInterface> IntegratedModel::Mgr::GetNetworkInterfaces () const
 {
+    // AS OF 2022-11-02 this returns the currently active network interfaces, but must be adapted to return ROLLUPS ASAP
     Collection<NetworkInterface> result;
     for (const Discovery::NetworkInterface& n : Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ()) {
-        NetworkInterface nw{n};
-        nw.fGUID = n.fGUID;
-#if qDebug
-        if (not n.fDebugProps.empty ()) {
-            nw.fDebugProps = n.fDebugProps;
-        }
-#endif
+        NetworkInterface nw = DiscoveryWrapper_::Discovery2Model_ (n);
         result += nw;
     }
     return result;
@@ -1308,5 +1333,8 @@ Collection<IntegratedModel::NetworkInterface> IntegratedModel::Mgr::GetNetworkIn
 
 optional<IntegratedModel::NetworkInterface> IntegratedModel::Mgr::GetNetworkInterface (const GUID& id) const
 {
+    // AS OF 2022-11-02 this returns the currently active network interfaces, but must be adapted to return ROLLUPS ASAP
+
+    // LIKE WITH NETWORKS - FISST TRY ROLLUP LIST AND IF THAT FAILS, CHEKC DB .. (which contains the actives already)
     return GetNetworkInterfaces ().First ([&] (const auto& i) { return i.fGUID == id; });
 }
