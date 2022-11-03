@@ -25,9 +25,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 }
 
 namespace Stroika::Foundation::Configuration {
-#if !qCompilerAndStdLib_template_specialization_internalErrorWithSpecializationSignifier_Buggy
     template <>
-#endif
     constexpr EnumNames<WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::Device::DeviceType> DefaultNames<WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::Device::DeviceType>::k{
         EnumNames<WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::Device::DeviceType>::BasicArrayInitializer{{
             {WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::Device::DeviceType::eMediaPlayer, L"Media-Player"},
@@ -43,9 +41,7 @@ namespace Stroika::Foundation::Configuration {
             {WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::Device::DeviceType::eVirtualMachine, L"Virtual-Machine"},
         }}};
 
-#if !qCompilerAndStdLib_template_specialization_internalErrorWithSpecializationSignifier_Buggy
     template <>
-#endif
     constexpr EnumNames<WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::DeviceSortParamters::SearchTerm::By> DefaultNames<WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::DeviceSortParamters::SearchTerm::By>::k{
         EnumNames<WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::DeviceSortParamters::SearchTerm::By>::BasicArrayInitializer{{
             {WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::DeviceSortParamters::SearchTerm::By::eAddress, L"Address"},
