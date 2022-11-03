@@ -421,28 +421,21 @@ public:
                       }
                   }},
           }
-        , fStaticRoutes_
-    {
-        Route{L"config.json"_RegEx, mkRequestHandler (kGUIConfig_, Config_::kMapper, function<Config_ (void)>{[=] () { return GetConfig_ (); }})},
-            Route{RegularExpression::kAny, FileSystemRequestHandler{Execution::GetEXEDir () / "html", kStaticSiteHandlerOptions_}},
-    }
+        , fStaticRoutes_{
+              Route{L"config.json"_RegEx, mkRequestHandler (kGUIConfig_, Config_::kMapper, function<Config_ (void)>{[=] () { return GetConfig_ (); }})},
+              Route{RegularExpression::kAny, FileSystemRequestHandler{Execution::GetEXEDir () / "html", kStaticSiteHandlerOptions_}},
+          }
 #if __cpp_designated_initializers
-    , fConnectionMgr_
-    {
-        SocketAddresses (InternetAddresses_Any (), gAppConfiguration.Get ().WebServerPort.value_or (AppConfigurationType::kWebServerPort_Default)), fWSRoutes_ + fStaticRoutes_, ConnectionManager::Options { .fMaxConnections = kMaxWebServerConcurrentConnections_, .fMaxConcurrentlyHandledConnections = kMaxThreads_, .fBindFlags = Socket::BindFlags{.fSO_REUSEADDR = true}, .fDefaultResponseHeaders = kDefaultResponseHeadersStaticSite_ }
-    }
+        , fConnectionMgr_{SocketAddresses (InternetAddresses_Any (), gAppConfiguration.Get ().WebServerPort.value_or (AppConfigurationType::kWebServerPort_Default)), fWSRoutes_ + fStaticRoutes_, ConnectionManager::Options{.fMaxConnections = kMaxWebServerConcurrentConnections_, .fMaxConcurrentlyHandledConnections = kMaxThreads_, .fBindFlags = Socket::BindFlags{.fSO_REUSEADDR = true}, .fDefaultResponseHeaders = kDefaultResponseHeadersStaticSite_}}
 #else
-    , fConnectionMgr_
-    {
-        SocketAddresses (InternetAddresses_Any (), gAppConfiguration.Get ().WebServerPort.value_or (AppConfigurationType::kWebServerPort_Default)), fWSRoutes_ + fStaticRoutes_, ConnectionManager::Options { kMaxWebServerConcurrentConnections_, kMaxThreads_, Socket::BindFlags{true}, kDefaultResponseHeadersStaticSite_ }
-    }
+        , fConnectionMgr_{SocketAddresses (InternetAddresses_Any (), gAppConfiguration.Get ().WebServerPort.value_or (AppConfigurationType::kWebServerPort_Default)), fWSRoutes_ + fStaticRoutes_, ConnectionManager::Options{kMaxWebServerConcurrentConnections_, kMaxThreads_, Socket::BindFlags{true}, kDefaultResponseHeadersStaticSite_}}
 #endif
-    , fIntervalTimerAdder_{[this] () {
-                               OperationalStatisticsMgr::sThe.RecordActiveRunningTasksCount (fActiveCallCnt_);
-                               OperationalStatisticsMgr::sThe.RecordOpenConnectionCount (fConnectionMgr_.pConnections ().length ());
-                               OperationalStatisticsMgr::sThe.RecordActiveRunningTasksCount (fConnectionMgr_.pActiveConnections ().length ());
-                           },
-                           15s, IntervalTimer::Adder::eRunImmediately}
+        , fIntervalTimerAdder_{[this] () {
+                                   OperationalStatisticsMgr::sThe.RecordActiveRunningTasksCount (fActiveCallCnt_);
+                                   OperationalStatisticsMgr::sThe.RecordOpenConnectionCount (fConnectionMgr_.pConnections ().length ());
+                                   OperationalStatisticsMgr::sThe.RecordActiveRunningTasksCount (fConnectionMgr_.pActiveConnections ().length ());
+                               },
+                               15s, IntervalTimer::Adder::eRunImmediately}
     {
         using Stroika::Frameworks::WebServer::DefaultFaultInterceptor;
         DefaultFaultInterceptor defaultHandler;

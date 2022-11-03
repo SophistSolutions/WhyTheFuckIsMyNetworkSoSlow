@@ -279,7 +279,7 @@ namespace {
             Require (fDatabaseSyncThread_ == nullptr);
             fDatabaseSyncThread_ = Thread::New ([this] () { BackgroundDatabaseThread_ (); }, Thread::eAutoStart, L"BackgroundDatabaseThread"sv);
         }
-        DBAccessMgr_ (const DBAccessMgr_&) = delete;
+        DBAccessMgr_ (const DBAccessMgr_&)            = delete;
         DBAccessMgr_& operator= (const DBAccessMgr_&) = delete;
         ~DBAccessMgr_ ()
         {
@@ -503,7 +503,7 @@ namespace {
         BackendApp::Common::DB                  fDB_{
             kCurrentVersion_,
             Traversal::Iterable<Schema_Table>{
-                kDeviceTableSchema_, kDeviceUserSettingsSchema_, kNetworkTableSchema_, kNetworkUserSettingsSchema_}};
+                                 kDeviceTableSchema_, kDeviceUserSettingsSchema_, kNetworkTableSchema_, kNetworkUserSettingsSchema_}};
         Synchronized<SQL::Connection::Ptr>                                                   fDBConnectionPtr_{fDB_.NewConnection ()};
         Execution::Thread::Ptr                                                               fDatabaseSyncThread_{};
         Synchronized<Mapping<GUID, IntegratedModel::Device::UserOverridesType>>              fCachedDeviceUserSettings_;
@@ -648,9 +648,9 @@ namespace {
                 fRolledUpNetworks_ = fStarterRollups_;
                 MergeIn (nets2MergeIn);
             }
-            RolledUpNetworks (const RolledUpNetworks&) = default;
-            RolledUpNetworks (RolledUpNetworks&&)      = default;
-            RolledUpNetworks& operator= (RolledUpNetworks&&) = default;
+            RolledUpNetworks (const RolledUpNetworks&)            = default;
+            RolledUpNetworks (RolledUpNetworks&&)                 = default;
+            RolledUpNetworks& operator= (RolledUpNetworks&&)      = default;
             RolledUpNetworks& operator= (const RolledUpNetworks&) = default;
 
         public:
@@ -839,7 +839,6 @@ namespace {
             {
                 // @todo NO LONGER PAY ATTENTION TO faggarates... stuff - just use fUserOverrides
 
-
                 // check aggregates not necessarily from user settings
                 if (targetRollup.fAggregatesFingerprints and targetRollup.fAggregatesFingerprints->Contains (net2MergeInFingerprint)) {
                     return true;
@@ -951,10 +950,10 @@ namespace {
                 fRolledUpDevices = fStarterRollups_;
                 MergeIn (devices2MergeIn, useRolledUpNetworks);
             }
-            RolledUpDevices (const RolledUpDevices&) = default;
-            RolledUpDevices (RolledUpDevices&&)      = default;
+            RolledUpDevices (const RolledUpDevices&)            = default;
+            RolledUpDevices (RolledUpDevices&&)                 = default;
             RolledUpDevices& operator= (const RolledUpDevices&) = default;
-            RolledUpDevices& operator= (RolledUpDevices&&) = default;
+            RolledUpDevices& operator= (RolledUpDevices&&)      = default;
 
         public:
             /**

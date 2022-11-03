@@ -126,7 +126,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
             return not(*this == rhs);
         }
 #else
-        auto operator<=> (const Manufacturer&) const = default;
+        auto operator<=> (const Manufacturer&) const    = default;
 #endif
 
         /**
@@ -175,7 +175,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         Network (const Network& src) = default;
         Network (const Set<CIDR>& nas);
 
-        nonvirtual Network& operator= (Network&& rhs) = default;
+        nonvirtual Network& operator= (Network&& rhs)      = default;
         nonvirtual Network& operator= (const Network& rhs) = default;
 
         // @todo - WTF allocated ID - and one inherited from network interface (windows only) - CLARIFY - probably call OURs just fID (and change others in this module to match)
@@ -371,11 +371,11 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
      */
     struct Device {
 
-        Device ()              = default;
-        Device (const Device&) = default;
-        Device (Device&&)      = default;
+        Device ()                         = default;
+        Device (const Device&)            = default;
+        Device (Device&&)                 = default;
         Device& operator= (const Device&) = default;
-        Device& operator= (Device&&) = default;
+        Device& operator= (Device&&)      = default;
 
         GUID fGUID;
 
