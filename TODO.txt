@@ -1,3 +1,63 @@
+  attachedNetworkInterfaces: string[];
+
+		SB array of NetworkInterface[] objects..
+
+		----
+
+
+IF I'm going to stick to new dsign wehre networkinterfaces are aggregated inside device, then we need
+NetworkInterface objects to OBJECT REF to NETWORK (or maybe set of networks).
+
+then sometimes - maybe - need to be able to BACK from network to owning network-interfaces (but what for - maybe not this).
+
+YES, whole point was from Network, you could see list of 'network-interfacews' and get some info from them, and use that
+to help with fingerprinting the network (like if networkinterface fingerprint = such and such, then that means this network).
+
+MAYBE that means no pointers? NOT SURE...
+
+
+
+
+Support network interfaces and their rollup the way I did for networks, so that I can improve NETWORK rollup to be based on
+network interface info... Hard todo now cuz I dont even see that network interface stuff now.
+
+
+
+	>>> MAYBE dont need to rollup network interfaces (?)
+
+	>>> Network Iterfaces DO need to be aggregated inside a DEVICE (or have a parent-device - and only exist inside
+		that device - unclear - but maybe best to always show there? - only in RECORDING DEVICES).
+
+	>>> Then can have 'name' of network-interface scoped by DEVICEID its aggregated in
+	>>> Then can say 
+		force network to INCLUDE DEVICEID/NETWORK-INTERFACE
+
+	>>> Maybe simplification having network-interfaces directly aggregated inside devices. Then maybe dont need explicit (generated)
+		ID. They have already done ids anyhow (eth0, etc) - we show those. No need to generate nore.
+
+		When ROLLING UP a device - probably only show LIVE network interfaces, and dont show
+		HISTORICAL ones? But then how can we do rollup (repeatably).
+
+		MAYBE I really DO need to rollup network interfaces.
+
+		MAYBNE I CAN ROLLUP NETWORK INTERFACES - ROLLUP IS JUST THE STUFF
+			ThAT IS constant
+			:
+				HARDAWRE addresses
+				NAMES
+				DEscription
+				paltformID
+
+			: STUFF NOT ROLLED UP
+				status
+				bindings
+				linkspeed
+
+----
+	>>> Add DEVICETYPE COLLECTOR and include that type on devices that collect data (are WTF data sources).
+
+----
+
 e59ab2d7-09aa-fa02-f030-0d973526dc8f
 	{
 		"UserSettings" : {
