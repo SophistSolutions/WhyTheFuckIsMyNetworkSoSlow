@@ -38,36 +38,7 @@ namespace {
     // lower-camel-case names happier in javascript?
     const ObjectVariantMapper::TypeMappingDetails kDateRangeMapper_ = ObjectVariantMapper::MakeCommonSerializer<Range<DateTime>> (ObjectVariantMapper::RangeSerializerOptions{L"lowerBound"sv, L"upperBound"sv});
 
-#if kStroika_Version_FullVersion <= Stroika_Make_FULL_VERSION(2, 1, kStroika_Version_Stage_Release, 5, 1)
-    const ObjectVariantMapper::TypeMappingDetails kOptionalDateRangeMapper_ = [] () {
-        using T                                                                 = Range<DateTime>;
-        ObjectVariantMapper::FromObjectMapperType<optional<T>> fromObjectMapper = [] (const ObjectVariantMapper& mapper, const optional<T>* fromObjOfTypeT) -> VariantValue {
-            RequireNotNull (fromObjOfTypeT);
-            if (fromObjOfTypeT->has_value ()) {
-                return kDateRangeMapper_.FromObjectMapper<T> () (mapper, &**fromObjOfTypeT);
-            }
-            else {
-                return VariantValue{};
-            }
-        };
-        ObjectVariantMapper::ToObjectMapperType<optional<T>> toObjectMapper = [] (const ObjectVariantMapper& mapper, const VariantValue& d, optional<T>* intoObjOfTypeT) -> void {
-            RequireNotNull (intoObjOfTypeT);
-            if (d.GetType () == VariantValue::eNull) {
-                *intoObjOfTypeT = nullopt;
-            }
-            else {
-                // SEE https://stroika.atlassian.net/browse/STK-910
-                // fix here - I KNOW I have something there, but how to construct
-                T tmp;
-                kDateRangeMapper_.ToObjectMapper<T> () (mapper, d, &tmp);
-                *intoObjOfTypeT = tmp;
-            }
-        };
-        return ObjectVariantMapper::TypeMappingDetails{typeid (optional<T>), fromObjectMapper, toObjectMapper};
-    }();
-#else
     const ObjectVariantMapper::TypeMappingDetails kOptionalDateRangeMapper_ = ObjectVariantMapper::MakeCommonSerializer<optional<Range<DateTime>>> (ObjectVariantMapper::OptionalSerializerOptions{kDateRangeMapper_});
-#endif
 }
 
 namespace Stroika::Foundation::DataExchange {
@@ -371,12 +342,8 @@ Network::FingerprintType Network::GenerateFingerprintFromProperties () const
             sb += i;
         }
     }
-#if kStroika_Version_FullVersion <= Stroika_Make_FULL_VERSION(2, 1, kStroika_Version_Stage_Release, 5, 1)
-    return Cryptography::Digest::ComputeDigest<Cryptography::Digest::Algorithm::MD5> ((const std::byte*)sb.begin (), (const std::byte*)sb.end ());
-#else
     // Could use other algorithms, but easiest to stick with MD5 for compat with 2.1.5 Stroika
     return Cryptography::Digest::ComputeDigest<Cryptography::Digest::Algorithm::MD5> (sb.str ());
-#endif
 }
 
 String Network::ToString () const
