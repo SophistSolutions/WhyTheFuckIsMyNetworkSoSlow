@@ -144,7 +144,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
     struct NetworkInterface : IO::Network::Interface {
         NetworkInterface ()                            = default;
         NetworkInterface (const NetworkInterface& src) = default;
-        NetworkInterface (const IO::Network::Interface& src);
+        explicit NetworkInterface (const IO::Network::Interface& src);
 
         /**
          *  GUID for this interface - MANUFACTURED by WTF
@@ -173,7 +173,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         Network ()                   = default;
         Network (Network&& src)      = default;
         Network (const Network& src) = default;
-        Network (const Set<CIDR>& nas);
+        explicit Network (const Set<CIDR>& nas);
 
         nonvirtual Network& operator= (Network&& rhs)      = default;
         nonvirtual Network& operator= (const Network& rhs) = default;

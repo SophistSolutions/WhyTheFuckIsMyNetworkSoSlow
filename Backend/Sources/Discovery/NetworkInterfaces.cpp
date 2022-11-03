@@ -43,6 +43,16 @@ NetworkInterface::NetworkInterface (const IO::Network::Interface& src)
 {
 }
 
+String NetworkInterface::ToString () const
+{
+    String        baseRep = Interface::ToString ();
+    StringBuilder sb;
+    sb += L"{";
+    sb += L"GUID: " + Characters::ToString (fGUID) + L", ";
+    sb += baseRep.SubString (1);
+    return sb.str ();
+}
+
 /*
  ********************************************************************************
  ****************** Discovery::NetworkInterfacesMgr::Activator ******************
@@ -113,7 +123,7 @@ namespace {
         Require (sActive_);
         SystemInterfacesMgr      sysNetInterfaces;
         vector<NetworkInterface> results;
-        for (const Interface& i : sysNetInterfaces.GetAll ()) {
+        for (const IO::Network::Interface& i : sysNetInterfaces.GetAll ()) {
             NetworkInterface ni{i};
             {
                 ni.fGUID = MapCurrentProcessInternalInterfaceIDToReportedProcessLifetimeGUID_ (i.fInternalInterfaceID);

@@ -42,6 +42,11 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
 
         NetworkInterface (const NetworkInterface& src) = default;
         NetworkInterface (const IO::Network::Interface& src);
+
+        /**
+         *  @see Characters::ToString ();
+         */
+        nonvirtual String ToString () const;
     };
 
     /**
