@@ -162,6 +162,16 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
          */
         optional<Set<GUID>> fAggregatesIrreversibly;
 
+        /**
+         *  this ID is stored in the database
+         */
+        optional<bool> fIDPersistent;
+
+        /**
+         *  this data is a historical (database) snapshot, vs a dynamic rollup
+         */
+        optional<bool> fHistoricalSnapshot;
+
         using FingerprintType = GUID;
 
         /**
@@ -181,7 +191,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
         static const DataExchange::ObjectVariantMapper kMapper;
 
-        static NetworkInterface Rollup (const NetworkInterface& rollupNetwork, const NetworkInterface& instanceNetwork2Add);
+        /**
+         */
+        static NetworkInterface Rollup (const optional < NetworkInterface >& previousRollupNetworkInterface, const NetworkInterface& instanceNetwork2Add);
     };
 
     /**

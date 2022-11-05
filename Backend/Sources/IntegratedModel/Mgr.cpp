@@ -57,7 +57,7 @@ using Stroika::Foundation::Traversal::Range;
 namespace {
     // For now (as of 2021-07-18) NYI
     // so dont write out, and dont merge from DB - only show current ones
-    constexpr bool kSupportPersistedNetworkInterfaces_{false};
+    constexpr bool kSupportPersistedNetworkInterfaces_{true};
 }
 
 namespace {
@@ -108,6 +108,11 @@ namespace {
         GUID operator() (const IntegratedModel::Network& t) const { return t.fGUID; };
     };
     using NetworkKeyedCollection_ = KeyedCollection<IntegratedModel::Network, GUID, KeyedCollection_DefaultTraits<IntegratedModel::Network, GUID, Network_Key_Extractor_>>;
+
+    struct NetworkInterface_Key_Extractor_ {
+        GUID operator() (const IntegratedModel::NetworkInterface& t) const { return t.fGUID; };
+    };
+    using NetworkInterfaceCollection_ = Containers::KeyedCollection<IntegratedModel::NetworkInterface, GUID, Containers::KeyedCollection_DefaultTraits<IntegratedModel::NetworkInterface, GUID, NetworkInterface_Key_Extractor_>>;
 }
 
 namespace {
@@ -287,6 +292,7 @@ namespace {
             fNetworkUserSettingsTableConnection_ = make_unique<SQL::ORM::TableConnection<ExternalNetworkUserSettingsElt_>> (fDBConnectionPtr_, kNetworkUserSettingsSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<ExternalNetworkUserSettingsElt_>> ());
             fDeviceTableConnection_              = make_unique<SQL::ORM::TableConnection<IntegratedModel::Device>> (fDBConnectionPtr_, kDeviceTableSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<IntegratedModel::Device>> ());
             fNetworkTableConnection_             = make_unique<SQL::ORM::TableConnection<IntegratedModel::Network>> (fDBConnectionPtr_, kNetworkTableSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<IntegratedModel::Network>> ());
+            fNetworkInterfaceTableConnection_    = make_unique<SQL::ORM::TableConnection<IntegratedModel::NetworkInterface>> (fDBConnectionPtr_, kNetworkInterfaceTableSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<IntegratedModel::NetworkInterface>> ());
             try {
                 Debug::TimingTrace ttrc{L"...load of fCachedDeviceUserSettings_ from database ", 1};
                 lock_guard         lock{this->fDBConnectionPtr_};
@@ -408,6 +414,10 @@ namespace {
         {
             return fDBNetworks_;
         }
+        nonvirtual NetworkInterfaceCollection_ GetRawNetworkInterfaces () const
+        {
+            return fDBNetworkInterfaces_;
+        }
         nonvirtual bool GetFinishedInitialDBLoad () const
         {
             return fFinishedInitialDBLoad_;
@@ -445,10 +455,10 @@ namespace {
         static inline const ConstantProperty<ObjectVariantMapper> kDBObjectMapper_{[] () {
             ObjectVariantMapper mapper;
 
-            mapper += IntegratedModel::Device::kMapper;
+            mapper += IntegratedModel::NetworkInterface::kMapper;
             mapper += IntegratedModel::Network::kMapper;
+            mapper += IntegratedModel::Device::kMapper;
 
-            //tmphack need better way to make this context sensative!!! @todo SOON FIX
             mapper.AddCommonType<Range<DateTime>> (ObjectVariantMapper::RangeSerializerOptions{L"lowerBound"sv, L"upperBound"sv}); // lower-camel-case names happier in javascript?
 
             mapper.AddClass<ExternalDeviceUserSettingsElt_> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
@@ -508,6 +518,27 @@ namespace {
 #endif
             },
             Schema_CatchAllField{}};
+
+        static inline const Schema_Table kNetworkInterfaceTableSchema_{
+            L"NetworkInteraces"sv,
+            /*
+             *  use the same names as the ObjectVariantMapper for simpler mapping, or specify an alternate name
+             *  for ID, just as an example.
+             */
+            Collection<Schema_Field>{
+#if __cpp_designated_initializers
+                {.fName = L"ID"sv, .fVariantValueName = L"id"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true},
+                {.fName = L"friendlyName"sv, .fVariantValueType = VariantValue::eString},
+                {.fName = L"hardwareAddress"sv, .fVariantValueType = VariantValue::eString},
+                {.fName = L"type"sv, .fVariantValueType = VariantValue::eString},
+#else
+                {L"ID", L"id"sv, true, kRepresentIDAs_, nullopt, true, nullopt},
+                {L"friendlyName", nullopt, false, VariantValue::eString},
+                {L"hardwareAddress", nullopt, false, VariantValue::eString},
+                {L"type", nullopt, false, VariantValue::eString},
+#endif
+            },
+            Schema_CatchAllField{}};
         static inline const Schema_Table kNetworkTableSchema_{
             L"Networks"sv,
             /*
@@ -519,7 +550,7 @@ namespace {
                 /**
                  *  For ID, generate random GUID (BLOB) automatically in database
                  */
-                {.fName = L"ID"sv, .fVariantValueName = L"id"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = L"randomblob(16)"sv},
+                {.fName = L"ID"sv, .fVariantValueName = L"id"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = GenRandomIDString_ (kRepresentIDAs_)},
                 {.fName = L"friendlyName"sv, .fVariantValueType = VariantValue::eString},
 #else
                 {L"ID", L"id"sv, true, kRepresentIDAs_, nullopt, true, nullopt, GenRandomIDString_ (kRepresentIDAs_)},
@@ -533,17 +564,19 @@ namespace {
         BackendApp::Common::DB                  fDB_{
             kCurrentVersion_,
             Traversal::Iterable<Schema_Table>{
-                                 kDeviceTableSchema_, kDeviceUserSettingsSchema_, kNetworkTableSchema_, kNetworkUserSettingsSchema_}};
+                                 kDeviceTableSchema_, kDeviceUserSettingsSchema_, kNetworkTableSchema_, kNetworkInterfaceTableSchema_, kNetworkUserSettingsSchema_}};
         Synchronized<SQL::Connection::Ptr>                                                   fDBConnectionPtr_{fDB_.NewConnection ()};
         Execution::Thread::Ptr                                                               fDatabaseSyncThread_{};
         Synchronized<Mapping<GUID, IntegratedModel::Device::UserOverridesType>>              fCachedDeviceUserSettings_;
         Synchronized<unique_ptr<SQL::ORM::TableConnection<ExternalDeviceUserSettingsElt_>>>  fDeviceUserSettingsTableConnection_;
         Synchronized<Mapping<GUID, IntegratedModel::Network::UserOverridesType>>             fCachedNetworkUserSettings_;
         Synchronized<unique_ptr<SQL::ORM::TableConnection<ExternalNetworkUserSettingsElt_>>> fNetworkUserSettingsTableConnection_;
-        unique_ptr<SQL::ORM::TableConnection<IntegratedModel::Device>>                       fDeviceTableConnection_;  // only accessed from a background database thread
-        unique_ptr<SQL::ORM::TableConnection<IntegratedModel::Network>>                      fNetworkTableConnection_; // ''
-        Synchronized<DeviceKeyedCollection_>                                                 fDBDevices_;              // mirror database contents in RAM
-        Synchronized<NetworkKeyedCollection_>                                                fDBNetworks_;             // ''
+        unique_ptr<SQL::ORM::TableConnection<IntegratedModel::Device>>                       fDeviceTableConnection_;           // only accessed from a background database thread
+        unique_ptr<SQL::ORM::TableConnection<IntegratedModel::Network>>                      fNetworkTableConnection_;          // ''
+        unique_ptr<SQL::ORM::TableConnection<IntegratedModel::NetworkInterface>>             fNetworkInterfaceTableConnection_; // ''
+        Synchronized<DeviceKeyedCollection_>                                                 fDBDevices_;                       // mirror database contents in RAM
+        Synchronized<NetworkKeyedCollection_>                                                fDBNetworks_;                      // ''
+        Synchronized<NetworkInterfaceCollection_>                                            fDBNetworkInterfaces_;             // ''
         atomic<bool>                                                                         fFinishedInitialDBLoad_{false};
 
         // the latest copy of what is in the DB (manually kept up to date)
@@ -554,6 +587,7 @@ namespace {
         void BackgroundDatabaseThread_ ()
         {
             Debug::TraceContextBumper ctx{L"BackgroundDatabaseThread_ loop"};
+            optional<unsigned int>    netInterfaceSnapshotsLoaded{};
             optional<unsigned int>    netSnapshotsLoaded{};
             optional<unsigned int>    deviceSnapshotsLoaded{};
             while (true) {
@@ -561,6 +595,23 @@ namespace {
                     // @todo Consider if we should do this logic in CTOR so we can lose the flag saying if we've started up...
 
                     // load networks before devices because devices depend on networks but not the reverse
+                    if (not netInterfaceSnapshotsLoaded.has_value ()) {
+                        try {
+                            Debug::TimingTrace ttrc{L"...initial load of fDBNetworkInterfaces_ from database ", 1};
+                            auto               errorHandler = [] ([[maybe_unused]] const SQL::Statement::Row& r, const exception_ptr& e) -> optional<IntegratedModel::NetworkInterface> {
+                                // Just drop the record on the floor after logging
+                                Logger::sThe.Log (Logger::eError, L"Error reading database of persisted network interfaces snapshot ('%s'): %s", Characters::ToString (r).c_str (), Characters::ToString (e).c_str ());
+                                return nullopt;
+                            };
+                            auto all                    = fNetworkInterfaceTableConnection_->GetAll (errorHandler);
+                            netInterfaceSnapshotsLoaded = static_cast<unsigned int> (all.size ());
+                            fDBNetworkInterfaces_.store (NetworkInterfaceCollection_{all});
+                        }
+                        catch (...) {
+                            Logger::sThe.Log (Logger::eError, L"Probably important error reading database of old network interfaces data: %s", Characters::ToString (current_exception ()).c_str ());
+                            Execution::ReThrow ();
+                        }
+                    }
                     if (not netSnapshotsLoaded.has_value ()) {
                         try {
                             Debug::TimingTrace ttrc{L"...initial load of fDBNetworks_ from database ", 1};
@@ -601,10 +652,19 @@ namespace {
                     if (not fFinishedInitialDBLoad_) {
                         Assert (deviceSnapshotsLoaded);
                         Assert (netSnapshotsLoaded);
-                        Logger::sThe.Log (Logger::eInfo, L"Loaded %d network snapshots and %d device snapshots from database", *netSnapshotsLoaded, *deviceSnapshotsLoaded);
+                        Assert (netInterfaceSnapshotsLoaded);
+                        Logger::sThe.Log (Logger::eInfo, L"Loaded %d network connection snapshots, %d network snapshots and %d device snapshots from database", *netInterfaceSnapshotsLoaded, *netSnapshotsLoaded, *deviceSnapshotsLoaded);
                         fFinishedInitialDBLoad_ = true;
                     }
                     // periodically write the latest discovered data to the database
+
+                    // UPDATE fDBNetworkInterfaces_ INCREMENTALLY to reflect reflect these merges
+                    for (auto ni : DiscoveryWrapper_::GetNetworkInterfaces_ ()) {
+                        lock_guard lock{this->fDBConnectionPtr_};
+                        Assert (ni.fAggregatesReversibly == nullopt); // dont write these summary values
+                        fNetworkInterfaceTableConnection_->AddOrUpdate (ni);
+                        fDBNetworkInterfaces_.rwget ()->Add (ni);
+                    }
 
                     // UPDATE fDBNetworks_ INCREMENTALLY to reflect reflect these merges
                     for (auto ni : DiscoveryWrapper_::GetNetworks_ ()) {
@@ -612,8 +672,8 @@ namespace {
                             ni.fAttachedInterfaces.clear ();
                         }
                         Assert (ni.fSeen); // don't track/write items which have never been seen
-                                           //                            auto rec2Update = fDB_.AddOrMergeUpdate (fNetworkTableConnection_.get (), ni);
                         lock_guard lock{this->fDBConnectionPtr_};
+                        Assert (ni.fAggregatesReversibly == nullopt); // dont write these summary values
                         fNetworkTableConnection_->AddOrUpdate (ni);
                         fDBNetworks_.rwget ()->Add (ni);
                     }
@@ -627,7 +687,8 @@ namespace {
                         Assert (di.fSeen.EverSeen ());         // don't track/write items which have never been seen
                         Assert (di.fUserOverrides == nullopt); // tracked on rollup devices, not snapshot devices
                         lock_guard lock{this->fDBConnectionPtr_};
-                        auto       rec2Update = fDB_.AddOrMergeUpdate (fDeviceTableConnection_.get (), di);
+                        Assert (di.fAggregatesReversibly == nullopt); // dont write these summary values
+                        auto rec2Update = fDB_.AddOrMergeUpdate (fDeviceTableConnection_.get (), di);
                         fDBDevices_.rwget ()->Add (rec2Update);
                     }
 
@@ -655,6 +716,134 @@ namespace {
         using IntegratedModel::Device;
         using IntegratedModel::Network;
         using IntegratedModel::NetworkAttachmentInfo;
+        using IntegratedModel::NetworkInterface;
+
+        /**
+         *  Data structure representing a copy of currently rolled up network interfaces data (copyable).
+         *
+         *  \note   \em Thread-Safety   <a href="Thread-Safety.md#C++-Standard-Thread-Safety">C++-Standard-Thread-Safety</a>
+         */
+        struct RolledUpNetworkInterfaces {
+        public:
+            RolledUpNetworkInterfaces (const Iterable<NetworkInterface>& nets2MergeIn = {})
+            {
+                MergeIn (nets2MergeIn);
+            }
+            RolledUpNetworkInterfaces (const RolledUpNetworkInterfaces&)            = default;
+            RolledUpNetworkInterfaces (RolledUpNetworkInterfaces&&)                 = default;
+            RolledUpNetworkInterfaces& operator= (RolledUpNetworkInterfaces&&)      = default;
+            RolledUpNetworkInterfaces& operator= (const RolledUpNetworkInterfaces&) = default;
+
+        public:
+            /**
+             *  This returns the current rolled up network interface objects.
+             */
+            nonvirtual NetworkInterfaceCollection_ GetNetworkInterfacess () const
+            {
+                return fRolledUpNetworkInterfaces_;
+            }
+
+        public:
+            /**
+             */
+            nonvirtual void MergeIn (const Iterable<NetworkInterface>& netInterfaces2MergeIn)
+            {
+                fRawNetworkInterfaces_ += netInterfaces2MergeIn;
+                bool anyFailed = false;
+                for (const NetworkInterface& n : netInterfaces2MergeIn) {
+                    MergeIn_ (n);
+#if 0
+                    if (MergeIn_ (n) == PassFailType_::eFail) {
+                        anyFailed = true;
+                        break;
+                    }
+#endif
+                }
+                if (anyFailed) {
+                    // RecomputeAll_ ();
+                }
+            }
+
+        public:
+            /**
+             * INVALIDATE IF 'UserSettings' change, which might cause different rollups (this includes fingerprint to guid map)
+             *
+             *  \note   \em Thread-Safety   <a href="Thread-Safety.md#Internally-Synchronized-Thread-Safety">Internally-Synchronized-Thread-Safety</a>
+             */
+            static RolledUpNetworkInterfaces GetCached (Time::DurationSecondsType allowedStaleness = 5.0)
+            {
+                Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...RolledUpNetworkInterfaces::GetCached")};
+                Debug::TimingTrace        ttrc{L"RolledUpNetworkInterfaces::GetCached", 1};
+                // SynchronizedCallerStalenessCache object just assures one rollup RUNS internally at a time, and
+                // that two calls in rapid succession, the second call re-uses the previous value
+                static Cache::SynchronizedCallerStalenessCache<void, RolledUpNetworkInterfaces> sCache_;
+                // Disable fHoldWriteLockDuringCacheFill due to https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/23
+                // See also
+                //      https://stroika.atlassian.net/browse/STK-906 - possible enhancement to this configuration to work better avoiding
+                //      See https://stroika.atlassian.net/browse/STK-907 - about needing some new mechanism in Stroika for deadlock detection/avoidance.
+                // sCache_.fHoldWriteLockDuringCacheFill = true; // so only one call to filler lambda at a time
+                return sCache_.LookupValue (sCache_.Ago (allowedStaleness), [] () -> RolledUpNetworkInterfaces {
+                    /*
+                     *  DEADLOCK NOTE
+                     *      Since this can be called while rolling up DEVICES, its important that this code not call anything involving device rollup since
+                     *      that could trigger a deadlock.
+                     */
+                    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...RolledUpNetworkInterfaces::GetCached...cachefiller")};
+                    Debug::TimingTrace        ttrc{L"RolledUpNetworkInterfaces::GetCached...cachefiller", 1};
+
+                    // Start with the existing rolled up objects
+                    // and merge in any more recent discovery changes
+                    RolledUpNetworkInterfaces result = [] () {
+                        auto lk = sRolledUpNetworksInterfaces_.rwget ();
+                        if (not lk.cref ().has_value ()) {
+                            if (not sDBAccessMgr_->GetFinishedInitialDBLoad ()) {
+                                // Design Choice - could return non-standardized rollup IDs if DB not loaded, but then those IDs would
+                                // disappear later in the run, leading to possible client confusion. Best to just not say anything til DB loaded
+                                // Could ALSO do 2 stage DB load - critical stuff for IDs, and the detailed DB records. All we need is first
+                                // stage for here...
+                                Execution::Throw (HTTP::Exception{HTTP::StatusCodes::kServiceUnavailable, L"Database not yet loaded"_k});
+                            };
+                            // @todo add more stuff here - empty preset rules from DB
+                            // merge two tables - ID to fingerprint and user settings tables and store those in this rollup early
+                            // maybe make CTOR for rolledupnetworks take in ital DB netwworks and rules, and have copyis CTOR taking orig networks and new rules?
+                            lk.store (RolledUpNetworkInterfaces{sDBAccessMgr_->GetRawNetworkInterfaces ()});
+                        }
+                        return Memory::ValueOf (lk.load ());
+                    }();
+                    // not sure we want to allow this? @todo consider throwing here or asserting out cuz nets rollup IDs would change after this
+                    result.MergeIn (DiscoveryWrapper_::GetNetworkInterfaces_ ());
+                    sRolledUpNetworksInterfaces_.store (result); // save here so we can update rollup networks instead of creating anew each time
+                    return result;
+                });
+            }
+
+        public:
+            /**
+             *  \note   \em Thread-Safety   <a href="Thread-Safety.md#Internally-Synchronized-Thread-Safety">Internally-Synchronized-Thread-Safety</a>
+             */
+            static void InvalidateCache ()
+            {
+                AssertNotImplemented ();
+            }
+
+        private:
+            void MergeIn_ (const NetworkInterface& net2MergeIn)
+            {
+                // @todo same FAIL logic we have in Network objects needed here
+                // friendly name - for example - of network interface can change while running, so must be able to invalidate and recompute this list
+
+                Network::FingerprintType netInterface2MergeInFingerprint = net2MergeIn.GenerateFingerprintFromProperties ();
+                fRolledUpNetworkInterfaces_.Add (NetworkInterface::Rollup (fRolledUpNetworkInterfaces_.Lookup (netInterface2MergeInFingerprint), net2MergeIn));
+            }
+
+        private:
+            NetworkInterfaceCollection_ fRawNetworkInterfaces_; // used for RecomputeAll_
+            NetworkInterfaceCollection_ fRolledUpNetworkInterfaces_;
+
+        private:
+            static Synchronized<optional<RolledUpNetworkInterfaces>> sRolledUpNetworksInterfaces_;
+        };
+        Synchronized<optional<RolledUpNetworkInterfaces>> RolledUpNetworkInterfaces::sRolledUpNetworksInterfaces_;
 
         /**
          *  Data structure representing a copy of currently rolled up networks data (copyable).
@@ -1322,19 +1511,22 @@ void IntegratedModel::Mgr::SetNetworkUserSettings (const Common::GUID& id, const
 
 Collection<IntegratedModel::NetworkInterface> IntegratedModel::Mgr::GetNetworkInterfaces () const
 {
-    // AS OF 2022-11-02 this returns the currently active network interfaces, but must be adapted to return ROLLUPS ASAP
-    Collection<NetworkInterface> result;
-    for (const Discovery::NetworkInterface& n : Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ()) {
-        NetworkInterface nw = DiscoveryWrapper_::Discovery2Model_ (n);
-        result += nw;
-    }
-    return result;
+    // AS OF 2022-11-02 this returns the currently active network interfaces, but changed to mimic other accessors (rollups returned)
+    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"IntegratedModel::Mgr::GetNetworkInterfaces")};
+    Debug::TimingTrace        ttrc{L"IntegratedModel::Mgr::GetNetworkInterfaces", 0.1};
+    return Collection<IntegratedModel::NetworkInterface>{RollupSummary_::RolledUpNetworkInterfaces::GetCached ().GetNetworkInterfacess ()};
 }
 
 optional<IntegratedModel::NetworkInterface> IntegratedModel::Mgr::GetNetworkInterface (const GUID& id) const
 {
-    // AS OF 2022-11-02 this returns the currently active network interfaces, but must be adapted to return ROLLUPS ASAP
-
-    // LIKE WITH NETWORKS - FISST TRY ROLLUP LIST AND IF THAT FAILS, CHEKC DB .. (which contains the actives already)
-    return GetNetworkInterfaces ().First ([&] (const auto& i) { return i.fGUID == id; });
+    // AS OF 2022-11-02 this returns the currently active network interfaces, but changed to mimic other accessors (rollups returned by default then raw records)
+    auto result = RollupSummary_::RolledUpNetworkInterfaces::GetCached ().GetNetworkInterfacess ().Lookup (id);
+    if (not result.has_value ()) {
+        result = sDBAccessMgr_->GetRawNetworkInterfaces ().Lookup (id);
+        if (result) {
+            result->fIDPersistent       = true;
+            result->fHistoricalSnapshot = true;
+        }
+    }
+    return result;
 }
