@@ -622,12 +622,12 @@ NetworkInterface NetworkInterface::Rollup (const optional<NetworkInterface>& pre
     }
     else {
         NetworkInterface r;
-        r.fGUID                = instanceNetwork2Add.GenerateFingerprintFromProperties ();
-        r.fFriendlyName        = instanceNetwork2Add.fFriendlyName;
-        r.fDescription         = instanceNetwork2Add.fDescription;
-        r.fType                = instanceNetwork2Add.fType;
-        r.fHardwareAddress     = instanceNetwork2Add.fHardwareAddress;
-        r.fInternalInterfaceID = instanceNetwork2Add.fInternalInterfaceID;
+        r.fGUID                 = instanceNetwork2Add.GenerateFingerprintFromProperties ();
+        r.fFriendlyName         = instanceNetwork2Add.fFriendlyName;
+        r.fDescription          = instanceNetwork2Add.fDescription;
+        r.fType                 = instanceNetwork2Add.fType;
+        r.fHardwareAddress      = instanceNetwork2Add.fHardwareAddress;
+        r.fInternalInterfaceID  = instanceNetwork2Add.fInternalInterfaceID;
         r.fAggregatesReversibly = Set<GUID>{instanceNetwork2Add.fGUID};
         Assert (r.GenerateFingerprintFromProperties () == r.fGUID); // captured all that matters/part of fingerprint    return rollupNetwork;
         return r;

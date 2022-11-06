@@ -193,7 +193,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
         /**
          */
-        static NetworkInterface Rollup (const optional < NetworkInterface >& previousRollupNetworkInterface, const NetworkInterface& instanceNetwork2Add);
+        static NetworkInterface Rollup (const optional<NetworkInterface>& previousRollupNetworkInterface, const NetworkInterface& instanceNetwork2Add);
     };
 
     /**

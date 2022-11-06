@@ -1,8 +1,18 @@
 make sure network and device instances and rollups point to the right LEVEL of network interface object (rollup or instance)
+	First check networks, and then check devices.
+	(devices definitely very wrong and I think networks somewhat/very wrong)
 
 ----
 MAY need to somehow include 'deviceid' in network-interface rollup object (but then not clear how to match them as being
 same across devices)...
+
+----
+
+	// USE CACHEABILIYT HEADERS ON RESULTS FROM WSAPI that are IMMUTABLE, SAYING THEY CNA BE CACHED (largely forever) - but maybe say 1 day).
+	// so for snapshots that are old - they can be cahced long time. For snapshots that are actuively being updated, say not cachable or just a few seconds\
+	THEN can probably GET RID OF idPersistable attribute, since can be inferred from cachablity header intead (just better way to say same thign)
+	STILL need 'historicalSnapshot' cuz (bette rdocument) means its NOT a rollup (could have used noARollup as the name). Thoguh a little weird
+	cuz in a ssense, everything is a rollup?? MAYBE dont need that flag either.
 
 
 ---

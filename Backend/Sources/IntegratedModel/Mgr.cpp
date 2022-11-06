@@ -211,11 +211,11 @@ namespace {
         {
             NetworkInterface nwi{n};
             nwi.fGUID = n.fGUID;
-            if constexpr (qDebug) {
-                if (not n.fDebugProps.empty ()) {
-                    nwi.fDebugProps = n.fDebugProps;
-                }
+#if qDebug
+            if (not n.fDebugProps.empty ()) {
+                nwi.fDebugProps = n.fDebugProps;
             }
+#endif
             return nwi;
         }
 
