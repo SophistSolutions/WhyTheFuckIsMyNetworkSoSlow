@@ -1,15 +1,7 @@
-make sure network and device instances and rollups point to the right LEVEL of network interface object (rollup or instance)
-	First check networks, and then check devices.
-	(devices definitely very wrong and I think networks somewhat/very wrong)
-	(DID Networks (and NetworkInteraces) - todo so Devices show proper set of Networks with right ids - rollup ids)
-	(( THEN PROBABLY GET RID OF ATTACHED NETWORK INFO OBEJCTS (or only after we do the memoizing crap on the html side?)))
+Cleanup last checkin of rollup code (esp device rollup of networks and interfaces)
 
-----
-MAY need to somehow include 'deviceid' in network-interface rollup object (but then not clear how to match them as being
-same across devices)...
 
-----
-
+---
 	// USE CACHEABILIYT HEADERS ON RESULTS FROM WSAPI that are IMMUTABLE, SAYING THEY CNA BE CACHED (largely forever) - but maybe say 1 day).
 	// so for snapshots that are old - they can be cahced long time. For snapshots that are actuively being updated, say not cachable or just a few seconds\
 	THEN can probably GET RID OF idPersistable attribute, since can be inferred from cachablity header intead (just better way to say same thign)

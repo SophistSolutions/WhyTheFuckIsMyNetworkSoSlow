@@ -1220,7 +1220,8 @@ namespace {
         public:
             nonvirtual void ResetUserOverrides (const Mapping<GUID, Device::UserOverridesType>& userOverrides, const RolledUpNetworks& useRolledUpNetworks)
             {
-                fStarterRollups_ = userOverrides.Select<Device> (
+                RolledUpNetworkInterfaces networkInterfacesRollup = RolledUpNetworkInterfaces::GetCached ();
+                fStarterRollups_                                  = userOverrides.Select<Device> (
                     [] (const auto& guid2UOTPair) -> Device {
                         Device d;
                         d.fGUID          = guid2UOTPair.fKey;
@@ -1230,22 +1231,23 @@ namespace {
                         }
                         return d;
                     });
-                RecomputeAll_ (useRolledUpNetworks);
+                RecomputeAll_ (useRolledUpNetworks, networkInterfacesRollup);
             }
 
         public:
             nonvirtual void MergeIn (const Iterable<Device>& devices2MergeIn, const RolledUpNetworks& useRolledUpNetworks)
             {
+                RolledUpNetworkInterfaces networkInterfacesRollup = RolledUpNetworkInterfaces::GetCached ();
                 fRawDevices_ += devices2MergeIn;
                 bool anyFailed = false;
                 for (const Device& d : devices2MergeIn) {
-                    if (MergeIn_ (d, useRolledUpNetworks) == PassFailType_::eFail) {
+                    if (MergeIn_ (d, useRolledUpNetworks, networkInterfacesRollup) == PassFailType_::eFail) {
                         anyFailed = true;
                         break;
                     }
                 }
                 if (anyFailed) {
-                    RecomputeAll_ (useRolledUpNetworks);
+                    RecomputeAll_ (useRolledUpNetworks, networkInterfacesRollup);
                 }
             }
 
@@ -1316,13 +1318,13 @@ namespace {
             enum class PassFailType_ { ePass,
                                        eFail };
             // if fails simple merge, returns false, so must call recomputeall
-            PassFailType_ MergeIn_ (const Device& d2MergeIn, const RolledUpNetworks& useRolledUpNetworks)
+            PassFailType_ MergeIn_ (const Device& d2MergeIn, const RolledUpNetworks& useRolledUpNetworks, const RolledUpNetworkInterfaces& networkInterfacesRollup)
             {
                 // see if it still should be rolled up in the place it was last rolled up as a shortcut
                 if (optional<GUID> prevRollupID = fRaw2RollupIDMap_.Lookup (d2MergeIn.fGUID)) {
                     Device rollupDevice = Memory::ValueOf (fRolledUpDevices.Lookup (*prevRollupID)); // must be there cuz in sync with fRaw2RollupIDMap_
                     if (ShouldRollup_ (rollupDevice, d2MergeIn)) {
-                        MergeInUpdate_ (rollupDevice, d2MergeIn, useRolledUpNetworks);
+                        MergeInUpdate_ (rollupDevice, d2MergeIn, useRolledUpNetworks, networkInterfacesRollup);
                         return PassFailType_::ePass;
                     }
                     else {
@@ -1332,25 +1334,37 @@ namespace {
                 else {
                     // then see if it SHOULD be rolled into an existing rollup device, or if we should create a new one
                     if (auto i = fRolledUpDevices.First ([&d2MergeIn] (const auto& exisingRolledUpDevice) { return ShouldRollup_ (exisingRolledUpDevice, d2MergeIn); })) {
-                        MergeInUpdate_ (*i, d2MergeIn, useRolledUpNetworks);
+                        MergeInUpdate_ (*i, d2MergeIn, useRolledUpNetworks, networkInterfacesRollup);
                     }
                     else {
-                        MergeInNew_ (d2MergeIn, useRolledUpNetworks);
+                        MergeInNew_ (d2MergeIn, useRolledUpNetworks, networkInterfacesRollup);
                     }
                     return PassFailType_::ePass;
                 }
             }
-            void MergeInUpdate_ (const Device& rollupDevice, const Device& newDevice2MergeIn, const RolledUpNetworks& useRolledUpNetworks)
+            void MergeInUpdate_ (const Device& rollupDevice, const Device& newDevice2MergeIn, const RolledUpNetworks& useRolledUpNetworks, const RolledUpNetworkInterfaces& networkInterfacesRollup)
             {
                 Device d2MergeInPatched            = newDevice2MergeIn;
                 d2MergeInPatched.fAttachedNetworks = MapAggregatedAttachments2Rollups_ (useRolledUpNetworks, d2MergeInPatched.fAttachedNetworks);
                 Device tmp                         = Device::Rollup (rollupDevice, d2MergeInPatched);
+
+
+
                 Assert (tmp.fGUID == rollupDevice.fGUID); // rollup cannot change device ID
+
+                tmp.fAttachedNetworkInterfaces = rollupDevice.fAttachedNetworkInterfaces;
+                if (newDevice2MergeIn.fAttachedNetworkInterfaces) {
+                    if (tmp.fAttachedNetworkInterfaces == nullopt) {
+                        tmp.fAttachedNetworkInterfaces = Set<GUID>{};
+                    }
+                    *tmp.fAttachedNetworkInterfaces += networkInterfacesRollup.MapAggregatedNetInterfaceID2ItsRollupID (*newDevice2MergeIn.fAttachedNetworkInterfaces);
+                }
+
                 // userSettings already added on first rollup
                 fRolledUpDevices += tmp;
                 fRaw2RollupIDMap_.Add (newDevice2MergeIn.fGUID, tmp.fGUID);
             }
-            void MergeInNew_ (const Device& d2MergeIn, const RolledUpNetworks& useRolledUpNetworks)
+            void MergeInNew_ (const Device& d2MergeIn, const RolledUpNetworks& useRolledUpNetworks, const RolledUpNetworkInterfaces& networkInterfacesRollup)
             {
                 Assert (not d2MergeIn.fAggregatesReversibly.has_value ());
                 Device newRolledUpDevice                = d2MergeIn;
@@ -1362,20 +1376,23 @@ namespace {
                     newRolledUpDevice.fGUID = GUID::GenerateNew ();
                 }
                 newRolledUpDevice.fAttachedNetworks = MapAggregatedAttachments2Rollups_ (useRolledUpNetworks, newRolledUpDevice.fAttachedNetworks);
-                newRolledUpDevice.fUserOverrides    = sDBAccessMgr_->LookupDevicesUserSettings (newRolledUpDevice.fGUID);
+                if (d2MergeIn.fAttachedNetworkInterfaces) {
+                    newRolledUpDevice.fAttachedNetworkInterfaces = networkInterfacesRollup.MapAggregatedNetInterfaceID2ItsRollupID (*d2MergeIn.fAttachedNetworkInterfaces);
+                }
+                newRolledUpDevice.fUserOverrides = sDBAccessMgr_->LookupDevicesUserSettings (newRolledUpDevice.fGUID);
                 if (newRolledUpDevice.fUserOverrides && newRolledUpDevice.fUserOverrides->fName) {
                     newRolledUpDevice.fNames.Add (*newRolledUpDevice.fUserOverrides->fName, 500);
                 }
                 fRolledUpDevices += newRolledUpDevice;
                 fRaw2RollupIDMap_.Add (d2MergeIn.fGUID, newRolledUpDevice.fGUID);
             }
-            void RecomputeAll_ (const RolledUpNetworks& useRolledUpNetworks)
+            void RecomputeAll_ (const RolledUpNetworks& useRolledUpNetworks, const RolledUpNetworkInterfaces& networkInterfacesRollup)
             {
                 fRolledUpDevices.clear ();
                 fRaw2RollupIDMap_.clear ();
                 fRolledUpDevices += fStarterRollups_;
                 for (const auto& di : fRawDevices_) {
-                    if (MergeIn_ (di, useRolledUpNetworks) == PassFailType_::eFail) {
+                    if (MergeIn_ (di, useRolledUpNetworks, networkInterfacesRollup) == PassFailType_::eFail) {
                         Assert (false); //nyi - or maybe just bug since we have mapping so device goes into two different rollups?
                     }
                 }
