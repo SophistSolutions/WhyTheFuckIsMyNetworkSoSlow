@@ -56,10 +56,13 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
      *  intuitively (fuzily) think of as a 'Network'
      *
      *  If you have an IPv4 and IPv6 network they maybe merged into a single logical network
+     *
+     *  Network objects must exist in the discovery layer (mostly could be in Integration::Model layer) except
+     *  we need to know about active networks for discovery.
      */
     struct Network {
-        Set<CIDR>                fNetworkAddresses;
         GUID                     fGUID;
+        Set<CIDR>                fNetworkAddresses;
         Common::PrioritizedNames fNames;
         Range<DateTime>          fSeen;
 

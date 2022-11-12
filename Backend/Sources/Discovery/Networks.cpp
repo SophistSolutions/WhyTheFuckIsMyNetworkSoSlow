@@ -348,7 +348,6 @@ namespace {
 #endif
         return results;
     }
-
 }
 NetworksMgr NetworksMgr::sThe;
 
@@ -358,9 +357,8 @@ Sequence<Network> Discovery::NetworksMgr::CollectActiveNetworks (optional<Time::
     Debug::TraceContextBumper ctx{L"Discovery::CollectAllNetworkInterfaces"};
 #endif
     Require (sActive_);
-    Sequence<Network> results;
-    using Cache::SynchronizedCallerStalenessCache;
-    static SynchronizedCallerStalenessCache<void, Sequence<Network>> sCache_;
+    Sequence<Network>                                                       results;
+    static Cache::SynchronizedCallerStalenessCache<void, Sequence<Network>> sCache_;
     results = sCache_.LookupValue (sCache_.Ago (allowedStaleness.value_or (kDefaultItemCacheLifetime_)), [] () {
         return CollectActiveNetworks_ ();
     });

@@ -119,6 +119,9 @@ namespace {
     /**
      *  Wrappers on the device manager APIs, that just fetch the discovered devices and convert to common
      *  integrated model (no datebase awareness)
+     * 
+     *  Note - IDs are simple to manage/maintain - they come from the discovery layer, and we SIMPLY RE-USE those IDs in this DiscoveryWrapper
+     *  layer. That makes all ID/Pointers consistent. They just get handled differently by the ROLLUP layer.
      */
     namespace DiscoveryWrapper_ {
         using IntegratedModel::Device;
@@ -815,6 +818,16 @@ namespace {
                     sRolledUpNetworksInterfaces_.store (result); // save here so we can update rollup networks instead of creating anew each time
                     return result;
                 });
+            }
+
+        public:
+            /**
+             *  Given an aggregated (device) network interface id, map to the correspoding rollup ID
+             */
+            nonvirtual auto MapAggregatedNetID2ItsRollupID (const GUID& netID) const -> GUID
+            {
+                Assert (false); // NYI
+                return netID;
             }
 
         public:
