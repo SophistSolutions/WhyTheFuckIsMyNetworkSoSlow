@@ -1,4 +1,4 @@
-﻿FROM sophistsolutionsinc/stroika-buildvm-windows-cygwin-vs2k19:v2.1
+﻿FROM sophistsolutionsinc/stroika-buildvm-windows-cygwin-vs2k22:v2.1
 
 SHELL ["cmd", "/S", "/C"]
 

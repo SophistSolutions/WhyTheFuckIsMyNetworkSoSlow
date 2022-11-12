@@ -32,6 +32,7 @@ ifeq (${DETECTED_HOST_OS},Linux)
 endif
 ifeq (Windows,$(findstring Windows,$(OS)))
 	docker build -f Windows-Cygwin-VS2k19/Dockerfile -t sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19 -m 2G .
+	docker build -f Windows-Cygwin-VS2k19/Dockerfile -t sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k22 -m 2G .
 endif
 
 
@@ -43,6 +44,7 @@ ifeq (${DETECTED_HOST_OS},Linux)
 endif
 ifeq (Windows,$(findstring Windows,$(OS)))
 	docker tag sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19:latest sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19:$(VERSION)
+	docker tag sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19:latest sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k22:$(VERSION)
 endif
 
 
@@ -55,6 +57,7 @@ ifeq (${DETECTED_HOST_OS},Linux)
 endif
 ifeq (Windows,$(findstring Windows,$(OS)))
 	docker push sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19
+	docker push sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k22
 endif
 ifeq ($(VERSION_Final),true)
 ifeq (${DETECTED_HOST_OS},Linux)
@@ -64,6 +67,7 @@ ifeq (${DETECTED_HOST_OS},Linux)
 endif
 ifeq (Windows,$(findstring Windows,$(OS)))
 	docker push sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19:$(VERSION)
+	docker push sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k22:$(VERSION)
 endif
 endif
 

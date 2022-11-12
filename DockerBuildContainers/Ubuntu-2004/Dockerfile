@@ -1,5 +1,5 @@
 # Start with basic set of tools from Stroika build environment
-FROM ${BASE_IMAGE:-sophistsolutionsinc/stroika-buildvm-ubuntu2004-small}
+FROM ${BASE_IMAGE:-sophistsolutionsinc/stroika-buildvm-ubuntu2004-small:v2.1}
 
 ARG INCLUDE_OPENSSL=false
 ARG INCLUDE_HANDY_DEV_TOOLS=false
