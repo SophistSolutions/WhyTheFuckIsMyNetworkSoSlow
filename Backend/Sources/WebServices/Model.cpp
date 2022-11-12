@@ -239,21 +239,28 @@ Network Network::Merge (const Network& baseNetwork, const Network& priorityNetwo
 
 Network Network::Rollup (const Network& rollupNetwork, const Network& instanceNetwork2Add)
 {
+    // @todo this must take ARG OF attachedNetworkInterfaceDicoveryID2RollupIDMap and use for merged in interfaces (not just savedInterfaces)
+
     // Use seen.Ever() to decide which 'device' gets precedence in merging. Give the most
     // recent device precedence
     Network merged = (rollupNetwork.fSeen.empty () or rollupNetwork.fSeen.GetUpperBound () < instanceNetwork2Add.fSeen.GetUpperBound ())
                          ? Merge (rollupNetwork, instanceNetwork2Add)
                          : Merge (instanceNetwork2Add, rollupNetwork);
-    merged.fGUID   = rollupNetwork.fGUID; // regardless of dates, keep the rollupDevice GUID
+    // regardless of dates, keep the rollupDevice GUID and original rolled up interface ids
+    merged.fGUID                   = rollupNetwork.fGUID;
+    merged.fAttachedInterfaces     = rollupNetwork.fAttachedInterfaces;
+    merged.fAggregatesReversibly   = rollupNetwork.fAggregatesReversibly;
+    merged.fAggregatesIrreversibly = rollupNetwork.fAggregatesIrreversibly;
+
     if (merged.fAggregatesReversibly.has_value ()) {
         merged.fAggregatesReversibly->Add (instanceNetwork2Add.fGUID);
     }
     else {
         merged.fAggregatesReversibly = Set<GUID>{instanceNetwork2Add.fGUID};
     }
-    merged.fAggregatesIrreversibly = nullopt;
-    merged.fIDPersistent           = false;
-    merged.fHistoricalSnapshot     = false;
+    // merged.fAggregatesIrreversibly = nullopt;
+    merged.fIDPersistent       = false;
+    merged.fHistoricalSnapshot = false;
     Memory::CopyToIf (&merged.fUserOverrides, instanceNetwork2Add.fUserOverrides); // for now, no need to look inside and accumulate because only one place can generate user-overrides - some special TBD database record - LGP 2022-09-14
     return merged;
 }

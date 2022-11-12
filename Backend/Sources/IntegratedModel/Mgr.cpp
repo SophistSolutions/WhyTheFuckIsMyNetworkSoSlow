@@ -824,10 +824,21 @@ namespace {
             /**
              *  Given an aggregated (device) network interface id, map to the correspoding rollup ID
              */
-            nonvirtual auto MapAggregatedNetID2ItsRollupID (const GUID& netID) const -> GUID
+            nonvirtual auto MapAggregatedNetInterfaceID2ItsRollupID (const GUID& netID) const -> GUID
             {
-                Assert (false); // NYI
+                if (auto r = fMapAggregatedNetInterfaceID2RollupID_.Lookup (netID)) {
+                    return *r;
+                }
+                AssertNotReached ();
                 return netID;
+            }
+            nonvirtual auto MapAggregatedNetInterfaceID2ItsRollupID (const Set<GUID>& netIDs) const -> Set<GUID>
+            {
+                Set<GUID> result;
+                for (const auto& i : netIDs) {
+                    result += MapAggregatedNetInterfaceID2ItsRollupID (i);
+                }
+                return result;
             }
 
         public:
@@ -846,12 +857,15 @@ namespace {
                 // friendly name - for example - of network interface can change while running, so must be able to invalidate and recompute this list
 
                 Network::FingerprintType netInterface2MergeInFingerprint = net2MergeIn.GenerateFingerprintFromProperties ();
-                fRolledUpNetworkInterfaces_.Add (NetworkInterface::Rollup (fRolledUpNetworkInterfaces_.Lookup (netInterface2MergeInFingerprint), net2MergeIn));
+                auto                     rolledUpNetworkInterace         = NetworkInterface::Rollup (fRolledUpNetworkInterfaces_.Lookup (netInterface2MergeInFingerprint), net2MergeIn);
+                fRolledUpNetworkInterfaces_.Add (rolledUpNetworkInterace);
+                fMapAggregatedNetInterfaceID2RollupID_.Add (net2MergeIn.fGUID, rolledUpNetworkInterace.fGUID);
             }
 
         private:
             NetworkInterfaceCollection_ fRawNetworkInterfaces_; // used for RecomputeAll_
             NetworkInterfaceCollection_ fRolledUpNetworkInterfaces_;
+            Mapping<GUID, GUID>         fMapAggregatedNetInterfaceID2RollupID_; // each aggregate net interface id is mapped to at most one rollup id)
 
         private:
             static Synchronized<optional<RolledUpNetworkInterfaces>> sRolledUpNetworksInterfaces_;
@@ -913,18 +927,22 @@ namespace {
         public:
             /**
              *  Given an aggregated network id, map to the correspoding rollup ID (todo do we need to handle missing case)
+             * 
+             *  \req is already valid rollup net ID.
              */
             nonvirtual auto MapAggregatedNetID2ItsRollupID (const GUID& netID) const -> GUID
             {
                 if (auto r = fMapAggregatedNetID2RollupID_.Lookup (netID)) {
                     return *r;
                 }
+                // shouldn't get past here - debug if/why this hapepns - see comments below
                 Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"MapAggregatedNetID2ItsRollupID failed to find netID=%s", Characters::ToString (netID).c_str ())};
 #if qDebug
                 for (const auto& i : fRolledUpNetworks_) {
                     DbgTrace (L"rolledupNet=%s", Characters::ToString (i).c_str ());
                 }
 #endif
+                Assert (false);     // @todo fix - because we guarantee each item rolled up exactly once - but happens sometimes on change of network - I think due to outdated device records referring to newer network not yet in this cache...
                 WeakAssert (false); // @todo fix - because we guarantee each item rolled up exactly once - but happens sometimes on change of network - I think due to outdated device records referring to newer network not yet in this cache...
                 return netID;
             }
@@ -939,9 +957,10 @@ namespace {
             nonvirtual void MergeIn (const Iterable<Network>& nets2MergeIn)
             {
                 fRawNetworks_ += nets2MergeIn;
-                bool anyFailed = false;
+                bool                      anyFailed               = false;
+                RolledUpNetworkInterfaces networkInterfacesRollup = RolledUpNetworkInterfaces::GetCached ();
                 for (const Network& n : nets2MergeIn) {
-                    if (MergeIn_ (n) == PassFailType_::eFail) {
+                    if (MergeIn_ (n, networkInterfacesRollup) == PassFailType_::eFail) {
                         anyFailed = true;
                         break;
                     }
@@ -1021,7 +1040,7 @@ namespace {
             enum class PassFailType_ { ePass,
                                        eFail };
             // if fails simple merge, returns false, so must call recomputeall
-            PassFailType_ MergeIn_ (const Network& net2MergeIn)
+            PassFailType_ MergeIn_ (const Network& net2MergeIn, const RolledUpNetworkInterfaces& networkInterfacesRollup)
             {
                 // @todo https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/75 - fix corner case
                 Network::FingerprintType net2MergeInFingerprint      = net2MergeIn.GenerateFingerprintFromProperties ();
@@ -1029,10 +1048,10 @@ namespace {
                 if (shouldInvalidateAll == PassFailType_::ePass) {
                     if (oShouldRollIntoNet) {
                         // then we rollup to this same rollup network - very common case - so just re-rollup, and we are done
-                        AddUpdateIn_ (*oShouldRollIntoNet, net2MergeIn, net2MergeInFingerprint);
+                        AddUpdateIn_ (*oShouldRollIntoNet, net2MergeIn, net2MergeInFingerprint, networkInterfacesRollup);
                     }
                     else {
-                        AddNewIn_ (net2MergeIn, net2MergeInFingerprint);
+                        AddNewIn_ (net2MergeIn, net2MergeInFingerprint, networkInterfacesRollup);
                     }
                     return PassFailType_::ePass;
                 }
@@ -1095,22 +1114,23 @@ namespace {
                 }
                 return false;
             }
-            void AddUpdateIn_ (const Network& addNet2MergeFromThisRollup, const Network& net2MergeIn, const Network::FingerprintType& net2MergeInFingerprint)
+            void AddUpdateIn_ (const Network& addNet2MergeFromThisRollup, const Network& net2MergeIn, const Network::FingerprintType& net2MergeInFingerprint, const RolledUpNetworkInterfaces& networkInterfacesRollup)
             {
                 Assert (net2MergeIn.GenerateFingerprintFromProperties () == net2MergeInFingerprint); // provided to avoid cost of recompute
                 Network newRolledUpNetwork = Network::Rollup (addNet2MergeFromThisRollup, net2MergeIn);
+                newRolledUpNetwork.fAttachedInterfaces += networkInterfacesRollup.MapAggregatedNetInterfaceID2ItsRollupID (net2MergeIn.fAttachedInterfaces);
                 Assert (addNet2MergeFromThisRollup.fAggregatesFingerprints == newRolledUpNetwork.fAggregatesFingerprints); // spot check - should be same...
                 fRolledUpNetworks_.Add (newRolledUpNetwork);
                 fMapAggregatedNetID2RollupID_.Add (net2MergeIn.fGUID, newRolledUpNetwork.fGUID);
                 fMapFingerprint2RollupID.Add (net2MergeInFingerprint, newRolledUpNetwork.fGUID);
             }
-            void AddNewIn_ (const Network& net2MergeIn, const Network::FingerprintType& net2MergeInFingerprint)
+            void AddNewIn_ (const Network& net2MergeIn, const Network::FingerprintType& net2MergeInFingerprint, const RolledUpNetworkInterfaces& networkInterfacesRollup)
             {
                 Assert (net2MergeIn.GenerateFingerprintFromProperties () == net2MergeInFingerprint); // provided to avoid cost of recompute
                 Network newRolledUpNetwork                 = net2MergeIn;
+                newRolledUpNetwork.fAttachedInterfaces     = networkInterfacesRollup.MapAggregatedNetInterfaceID2ItsRollupID (net2MergeIn.fAttachedInterfaces);
                 newRolledUpNetwork.fAggregatesReversibly   = Set<GUID>{net2MergeIn.fGUID};
                 newRolledUpNetwork.fAggregatesFingerprints = Set<Network::FingerprintType>{net2MergeInFingerprint};
-
                 // @todo fix this code so each time through we UPDATE sDBAccessMgr_ with latest 'fingerprint' of each dynamic network
                 newRolledUpNetwork.fGUID = sDBAccessMgr_->GenNewNetworkID (net2MergeInFingerprint);
                 if (fRolledUpNetworks_.Contains (newRolledUpNetwork.fGUID)) {
@@ -1142,9 +1162,10 @@ namespace {
                 fMapAggregatedNetID2RollupID_.clear ();
                 fMapFingerprint2RollupID.clear ();
                 fRolledUpNetworks_ += fStarterRollups_;
+                RolledUpNetworkInterfaces networkInterfacesRollup = RolledUpNetworkInterfaces::GetCached ();
                 for (const auto& ni : fRawNetworks_) {
-                    if (MergeIn_ (ni) == PassFailType_::eFail) {
-                        AddNewIn_ (ni, ni.GenerateFingerprintFromProperties ());
+                    if (MergeIn_ (ni, networkInterfacesRollup) == PassFailType_::eFail) {
+                        AddNewIn_ (ni, ni.GenerateFingerprintFromProperties (), networkInterfacesRollup);
                     }
                 }
             }
