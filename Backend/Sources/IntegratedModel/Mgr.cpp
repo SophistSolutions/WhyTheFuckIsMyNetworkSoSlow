@@ -714,6 +714,24 @@ namespace {
 }
 
 namespace {
+    /**
+     *  \breif RollupSummary_ - Data structures representing a rollups of various bits of networking/device etc data
+     * 
+     *  \note   These rollup objects are copyable.
+     * 
+     *  \note   Important design principle is that RolledUp... objects can be captured as of a point
+     *          in time, and then additional data 'rolled in'.
+     * 
+     *          The reason this is important, is we have alot of historical data as a baseline (which is unchanging).
+     *          And a small amount of data which is dynamic (e.g. current network readings). And we want to compute
+     *          a summary of the past data with new data rolled in.
+     * 
+     *          We do most of the work up to a point in time (from the database). Save that snapshot. And then merge
+     *          in additional data as needed.
+     * 
+     *  \note   The one thing that could cause us to have to COMPLETELY redo our computations, is when we change 'user settings'
+     *          which control how the rollup happens.
+     */
     namespace RollupSummary_ {
 
         using IntegratedModel::Device;
@@ -723,7 +741,11 @@ namespace {
 
         /**
          *  Data structure representing a copy of currently rolled up network interfaces data (copyable).
-         *
+         * 
+         *  Unlike most othter rollup structures, we have no USER_SETTINGS here, so we ALWAYS rollup the same
+         *  way. That means there is no ResetUserSettings, and no need to ever INVALIDATE the network interface settings.
+         *  (note this refers something computed from historical database data, not soemthign where dynaic data still rolling in).
+         * 
          *  \note   \em Thread-Safety   <a href="Thread-Safety.md#C++-Standard-Thread-Safety">C++-Standard-Thread-Safety</a>
          */
         struct RolledUpNetworkInterfaces {
@@ -752,25 +774,13 @@ namespace {
             nonvirtual void MergeIn (const Iterable<NetworkInterface>& netInterfaces2MergeIn)
             {
                 fRawNetworkInterfaces_ += netInterfaces2MergeIn;
-                bool anyFailed = false;
                 for (const NetworkInterface& n : netInterfaces2MergeIn) {
                     MergeIn_ (n);
-#if 0
-                    if (MergeIn_ (n) == PassFailType_::eFail) {
-                        anyFailed = true;
-                        break;
-                    }
-#endif
-                }
-                if (anyFailed) {
-                    // RecomputeAll_ ();
                 }
             }
 
         public:
             /**
-             * INVALIDATE IF 'UserSettings' change, which might cause different rollups (this includes fingerprint to guid map)
-             *
              *  \note   \em Thread-Safety   <a href="Thread-Safety.md#Internally-Synchronized-Thread-Safety">Internally-Synchronized-Thread-Safety</a>
              */
             static RolledUpNetworkInterfaces GetCached (Time::DurationSecondsType allowedStaleness = 5.0)
@@ -841,15 +851,6 @@ namespace {
                 return result;
             }
 
-        public:
-            /**
-             *  \note   \em Thread-Safety   <a href="Thread-Safety.md#Internally-Synchronized-Thread-Safety">Internally-Synchronized-Thread-Safety</a>
-             */
-            static void InvalidateCache ()
-            {
-                AssertNotImplemented ();
-            }
-
         private:
             void MergeIn_ (const NetworkInterface& net2MergeIn)
             {
@@ -874,12 +875,16 @@ namespace {
 
         /**
          *  Data structure representing a copy of currently rolled up networks data (copyable).
+         * 
+         *  This data MAYBE invalidated due to changes in Network::UserOverridesType settings (even historical database data
+         *  cuz changes in rollup rules could cause how the historical data was rolled up to change).
          *
          *  \note   \em Thread-Safety   <a href="Thread-Safety.md#C++-Standard-Thread-Safety">C++-Standard-Thread-Safety</a>
          */
         struct RolledUpNetworks {
         public:
-            RolledUpNetworks (const Iterable<Network>& nets2MergeIn, const Mapping<GUID, Network::UserOverridesType>& userOverrides)
+            RolledUpNetworks (const Iterable<Network>& nets2MergeIn, const Mapping<GUID, Network::UserOverridesType>& userOverrides, const RolledUpNetworkInterfaces& useNetworkInterfaceRollups)
+                : fUseNetworkInterfaceRollups{useNetworkInterfaceRollups}
             {
                 fStarterRollups_ = userOverrides.Select<Network> (
                     [] (const auto& guid2UOTPair) -> Network {
@@ -957,10 +962,9 @@ namespace {
             nonvirtual void MergeIn (const Iterable<Network>& nets2MergeIn)
             {
                 fRawNetworks_ += nets2MergeIn;
-                bool                      anyFailed               = false;
-                RolledUpNetworkInterfaces networkInterfacesRollup = RolledUpNetworkInterfaces::GetCached ();
+                bool anyFailed = false;
                 for (const Network& n : nets2MergeIn) {
-                    if (MergeIn_ (n, networkInterfacesRollup) == PassFailType_::eFail) {
+                    if (MergeIn_ (n) == PassFailType_::eFail) {
                         anyFailed = true;
                         break;
                     }
@@ -988,7 +992,7 @@ namespace {
                 //      https://stroika.atlassian.net/browse/STK-906 - possible enhancement to this configuration to work better avoiding
                 //      See https://stroika.atlassian.net/browse/STK-907 - about needing some new mechanism in Stroika for deadlock detection/avoidance.
                 // sCache_.fHoldWriteLockDuringCacheFill = true; // so only one call to filler lambda at a time
-                return sCache_.LookupValue (sCache_.Ago (allowedStaleness), [] () -> RolledUpNetworks {
+                return sCache_.LookupValue (sCache_.Ago (allowedStaleness), [allowedStaleness] () -> RolledUpNetworks {
                     /*
                      *  DEADLOCK NOTE
                      *      Since this can be called while rolling up DEVICES, its important that this code not call anything involving device rollup since
@@ -999,7 +1003,9 @@ namespace {
 
                     // Start with the existing rolled up objects
                     // and merge in any more recent discovery changes
-                    RolledUpNetworks result = [] () {
+                    RolledUpNetworks result = [allowedStaleness] () {
+                        auto rolledUpNetworkInterfacess = RolledUpNetworkInterfaces::GetCached (allowedStaleness * 3.0); // longer allowedStaleness cuz we dont care much about this and the parts
+                                                                                                                         // we look at really dont change
                         auto lk = sRolledUpNetworks_.rwget ();
                         if (not lk.cref ().has_value ()) {
                             if (not sDBAccessMgr_->GetFinishedInitialDBLoad ()) {
@@ -1012,7 +1018,7 @@ namespace {
                             // @todo add more stuff here - empty preset rules from DB
                             // merge two tables - ID to fingerprint and user settings tables and store those in this rollup early
                             // maybe make CTOR for rolledupnetworks take in ital DB netwworks and rules, and have copyis CTOR taking orig networks and new rules?
-                            lk.store (RolledUpNetworks{sDBAccessMgr_->GetRawNetworks (), sDBAccessMgr_->GetNetworkUserSettings ()});
+                            lk.store (RolledUpNetworks{sDBAccessMgr_->GetRawNetworks (), sDBAccessMgr_->GetNetworkUserSettings (), rolledUpNetworkInterfacess});
                         }
                         return Memory::ValueOf (lk.load ());
                     }();
@@ -1040,7 +1046,7 @@ namespace {
             enum class PassFailType_ { ePass,
                                        eFail };
             // if fails simple merge, returns false, so must call recomputeall
-            PassFailType_ MergeIn_ (const Network& net2MergeIn, const RolledUpNetworkInterfaces& networkInterfacesRollup)
+            PassFailType_ MergeIn_ (const Network& net2MergeIn)
             {
                 // @todo https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/75 - fix corner case
                 Network::FingerprintType net2MergeInFingerprint      = net2MergeIn.GenerateFingerprintFromProperties ();
@@ -1048,10 +1054,10 @@ namespace {
                 if (shouldInvalidateAll == PassFailType_::ePass) {
                     if (oShouldRollIntoNet) {
                         // then we rollup to this same rollup network - very common case - so just re-rollup, and we are done
-                        AddUpdateIn_ (*oShouldRollIntoNet, net2MergeIn, net2MergeInFingerprint, networkInterfacesRollup);
+                        AddUpdateIn_ (*oShouldRollIntoNet, net2MergeIn, net2MergeInFingerprint);
                     }
                     else {
-                        AddNewIn_ (net2MergeIn, net2MergeInFingerprint, networkInterfacesRollup);
+                        AddNewIn_ (net2MergeIn, net2MergeInFingerprint);
                     }
                     return PassFailType_::ePass;
                 }
@@ -1114,21 +1120,21 @@ namespace {
                 }
                 return false;
             }
-            void AddUpdateIn_ (const Network& addNet2MergeFromThisRollup, const Network& net2MergeIn, const Network::FingerprintType& net2MergeInFingerprint, const RolledUpNetworkInterfaces& networkInterfacesRollup)
+            void AddUpdateIn_ (const Network& addNet2MergeFromThisRollup, const Network& net2MergeIn, const Network::FingerprintType& net2MergeInFingerprint)
             {
                 Assert (net2MergeIn.GenerateFingerprintFromProperties () == net2MergeInFingerprint); // provided to avoid cost of recompute
                 Network newRolledUpNetwork = Network::Rollup (addNet2MergeFromThisRollup, net2MergeIn);
-                newRolledUpNetwork.fAttachedInterfaces += networkInterfacesRollup.MapAggregatedNetInterfaceID2ItsRollupID (net2MergeIn.fAttachedInterfaces);
+                newRolledUpNetwork.fAttachedInterfaces += fUseNetworkInterfaceRollups.MapAggregatedNetInterfaceID2ItsRollupID (net2MergeIn.fAttachedInterfaces);
                 Assert (addNet2MergeFromThisRollup.fAggregatesFingerprints == newRolledUpNetwork.fAggregatesFingerprints); // spot check - should be same...
                 fRolledUpNetworks_.Add (newRolledUpNetwork);
                 fMapAggregatedNetID2RollupID_.Add (net2MergeIn.fGUID, newRolledUpNetwork.fGUID);
                 fMapFingerprint2RollupID.Add (net2MergeInFingerprint, newRolledUpNetwork.fGUID);
             }
-            void AddNewIn_ (const Network& net2MergeIn, const Network::FingerprintType& net2MergeInFingerprint, const RolledUpNetworkInterfaces& networkInterfacesRollup)
+            void AddNewIn_ (const Network& net2MergeIn, const Network::FingerprintType& net2MergeInFingerprint)
             {
                 Assert (net2MergeIn.GenerateFingerprintFromProperties () == net2MergeInFingerprint); // provided to avoid cost of recompute
                 Network newRolledUpNetwork                 = net2MergeIn;
-                newRolledUpNetwork.fAttachedInterfaces     = networkInterfacesRollup.MapAggregatedNetInterfaceID2ItsRollupID (net2MergeIn.fAttachedInterfaces);
+                newRolledUpNetwork.fAttachedInterfaces     = fUseNetworkInterfaceRollups.MapAggregatedNetInterfaceID2ItsRollupID (net2MergeIn.fAttachedInterfaces);
                 newRolledUpNetwork.fAggregatesReversibly   = Set<GUID>{net2MergeIn.fGUID};
                 newRolledUpNetwork.fAggregatesFingerprints = Set<Network::FingerprintType>{net2MergeInFingerprint};
                 // @todo fix this code so each time through we UPDATE sDBAccessMgr_ with latest 'fingerprint' of each dynamic network
@@ -1162,15 +1168,15 @@ namespace {
                 fMapAggregatedNetID2RollupID_.clear ();
                 fMapFingerprint2RollupID.clear ();
                 fRolledUpNetworks_ += fStarterRollups_;
-                RolledUpNetworkInterfaces networkInterfacesRollup = RolledUpNetworkInterfaces::GetCached ();
                 for (const auto& ni : fRawNetworks_) {
-                    if (MergeIn_ (ni, networkInterfacesRollup) == PassFailType_::eFail) {
-                        AddNewIn_ (ni, ni.GenerateFingerprintFromProperties (), networkInterfacesRollup);
+                    if (MergeIn_ (ni) == PassFailType_::eFail) {
+                        AddNewIn_ (ni, ni.GenerateFingerprintFromProperties ());
                     }
                 }
             }
 
         private:
+            RolledUpNetworkInterfaces               fUseNetworkInterfaceRollups;
             NetworkKeyedCollection_                 fRawNetworks_; // used for RecomputeAll_
             NetworkKeyedCollection_                 fStarterRollups_;
             NetworkKeyedCollection_                 fRolledUpNetworks_;
@@ -1184,11 +1190,16 @@ namespace {
         /**
          *  Data structure representing a copy of currently rolled up devices data (copyable).
          *
+         *  This data MAYBE invalidated due to changes in Network::UserOverridesType settings (even historical database data
+         *  cuz changes in rollup rules could cause how the historical data was rolled up to change).
+         *
          *  \note   \em Thread-Safety   <a href="Thread-Safety.md#C++-Standard-Thread-Safety">C++-Standard-Thread-Safety</a>
          */
         struct RolledUpDevices {
         public:
-            RolledUpDevices (const Iterable<Device>& devices2MergeIn, const Mapping<GUID, Device::UserOverridesType>& userOverrides, const RolledUpNetworks& useRolledUpNetworks)
+            RolledUpDevices (const Iterable<Device>& devices2MergeIn, const Mapping<GUID, Device::UserOverridesType>& userOverrides, const RolledUpNetworks& useRolledUpNetworks, const RolledUpNetworkInterfaces& useNetworkInterfaceRollups)
+                : fUseRolledUpNetworks{useRolledUpNetworks}
+                , fUseNetworkInterfaceRollups{useNetworkInterfaceRollups}
             {
                 fStarterRollups_ = userOverrides.Select<Device> (
                     [] (const auto& guid2UOTPair) -> Device {
@@ -1201,7 +1212,7 @@ namespace {
                         return d;
                     });
                 fRolledUpDevices = fStarterRollups_;
-                MergeIn (devices2MergeIn, useRolledUpNetworks);
+                MergeIn (devices2MergeIn);
             }
             RolledUpDevices (const RolledUpDevices&)            = default;
             RolledUpDevices (RolledUpDevices&&)                 = default;
@@ -1218,7 +1229,7 @@ namespace {
             }
 
         public:
-            nonvirtual void ResetUserOverrides (const Mapping<GUID, Device::UserOverridesType>& userOverrides, const RolledUpNetworks& useRolledUpNetworks)
+            nonvirtual void ResetUserOverrides (const Mapping<GUID, Device::UserOverridesType>& userOverrides)
             {
                 RolledUpNetworkInterfaces networkInterfacesRollup = RolledUpNetworkInterfaces::GetCached ();
                 fStarterRollups_                                  = userOverrides.Select<Device> (
@@ -1231,23 +1242,22 @@ namespace {
                         }
                         return d;
                     });
-                RecomputeAll_ (useRolledUpNetworks, networkInterfacesRollup);
+                RecomputeAll_ ();
             }
 
         public:
-            nonvirtual void MergeIn (const Iterable<Device>& devices2MergeIn, const RolledUpNetworks& useRolledUpNetworks)
+            nonvirtual void MergeIn (const Iterable<Device>& devices2MergeIn)
             {
-                RolledUpNetworkInterfaces networkInterfacesRollup = RolledUpNetworkInterfaces::GetCached ();
                 fRawDevices_ += devices2MergeIn;
                 bool anyFailed = false;
                 for (const Device& d : devices2MergeIn) {
-                    if (MergeIn_ (d, useRolledUpNetworks, networkInterfacesRollup) == PassFailType_::eFail) {
+                    if (MergeIn_ (d) == PassFailType_::eFail) {
                         anyFailed = true;
                         break;
                     }
                 }
                 if (anyFailed) {
-                    RecomputeAll_ (useRolledUpNetworks, networkInterfacesRollup);
+                    RecomputeAll_ ();
                 }
             }
 
@@ -1271,8 +1281,10 @@ namespace {
                     Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...RolledUpDevices::GetCached...cachefiller")};
                     Debug::TimingTrace        ttrc{L"RolledUpDevices::GetCached...cachefiller", 1};
 
-                    auto rolledUpNetworks = RolledUpNetworks::GetCached (allowedStaleness * 3.0); // longer allowedStaleness cuz we dont care much about this and the parts
-                                                                                                  // we look at really dont change
+                    auto rolledUpNetworks = RolledUpNetworks::GetCached (allowedStaleness * 3.0);                    // longer allowedStaleness cuz we dont care much about this and the parts
+                                                                                                                     // we look at really dont change
+                    auto rolledUpNetworkInterfacess = RolledUpNetworkInterfaces::GetCached (allowedStaleness * 3.0); // longer allowedStaleness cuz we dont care much about this and the parts
+                                                                                                                     // we look at really dont change
 
                     // Start with the existing rolled up objects
                     // and merge in any more recent discovery changes
@@ -1289,13 +1301,13 @@ namespace {
                             // @todo add more stuff here - empty preset rules from DB
                             // merge two tables - ID to fingerprint and user settings tables and store those in this rollup early
                             // maybe make CTOR for rolledupnetworks take in ital DB netwworks and rules, and have copyis CTOR taking orig networks and new rules?
-                            RolledUpDevices initialDBDevices{sDBAccessMgr_->GetRawDevices (), sDBAccessMgr_->GetDeviceUserSettings (), rolledUpNetworks};
+                            RolledUpDevices initialDBDevices{sDBAccessMgr_->GetRawDevices (), sDBAccessMgr_->GetDeviceUserSettings (), rolledUpNetworks, rolledUpNetworkInterfacess};
                             lk.store (initialDBDevices);
                         }
                         return Memory::ValueOf (lk.load ());
                     }();
                     // not sure we want to allow this? @todo consider throwing here or asserting out cuz nets rollup IDs would change after this
-                    result.MergeIn (DiscoveryWrapper_::GetDevices_ (), rolledUpNetworks);
+                    result.MergeIn (DiscoveryWrapper_::GetDevices_ ());
                     sRolledUpDevicesSoFar_.store (result); // save here so we can update rollup networks instead of creating anew each time
                     return result;
                 });
@@ -1309,7 +1321,7 @@ namespace {
             {
                 auto lk = sRolledUpDevicesSoFar_.rwget ();
                 if (lk->has_value ()) {
-                    lk.rwref ()->ResetUserOverrides (sDBAccessMgr_->GetDeviceUserSettings (), RollupSummary_::RolledUpNetworks::GetCached ());
+                    lk.rwref ()->ResetUserOverrides (sDBAccessMgr_->GetDeviceUserSettings ());
                 }
                 // else OK if not yet loaded, nothing to invalidate
             }
@@ -1318,13 +1330,13 @@ namespace {
             enum class PassFailType_ { ePass,
                                        eFail };
             // if fails simple merge, returns false, so must call recomputeall
-            PassFailType_ MergeIn_ (const Device& d2MergeIn, const RolledUpNetworks& useRolledUpNetworks, const RolledUpNetworkInterfaces& networkInterfacesRollup)
+            PassFailType_ MergeIn_ (const Device& d2MergeIn)
             {
                 // see if it still should be rolled up in the place it was last rolled up as a shortcut
                 if (optional<GUID> prevRollupID = fRaw2RollupIDMap_.Lookup (d2MergeIn.fGUID)) {
                     Device rollupDevice = Memory::ValueOf (fRolledUpDevices.Lookup (*prevRollupID)); // must be there cuz in sync with fRaw2RollupIDMap_
                     if (ShouldRollup_ (rollupDevice, d2MergeIn)) {
-                        MergeInUpdate_ (rollupDevice, d2MergeIn, useRolledUpNetworks, networkInterfacesRollup);
+                        MergeInUpdate_ (rollupDevice, d2MergeIn);
                         return PassFailType_::ePass;
                     }
                     else {
@@ -1334,21 +1346,19 @@ namespace {
                 else {
                     // then see if it SHOULD be rolled into an existing rollup device, or if we should create a new one
                     if (auto i = fRolledUpDevices.First ([&d2MergeIn] (const auto& exisingRolledUpDevice) { return ShouldRollup_ (exisingRolledUpDevice, d2MergeIn); })) {
-                        MergeInUpdate_ (*i, d2MergeIn, useRolledUpNetworks, networkInterfacesRollup);
+                        MergeInUpdate_ (*i, d2MergeIn);
                     }
                     else {
-                        MergeInNew_ (d2MergeIn, useRolledUpNetworks, networkInterfacesRollup);
+                        MergeInNew_ (d2MergeIn);
                     }
                     return PassFailType_::ePass;
                 }
             }
-            void MergeInUpdate_ (const Device& rollupDevice, const Device& newDevice2MergeIn, const RolledUpNetworks& useRolledUpNetworks, const RolledUpNetworkInterfaces& networkInterfacesRollup)
+            void MergeInUpdate_ (const Device& rollupDevice, const Device& newDevice2MergeIn)
             {
                 Device d2MergeInPatched            = newDevice2MergeIn;
-                d2MergeInPatched.fAttachedNetworks = MapAggregatedAttachments2Rollups_ (useRolledUpNetworks, d2MergeInPatched.fAttachedNetworks);
+                d2MergeInPatched.fAttachedNetworks = MapAggregatedAttachments2Rollups_ (d2MergeInPatched.fAttachedNetworks);
                 Device tmp                         = Device::Rollup (rollupDevice, d2MergeInPatched);
-
-
 
                 Assert (tmp.fGUID == rollupDevice.fGUID); // rollup cannot change device ID
 
@@ -1357,14 +1367,14 @@ namespace {
                     if (tmp.fAttachedNetworkInterfaces == nullopt) {
                         tmp.fAttachedNetworkInterfaces = Set<GUID>{};
                     }
-                    *tmp.fAttachedNetworkInterfaces += networkInterfacesRollup.MapAggregatedNetInterfaceID2ItsRollupID (*newDevice2MergeIn.fAttachedNetworkInterfaces);
+                    *tmp.fAttachedNetworkInterfaces += fUseNetworkInterfaceRollups.MapAggregatedNetInterfaceID2ItsRollupID (*newDevice2MergeIn.fAttachedNetworkInterfaces);
                 }
 
                 // userSettings already added on first rollup
                 fRolledUpDevices += tmp;
                 fRaw2RollupIDMap_.Add (newDevice2MergeIn.fGUID, tmp.fGUID);
             }
-            void MergeInNew_ (const Device& d2MergeIn, const RolledUpNetworks& useRolledUpNetworks, const RolledUpNetworkInterfaces& networkInterfacesRollup)
+            void MergeInNew_ (const Device& d2MergeIn)
             {
                 Assert (not d2MergeIn.fAggregatesReversibly.has_value ());
                 Device newRolledUpDevice                = d2MergeIn;
@@ -1375,9 +1385,9 @@ namespace {
                     Logger::sThe.Log (Logger::eWarning, L"Got rollup device ID from cache that is already in use: %s (for hardware addresses %s)", Characters::ToString (newRolledUpDevice.fGUID).c_str (), Characters::ToString (d2MergeIn.GetHardwareAddresses ()).c_str ());
                     newRolledUpDevice.fGUID = GUID::GenerateNew ();
                 }
-                newRolledUpDevice.fAttachedNetworks = MapAggregatedAttachments2Rollups_ (useRolledUpNetworks, newRolledUpDevice.fAttachedNetworks);
+                newRolledUpDevice.fAttachedNetworks = MapAggregatedAttachments2Rollups_ (newRolledUpDevice.fAttachedNetworks);
                 if (d2MergeIn.fAttachedNetworkInterfaces) {
-                    newRolledUpDevice.fAttachedNetworkInterfaces = networkInterfacesRollup.MapAggregatedNetInterfaceID2ItsRollupID (*d2MergeIn.fAttachedNetworkInterfaces);
+                    newRolledUpDevice.fAttachedNetworkInterfaces = fUseNetworkInterfaceRollups.MapAggregatedNetInterfaceID2ItsRollupID (*d2MergeIn.fAttachedNetworkInterfaces);
                 }
                 newRolledUpDevice.fUserOverrides = sDBAccessMgr_->LookupDevicesUserSettings (newRolledUpDevice.fGUID);
                 if (newRolledUpDevice.fUserOverrides && newRolledUpDevice.fUserOverrides->fName) {
@@ -1386,22 +1396,22 @@ namespace {
                 fRolledUpDevices += newRolledUpDevice;
                 fRaw2RollupIDMap_.Add (d2MergeIn.fGUID, newRolledUpDevice.fGUID);
             }
-            void RecomputeAll_ (const RolledUpNetworks& useRolledUpNetworks, const RolledUpNetworkInterfaces& networkInterfacesRollup)
+            void RecomputeAll_ ()
             {
                 fRolledUpDevices.clear ();
                 fRaw2RollupIDMap_.clear ();
                 fRolledUpDevices += fStarterRollups_;
                 for (const auto& di : fRawDevices_) {
-                    if (MergeIn_ (di, useRolledUpNetworks, networkInterfacesRollup) == PassFailType_::eFail) {
+                    if (MergeIn_ (di) == PassFailType_::eFail) {
                         Assert (false); //nyi - or maybe just bug since we have mapping so device goes into two different rollups?
                     }
                 }
             }
-            auto MapAggregatedAttachments2Rollups_ (const RolledUpNetworks& useRolledUpNetworks, const Mapping<GUID, NetworkAttachmentInfo>& nats) -> Mapping<GUID, NetworkAttachmentInfo>
+            auto MapAggregatedAttachments2Rollups_ (const Mapping<GUID, NetworkAttachmentInfo>& nats) -> Mapping<GUID, NetworkAttachmentInfo>
             {
                 Mapping<GUID, NetworkAttachmentInfo> result;
                 for (const auto& ni : nats) {
-                    result.Add (useRolledUpNetworks.MapAggregatedNetID2ItsRollupID (ni.fKey), ni.fValue);
+                    result.Add (fUseRolledUpNetworks.MapAggregatedNetID2ItsRollupID (ni.fKey), ni.fValue);
                 }
                 return result;
             };
@@ -1437,11 +1447,12 @@ namespace {
             }
 
         private:
-            DeviceKeyedCollection_ fStarterRollups_;
-            DeviceKeyedCollection_ fRolledUpDevices;
-            DeviceKeyedCollection_ fRawDevices_;
-            Mapping<GUID, GUID>    fRaw2RollupIDMap_; // each aggregate deviceid is mapped to at most one rollup id)
-
+            DeviceKeyedCollection_    fStarterRollups_;
+            DeviceKeyedCollection_    fRolledUpDevices;
+            DeviceKeyedCollection_    fRawDevices_;
+            Mapping<GUID, GUID>       fRaw2RollupIDMap_; // each aggregate deviceid is mapped to at most one rollup id)
+            RolledUpNetworks          fUseRolledUpNetworks;
+            RolledUpNetworkInterfaces fUseNetworkInterfaceRollups;
             // sRolledUpDevicesSoFar_: keep a cache of the rolled up devices so far, just
             // as a slight performance tweek
             static Synchronized<optional<RolledUpDevices>> sRolledUpDevicesSoFar_;

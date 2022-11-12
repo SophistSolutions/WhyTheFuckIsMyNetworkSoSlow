@@ -1,5 +1,7 @@
-Cleanup last checkin of rollup code (esp device rollup of networks and interfaces)
+----
 
+sporadic spinning issue on hercules (1.0 CPU); build from github actions doe sthis (but maybe not immediately).
+TEST build from my source code with logging on.
 
 ---
 	// USE CACHEABILIYT HEADERS ON RESULTS FROM WSAPI that are IMMUTABLE, SAYING THEY CNA BE CACHED (largely forever) - but maybe say 1 day).
@@ -8,7 +10,9 @@ Cleanup last checkin of rollup code (esp device rollup of networks and interface
 	STILL need 'historicalSnapshot' cuz (bette rdocument) means its NOT a rollup (could have used noARollup as the name). Thoguh a little weird
 	cuz in a ssense, everything is a rollup?? MAYBE dont need that flag either.
 
-
+---
+Show NetworkInterface information in GUI once we have fetch of the network interface objects working
+(COULD DO BEFORE OR AFTER THE CACHE BY ID STUFF)
 ---
 
 	IN HMTL, at least in GUI , show network interface objects - both rollups and snapshots
@@ -57,11 +61,6 @@ SB			"aggregateGatewayHardwareAddresses" : [
 ----
 >>> Review code cehcking in. I think its mostly OK. But verify I do a sensible job producing same answer incremntally as when starting up from scratch.
   And handling CONFLICTS in specs. Been a while - must consider.
-
-----
-
-sporadic spinning issue on hercules (1.0 CPU); build from github actions doe sthis (but maybe not immediately).
-TEST build from my source code with logging on.
 
 	---
 	from commandline - assure if I delete record from usersettings, it disappears from aggregated networks too immediately.and from database
