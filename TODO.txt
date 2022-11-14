@@ -3,6 +3,9 @@
 sporadic spinning issue on hercules (1.0 CPU); build from github actions doe sthis (but maybe not immediately).
 TEST build from my source code with logging on.
 
+----
+	>>> Add DEVICETYPE COLLECTOR and include that type on devices that collect data (are WTF data sources).
+
 ---
 	// USE CACHEABILIYT HEADERS ON RESULTS FROM WSAPI that are IMMUTABLE, SAYING THEY CNA BE CACHED (largely forever) - but maybe say 1 day).
 	// so for snapshots that are old - they can be cahced long time. For snapshots that are actuively being updated, say not cachable or just a few seconds\
@@ -11,14 +14,17 @@ TEST build from my source code with logging on.
 	cuz in a ssense, everything is a rollup?? MAYBE dont need that flag either.
 
 ---
+UI
+       IN NEWTWORK DETAILS PAGE
+               "Gateway (IP / Hardware)" probably should have Address appended to label (like External IP Address)
+
+
+---
 Show NetworkInterface information in GUI once we have fetch of the network interface objects working
 (COULD DO BEFORE OR AFTER THE CACHE BY ID STUFF)
 ---
 
 	IN HMTL, at least in GUI , show network interface objects - both rollups and snapshots
-
-----
-	>>> Add DEVICETYPE COLLECTOR and include that type on devices that collect data (are WTF data sources).
 
 ----
 
