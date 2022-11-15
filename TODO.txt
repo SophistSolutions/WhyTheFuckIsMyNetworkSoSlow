@@ -1,7 +1,9 @@
-----
 
 sporadic spinning issue on hercules (1.0 CPU); build from github actions doe sthis (but maybe not immediately).
 TEST build from my source code with logging on.
+
+	(SO FAR CANNOT REPRODUCE - TRY BUILD FROM GITHUB ACTIONS AGAIN)
+	(TEST MORE AND THEN CLOSE)
 
 ----
 	>>> Add DEVICETYPE COLLECTOR and include that type on devices that collect data (are WTF data sources).
