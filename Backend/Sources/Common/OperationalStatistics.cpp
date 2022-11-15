@@ -107,7 +107,7 @@ auto OperationalStatisticsMgr::GetStatistics () const -> Statistics
     }();
 
     {
-        Iterable<DurationSecondsType> apiTimes = allApplicable.Select<DurationSecondsType> ([] (const Rec_& r) -> optional<DurationSecondsType> { if (r.fKind == Rec_::Kind::eAPI) return r.fDuration; return nullopt; });
+        Iterable<DurationSecondsType> apiTimes = allApplicable.Map<DurationSecondsType> ([] (const Rec_& r) -> optional<DurationSecondsType> { if (r.fKind == Rec_::Kind::eAPI) return r.fDuration; return nullopt; });
         if (not apiTimes.empty ()) {
             result.fRecentAPI.fMeanDuration   = Duration{Math::Mean (apiTimes)};
             result.fRecentAPI.fMedianDuration = Duration{Math::Median (apiTimes)};
@@ -117,31 +117,31 @@ auto OperationalStatisticsMgr::GetStatistics () const -> Statistics
         result.fRecentAPI.fErrors         = static_cast<unsigned int> (allApplicable.Count ([] (const Rec_& r) { return r.fKind == Rec_::Kind::eAPIError; }));
     }
     {
-        Iterable<float> openWSConnections = allApplicable.Select<float> ([] (const Rec_& r) -> optional<float> { if (r.fKind == Rec_::Kind::eAPIOpenConnectionCount) return static_cast<float> (r.fLength); return nullopt; });
+        Iterable<float> openWSConnections = allApplicable.Map<float> ([] (const Rec_& r) -> optional<float> { if (r.fKind == Rec_::Kind::eAPIOpenConnectionCount) return static_cast<float> (r.fLength); return nullopt; });
         if (not openWSConnections.empty ()) {
             result.fRecentAPI.fMedianWebServerConnections = Math::Median (openWSConnections);
         }
     }
     {
-        Iterable<float> processingWSConnections = allApplicable.Select<float> ([] (const Rec_& r) -> optional<float> { if (r.fKind == Rec_::Kind::eAPIOpenConnectionCount) return static_cast<float> (r.fLength); return nullopt; });
+        Iterable<float> processingWSConnections = allApplicable.Map<float> ([] (const Rec_& r) -> optional<float> { if (r.fKind == Rec_::Kind::eAPIOpenConnectionCount) return static_cast<float> (r.fLength); return nullopt; });
         if (not processingWSConnections.empty ()) {
             result.fRecentAPI.fMedianProcessingWebServerConnections = Math::Median (processingWSConnections);
         }
     }
     {
-        Iterable<float> activeRunningWSAPITasks = allApplicable.Select<float> ([] (const Rec_& r) -> optional<float> { if (r.fKind == Rec_::Kind::eAPIActiveRunningTasks) return static_cast<float> (r.fLength); return nullopt; });
+        Iterable<float> activeRunningWSAPITasks = allApplicable.Map<float> ([] (const Rec_& r) -> optional<float> { if (r.fKind == Rec_::Kind::eAPIActiveRunningTasks) return static_cast<float> (r.fLength); return nullopt; });
         if (not activeRunningWSAPITasks.empty ()) {
             result.fRecentAPI.fMedianRunningAPITasks = Math::Median (activeRunningWSAPITasks);
         }
     }
     {
-        Iterable<float> activeWSConnections = allApplicable.Select<float> ([] (const Rec_& r) -> optional<float> { if (r.fKind == Rec_::Kind::eAPIOpenConnectionCount) return static_cast<float> (r.fLength); return nullopt; });
+        Iterable<float> activeWSConnections = allApplicable.Map<float> ([] (const Rec_& r) -> optional<float> { if (r.fKind == Rec_::Kind::eAPIOpenConnectionCount) return static_cast<float> (r.fLength); return nullopt; });
         if (not activeWSConnections.empty ()) {
             result.fRecentAPI.fMedianProcessingWebServerConnections = Math::Median (activeWSConnections);
         }
     }
     {
-        Iterable<DurationSecondsType> dbReadTimes = allApplicable.Select<DurationSecondsType> ([] (const Rec_& r) -> optional<DurationSecondsType> { if (r.fKind == Rec_::Kind::eDBRead) return r.fDuration; return nullopt; });
+        Iterable<DurationSecondsType> dbReadTimes = allApplicable.Map<DurationSecondsType> ([] (const Rec_& r) -> optional<DurationSecondsType> { if (r.fKind == Rec_::Kind::eDBRead) return r.fDuration; return nullopt; });
         if (not dbReadTimes.empty ()) {
             result.fRecentDB.fMeanReadDuration   = Duration{dbReadTimes.MeanValue ()};
             result.fRecentDB.fMedianReadDuration = Duration{dbReadTimes.MedianValue ()};
@@ -150,7 +150,7 @@ auto OperationalStatisticsMgr::GetStatistics () const -> Statistics
         result.fRecentDB.fReads = static_cast<unsigned int> (dbReadTimes.length ());
     }
     {
-        Iterable<DurationSecondsType> dbWriteTimes = allApplicable.Select<DurationSecondsType> ([] (const Rec_& r) -> optional<DurationSecondsType> { if (r.fKind == Rec_::Kind::eDBWrite) return r.fDuration; return nullopt; });
+        Iterable<DurationSecondsType> dbWriteTimes = allApplicable.Map<DurationSecondsType> ([] (const Rec_& r) -> optional<DurationSecondsType> { if (r.fKind == Rec_::Kind::eDBWrite) return r.fDuration; return nullopt; });
         if (not dbWriteTimes.empty ()) {
             result.fRecentDB.fMeanWriteDuration   = Duration{dbWriteTimes.MeanValue ()};
             result.fRecentDB.fMedianWriteDuration = Duration{dbWriteTimes.MedianValue ()};

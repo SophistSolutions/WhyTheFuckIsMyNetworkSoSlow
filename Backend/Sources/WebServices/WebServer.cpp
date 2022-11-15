@@ -232,12 +232,10 @@ public:
               Route{
                   L"api/v1/devices(/?)"_RegEx,
                   [this] (Message* m) {
-                      constexpr bool                              kDefault_FilterRunningOnly_{true};
                       ActiveCallCounter_                          acc{*this};
                       Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (&m->rwRequest ());
 
                       DbgTrace (L"args=%s", Characters::ToString (args).c_str ());
-                      bool                          filterRunningOnly = args.LookupValue (L"filter-only-running"sv, DataExchange::VariantValue{kDefault_FilterRunningOnly_}).As<bool> ();
                       optional<DeviceSortParamters> sort;
                       if (auto o = args.Lookup (L"sort"sv)) {
                           ClientErrorException::TreatExceptionsAsClientError ([&] () {
@@ -282,14 +280,12 @@ public:
                   L"api/v1/network-interfaces(/?)"_RegEx,
                   [this] (Message* m) {
                       ActiveCallCounter_                          acc{*this};
-                      constexpr bool                              kDefault_FilterRunningOnly_{true};
                       Mapping<String, DataExchange::VariantValue> args              = PickoutParamValues (&m->rwRequest ());
-                      bool                                        filterRunningOnly = args.LookupValue (L"filter-only-running"sv, DataExchange::VariantValue{kDefault_FilterRunningOnly_}).As<bool> ();
                       if (args.LookupValue (L"recurse"sv, false).As<bool> ()) {
-                          WriteResponse (&m->rwResponse (), kNetworkInterfaces_, NetworkInterface::kMapper.FromObject (fWSAPI_->GetNetworkInterfaces_Recurse (filterRunningOnly)));
+                          WriteResponse (&m->rwResponse (), kNetworkInterfaces_, NetworkInterface::kMapper.FromObject (fWSAPI_->GetNetworkInterfaces_Recurse ()));
                       }
                       else {
-                          WriteResponse (&m->rwResponse (), kNetworkInterfaces_, kBasicsMapper_.FromObject (fWSAPI_->GetNetworkInterfaces (filterRunningOnly)));
+                          WriteResponse (&m->rwResponse (), kNetworkInterfaces_, kBasicsMapper_.FromObject (fWSAPI_->GetNetworkInterfaces ()));
                       }
                   }},
               Route{
@@ -534,9 +530,9 @@ const WebServiceMethodDescription WebServer::Rep_::kNetworkInterfaces_{
     Set<String>{IO::Network::HTTP::Methods::kGet},
     DataExchange::InternetMediaTypes::kJSON,
     {},
-    Sequence<String>{L"curl http://localhost/api/v1/network-interfaces", L"curl http://localhost/api/v1/network-interfaces?recurse=true"sv, L"curl http://localhost/api/v1/network-interfaces?filter-only-running=true"sv},
+    Sequence<String>{L"curl http://localhost/api/v1/network-interfaces", L"curl http://localhost/api/v1/network-interfaces?recurse=true"sv},
     Sequence<String>{L"Fetch the list of known Network Interfaces."sv,
-                     L"[filter-only-running=true|false]?, recurse=true|false]?"sv},
+                     L"[recurse=true|false]?"sv},
 };
 const WebServiceMethodDescription WebServer::Rep_::kOperations_{
     L"api/v1/operations"sv,

@@ -229,11 +229,9 @@ tuple<Memory::BLOB, optional<DataExchange::InternetMediaType>> WSImpl::GetBLOB (
 Sequence<String> WSImpl::GetDevices (const optional<Set<GUID>>& ids, const optional<DeviceSortParamters>& sort) const
 {
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
-    Sequence<String>                                result;
-    for (const BackendApp::WebServices::Device& n : GetDevices_Recurse (ids, sort)) {
-        result += Characters::ToString (n.fGUID);
-    }
-    return result;
+    return GetDevices_Recurse (ids, sort).Map<String, Sequence<String>> ([] (const WebServices::Device& n) {
+        return n.fGUID.As<String> ();
+    });
 }
 
 Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const optional<Set<GUID>>& ids, const optional<DeviceSortParamters>& sort) const
@@ -436,7 +434,7 @@ void WSImpl::PatchDevice (const String& id, const JSONPATCH::OperationItemsType&
                 }
                 else if (op.path == L"/userOverrides/tags") {
                     // for now only support replacing the whole array at a time
-                    updateVal.fTags = Set<String>{op.value->As<Sequence<VariantValue>> ().Select<String> ([] (const VariantValue& vv) { return vv.As<String> (); })};
+                    updateVal.fTags = op.value->As<Sequence<VariantValue>> ().Map<String, Set<String>> ([] (const VariantValue& vv) { return vv.As<String> (); });
                 }
                 else {
                     Execution::Throw (ClientErrorException{L"JSON-Patch add of unsupported op.path"_k});
@@ -491,7 +489,7 @@ Sequence<String> WSImpl::GetNetworks (const optional<Set<GUID>>& ids) const
         return result;
     }
     else {
-        return Sequence<String>{IntegratedModel::Mgr::sThe.GetNetworks ().Select<String> ([] (const auto& n) { return n.fGUID.ToString (); })};
+        return Sequence<String>{IntegratedModel::Mgr::sThe.GetNetworks ().Map<String> ([] (const auto& n) { return n.fGUID.ToString (); })};
     }
 }
 
@@ -546,15 +544,15 @@ void WSImpl::PatchNetwork (const String& id, const JSONPATCH::OperationItemsType
                 }
                 else if (op.path == L"/userOverrides/tags") {
                     // for now only support replacing the whole array at a time
-                    updateVal.fTags = Set<String>{op.value->As<Sequence<VariantValue>> ().Select<String> ([] (const VariantValue& vv) { return vv.As<String> (); })};
+                    updateVal.fTags = Set<String>{op.value->As<Sequence<VariantValue>> ().Map<String> ([] (const VariantValue& vv) { return vv.As<String> (); })};
                 }
                 else if (op.path == L"/userOverrides/aggregateFingerprints") {
                     // for now only support replacing the whole array at a time
-                    updateVal.fAggregateFingerprints = Set<GUID>{op.value->As<Sequence<VariantValue>> ().Select<GUID> ([] (const VariantValue& vv) { return vv.As<String> (); })};
+                    updateVal.fAggregateFingerprints = Set<GUID>{op.value->As<Sequence<VariantValue>> ().Map<GUID> ([] (const VariantValue& vv) { return vv.As<String> (); })};
                 }
                 else if (op.path == L"/userOverrides/aggregateGatewayHardwareAddresses") {
                     // for now only support replacing the whole array at a time
-                    updateVal.fAggregateGatewayHardwareAddresses = Set<String>{op.value->As<Sequence<VariantValue>> ().Select<String> ([] (const VariantValue& vv) { return vv.As<String> (); })};
+                    updateVal.fAggregateGatewayHardwareAddresses = Set<String>{op.value->As<Sequence<VariantValue>> ().Map<String> ([] (const VariantValue& vv) { return vv.As<String> (); })};
                 }
                 else {
                     Execution::Throw (ClientErrorException{L"JSON-Patch add of unsupported op.path"_k});
@@ -598,28 +596,20 @@ void WSImpl::PatchNetwork (const String& id, const JSONPATCH::OperationItemsType
     }
 }
 
-Collection<String> WSImpl::GetNetworkInterfaces (bool filterRunningOnly) const
+Collection<String> WSImpl::GetNetworkInterfaces () const
 {
     Debug::TimingTrace                              ttrc{L"WSImpl::GetNetworkInterfaces_Recurse", 0.1};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
-    return Collection<String>{IntegratedModel::Mgr::sThe.GetNetworkInterfaces ().Select<String> ([=] (const auto& ni) -> optional<String> {
-        if (ni.fStatus.has_value () and not ni.fStatus->Contains (IO::Network::Interface::Status::eConnected)) {
-            return nullopt;
-        }
+    return IntegratedModel::Mgr::sThe.GetNetworkInterfaces ().Map<String, Collection<String>> ([=] (const auto& ni) -> optional<String> {
         return ni.fGUID.ToString ();
-    })};
+    });
 }
 
-Collection<BackendApp::WebServices::NetworkInterface> WSImpl::GetNetworkInterfaces_Recurse (bool filterRunningOnly) const
+Collection<BackendApp::WebServices::NetworkInterface> WSImpl::GetNetworkInterfaces_Recurse () const
 {
     Debug::TimingTrace                              ttrc{L"WSImpl::GetNetworkInterfaces_Recurse", 0.1};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
-    return IntegratedModel::Mgr::sThe.GetNetworkInterfaces ().Select<NetworkInterface> ([=] (const auto& ni) -> optional<NetworkInterface> {
-        if (ni.fStatus.has_value () and not ni.fStatus->Contains (IO::Network::Interface::Status::eConnected)) {
-            return nullopt;
-        }
-        return ni;
-    });
+    return IntegratedModel::Mgr::sThe.GetNetworkInterfaces ();
 }
 
 NetworkInterface WSImpl::GetNetworkInterface (const String& id) const

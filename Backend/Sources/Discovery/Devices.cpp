@@ -804,7 +804,7 @@ namespace {
                     });
                 }
             }
-            newDev.fAttachedInterfaces = Set<GUID>{Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ().Select<GUID> ([] (auto iFace) { return iFace.fGUID; })};
+            newDev.fAttachedInterfaces = Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ().Map<GUID, Set<GUID>> ([] (const auto& iFace) { return iFace.fGUID; });
 
             if (newDev.GetHardwareAddresses ().empty ()) {
                 DbgTrace ("no hardware address, so returning no 'MyDevice'");
@@ -1638,12 +1638,8 @@ void Discovery::DevicesMgr::ReScan (const GUID& deviceID)
 
 VariantValue DevicesMgr::ScanAndReturnReport (const InternetAddress& addr)
 {
-    Mapping<String, VariantValue> result;
-    Set<String>                   ports;
     PortScanResults               results = ScanPorts (addr, ScanOptions{ScanOptions::eFull});
-    for (const String& p : results.fDiscoveredOpenPorts) {
-        ports += p;
-    }
-    result.Add (L"openPorts", VariantValue{ports.Select<VariantValue> ([] (String i) { return VariantValue{i}; })});
+    Mapping<String, VariantValue> result;
+    result.Add (L"openPorts", VariantValue{results.fDiscoveredOpenPorts.Map<VariantValue> ([] (String i) { return VariantValue{i}; })});
     return VariantValue{result};
 }

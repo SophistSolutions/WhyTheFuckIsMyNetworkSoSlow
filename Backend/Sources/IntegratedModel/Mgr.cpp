@@ -55,12 +55,6 @@ using Stroika::Foundation::Common::GUID;
 using Stroika::Foundation::Traversal::Range;
 
 namespace {
-    // For now (as of 2021-07-18) NYI
-    // so dont write out, and dont merge from DB - only show current ones
-    constexpr bool kSupportPersistedNetworkInterfaces_{true};
-}
-
-namespace {
     URI TransformURL2LocalStorage_ (const URI& url)
     {
         Debug::TimingTrace ttrc{L"TransformURL2LocalStorage_", 0.1}; // sb very quick cuz we schedule url fetches for background
@@ -231,9 +225,9 @@ namespace {
         {
             Debug::TimingTrace ttrc{L"DiscoveryWrapper_::GetDevices_", .1};
             // Fetch (UNSORTED) list of devices
-            return Sequence<Device>{Discovery::DevicesMgr::sThe.GetActiveDevices ().Select<Device> ([] (const Discovery::Device& d) {
+            return Discovery::DevicesMgr::sThe.GetActiveDevices ().Map<Device, Sequence<Device>> ([] (const Discovery::Device& d) {
                 return Discovery2Model_ (d);
-            })};
+            });
         }
         /**
          * Map all the 'Discovery::Network' objects to 'Model::Network' objects.
@@ -243,9 +237,9 @@ namespace {
         Sequence<Network> GetNetworks_ ()
         {
             Debug::TimingTrace ttrc{L"DiscoveryWrapper_::GetNetworks_", 0.1};
-            Sequence<Network>  result = Sequence<Network>{Discovery::NetworksMgr::sThe.CollectActiveNetworks ().Select<Network> ([] (const Discovery::Network& n) {
+            Sequence<Network>  result = Discovery::NetworksMgr::sThe.CollectActiveNetworks ().Map<Network, Sequence<Network>> ([] (const Discovery::Network& n) {
                 return Discovery2Model_ (n);
-            })};
+            });
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
             DbgTrace (L"returns: %s", Characters::ToString (result).c_str ());
 #endif
@@ -260,9 +254,9 @@ namespace {
         Sequence<NetworkInterface> GetNetworkInterfaces_ ()
         {
             Debug::TimingTrace         ttrc{L"DiscoveryWrapper_::GetNetworkInterfaces_", 0.1};
-            Sequence<NetworkInterface> result = Sequence<NetworkInterface>{Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ().Select<NetworkInterface> ([] (const Discovery::NetworkInterface& n) {
+            Sequence<NetworkInterface> result = Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ().Map<NetworkInterface, Sequence<NetworkInterface>> ([] (const Discovery::NetworkInterface& n) {
                 return Discovery2Model_ (n);
-            })};
+            });
 
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
             DbgTrace (L"returns: %s", Characters::ToString (result).c_str ());
@@ -299,7 +293,7 @@ namespace {
             try {
                 Debug::TimingTrace ttrc{L"...load of fCachedDeviceUserSettings_ from database ", 1};
                 lock_guard         lock{this->fDBConnectionPtr_};
-                fCachedDeviceUserSettings_.store (Mapping<GUID, Model::Device::UserOverridesType>{fDeviceUserSettingsTableConnection_.rwget ().cref ()->GetAll ().Select<KeyValuePair<GUID, Model::Device::UserOverridesType>> ([] (const auto& i) { return KeyValuePair<GUID, Model::Device::UserOverridesType>{i.fDeviceID, i.fUserSettings}; })});
+                fCachedDeviceUserSettings_.store (Mapping<GUID, Model::Device::UserOverridesType>{fDeviceUserSettingsTableConnection_.rwget ().cref ()->GetAll ().Map<KeyValuePair<GUID, Model::Device::UserOverridesType>> ([] (const auto& i) { return KeyValuePair<GUID, Model::Device::UserOverridesType>{i.fDeviceID, i.fUserSettings}; })});
             }
             catch (...) {
                 Logger::sThe.Log (Logger::eCriticalError, L"Failed to load fCachedDeviceUserSettings_ from db: %s", Characters::ToString (current_exception ()).c_str ());
@@ -308,7 +302,7 @@ namespace {
             try {
                 Debug::TimingTrace ttrc{L"...load of fCachedNetworkUserSettings_ from database ", 1};
                 lock_guard         lock{this->fDBConnectionPtr_};
-                fCachedNetworkUserSettings_.store (Mapping<GUID, Model::Network::UserOverridesType>{fNetworkUserSettingsTableConnection_.rwget ().cref ()->GetAll ().Select<KeyValuePair<GUID, Model::Network::UserOverridesType>> ([] (const auto& i) { return KeyValuePair<GUID, Model::Network::UserOverridesType>{i.fNetworkID, i.fUserSettings}; })});
+                fCachedNetworkUserSettings_.store (Mapping<GUID, Model::Network::UserOverridesType>{fNetworkUserSettingsTableConnection_.rwget ().cref ()->GetAll ().Map<KeyValuePair<GUID, Model::Network::UserOverridesType>> ([] (const auto& i) { return KeyValuePair<GUID, Model::Network::UserOverridesType>{i.fNetworkID, i.fUserSettings}; })});
             }
             catch (...) {
                 Logger::sThe.Log (Logger::eCriticalError, L"Failed to load fCachedNetworkUserSettings_ from db: %s", Characters::ToString (current_exception ()).c_str ());
@@ -664,38 +658,32 @@ namespace {
                     // periodically write the latest discovered data to the database
 
                     // UPDATE fDBNetworkInterfaces_ INCREMENTALLY to reflect reflect these merges
-                    for (auto ni : DiscoveryWrapper_::GetNetworkInterfaces_ ()) {
+                    DiscoveryWrapper_::GetNetworkInterfaces_ ().Apply ([this] (const Model::NetworkInterface& ni) {
                         lock_guard lock{this->fDBConnectionPtr_};
                         Assert (ni.fAggregatesReversibly == nullopt); // dont write these summary values
                         fNetworkInterfaceTableConnection_->AddOrUpdate (ni);
                         fDBNetworkInterfaces_.rwget ()->Add (ni);
-                    }
+                    });
 
                     // UPDATE fDBNetworks_ INCREMENTALLY to reflect reflect these merges
-                    for (auto ni : DiscoveryWrapper_::GetNetworks_ ()) {
-                        if (not kSupportPersistedNetworkInterfaces_) {
-                            ni.fAttachedInterfaces.clear ();
-                        }
-                        Assert (ni.fSeen); // don't track/write items which have never been seen
+                    DiscoveryWrapper_::GetNetworks_ ().Apply ([this] (const Model::Network& n) {
+                        Assert (n.fSeen); // don't track/write items which have never been seen
                         lock_guard lock{this->fDBConnectionPtr_};
-                        Assert (ni.fAggregatesReversibly == nullopt); // dont write these summary values
-                        fNetworkTableConnection_->AddOrUpdate (ni);
-                        fDBNetworks_.rwget ()->Add (ni);
-                    }
+                        Assert (n.fAggregatesReversibly == nullopt); // dont write these summary values
+                        fNetworkTableConnection_->AddOrUpdate (n);
+                        fDBNetworks_.rwget ()->Add (n);
+                    });
 
                     // UPDATE fDBDevices_ INCREMENTALLY to reflect reflect these merges
-                    for (auto di : DiscoveryWrapper_::GetDevices_ ()) {
-                        Assert (di.fSeen.EverSeen ());
-                        if (not kSupportPersistedNetworkInterfaces_) {
-                            di.fAttachedNetworkInterfaces = nullopt;
-                        }
-                        Assert (di.fSeen.EverSeen ());         // don't track/write items which have never been seen
-                        Assert (di.fUserOverrides == nullopt); // tracked on rollup devices, not snapshot devices
+                    DiscoveryWrapper_::GetDevices_ ().Apply ([this] (const Model::Device& d) {
+                        Assert (d.fSeen.EverSeen ());
+                        Assert (d.fSeen.EverSeen ());         // don't track/write items which have never been seen
+                        Assert (d.fUserOverrides == nullopt); // tracked on rollup devices, not snapshot devices
                         lock_guard lock{this->fDBConnectionPtr_};
-                        Assert (di.fAggregatesReversibly == nullopt); // dont write these summary values
-                        auto rec2Update = fDB_.AddOrMergeUpdate (fDeviceTableConnection_.get (), di);
+                        Assert (d.fAggregatesReversibly == nullopt); // dont write these summary values
+                        auto rec2Update = fDB_.AddOrMergeUpdate (fDeviceTableConnection_.get (), d);
                         fDBDevices_.rwget ()->Add (rec2Update);
-                    }
+                    });
 
                     // only update periodically
                     Execution::Sleep (30s);
@@ -775,10 +763,10 @@ namespace {
              */
             nonvirtual void MergeIn (const Iterable<NetworkInterface>& netInterfaces2MergeIn)
             {
-                fRawNetworkInterfaces_ += netInterfaces2MergeIn;
-                for (const NetworkInterface& n : netInterfaces2MergeIn) {
+                netInterfaces2MergeIn.Apply ([this] (const NetworkInterface& n) {
+                    fRawNetworkInterfaces_ += n;
                     MergeIn_ (n);
-                }
+                });
             }
 
         public:
@@ -846,11 +834,7 @@ namespace {
             }
             nonvirtual auto MapAggregatedNetInterfaceID2ItsRollupID (const Set<GUID>& netIDs) const -> Set<GUID>
             {
-                Set<GUID> result;
-                for (const auto& i : netIDs) {
-                    result += MapAggregatedNetInterfaceID2ItsRollupID (i);
-                }
-                return result;
+                return netIDs.Map<GUID, Set<GUID>> ([this] (const auto& i) { return MapAggregatedNetInterfaceID2ItsRollupID (i); });
             }
 
         private:
@@ -888,7 +872,7 @@ namespace {
             RolledUpNetworks (const Iterable<Network>& nets2MergeIn, const Mapping<GUID, Network::UserOverridesType>& userOverrides, const RolledUpNetworkInterfaces& useNetworkInterfaceRollups)
                 : fUseNetworkInterfaceRollups{useNetworkInterfaceRollups}
             {
-                fStarterRollups_ = userOverrides.Select<Network> (
+                fStarterRollups_ = userOverrides.Map<Network> (
                     [] (const auto& guid2UOTPair) -> Network {
                         Network nw;
                         nw.fGUID          = guid2UOTPair.fKey;
@@ -918,7 +902,7 @@ namespace {
         public:
             nonvirtual void ResetUserOverrides (const Mapping<GUID, Network::UserOverridesType>& userOverrides)
             {
-                fStarterRollups_ = userOverrides.Select<Network> (
+                fStarterRollups_ = userOverrides.Map<Network> (
                     [] (const auto& guid2UOTPair) -> Network {
                         Network nw;
                         nw.fGUID          = guid2UOTPair.fKey;
@@ -1169,11 +1153,11 @@ namespace {
                 fMapAggregatedNetID2RollupID_.clear ();
                 fMapFingerprint2RollupID.clear ();
                 fRolledUpNetworks_ += fStarterRollups_;
-                for (const auto& ni : fRawNetworks_) {
-                    if (MergeIn_ (ni) == PassFailType_::eFail) {
-                        AddNewIn_ (ni, ni.GenerateFingerprintFromProperties ());
+                fRawNetworks_.Apply ([this] (const Network& n) {
+                    if (MergeIn_ (n) == PassFailType_::eFail) {
+                        AddNewIn_ (n, n.GenerateFingerprintFromProperties ());
                     }
-                }
+                });
             }
 
         private:
@@ -1202,7 +1186,7 @@ namespace {
                 : fUseRolledUpNetworks{useRolledUpNetworks}
                 , fUseNetworkInterfaceRollups{useNetworkInterfaceRollups}
             {
-                fStarterRollups_ = userOverrides.Select<Device> (
+                fStarterRollups_ = userOverrides.Map<Device> (
                     [] (const auto& guid2UOTPair) -> Device {
                         Device d;
                         d.fGUID          = guid2UOTPair.fKey;
@@ -1233,7 +1217,7 @@ namespace {
             nonvirtual void ResetUserOverrides (const Mapping<GUID, Device::UserOverridesType>& userOverrides)
             {
                 RolledUpNetworkInterfaces networkInterfacesRollup = RolledUpNetworkInterfaces::GetCached ();
-                fStarterRollups_                                  = userOverrides.Select<Device> (
+                fStarterRollups_                                  = userOverrides.Map<Device> (
                     [] (const auto& guid2UOTPair) -> Device {
                         Device d;
                         d.fGUID          = guid2UOTPair.fKey;
@@ -1523,7 +1507,7 @@ void IntegratedModel::Mgr::SetDeviceUserSettings (const Common::GUID& id, const 
 
 std::optional<GUID> IntegratedModel::Mgr::GetCorrespondingDynamicDeviceID (const GUID& id) const
 {
-    Set<GUID> dynamicDevices{Discovery::DevicesMgr::sThe.GetActiveDevices ().Select<GUID> ([] (const auto& d) { return d.fGUID; })};
+    Set<GUID> dynamicDevices{Discovery::DevicesMgr::sThe.GetActiveDevices ().Map<GUID> ([] (const auto& d) { return d.fGUID; })};
     if (dynamicDevices.Contains (id)) {
         return id;
     }

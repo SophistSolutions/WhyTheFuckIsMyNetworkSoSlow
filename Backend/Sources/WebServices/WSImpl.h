@@ -39,8 +39,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
         virtual Sequence<Network>                                              GetNetworks_Recurse (const optional<Set<GUID>>& ids) const override;
         virtual Network                                                        GetNetwork (const String& id) const override;
         virtual void                                                           PatchNetwork (const String& id, const JSONPATCH::OperationItemsType& patchDoc) const override;
-        virtual Collection<String>                                             GetNetworkInterfaces (bool filterRunningOnly) const override;
-        virtual Collection<NetworkInterface>                                   GetNetworkInterfaces_Recurse (bool filterRunningOnly) const override;
+        virtual Collection<String>                                             GetNetworkInterfaces () const override;
+        virtual Collection<NetworkInterface>                                   GetNetworkInterfaces_Recurse () const override;
         virtual NetworkInterface                                               GetNetworkInterface (const String& id) const override;
         virtual double                                                         Operation_Ping (const String& address) const override;
         virtual Operations::TraceRouteResults                                  Operation_TraceRoute (const String& address, optional<bool> reverseDNSResults) const override;
