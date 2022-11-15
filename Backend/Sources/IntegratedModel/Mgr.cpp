@@ -1062,7 +1062,7 @@ namespace {
                 auto formerRollupID = fMapFingerprint2RollupID.Lookup (net2MergeInFingerprint);
                 if (formerRollupID) {
                     auto alreadyRolledUpNetwork = Memory::ValueOf (fRolledUpNetworks_.Lookup (*formerRollupID)); // must be in list because we keep those in sync here in this class
-                    if (ShouldRollupInto_ (net2MergeIn, net2MergeInFingerprint, alreadyRolledUpNetwork)) {
+                    if (ShouldRollupInto_CheckIsCompatibleWithTarget_ (net2MergeIn, net2MergeInFingerprint, alreadyRolledUpNetwork)) {
                         return make_tuple (alreadyRolledUpNetwork, PassFailType_::ePass);
                     }
                 }
@@ -1070,14 +1070,14 @@ namespace {
                 // different one, don't bother cuz have to recompute anyhow
                 if (not formerRollupID.has_value ()) {
                     for (const auto& ri : fRolledUpNetworks_) {
-                        if (ShouldRollupInto_ (net2MergeIn, net2MergeInFingerprint, ri)) {
+                        if (ShouldRollupInto_CheckIsCompatibleWithTarget_ (net2MergeIn, net2MergeInFingerprint, ri)) {
                             return make_tuple (ri, PassFailType_::ePass);
                         }
                     }
                 }
                 return make_tuple (nullopt, PassFailType_::eFail);
             }
-            bool ShouldRollupInto_ (const Network& net2MergeIn, const Network::FingerprintType& net2MergeInFingerprint, const Network& targetRollup)
+            bool ShouldRollupInto_CheckIsCompatibleWithTarget_ (const Network& net2MergeIn, const Network::FingerprintType& net2MergeInFingerprint, const Network& targetRollup)
             {
                 // @todo NO LONGER PAY ATTENTION TO faggarates... stuff - just use fUserOverrides
 
@@ -1091,7 +1091,7 @@ namespace {
                 if (targetRollup.fAggregatesIrreversibly and targetRollup.fAggregatesIrreversibly->Contains (net2MergeIn.fGUID)) {
                     return true;
                 }
-                // lose these checks if rollup combines them
+                // lose these checks if rollup combines them (or maybe lose the former ones - but we dont need both)
                 if (auto riu = targetRollup.fUserOverrides) {
                     if (riu->fAggregateFingerprints and riu->fAggregateFingerprints->Contains (net2MergeInFingerprint)) {
                         return true;
