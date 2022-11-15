@@ -280,7 +280,7 @@ public:
                   L"api/v1/network-interfaces(/?)"_RegEx,
                   [this] (Message* m) {
                       ActiveCallCounter_                          acc{*this};
-                      Mapping<String, DataExchange::VariantValue> args              = PickoutParamValues (&m->rwRequest ());
+                      Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (&m->rwRequest ());
                       if (args.LookupValue (L"recurse"sv, false).As<bool> ()) {
                           WriteResponse (&m->rwResponse (), kNetworkInterfaces_, NetworkInterface::kMapper.FromObject (fWSAPI_->GetNetworkInterfaces_Recurse ()));
                       }
