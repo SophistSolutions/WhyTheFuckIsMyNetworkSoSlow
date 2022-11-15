@@ -770,6 +770,36 @@ namespace {
             }
 
         public:
+            /*
+             *  Given a rollup network interface id, apply F to all the matching concrete interfaces.
+             *      \req rollupID is contained in this rollup object as a valid rollup id
+             */
+            nonvirtual Set<GUID> GetConcreteIDsForRollup (const GUID& rollupID)
+            {
+                Set<GUID>        result;
+                NetworkInterface rolledUpNI = Memory::ValueOf (fRolledUpNetworkInterfaces_.Lookup (rollupID));
+                if (rolledUpNI.fAggregatesReversibly) {
+                    result = *rolledUpNI.fAggregatesReversibly;
+                }
+                if (rolledUpNI.fAggregatesIrreversibly) {
+                    result += *rolledUpNI.fAggregatesIrreversibly;
+                }
+                return result;
+            }
+
+        public:
+            /**
+             *  \brief return the actual (concrete not rollup) NetworkInterface objects associated with the argument ids
+             * 
+             *      \req each concreteIDs is a valid concrete id contains in this rollup.
+             */
+            nonvirtual NetworkInterfaceCollection_ GetConcreteNeworkInterfaces (const Set<GUID>& concreteIDs)
+            {
+                Require (Set<GUID>{fRawNetworkInterfaces_.Keys ()}.ContainsAll (concreteIDs));
+                return fRawNetworkInterfaces_.Where ([&concreteIDs] (const auto& i) { return concreteIDs.Contains (i.fGUID); });
+            }
+
+        public:
             /**
              *  \note   \em Thread-Safety   <a href="Thread-Safety.md#Internally-Synchronized-Thread-Safety">Internally-Synchronized-Thread-Safety</a>
              */
