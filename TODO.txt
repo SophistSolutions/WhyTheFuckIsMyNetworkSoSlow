@@ -1,4 +1,29 @@
+maybe doing network interface rollup magic in wrong place
 
+INSTAED of (bad) in network interface??
+
+	In network rollup logic
+	
+	Check if ONLY source for network is of type (devixce internal) - then
+	be more flexible about combining if fingerprints are not too far off
+	
+	Or maybe just have one network for ALL that
+		ARE OF TYPE device-internal
+			and MAHBE matcha  few other criteria
+			(like from this collector ID).
+			
+
+
+
+
+
+
+
+
+
+
+
+---
 sporadic spinning issue on hercules (1.0 CPU); build from github actions doe sthis (but maybe not immediately).
 TEST build from my source code with logging on.
 
@@ -17,6 +42,10 @@ TEST build from my source code with logging on.
 		to the historical guys pretty much)
 .
 
+----
+
+	Model::NeworkInterface should not INHERIT from Stroika interface, but copy what makes sense and make it easy to convert.
+	Inherits too much trash; and ties API to internals of stroika inappropriately.
 ---
 UI
        IN NEWTWORK DETAILS PAGE
