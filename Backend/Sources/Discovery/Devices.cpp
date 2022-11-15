@@ -793,7 +793,8 @@ namespace {
 #endif
             DiscoveryInfo_ newDev;
             newDev.fNames.Add (Configuration::GetSystemConfiguration_ComputerNames ().fHostname, 200);
-            newDev.fTypes.Add (DeviceType::ePC); //tmphack @todo fix
+            newDev.fTypes += DeviceType::ePC; // not sure what this means, or if its the best place
+            newDev.fTypes += DeviceType::eWTFCollector;
             newDev.fThisDevice = true;
             SystemInterfacesMgr interfacesMgr;
             for (const Interface& i : interfacesMgr.GetAll ()) {

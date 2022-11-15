@@ -39,6 +39,7 @@ namespace Stroika::Foundation::Configuration {
             {WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::Device::DeviceType::eTablet, L"Tablet"},
             {WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::Device::DeviceType::eTV, L"TV"},
             {WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::Device::DeviceType::eVirtualMachine, L"Virtual-Machine"},
+            {WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::Device::DeviceType::eWTFCollector, L"WTFIMNSS-Collector"},
         }}};
 
     template <>

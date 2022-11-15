@@ -427,8 +427,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
             eTablet,
             eTV,
             eVirtualMachine,
+            eWTFCollector,
 
-            Stroika_Define_Enum_Bounds (eMediaPlayer, eVirtualMachine)
+            Stroika_Define_Enum_Bounds (eMediaPlayer, eWTFCollector)
         };
 
         /**

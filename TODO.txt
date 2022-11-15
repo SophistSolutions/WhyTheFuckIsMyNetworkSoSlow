@@ -5,15 +5,17 @@ TEST build from my source code with logging on.
 	(SO FAR CANNOT REPRODUCE - TRY BUILD FROM GITHUB ACTIONS AGAIN)
 	(TEST MORE AND THEN CLOSE)
 
-----
-	>>> Add DEVICETYPE COLLECTOR and include that type on devices that collect data (are WTF data sources).
-
 ---
 	// USE CACHEABILIYT HEADERS ON RESULTS FROM WSAPI that are IMMUTABLE, SAYING THEY CNA BE CACHED (largely forever) - but maybe say 1 day).
 	// so for snapshots that are old - they can be cahced long time. For snapshots that are actuively being updated, say not cachable or just a few seconds\
 	THEN can probably GET RID OF idPersistable attribute, since can be inferred from cachablity header intead (just better way to say same thign)
 	STILL need 'historicalSnapshot' cuz (bette rdocument) means its NOT a rollup (could have used noARollup as the name). Thoguh a little weird
 	cuz in a ssense, everything is a rollup?? MAYBE dont need that flag either.
+
+		PROBABLY DONT NEED EITHER FLAG - horizcatsnapshot - since equiv to == aggregatopns.isEmpty () and otheragg.isEmpty ();
+		MAYBE need flag saying 'ID-PERSISTENT'. Since only then do you know its an ID you can save in a database (which corresponds
+		to the historical guys pretty much)
+.
 
 ---
 UI

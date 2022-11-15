@@ -596,6 +596,8 @@ namespace {
             while (true) {
                 try {
                     // @todo Consider if we should do this logic in CTOR so we can lose the flag saying if we've started up...
+                    // advantage of keeping this way is we get to starting to accept commands sooner. BUt so many of those
+                    // commands we just need to reject cuz we aren't ready. UNSURE.
 
                     // load networks before devices because devices depend on networks but not the reverse
                     if (not netInterfaceSnapshotsLoaded.has_value ()) {
@@ -641,9 +643,9 @@ namespace {
                                 return nullopt;
                             };
                             auto all = fDeviceTableConnection_->GetAll (errorHandler);
-#if qDebug
-                            all.Apply ([] (const Model::Device& d) { Assert (!d.fUserOverrides); }); // tracked on rollup devices, not snapshot devices
-#endif
+                            if constexpr (qDebug) {
+                                all.Apply ([] (const Model::Device& d) { Assert (!d.fUserOverrides); }); // tracked on rollup devices, not snapshot devices
+                            }
                             deviceSnapshotsLoaded = static_cast<unsigned int> (all.size ());
                             fDBDevices_.store (DeviceKeyedCollection_{all}); // pre-load in memory copy with whatever we had stored in the database
                         }
@@ -942,11 +944,11 @@ namespace {
                 }
                 // shouldn't get past here - debug if/why this hapepns - see comments below
                 Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"MapAggregatedNetID2ItsRollupID failed to find netID=%s", Characters::ToString (netID).c_str ())};
-#if qDebug
-                for (const auto& i : fRolledUpNetworks_) {
-                    DbgTrace (L"rolledupNet=%s", Characters::ToString (i).c_str ());
+                if constexpr (qDebug) {
+                    for (const auto& i : fRolledUpNetworks_) {
+                        DbgTrace (L"rolledupNet=%s", Characters::ToString (i).c_str ());
+                    }
                 }
-#endif
                 Assert (false);     // @todo fix - because we guarantee each item rolled up exactly once - but happens sometimes on change of network - I think due to outdated device records referring to newer network not yet in this cache...
                 WeakAssert (false); // @todo fix - because we guarantee each item rolled up exactly once - but happens sometimes on change of network - I think due to outdated device records referring to newer network not yet in this cache...
                 return netID;
@@ -1022,7 +1024,6 @@ namespace {
                         }
                         return Memory::ValueOf (lk.load ());
                     }();
-                    // not sure we want to allow this? @todo consider throwing here or asserting out cuz nets rollup IDs would change after this
                     result.MergeIn (DiscoveryWrapper_::GetNetworks_ ());
                     sRolledUpNetworks_.store (result); // save here so we can update rollup networks instead of creating anew each time
                     return result;
