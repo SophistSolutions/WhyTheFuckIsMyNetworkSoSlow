@@ -192,6 +192,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         static const DataExchange::ObjectVariantMapper kMapper;
 
         /**
+         *  This code ensures that the resulting rollup has same GenerateFingerprintFromProperties () as instanceNetwork2Add.GenerateFingerprintFromProperties ()
          */
         static NetworkInterface Rollup (const optional<NetworkInterface>& previousRollupNetworkInterface, const NetworkInterface& instanceNetwork2Add);
     };
