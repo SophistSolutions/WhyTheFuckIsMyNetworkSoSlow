@@ -134,6 +134,189 @@ const ObjectVariantMapper Model::Manufacturer::kMapper = [] () {
 
 /*
  ********************************************************************************
+ **************************** Model::NetworkInterface ***************************
+ ********************************************************************************
+ */
+Model::NetworkInterface::NetworkInterface (const IO::Network::Interface& src)
+    : Interface{src}
+{
+}
+
+String NetworkInterface::ToString () const
+{
+    Characters::StringBuilder sb;
+    sb += L"{";
+    sb += L"GUID: " + Characters::ToString (fGUID) + L", ";
+    if (fAggregatesReversibly) {
+        sb += L"fAggregatesReversibly: " + Characters::ToString (fAggregatesReversibly) + L", ";
+    }
+    if (fAggregatesIrreversibly) {
+        sb += L"fAggregatesIrreversibly: " + Characters::ToString (fAggregatesIrreversibly) + L", ";
+    }
+    if (fIDPersistent) {
+        sb += L"fIDPersistent: " + Characters::ToString (fIDPersistent) + L", ";
+    }
+    if (fHistoricalSnapshot) {
+        sb += L"fHistoricalSnapshot: " + Characters::ToString (fHistoricalSnapshot) + L", ";
+    }
+    sb += Interface::ToString ().SafeSubString (1, -1);
+    sb += L"}";
+    return sb.str ();
+}
+
+auto NetworkInterface::GenerateFingerprintFromProperties () const -> FingerprintType
+{
+    StringBuilder sb;
+    sb += fInternalInterfaceID;
+    sb += L"/";
+    sb += fFriendlyName;
+    sb += L"/";
+    if (fDescription) {
+        sb += *fDescription;
+    }
+    sb += L"/";
+    if (fType) {
+        sb += Configuration::DefaultNames<NetworkInterface::Type>::k.GetName (*fType);
+    }
+    sb += L"/";
+    if (fHardwareAddress) {
+        sb += *fHardwareAddress;
+    }
+    sb += L"/";
+    // Could use other algorithms, but easiest to stick with MD5 for compat with 2.1.5 Stroika
+    return Cryptography::Digest::ComputeDigest<Cryptography::Digest::Algorithm::MD5> (sb.str ());
+}
+
+const ObjectVariantMapper NetworkInterface::kMapper = [] () {
+    ObjectVariantMapper mapper;
+
+    mapper.AddCommonType<NetworkInterface::Type> ();
+    mapper.AddCommonType<optional<NetworkInterface::Type>> ();
+    mapper.AddCommonType<InternetAddress> ();
+    mapper.AddCommonType<optional<InternetAddress>> ();
+    mapper.AddCommonType<Sequence<InternetAddress>> ();
+    mapper.AddCommonType<optional<Sequence<InternetAddress>>> ();
+
+    using IO::Network::CIDR;
+    mapper.AddCommonType<CIDR> ();
+    mapper.AddCommonType<Set<CIDR>> ();
+    mapper.AddCommonType<Collection<CIDR>> ();
+    mapper.AddCommonType<Collection<InternetAddress>> ();
+
+    mapper.AddCommonType<IO::Network::Interface::WirelessInfo::State> ();
+    mapper.AddCommonType<optional<IO::Network::Interface::WirelessInfo::State>> ();
+    mapper.AddCommonType<IO::Network::Interface::WirelessInfo::ConnectionMode> ();
+    mapper.AddCommonType<optional<IO::Network::Interface::WirelessInfo::ConnectionMode>> ();
+    mapper.AddCommonType<IO::Network::Interface::WirelessInfo::BSSType> ();
+    mapper.AddCommonType<optional<IO::Network::Interface::WirelessInfo::BSSType>> ();
+    mapper.AddCommonType<IO::Network::Interface::WirelessInfo::PhysicalConnectionType> ();
+    mapper.AddCommonType<optional<IO::Network::Interface::WirelessInfo::PhysicalConnectionType>> ();
+    mapper.AddCommonType<IO::Network::Interface::WirelessInfo::AuthAlgorithm> ();
+    mapper.AddCommonType<optional<IO::Network::Interface::WirelessInfo::AuthAlgorithm>> ();
+
+    mapper.AddClass<NetworkInterface::WirelessInfo> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+        {L"SSID", StructFieldMetaInfo{&NetworkInterface::WirelessInfo::fSSID}},
+        {L"state", StructFieldMetaInfo{&NetworkInterface::WirelessInfo::fState}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"connectionMode", StructFieldMetaInfo{&NetworkInterface::WirelessInfo::fConnectionMode}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"profileName", StructFieldMetaInfo{&NetworkInterface::WirelessInfo::fProfileName}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"BSSType", StructFieldMetaInfo{&NetworkInterface::WirelessInfo::fBSSType}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"MACAddress", StructFieldMetaInfo{&NetworkInterface::WirelessInfo::fMACAddress}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"physicalConnectionType", StructFieldMetaInfo{&NetworkInterface::WirelessInfo::fPhysicalConnectionType}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"signalQuality", StructFieldMetaInfo{&NetworkInterface::WirelessInfo::fSignalQuality}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"securityEnabled", StructFieldMetaInfo{&NetworkInterface::WirelessInfo::fSecurityEnabled}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"802.1XEnabled", StructFieldMetaInfo{&NetworkInterface::WirelessInfo::f8021XEnabled}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"authAlgorithm", StructFieldMetaInfo{&NetworkInterface::WirelessInfo::fAuthAlgorithm}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"cipher", StructFieldMetaInfo{&NetworkInterface::WirelessInfo::fCipher}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+    });
+    mapper.AddCommonType<optional<NetworkInterface::WirelessInfo>> ();
+    mapper.AddCommonType<NetworkInterface::Status> ();
+    mapper.AddCommonType<Set<NetworkInterface::Status>> ();
+    mapper.AddCommonType<optional<Set<NetworkInterface::Status>>> ();
+
+    mapper.AddCommonType<Set<GUID>> ();
+    mapper.AddCommonType<optional<Set<GUID>>> ();
+
+    {
+        mapper.AddClass<NetworkInterface> (initializer_list<ObjectVariantMapper::StructFieldInfo> {
+            {L"platformInterfaceID", StructFieldMetaInfo{&NetworkInterface::fInternalInterfaceID}},
+                {L"id", StructFieldMetaInfo{&NetworkInterface::fGUID}},
+                {L"friendlyName", StructFieldMetaInfo{&NetworkInterface::fFriendlyName}},
+                {L"description", StructFieldMetaInfo{&NetworkInterface::fDescription}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+                // fNetworkGUID INTENTIONALLY OMITTED because doesn't correspond to our network ID, misleading, and unhelpful
+                {L"type", StructFieldMetaInfo{&NetworkInterface::fType}},
+                {L"hardwareAddress", StructFieldMetaInfo{&NetworkInterface::fHardwareAddress}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+                {L"transmitSpeedBaud", StructFieldMetaInfo{&NetworkInterface::fTransmitSpeedBaud}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+                {L"receiveLinkSpeedBaud", StructFieldMetaInfo{&NetworkInterface::fReceiveLinkSpeedBaud}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+                //SEE OVERRIDE BELOW {L"boundAddressRanges", StructFieldMetaInfo{&NetworkInterface::fBindings.fAddressRanges}},
+                //SEE OVERRIDE BELOW {L"boundAddresses", StructFieldMetaInfo{&NetworkInterface::fBindings.fAddresses}},
+                {L"gateways", StructFieldMetaInfo{&NetworkInterface::fGateways}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+                {L"DNSServers", StructFieldMetaInfo{&NetworkInterface::fDNSServers}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+                {L"wirelessInformation", StructFieldMetaInfo{&NetworkInterface::fWirelessInfo}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+                {L"status", StructFieldMetaInfo{&NetworkInterface::fStatus}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+                {L"aggregatesReversibly"sv, StructFieldMetaInfo{&NetworkInterface::fAggregatesReversibly}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+                {L"aggregatesIrreversibly"sv, StructFieldMetaInfo{&NetworkInterface::fAggregatesIrreversibly}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+                {L"idIsPersistent"sv, StructFieldMetaInfo{&NetworkInterface::fIDPersistent}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+                {L"historicalSnapshot"sv, StructFieldMetaInfo{&NetworkInterface::fHistoricalSnapshot}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+#if qDebug
+                {L"debugProps", StructFieldMetaInfo{&NetworkInterface::fDebugProps}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+#endif
+        });
+        // StructFieldMetaInfo{} doesn't work with nested members - https://stackoverflow.com/questions/1929887/is-pointer-to-inner-struct-member-forbidden
+        ObjectVariantMapper::TypeMappingDetails originalTypeMapper = *mapper.GetTypeMappingRegistry ().Lookup (typeid (NetworkInterface));
+        mapper.Add<NetworkInterface> (
+            [=] (const ObjectVariantMapper& mapper, const NetworkInterface* obj) -> VariantValue {
+                Mapping<String, VariantValue> resultMap = originalTypeMapper.fFromObjectMapper (mapper, obj).As<Mapping<String, VariantValue>> ();
+                // @todo when we decompose this so we have our own (not just inherited from stroika) class can make bindings OPTIONAL and only show here if present.
+                // SIMULATE SORT OF - FOR NOW -- LGP 2022-11-04
+                if (not obj->fBindings.fAddressRanges.empty ()) {
+                    resultMap.Add (L"boundAddressRanges", mapper.FromObject (obj->fBindings.fAddressRanges));
+                }
+                if (not obj->fBindings.fAddresses.empty ()) {
+                    resultMap.Add (L"boundAddresses", mapper.FromObject (obj->fBindings.fAddresses));
+                }
+                return VariantValue{resultMap};
+            },
+            [=] (const ObjectVariantMapper& mapper, const VariantValue& d, NetworkInterface* intoObj) -> void {
+                originalTypeMapper.fToObjectMapper (mapper, d, intoObj);
+                Mapping<String, VariantValue> fromMap = d.As<Mapping<String, VariantValue>> ();
+                if (auto o = fromMap.Lookup (L"boundAddressRanges")) {
+                    intoObj->fBindings.fAddressRanges = mapper.ToObject<Containers::Collection<CIDR>> (*o);
+                }
+                if (auto o = fromMap.Lookup (L"boundAddresses")) {
+                    intoObj->fBindings.fAddresses = mapper.ToObject<Containers::Collection<InternetAddress>> (*o);
+                }
+            });
+    }
+    mapper.AddCommonType<Collection<NetworkInterface>> ();
+    return mapper;
+}();
+
+NetworkInterface NetworkInterface::Rollup (const optional<NetworkInterface>& previousRollupNetworkInterface, const NetworkInterface& instanceNetwork2Add)
+{
+    if (previousRollupNetworkInterface) {
+        NetworkInterface r = *previousRollupNetworkInterface;
+        Assert (r.fGUID == instanceNetwork2Add.GenerateFingerprintFromProperties ());
+        Assert (r.GenerateFingerprintFromProperties () == instanceNetwork2Add.GenerateFingerprintFromProperties ());
+        Assert (r.fAggregatesReversibly); // because already its a rollup of something
+        r.fAggregatesReversibly->Add (instanceNetwork2Add.fGUID);
+        return r;
+    }
+    else {
+        NetworkInterface r;
+        r.fGUID                 = instanceNetwork2Add.GenerateFingerprintFromProperties ();
+        r.fFriendlyName         = instanceNetwork2Add.fFriendlyName;
+        r.fDescription          = instanceNetwork2Add.fDescription;
+        r.fType                 = instanceNetwork2Add.fType;
+        r.fHardwareAddress      = instanceNetwork2Add.fHardwareAddress;
+        r.fInternalInterfaceID  = instanceNetwork2Add.fInternalInterfaceID;
+        r.fAggregatesReversibly = Set<GUID>{instanceNetwork2Add.fGUID};
+        Assert (r.GenerateFingerprintFromProperties () == r.fGUID); // captured all that matters/part of fingerprint    return rollupNetwork;
+        return r;
+    }
+}
+
+/*
+ ********************************************************************************
  ****** Model::Network::UserOverridesType::NetworkInterfaceAggregateRule ********
  ********************************************************************************
  */
@@ -484,189 +667,6 @@ const ObjectVariantMapper Network::kMapper = [] () {
 
     return mapper;
 }();
-
-/*
- ********************************************************************************
- **************************** Model::NetworkInterface ***************************
- ********************************************************************************
- */
-Model::NetworkInterface::NetworkInterface (const IO::Network::Interface& src)
-    : Interface{src}
-{
-}
-
-String NetworkInterface::ToString () const
-{
-    Characters::StringBuilder sb;
-    sb += L"{";
-    sb += L"GUID: " + Characters::ToString (fGUID) + L", ";
-    if (fAggregatesReversibly) {
-        sb += L"fAggregatesReversibly: " + Characters::ToString (fAggregatesReversibly) + L", ";
-    }
-    if (fAggregatesIrreversibly) {
-        sb += L"fAggregatesIrreversibly: " + Characters::ToString (fAggregatesIrreversibly) + L", ";
-    }
-    if (fIDPersistent) {
-        sb += L"fIDPersistent: " + Characters::ToString (fIDPersistent) + L", ";
-    }
-    if (fHistoricalSnapshot) {
-        sb += L"fHistoricalSnapshot: " + Characters::ToString (fHistoricalSnapshot) + L", ";
-    }
-    sb += Interface::ToString ().SafeSubString (1, -1);
-    sb += L"}";
-    return sb.str ();
-}
-
-auto NetworkInterface::GenerateFingerprintFromProperties () const -> FingerprintType
-{
-    StringBuilder sb;
-    sb += fInternalInterfaceID;
-    sb += L"/";
-    sb += fFriendlyName;
-    sb += L"/";
-    if (fDescription) {
-        sb += *fDescription;
-    }
-    sb += L"/";
-    if (fType) {
-        sb += Configuration::DefaultNames<NetworkInterface::Type>::k.GetName (*fType);
-    }
-    sb += L"/";
-    if (fHardwareAddress) {
-        sb += *fHardwareAddress;
-    }
-    sb += L"/";
-    // Could use other algorithms, but easiest to stick with MD5 for compat with 2.1.5 Stroika
-    return Cryptography::Digest::ComputeDigest<Cryptography::Digest::Algorithm::MD5> (sb.str ());
-}
-
-const ObjectVariantMapper NetworkInterface::kMapper = [] () {
-    ObjectVariantMapper mapper;
-
-    mapper.AddCommonType<NetworkInterface::Type> ();
-    mapper.AddCommonType<optional<NetworkInterface::Type>> ();
-    mapper.AddCommonType<InternetAddress> ();
-    mapper.AddCommonType<optional<InternetAddress>> ();
-    mapper.AddCommonType<Sequence<InternetAddress>> ();
-    mapper.AddCommonType<optional<Sequence<InternetAddress>>> ();
-
-    using IO::Network::CIDR;
-    mapper.AddCommonType<CIDR> ();
-    mapper.AddCommonType<Set<CIDR>> ();
-    mapper.AddCommonType<Collection<CIDR>> ();
-    mapper.AddCommonType<Collection<InternetAddress>> ();
-
-    mapper.AddCommonType<IO::Network::Interface::WirelessInfo::State> ();
-    mapper.AddCommonType<optional<IO::Network::Interface::WirelessInfo::State>> ();
-    mapper.AddCommonType<IO::Network::Interface::WirelessInfo::ConnectionMode> ();
-    mapper.AddCommonType<optional<IO::Network::Interface::WirelessInfo::ConnectionMode>> ();
-    mapper.AddCommonType<IO::Network::Interface::WirelessInfo::BSSType> ();
-    mapper.AddCommonType<optional<IO::Network::Interface::WirelessInfo::BSSType>> ();
-    mapper.AddCommonType<IO::Network::Interface::WirelessInfo::PhysicalConnectionType> ();
-    mapper.AddCommonType<optional<IO::Network::Interface::WirelessInfo::PhysicalConnectionType>> ();
-    mapper.AddCommonType<IO::Network::Interface::WirelessInfo::AuthAlgorithm> ();
-    mapper.AddCommonType<optional<IO::Network::Interface::WirelessInfo::AuthAlgorithm>> ();
-
-    mapper.AddClass<NetworkInterface::WirelessInfo> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-        {L"SSID", StructFieldMetaInfo{&NetworkInterface::WirelessInfo::fSSID}},
-        {L"state", StructFieldMetaInfo{&NetworkInterface::WirelessInfo::fState}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"connectionMode", StructFieldMetaInfo{&NetworkInterface::WirelessInfo::fConnectionMode}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"profileName", StructFieldMetaInfo{&NetworkInterface::WirelessInfo::fProfileName}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"BSSType", StructFieldMetaInfo{&NetworkInterface::WirelessInfo::fBSSType}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"MACAddress", StructFieldMetaInfo{&NetworkInterface::WirelessInfo::fMACAddress}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"physicalConnectionType", StructFieldMetaInfo{&NetworkInterface::WirelessInfo::fPhysicalConnectionType}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"signalQuality", StructFieldMetaInfo{&NetworkInterface::WirelessInfo::fSignalQuality}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"securityEnabled", StructFieldMetaInfo{&NetworkInterface::WirelessInfo::fSecurityEnabled}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"802.1XEnabled", StructFieldMetaInfo{&NetworkInterface::WirelessInfo::f8021XEnabled}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"authAlgorithm", StructFieldMetaInfo{&NetworkInterface::WirelessInfo::fAuthAlgorithm}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"cipher", StructFieldMetaInfo{&NetworkInterface::WirelessInfo::fCipher}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-    });
-    mapper.AddCommonType<optional<NetworkInterface::WirelessInfo>> ();
-    mapper.AddCommonType<NetworkInterface::Status> ();
-    mapper.AddCommonType<Set<NetworkInterface::Status>> ();
-    mapper.AddCommonType<optional<Set<NetworkInterface::Status>>> ();
-
-    mapper.AddCommonType<Set<GUID>> ();
-    mapper.AddCommonType<optional<Set<GUID>>> ();
-
-    {
-        mapper.AddClass<NetworkInterface> (initializer_list<ObjectVariantMapper::StructFieldInfo> {
-            {L"platformInterfaceID", StructFieldMetaInfo{&NetworkInterface::fInternalInterfaceID}},
-                {L"id", StructFieldMetaInfo{&NetworkInterface::fGUID}},
-                {L"friendlyName", StructFieldMetaInfo{&NetworkInterface::fFriendlyName}},
-                {L"description", StructFieldMetaInfo{&NetworkInterface::fDescription}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-                // fNetworkGUID INTENTIONALLY OMITTED because doesn't correspond to our network ID, misleading, and unhelpful
-                {L"type", StructFieldMetaInfo{&NetworkInterface::fType}},
-                {L"hardwareAddress", StructFieldMetaInfo{&NetworkInterface::fHardwareAddress}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-                {L"transmitSpeedBaud", StructFieldMetaInfo{&NetworkInterface::fTransmitSpeedBaud}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-                {L"receiveLinkSpeedBaud", StructFieldMetaInfo{&NetworkInterface::fReceiveLinkSpeedBaud}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-                //SEE OVERRIDE BELOW {L"boundAddressRanges", StructFieldMetaInfo{&NetworkInterface::fBindings.fAddressRanges}},
-                //SEE OVERRIDE BELOW {L"boundAddresses", StructFieldMetaInfo{&NetworkInterface::fBindings.fAddresses}},
-                {L"gateways", StructFieldMetaInfo{&NetworkInterface::fGateways}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-                {L"DNSServers", StructFieldMetaInfo{&NetworkInterface::fDNSServers}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-                {L"wirelessInformation", StructFieldMetaInfo{&NetworkInterface::fWirelessInfo}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-                {L"status", StructFieldMetaInfo{&NetworkInterface::fStatus}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-                {L"aggregatesReversibly"sv, StructFieldMetaInfo{&NetworkInterface::fAggregatesReversibly}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-                {L"aggregatesIrreversibly"sv, StructFieldMetaInfo{&NetworkInterface::fAggregatesIrreversibly}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-                {L"idIsPersistent"sv, StructFieldMetaInfo{&NetworkInterface::fIDPersistent}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-                {L"historicalSnapshot"sv, StructFieldMetaInfo{&NetworkInterface::fHistoricalSnapshot}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-#if qDebug
-                {L"debugProps", StructFieldMetaInfo{&NetworkInterface::fDebugProps}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-#endif
-        });
-        // StructFieldMetaInfo{} doesn't work with nested members - https://stackoverflow.com/questions/1929887/is-pointer-to-inner-struct-member-forbidden
-        ObjectVariantMapper::TypeMappingDetails originalTypeMapper = *mapper.GetTypeMappingRegistry ().Lookup (typeid (NetworkInterface));
-        mapper.Add<NetworkInterface> (
-            [=] (const ObjectVariantMapper& mapper, const NetworkInterface* obj) -> VariantValue {
-                Mapping<String, VariantValue> resultMap = originalTypeMapper.fFromObjectMapper (mapper, obj).As<Mapping<String, VariantValue>> ();
-                // @todo when we decompose this so we have our own (not just inherited from stroika) class can make bindings OPTIONAL and only show here if present.
-                // SIMULATE SORT OF - FOR NOW -- LGP 2022-11-04
-                if (not obj->fBindings.fAddressRanges.empty ()) {
-                    resultMap.Add (L"boundAddressRanges", mapper.FromObject (obj->fBindings.fAddressRanges));
-                }
-                if (not obj->fBindings.fAddresses.empty ()) {
-                    resultMap.Add (L"boundAddresses", mapper.FromObject (obj->fBindings.fAddresses));
-                }
-                return VariantValue{resultMap};
-            },
-            [=] (const ObjectVariantMapper& mapper, const VariantValue& d, NetworkInterface* intoObj) -> void {
-                originalTypeMapper.fToObjectMapper (mapper, d, intoObj);
-                Mapping<String, VariantValue> fromMap = d.As<Mapping<String, VariantValue>> ();
-                if (auto o = fromMap.Lookup (L"boundAddressRanges")) {
-                    intoObj->fBindings.fAddressRanges = mapper.ToObject<Containers::Collection<CIDR>> (*o);
-                }
-                if (auto o = fromMap.Lookup (L"boundAddresses")) {
-                    intoObj->fBindings.fAddresses = mapper.ToObject<Containers::Collection<InternetAddress>> (*o);
-                }
-            });
-    }
-    mapper.AddCommonType<Collection<NetworkInterface>> ();
-    return mapper;
-}();
-
-NetworkInterface NetworkInterface::Rollup (const optional<NetworkInterface>& previousRollupNetworkInterface, const NetworkInterface& instanceNetwork2Add)
-{
-    if (previousRollupNetworkInterface) {
-        NetworkInterface r = *previousRollupNetworkInterface;
-        Assert (r.fGUID == instanceNetwork2Add.GenerateFingerprintFromProperties ());
-        Assert (r.GenerateFingerprintFromProperties () == instanceNetwork2Add.GenerateFingerprintFromProperties ());
-        Assert (r.fAggregatesReversibly); // because already its a rollup of something
-        r.fAggregatesReversibly->Add (instanceNetwork2Add.fGUID);
-        return r;
-    }
-    else {
-        NetworkInterface r;
-        r.fGUID                 = instanceNetwork2Add.GenerateFingerprintFromProperties ();
-        r.fFriendlyName         = instanceNetwork2Add.fFriendlyName;
-        r.fDescription          = instanceNetwork2Add.fDescription;
-        r.fType                 = instanceNetwork2Add.fType;
-        r.fHardwareAddress      = instanceNetwork2Add.fHardwareAddress;
-        r.fInternalInterfaceID  = instanceNetwork2Add.fInternalInterfaceID;
-        r.fAggregatesReversibly = Set<GUID>{instanceNetwork2Add.fGUID};
-        Assert (r.GenerateFingerprintFromProperties () == r.fGUID); // captured all that matters/part of fingerprint    return rollupNetwork;
-        return r;
-    }
-}
 
 /*
  ********************************************************************************
