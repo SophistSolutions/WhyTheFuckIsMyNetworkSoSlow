@@ -334,12 +334,25 @@ namespace {
             }
             return newRes;
         }
-        nonvirtual GUID GenNewNetworkID (const GUID& probablyUniqueIDForNetwork)
+        nonvirtual GUID GenNewNetworkID ([[maybe_unused]] const Model::Network& rollupNetwork, const Model::Network& containedNetwork)
         {
             Debug::TimingTrace                ttrc{L"GenNewNetworkID", 0.001}; // sb very quick
             GUID                              newRes = GUID::GenerateNew ();
             Model::Network::UserOverridesType tmp;
-            tmp.fAggregateFingerprints = Set<GUID>{probablyUniqueIDForNetwork};
+            tmp.fAggregateFingerprints = Set<GUID>{containedNetwork.GenerateFingerprintFromProperties ()};
+            /*
+             *  Automatically create rules to group 'internal device networks'
+             */
+            using NetworkInterfaceAggregateRule = Model::Network::UserOverridesType::NetworkInterfaceAggregateRule;
+            for (const GUID& i : containedNetwork.fAttachedInterfaces) {
+                auto ni = Memory::ValueOf (GetRawNetworkInterfaces ().Lookup (i));
+                if (ni.fType == IO::Network::Interface::Type::eDeviceVirtualInternalNetwork) {
+                    if (tmp.fAggregateNetworkInterfacesMatching == nullopt) {
+                        tmp.fAggregateNetworkInterfacesMatching = Sequence<NetworkInterfaceAggregateRule>{};
+                    }
+                    *tmp.fAggregateNetworkInterfacesMatching += NetworkInterfaceAggregateRule{*ni.fType, ni.GenerateFingerprintFromProperties ()};
+                }
+            }
             SetNetworkUserSettings (newRes, tmp);
             return newRes;
         }
@@ -403,17 +416,17 @@ namespace {
                 return fCachedNetworkUserSettings_.rwget ().rwref ().RemoveIf (id);
             }
         }
-        nonvirtual DeviceKeyedCollection_ GetRawDevices () const
+        nonvirtual NetworkInterfaceCollection_ GetRawNetworkInterfaces () const
         {
-            return fDBDevices_;
+            return fDBNetworkInterfaces_;
         }
         nonvirtual NetworkKeyedCollection_ GetRawNetworks () const
         {
             return fDBNetworks_;
         }
-        nonvirtual NetworkInterfaceCollection_ GetRawNetworkInterfaces () const
+        nonvirtual DeviceKeyedCollection_ GetRawDevices () const
         {
-            return fDBNetworkInterfaces_;
+            return fDBDevices_;
         }
         nonvirtual bool GetFinishedInitialDBLoad () const
         {
@@ -801,6 +814,32 @@ namespace {
 
         public:
             /**
+             */
+            nonvirtual NetworkInterface GetRollupNetworkInterface (const GUID& id)
+            {
+                return Memory::ValueOf (fRolledUpNetworkInterfaces_.Lookup (id));
+            }
+
+        public:
+            /**
+             */
+            nonvirtual NetworkInterfaceCollection_ GetRollupNetworkInterfaces (const Set<GUID>& rollupIDs)
+            {
+                Require (Set<GUID>{fRolledUpNetworkInterfaces_.Keys ()}.ContainsAll (rollupIDs));
+                return fRolledUpNetworkInterfaces_.Where ([&rollupIDs] (const auto& i) { return rollupIDs.Contains (i.fGUID); });
+            }
+
+        public:
+            /**
+             */
+            nonvirtual NetworkInterfaceCollection_ GetRawNetworkInterfaces (const Set<GUID>& rawIDs)
+            {
+                Require (Set<GUID>{fRawNetworkInterfaces_.Keys ()}.ContainsAll (rawIDs));
+                return fRawNetworkInterfaces_.Where ([&rawIDs] (const auto& i) { return rawIDs.Contains (i.fGUID); });
+            }
+
+        public:
+            /**
              *  \note   \em Thread-Safety   <a href="Thread-Safety.md#Internally-Synchronized-Thread-Safety">Internally-Synchronized-Thread-Safety</a>
              */
             static RolledUpNetworkInterfaces GetCached (Time::DurationSecondsType allowedStaleness = 5.0)
@@ -1133,11 +1172,10 @@ namespace {
                         return true;
                     }
                     if (riu->fAggregateNetworkInterfacesMatching) {
-                        // @todo DECIDE/DOCUMENT IF ROLLUP ALWAYS HAS SAME FINGERPRINT AS AGGREAGATED ITEMS AND IF SO DONT CALL
                         for (const auto& rule : *riu->fAggregateNetworkInterfacesMatching) {
                             // net2MergeIn is unaggregated and so net2MergeIn.fAttachedInterfaces are as well dont call fUseNetworkInterfaceRollups.GetConcreteNeworkInterfaces
                             // but also need api to grab aggreaged guy by ID
-                            if (fUseNetworkInterfaceRollups.GetConcreteNeworkInterfaces (net2MergeIn.fAttachedInterfaces).All ([&] (const NetworkInterface& i) {
+                            if (fUseNetworkInterfaceRollups.GetRawNetworkInterfaces (net2MergeIn.fAttachedInterfaces).All ([&] (const NetworkInterface& i) {
                                     return i.fType == rule.fInterfaceType and i.GenerateFingerprintFromProperties () == rule.fFingerprint;
                                 })) {
                                 return true;
@@ -1188,7 +1226,7 @@ namespace {
                 newRolledUpNetwork.fAggregatesReversibly   = Set<GUID>{net2MergeIn.fGUID};
                 newRolledUpNetwork.fAggregatesFingerprints = Set<Network::FingerprintType>{net2MergeInFingerprint};
                 // @todo fix this code so each time through we UPDATE sDBAccessMgr_ with latest 'fingerprint' of each dynamic network
-                newRolledUpNetwork.fGUID = sDBAccessMgr_->GenNewNetworkID (net2MergeInFingerprint);
+                newRolledUpNetwork.fGUID = sDBAccessMgr_->GenNewNetworkID (newRolledUpNetwork, net2MergeIn);
                 if (fRolledUpNetworks_.Contains (newRolledUpNetwork.fGUID)) {
                     // Should probably never happen, but since depends on data in database, program defensively
 
