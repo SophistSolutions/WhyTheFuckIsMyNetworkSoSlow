@@ -13,7 +13,19 @@ INSTAED of (bad) in network interface??
 			(like from this collector ID).
 			
 
+... PERHAPS solutionis
+	Networl::UserSettings 
+	  auto-assign-rule {
+		ForVirtualDevices:
+			if-fingerprint-equals: set
+		OR more genreally:
+			set of 
+				{ type: x, fingerprint: y } rollup to this guy.
+	  }
 
+	  and automatically create such rules (when?)
+
+	  when adding 'device-virtual' guy to new empty target
 
 
 
