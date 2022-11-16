@@ -409,8 +409,9 @@ tuple<Device, Duration> WSImpl::GetDevice (const String& id) const
     Debug::TimingTrace                              ttrc{L"WSImpl::GetDevice", 0.1};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
     GUID                                            compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
-    if (auto d = IntegratedModel::Mgr::sThe.GetDevice (compareWithID)) {
-        return make_tuple (*d, 30s); //ttl tmphack for now
+    optional<Duration>                              ttl;
+    if (auto d = IntegratedModel::Mgr::sThe.GetDevice (compareWithID, &ttl)) {
+        return make_tuple (*d, Memory::ValueOf (ttl));
     }
     Execution::Throw (ClientErrorException{L"no such id"sv});
 }
@@ -519,8 +520,9 @@ tuple<Network, Duration> WSImpl::GetNetwork (const String& id) const
     Debug::TimingTrace                              ttrc{L"WSImpl::GetNetwork", 0.1};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
     GUID                                            compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
-    if (auto d = IntegratedModel::Mgr::sThe.GetNetwork (compareWithID)) {
-        return make_tuple (*d, 30s); //ttl tmphack for now
+    optional<Duration>                              ttl;
+    if (auto d = IntegratedModel::Mgr::sThe.GetNetwork (compareWithID, &ttl)) {
+        return make_tuple (*d, Memory::ValueOf (ttl));
     }
     Execution::Throw (ClientErrorException{L"no such id"sv});
 }
@@ -624,8 +626,9 @@ tuple<NetworkInterface, Duration> WSImpl::GetNetworkInterface (const String& id)
     Debug::TimingTrace                              ttrc{L"WSImpl::GetNetworkInterface", 0.1};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
     GUID                                            compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
-    if (auto ni = IntegratedModel::Mgr::sThe.GetNetworkInterface (compareWithID)) {
-        return make_tuple (*ni, 30s); // tmphack - set this according to type of response
+    optional<Duration>                              ttl;
+    if (auto ni = IntegratedModel::Mgr::sThe.GetNetworkInterface (compareWithID, &ttl)) {
+        return make_tuple (*ni, Memory::ValueOf (ttl));
     }
     Execution::Throw (ClientErrorException{L"no such id"sv});
 }

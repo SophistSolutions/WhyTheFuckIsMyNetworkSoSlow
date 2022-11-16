@@ -717,6 +717,10 @@ namespace {
 }
 
 namespace {
+    constexpr chrono::duration<double> kTTLForRollupsReturned_{10s};
+    constexpr chrono::duration<double> kTTLForActiveObjectsReturned_{10s};
+    constexpr chrono::duration<double> kTTLForHistroicalDBObjectsReturned_{24h};
+
     /**
      *  \breif RollupSummary_ - Data structures representing a rollups of various bits of networking/device etc data
      * 
@@ -1545,16 +1549,30 @@ Sequence<IntegratedModel::Device> IntegratedModel::Mgr::GetDevices () const
     return Sequence<IntegratedModel::Device>{RollupSummary_::RolledUpDevices::GetCached ().GetDevices ()};
 }
 
-optional<IntegratedModel::Device> IntegratedModel::Mgr::GetDevice (const GUID& id) const
+optional<IntegratedModel::Device> IntegratedModel::Mgr::GetDevice (const GUID& id, optional<Duration>* ttl) const
 {
     // first check rolled up devices, and then raw/unrolled up devices
     // NOTE - this doesn't check the 'dynamic' copy of the devices - it waits til those get migrated to the DB, once ever
     // 30 seconds roughtly...
     auto result = RollupSummary_::RolledUpDevices::GetCached ().GetDevices ().Lookup (id);
-    if (not result.has_value ()) {
+    if (result) {
+        if (ttl != nullptr) {
+            *ttl = kTTLForRollupsReturned_;
+        }
+    }
+    else {
         if (result = sDBAccessMgr_->GetRawDevices ().Lookup (id)) {
             result->fIDPersistent       = true;
             result->fHistoricalSnapshot = true;
+            if (ttl != nullptr) {
+                auto everSeen = result->fSeen.EverSeen ();
+                if (everSeen and everSeen->GetUpperBound () >= (DateTime::Now () - 30s)) {
+                    *ttl = kTTLForActiveObjectsReturned_;
+                }
+                else {
+                    *ttl = kTTLForHistroicalDBObjectsReturned_;
+                }
+            }
         }
     }
     return result;
@@ -1597,15 +1615,27 @@ Sequence<IntegratedModel::Network> IntegratedModel::Mgr::GetNetworks () const
     return Sequence<IntegratedModel::Network>{RollupSummary_::RolledUpNetworks::GetCached ().GetNetworks ()};
 }
 
-optional<IntegratedModel::Network> IntegratedModel::Mgr::GetNetwork (const GUID& id) const
+optional<IntegratedModel::Network> IntegratedModel::Mgr::GetNetwork (const GUID& id, optional<Duration>* ttl) const
 {
     // first check rolled up networks, and then raw/unrolled up networks
     auto result = RollupSummary_::RolledUpNetworks::GetCached ().GetNetworks ().Lookup (id);
-    if (not result.has_value ()) {
+    if (result) {
+        if (ttl != nullptr) {
+            *ttl = kTTLForRollupsReturned_;
+        }
+    }
+    else {
         result = sDBAccessMgr_->GetRawNetworks ().Lookup (id);
         if (result) {
             result->fIDPersistent       = true;
             result->fHistoricalSnapshot = true;
+            auto everSeen               = result->fSeen;
+            if (everSeen.GetUpperBound () >= (DateTime::Now () - 30s)) {
+                *ttl = kTTLForActiveObjectsReturned_;
+            }
+            else {
+                *ttl = kTTLForHistroicalDBObjectsReturned_;
+            }
         }
     }
     return result;
@@ -1631,15 +1661,22 @@ Collection<IntegratedModel::NetworkInterface> IntegratedModel::Mgr::GetNetworkIn
     return Collection<IntegratedModel::NetworkInterface>{RollupSummary_::RolledUpNetworkInterfaces::GetCached ().GetNetworkInterfacess ()};
 }
 
-optional<IntegratedModel::NetworkInterface> IntegratedModel::Mgr::GetNetworkInterface (const GUID& id) const
+optional<IntegratedModel::NetworkInterface> IntegratedModel::Mgr::GetNetworkInterface (const GUID& id, optional<Duration>* ttl) const
 {
     // AS OF 2022-11-02 this returns the currently active network interfaces, but changed to mimic other accessors (rollups returned by default then raw records)
     auto result = RollupSummary_::RolledUpNetworkInterfaces::GetCached ().GetNetworkInterfacess ().Lookup (id);
-    if (not result.has_value ()) {
+    if (result) {
+        if (ttl != nullptr) {
+            *ttl = kTTLForRollupsReturned_;
+        }
+    }
+    else {
         result = sDBAccessMgr_->GetRawNetworkInterfaces ().Lookup (id);
         if (result) {
             result->fIDPersistent       = true;
             result->fHistoricalSnapshot = true;
+            // @todo MUST FIX THIS - sometimes need more info to tell if its a recent one or ancient
+            *ttl = kTTLForActiveObjectsReturned_;
         }
     }
     return result;

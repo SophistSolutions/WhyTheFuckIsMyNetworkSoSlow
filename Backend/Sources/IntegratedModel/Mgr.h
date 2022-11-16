@@ -18,8 +18,11 @@
  */
 namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel {
 
+    using namespace std;
+
     using Stroika::Foundation::Containers::Collection;
     using Stroika::Foundation::Containers::Sequence;
+    using Stroika::Foundation::Time::Duration;
 
     using WebServices::Model::Device;
     using WebServices::Model::Network;
@@ -57,13 +60,13 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel {
          *  Note that 'id' could refer to a rolled-up device, or an aggregated device, and the appropriate type of Device object
          *  will be returned. If the id doesn't refer to a device, this returns nullopt, not an exception.
          */
-        nonvirtual std::optional<Device> GetDevice (const Common::GUID& id) const;
+        nonvirtual optional<Device> GetDevice (const Common::GUID& id, optional<Duration>* ttl = nullptr) const;
 
     public:
         /**
          *  If there are no user overrides (or the id is invalid) this will return nullopt.
          */
-        nonvirtual std::optional<Device::UserOverridesType> GetDeviceUserSettings (const Common::GUID& id) const;
+        nonvirtual optional<Device::UserOverridesType> GetDeviceUserSettings (const Common::GUID& id) const;
 
     public:
         /**
@@ -87,7 +90,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel {
     public:
         /**
          */
-        nonvirtual std::optional<Network> GetNetwork (const Common::GUID& id) const;
+        nonvirtual std::optional<Network> GetNetwork (const Common::GUID& id, optional<Duration>* ttl = nullptr) const;
 
     public:
         /**
@@ -110,7 +113,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel {
     public:
         /**
          */
-        nonvirtual std::optional<NetworkInterface> GetNetworkInterface (const Common::GUID& id) const;
+        nonvirtual std::optional<NetworkInterface> GetNetworkInterface (const Common::GUID& id, optional<Duration>* ttl = nullptr) const;
     };
     inline Mgr Mgr::sThe;
 
