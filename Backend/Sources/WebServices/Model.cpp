@@ -339,7 +339,7 @@ String Model::Network::UserOverridesType::NetworkInterfaceAggregateRule::ToStrin
  */
 bool Model::Network::UserOverridesType::IsNonTrivial () const
 {
-    return fName or fTags or fNotes or fAggregateNetworks or fDontAggregateNetworks or fAggregateFingerprints or fDontAggregateFingerprints or fAggregateGatewayHardwareAddresses or fAggregateNetworkInterfacesMatching;
+    return fName or fTags or fNotes or fAggregateNetworks or fAggregateFingerprints or fAggregateGatewayHardwareAddresses or fAggregateNetworkInterfacesMatching;
 }
 
 String Model::Network::UserOverridesType::ToString () const
@@ -358,14 +358,8 @@ String Model::Network::UserOverridesType::ToString () const
     if (fAggregateNetworks) {
         sb += L"AggregateNetworks: " + Characters::ToString (fAggregateNetworks);
     }
-    if (fDontAggregateNetworks) {
-        sb += L"DontAggregateNetworks: " + Characters::ToString (fDontAggregateNetworks);
-    }
     if (fAggregateFingerprints) {
         sb += L"AggregateFingerprints: " + Characters::ToString (fAggregateFingerprints);
-    }
-    if (fDontAggregateFingerprints) {
-        sb += L"DontAggregateFingerprints: " + Characters::ToString (fDontAggregateFingerprints);
     }
     if (fAggregateGatewayHardwareAddresses) {
         sb += L"AggregateGatewayHardwareAddresses: " + Characters::ToString (fAggregateGatewayHardwareAddresses);
@@ -396,9 +390,7 @@ const DataExchange::ObjectVariantMapper Model::Network::UserOverridesType::kMapp
         {L"tags"sv, StructFieldMetaInfo{&UserOverridesType::fTags}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"notes"sv, StructFieldMetaInfo{&UserOverridesType::fNotes}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"aggregateNetworks"sv, StructFieldMetaInfo{&UserOverridesType::fAggregateNetworks}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"dontAggregateNetworks"sv, StructFieldMetaInfo{&UserOverridesType::fDontAggregateNetworks}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"aggregateFingerprints"sv, StructFieldMetaInfo{&UserOverridesType::fAggregateFingerprints}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"dontAggregateFingerprints"sv, StructFieldMetaInfo{&UserOverridesType::fDontAggregateFingerprints}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"aggregateGatewayHardwareAddresses"sv, StructFieldMetaInfo{&UserOverridesType::fAggregateGatewayHardwareAddresses}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"aggregateNetworkInterfacesMatching"sv, StructFieldMetaInfo{&UserOverridesType::fAggregateNetworkInterfacesMatching}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
@@ -761,7 +753,7 @@ const DataExchange::ObjectVariantMapper Model::Device::SeenType::kMapper = [] ()
  */
 bool Model::Device::UserOverridesType::IsNonTrivial () const
 {
-    return fName or fTags or fNotes or fAggregateDevices or fDontAggregateDevices or fAggregateDeviceHardwareAddresses;
+    return fName or fTags or fNotes or fAggregateDevices or fAggregateDeviceHardwareAddresses;
 }
 
 String Model::Device::UserOverridesType::ToString () const
@@ -779,9 +771,6 @@ String Model::Device::UserOverridesType::ToString () const
     }
     if (fAggregateDevices) {
         sb += L"AggregateDevices: " + Characters::ToString (fAggregateDevices);
-    }
-    if (fDontAggregateDevices) {
-        sb += L"DontAggregateDevices: " + Characters::ToString (fDontAggregateDevices);
     }
     if (fAggregateDeviceHardwareAddresses) {
         sb += L"AggregateDeviceHardwareAddresses: " + Characters::ToString (fAggregateDeviceHardwareAddresses);
@@ -802,7 +791,6 @@ const DataExchange::ObjectVariantMapper Model::Device::UserOverridesType::kMappe
         {L"tags"sv, StructFieldMetaInfo{&UserOverridesType::fTags}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"notes"sv, StructFieldMetaInfo{&UserOverridesType::fNotes}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"aggregateDevices"sv, StructFieldMetaInfo{&UserOverridesType::fAggregateDevices}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"dontAggregateDevices"sv, StructFieldMetaInfo{&UserOverridesType::fDontAggregateDevices}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"aggregateDeviceHardwareAddresses"sv, StructFieldMetaInfo{&UserOverridesType::fAggregateDeviceHardwareAddresses}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
     return mapper;

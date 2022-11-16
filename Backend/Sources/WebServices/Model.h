@@ -335,9 +335,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
             // LOSE NEGATIVE RULES - DONT THIS OR THAT - ONLY INCLUDE POSITIVE RULES CUZ THEN CLEAR HOW TO RESOLVE CONFLICTS
 
             optional<Set<GUID>>            fAggregateNetworks;
-            optional<Set<GUID>>            fDontAggregateNetworks;
             optional<Set<FingerprintType>> fAggregateFingerprints;
-            optional<Set<FingerprintType>> fDontAggregateFingerprints;
             optional<Set<String>>          fAggregateGatewayHardwareAddresses;
 
             struct NetworkInterfaceAggregateRule {
@@ -385,13 +383,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
                 if (fAggregateNetworks != rhs.fAggregateNetworks) {
                     return false;
                 }
-                if (fDontAggregateNetworks != rhs.fDontAggregateNetworks) {
-                    return false;
-                }
                 if (fAggregateFingerprints != rhs.fAggregateFingerprints) {
-                    return false;
-                }
-                if (fDontAggregateFingerprints != rhs.fDontAggregateFingerprints) {
                     return false;
                 }
                 if (fAggregateGatewayHardwareAddresses != rhs.fAggregateGatewayHardwareAddresses) {
@@ -594,7 +586,6 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
             // /AddID/RemoveID optional<set<guid>>> here so user can customize what gets rolled into this device.
             optional<Set<GUID>> fAggregateDevices;
-            optional<Set<GUID>> fDontAggregateDevices;
 
             // Automatically merge into this device anything with the given device hardware address
             optional<Set<String>> fAggregateDeviceHardwareAddresses;
@@ -611,9 +602,6 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
                     return false;
                 }
                 if (fAggregateDevices != rhs.fAggregateDevices) {
-                    return false;
-                }
-                if (fDontAggregateDevices != rhs.fDontAggregateDevices) {
                     return false;
                 }
                 if (fAggregateDeviceHardwareAddresses != rhs.fAggregateDeviceHardwareAddresses) {
