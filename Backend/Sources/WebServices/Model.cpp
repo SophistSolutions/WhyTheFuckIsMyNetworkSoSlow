@@ -299,6 +299,7 @@ NetworkInterface NetworkInterface::Rollup (const optional<NetworkInterface>& pre
         Assert (r.GenerateFingerprintFromProperties () == instanceNetwork2Add.GenerateFingerprintFromProperties ());
         Assert (r.fAggregatesReversibly); // because already its a rollup of something
         r.fAggregatesReversibly->Add (instanceNetwork2Add.fGUID);
+        Ensure (r.GenerateFingerprintFromProperties () == instanceNetwork2Add.GenerateFingerprintFromProperties ());
         return r;
     }
     else {
@@ -311,6 +312,7 @@ NetworkInterface NetworkInterface::Rollup (const optional<NetworkInterface>& pre
         r.fInternalInterfaceID  = instanceNetwork2Add.fInternalInterfaceID;
         r.fAggregatesReversibly = Set<GUID>{instanceNetwork2Add.fGUID};
         Assert (r.GenerateFingerprintFromProperties () == r.fGUID); // captured all that matters/part of fingerprint    return rollupNetwork;
+        Ensure (r.GenerateFingerprintFromProperties () == instanceNetwork2Add.GenerateFingerprintFromProperties ());
         return r;
     }
 }
