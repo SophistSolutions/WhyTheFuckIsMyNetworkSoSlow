@@ -554,6 +554,10 @@ void WSImpl::PatchNetwork (const String& id, const JSONPATCH::OperationItemsType
                     // for now only support replacing the whole array at a time
                     updateVal.fAggregateGatewayHardwareAddresses = Set<String>{op.value->As<Sequence<VariantValue>> ().Map<String> ([] (const VariantValue& vv) { return vv.As<String> (); })};
                 }
+                else if (op.path == L"/userOverrides/aggregateNetworkInterfacesMatching") {
+                    // for now only support replacing the whole array at a time
+                    updateVal.fAggregateNetworkInterfacesMatching = Model::Network::UserOverridesType::kMapper.ToObject<Sequence<Model::Network::UserOverridesType::NetworkInterfaceAggregateRule>> (*op.value);
+                }
                 else {
                     Execution::Throw (ClientErrorException{L"JSON-Patch add of unsupported op.path"_k});
                 }
@@ -581,6 +585,9 @@ void WSImpl::PatchNetwork (const String& id, const JSONPATCH::OperationItemsType
                 }
                 else if (op.path == L"/userOverrides/aggregateGatewayHardwareAddresses") {
                     updateVal.fAggregateGatewayHardwareAddresses = nullopt;
+                }
+                else if (op.path == L"/userOverrides/aggregateNetworkInterfacesMatching") {
+                    updateVal.fAggregateNetworkInterfacesMatching = nullopt;
                 }
                 else {
                     Execution::Throw (ClientErrorException{L"JSON-Patch remove of unsupported op.path"_k});
