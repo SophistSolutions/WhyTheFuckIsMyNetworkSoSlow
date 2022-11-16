@@ -51,28 +51,34 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
     public:
         /**
          *  curl  http://localhost/api/v1/devices
+         * 
+         *      GetDevice(id) API second value in tuple is TTL
          */
-        virtual Sequence<String> GetDevices (const optional<Set<GUID>>& ids = nullopt, const optional<DeviceSortParamters>& sort = {}) const         = 0;
-        virtual Sequence<Device> GetDevices_Recurse (const optional<Set<GUID>>& ids = nullopt, const optional<DeviceSortParamters>& sort = {}) const = 0;
-        virtual Device           GetDevice (const String& id) const                                                                                  = 0;
-        virtual void             PatchDevice (const String& id, const JSONPATCH::OperationItemsType& patchDoc) const                                 = 0;
+        virtual Sequence<String>        GetDevices (const optional<Set<GUID>>& ids = nullopt, const optional<DeviceSortParamters>& sort = {}) const         = 0;
+        virtual Sequence<Device>        GetDevices_Recurse (const optional<Set<GUID>>& ids = nullopt, const optional<DeviceSortParamters>& sort = {}) const = 0;
+        virtual tuple<Device, Duration> GetDevice (const String& id) const                                                                                  = 0;
+        virtual void                    PatchDevice (const String& id, const JSONPATCH::OperationItemsType& patchDoc) const                                 = 0;
 
     public:
         /**
          *  curl  http://localhost/api/v1/networks
+         * 
+         *      GetNetwork(id) API second value in tuple is TTL
          */
-        virtual Sequence<String>  GetNetworks (const optional<Set<GUID>>& ids = nullopt) const                         = 0;
-        virtual Sequence<Network> GetNetworks_Recurse (const optional<Set<GUID>>& ids = nullopt) const                 = 0;
-        virtual Network           GetNetwork (const String& id) const                                                  = 0;
-        virtual void              PatchNetwork (const String& id, const JSONPATCH::OperationItemsType& patchDoc) const = 0;
+        virtual Sequence<String>         GetNetworks (const optional<Set<GUID>>& ids = nullopt) const                         = 0;
+        virtual Sequence<Network>        GetNetworks_Recurse (const optional<Set<GUID>>& ids = nullopt) const                 = 0;
+        virtual tuple<Network, Duration> GetNetwork (const String& id) const                                                  = 0;
+        virtual void                     PatchNetwork (const String& id, const JSONPATCH::OperationItemsType& patchDoc) const = 0;
 
     public:
         /**
          *  curl  http://localhost/api/v1/network-interfaces
+         * 
+         *      GetNetworkInterface(id) API second value in tuple is TTL
          */
-        virtual Collection<String>           GetNetworkInterfaces () const                = 0;
-        virtual Collection<NetworkInterface> GetNetworkInterfaces_Recurse () const        = 0;
-        virtual NetworkInterface             GetNetworkInterface (const String& id) const = 0;
+        virtual Collection<String>                GetNetworkInterfaces () const                = 0;
+        virtual Collection<NetworkInterface>      GetNetworkInterfaces_Recurse () const        = 0;
+        virtual tuple<NetworkInterface, Duration> GetNetworkInterface (const String& id) const = 0;
 
     public:
         /**

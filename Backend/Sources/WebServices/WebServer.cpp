@@ -146,6 +146,12 @@ namespace {
         h.cacheControl = HTTP::CacheControl::kMustRevalidatePrivate;
         return h;
     }};
+    CacheControl                    mkCacheControlForAPI_ (Duration ttl)
+    {
+        auto cc    = HTTP::CacheControl::kMustRevalidatePrivate;
+        cc.fMaxAge = static_cast<uint32_t> (ttl.As<int> ());
+        return cc;
+    }
 }
 
 namespace {
@@ -265,7 +271,9 @@ public:
                   L"api/v1/devices/(.+)"_RegEx,
                   [this] (Message* m, const String& id) {
                       ActiveCallCounter_ acc{*this};
-                      WriteResponse (&m->rwResponse (), kDevices_, Device::kMapper.FromObject (fWSAPI_->GetDevice (id)));
+                      auto [device, ttl]                         = fWSAPI_->GetDevice (id);
+                      m->rwResponse ().rwHeaders ().cacheControl = mkCacheControlForAPI_ (ttl);
+                      WriteResponse (&m->rwResponse (), kDevices_, Device::kMapper.FromObject (device));
                   }},
               Route{
                   IO::Network::HTTP::MethodsRegEx::kPatch,
@@ -292,7 +300,9 @@ public:
                   L"api/v1/network-interfaces/(.+)"_RegEx,
                   [this] (Message* m, const String& id) {
                       ActiveCallCounter_ acc{*this};
-                      WriteResponse (&m->rwResponse (), kNetworkInterfaces_, NetworkInterface::kMapper.FromObject (fWSAPI_->GetNetworkInterface (id)));
+                      auto [networkInterface, ttl]               = fWSAPI_->GetNetworkInterface (id);
+                      m->rwResponse ().rwHeaders ().cacheControl = mkCacheControlForAPI_ (ttl);
+                      WriteResponse (&m->rwResponse (), kNetworkInterfaces_, NetworkInterface::kMapper.FromObject (networkInterface));
                   }},
 
               Route{
@@ -315,7 +325,9 @@ public:
                   L"api/v1/networks/(.+)"_RegEx,
                   [this] (Message* m, const String& id) {
                       ActiveCallCounter_ acc{*this};
-                      WriteResponse (&m->rwResponse (), kNetworks_, Network::kMapper.FromObject (fWSAPI_->GetNetwork (id)));
+                      auto [network, ttl]                        = fWSAPI_->GetNetwork (id);
+                      m->rwResponse ().rwHeaders ().cacheControl = mkCacheControlForAPI_ (ttl);
+                      WriteResponse (&m->rwResponse (), kNetworks_, Network::kMapper.FromObject (network));
                   }},
               Route{
                   IO::Network::HTTP::MethodsRegEx::kPatch,

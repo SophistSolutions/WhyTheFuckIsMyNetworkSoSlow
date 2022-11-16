@@ -404,13 +404,13 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
     return devices;
 }
 
-Device WSImpl::GetDevice (const String& id) const
+tuple<Device, Duration> WSImpl::GetDevice (const String& id) const
 {
     Debug::TimingTrace                              ttrc{L"WSImpl::GetDevice", 0.1};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
     GUID                                            compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
     if (auto d = IntegratedModel::Mgr::sThe.GetDevice (compareWithID)) {
-        return *d;
+        return make_tuple (*d, 30s); //ttl tmphack for now
     }
     Execution::Throw (ClientErrorException{L"no such id"sv});
 }
@@ -514,13 +514,13 @@ Sequence<BackendApp::WebServices::Network> WSImpl::GetNetworks_Recurse (const op
     }
 }
 
-Network WSImpl::GetNetwork (const String& id) const
+tuple<Network, Duration> WSImpl::GetNetwork (const String& id) const
 {
     Debug::TimingTrace                              ttrc{L"WSImpl::GetNetwork", 0.1};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
     GUID                                            compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
     if (auto d = IntegratedModel::Mgr::sThe.GetNetwork (compareWithID)) {
-        return *d;
+        return make_tuple (*d, 30s); //ttl tmphack for now
     }
     Execution::Throw (ClientErrorException{L"no such id"sv});
 }
@@ -619,13 +619,13 @@ Collection<BackendApp::WebServices::NetworkInterface> WSImpl::GetNetworkInterfac
     return IntegratedModel::Mgr::sThe.GetNetworkInterfaces ();
 }
 
-NetworkInterface WSImpl::GetNetworkInterface (const String& id) const
+tuple<NetworkInterface, Duration> WSImpl::GetNetworkInterface (const String& id) const
 {
     Debug::TimingTrace                              ttrc{L"WSImpl::GetNetworkInterface", 0.1};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
     GUID                                            compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
     if (auto ni = IntegratedModel::Mgr::sThe.GetNetworkInterface (compareWithID)) {
-        return *ni;
+        return make_tuple (*ni, 30s); // tmphack - set this according to type of response
     }
     Execution::Throw (ClientErrorException{L"no such id"sv});
 }
