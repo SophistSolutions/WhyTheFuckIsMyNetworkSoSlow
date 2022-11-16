@@ -322,7 +322,6 @@ NetworkInterface NetworkInterface::Rollup (const optional<NetworkInterface>& pre
  ****** Model::Network::UserOverridesType::NetworkInterfaceAggregateRule ********
  ********************************************************************************
  */
-
 String Model::Network::UserOverridesType::NetworkInterfaceAggregateRule::ToString () const
 {
     Characters::StringBuilder sb;
