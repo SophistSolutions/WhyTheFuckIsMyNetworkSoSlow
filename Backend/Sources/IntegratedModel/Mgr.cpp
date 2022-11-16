@@ -1148,19 +1148,6 @@ namespace {
             }
             bool ShouldRollupInto_CheckIsCompatibleWithTarget_ (const Network& net2MergeIn, const Network::FingerprintType& net2MergeInFingerprint, const Network& targetRollup)
             {
-                // @todo NO LONGER PAY ATTENTION TO faggarates... stuff - just use fUserOverrides
-
-                // check aggregates not necessarily from user settings
-                if (targetRollup.fAggregatesFingerprints and targetRollup.fAggregatesFingerprints->Contains (net2MergeInFingerprint)) {
-                    return true;
-                }
-                if (targetRollup.fAggregatesReversibly and targetRollup.fAggregatesReversibly->Contains (net2MergeIn.fGUID)) {
-                    return true;
-                }
-                if (targetRollup.fAggregatesIrreversibly and targetRollup.fAggregatesIrreversibly->Contains (net2MergeIn.fGUID)) {
-                    return true;
-                }
-                // lose these checks if rollup combines them (or maybe lose the former ones - but we dont need both)
                 if (auto riu = targetRollup.fUserOverrides) {
                     if (riu->fAggregateFingerprints and riu->fAggregateFingerprints->Contains (net2MergeInFingerprint)) {
                         return true;
@@ -1183,29 +1170,6 @@ namespace {
                         }
                     }
                 }
-
-                // bad/failed approach - instead addusersettings override to do the lifting
-                if (false) {
-                    Set<GUID> allConcreteInterfaces2Check = net2MergeIn.fAttachedInterfaces; // net2MergeIn is unaggregated and so its interfaces are as well
-                    size_t    sz                          = allConcreteInterfaces2Check.size ();
-                    targetRollup.fAttachedInterfaces.Apply ([this, &allConcreteInterfaces2Check] (const GUID& i) {
-                        allConcreteInterfaces2Check += fUseNetworkInterfaceRollups.GetConcreteIDsForRollup (i);
-                    });
-
-                    if (sz != allConcreteInterfaces2Check.size () and fUseNetworkInterfaceRollups.GetConcreteNeworkInterfaces (allConcreteInterfaces2Check).All ([&] (const NetworkInterface& i) {
-                            return i.fType == IO::Network::Interface::Type::eDeviceVirtualInternalNetwork;
-                        })) {
-
-                        DbgTrace (L"decided net2MergeIn (%s) can be merged into %s", Characters::ToString (net2MergeIn.fGUID).c_str (), Characters::ToString (targetRollup.fGUID).c_str ());
-                        DbgTrace (L"net2MergeIn.fNames=%s", Characters::ToString (net2MergeIn.fNames).c_str ());
-                        DbgTrace (L"targetRollup.fNames=%s", Characters::ToString (targetRollup.fNames).c_str ());
-                        if (net2MergeIn.fNames.Any ([] (auto i) { return i.fName.Contains (L"WSL"); })) {
-                            return true;
-                        }
-                        return true;
-                    }
-                }
-
                 return false;
             }
             void AddUpdateIn_ (const Network& addNet2MergeFromThisRollup, const Network& net2MergeIn, const Network::FingerprintType& net2MergeInFingerprint)
