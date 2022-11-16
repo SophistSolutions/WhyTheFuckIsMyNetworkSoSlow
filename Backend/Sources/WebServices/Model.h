@@ -169,6 +169,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
         /**
          *  this data is a historical (database) snapshot, vs a dynamic rollup
+         *      @todo DEPREACATE THIS AND INSTEAD ON RESROUCE GET - include TTL/Content-Cache header info
          */
         optional<bool> fHistoricalSnapshot;
 
@@ -293,6 +294,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
         /**
          *  this data is a historical (database) snapshot, vs a dynamic rollup
+         *      @todo DEPREACATE THIS AND INSTEAD ON RESROUCE GET - include TTL/Content-Cache header info
          */
         optional<bool> fHistoricalSnapshot;
 
@@ -554,6 +556,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
         /**
          *  this data is a historical (database) snapshot, vs a dynamic rollup
+         *      @todo DEPREACATE THIS AND INSTEAD ON RESROUCE GET - include TTL/Content-Cache header info
          */
         optional<bool> fHistoricalSnapshot;
 
