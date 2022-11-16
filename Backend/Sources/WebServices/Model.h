@@ -178,6 +178,13 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         /**
          *  This returns a property that can be used for object identity - if two networkinterfaces have the same fingerprint
          *  they can usefully be throught of as the same (MAYBE need to augment this with ID of device they come from?).
+         * 
+         *  Features that get copied up/preserved in rollup:
+         *      o   fDescription
+         *      o   fFriendlyName
+         *      o   fHardwareAddress
+         *      o   fInternalInterfaceID
+         *      o   fType
          */
         nonvirtual FingerprintType GenerateFingerprintFromProperties () const;
 
@@ -194,6 +201,14 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
         /**
          *  This code ensures that the resulting rollup has same GenerateFingerprintFromProperties () as instanceNetwork2Add.GenerateFingerprintFromProperties ()
+         * 
+         *  Features that get copied up/preserved in rollup:
+         *      o   fDescription
+         *      o   fFriendlyName
+         *      o   fHardwareAddress
+         *      o   fInternalInterfaceID
+         *      o   fType
+         *      Ensure (r.GenerateFingerprintFromProperties () == instanceNetwork2Add.GenerateFingerprintFromProperties ());
          */
         static NetworkInterface Rollup (const optional<NetworkInterface>& previousRollupNetworkInterface, const NetworkInterface& instanceNetwork2Add);
     };
@@ -246,8 +261,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
          */
         Set<InternetAddress> fDNSServers;
 
-        // PROBABLY idnetify same network - by default - as hash of default gateway's macaddr - or at least look at that to compare...
-        // thogh that doesnt quite work cuz if you cahnge router, you need o call it the same network.... It's just a big clue... Not sure how
+        // PROBABLY identify same network - by default - as hash of default gateway's macaddr - or at least look at that to compare...
+        // though that doesn't quite work cuz if you change router, you need o call it the same network.... It's just a big clue... Not sure how
         // best to deal with this fuzzy identity notion
 
         // @todo add SSIDs here - as a good hint in identenifying same network
