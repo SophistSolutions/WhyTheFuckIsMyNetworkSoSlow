@@ -134,12 +134,28 @@ const ObjectVariantMapper Model::Manufacturer::kMapper = [] () {
 
 /*
  ********************************************************************************
+ ****** Model::Network::UserOverridesType::NetworkInterfaceAggregateRule ********
+ ********************************************************************************
+ */
+
+String Model::Network::UserOverridesType::NetworkInterfaceAggregateRule::ToString () const
+{
+    Characters::StringBuilder sb;
+    sb += L"{";
+    sb += L"interfaceType: " + Characters::ToString (fInterfaceType) + L", ";
+    sb += L"fingerprint: " + Characters::ToString (fFingerprint) + L", ";
+    sb += L"}";
+    return sb.str ();
+}
+
+/*
+ ********************************************************************************
  ********************** Model::Network::UserOverridesType ***********************
  ********************************************************************************
  */
 bool Model::Network::UserOverridesType::IsNonTrivial () const
 {
-    return fName or fTags or fNotes or fAggregateNetworks or fDontAggregateNetworks or fAggregateFingerprints or fDontAggregateFingerprints or fAggregateGatewayHardwareAddresses;
+    return fName or fTags or fNotes or fAggregateNetworks or fDontAggregateNetworks or fAggregateFingerprints or fDontAggregateFingerprints or fAggregateGatewayHardwareAddresses or fAggregateNetworkInterfacesMatching;
 }
 
 String Model::Network::UserOverridesType::ToString () const
@@ -170,6 +186,9 @@ String Model::Network::UserOverridesType::ToString () const
     if (fAggregateGatewayHardwareAddresses) {
         sb += L"AggregateGatewayHardwareAddresses: " + Characters::ToString (fAggregateGatewayHardwareAddresses);
     }
+    if (fAggregateNetworkInterfacesMatching) {
+        sb += L"AggregateNetworkInterfacesMatching: " + Characters::ToString (fAggregateNetworkInterfacesMatching);
+    }
     sb += L"}";
     return sb.str ();
 }
@@ -181,6 +200,13 @@ const DataExchange::ObjectVariantMapper Model::Network::UserOverridesType::kMapp
     mapper.AddCommonType<optional<Set<String>>> ();
     mapper.AddCommonType<Set<GUID>> ();
     mapper.AddCommonType<optional<Set<GUID>>> ();
+    mapper.AddCommonType<Stroika::Foundation::IO::Network::Interface::Type> ();
+    mapper.AddClass<UserOverridesType::NetworkInterfaceAggregateRule> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+        {L"interfaceType"sv, StructFieldMetaInfo{&UserOverridesType::NetworkInterfaceAggregateRule::fInterfaceType}},
+        {L"fingerprint"sv, StructFieldMetaInfo{&UserOverridesType::NetworkInterfaceAggregateRule::fFingerprint}},
+    });
+    mapper.AddCommonType<Sequence<UserOverridesType::NetworkInterfaceAggregateRule>> ();
+    mapper.AddCommonType<optional<Sequence<UserOverridesType::NetworkInterfaceAggregateRule>>> ();
     mapper.AddClass<UserOverridesType> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
         {L"name"sv, StructFieldMetaInfo{&UserOverridesType::fName}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"tags"sv, StructFieldMetaInfo{&UserOverridesType::fTags}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
@@ -190,6 +216,7 @@ const DataExchange::ObjectVariantMapper Model::Network::UserOverridesType::kMapp
         {L"aggregateFingerprints"sv, StructFieldMetaInfo{&UserOverridesType::fAggregateFingerprints}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"dontAggregateFingerprints"sv, StructFieldMetaInfo{&UserOverridesType::fDontAggregateFingerprints}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"aggregateGatewayHardwareAddresses"sv, StructFieldMetaInfo{&UserOverridesType::fAggregateGatewayHardwareAddresses}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"aggregateNetworkInterfacesMatching"sv, StructFieldMetaInfo{&UserOverridesType::fAggregateNetworkInterfacesMatching}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
     return mapper;
 }();

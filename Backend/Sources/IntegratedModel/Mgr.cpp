@@ -1132,6 +1132,18 @@ namespace {
                     if (riu->fAggregateNetworks and riu->fAggregateNetworks->Contains (net2MergeIn.fGUID)) {
                         return true;
                     }
+                    if (riu->fAggregateNetworkInterfacesMatching) {
+                        // @todo DECIDE/DOCUMENT IF ROLLUP ALWAYS HAS SAME FINGERPRINT AS AGGREAGATED ITEMS AND IF SO DONT CALL
+                        for (const auto& rule : *riu->fAggregateNetworkInterfacesMatching) {
+                            // net2MergeIn is unaggregated and so net2MergeIn.fAttachedInterfaces are as well dont call fUseNetworkInterfaceRollups.GetConcreteNeworkInterfaces
+                            // but also need api to grab aggreaged guy by ID
+                            if (fUseNetworkInterfaceRollups.GetConcreteNeworkInterfaces (net2MergeIn.fAttachedInterfaces).All ([&] (const NetworkInterface& i) {
+                                    return i.fType == rule.fInterfaceType and i.GenerateFingerprintFromProperties () == rule.fFingerprint;
+                                })) {
+                                return true;
+                            }
+                        }
+                    }
                 }
 
                 // bad/failed approach - instead addusersettings override to do the lifting

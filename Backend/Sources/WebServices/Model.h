@@ -313,11 +313,44 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
             optional<String> fNotes;
 
             // AddFingerprint/RemoveFingerprint/AddID/RemoveID optional<set<guid>>> here so user can customize what gets rolled into this net.
+
+            // LOSE NEGATIVE RULES - DONT THIS OR THAT - ONLY INCLUDE POSITIVE RULES CUZ THEN CLEAR HOW TO RESOLVE CONFLICTS
+
             optional<Set<GUID>>            fAggregateNetworks;
             optional<Set<GUID>>            fDontAggregateNetworks;
             optional<Set<FingerprintType>> fAggregateFingerprints;
             optional<Set<FingerprintType>> fDontAggregateFingerprints;
             optional<Set<String>>          fAggregateGatewayHardwareAddresses;
+
+            struct NetworkInterfaceAggregateRule {
+                IO::Network::Interface::Type fInterfaceType;
+                FingerprintType              fFingerprint;
+
+                /**
+                 *  @see Characters::ToString ();
+                 */
+                nonvirtual String ToString () const;
+
+#if __cpp_impl_three_way_comparison < 201711
+                bool operator== (const NetworkInterfaceAggregateRule& rhs) const
+                {
+                    if (fInterfaceType != rhs.fInterfaceType) {
+                        return false;
+                    }
+                    if (fFingerprint != rhs.fFingerprint) {
+                        return false;
+                    }
+                    return true;
+                }
+                bool operator!= (const NetworkInterfaceAggregateRule& rhs) const
+                {
+                    return not(*this == rhs);
+                }
+#else
+                auto operator<=> (const NetworkInterfaceAggregateRule&) const = default;
+#endif
+            };
+            optional<Sequence<NetworkInterfaceAggregateRule>> fAggregateNetworkInterfacesMatching;
 
 #if __cpp_impl_three_way_comparison < 201711
             bool operator== (const UserOverridesType& rhs) const
@@ -344,6 +377,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
                     return false;
                 }
                 if (fAggregateGatewayHardwareAddresses != rhs.fAggregateGatewayHardwareAddresses) {
+                    return false;
+                }
+                if (fAggregateNetworkInterfacesMatching != rhs.fAggregateNetworkInterfacesMatching) {
                     return false;
                 }
                 return true;

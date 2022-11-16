@@ -1,3 +1,12 @@
+
+
+middle of doing below...
+	+ add WSAPI to update these flags
+	+ add code to AUTO-ADD these flags to merge certian items
+	(after I experiment and verify can do manually)
+
+
+
 maybe doing network interface rollup magic in wrong place
 
 INSTAED of (bad) in network interface??
