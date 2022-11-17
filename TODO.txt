@@ -1,6 +1,9 @@
 add (if configuration) when writing Network objects- write its network fingerprint (and likewise for
 network-interfaces))
-
+// Try doing this with AddSubClass, and if works, can use constexpr here
+namespace {
+#define qIncludeFingerprintsInOutputTMP2Test_ 1
+}
 ---
 sporadic spinning issue on hercules (1.0 CPU); build from github actions doe sthis (but maybe not immediately).
 TEST build from my source code with logging on.

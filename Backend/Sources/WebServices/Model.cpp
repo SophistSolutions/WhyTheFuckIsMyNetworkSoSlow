@@ -41,6 +41,11 @@ namespace {
     const ObjectVariantMapper::TypeMappingDetails kOptionalDateRangeMapper_ = ObjectVariantMapper::MakeCommonSerializer<optional<Range<DateTime>>> (ObjectVariantMapper::OptionalSerializerOptions{kDateRangeMapper_});
 }
 
+// Try doing this with AddSubClass, and if works, can use constexpr here
+namespace {
+#define qIncludeFingerprintsInOutputTMP2Test_ 1
+}
+
 namespace Stroika::Foundation::DataExchange {
     template <>
     CIDR ObjectVariantMapper::ToObject (const ToObjectMapperType<CIDR>& toObjectMapper, const VariantValue& v) const
@@ -275,10 +280,21 @@ const ObjectVariantMapper NetworkInterface::kMapper = [] () {
                 {L"aggregatesIrreversibly"sv, StructFieldMetaInfo{&NetworkInterface::fAggregatesIrreversibly}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
                 {L"idIsPersistent"sv, StructFieldMetaInfo{&NetworkInterface::fIDPersistent}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
                 {L"historicalSnapshot"sv, StructFieldMetaInfo{&NetworkInterface::fHistoricalSnapshot}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+
+#if qIncludeFingerprintsInOutputTMP2Test_
+                {L"fingerprint", ObjectVariantMapper::TypeMappingDetails{
+                                     ObjectVariantMapper::FromObjectMapperType<NetworkInterface> ([] (const ObjectVariantMapper&, const NetworkInterface* objOfType) -> VariantValue {
+                                         return VariantValue{objOfType->GenerateFingerprintFromProperties ().As<String> ()};
+                                     }),
+                                     ObjectVariantMapper::ToObjectMapperType<NetworkInterface> (nullptr)}},
+#endif
+
 #if qDebug
                 {L"debugProps", StructFieldMetaInfo{&NetworkInterface::fDebugProps}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
 #endif
         });
+
+        // @todo REDO THIS using the subclass mechaniusm????
         // StructFieldMetaInfo{} doesn't work with nested members - https://stackoverflow.com/questions/1929887/is-pointer-to-inner-struct-member-forbidden
         ObjectVariantMapper::TypeMappingDetails originalTypeMapper = *mapper.GetTypeMappingRegistry ().Lookup (typeid (NetworkInterface));
         mapper.Add<NetworkInterface> (
@@ -661,6 +677,15 @@ const ObjectVariantMapper Network::kMapper = [] () {
             {L"idIsPersistent"sv, StructFieldMetaInfo{&Network::fIDPersistent}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"historicalSnapshot"sv, StructFieldMetaInfo{&Network::fHistoricalSnapshot}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {L"userOverrides"sv, StructFieldMetaInfo{&Network::fUserOverrides}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+
+#if qIncludeFingerprintsInOutputTMP2Test_
+            {L"fingerprint", ObjectVariantMapper::TypeMappingDetails{
+                                 ObjectVariantMapper::FromObjectMapperType<Network> ([] (const ObjectVariantMapper&, const Network* objOfType) -> VariantValue {
+                                     return VariantValue{objOfType->GenerateFingerprintFromProperties ().As<String> ()};
+                                 }),
+                                 ObjectVariantMapper::ToObjectMapperType<Network> (nullptr)}},
+#endif
+
 #if qDebug
             {L"debugProps", StructFieldMetaInfo{&Network::fDebugProps}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
 #endif
