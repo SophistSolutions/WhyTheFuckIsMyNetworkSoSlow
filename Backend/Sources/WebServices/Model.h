@@ -144,13 +144,11 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
     struct NetworkInterface {
         NetworkInterface ()                            = default;
         NetworkInterface (const NetworkInterface& src) = default;
-   //     explicit NetworkInterface (const IO::Network::Interface& src);
+        //     explicit NetworkInterface (const IO::Network::Interface& src);
 
         using SystemIDType = IO::Network::Interface::SystemIDType;
 
-
-
-         /**
+        /**
         * @see IO::Network::Interface::fInternalInterfaceID
          */
         SystemIDType fInternalInterfaceID;
@@ -197,7 +195,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         /**
         * @see IO::Network::Interface::fWirelessInfo
          */
-        optional<WirelessInfo> fWirelessInfo; 
+        optional<WirelessInfo> fWirelessInfo;
 
         /**
          */
@@ -227,12 +225,6 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         * @see IO::Network::Interface::fStatus
          */
         optional<Containers::Set<Status>> fStatus;
-
-
-
-
-
-
 
         /**
          *  GUID for this interface - MANUFACTURED by WTF

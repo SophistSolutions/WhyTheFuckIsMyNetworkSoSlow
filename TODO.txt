@@ -1,3 +1,7 @@
+add (if configuration) when writing Network objects- write its network fingerprint (and likewise for
+network-interfaces))
+
+---
 sporadic spinning issue on hercules (1.0 CPU); build from github actions doe sthis (but maybe not immediately).
 TEST build from my source code with logging on.
 

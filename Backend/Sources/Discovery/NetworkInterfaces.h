@@ -28,7 +28,6 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
     using Containers::Set;
     using Stroika::Foundation::Common::GUID;
 
-
     /**
      *  OK to inherit from Stroika interface (subject to change) because this is not externalized - just
      *  used internally).

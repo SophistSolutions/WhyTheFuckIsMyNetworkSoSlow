@@ -203,8 +203,6 @@ auto NetworkInterface::GenerateFingerprintFromProperties () const -> Fingerprint
     if (fHardwareAddress) {
         sb += *fHardwareAddress;
     }
-    sb += L"/";
-    // Could use other algorithms, but easiest to stick with MD5 for compat with 2.1.5 Stroika
     return Cryptography::Digest::ComputeDigest<Cryptography::Digest::Algorithm::MD5> (sb.str ());
 }
 
@@ -536,43 +534,69 @@ Network::FingerprintType Network::GenerateFingerprintFromProperties () const
     // network id, but often a good idea, and not hard to add records allowing combine of networks (more of a PITA than
     // other way where we didn't include and had to force separate).
     StringBuilder sb;
-    if (fExternalAddresses and fExternalAddresses->size () > 1) {
-        for (const InternetAddress& i : SortedSet<InternetAddress>{useAddresses (*fExternalAddresses)}) {
-            sb += i.As<String> ();
+
+    auto accumAddrList = [&sb] (const Set<InternetAddress>& ias) {
+        switch (ias.size ()) {
+            case 0:
+                break;
+            case 1:
+                sb += ias.Nth (0).As<String> ();
+                sb += L"/";
+                break;
+            default: {
+                // regularize
+                for (const InternetAddress& i : SortedSet<InternetAddress>{ias}) {
+                    sb += i.As<String> ();
+                    sb += L"/";
+                }
+            } break;
         }
-    }
-    else if (fExternalAddresses and fExternalAddresses->size () == 1) {
-        for (const InternetAddress& i : *fExternalAddresses) {
-            sb += i.As<String> ();
+    };
+    // SOMEHOW REDO ABOVE GENERICALLY? (could do easily with templates but can do ne
+    //      but requires c++20 - https://stackoverflow.com/questions/3449112/why-cant-templates-be-declared-in-a-function
+    auto accumAddrListCIDR = [&sb] (const Set<CIDR>& ias) {
+        switch (ias.size ()) {
+            case 0:
+                break;
+            case 1:
+                sb += ias.Nth (0).As<String> ();
+                sb += L"/";
+                break;
+            default: {
+                // regularize
+                for (const CIDR& i : SortedSet<CIDR>{ias}) {
+                    sb += i.As<String> ();
+                    sb += L"/";
+                }
+            } break;
         }
+    };
+    auto accumAddrListSTR = [&sb] (const Set<String>& ias) {
+        switch (ias.size ()) {
+            case 0:
+                break;
+            case 1:
+                sb += ias.Nth (0).As<String> ();
+                sb += L"/";
+                break;
+            default: {
+                // regularize
+                for (const CIDR& i : SortedSet<String>{ias}) {
+                    sb += i.As<String> ();
+                    sb += L"/";
+                }
+            } break;
+        }
+    };
+    if (fExternalAddresses) {
+        accumAddrList (*fExternalAddresses);
     }
     sb += L"/";
-    for (const CIDR& i : useCIDRs (fNetworkAddresses)) {
-        sb += i.As<String> ();
-    }
+    accumAddrListCIDR (useCIDRs (fNetworkAddresses));
     sb += L"/";
-    if (fGateways.size () > 1) {
-        for (const InternetAddress& i : SortedSet<InternetAddress>{useAddresses (fGateways)}) {
-            sb += i.As<String> ();
-        }
-    }
-    else {
-        for (const InternetAddress& i : fGateways) {
-            sb += i.As<String> ();
-        }
-    }
+    accumAddrList (useAddresses (fGateways));
     sb += L"/";
-    if (fGatewayHardwareAddresses.size () > 1) {
-        for (const String& i : SortedSet<String>{fGatewayHardwareAddresses}) {
-            sb += i;
-        }
-    }
-    else {
-        for (const String& i : fGatewayHardwareAddresses) {
-            sb += i;
-        }
-    }
-    // Could use other algorithms, but easiest to stick with MD5 for compat with 2.1.5 Stroika
+    accumAddrListSTR (fGatewayHardwareAddresses);
     return Cryptography::Digest::ComputeDigest<Cryptography::Digest::Algorithm::MD5> (sb.str ());
 }
 

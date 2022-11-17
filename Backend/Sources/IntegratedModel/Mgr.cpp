@@ -211,16 +211,16 @@ namespace {
             nwi.fFriendlyName        = n.fFriendlyName;
             nwi.fDescription         = n.fDescription;
             //nwi.fNetworkGUID         = n.fNetworkGUID;    INTENTIONALLY OMITTED because doesn't correspond to our network ID, misleading, and unhelpful
-            nwi.fType                = n.fType;
-            nwi.fHardwareAddress     = n.fHardwareAddress;
-            nwi.fTransmitSpeedBaud   = n.fTransmitSpeedBaud;
+            nwi.fType                 = n.fType;
+            nwi.fHardwareAddress      = n.fHardwareAddress;
+            nwi.fTransmitSpeedBaud    = n.fTransmitSpeedBaud;
             nwi.fReceiveLinkSpeedBaud = n.fReceiveLinkSpeedBaud;
             nwi.fWirelessInfo         = n.fWirelessInfo;
             nwi.fBindings             = n.fBindings;
             nwi.fGateways             = n.fGateways;
             nwi.fDNSServers           = n.fDNSServers;
             nwi.fStatus               = n.fStatus;
-            nwi.fGUID = n.fGUID;
+            nwi.fGUID                 = n.fGUID;
 #if qDebug
             if (not n.fDebugProps.empty ()) {
                 nwi.fDebugProps = n.fDebugProps;
