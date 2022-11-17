@@ -557,13 +557,13 @@ Network::FingerprintType Network::GenerateFingerprintFromProperties () const
                 sb += L"/";
                 break;
             case 1:
-                sb += ias.Nth (0).As<String> ();
+                sb += ias.Nth (0).template As<String> ();
                 sb += L"/";
                 break;
             default: {
                 // regularize
                 for (const T& i : SortedSet<T>{ias}) {
-                    sb += i.As<String> ();
+                    sb += i.template As<String> ();
                     sb += L"/";
                 }
             } break;
