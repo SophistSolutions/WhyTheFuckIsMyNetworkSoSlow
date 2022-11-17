@@ -141,10 +141,98 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
      *  This roughly mimics the Stroika class IO::Network::Interface, or what you would see 
      *  returned on windows ipconfig/all, or unix "ip link show"
      */
-    struct NetworkInterface : IO::Network::Interface {
+    struct NetworkInterface {
         NetworkInterface ()                            = default;
         NetworkInterface (const NetworkInterface& src) = default;
-        explicit NetworkInterface (const IO::Network::Interface& src);
+   //     explicit NetworkInterface (const IO::Network::Interface& src);
+
+        using SystemIDType = IO::Network::Interface::SystemIDType;
+
+
+
+         /**
+        * @see IO::Network::Interface::fInternalInterfaceID
+         */
+        SystemIDType fInternalInterfaceID;
+
+        /**
+        * @see IO::Network::Interface::fFriendlyName
+         */
+        String fFriendlyName;
+
+        /**
+        * @see IO::Network::Interface::fDescription
+         */
+        optional<String> fDescription;
+
+        /**
+        * @see IO::Network::Interface::Type
+         */
+        using Type = IO::Network::Interface::Type;
+
+        /**
+        * @see IO::Network::Interface::fType
+         */
+        optional<Type> fType;
+
+        /**
+        * @see IO::Network::Interface::fHardwareAddress
+         */
+        optional<String> fHardwareAddress;
+
+        /**
+        * @see IO::Network::Interface::fTransmitSpeedBaud
+         */
+        optional<uint64_t> fTransmitSpeedBaud;
+
+        /**
+        * @see IO::Network::Interface::fReceiveLinkSpeedBaud
+         */
+        optional<uint64_t> fReceiveLinkSpeedBaud;
+
+        /**
+         */
+        using WirelessInfo = IO::Network::Interface::WirelessInfo;
+
+        /**
+        * @see IO::Network::Interface::fWirelessInfo
+         */
+        optional<WirelessInfo> fWirelessInfo; 
+
+        /**
+         */
+        using Bindings = IO::Network::Interface::Bindings;
+
+        /**
+        * @see IO::Network::Interface::fBindings
+         */
+        Bindings fBindings;
+
+        /**
+        * @see IO::Network::Interface::fGateways
+         */
+        optional<Containers::Sequence<InternetAddress>> fGateways;
+
+        /**
+        * @see IO::Network::Interface::fDNSServers
+         */
+        optional<Containers::Sequence<InternetAddress>> fDNSServers;
+
+        /**
+        * @see IO::Network::Interface::Status
+         */
+        using Status = IO::Network::Interface::Status;
+
+        /**
+        * @see IO::Network::Interface::fStatus
+         */
+        optional<Containers::Set<Status>> fStatus;
+
+
+
+
+
+
 
         /**
          *  GUID for this interface - MANUFACTURED by WTF

@@ -24,12 +24,9 @@ TEST build from my source code with logging on.
 		PROBABLY DONT NEED EITHER FLAG - horizcatsnapshot - since equiv to == aggregatopns.isEmpty () and otheragg.isEmpty ();
 		MAYBE need flag saying 'ID-PERSISTENT'. Since only then do you know its an ID you can save in a database (which corresponds
 		to the historical guys pretty much)
-.
 
-----
-
-	Model::NeworkInterface should not INHERIT from Stroika interface, but copy what makes sense and make it easy to convert.
-	Inherits too much trash; and ties API to internals of stroika inappropriately.
+		(done ENUF for now, and just do the change in logic so we dont need thos isHistorical flag - see if we can 
+		access cache control header from html))
 ---
 UI
        IN NEWTWORK DETAILS PAGE

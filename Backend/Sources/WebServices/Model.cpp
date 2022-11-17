@@ -137,15 +137,37 @@ const ObjectVariantMapper Model::Manufacturer::kMapper = [] () {
  **************************** Model::NetworkInterface ***************************
  ********************************************************************************
  */
-Model::NetworkInterface::NetworkInterface (const IO::Network::Interface& src)
-    : Interface{src}
-{
-}
-
 String NetworkInterface::ToString () const
 {
     Characters::StringBuilder sb;
     sb += L"{";
+    sb += L"Internal-Interface-ID: " + Characters::ToString (fInternalInterfaceID) + L", ";
+    sb += L"Friendly-Name: " + Characters::ToString (fFriendlyName) + L", ";
+    if (fDescription) {
+        sb += L"Description: " + Characters::ToString (*fDescription) + L", ";
+    }
+    if (fType) {
+        sb += L"Type: " + Characters::ToString (*fType) + L", ";
+    }
+    if (fHardwareAddress) {
+        sb += L"Hardware-Address: " + Characters::ToString (*fHardwareAddress) + L", ";
+    }
+    if (fTransmitSpeedBaud) {
+        sb += L"Transmit-Speed-Baud: " + Characters::ToString (*fTransmitSpeedBaud) + L", ";
+    }
+    if (fReceiveLinkSpeedBaud) {
+        sb += L"Receive-Link-Speed-Baud: " + Characters::ToString (*fReceiveLinkSpeedBaud) + L", ";
+    }
+    if (fWirelessInfo) {
+        sb += L"Wireless-Info: " + Characters::ToString (fWirelessInfo) + L", ";
+    }
+    sb += L"Bindings: " + Characters::ToString (fBindings) + L", ";
+
+    sb += L"Gateways: " + Characters::ToString (fGateways) + L", ";
+    sb += L"DNS-Servers: " + Characters::ToString (fDNSServers) + L", ";
+    if (fStatus) {
+        sb += L"Status: " + Characters::ToString (*fStatus) + L", ";
+    }
     sb += L"GUID: " + Characters::ToString (fGUID) + L", ";
     if (fAggregatesReversibly) {
         sb += L"fAggregatesReversibly: " + Characters::ToString (fAggregatesReversibly) + L", ";
@@ -159,7 +181,6 @@ String NetworkInterface::ToString () const
     if (fHistoricalSnapshot) {
         sb += L"fHistoricalSnapshot: " + Characters::ToString (fHistoricalSnapshot) + L", ";
     }
-    sb += Interface::ToString ().SafeSubString (1, -1);
     sb += L"}";
     return sb.str ();
 }
@@ -242,7 +263,6 @@ const ObjectVariantMapper NetworkInterface::kMapper = [] () {
                 {L"id", StructFieldMetaInfo{&NetworkInterface::fGUID}},
                 {L"friendlyName", StructFieldMetaInfo{&NetworkInterface::fFriendlyName}},
                 {L"description", StructFieldMetaInfo{&NetworkInterface::fDescription}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-                // fNetworkGUID INTENTIONALLY OMITTED because doesn't correspond to our network ID, misleading, and unhelpful
                 {L"type", StructFieldMetaInfo{&NetworkInterface::fType}},
                 {L"hardwareAddress", StructFieldMetaInfo{&NetworkInterface::fHardwareAddress}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
                 {L"transmitSpeedBaud", StructFieldMetaInfo{&NetworkInterface::fTransmitSpeedBaud}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},

@@ -28,8 +28,12 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
     using Containers::Set;
     using Stroika::Foundation::Common::GUID;
 
-    struct NetworkInterface : IO::Network::Interface {
 
+    /**
+     *  OK to inherit from Stroika interface (subject to change) because this is not externalized - just
+     *  used internally).
+     */
+    struct NetworkInterface : IO::Network::Interface {
         /**
          *  GUID for this interface - MANUFACTURED by WTF
          // @todo rename fID, and actually auto-generate it uniquly somehow (or OK to use iwndows based one)
