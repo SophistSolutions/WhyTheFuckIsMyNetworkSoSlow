@@ -170,16 +170,16 @@ String NetworkInterface::ToString () const
     }
     sb += L"GUID: " + Characters::ToString (fGUID) + L", ";
     if (fAggregatesReversibly) {
-        sb += L"fAggregatesReversibly: " + Characters::ToString (fAggregatesReversibly) + L", ";
+        sb += L"AggregatesReversibly: " + Characters::ToString (fAggregatesReversibly) + L", ";
     }
     if (fAggregatesIrreversibly) {
-        sb += L"fAggregatesIrreversibly: " + Characters::ToString (fAggregatesIrreversibly) + L", ";
+        sb += L"AggregatesIrreversibly: " + Characters::ToString (fAggregatesIrreversibly) + L", ";
     }
     if (fIDPersistent) {
-        sb += L"fIDPersistent: " + Characters::ToString (fIDPersistent) + L", ";
+        sb += L"IDPersistent: " + Characters::ToString (fIDPersistent) + L", ";
     }
     if (fHistoricalSnapshot) {
-        sb += L"fHistoricalSnapshot: " + Characters::ToString (fHistoricalSnapshot) + L", ";
+        sb += L"HistoricalSnapshot: " + Characters::ToString (fHistoricalSnapshot) + L", ";
     }
     sb += L"}";
     return sb.str ();
@@ -535,9 +535,18 @@ Network::FingerprintType Network::GenerateFingerprintFromProperties () const
     // other way where we didn't include and had to force separate).
     StringBuilder sb;
 
-    auto accumAddrList = [&sb] (const Set<InternetAddress>& ias) {
+#if __cplusplus >= kStrokia_Foundation_Configuration_cplusplus_20
+    auto accumList = [&sb]<typename T> (const Set<T>& ias)
+#else
+    auto accumList = [&sb] (const auto& ias)
+#endif
+    {
+#if not(__cplusplus >= kStrokia_Foundation_Configuration_cplusplus_20)
+        using T = typename decay_t<decltype (ias)>::value_type;
+#endif
         switch (ias.size ()) {
             case 0:
+                sb += L"/";
                 break;
             case 1:
                 sb += ias.Nth (0).As<String> ();
@@ -545,43 +554,7 @@ Network::FingerprintType Network::GenerateFingerprintFromProperties () const
                 break;
             default: {
                 // regularize
-                for (const InternetAddress& i : SortedSet<InternetAddress>{ias}) {
-                    sb += i.As<String> ();
-                    sb += L"/";
-                }
-            } break;
-        }
-    };
-    // SOMEHOW REDO ABOVE GENERICALLY? (could do easily with templates but can do ne
-    //      but requires c++20 - https://stackoverflow.com/questions/3449112/why-cant-templates-be-declared-in-a-function
-    auto accumAddrListCIDR = [&sb] (const Set<CIDR>& ias) {
-        switch (ias.size ()) {
-            case 0:
-                break;
-            case 1:
-                sb += ias.Nth (0).As<String> ();
-                sb += L"/";
-                break;
-            default: {
-                // regularize
-                for (const CIDR& i : SortedSet<CIDR>{ias}) {
-                    sb += i.As<String> ();
-                    sb += L"/";
-                }
-            } break;
-        }
-    };
-    auto accumAddrListSTR = [&sb] (const Set<String>& ias) {
-        switch (ias.size ()) {
-            case 0:
-                break;
-            case 1:
-                sb += ias.Nth (0).As<String> ();
-                sb += L"/";
-                break;
-            default: {
-                // regularize
-                for (const CIDR& i : SortedSet<String>{ias}) {
+                for (const T& i : SortedSet<T>{ias}) {
                     sb += i.As<String> ();
                     sb += L"/";
                 }
@@ -589,14 +562,14 @@ Network::FingerprintType Network::GenerateFingerprintFromProperties () const
         }
     };
     if (fExternalAddresses) {
-        accumAddrList (*fExternalAddresses);
+        accumList (*fExternalAddresses);
     }
-    sb += L"/";
-    accumAddrListCIDR (useCIDRs (fNetworkAddresses));
-    sb += L"/";
-    accumAddrList (useAddresses (fGateways));
-    sb += L"/";
-    accumAddrListSTR (fGatewayHardwareAddresses);
+    sb += L";";
+    accumList (useCIDRs (fNetworkAddresses));
+    sb += L";";
+    accumList (useAddresses (fGateways));
+    sb += L";";
+    accumList (fGatewayHardwareAddresses);
     return Cryptography::Digest::ComputeDigest<Cryptography::Digest::Algorithm::MD5> (sb.str ());
 }
 
