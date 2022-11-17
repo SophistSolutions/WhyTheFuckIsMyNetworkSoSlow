@@ -488,32 +488,31 @@ Network Network::Rollup (const Network& rollupNetwork, const Network& instanceNe
 
 Network::FingerprintType Network::GenerateFingerprintFromProperties () const
 {
-    // LOGIC UP TIL 2022-09-25
-#if 0
-            /*
-             *  A network is not a super-well defined concept, so deciding if two instances of a network refer to the same
-             *  network is a bit of a judgement call.
-             * 
-             *  BUt a few key things probably make sense:
-             *      >   Same ISP
-             *      >   Same GeoLoc (with exceptions)
-             *      >   Same IPv4 CIDR
-             *      >   Same Gateway addresses
-             * 
-             *  Things we allow to differ:
-             *      >   details of any IP-v6 network addresses (if there were IPV4 CIDRs agreed upon).
-             * 
-             *  At least thats by best guess to start as of 2021-08-29
-             */
-#endif
+    /*
+     *  A network is not a super-well defined concept, so deciding if two instances of a network refer to the same
+     *  network is a bit of a judgement call.
+     * 
+     *  But a few key things probably make sense:
+     *      >   Same ISP
+     *      >   Same GeoLoc (with exceptions)
+     *      >   Same IPv4 CIDR
+     *      >   Same Gateway addresses (hardware address, local gateway address, external address)
+     * 
+     *  Things we allow to differ:
+     *      >   details of any IP-v6 network addresses (if there were IPV4 CIDRs agreed upon).
+     * 
+     *  Now since geoloc tends to vary needlessly, and same for ISP reporting, just use the external address.
+     *  This TOO can float (and maybe we want to do something about that like trim a few significant bits?).
+     * 
+     *  note - if external id floats, this will change, and it will look like a new network. NOT SURE best to include
+     *  network id, but often a good idea, and not hard to add records allowing combine of networks (more of a PITA than
+     *  other way where we didn't include and had to force separate).
+     */
     auto useCIDRs = [] (const Set<CIDR>& ias) {
         // for some reason, gateway list sometimes contains IPv4 only, and sometimes IPv4 and IPv6 addresses
         // treat the list the same if the gateway list ipv4s at least are the same (and non-empty)
         // if IPv4 CIDRs same (and non-empty), then ignore differences in IPv4 addressses
         Set<CIDR> ipv4s{ias.Where ([] (const CIDR& i) { return i.GetBaseInternetAddress ().GetAddressFamily () == InternetAddress::AddressFamily::V4; })};
-
-        // If we got here, they differ in IPv6 (or other) address. If they matched on IPV4 (not trivially - because there were none)
-        // ignore the (ipv6) differences
         return ipv4s.empty () ? ias : ipv4s;
     };
     auto useAddresses = [] (const Set<InternetAddress>& ias) {
@@ -521,18 +520,11 @@ Network::FingerprintType Network::GenerateFingerprintFromProperties () const
         // treat the list the same if the gateway list ipv4s at least are the same (and non-empty)
         // if IPv4 CIDRs same (and non-empty), then ignore differences in IPv4 addressses
         Set<InternetAddress> ipv4s{ias.Where ([] (const InternetAddress& i) { return i.GetAddressFamily () == InternetAddress::AddressFamily::V4; })};
-
-        // If we got here, they differ in IPv6 (or other) address. If they matched on IPV4 (not trivially - because there were none)
-        // ignore the (ipv6) differences
         return ipv4s.empty () ? ias : ipv4s;
     };
 
     // combine hardare addresses of gateway with gateway address, and external ip address (and hash)
     // into a single ID that probably mostly uniquely ids a network.
-
-    // note - if external id floats, this will change, and it will look like a new network. NOT SURE best to include
-    // network id, but often a good idea, and not hard to add records allowing combine of networks (more of a PITA than
-    // other way where we didn't include and had to force separate).
     StringBuilder sb;
 
 #if __cplusplus >= kStrokia_Foundation_Configuration_cplusplus_20
