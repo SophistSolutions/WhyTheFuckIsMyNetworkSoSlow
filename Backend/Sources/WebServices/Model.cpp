@@ -546,23 +546,23 @@ Network::FingerprintType Network::GenerateFingerprintFromProperties () const
 #if __cplusplus >= kStrokia_Foundation_Configuration_cplusplus_20
     auto accumList = [&sb]<typename T> (const Set<T>& ias)
 #else
-    auto accumList = [&sb] (const auto& ias)
+    auto accumList = [&sb] (const auto& elts)
 #endif
     {
 #if not(__cplusplus >= kStrokia_Foundation_Configuration_cplusplus_20)
-        using T = typename decay_t<decltype (ias)>::value_type;
+        using T = typename decay_t<decltype (elts)>::value_type;
 #endif
-        switch (ias.size ()) {
+        switch (elts.size ()) {
             case 0:
                 sb += L"/";
                 break;
             case 1:
-                sb += ias.Nth (0).template As<String> ();
+                sb += elts.Nth (0).template As<String> ();
                 sb += L"/";
                 break;
             default: {
                 // regularize
-                for (const T& i : SortedSet<T>{ias}) {
+                for (const T& i : SortedSet<T>{elts}) {
                     sb += i.template As<String> ();
                     sb += L"/";
                 }
