@@ -98,6 +98,7 @@ namespace {
 #endif
         static const Time::Duration                                             kCacheTTL_{5min}; // @todo fix when Stroika Duration bug supports constexpr this should
         static Cache::SynchronizedTimedCache<InternetAddress, optional<String>> sCache_{kCacheTTL_};
+        //sCache_.fHoldWriteLockDuringCacheFill = true; // see random false positive - see if this affects -LGP 2022-11-21 - assertexternally...https://stroika.atlassian.net/browse/STK-956
         try {
             return sCache_.LookupValue (inetAddr, [] (const InternetAddress& inetAddr) {
                 return DNS::kThe.ReverseLookup (inetAddr);

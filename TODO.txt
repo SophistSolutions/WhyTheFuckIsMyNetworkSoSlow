@@ -1,17 +1,45 @@
-stashing and unstashing current chagnes.
+TO DEBUG see if fHoldWriteLockDuringCacheFill gets rid of rare/sporadic failure with Reverse DNS Lookup Cache.
 
-Seem to get crash in unrelated wierd code. @todo understand why my change causes
-crash in rollup!!!
-		Maybe narrow to just one change???
-
+	Turning that to true causes (at least in debug builds) horrible delays so SW unusable. So may need another way.
+	MAYBE I can do to debug?
 
 
-add (if configuration) when writing Network objects- write its network fingerprint (and likewise for
-network-interfaces))
-// Try doing this with AddSubClass, and if works, can use constexpr here
-namespace {
-#define qIncludeFingerprintsInOutputTMP2Test_ 1
-}
+----
+
+	Network INterface IDENTITY
+		+	Rollup interface must allow changing hardwareAddress, or not including hardware address (or set of hardare addresses).
+
+		On Windows machine:
+			"description": "Hyper-V Virtual Ethernet Adapter",
+			"friendlyName": "vEthernet (nat)",
+			 "hardwareAddress": "00:15:5d:dc:3a:a0",
+			but earlier   "hardwareAddress": "00:15:5d:98:09:e6",
+
+	ipconfig/all
+		Ethernet adapter vEthernet (nat):
+
+		Connection-specific DNS Suffix  . :
+		Description . . . . . . . . . . . : Hyper-V Virtual Ethernet Adapter
+		Physical Address. . . . . . . . . : 00-15-5D-DC-3A-A0
+		DHCP Enabled. . . . . . . . . . . : No
+		Autoconfiguration Enabled . . . . : Yes
+		Link-local IPv6 Address . . . . . : fe80::9853:4791:b80c:72f4%18(Preferred)
+		IPv4 Address. . . . . . . . . . . : 172.17.176.1(Preferred)
+		Subnet Mask . . . . . . . . . . . : 255.255.240.0
+		Default Gateway . . . . . . . . . :
+		DHCPv6 IAID . . . . . . . . . . . : 301995357
+		DHCPv6 Client DUID. . . . . . . . : 00-01-00-01-29-C3-74-94-A0-29-19-57-CC-3F
+		NetBIOS over Tcpip. . . . . . . . : Enabled
+
+		@tod see if anything here can be used to identify when the hardware address floats...
+		MAYBE add "COLLECTOR-ID" - and then have aggreagte rule whic is collector-id + interface-name?
+		
+
+
+
+
+
+
 ---
 debug why herecules has two sudbury networks
 
