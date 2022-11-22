@@ -544,7 +544,7 @@ Network::FingerprintType Network::GenerateFingerprintFromProperties () const
     StringBuilder sb;
 
 #if __cplusplus >= kStrokia_Foundation_Configuration_cplusplus_20
-    auto accumList = [&sb]<typename T> (const Set<T>& ias)
+    auto accumList = [&sb]<typename T> (const Set<T>& elts)
 #else
     auto accumList = [&sb] (const auto& elts)
 #endif
