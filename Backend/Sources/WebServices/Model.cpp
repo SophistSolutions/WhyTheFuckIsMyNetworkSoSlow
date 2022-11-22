@@ -311,11 +311,11 @@ const ObjectVariantMapper NetworkInterface::kMapper = [] () {
         {L"idIsPersistent"sv, StructFieldMetaInfo{&NetworkInterface::fIDPersistent}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"historicalSnapshot"sv, StructFieldMetaInfo{&NetworkInterface::fHistoricalSnapshot}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
-    if constexpr (qDebug) {
+#if qDebug
         mapper.AddSubClass<NetworkInterface, NetworkInterface> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
             {L"debugProps", StructFieldMetaInfo{&NetworkInterface::fDebugProps}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         });
-    }
+#endif
     if constexpr (kIncludeFingerprintsInOutputTMP2Test_) {
         mapper.AddSubClass<NetworkInterface, NetworkInterface> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
             {L"fingerprint", TypeMappingDetails{
@@ -683,11 +683,11 @@ const ObjectVariantMapper Network::kMapper = [] () {
         {L"historicalSnapshot"sv, StructFieldMetaInfo{&Network::fHistoricalSnapshot}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"userOverrides"sv, StructFieldMetaInfo{&Network::fUserOverrides}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
-    if constexpr (qDebug) {
+#if qDebug
         mapper.AddSubClass<Network, Network> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
             {L"debugProps", StructFieldMetaInfo{&Network::fDebugProps}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         });
-    }
+#endif
     if constexpr (kIncludeFingerprintsInOutputTMP2Test_) {
         mapper.AddSubClass<Network, Network> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
             {L"fingerprint", ObjectVariantMapper::TypeMappingDetails{
