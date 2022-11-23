@@ -30,6 +30,7 @@ const store = useNetStateStore()
 const props = defineProps({
   networkId: { type: String, required: true },
   includeLinkToDetailsPage: { type: Boolean, required: false, default: false },
+  showExtraDetails: { type: Boolean, required: false, default: false },
 })
 
 defineComponent({
@@ -151,7 +152,7 @@ function GetSubNetworkDisplay_(id: string, summaryOnly: boolean): string {
       <div class="col"> {{ currentNetwork.names.length > 0? currentNetwork.names[0].name: "" }} </div>
     </div>
     <div class="row" v-if="currentNetwork.names.filter(m => m.priority > 1).length > 1">
-      <div class="col-3">Aliases</div>
+      <div class="col-3">{{PluralizeNoun('Alias', currentNetwork.names.filter(m => m.priority > 1).length-1)}}</div>
       <div class="col"> {{ currentNetwork.names.filter(m => m.priority > 1).map (m => m.name).slice(1).join (", ") }}
       </div>
     </div>
@@ -167,11 +168,11 @@ function GetSubNetworkDisplay_(id: string, summaryOnly: boolean): string {
       }} </div>
     </div>
     <div class="row">
-      <div class="col-3">CIDRs</div>
+      <div class="col-3">{{PluralizeNoun('CIDR', currentNetwork.networkAddresses.length)}}</div>
       <div class="col"> {{ GetNetworkCIDRs(currentNetwork) }} </div>
     </div>
     <div class="row" v-if="currentNetwork.DNSServers && currentNetwork.DNSServers.length">
-      <div class="col-3">DNS Server{{currentNetwork.DNSServers.length>=2?"s":""}}</div>
+      <div class="col-3">{{PluralizeNoun ('DNS Server', currentNetwork.DNSServers.length)}}</div>
       <div class="col"> {{ currentNetwork.DNSServers.join(", ") }} </div>
     </div>
     <div class="row" v-if="currentNetwork.externalAddresses && currentNetwork.externalAddresses.length">
@@ -179,7 +180,7 @@ function GetSubNetworkDisplay_(id: string, summaryOnly: boolean): string {
       <div class="col"> {{ currentNetwork.externalAddresses.join(", ") }} </div>
     </div>
     <div class="row" v-if="(currentNetwork.gateways && currentNetwork.gateways.length) || (currentNetwork.gatewayHardwareAddresses && currentNetwork.gatewayHardwareAddresses.length)">
-      <div class="col-3">Gateway (IP / Hardware) {{PluralizeNoun("Address",Math.max(currentNetwork.gateways?.length,currentNetwork.gatewayHardwareAddresses?.length))}}</div>
+      <div class="col-3">Gateway (IP/Hardware) {{PluralizeNoun("Address",Math.max(currentNetwork.gateways?.length,currentNetwork.gatewayHardwareAddresses?.length))}}</div>
       <div class="col"> {{ currentNetwork.gateways?.join(", ") }} / {{ currentNetwork.gatewayHardwareAddresses?.join(", ") }} </div>
     </div>
     <div class="row" v-if="currentNetwork.geographicLocation">
@@ -213,18 +214,18 @@ function GetSubNetworkDisplay_(id: string, summaryOnly: boolean): string {
       </div>
     </div>
     <div class="row" v-if="currentNetwork.historicalSnapshot != true">
-      <div class="col-3">Devices</div>
+      <div class="col-3">{{PluralizeNoun('Device', GetDeviceIDsInNetwork(currentNetwork, allDevices).length)}}</div>
       <div class="col"> <a :href="GetDevicesForNetworkLink(currentNetwork.id)">{{
           GetDeviceIDsInNetwork(currentNetwork, allDevices).length
       }}</a> </div>
     </div>
-    <div class="row" v-if="currentNetwork.attachedInterfaces">
-      <div class="col-3">ATTACHED INTERFACES</div>
+    <div class="row" v-if="currentNetwork.attachedInterfaces && props.showExtraDetails">
+      <div class="col-3">Attached Network {{PluralizeNoun ('Interface', currentNetwork.attachedInterfaces.length)}}</div>
       <div class="col">
         <json-viewer :value="thisNetworksInterfaces" :expand-depth="0" copyable sort class="debugInfoJSONViewers" />
       </div>
     </div>
-    <div class="row" v-if="currentNetwork.debugProps">
+    <div class="row" v-if="currentNetwork.debugProps && props.showExtraDetails">
       <div class="col-3">DEBUG INFO</div>
       <div class="col">
         <json-viewer :value="currentNetwork.debugProps" :expand-depth="0" copyable sort class="debugInfoJSONViewers" />
