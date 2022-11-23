@@ -41,6 +41,9 @@
 #include "Stroika/Frameworks/SystemPerformance/Instruments/Process.h"
 #include "Stroika/Frameworks/SystemPerformance/Measurement.h"
 
+//tmphack
+#include "Stroika/Foundation/Execution/IntervalTimer.h"
+
 #include "Stroika-Current-Version.h"
 
 #include "../Common/BLOBMgr.h"
@@ -123,6 +126,8 @@ WSImpl::WSImpl ()
 
 About WSImpl::GetAbout () const
 {
+    DbgTrace (L"intervalutimertasks=%s", Characters::ToString (Execution::IntervalTimer::Manager::sThe.GetAllRegisteredTasks ()).c_str ());
+
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
     using APIServerInfo  = About::APIServerInfo;
     using ComponentInfo  = APIServerInfo::ComponentInfo;

@@ -119,6 +119,7 @@ namespace {
         NeighborsMonitor fMonitor_{};
         void             DoOnce ()
         {
+            Debug::TraceContextBumper ctx{"KeepCachedMonitorsUpToDate_ TIMER HANDLER"};
             sCachedNeighbors_.store (fMonitor_.GetNeighbors ());
         }
     };

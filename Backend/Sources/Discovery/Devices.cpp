@@ -840,6 +840,7 @@ namespace {
         SSDPDeviceDiscoverer_ ()
             : fIntervalTimerAdder_{
                   [this] () {
+                      Debug::TraceContextBumper ctx{"SSDPDeviceDiscoverer_ TIMER HANDLER"};
                       // @todo must be able to detect nework change, or reason to make this change
                       // for now - just do if missing
                       if (fListener_ == nullptr or fSearcher_ == nullptr) {
