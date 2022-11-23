@@ -385,7 +385,7 @@ namespace {
             // first check if legit id, and then store
             // @todo check if good id and throw if not...
             auto       lk = fCachedDeviceUserSettings_.rwget ();
-            lock_guard lock{this->fDBConnectionPtr_};
+            lock_guard lock{this->fDBConnectionPtr_};   //tmphack fix underlying SQL orm wrapper stuff so not needed --LGP 2022-11-23
             if (settings) {
                 if (fCachedDeviceUserSettings_.cget ().cref ().Lookup (id) != settings) {
                     fDeviceUserSettingsTableConnection_.rwget ().cref ()->AddOrUpdate (ExternalDeviceUserSettingsElt_{id, *settings});
@@ -678,14 +678,14 @@ namespace {
                         Assert (deviceSnapshotsLoaded);
                         Assert (netSnapshotsLoaded);
                         Assert (netInterfaceSnapshotsLoaded);
-                        Logger::sThe.Log (Logger::eInfo, L"Loaded %d network connection snapshots, %d network snapshots and %d device snapshots from database", *netInterfaceSnapshotsLoaded, *netSnapshotsLoaded, *deviceSnapshotsLoaded);
+                        Logger::sThe.Log (Logger::eInfo, L"Loaded %d network interface snapshots, %d network snapshots and %d device snapshots from database", *netInterfaceSnapshotsLoaded, *netSnapshotsLoaded, *deviceSnapshotsLoaded);
                         fFinishedInitialDBLoad_ = true;
                     }
                     // periodically write the latest discovered data to the database
 
                     // UPDATE fDBNetworkInterfaces_ INCREMENTALLY to reflect reflect these merges
                     DiscoveryWrapper_::GetNetworkInterfaces_ ().Apply ([this] (const Model::NetworkInterface& ni) {
-                        lock_guard lock{this->fDBConnectionPtr_};
+                        lock_guard lock{this->fDBConnectionPtr_};     //tmphack fix underlying SQL orm wrapper stuff so not needed --LGP 2022-11-23
                         Assert (ni.fAggregatesReversibly == nullopt); // dont write these summary values
                         fNetworkInterfaceTableConnection_->AddOrUpdate (ni);
                         fDBNetworkInterfaces_.rwget ()->Add (ni);
@@ -694,7 +694,7 @@ namespace {
                     // UPDATE fDBNetworks_ INCREMENTALLY to reflect reflect these merges
                     DiscoveryWrapper_::GetNetworks_ ().Apply ([this] (const Model::Network& n) {
                         Assert (n.fSeen); // don't track/write items which have never been seen
-                        lock_guard lock{this->fDBConnectionPtr_};
+                        lock_guard lock{this->fDBConnectionPtr_};    //tmphack fix underlying SQL orm wrapper stuff so not needed --LGP 2022-11-23
                         Assert (n.fAggregatesReversibly == nullopt); // dont write these summary values
                         fNetworkTableConnection_->AddOrUpdate (n);
                         fDBNetworks_.rwget ()->Add (n);
@@ -705,7 +705,7 @@ namespace {
                         Assert (d.fSeen.EverSeen ());
                         Assert (d.fSeen.EverSeen ());         // don't track/write items which have never been seen
                         Assert (d.fUserOverrides == nullopt); // tracked on rollup devices, not snapshot devices
-                        lock_guard lock{this->fDBConnectionPtr_};
+                        lock_guard lock{this->fDBConnectionPtr_};    //tmphack fix underlying SQL orm wrapper stuff so not needed --LGP 2022-11-23
                         Assert (d.fAggregatesReversibly == nullopt); // dont write these summary values
                         auto rec2Update = fDB_.AddOrMergeUpdate (fDeviceTableConnection_.get (), d);
                         fDBDevices_.rwget ()->Add (rec2Update);
