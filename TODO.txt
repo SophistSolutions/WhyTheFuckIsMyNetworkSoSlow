@@ -1,3 +1,31 @@
+---
+UI
+       IN NEWTWORK DETAILS PAGE
+               "Gateway (IP / Hardware)" probably should have Address appended to label (like External IP Address)
+
+
+---
+Show NetworkInterface information in GUI once we have fetch of the network interface objects working
+(COULD DO BEFORE OR AFTER THE CACHE BY ID STUFF)
+---
+
+	IN HMTL, at least in GUI , show network interface objects - both rollups and snapshots
+
+----
+
+	Once I restructure html code (maybe before) to separately fetch each network (and other object) by ID, I can 
+	redo teh atttachedNetworks field of a device to be JUST the ID, not a mapping of ID to a few interesting key values.
+
+
+
+
+
+--------------------- GUI ABOVE and BACKEND directly below -----------------
+
+
+
+
+
 TO DEBUG see if fHoldWriteLockDuringCacheFill gets rid of rare/sporadic failure with Reverse DNS Lookup Cache.
 
 	Turning that to true causes (at least in debug builds) horrible delays so SW unusable. So may need another way.
@@ -70,83 +98,8 @@ https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/78
 
 		(done ENUF for now, and just do the change in logic so we dont need thos isHistorical flag - see if we can 
 		access cache control header from html))
----
-UI
-       IN NEWTWORK DETAILS PAGE
-               "Gateway (IP / Hardware)" probably should have Address appended to label (like External IP Address)
-
-
----
-Show NetworkInterface information in GUI once we have fetch of the network interface objects working
-(COULD DO BEFORE OR AFTER THE CACHE BY ID STUFF)
----
-
-	IN HMTL, at least in GUI , show network interface objects - both rollups and snapshots
 
 ----
-
-e59ab2d7-09aa-fa02-f030-0d973526dc8f
-	{
-		"UserSettings" : {
-			"aggregateGatewayHardwareAddresses" : [
-				"70:97:41:94:1a:00"
-			],
-			"name" : "Chania"
-		}
-	}
-0f7d1c2e-3b14-07a0-e444-5b83f67debd7
-	{
-		"UserSettings" : {
-			"aggregateGatewayHardwareAddresses" : [
-				"e0:3f:49:e3:1c:a8"
-			],
-			"name" : "34 Church Street"
-		}
-	}
-d4784d78-3bcc-5973-bb9f-3e3a7275d7d5
-{
-    "UserSettings" : {
-        "aggregateFingerprints" : [
-            "ae2c8b83-a5e9-30c3-f23b-cc147d82246a"
-        ],
-SB			"aggregateGatewayHardwareAddresses" : [
-				"34:4d:ea:94:4a:94"
-			],
-        "name" : "Athens-Apartment-2022-10"
-    }
-}
-
-----
-
-	Once I restructure html code (maybe before) to separately fetch each network (and other object) by ID, I can 
-	redo teh atttachedNetworks field of a device to be JUST the ID, not a mapping of ID to a few interesting key values.
-
-----
->>> Review code cehcking in. I think its mostly OK. But verify I do a sensible job producing same answer incremntally as when starting up from scratch.
-  And handling CONFLICTS in specs. Been a while - must consider.
-
-	---
-	from commandline - assure if I delete record from usersettings, it disappears from aggregated networks too immediately.and from database
-	
-	---
-	ALSO - must debug why we get two copies of Sudbury network with the new code as well!
-
-			... review in detail how rollup done. SOME of it cuz at least one record with no hardware address and some with hardware address
-			of gateway.
-
-			BUT ALSO - it appears we CAN get overlapping and random assignment between rollups, which isn't great.
-
-
-			WORKING ON THIS - SEEMS ON SURFACE NOT A BUG. JUST SET userOverrides.aggregateFingerprints
-				but thats not working rihgt, so debug
-
-			thogh names make no sense, try adding to local windows server (and then delete)
-
-
-airplane-greece2boston-2022-10-02
-
-
-
  curl -v -X PATCH --output - -H "Content-Type: application/json" -d '[{"op":"add","path":"/userOverrides/name","value":"airplane-greece2boston-2022-10-02"}]' http://localhost/api/v1/networks/340ceb50-e337-7669-4d5a-5c6f7a03dbb6
 
  issue is when we recompute we dont get the auto-add of the fingerprint rule. So new item created.
@@ -158,9 +111,7 @@ airplane-greece2boston-2022-10-02
 		THEN - must have system POLICY about DELETING OLD UNINTERSTING objects from DB (those with no associated records, or just old rollups - or maybe save just the
 		rollups as rollups - no longer disaggregatable).
 
-		>>>>>>>>>>>>>>>***** ABOVE NEXT*******<<<<<<<<<<<<<<<<<<
-
-
+---
 
 
 hibernate on airplane, and wakeup PC at home, and confused about networks. Need to treat after wakeup
