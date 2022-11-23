@@ -126,8 +126,7 @@ WSImpl::WSImpl ()
 
 About WSImpl::GetAbout () const
 {
-    DbgTrace (L"intervalutimertasks=%s", Characters::ToString (Execution::IntervalTimer::Manager::sThe.GetAllRegisteredTasks ()).c_str ());
-
+    DbgTrace (L"intervalutimertasks=%s", Characters::ToString (Execution::IntervalTimer::Manager::sThe.GetAllRegisteredTasks ()).c_str ()); // to debug https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/78
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
     using APIServerInfo  = About::APIServerInfo;
     using ComponentInfo  = APIServerInfo::ComponentInfo;

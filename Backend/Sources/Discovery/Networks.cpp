@@ -119,7 +119,7 @@ namespace {
         NeighborsMonitor fMonitor_{};
         void             DoOnce ()
         {
-            Debug::TraceContextBumper ctx{"KeepCachedMonitorsUpToDate_ TIMER HANDLER"};
+            Debug::TraceContextBumper ctx{"KeepCachedMonitorsUpToDate_ TIMER HANDLER"}; // to debug https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/78
             sCachedNeighbors_.store (fMonitor_.GetNeighbors ());
         }
     };
