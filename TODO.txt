@@ -2,7 +2,7 @@ TO DEBUG see if fHoldWriteLockDuringCacheFill gets rid of rare/sporadic failure 
 
 	Turning that to true causes (at least in debug builds) horrible delays so SW unusable. So may need another way.
 	MAYBE I can do to debug?
-
+	- havent seen issue since 11/23 --LGP 2022-11-23
 
 ----
 
@@ -34,34 +34,28 @@ TO DEBUG see if fHoldWriteLockDuringCacheFill gets rid of rare/sporadic failure 
 		@tod see if anything here can be used to identify when the hardware address floats...
 		MAYBE add "COLLECTOR-ID" - and then have aggreagte rule whic is collector-id + interface-name?
 
-
-
-
-
-
+		MAYBE just not an issue... Need to be able to better hide unintesting networks from UI.
+		That maybe the fix.
 
 ---
-debug why herecules has two sudbury networks
+https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/78
+		sporadic spinning issue on hercules (1.0 CPU); build from github actions doe sthis (but maybe not immediately).
+		TEST build from my source code with logging on.
 
----
-sporadic spinning issue on hercules (1.0 CPU); build from github actions doe sthis (but maybe not immediately).
-TEST build from my source code with logging on.
+			(SO FAR CANNOT REPRODUCE - TRY BUILD FROM GITHUB ACTIONS AGAIN)
+			(TEST MORE AND THEN CLOSE)
+			(cannot reproduce when im loooking but still saw today
+			it was after erorr )
+						6 15:25:33 Hercules systemd[1]: Started Why the Fuck is My Network So Slow.
+					Nov 16 15:28:03 Hercules WhyTheFuckIsMyNetworkSoSlow[3485389]: Database operation exception: Exception: Device or resource busy (lastsql 'UPDATE Devices SET name=NULL, _other_fields_=x'7b0a202020202261747461636865644e6574776f726b7322203a…')
+					Nov 16 15:28:03 Hercules WhyTheFuckIsMyNetworkSoSlow[3485389]: Database update: ignoring exception in BackgroundDatabaseThread_ loop (will retry in 30 seconds): Exception: Device or resource busy
+					Nov 16 15:28:05 Hercules WhyTheFuckIsMyNetworkSoSlow[3485389]: Database operation exception: Exception: Device or resource busy (lastsql 'INSERT INTO BLOB (contentType, blob, id) VALUES (NULL, x'89504e470d0a1a0a0000000d494844520000003000…')
+					Nov 16 15:31:20 Hercules sy
+			cannot get to happen again. MIGHT be issue caused by this error.
+			Can use 2a vrsion to look at logs. BUt first use non-log version (sinc eonly ever saw with that).
+			and use top -H to find the thread that is bsuy waiting.
 
-	(SO FAR CANNOT REPRODUCE - TRY BUILD FROM GITHUB ACTIONS AGAIN)
-	(TEST MORE AND THEN CLOSE)
-	(cannot reproduce when im loooking but still saw today
-	it was after erorr )
-				6 15:25:33 Hercules systemd[1]: Started Why the Fuck is My Network So Slow.
-			Nov 16 15:28:03 Hercules WhyTheFuckIsMyNetworkSoSlow[3485389]: Database operation exception: Exception: Device or resource busy (lastsql 'UPDATE Devices SET name=NULL, _other_fields_=x'7b0a202020202261747461636865644e6574776f726b7322203a…')
-			Nov 16 15:28:03 Hercules WhyTheFuckIsMyNetworkSoSlow[3485389]: Database update: ignoring exception in BackgroundDatabaseThread_ loop (will retry in 30 seconds): Exception: Device or resource busy
-			Nov 16 15:28:05 Hercules WhyTheFuckIsMyNetworkSoSlow[3485389]: Database operation exception: Exception: Device or resource busy (lastsql 'INSERT INTO BLOB (contentType, blob, id) VALUES (NULL, x'89504e470d0a1a0a0000000d494844520000003000…')
-			Nov 16 15:31:20 Hercules sy
-	cannot get to happen again. MIGHT be issue caused by this error.
-	Can use 2a vrsion to look at logs. BUt first use non-log version (sinc eonly ever saw with that).
-	and use top -H to find the thread that is bsuy waiting.
-
-	--- > Its Default-Interval-Timer!!! so one of my timers is buggy (or stroika code).
-	
+			--- > Its Default-Interval-Timer!!! so one of my timers is buggy (or stroika code).
 
 ---
 	// USE CACHEABILIYT HEADERS ON RESULTS FROM WSAPI that are IMMUTABLE, SAYING THEY CNA BE CACHED (largely forever) - but maybe say 1 day).
