@@ -52,7 +52,7 @@ function wsAPIMsg(info: IAPIEndpoint, showShort: boolean): string {
     msg += `${info.callsCompleted} calls; `;
   }
   if (!showShort || info.errors != 0) {
-    msg += `errors: ${info.errors}; `;
+    msg += `${info.errors} error${info.errors==1?"":"s"}; `;
   }
   if (showShort) {
     msg += `${info.medianWebServerConnections ?? "?"} connections`;
@@ -77,7 +77,7 @@ function wsAPIMsg(info: IAPIEndpoint, showShort: boolean): string {
 function dbStatsMsg(info: IDatabase, showShort: boolean): string {
   let msg = "";
   if (!showShort || info.errors != 0) {
-    msg += `errors: ${info.errors}; `;
+    msg += `${info.errors} error${info.errors==1?"":"s"}; `;
   }
   if (info.fileSize) {
     msg += `${prettyBytes(info.fileSize)}; `
