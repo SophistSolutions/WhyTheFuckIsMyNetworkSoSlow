@@ -15,6 +15,8 @@ import {
   GetNetworkName,
 } from "../models/network/Utils";
 
+import { PluralizeNoun } from 'src/utils/Linguistics';
+
 
 // Components
 import ReadOnlyTextWithHover from '../components/ReadOnlyTextWithHover.vue';
@@ -173,11 +175,11 @@ function GetSubNetworkDisplay_(id: string, summaryOnly: boolean): string {
       <div class="col"> {{ currentNetwork.DNSServers.join(", ") }} </div>
     </div>
     <div class="row" v-if="currentNetwork.externalAddresses && currentNetwork.externalAddresses.length">
-      <div class="col-3">External IP Address{{currentNetwork.externalAddresses.length>=2?"es":""}}</div>
+      <div class="col-3">External IP {{PluralizeNoun("Address",currentNetwork.externalAddresses.length)}}</div>
       <div class="col"> {{ currentNetwork.externalAddresses.join(", ") }} </div>
     </div>
     <div class="row" v-if="(currentNetwork.gateways && currentNetwork.gateways.length) || (currentNetwork.gatewayHardwareAddresses && currentNetwork.gatewayHardwareAddresses.length)">
-      <div class="col-3">Gateway{{((currentNetwork.gateways?.length>=2)||(currentNetwork.gatewayHardwareAddresses?.length>=2))?"s":""}} (IP / Hardware)</div>
+      <div class="col-3">Gateway (IP / Hardware) {{PluralizeNoun("Address",Math.max(currentNetwork.gateways?.length,currentNetwork.gatewayHardwareAddresses?.length))}}</div>
       <div class="col"> {{ currentNetwork.gateways?.join(", ") }} / {{ currentNetwork.gatewayHardwareAddresses?.join(", ") }} </div>
     </div>
     <div class="row" v-if="currentNetwork.geographicLocation">

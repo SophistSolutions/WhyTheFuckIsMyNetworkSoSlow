@@ -7,6 +7,7 @@ import prettyBytes from 'pretty-bytes';
 import { kCompileTimeConfiguration } from '../config/config';
 import { IAbout, IAPIEndpoint, IComponent, IDatabase } from "../models/IAbout";
 import { useNetStateStore } from '../stores/Net-State-store'
+import { PluralizeNoun } from 'src/utils/Linguistics';
 
 let polling: undefined | NodeJS.Timeout;
 const $q = useQuasar()
@@ -52,7 +53,7 @@ function wsAPIMsg(info: IAPIEndpoint, showShort: boolean): string {
     msg += `${info.callsCompleted} calls; `;
   }
   if (!showShort || info.errors != 0) {
-    msg += `${info.errors} error${info.errors==1?"":"s"}; `;
+    msg += `${info.errors} ${PluralizeNoun('error', info.errors)}; `;
   }
   if (showShort) {
     msg += `${info.medianWebServerConnections ?? "?"} connections`;
@@ -77,7 +78,7 @@ function wsAPIMsg(info: IAPIEndpoint, showShort: boolean): string {
 function dbStatsMsg(info: IDatabase, showShort: boolean): string {
   let msg = "";
   if (!showShort || info.errors != 0) {
-    msg += `${info.errors} error${info.errors==1?"":"s"}; `;
+    msg += `${info.errors} ${PluralizeNoun('error', info.errors)}; `;
   }
   if (info.fileSize) {
     msg += `${prettyBytes(info.fileSize)}; `
