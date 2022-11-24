@@ -68,6 +68,12 @@ onUnmounted(() => {
 </script>
 
 <template>
+  <!--
+    @todo add a page with networkInnterface as only argument, and then have LINK to one of those and make links
+    in 'aggreates' below point ot that page so you can easily link/view one of the detail interfaces... (now you have to
+    follow the dated network or device itself to find corresponding link)
+  -->
+  <!-- @TODO ADD: idIsPersitsnet, historicalSnapshot, and wirelessINFO DATA-->
   <div v-if="currentNetworkInterface || true" class="q-pa-sm">
     <div class="row" v-if="currentNetworkInterface?.friendlyName">
       <div class="col-3">Friendly Name</div>
@@ -80,6 +86,14 @@ onUnmounted(() => {
     <div class="row" v-if="currentNetworkInterface?.description">
       <div class="col-3">Description</div>
       <div class="col"> {{currentNetworkInterface.description}} </div>
+    </div>
+    <div class="row" v-if="currentNetworkInterface?.platformInterfaceID">
+      <div class="col-3">Platform Interface ID</div>
+      <div class="col"> {{currentNetworkInterface.platformInterfaceID}} </div>
+    </div>
+    <div class="row" v-if="currentNetworkInterface?.status">
+      <div class="col-3">Status</div>
+      <div class="col"> {{currentNetworkInterface.status.join (", ")}} </div>
     </div>
     <div class="row">
       <div class="col-3">ID</div>
@@ -108,6 +122,28 @@ onUnmounted(() => {
     <div class="row" v-if="currentNetworkInterface?.gateways">
       <div class="col-3">Gateways</div>
       <div class="col"> {{currentNetworkInterface.gateways.join(", ")}} </div>
+    </div>
+    <div class="row" v-if="currentNetworkInterface?.aggregatesReversibly && currentNetworkInterface.aggregatesReversibly.length">
+      <div class="col-3">Aggregates Reversibly</div>
+      <div class="col">
+        <div class="row wrap"><span
+            v-for="aggregate in currentNetworkInterface.aggregatesReversibly"
+            v-bind:key="aggregate" class="aggregatesItem">
+            <ReadOnlyTextWithHover :message="aggregate"
+           />;&nbsp;
+          </span></div>
+      </div>
+    </div>
+    <div class="row" v-if="currentNetworkInterface?.aggregatesIrreversibly && currentNetworkInterface.aggregatesIrreversibly.length">
+      <div class="col-3">Aggregates Irreversibly</div>
+      <div class="col">
+        <div class="row wrap"><span
+            v-for="aggregate in currentNetworkInterface.aggregatesIrreversibly"
+            v-bind:key="aggregate" class="aggregatesItem">
+            <ReadOnlyTextWithHover :message="aggregate"
+           />;&nbsp;
+          </span></div>
+      </div>
     </div>
     <div class="row" v-if="currentNetworkInterface?.debugProps && props.showExtraDetails">
       <div class="col-3">DEBUG INFO</div>

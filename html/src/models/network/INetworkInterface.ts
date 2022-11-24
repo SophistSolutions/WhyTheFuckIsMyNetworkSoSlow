@@ -1,16 +1,22 @@
 // INCOMPLETE list of fields, but a good start
 export interface INetworkInterface {
+  platformInterfaceID: string;
   id: string;
-  DNSServers?: string[];
+  friendlyName: string;
+  description?: string;
+  type: string;
+  hardwareAddress?: string;
+  transmitSpeedBaud?: number;
+  receiveLinkSpeedBaud?: number;
+  wirelessInformation?: object;
   boundAddressRanges?: string[];
   boundAddresses?: string[];
   gateways?: string[];
-  friendlyName?: string;
-  hardwareAddress?: string;
-  description?: string;
-  transmitSpeedBaud?: number;
-  receiveLinkSpeedBaud?: number;
-  type?: string;
-  wirelessInformation?: object;
+  DNSServers?: string[];
+  status?: string[];
+  aggregatesReversibly?: string[];
+  aggregatesIrreversibly?: string[];
+  idIsPersistent?: boolean;
+  historicalSnapshot?: boolean;
   debugProps?: object;
 }

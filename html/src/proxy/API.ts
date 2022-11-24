@@ -15,8 +15,17 @@ import { gRuntimeConfiguration } from 'boot/configuration';
 import { Logger } from '../utils/Logger';
 import { IDateTimeRange } from 'src/models/common/IDateTimeRange';
 
+// On Chrome, CORS frequently fails - not sure why. In chrome debugger, Access-Control-Allow-Origin 
+// lines not showing up but do in other browsers (edge)
+// --LGP 2022-11-24
+//const kFetchOptions_: RequestInit = { mode: 'no-cors' };
+const kFetchOptions_: RequestInit = {}
+
 export async function fetchNetworks(): Promise<INetwork[]> {
-  return fetch(`${gRuntimeConfiguration.API_ROOT}/api/v1/networks?recurse=true`)
+  return fetch(
+    `${gRuntimeConfiguration.API_ROOT}/api/v1/networks?recurse=true`,
+    kFetchOptions_
+  )
     .then((response) => response.json())
     .then((data) => {
       return data;
@@ -80,7 +89,10 @@ function jsonPatch2IDevice_(d: IDevice) {
 }
 
 export async function fetchNetwork(id: string): Promise<INetwork> {
-  return fetch(`${gRuntimeConfiguration.API_ROOT}/api/v1/networks/${id}`)
+  return fetch(
+    `${gRuntimeConfiguration.API_ROOT}/api/v1/networks/${id}`,
+    kFetchOptions_
+  )
     .then((response) => response.json())
     .then((data) => {
       jsonPatch2INetwork_(data);
@@ -89,9 +101,12 @@ export async function fetchNetwork(id: string): Promise<INetwork> {
     .catch((error) => Logger.error(error));
 }
 
-export async function fetchAllActiveNetworkInterfaces(): Promise<INetworkInterface[]> {
+export async function fetchAllActiveNetworkInterfaces(): Promise<
+  INetworkInterface[]
+> {
   return fetch(
-    `${gRuntimeConfiguration.API_ROOT}/api/v1/network-interfaces?recurse=true`
+    `${gRuntimeConfiguration.API_ROOT}/api/v1/network-interfaces?recurse=true`,
+    kFetchOptions_
   )
     .then((response) => response.json())
     .then((data) => {
@@ -100,9 +115,12 @@ export async function fetchAllActiveNetworkInterfaces(): Promise<INetworkInterfa
     .catch((error) => Logger.error(error));
 }
 
-export async function fetchNetworkInterface(id:string): Promise<INetworkInterface> {
+export async function fetchNetworkInterface(
+  id: string
+): Promise<INetworkInterface> {
   return fetch(
-    `${gRuntimeConfiguration.API_ROOT}/api/v1/network-interfaces/${id}`
+    `${gRuntimeConfiguration.API_ROOT}/api/v1/network-interfaces/${id}`,
+    kFetchOptions_
   )
     .then((response) => response.json())
     .then((data) => {
@@ -113,7 +131,8 @@ export async function fetchNetworkInterface(id:string): Promise<INetworkInterfac
 
 export async function rescanDevice(deviceID: string): Promise<void> {
   return fetch(
-    `${gRuntimeConfiguration.API_ROOT}/api/v1/operations/scan/FullRescan?deviceID=${deviceID}`
+    `${gRuntimeConfiguration.API_ROOT}/api/v1/operations/scan/FullRescan?deviceID=${deviceID}`,
+    kFetchOptions_
   )
     .then((response) => response.json())
     .then((data) => {
@@ -151,7 +170,8 @@ export async function fetchDevices(
       gRuntimeConfiguration.API_ROOT
     }/api/v1/devices?recurse=true&sort=${encodeURI(
       JSON.stringify(searchSpecs)
-    )}`
+    )}`,
+    kFetchOptions_
   )
     .then((response) => response.json())
     .then((data) => {
@@ -167,7 +187,10 @@ export async function fetchDevices(
 }
 
 export async function fetchDevice(id: string): Promise<IDevice> {
-  return fetch(`${gRuntimeConfiguration.API_ROOT}/api/v1/devices/${id}`)
+  return fetch(
+    `${gRuntimeConfiguration.API_ROOT}/api/v1/devices/${id}`,
+    kFetchOptions_
+  )
     .then((response) => response.json())
     .then((data) => {
       jsonPatch2IDevice_(data);
@@ -180,7 +203,7 @@ export async function fetchDevice(id: string): Promise<IDevice> {
 }
 
 export async function fetchAboutInfo(): Promise<IAbout> {
-  return fetch(`${gRuntimeConfiguration.API_ROOT}/api/v1/about`)
+  return fetch(`${gRuntimeConfiguration.API_ROOT}/api/v1/about`, kFetchOptions_)
     .then((response) => response.json())
     .then((data) => {
       return data;

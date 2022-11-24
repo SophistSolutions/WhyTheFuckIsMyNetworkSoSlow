@@ -1,8 +1,21 @@
 Show NetworkInterface information in GUI once we have fetch of the network interface objects working
 (COULD DO BEFORE OR AFTER THE CACHE BY ID STUFF)
----
 
-	IN HMTL, at least in GUI , show network interface objects - both rollups and snapshots
+	Do Component for Network-interface
+		optional param - single-line-summary or full-view
+
+	Do Component for Network-Interfaces-list
+
+	THEN do store support for network-interfaces.
+
+
+		(mostly done above but:)
+			- wireless info
+			- review / compare actual and C++ and .ts and gui to make sure all shown/appropriuate
+			- review why some link speed numbers look iffy on windows (bluetooth)
+
+	- verify etag conditional gets working properly (chrome debugger makes it look like not working right)
+
 
 ----
 
