@@ -145,6 +145,59 @@ onUnmounted(() => {
           </span></div>
       </div>
     </div>
+    <div class="row" v-if="currentNetworkInterface?.wirelessInformation ">
+      <div class="col-3">Wireless</div>
+      <div class="col">
+        <div class="row wrap">
+          <div class="col-4">SSID</div>
+          <div>{{currentNetworkInterface?.wirelessInformation.SSID}}</div>
+        </div>
+        <div class="row wrap" v-if="currentNetworkInterface?.wirelessInformation.profileName">
+          <div class="col-4">profileName</div>
+          <div>{{currentNetworkInterface?.wirelessInformation.profileName}}</div>
+        </div>
+        <div class="row wrap">
+          <div class="col-4">State</div>
+          <div>{{currentNetworkInterface?.wirelessInformation.state}}</div>
+        </div>
+        <div class="row wrap" v-if="currentNetworkInterface?.wirelessInformation.signalQuality">
+          <div class="col-4">Signal Quality</div>
+          <div>{{currentNetworkInterface?.wirelessInformation.signalQuality}}</div>
+        </div>
+        <div class="row wrap" v-if="currentNetworkInterface?.wirelessInformation.MACAddress">
+          <div class="col-4">MACAddress</div>
+          <div>{{currentNetworkInterface?.wirelessInformation.MACAddress}}</div>
+        </div>
+        <div class="row wrap" v-if="currentNetworkInterface?.wirelessInformation.authAlgorithm">
+          <div class="col-4">Auth Algorithm</div>
+          <div>{{currentNetworkInterface?.wirelessInformation.authAlgorithm}}</div>
+        </div>
+        <div class="row wrap" v-if="currentNetworkInterface?.wirelessInformation.cipher">
+          <div class="col-4">Cipher</div>
+          <div>{{currentNetworkInterface?.wirelessInformation.cipher}}</div>
+        </div>
+        <div class="row wrap" v-if="currentNetworkInterface?.wirelessInformation.BSSType">
+          <div class="col-4">BSSType</div>
+          <div>{{currentNetworkInterface?.wirelessInformation.BSSType}}</div>
+        </div>
+        <div class="row wrap" v-if="currentNetworkInterface?.wirelessInformation.physicalConnectionType">
+          <div class="col-4">Physical Connection Type</div>
+          <div>{{currentNetworkInterface?.wirelessInformation.physicalConnectionType}}</div>
+        </div>
+        <div class="row wrap" v-if="currentNetworkInterface?.wirelessInformation.securityEnabled">
+          <div class="col-4">Security</div>
+          <div>{{currentNetworkInterface?.wirelessInformation.securityEnabled==true? "enabled": "disabled"}}</div>
+        </div>
+        <div class="row wrap" v-if="currentNetworkInterface?.wirelessInformation.x8021Enabled">
+          <div class="col-4">8021x Enabled</div>
+          <div>{{currentNetworkInterface?.wirelessInformation.x8021Enabled}}</div>
+        </div>
+        <div class="row wrap" v-if="currentNetworkInterface?.wirelessInformation.connectionMode">
+          <div class="col-4">Connection Mode</div>
+          <div>{{currentNetworkInterface?.wirelessInformation.connectionMode}}</div>
+        </div>
+      </div>
+    </div>
     <div class="row" v-if="currentNetworkInterface?.debugProps && props.showExtraDetails">
       <div class="col-3">DEBUG INFO</div>
       <div class="col">

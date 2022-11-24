@@ -1,28 +1,17 @@
-Show NetworkInterface information in GUI once we have fetch of the network interface objects working
-(COULD DO BEFORE OR AFTER THE CACHE BY ID STUFF)
-
-	Do Component for Network-interface
-		optional param - single-line-summary or full-view
-
-	Do Component for Network-Interfaces-list
-
-	THEN do store support for network-interfaces.
-
-
+Network-interface GUI
 		(mostly done above but:)
-			- wireless info
-			- review / compare actual and C++ and .ts and gui to make sure all shown/appropriuate
 			- review why some link speed numbers look iffy on windows (bluetooth)
-
 	- verify etag conditional gets working properly (chrome debugger makes it look like not working right)
 
+	- Seen value not being dynamically updated on network interfaces (stays stuck on when found).
+		"15 minutes ago up until 14 minutes ago" when actively changing
+	- dynamic changes like unplugign etihernet and going to wireless and then plugging in and back not properly reflected
+	- Show baud rate better than 10000000 (3.4Mbps eg.)
 
 ----
 
 	Once I restructure html code (maybe before) to separately fetch each network (and other object) by ID, I can 
 	redo teh atttachedNetworks field of a device to be JUST the ID, not a mapping of ID to a few interesting key values.
-
-
 
 
 

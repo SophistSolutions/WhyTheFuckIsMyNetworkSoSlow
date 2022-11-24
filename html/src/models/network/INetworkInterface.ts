@@ -1,4 +1,18 @@
-// INCOMPLETE list of fields, but a good start
+export interface IWirelessInfo {
+  SSID?: string;
+  state?: string;
+  connectionMode?: string;
+  profileName?: string;
+  BSSType?: string;
+  MACAddress?: string;
+  physicalConnectionType?: string;
+  signalQuality?: number;
+  securityEnabled?: boolean;
+  x8021Enabled?: boolean;
+  authAlgorithm?: string;
+  cipher?: string;
+}
+
 export interface INetworkInterface {
   platformInterfaceID: string;
   id: string;
@@ -8,7 +22,7 @@ export interface INetworkInterface {
   hardwareAddress?: string;
   transmitSpeedBaud?: number;
   receiveLinkSpeedBaud?: number;
-  wirelessInformation?: object;
+  wirelessInformation?: IWirelessInfo;
   boundAddressRanges?: string[];
   boundAddresses?: string[];
   gateways?: string[];
@@ -20,3 +34,4 @@ export interface INetworkInterface {
   historicalSnapshot?: boolean;
   debugProps?: object;
 }
+
