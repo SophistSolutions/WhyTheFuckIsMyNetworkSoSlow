@@ -11,7 +11,7 @@ import {
   fetchDevice,
   fetchDevices,
   fetchNetwork,
-  fetchNetworkInterfaces,
+  fetchNetworkInterface,
   fetchNetworks,
 } from "../proxy/API";
 
@@ -35,7 +35,7 @@ export const useNetStateStore = defineStore('Net-State-Store', {
     // cache of objects, some of which maybe primary networks (rollups) and some maybe details
     networkDetails: {} as { [key: string]: INetwork },
     loadingNetworks: { numberOfTimesLoaded: 0, numberOfOutstandingLoadRequests: 0 } as ILoading,
-    networkInterfaces: [] as INetworkInterface[],
+    networkInterfaces: {} as { [key: string]: INetworkInterface},
     selectedNetworkId: {} as string,
     rolledUpDeviceIDs: [] as string[],
     // cache of objects, some of which maybe primary devices (rollups) and some maybe details
@@ -55,8 +55,16 @@ export const useNetStateStore = defineStore('Net-State-Store', {
     getNetwork: (state) => {
       return (id: string) => state.networkDetails[id];
     },
+    getNetworkInterface: (state) => {
+      return (id: string) : INetworkInterface=> state.networkInterfaces[id];
+    },
     getNetworkInterfaces: (state) => {
-      return state.networkInterfaces;
+      return (ids: string[]) => Object.keys(state.networkInterfaces)
+      .filter(key => ids.includes(key))
+      .reduce((obj, key) => {
+        obj[key] = state.networkInterfaces[key];
+        return obj;
+      }, {});;
     },
     getDevices: (state) => {
       return state.rolledUpDeviceIDs.map((di) => state.deviceDetails[di]);
@@ -82,8 +90,8 @@ export const useNetStateStore = defineStore('Net-State-Store', {
       this.rolledUpAvailableNetworkIDs = networks.map((x) => x.id);
       networks.forEach((x) => (this.networkDetails[x.id] = x));
     },
-    async fetchNetworkInterfaces() {
-      this.networkInterfaces = await fetchNetworkInterfaces();
+    async fetchNetworkInterfaces(ids: string[]) {
+      ids.forEach( async (i:string) => this.networkInterfaces[i] = await fetchNetworkInterface (i))
     },
     async fetchNetworks(ids: string[]) {
       // primitive WSAPI throttling

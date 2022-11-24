@@ -89,9 +89,20 @@ export async function fetchNetwork(id: string): Promise<INetwork> {
     .catch((error) => Logger.error(error));
 }
 
-export async function fetchNetworkInterfaces(): Promise<INetworkInterface[]> {
+export async function fetchAllActiveNetworkInterfaces(): Promise<INetworkInterface[]> {
   return fetch(
     `${gRuntimeConfiguration.API_ROOT}/api/v1/network-interfaces?recurse=true`
+  )
+    .then((response) => response.json())
+    .then((data) => {
+      return data;
+    })
+    .catch((error) => Logger.error(error));
+}
+
+export async function fetchNetworkInterface(id:string): Promise<INetworkInterface> {
+  return fetch(
+    `${gRuntimeConfiguration.API_ROOT}/api/v1/network-interfaces/${id}`
   )
     .then((response) => response.json())
     .then((data) => {

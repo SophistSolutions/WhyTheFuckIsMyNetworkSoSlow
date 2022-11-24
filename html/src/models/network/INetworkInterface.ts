@@ -6,6 +6,8 @@ export interface INetworkInterface {
   boundAddresses?: string[];
   gateways?: string[];
   friendlyName?: string;
+  hardwareAddress?: string;
+  description?: string;
   transmitSpeedBaud?: number;
   receiveLinkSpeedBaud?: number;
   type?: string;

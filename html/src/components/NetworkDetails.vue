@@ -50,31 +50,6 @@ let currentNetwork = computed<INetwork | undefined>(
   () => store.getNetwork(props.networkId)
 )
 
-let networkInterfaces = computed<INetworkInterface[]>(
-  () => store.getNetworkInterfaces
-)
-
-let thisNetworksInterfaces = computed<INetworkInterface[]>(
-  () => {
-    const result: INetworkInterface[] = [];
-    if (currentNetwork.value) {
-      currentNetwork.value.attachedInterfaces.forEach((e) => {
-        let answer: INetworkInterface | undefined;
-        networkInterfaces.value.forEach((ni) => {
-          if (e === ni.id) {
-            answer = ni;
-          }
-        });
-        if (answer === undefined) {
-          answer = { id: e };
-        }
-        result.push(answer);
-      });
-    }
-    return result;
-  }
-)
-
 function doFetches() {
   store.fetchNetworks([props.networkId]);
   store.fetchActiveDevices();
@@ -172,9 +147,19 @@ function GetSubNetworkDisplay_(id: string, summaryOnly: boolean): string {
       <div class="col-3">{{PluralizeNoun('CIDR', currentNetwork.networkAddresses.length)}}</div>
       <div class="col"> {{ GetNetworkCIDRs(currentNetwork) }} </div>
     </div>
-    <div class="row" v-if="currentNetwork.DNSServers && currentNetwork.DNSServers.length">
-      <div class="col-3">{{PluralizeNoun ('DNS Server', currentNetwork.DNSServers.length)}}</div>
-      <div class="col"> {{ currentNetwork.DNSServers.join(", ") }} </div>
+    <div class="row" v-if="currentNetwork.geographicLocation">
+      <div class="col-3">Geographic Location</div>
+      <div class="col"> {{ FormatLocation(currentNetwork.geographicLocation) ?? "?" }} </div>
+    </div>
+    <div class="row" v-if="currentNetwork.internetServiceProvider">
+      <div class="col-3">Internet Service Provider</div>
+      <div class="col"> {{ currentNetwork.internetServiceProvider.name }} </div>
+    </div>
+    <div class="row" v-if="currentNetwork.historicalSnapshot != true">
+      <div class="col-3">{{PluralizeNoun('Device', GetDeviceIDsInNetwork(currentNetwork, allDevices).length)}}</div>
+      <div class="col"> <a :href="GetDevicesForNetworkLink(currentNetwork.id)">{{
+          GetDeviceIDsInNetwork(currentNetwork, allDevices).length
+      }}</a> </div>
     </div>
     <div class="row" v-if="currentNetwork.externalAddresses && currentNetwork.externalAddresses.length">
       <div class="col-3">External IP {{PluralizeNoun("Address",currentNetwork.externalAddresses.length)}}</div>
@@ -184,13 +169,9 @@ function GetSubNetworkDisplay_(id: string, summaryOnly: boolean): string {
       <div class="col-3">Gateway (IP/Hardware) {{PluralizeNoun("Address",Math.max(currentNetwork.gateways?.length,currentNetwork.gatewayHardwareAddresses?.length))}}</div>
       <div class="col"> {{ currentNetwork.gateways?.join(", ") }} / {{ currentNetwork.gatewayHardwareAddresses?.join(", ") }} </div>
     </div>
-    <div class="row" v-if="currentNetwork.geographicLocation">
-      <div class="col-3">Geographic Location</div>
-      <div class="col"> {{ FormatLocation(currentNetwork.geographicLocation) ?? "?" }} </div>
-    </div>
-    <div class="row" v-if="currentNetwork.internetServiceProvider">
-      <div class="col-3">Internet Service Provider</div>
-      <div class="col"> {{ currentNetwork.internetServiceProvider.name }} </div>
+    <div class="row" v-if="currentNetwork.DNSServers && currentNetwork.DNSServers.length">
+      <div class="col-3">{{PluralizeNoun ('DNS Server', currentNetwork.DNSServers.length)}}</div>
+      <div class="col"> {{ currentNetwork.DNSServers.join(", ") }} </div>
     </div>
     <div class="row" v-if="currentNetwork.aggregatesReversibly && currentNetwork.aggregatesReversibly.length">
       <div class="col-3">Aggregates Reversibly</div>
@@ -213,12 +194,6 @@ function GetSubNetworkDisplay_(id: string, summaryOnly: boolean): string {
               :popup-title="GetSubNetworkDisplay_(aggregate, false)" :link="'/#/network/' + aggregate" />;&nbsp;
           </span> </div>
       </div>
-    </div>
-    <div class="row" v-if="currentNetwork.historicalSnapshot != true">
-      <div class="col-3">{{PluralizeNoun('Device', GetDeviceIDsInNetwork(currentNetwork, allDevices).length)}}</div>
-      <div class="col"> <a :href="GetDevicesForNetworkLink(currentNetwork.id)">{{
-          GetDeviceIDsInNetwork(currentNetwork, allDevices).length
-      }}</a> </div>
     </div>
     <div class="row" v-if="currentNetwork.attachedInterfaces && props.showExtraDetails">
       <div class="col-3">Attached Network {{PluralizeNoun ('Interface', currentNetwork.attachedInterfaces.length)}}</div>

@@ -57,7 +57,7 @@ let device: ComputedRef<IDevice | null> = computed(() => {
   <q-page padding class=" justify-center row">
     <q-card class="pageCard col-11">
       <q-card-section class="text-subtitle2">
-        Device {{ device == null ? "loading..." : '"' + device.name + '"' }}
+        Device Details for {{ device == null ? "loading..." : '"' + device.name + '"' }}
       </q-card-section>
       <q-card-section>
         <DeviceDetails v-if="device" :deviceId="device.id" :showExtraDetails="true" />
