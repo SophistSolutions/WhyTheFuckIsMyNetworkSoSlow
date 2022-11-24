@@ -144,12 +144,12 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
     struct NetworkInterface {
         NetworkInterface ()                            = default;
         NetworkInterface (const NetworkInterface& src) = default;
-        //     explicit NetworkInterface (const IO::Network::Interface& src);
 
         using SystemIDType = IO::Network::Interface::SystemIDType;
 
         /**
-        * @see IO::Network::Interface::fInternalInterfaceID
+         *  \brief platformInterfaceID
+         * @see IO::Network::Interface::fInternalInterfaceID
          */
         SystemIDType fInternalInterfaceID;
 
