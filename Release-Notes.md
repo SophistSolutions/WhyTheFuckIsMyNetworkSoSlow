@@ -318,7 +318,7 @@ High level summary of changes in WhyTheFuckIsMyNetworkSoSlow.
   - npm latest components (but cannot switch to vue 3 yet cuz no migration tool yet)
   - Cleaned up most build eslint warnings
   - configuring branch to build in github actions so you can force a rebuild using the release workflow using the DEV branch
-  - vetur.config.js file so it finds the package.config file and editring in vscode works better
+  - vetur.config.js file so it finds the package.config file and editing in vscode works better
 - API-Server
   - map OracleVM MACADDR to mean type is new Virtual-Machine; and html: support that Virtual-Machine type and other gui cleanups
   - Added a few extra ports to scan
