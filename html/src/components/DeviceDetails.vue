@@ -10,6 +10,7 @@ import { rescanDevice } from "../proxy/API";
 
 import ReadOnlyTextWithHover from '../components/ReadOnlyTextWithHover.vue';
 import Link2DetailsPage from '../components/Link2DetailsPage.vue';
+import NetworkInterfacesDetails from '../components/NetworkInterfacesDetails.vue';
 
 import { useNetStateStore } from '../stores/Net-State-store'
 import { INetwork } from 'src/models/network/INetwork';
@@ -19,6 +20,7 @@ const store = useNetStateStore()
 const props = defineProps({
   deviceId: { type: String, required: true },
   includeLinkToDetailsPage: { type: Boolean, required: false, default: false },
+  showExtraDetails: { type: Boolean, required: false, default: false },
 })
 
 defineComponent({
@@ -169,7 +171,7 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
     </div>
     <div class="row" v-if="currentDevice.names.filter(m => m.priority > 1).length > 1">
       <div class="col-3">Aliases</div>
-      <div class="col"> {{ currentDevice.names.filter(m => m.priority > 1).map (m => m.name).slice(1).join (", ") }}
+      <div class="col"> {{ currentDevice.names.filter(m => m.priority > 1).map(m => m.name).slice(1).join(", ") }}
       </div>
     </div>
     <div class="row">
@@ -189,13 +191,13 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
       <div class="col-3">Manufacturer</div>
       <div class="col">
         <span v-if="currentDevice.manufacturer.shortName || currentDevice.manufacturer.fullName">{{
-        currentDevice.manufacturer.shortName || currentDevice.manufacturer.fullName
+            currentDevice.manufacturer.shortName || currentDevice.manufacturer.fullName
         }}</span>
         <span v-if="currentDevice.manufacturer.webSiteURL">
           <span v-if="currentDevice.manufacturer.shortName || currentDevice.manufacturer.fullName">; </span>
           Link:
           <a :href="currentDevice.manufacturer.webSiteURL" target="_blank">{{
-          currentDevice.manufacturer.webSiteURL
+              currentDevice.manufacturer.webSiteURL
           }}</a>
         </span>
       </div>
@@ -266,7 +268,7 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
           <div class="col">
             <div class="row wrap"> <a v-for="l in svc.links" v-bind:href="l.href" v-bind:key="l.href" class="list-items"
                 target="_blank">{{
-                l.href
+                    l.href
                 }}</a></div>
           </div>
         </div>
@@ -277,7 +279,8 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
       <div class="col">
         <q-btn class="smallBtnMargin" elevation="2" dense size="sm" @click="rescanSelectedDevice"
           v-if="currentDevice.historicalSnapshot != true" :disabled="isRescanning"> {{ isRescanning ? "**SCANNING**" :
-          "Rescan" }} </q-btn>
+              "Rescan"
+          }} </q-btn>
         <span v-if="currentDevice.openPorts">{{ currentDevice.openPorts.join(", ") }}</span>
       </div>
     </div>
@@ -303,14 +306,13 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
           </span></div>
       </div>
     </div>
-    <div class="row" v-if="currentDevice.attachedNetworkInterfaces">
-      <div class="col-3">ATTACHED NETWORK INTERFACES</div>
+    <div class="row" v-if="currentDevice.attachedNetworkInterfaces && props.showExtraDetails">
+      <div class="col-3">Attached Network Interfaces</div>
       <div class="col">
-        <json-viewer :value="currentDevice.attachedNetworkInterfaces" :expand-depth="0" copyable sort
-          class="debugInfoJSONViewers" />
+        <NetworkInterfacesDetails :network-interface-ids="currentDevice.attachedNetworkInterfaces" />
       </div>
     </div>
-    <div class="row" v-if="currentDevice.debugProps">
+    <div class="row" v-if="currentDevice.debugProps && props.showExtraDetails">
       <div class="col-3">DEBUG INFO</div>
       <div class="col">
         <json-viewer :value="currentDevice.debugProps" :expand-depth="0" copyable sort class="debugInfoJSONViewers" />

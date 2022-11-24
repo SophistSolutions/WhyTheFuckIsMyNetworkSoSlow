@@ -21,6 +21,7 @@ import { PluralizeNoun } from 'src/utils/Linguistics';
 // Components
 import ReadOnlyTextWithHover from '../components/ReadOnlyTextWithHover.vue';
 import Link2DetailsPage from '../components/Link2DetailsPage.vue';
+import NetworkInterfacesDetails from '../components/NetworkInterfacesDetails.vue';
 
 import { useNetStateStore } from '../stores/Net-State-store'
 import { INetwork } from 'src/models/network/INetwork';
@@ -222,7 +223,7 @@ function GetSubNetworkDisplay_(id: string, summaryOnly: boolean): string {
     <div class="row" v-if="currentNetwork.attachedInterfaces && props.showExtraDetails">
       <div class="col-3">Attached Network {{PluralizeNoun ('Interface', currentNetwork.attachedInterfaces.length)}}</div>
       <div class="col">
-        <json-viewer :value="thisNetworksInterfaces" :expand-depth="0" copyable sort class="debugInfoJSONViewers" />
+        <NetworkInterfacesDetails :network-interface-ids="currentNetwork.attachedInterfaces"/>
       </div>
     </div>
     <div class="row" v-if="currentNetwork.debugProps && props.showExtraDetails">

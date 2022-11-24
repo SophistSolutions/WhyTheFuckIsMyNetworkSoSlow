@@ -60,7 +60,7 @@ let device: ComputedRef<IDevice | null> = computed(() => {
         Device {{ device == null ? "loading..." : '"' + device.name + '"' }}
       </q-card-section>
       <q-card-section>
-        <DeviceDetails v-if="device" :deviceId="device.id" />
+        <DeviceDetails v-if="device" :deviceId="device.id" :showExtraDetails="true" />
       </q-card-section>
     </q-card>
   </q-page>
