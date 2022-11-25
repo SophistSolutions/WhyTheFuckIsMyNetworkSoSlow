@@ -143,13 +143,15 @@ namespace {
         const String kServerString_ = L"Why-The-Fuck-Is-My-Network-So-Slow/"sv + AppVersion::kVersion.AsMajorMinorString ();
         Headers      h;
         h.server       = kServerString_;
-        h.cacheControl = HTTP::CacheControl::kMustRevalidatePrivate;
+        //h.cacheControl = HTTP::CacheControl::kMustRevalidatePrivate;
+        h.cacheControl = HTTP::CacheControl{/*.fCacheability=*/ HTTP::CacheControl::ePublic};
         return h;
     }};
     CacheControl                    mkCacheControlForAPI_ (Duration ttl)
     {
-        auto cc    = HTTP::CacheControl::kMustRevalidatePrivate;
-        cc.fMaxAge = static_cast<uint32_t> (ttl.As<int> ());
+        //auto cc    = HTTP::CacheControl::kMustRevalidatePrivate;
+        auto cc = HTTP::CacheControl{/*.fCacheability=*/HTTP::CacheControl::ePrivate};
+        cc.fMaxAge     = static_cast<uint32_t> (ttl.As<int> ());
         return cc;
     }
 }
