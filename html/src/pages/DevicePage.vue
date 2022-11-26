@@ -1,6 +1,6 @@
 
 <script setup lang="ts">
-import { defineComponent, defineProps, onMounted, onUnmounted, nextTick, ref, computed, ComputedRef } from 'vue';
+import { watch, defineProps, onMounted, onUnmounted, computed, ComputedRef } from 'vue';
 import { useRoute } from 'vue-router'
 
 import { IDevice } from "../models/device/IDevice";
@@ -20,11 +20,8 @@ const props = defineProps({
 
 let polling: undefined | NodeJS.Timeout;
 
-defineComponent({
-  components: {
-    DeviceDetails,
-  },
-});
+const emit = defineEmits(['update:breadcrumbs'])
+
 
 const kRefreshFrequencyInSeconds_: number = 15;
 
@@ -49,8 +46,35 @@ const route = useRoute()
 
 let device: ComputedRef<IDevice | null> = computed(() => {
   return store.getDevice(route.params.id as string);
-}
-);
+});
+
+
+watch(
+  () => device.value,
+  async device => {
+    // @todo - check network.names[0] - LENGTH - handle emopty case
+    // @todo CODE sharing with predefined routes
+    if (device) {
+      if (device.aggregatedBy) {
+        emit('update:breadcrumbs',  [
+          { text: 'Home', href: '/#/' },
+          { text: 'Devices', href: '/#/devices' },
+          // @todo wrong name for parent network name possibly - must fetch aggregated by and use its name - but not worth the trouble now since almost certainly the same
+          { text: device.names[0].name, href: '/#/device/' + device.aggregatedBy,  },
+          // @todo replace this name with the 'pretty seen' string we use 
+          { text: device.names[0].name, disabled: true },
+        ])
+      }
+      else {
+        emit('update:breadcrumbs',  [
+          { text: 'Home', href: '/#/' },
+          { text: 'Devices', href: '/#/devices' },
+          { text: device.names[0].name, disabled: true },
+        ])
+      }
+    }
+  }
+)
 </script>
 
 <template>

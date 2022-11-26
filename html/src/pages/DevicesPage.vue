@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineComponent, defineProps, onMounted, onUnmounted, nextTick, Ref, ref, computed, ComputedRef } from 'vue';
+import { defineProps, onMounted, onUnmounted, Ref, ref, computed, ComputedRef } from 'vue';
 import { useRoute, useRouter } from 'vue-router'
 import moment from 'moment';
 import { useQuasar } from 'quasar';
@@ -14,7 +14,6 @@ import {
 import { INetwork } from "../models/network/INetwork";
 import {
   FormatAttachedNetworkLocalAddresses,
-  GetNetworkByIDQuietly,
   GetNetworkLink,
   GetNetworkName,
   GetServices,
@@ -334,24 +333,7 @@ let filteredExtendedDevices: ComputedRef<object[]> = computed(() => {
 });
 
 
-
-const emit = defineEmits<{
-  (e: 'updateExtraContent', value: string): void
-}>()
-
 const kRefreshFrequencyInSeconds_: number = 15;
-
-defineComponent({
-  components: {
-    ClearButton,
-    ReadOnlyTextWithHover,
-    Link2DetailsPage,
-    FilterSummaryMessage,
-    DeviceDetails,
-    Search,
-  },
-  emits: ['updateExtraContent']
-});
 
 onMounted(() => {
   // @see https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/14
@@ -455,7 +437,7 @@ const pagination = ref({
           <template v-slot:body="props">
             <q-tr :props="props" @click="rowClicked(props)">
               <q-td :props="props" key="name">
-                <ReadOnlyTextWithHover :message="props.row.name" />
+                <ReadOnlyTextWithHover :message="props.row.name" :link="'/#/device/' + props.row.id" />
               </q-td>
               <q-td :props="props" key="type">
                 <span v-for="(t, i) in ComputeDeviceTypeIconURLs(props.row.type)" :key="i">

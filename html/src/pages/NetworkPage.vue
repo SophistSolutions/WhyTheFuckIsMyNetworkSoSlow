@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { defineComponent, defineProps, onMounted, onUnmounted, nextTick, ref, computed, ComputedRef } from 'vue';
+import { defineComponent, defineProps, onMounted, defineEmits, onUnmounted, onBeforeUnmount, nextTick, ref, computed, ComputedRef } from 'vue';
 import { useRoute } from 'vue-router'
 import { useQuasar } from 'quasar';
-
+import { watch } from 'vue'
+import { onBeforeRouteLeave, onBeforeRouteUpdate } from 'vue-router'
 import { INetwork } from "../models/network/INetwork";
 import { GetNetworkName } from "../models/network/Utils";
 
-// Components
 import NetworkDetails from '../components/NetworkDetails.vue';
 
 import { useNetStateStore } from '../stores/Net-State-store'
@@ -21,11 +21,7 @@ const props = defineProps({
 let polling: undefined | NodeJS.Timeout;
 const route = useRoute()
 
-defineComponent({
-  components: {
-    NetworkDetails,
-  },
-});
+const emit = defineEmits(['update:breadcrumbs'])
 
 onMounted(() => {
   // first time check quickly, then more gradually
@@ -45,6 +41,33 @@ onUnmounted(() => {
 let network: ComputedRef<INetwork> = computed(() => {
   return store.getNetwork(route.params.id as string);
 });
+
+watch(
+  () => network.value,
+  async network => {
+    // @todo - check network.names[0] - LENGTH - handle emopty case
+    // @todo CODE sharing with predefined routes
+    if (network) {
+      if (network.aggregatedBy) {
+        emit('update:breadcrumbs',  [
+          { text: 'Home', href: '/#/' },
+          { text: 'Networks', href: '/#/networks' },
+          // @todo wrong name for parent network name possibly - must fetch aggregated by and use its name - but not worth the trouble now since almost certainly the same
+          { text: network.names[0].name, href: '/#/network/' + network.aggregatedBy,  },
+          // @todo replace this name with the 'pretty seen' string we use 
+          { text: network.names[0].name, disabled: true },
+        ])
+      }
+      else {
+        emit('update:breadcrumbs',  [
+          { text: 'Home', href: '/#/' },
+          { text: 'Networks', href: '/#/networks' },
+          { text: network.names[0].name, disabled: true },
+        ])
+      }
+    }
+  }
+)
 </script>
 
 <template>
@@ -54,7 +77,7 @@ let network: ComputedRef<INetwork> = computed(() => {
         Network {{ network == null ? "loading..." : '"' + GetNetworkName(network) + '"' }}
       </q-card-section>
       <q-card-section style="margin-top: 0">
-        <NetworkDetails :networkId="network.id" v-if="network" :showExtraDetails="true" />
+        <NetworkDetails :network="network" v-if="network" :showExtraDetails="true" />
       </q-card-section>
     </q-card>
   </q-page>

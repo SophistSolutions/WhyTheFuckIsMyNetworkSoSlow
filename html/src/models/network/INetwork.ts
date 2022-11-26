@@ -4,6 +4,7 @@ import { IDateTimeRange } from "../common/IDateTimeRange"
 
 export interface INetwork {
   id: string;
+  aggregatedBy?: string;
   aggregatesReversibly?: string[];
   aggregatesIrreversibly?: string[];
   idIsPersistent?: boolean;

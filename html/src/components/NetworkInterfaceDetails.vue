@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, defineComponent, onMounted, onUnmounted, ref, computed, ComputedRef } from 'vue';
+import { defineProps, onMounted, onUnmounted, ref, computed, ComputedRef } from 'vue';
 
 import JsonViewer from 'vue-json-viewer';
 import moment from 'moment';
@@ -32,11 +32,6 @@ const props = defineProps({
   includeLinkToDetailsPage: { type: Boolean, required: false, default: false },
   showExtraDetails: { type: Boolean, required: false, default: false },
 })
-
-defineComponent({
-  components: {
-  },
-});
 
 let polling: undefined | NodeJS.Timeout;
 

@@ -14,11 +14,6 @@ const store = useNetStateStore()
 const props = defineProps({
   networkInterfaceIds: { type: Array as PropType<Array<string>>, required: true },
 })
-
-defineComponent({
-  components: {
-  },
-});
 </script>
 
 <template>

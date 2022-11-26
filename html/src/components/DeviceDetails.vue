@@ -23,14 +23,6 @@ const props = defineProps({
   showExtraDetails: { type: Boolean, required: false, default: false },
 })
 
-defineComponent({
-  components: {
-    ReadOnlyTextWithHover,
-    Link2DetailsPage,
-    JsonViewer,
-  },
-});
-
 let polling: undefined | NodeJS.Timeout;
 var isRescanning: Ref<boolean> = ref(false);
 

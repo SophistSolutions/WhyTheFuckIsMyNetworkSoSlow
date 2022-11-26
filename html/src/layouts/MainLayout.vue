@@ -1,12 +1,12 @@
 
 <script setup lang="ts">
 
-import { defineComponent, defineProps, Ref, ref } from 'vue';
+import { ref, onMounted } from 'vue';
 
 import { useRoute, useRouter } from 'vue-router'
 
-
 import EssentialLink from 'components/EssentialLink.vue';
+import ToolbarBreadcrumbs from 'components/ToolbarBreadcrumbs.vue';
 
 
 const route = useRoute()
@@ -64,11 +64,24 @@ function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value
 }
 
-defineComponent({
-  components: {
-    EssentialLink
-  },
-});
+var breadcrumbs = ref([])
+
+function updateBreadcrumbs(newBreadCrumbs: any) {
+  // explicit EVENTs can be used to update the breadcrumbs (like when they contain dynamic per page information)
+  breadcrumbs.value = newBreadCrumbs
+}
+
+router.afterEach((to, from) => {
+  // each time we nagivate, update the breadcrumbs
+  breadcrumbs.value = to.meta.breadcrumbs
+})
+
+onMounted(() => {
+  // needed to capture the initial breadcrumbs value
+  breadcrumbs.value = route.meta.breadcrumbs
+})
+
+
 </script>
 
 <template>
@@ -79,11 +92,7 @@ defineComponent({
         <q-toolbar-title>
           WhyTheFuckIsMyNetworkSoSlow
         </q-toolbar-title>
-        <q-breadcrumbs separator=">" active-color="secondary">
-          <template v-for="(item, index) in route.meta.breadcrumbs" :key="index">
-            <q-breadcrumbs-el :href="item.href" :disabled="item.disabled" :label="item.text.toUpperCase()" />
-          </template>
-        </q-breadcrumbs>
+        <ToolbarBreadcrumbs v-model:breadcrumbs="breadcrumbs"/>
         <q-btn flat dense round icon="mdi-dots-vertical" style="margin-left: 1in" aria-label="Menu" color="white">
           <q-menu>
             <q-list style="min-width: 100px">
@@ -108,7 +117,7 @@ defineComponent({
     </q-drawer>
 
     <q-page-container>
-      <router-view />
+      <router-view @update:breadcrumbs="updateBreadcrumbs" />
     </q-page-container>
   </q-layout>
 </template>

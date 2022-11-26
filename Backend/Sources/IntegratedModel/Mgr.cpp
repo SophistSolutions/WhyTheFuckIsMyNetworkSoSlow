@@ -1007,13 +1007,13 @@ namespace {
              * 
              *  \req is already valid rollup net ID.
              */
-            nonvirtual auto MapAggregatedNetID2ItsRollupID (const GUID& netID) const -> GUID
+            nonvirtual auto MapAggregatedID2ItsRollupID (const GUID& netID) const -> GUID
             {
                 if (auto r = fMapAggregatedNetID2RollupID_.Lookup (netID)) {
                     return *r;
                 }
                 // shouldn't get past here - debug if/why this hapepns - see comments below
-                Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"MapAggregatedNetID2ItsRollupID failed to find netID=%s", Characters::ToString (netID).c_str ())};
+                Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"MapAggregatedID2ItsRollupID failed to find netID=%s", Characters::ToString (netID).c_str ())};
                 if constexpr (qDebug) {
                     for (const auto& i : fRolledUpNetworks_) {
                         DbgTrace (L"rolledupNet=%s", Characters::ToString (i).c_str ());
@@ -1298,6 +1298,29 @@ namespace {
             }
 
         public:
+            /**
+             *  Given an aggregated device id, map to the correspoding rollup ID (todo do we need to handle missing case)
+             * 
+             *  \req is already valid rollup ID.
+             */
+            nonvirtual auto MapAggregatedID2ItsRollupID (const GUID& aggregatedDeviceID) const -> GUID
+            {
+                if (auto r = fRaw2RollupIDMap_.Lookup (aggregatedDeviceID)) {
+                    return *r;
+                }
+                // shouldn't get past here - debug if/why this hapepns - see comments below
+                Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"MapAggregatedID2ItsRollupID failed to find netID=%s", Characters::ToString (aggregatedDeviceID).c_str ())};
+                if constexpr (qDebug) {
+                    for (const auto& i : fRolledUpDevices) {
+                        DbgTrace (L"rolledupDevice=%s", Characters::ToString (i).c_str ());
+                    }
+                }
+                Assert (false);     // not seen yet, but verify - maybe data can leak through to this from webservice request...
+                WeakAssert (false); // @todo fix - because we guarantee each item rolled up exactly once - but happens sometimes on change of network - I think due to outdated device records referring to newer network not yet in this cache...
+                return aggregatedDeviceID;
+            }
+
+        public:
             nonvirtual void ResetUserOverrides (const Mapping<GUID, Device::UserOverridesType>& userOverrides)
             {
                 RolledUpNetworkInterfaces networkInterfacesRollup = RolledUpNetworkInterfaces::GetCached ();
@@ -1480,7 +1503,7 @@ namespace {
             {
                 Mapping<GUID, NetworkAttachmentInfo> result;
                 for (const auto& ni : nats) {
-                    result.Add (fUseRolledUpNetworks.MapAggregatedNetID2ItsRollupID (ni.fKey), ni.fValue);
+                    result.Add (fUseRolledUpNetworks.MapAggregatedID2ItsRollupID (ni.fKey), ni.fValue);
                 }
                 return result;
             };
@@ -1567,7 +1590,8 @@ optional<IntegratedModel::Device> IntegratedModel::Mgr::GetDevice (const GUID& i
     // first check rolled up devices, and then raw/unrolled up devices
     // NOTE - this doesn't check the 'dynamic' copy of the devices - it waits til those get migrated to the DB, once ever
     // 30 seconds roughtly...
-    auto result = RollupSummary_::RolledUpDevices::GetCached ().GetDevices ().Lookup (id);
+    auto devicesRollupCache = RollupSummary_::RolledUpDevices::GetCached ();
+    auto result             = devicesRollupCache.GetDevices ().Lookup (id);
     if (result) {
         if (ttl != nullptr) {
             *ttl = kTTLForRollupsReturned_;
@@ -1577,6 +1601,7 @@ optional<IntegratedModel::Device> IntegratedModel::Mgr::GetDevice (const GUID& i
         if (result = sDBAccessMgr_->GetRawDevices ().Lookup (id)) {
             result->fIDPersistent       = true;
             result->fHistoricalSnapshot = true;
+            result->fAggregatedBy       = devicesRollupCache.MapAggregatedID2ItsRollupID (id);
             if (ttl != nullptr) {
                 auto everSeen = result->fSeen.EverSeen ();
                 if (everSeen and everSeen->GetUpperBound () >= (DateTime::Now () - 30s)) {
@@ -1631,7 +1656,8 @@ Sequence<IntegratedModel::Network> IntegratedModel::Mgr::GetNetworks () const
 optional<IntegratedModel::Network> IntegratedModel::Mgr::GetNetwork (const GUID& id, optional<Duration>* ttl) const
 {
     // first check rolled up networks, and then raw/unrolled up networks
-    auto result = RollupSummary_::RolledUpNetworks::GetCached ().GetNetworks ().Lookup (id);
+    auto networkRollupsCache = RollupSummary_::RolledUpNetworks::GetCached ();
+    auto result              = networkRollupsCache.GetNetworks ().Lookup (id);
     if (result) {
         if (ttl != nullptr) {
             *ttl = kTTLForRollupsReturned_;
@@ -1642,6 +1668,7 @@ optional<IntegratedModel::Network> IntegratedModel::Mgr::GetNetwork (const GUID&
         if (result) {
             result->fIDPersistent       = true;
             result->fHistoricalSnapshot = true;
+            result->fAggregatedBy       = networkRollupsCache.MapAggregatedID2ItsRollupID (id);
             auto everSeen               = result->fSeen;
             if (everSeen.GetUpperBound () >= (DateTime::Now () - 30s)) {
                 *ttl = kTTLForActiveObjectsReturned_;

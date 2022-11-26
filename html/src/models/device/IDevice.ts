@@ -15,6 +15,7 @@ export interface IManufacturer {
 
 export interface IDevice {
   id: string;
+  aggregatedBy?: string;
   aggregatesReversibly?: string[];
   aggregatesIrreversibly?: string[];
   idIsPersistent?: boolean;

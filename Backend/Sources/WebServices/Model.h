@@ -311,6 +311,14 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         GUID fGUID;
 
         /**
+         *  In WSAPI, we show this record/value in objects which are rolled up into other objects.
+         * 
+         *  \note - this is not set by the Rollup/Merge methods, and not stored in the database, but dynamically added
+         *          by the IntegrationModel::Mgr
+         */
+        optional<GUID> fAggregatedBy;
+
+        /**
          */
         Common::PrioritizedNames fNames;
 
@@ -536,6 +544,14 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         Device& operator= (Device&&)      = default;
 
         GUID fGUID;
+
+        /**
+         *  In WSAPI, we show this record/value in objects which are rolled up into other objects.
+         * 
+         *  \note - this is not set by the Rollup/Merge methods, and not stored in the database, but dynamically added
+         *          by the IntegrationModel::Mgr
+         */
+        optional<GUID> fAggregatedBy;
 
         Common::PrioritizedNames fNames;
 

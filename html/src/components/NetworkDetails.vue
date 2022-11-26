@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, defineComponent, onMounted, onUnmounted, ref, computed, ComputedRef } from 'vue';
+import { defineProps, onMounted, onUnmounted, computed, ComputedRef } from 'vue';
 
 import JsonViewer from 'vue-json-viewer';
 import moment from 'moment';
@@ -29,29 +29,26 @@ import { INetwork } from 'src/models/network/INetwork';
 const store = useNetStateStore()
 
 const props = defineProps({
-  networkId: { type: String, required: true },
+  // Allow specify EITHER network or networkId, but not both, and not neither
+  network: { type: Object, required: false }, // Must be INetwork - in Vue 3.3 - https://github.com/vuejs/core/issues/4294
+  networkId: { type: String, required: false },
   includeLinkToDetailsPage: { type: Boolean, required: false, default: false },
   showExtraDetails: { type: Boolean, required: false, default: false },
 })
-
-defineComponent({
-  components: {
-    ReadOnlyTextWithHover,
-    JsonViewer,
-    Link2DetailsPage,
-  },
-});
 
 let polling: undefined | NodeJS.Timeout;
 
 let allDevices: ComputedRef<IDevice[]> = computed(() => store.getDevices);
 
 let currentNetwork = computed<INetwork | undefined>(
-  () => store.getNetwork(props.networkId)
+  // cast as INetwork no longer needed once we fix declation of props.network
+  () => props.network as INetwork || store.getNetwork(props.networkId)
 )
 
 function doFetches() {
-  store.fetchNetworks([props.networkId]);
+  if (props.network === undefined) {
+    store.fetchNetworks([props.networkId]);
+  }
   store.fetchActiveDevices();
   if (currentNetwork.value != null) {
     if (currentNetwork.value.aggregatesIrreversibly != null) {
@@ -204,7 +201,7 @@ function GetSubNetworkDisplay_(id: string, summaryOnly: boolean): string {
     <div class="row" v-if="currentNetwork.debugProps && props.showExtraDetails">
       <div class="col-3">DEBUG INFO</div>
       <div class="col">
-        <json-viewer :value="currentNetwork.debugProps" :expand-depth="0" copyable sort class="debugInfoJSONViewers" />
+        <JsonViewer :value="currentNetwork.debugProps" :expand-depth="0" copyable sort class="debugInfoJSONViewers" />
       </div>
     </div>
   </div>

@@ -593,6 +593,7 @@ String Network::ToString () const
     sb += L"Network-Addresses: " + Characters::ToString (fNetworkAddresses) + L", ";
     sb += L"Names: " + Characters::ToString (fNames) + L", ";
     sb += L"GUID: " + Characters::ToString (fGUID) + L", ";
+    sb += L"AggregatedBy: " + Characters::ToString (fAggregatedBy) + L", ";
     sb += L"Attached-Interfaces: " + Characters::ToString (fAttachedInterfaces) + L", ";
     sb += L"Gateways: " + Characters::ToString (fGateways) + L", ";
     sb += L"GatewayHardwareAddresses: " + Characters::ToString (fGatewayHardwareAddresses) + L", ";
@@ -622,6 +623,7 @@ const ObjectVariantMapper Network::kMapper = [] () {
     mapper.AddCommonType<optional<InternetAddress>> ();
     mapper.AddCommonType<optional<Sequence<InternetAddress>>> ();
     mapper.AddCommonType<optional<Set<InternetAddress>>> ();
+    mapper.AddCommonType<optional<GUID>> ();
     mapper.AddCommonType<Set<GUID>> ();
     mapper.AddCommonType<optional<Set<GUID>>> ();
     mapper += Common::PrioritizedNames::kMapper;
@@ -675,6 +677,7 @@ const ObjectVariantMapper Network::kMapper = [] () {
         {L"geographicLocation"sv, StructFieldMetaInfo{&Network::fGEOLocInformation}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"internetServiceProvider"sv, StructFieldMetaInfo{&Network::fInternetServiceProvider}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"id"sv, StructFieldMetaInfo{&Network::fGUID}},
+        {L"aggregatedBy"sv, StructFieldMetaInfo{&Network::fAggregatedBy}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"seen"sv, StructFieldMetaInfo{&Network::fSeen}, kDateRangeMapper_},
         {L"aggregatesReversibly"sv, StructFieldMetaInfo{&Network::fAggregatesReversibly}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"aggregatesIrreversibly"sv, StructFieldMetaInfo{&Network::fAggregatesIrreversibly}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
@@ -882,70 +885,30 @@ const ObjectVariantMapper Device::kMapper = [] () {
     });
     mapper.AddCommonType<Mapping<GUID, NetworkAttachmentInfo>> ();
 
-    mapper.AddClass<Device> (initializer_list<ObjectVariantMapper::StructFieldInfo> {
+    mapper.AddClass<Device> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
         {L"id", StructFieldMetaInfo{&Device::fGUID}},
-
-#if 0
-            //tmphack list name/names for bacward compat, then just names simple way
-            {L"name", StructFieldMetaInfo{&Device::fNames},
-             ObjectVariantMapper::TypeMappingDetails{
-                 typeid (Common::PrioritizedNames),
-                 ObjectVariantMapper::FromObjectMapperType<Common::PrioritizedNames>{[] (const ObjectVariantMapper&, const Common::PrioritizedNames* objOfType) -> VariantValue { return VariantValue{objOfType->GetName ()}; }},
-                 ObjectVariantMapper::ToObjectMapperType<Common::PrioritizedNames>{[] (const ObjectVariantMapper&, const VariantValue& d, Common::PrioritizedNames* into) -> void {
-                     if (not d.As<String> ().empty ()) {
-                         into->Add (d.As<String> (), 1);
-                     } 
-                 }}}},
-            {L"names", StructFieldMetaInfo{&Device::fNames},
-             ObjectVariantMapper::TypeMappingDetails{
-                 typeid (Common::PrioritizedNames),
-                 ObjectVariantMapper::FromObjectMapperType<Common::PrioritizedNames>{[] (const ObjectVariantMapper& mapper, const Common::PrioritizedNames* fromObjOfTypeT) -> VariantValue {
-                     RequireNotNull (fromObjOfTypeT);
-                     Sequence<VariantValue> s;
-                     if (not fromObjOfTypeT->empty ()) {
-                         using T = Common::PrioritizedName;
-                         ObjectVariantMapper::FromObjectMapperType<T> valueMapper{mapper.FromObjectMapper<T> ()};
-                         for (const auto& i : *fromObjOfTypeT) {
-                             s.Append (mapper.FromObject<T> (valueMapper, i));
-                         }
-                     }
-                     return VariantValue{s};
-                 }},
-                 ObjectVariantMapper::ToObjectMapperType<Common::PrioritizedNames>{[] (const ObjectVariantMapper& mapper, const VariantValue& d, Common::PrioritizedNames* intoObjOfTypeT) -> void {
-                     RequireNotNull (intoObjOfTypeT);
-                     // Require (intoObjOfTypeT->empty ()); override to avoid this and use Add
-                     Sequence<VariantValue> s = d.As<Sequence<VariantValue>> ();
-                     if (not s.empty ()) {
-                         ObjectVariantMapper::ToObjectMapperType<Common::PrioritizedName> valueMapper{mapper.ToObjectMapper<Common::PrioritizedName> ()};
-                         for (const auto& i : s) {
-                             auto obj2Add = mapper.ToObject<Common::PrioritizedName> (valueMapper, i);
-                             if (not obj2Add.fName.empty ()) {
-                                 intoObjOfTypeT->Add (obj2Add.fName, obj2Add.fPriority);
-                             }
-                         }
-                     }
-                 }}}},
-#endif
-            {L"names", StructFieldMetaInfo{&Device::fNames}},
-            {L"type", StructFieldMetaInfo{&Device::fTypes}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-            {L"seen", StructFieldMetaInfo{&Device::fSeen}},
-            {L"openPorts", StructFieldMetaInfo{&Device::fOpenPorts}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-            {L"icon", StructFieldMetaInfo{&Device::fIcon}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-            {L"manufacturer", StructFieldMetaInfo{&Device::fManufacturer}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-            {L"attachedNetworks", StructFieldMetaInfo{&Device::fAttachedNetworks}},
-            {L"attachedNetworkInterfaces", StructFieldMetaInfo{&Device::fAttachedNetworkInterfaces}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-            {L"presentationURL", StructFieldMetaInfo{&Device::fPresentationURL}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-            {L"operatingSystem", StructFieldMetaInfo{&Device::fOperatingSystem}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-            {L"aggregatesReversibly", StructFieldMetaInfo{&Device::fAggregatesReversibly}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-            {L"aggregatesIrreversibly"sv, StructFieldMetaInfo{&Device::fAggregatesIrreversibly}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-            {L"idIsPersistent"sv, StructFieldMetaInfo{&Device::fIDPersistent}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-            {L"historicalSnapshot"sv, StructFieldMetaInfo{&Device::fHistoricalSnapshot}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-            {L"userOverrides"sv, StructFieldMetaInfo{&Device::fUserOverrides}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-
-#if qDebug
-            {L"debugProps", StructFieldMetaInfo{&Device::fDebugProps}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-#endif
+        {L"aggregatedBy"sv, StructFieldMetaInfo{&Device::fAggregatedBy}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"names", StructFieldMetaInfo{&Device::fNames}},
+        {L"type", StructFieldMetaInfo{&Device::fTypes}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"seen", StructFieldMetaInfo{&Device::fSeen}},
+        {L"openPorts", StructFieldMetaInfo{&Device::fOpenPorts}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"icon", StructFieldMetaInfo{&Device::fIcon}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"manufacturer", StructFieldMetaInfo{&Device::fManufacturer}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"attachedNetworks", StructFieldMetaInfo{&Device::fAttachedNetworks}},
+        {L"attachedNetworkInterfaces", StructFieldMetaInfo{&Device::fAttachedNetworkInterfaces}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"presentationURL", StructFieldMetaInfo{&Device::fPresentationURL}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"operatingSystem", StructFieldMetaInfo{&Device::fOperatingSystem}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"aggregatesReversibly", StructFieldMetaInfo{&Device::fAggregatesReversibly}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"aggregatesIrreversibly"sv, StructFieldMetaInfo{&Device::fAggregatesIrreversibly}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"idIsPersistent"sv, StructFieldMetaInfo{&Device::fIDPersistent}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"historicalSnapshot"sv, StructFieldMetaInfo{&Device::fHistoricalSnapshot}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"userOverrides"sv, StructFieldMetaInfo{&Device::fUserOverrides}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
+#if qDebug
+    mapper.AddSubClass<Device, Device> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+        {L"debugProps", StructFieldMetaInfo{&Device::fDebugProps}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+    });
+#endif
     mapper.AddCommonType<Sequence<Device>> ();
     return mapper;
 }();
