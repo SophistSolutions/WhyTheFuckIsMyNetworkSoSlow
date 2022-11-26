@@ -312,9 +312,9 @@ const ObjectVariantMapper NetworkInterface::kMapper = [] () {
         {L"historicalSnapshot"sv, StructFieldMetaInfo{&NetworkInterface::fHistoricalSnapshot}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
 #if qDebug
-        mapper.AddSubClass<NetworkInterface, NetworkInterface> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-            {L"debugProps", StructFieldMetaInfo{&NetworkInterface::fDebugProps}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        });
+    mapper.AddSubClass<NetworkInterface, NetworkInterface> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+        {L"debugProps", StructFieldMetaInfo{&NetworkInterface::fDebugProps}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+    });
 #endif
     if constexpr (kIncludeFingerprintsInOutputTMP2Test_) {
         mapper.AddSubClass<NetworkInterface, NetworkInterface> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
@@ -684,9 +684,9 @@ const ObjectVariantMapper Network::kMapper = [] () {
         {L"userOverrides"sv, StructFieldMetaInfo{&Network::fUserOverrides}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
 #if qDebug
-        mapper.AddSubClass<Network, Network> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-            {L"debugProps", StructFieldMetaInfo{&Network::fDebugProps}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        });
+    mapper.AddSubClass<Network, Network> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+        {L"debugProps", StructFieldMetaInfo{&Network::fDebugProps}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+    });
 #endif
     if constexpr (kIncludeFingerprintsInOutputTMP2Test_) {
         mapper.AddSubClass<Network, Network> (initializer_list<ObjectVariantMapper::StructFieldInfo>{

@@ -385,7 +385,7 @@ namespace {
             // first check if legit id, and then store
             // @todo check if good id and throw if not...
             auto       lk = fCachedDeviceUserSettings_.rwget ();
-            lock_guard lock{this->fDBConnectionPtr_};   //tmphack fix underlying SQL orm wrapper stuff so not needed --LGP 2022-11-23
+            lock_guard lock{this->fDBConnectionPtr_}; //tmphack fix underlying SQL orm wrapper stuff so not needed --LGP 2022-11-23
             if (settings) {
                 if (fCachedDeviceUserSettings_.cget ().cref ().Lookup (id) != settings) {
                     fDeviceUserSettingsTableConnection_.rwget ().cref ()->AddOrUpdate (ExternalDeviceUserSettingsElt_{id, *settings});
@@ -693,7 +693,7 @@ namespace {
 
                     // UPDATE fDBNetworks_ INCREMENTALLY to reflect reflect these merges
                     DiscoveryWrapper_::GetNetworks_ ().Apply ([this] (const Model::Network& n) {
-                        Assert (n.fSeen); // don't track/write items which have never been seen
+                        Assert (n.fSeen);                            // don't track/write items which have never been seen
                         lock_guard lock{this->fDBConnectionPtr_};    //tmphack fix underlying SQL orm wrapper stuff so not needed --LGP 2022-11-23
                         Assert (n.fAggregatesReversibly == nullopt); // dont write these summary values
                         fNetworkTableConnection_->AddOrUpdate (n);
@@ -703,8 +703,8 @@ namespace {
                     // UPDATE fDBDevices_ INCREMENTALLY to reflect reflect these merges
                     DiscoveryWrapper_::GetDevices_ ().Apply ([this] (const Model::Device& d) {
                         Assert (d.fSeen.EverSeen ());
-                        Assert (d.fSeen.EverSeen ());         // don't track/write items which have never been seen
-                        Assert (d.fUserOverrides == nullopt); // tracked on rollup devices, not snapshot devices
+                        Assert (d.fSeen.EverSeen ());                // don't track/write items which have never been seen
+                        Assert (d.fUserOverrides == nullopt);        // tracked on rollup devices, not snapshot devices
                         lock_guard lock{this->fDBConnectionPtr_};    //tmphack fix underlying SQL orm wrapper stuff so not needed --LGP 2022-11-23
                         Assert (d.fAggregatesReversibly == nullopt); // dont write these summary values
                         auto rec2Update = fDB_.AddOrMergeUpdate (fDeviceTableConnection_.get (), d);
