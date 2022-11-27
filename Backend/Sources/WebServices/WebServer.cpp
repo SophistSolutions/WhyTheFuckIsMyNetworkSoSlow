@@ -242,8 +242,6 @@ public:
                   [this] (Message* m) {
                       ActiveCallCounter_                          acc{*this};
                       Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (&m->rwRequest ());
-
-                      DbgTrace (L"args=%s", Characters::ToString (args).c_str ());
                       optional<DeviceSortParamters> sort;
                       if (auto o = args.Lookup (L"sort"sv)) {
                           ClientErrorException::TreatExceptionsAsClientError ([&] () {
