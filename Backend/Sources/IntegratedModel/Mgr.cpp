@@ -1015,7 +1015,7 @@ namespace {
                 // shouldn't get past here - debug if/why this hapepns - see comments below
                 Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"MapAggregatedID2ItsRollupID failed to find netID=%s", Characters::ToString (netID).c_str ())};
                 if constexpr (qDebug) {
-                    for (const auto& i : fRolledUpNetworks_) {
+                    for ([[maybe_unused]] const auto& i : fRolledUpNetworks_) {
                         DbgTrace (L"rolledupNet=%s", Characters::ToString (i).c_str ());
                     }
                 }
@@ -1311,7 +1311,7 @@ namespace {
                 // shouldn't get past here - debug if/why this hapepns - see comments below
                 Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"MapAggregatedID2ItsRollupID failed to find netID=%s", Characters::ToString (aggregatedDeviceID).c_str ())};
                 if constexpr (qDebug) {
-                    for (const auto& i : fRolledUpDevices) {
+                    for ([[maybe_unused]] const auto& i : fRolledUpDevices) {
                         DbgTrace (L"rolledupDevice=%s", Characters::ToString (i).c_str ());
                     }
                 }
