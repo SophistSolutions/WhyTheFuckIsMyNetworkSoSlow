@@ -160,7 +160,6 @@ Discovery::NetworksMgr::Activator::~Activator ()
     Require (sActive_);
     sActive_ = false;
     sIntervalTimerAdder_.release ();
-    // @todo must shutdown any background threads
 }
 
 /*
