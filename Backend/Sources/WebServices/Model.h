@@ -233,6 +233,14 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         GUID fGUID;
 
         /**
+         *  In WSAPI, we show this record/value in objects which are rolled up into other objects.
+         * 
+         *  \note - this is not set by the Rollup/Merge methods, and not stored in the database, but dynamically added
+         *          by the IntegrationModel::Mgr
+         */
+        optional<GUID> fAggregatedBy;
+
+        /**
          * This NetworkInterface summary represents an aggregation of the following NetworkInterface objects.
          */
         optional<Set<GUID>> fAggregatesReversibly;
@@ -246,12 +254,6 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
          *  this ID is stored in the database
          */
         optional<bool> fIDPersistent;
-
-        /**
-         *  this data is a historical (database) snapshot, vs a dynamic rollup
-         *      @todo DEPREACATE THIS AND INSTEAD ON RESROUCE GET - include TTL/Content-Cache header info
-         */
-        optional<bool> fHistoricalSnapshot;
 
         using FingerprintType = GUID;
 
@@ -394,12 +396,6 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
          *  this ID is stored in the database
          */
         optional<bool> fIDPersistent;
-
-        /**
-         *  this data is a historical (database) snapshot, vs a dynamic rollup
-         *      @todo DEPREACATE THIS AND INSTEAD ON RESROUCE GET - include TTL/Content-Cache header info
-         */
-        optional<bool> fHistoricalSnapshot;
 
         /**
          * per network settings specified externally (typically GUI user edit)
@@ -656,12 +652,6 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
          *  this ID is stored in the database
          */
         optional<bool> fIDPersistent;
-
-        /**
-         *  this data is a historical (database) snapshot, vs a dynamic rollup
-         *      @todo DEPREACATE THIS AND INSTEAD ON RESROUCE GET - include TTL/Content-Cache header info
-         */
-        optional<bool> fHistoricalSnapshot;
 
         /**
          * per device settings specified externally (typically GUI user edit)

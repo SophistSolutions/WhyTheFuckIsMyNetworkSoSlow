@@ -42,7 +42,7 @@ namespace {
 }
 
 namespace {
-    constexpr bool kIncludeFingerprintsInOutputTMP2Test_ = true; // to debug fingerprint code - dont really emit this
+    constexpr bool kIncludeFingerprintsInOutputTMP2Test_ = false; // to debug fingerprint code - dont really emit this
 }
 
 namespace Stroika::Foundation::DataExchange {
@@ -173,6 +173,9 @@ String NetworkInterface::ToString () const
         sb += L"Status: " + Characters::ToString (*fStatus) + L", ";
     }
     sb += L"GUID: " + Characters::ToString (fGUID) + L", ";
+    if (fAggregatedBy) {
+        sb += L"AggregatedBy: " + Characters::ToString (*fAggregatedBy) + L", ";
+    }
     if (fAggregatesReversibly) {
         sb += L"AggregatesReversibly: " + Characters::ToString (fAggregatesReversibly) + L", ";
     }
@@ -181,9 +184,6 @@ String NetworkInterface::ToString () const
     }
     if (fIDPersistent) {
         sb += L"IDPersistent: " + Characters::ToString (fIDPersistent) + L", ";
-    }
-    if (fHistoricalSnapshot) {
-        sb += L"HistoricalSnapshot: " + Characters::ToString (fHistoricalSnapshot) + L", ";
     }
     sb += L"}";
     return sb.str ();
@@ -258,12 +258,14 @@ const ObjectVariantMapper NetworkInterface::kMapper = [] () {
     mapper.AddCommonType<Set<NetworkInterface::Status>> ();
     mapper.AddCommonType<optional<Set<NetworkInterface::Status>>> ();
 
+    mapper.AddCommonType<optional<GUID>> ();
     mapper.AddCommonType<Set<GUID>> ();
     mapper.AddCommonType<optional<Set<GUID>>> ();
 
     mapper.AddClass<NetworkInterface> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
         {L"platformInterfaceID", StructFieldMetaInfo{&NetworkInterface::fInternalInterfaceID}},
         {L"id", StructFieldMetaInfo{&NetworkInterface::fGUID}},
+        {L"aggregatedBy"sv, StructFieldMetaInfo{&NetworkInterface::fAggregatedBy}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"friendlyName", StructFieldMetaInfo{&NetworkInterface::fFriendlyName}},
         {L"description", StructFieldMetaInfo{&NetworkInterface::fDescription}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"type", StructFieldMetaInfo{&NetworkInterface::fType}},
@@ -309,7 +311,6 @@ const ObjectVariantMapper NetworkInterface::kMapper = [] () {
         {L"aggregatesReversibly"sv, StructFieldMetaInfo{&NetworkInterface::fAggregatesReversibly}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"aggregatesIrreversibly"sv, StructFieldMetaInfo{&NetworkInterface::fAggregatesIrreversibly}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"idIsPersistent"sv, StructFieldMetaInfo{&NetworkInterface::fIDPersistent}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"historicalSnapshot"sv, StructFieldMetaInfo{&NetworkInterface::fHistoricalSnapshot}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
 #if qDebug
     mapper.AddSubClass<NetworkInterface, NetworkInterface> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
@@ -464,7 +465,6 @@ Network Network::Merge (const Network& baseNetwork, const Network& priorityNetwo
     Memory::AccumulateIf (&merged.fAggregatesIrreversibly, priorityNetwork.fAggregatesIrreversibly);
     Memory::AccumulateIf (&merged.fAggregatesFingerprints, priorityNetwork.fAggregatesFingerprints);
     Memory::CopyToIf (&merged.fIDPersistent, priorityNetwork.fIDPersistent);
-    Memory::CopyToIf (&merged.fHistoricalSnapshot, priorityNetwork.fHistoricalSnapshot);
     Memory::CopyToIf (&merged.fUserOverrides, priorityNetwork.fUserOverrides); // for now, no need to look inside and accumulate because only one place can generate user-overrides - some special TBD database record - LGP 2022-09-14
 #if qDebug
     if (priorityNetwork.fDebugProps) {
@@ -501,8 +501,7 @@ Network Network::Rollup (const Network& rollupNetwork, const Network& instanceNe
         merged.fAggregatesReversibly = Set<GUID>{instanceNetwork2Add.fGUID};
     }
     // merged.fAggregatesIrreversibly = nullopt;
-    merged.fIDPersistent       = false;
-    merged.fHistoricalSnapshot = false;
+    merged.fIDPersistent = false;
     Memory::CopyToIf (&merged.fUserOverrides, instanceNetwork2Add.fUserOverrides); // for now, no need to look inside and accumulate because only one place can generate user-overrides - some special TBD database record - LGP 2022-09-14
     return merged;
 }
@@ -593,7 +592,9 @@ String Network::ToString () const
     sb += L"Network-Addresses: " + Characters::ToString (fNetworkAddresses) + L", ";
     sb += L"Names: " + Characters::ToString (fNames) + L", ";
     sb += L"GUID: " + Characters::ToString (fGUID) + L", ";
-    sb += L"AggregatedBy: " + Characters::ToString (fAggregatedBy) + L", ";
+    if (fAggregatedBy) {
+        sb += L"AggregatedBy: " + Characters::ToString (fAggregatedBy) + L", ";
+    }
     sb += L"Attached-Interfaces: " + Characters::ToString (fAttachedInterfaces) + L", ";
     sb += L"Gateways: " + Characters::ToString (fGateways) + L", ";
     sb += L"GatewayHardwareAddresses: " + Characters::ToString (fGatewayHardwareAddresses) + L", ";
@@ -603,7 +604,6 @@ String Network::ToString () const
     sb += L"Aggregates-Irreverisbly: " + Characters::ToString (fAggregatesIrreversibly) + L", ";
     sb += L"Aggregates-Fingerprints: " + Characters::ToString (fAggregatesFingerprints) + L", ";
     sb += L"IDPersistent: " + Characters::ToString (fIDPersistent) + L", ";
-    sb += L"HistoricalSnapshot: " + Characters::ToString (fHistoricalSnapshot) + L", ";
     sb += L"}";
     return sb.str ();
 }
@@ -683,7 +683,6 @@ const ObjectVariantMapper Network::kMapper = [] () {
         {L"aggregatesIrreversibly"sv, StructFieldMetaInfo{&Network::fAggregatesIrreversibly}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"aggregatesFingerprints"sv, StructFieldMetaInfo{&Network::fAggregatesFingerprints}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"idIsPersistent"sv, StructFieldMetaInfo{&Network::fIDPersistent}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"historicalSnapshot"sv, StructFieldMetaInfo{&Network::fHistoricalSnapshot}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"userOverrides"sv, StructFieldMetaInfo{&Network::fUserOverrides}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
 #if qDebug
@@ -901,7 +900,6 @@ const ObjectVariantMapper Device::kMapper = [] () {
         {L"aggregatesReversibly", StructFieldMetaInfo{&Device::fAggregatesReversibly}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"aggregatesIrreversibly"sv, StructFieldMetaInfo{&Device::fAggregatesIrreversibly}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"idIsPersistent"sv, StructFieldMetaInfo{&Device::fIDPersistent}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"historicalSnapshot"sv, StructFieldMetaInfo{&Device::fHistoricalSnapshot}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"userOverrides"sv, StructFieldMetaInfo{&Device::fUserOverrides}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
 #if qDebug
@@ -955,7 +953,6 @@ Device Device::Merge (const Device& baseDevice, const Device& priorityDevice)
     Memory::AccumulateIf (&merged.fAggregatesReversibly, priorityDevice.fAggregatesReversibly);
     Memory::AccumulateIf (&merged.fAggregatesIrreversibly, priorityDevice.fAggregatesIrreversibly);
     Memory::CopyToIf (&merged.fIDPersistent, priorityDevice.fIDPersistent);
-    Memory::CopyToIf (&merged.fHistoricalSnapshot, priorityDevice.fHistoricalSnapshot);
     Memory::CopyToIf (&merged.fUserOverrides, priorityDevice.fUserOverrides); // for now, no need to look inside and accumulate because only one place can generate user-overrides - some special TBD database record - LGP 2022-09-14
 #if qDebug
     if (priorityDevice.fDebugProps) {
@@ -986,7 +983,6 @@ Device Device::Rollup (const Device& rollupDevice, const Device& instanceDevice2
     }
     d.fAggregatesIrreversibly = nullopt;
     d.fIDPersistent           = false;
-    d.fHistoricalSnapshot     = false;
     return d;
 }
 

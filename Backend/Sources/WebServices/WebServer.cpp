@@ -242,7 +242,7 @@ public:
                   [this] (Message* m) {
                       ActiveCallCounter_                          acc{*this};
                       Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (&m->rwRequest ());
-                      optional<DeviceSortParamters> sort;
+                      optional<DeviceSortParamters>               sort;
                       if (auto o = args.Lookup (L"sort"sv)) {
                           ClientErrorException::TreatExceptionsAsClientError ([&] () {
                               sort = DeviceSortParamters::kMapper.ToObject<DeviceSortParamters> (DataExchange::Variant::JSON::Reader{}.Read (o->As<String> ()));

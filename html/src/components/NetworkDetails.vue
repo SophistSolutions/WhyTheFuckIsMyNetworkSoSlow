@@ -132,7 +132,7 @@ function GetSubNetworkDisplay_(id: string, summaryOnly: boolean): string {
     <div class="row">
       <div class="col-3">ID</div>
       <div class="col"> {{ currentNetwork.id }} <span class="snapshot"
-          v-if="currentNetwork.historicalSnapshot == true">{snapshot}</span></div>
+          v-if="currentNetwork.aggregatedBy">{snapshot}</span></div>
     </div>
     <div class="row" v-if="currentNetwork.seen">
       <div class="col-3">Seen</div>

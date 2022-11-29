@@ -19,7 +19,6 @@ export interface IDevice {
   aggregatesReversibly?: string[];
   aggregatesIrreversibly?: string[];
   idIsPersistent?: boolean;
-  historicalSnapshot?: boolean;
   attachedNetworks: { [key: string]: INetworkAttachmentInfo };
   attachedNetworkInterfaces: string[];
   name: string;

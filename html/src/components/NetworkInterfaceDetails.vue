@@ -68,11 +68,11 @@ onUnmounted(() => {
     in 'aggreates' below point ot that page so you can easily link/view one of the detail interfaces... (now you have to
     follow the dated network or device itself to find corresponding link)
   -->
-  <!-- @TODO ADD: idIsPersitsnet, historicalSnapshot, and wirelessINFO DATA-->
   <div v-if="currentNetworkInterface || true" class="q-pa-sm">
     <div class="row" v-if="currentNetworkInterface?.friendlyName">
       <div class="col-3">Friendly Name</div>
-      <div class="col"> {{currentNetworkInterface.friendlyName}} </div>
+      <div class="col"> {{currentNetworkInterface.friendlyName}} <span class="snapshot"
+          v-if="currentNetworkInterface.aggregatedBy">{snapshot}</span></div>
     </div>
     <div class="row" v-if="currentNetworkInterface?.type">
       <div class="col-3">Type</div>

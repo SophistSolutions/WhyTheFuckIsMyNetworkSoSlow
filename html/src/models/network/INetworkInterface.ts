@@ -28,10 +28,10 @@ export interface INetworkInterface {
   gateways?: string[];
   DNSServers?: string[];
   status?: string[];
+  aggregatedBy?: string;
   aggregatesReversibly?: string[];
   aggregatesIrreversibly?: string[];
   idIsPersistent?: boolean;
-  historicalSnapshot?: boolean;
   debugProps?: object;
 }
 

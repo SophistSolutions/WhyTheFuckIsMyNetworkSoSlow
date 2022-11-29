@@ -819,6 +819,29 @@ namespace {
 
         public:
             /**
+             *  Given an aggregated network id, map to the correspoding rollup ID (todo do we need to handle missing case)
+             * 
+             *  \req is already valid rollup net ID.
+             */
+            nonvirtual auto MapAggregatedID2ItsRollupID (const GUID& aggregatedNetInterfaceID) const -> GUID
+            {
+                if (auto r = fMapAggregatedNetInterfaceID2RollupID_.Lookup (aggregatedNetInterfaceID)) {
+                    return *r;
+                }
+                // shouldn't get past here - debug if/why this hapepns - see comments below
+                Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"MapAggregatedID2ItsRollupID failed to find aggregatedNetInterfaceID=%s", Characters::ToString (aggregatedNetInterfaceID).c_str ())};
+                if constexpr (qDebug) {
+                    for ([[maybe_unused]] const auto& i : fRolledUpNetworkInterfaces_) {
+                        DbgTrace (L"rolledupNetInterface=%s", Characters::ToString (i).c_str ());
+                    }
+                }
+                Assert (false);     // @todo fix - because we guarantee each item rolled up exactly once - but happens sometimes on change of network - I think due to outdated device records referring to newer network not yet in this cache...
+                WeakAssert (false); // @todo fix - because we guarantee each item rolled up exactly once - but happens sometimes on change of network - I think due to outdated device records referring to newer network not yet in this cache...
+                return aggregatedNetInterfaceID;
+            }
+
+        public:
+            /**
              *  \brief return the actual (concrete not rollup) NetworkInterface objects associated with the argument ids
              * 
              *      \req each concreteIDs is a valid concrete id contains in this rollup.
@@ -1599,9 +1622,8 @@ optional<IntegratedModel::Device> IntegratedModel::Mgr::GetDevice (const GUID& i
     }
     else {
         if (result = sDBAccessMgr_->GetRawDevices ().Lookup (id)) {
-            result->fIDPersistent       = true;
-            result->fHistoricalSnapshot = true;
-            result->fAggregatedBy       = devicesRollupCache.MapAggregatedID2ItsRollupID (id);
+            result->fIDPersistent = true;
+            result->fAggregatedBy = devicesRollupCache.MapAggregatedID2ItsRollupID (id);
             if (ttl != nullptr) {
                 auto everSeen = result->fSeen.EverSeen ();
                 if (everSeen and everSeen->GetUpperBound () >= (DateTime::Now () - 30s)) {
@@ -1666,10 +1688,9 @@ optional<IntegratedModel::Network> IntegratedModel::Mgr::GetNetwork (const GUID&
     else {
         result = sDBAccessMgr_->GetRawNetworks ().Lookup (id);
         if (result) {
-            result->fIDPersistent       = true;
-            result->fHistoricalSnapshot = true;
-            result->fAggregatedBy       = networkRollupsCache.MapAggregatedID2ItsRollupID (id);
-            auto everSeen               = result->fSeen;
+            result->fIDPersistent = true;
+            result->fAggregatedBy = networkRollupsCache.MapAggregatedID2ItsRollupID (id);
+            auto everSeen         = result->fSeen;
             if (everSeen.GetUpperBound () >= (DateTime::Now () - 30s)) {
                 *ttl = kTTLForActiveObjectsReturned_;
             }
@@ -1704,7 +1725,8 @@ Collection<IntegratedModel::NetworkInterface> IntegratedModel::Mgr::GetNetworkIn
 optional<IntegratedModel::NetworkInterface> IntegratedModel::Mgr::GetNetworkInterface (const GUID& id, optional<Duration>* ttl) const
 {
     // AS OF 2022-11-02 this returns the currently active network interfaces, but changed to mimic other accessors (rollups returned by default then raw records)
-    auto result = RollupSummary_::RolledUpNetworkInterfaces::GetCached ().GetNetworkInterfacess ().Lookup (id);
+    auto networkInterfacesCache = RollupSummary_::RolledUpNetworkInterfaces::GetCached ();
+    auto result                 = networkInterfacesCache.GetNetworkInterfacess ().Lookup (id);
     if (result) {
         if (ttl != nullptr) {
             *ttl = kTTLForRollupsReturned_;
@@ -1713,8 +1735,8 @@ optional<IntegratedModel::NetworkInterface> IntegratedModel::Mgr::GetNetworkInte
     else {
         result = sDBAccessMgr_->GetRawNetworkInterfaces ().Lookup (id);
         if (result) {
-            result->fIDPersistent       = true;
-            result->fHistoricalSnapshot = true;
+            result->fIDPersistent = true;
+            result->fAggregatedBy = networkInterfacesCache.MapAggregatedID2ItsRollupID (id);
             // @todo MUST FIX THIS - sometimes need more info to tell if its a recent one or ancient
             *ttl = kTTLForActiveObjectsReturned_;
         }

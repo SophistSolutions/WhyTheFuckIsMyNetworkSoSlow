@@ -169,7 +169,7 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
     <div class="row">
       <div class="col-3">ID</div>
       <div class="col"> {{ currentDevice.id }} <span class="snapshot"
-          v-if="currentDevice.historicalSnapshot == true">{snapshot}</span></div>
+          v-if="currentDevice.aggregatedBy">{snapshot}</span></div>
     </div>
     <div class="row" v-if="currentDevice.type">
       <div class="col-3">Types</div>
@@ -270,7 +270,7 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
       <div class="col-3">Open Ports</div>
       <div class="col">
         <q-btn class="smallBtnMargin" elevation="2" dense size="sm" @click="rescanSelectedDevice"
-          v-if="currentDevice.historicalSnapshot != true" :disabled="isRescanning"> {{ isRescanning ? "**SCANNING**" :
+          v-if="!currentDevice.aggregatedBy" :disabled="isRescanning"> {{ isRescanning ? "**SCANNING**" :
               "Rescan"
           }} </q-btn>
         <span v-if="currentDevice.openPorts">{{ currentDevice.openPorts.join(", ") }}</span>
