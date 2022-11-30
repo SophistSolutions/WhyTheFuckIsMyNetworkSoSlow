@@ -47,16 +47,16 @@ watch(
     // @todo CODE sharing with predefined routes
     if (networkInterface) {
       if (networkInterface.aggregatedBy) {
-        emit('update:breadcrumbs',  [
+        emit('update:breadcrumbs', [
           { text: 'Home', href: '/#/' },
           // @todo wrong name for parent network name possibly - must fetch aggregated by and use its name - but not worth the trouble now since almost certainly the same
-          { text: networkInterface.friendlyName, href: '/#/network-interface/' + networkInterface.aggregatedBy,  },
+          { text: networkInterface.friendlyName, href: '/#/network-interface/' + networkInterface.aggregatedBy, },
           // @todo replace this name with the 'pretty seen' string we use 
           { text: networkInterface.friendlyName, disabled: true },
         ])
       }
       else {
-        emit('update:breadcrumbs',  [
+        emit('update:breadcrumbs', [
           { text: 'Home', href: '/#/' },
           { text: networkInterface.friendlyName, disabled: true },
         ])
@@ -73,7 +73,8 @@ watch(
         NetworkInterface {{ networkInterface == null ? "loading..." : '"' + networkInterface.friendlyName + '"' }}
       </q-card-section>
       <q-card-section style="margin-top: 0">
-        <NetworkInterfaceDetails :networkInterface="networkInterface" v-if="networkInterface" :showExtraDetails="true" />
+        <NetworkInterfaceDetails :networkInterface="networkInterface" v-if="networkInterface"
+          :showExtraDetails="true" />
       </q-card-section>
     </q-card>
   </q-page>

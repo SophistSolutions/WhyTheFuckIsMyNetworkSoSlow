@@ -1,3 +1,3 @@
 export interface IInternetServiceProvider {
-    name: string;
+  name: string;
 }

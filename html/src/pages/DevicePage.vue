@@ -56,17 +56,17 @@ watch(
     // @todo CODE sharing with predefined routes
     if (device) {
       if (device.aggregatedBy) {
-        emit('update:breadcrumbs',  [
+        emit('update:breadcrumbs', [
           { text: 'Home', href: '/#/' },
           { text: 'Devices', href: '/#/devices' },
           // @todo wrong name for parent network name possibly - must fetch aggregated by and use its name - but not worth the trouble now since almost certainly the same
-          { text: device.names[0].name, href: '/#/device/' + device.aggregatedBy,  },
+          { text: device.names[0].name, href: '/#/device/' + device.aggregatedBy, },
           // @todo replace this name with the 'pretty seen' string we use 
           { text: device.names[0].name, disabled: true },
         ])
       }
       else {
-        emit('update:breadcrumbs',  [
+        emit('update:breadcrumbs', [
           { text: 'Home', href: '/#/' },
           { text: 'Devices', href: '/#/devices' },
           { text: device.names[0].name, disabled: true },

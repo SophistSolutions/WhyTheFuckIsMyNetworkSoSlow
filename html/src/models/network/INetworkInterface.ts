@@ -34,4 +34,3 @@ export interface INetworkInterface {
   idIsPersistent?: boolean;
   debugProps?: object;
 }
-

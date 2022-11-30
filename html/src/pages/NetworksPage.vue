@@ -374,7 +374,7 @@ const pagination = ref({
           <template v-slot:body="props">
             <q-tr :props="props" @click="rowClicked(props)">
               <q-td :props="props" key="name">
-               <ReadOnlyTextWithHover :message="props.row.name" :link="'/#/network/' + props.row.id" />
+                <ReadOnlyTextWithHover :message="props.row.name" :link="'/#/network/' + props.row.id" />
               </q-td>
               <q-td :props="props" key="CIDRs">
                 <ReadOnlyTextWithHover :message="props.row.CIDRs" />

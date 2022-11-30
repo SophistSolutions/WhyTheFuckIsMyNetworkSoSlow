@@ -46,7 +46,7 @@ export const useNetStateStore = defineStore('Net-State-Store', {
       numberOfOutstandingLoadRequests: 0,
     } as ILoading,
     // @todo - incomplete/draft attempt to track what we are already loading
-    networkInterfacesLoading: new Set as Set<string>,
+    networkInterfacesLoading: new Set() as Set<string>,
   }),
   getters: {
     getLoading_Networks: (state) => {

@@ -5,9 +5,7 @@ const routes: RouteRecordRaw[] = [
     path: '/',
     name: 'Home',
     component: () => import('layouts/MainLayout.vue'),
-    children: [
-      { path: '/', component: () => import('pages/HomePage.vue') },
-    ],
+    children: [{ path: '/', component: () => import('pages/HomePage.vue') }],
     meta: {
       breadcrumbs: [{ text: 'Home', exact: true, disabled: true }],
       divderAfter: true,
@@ -81,7 +79,10 @@ const routes: RouteRecordRaw[] = [
     name: 'Network',
     component: () => import('layouts/MainLayout.vue'),
     children: [
-      { path: '/network/:id', component: () => import('pages/NetworkPage.vue') },
+      {
+        path: '/network/:id',
+        component: () => import('pages/NetworkPage.vue'),
+      },
     ],
     meta: {
       breadcrumbs: [
@@ -95,7 +96,9 @@ const routes: RouteRecordRaw[] = [
     path: '/networks',
     name: 'Networks',
     component: () => import('layouts/MainLayout.vue'),
-    children: [{ path: '/networks', component: () => import('pages/NetworksPage.vue') }],
+    children: [
+      { path: '/networks', component: () => import('pages/NetworksPage.vue') },
+    ],
     meta: {
       breadcrumbs: [
         { text: 'Home', href: '/#/' },
@@ -109,7 +112,10 @@ const routes: RouteRecordRaw[] = [
     name: 'Network-Interface',
     component: () => import('layouts/MainLayout.vue'),
     children: [
-      { path: '/network-interface/:id', component: () => import('pages/NetworkInterfacePage.vue') },
+      {
+        path: '/network-interface/:id',
+        component: () => import('pages/NetworkInterfacePage.vue'),
+      },
     ],
     meta: {
       breadcrumbs: [

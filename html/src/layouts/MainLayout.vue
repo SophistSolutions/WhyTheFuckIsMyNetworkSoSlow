@@ -92,7 +92,7 @@ onMounted(() => {
         <q-toolbar-title>
           WhyTheFuckIsMyNetworkSoSlow
         </q-toolbar-title>
-        <ToolbarBreadcrumbs v-model:breadcrumbs="breadcrumbs"/>
+        <ToolbarBreadcrumbs v-model:breadcrumbs="breadcrumbs" />
         <q-btn flat dense round icon="mdi-dots-vertical" style="margin-left: 1in" aria-label="Menu" color="white">
           <q-menu>
             <q-list style="min-width: 100px">

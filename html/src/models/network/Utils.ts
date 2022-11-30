@@ -15,7 +15,7 @@ export function GetNetworkName(n: INetwork): string {
   if (addresses.length === 0) {
     addresses = n.networkAddresses;
   }
-  const preferredName = n.names.length > 0? n.names[0].name: "";
+  const preferredName = n.names.length > 0 ? n.names[0].name : '';
   let name = preferredName;
   // allow user set names to be shown as is, but for lower priority names, fold the best name with the CIDR
   if (n.names.length == 0 || n.names[0].priority < 500) {
@@ -46,8 +46,8 @@ export function GetNetworkByID(
   networkID: string,
   networks: INetwork[]
 ): INetwork {
-  const n: INetwork | null = GetNetworkByIDQuietly(networkID, networks);
-  if (n == null) {
+  const n: INetwork|undefined  = GetNetworkByIDQuietly(networkID, networks);
+  if (n === undefined) {
     throw new Error('no such network id found');
   }
   return n;
@@ -92,7 +92,7 @@ export function GetDevicesForNetworkLink(
  *
  * @param l argument can be null, in which case this returns null
  */
-export function FormatLocation(l?: IGeographicLocation): string|null {
+export function FormatLocation(l?: IGeographicLocation): string | null {
   let result: string = '';
   if (l == null) {
     return null;

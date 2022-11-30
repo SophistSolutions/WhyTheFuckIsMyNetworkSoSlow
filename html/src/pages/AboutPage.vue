@@ -42,7 +42,7 @@ function prettyPrintMSTime(time?: string) {
     return "?";
   }
   var m = moment.duration(time);
-  if (m.asMilliseconds () < 1.0) {
+  if (m.asMilliseconds() < 1.0) {
     return (m.milliseconds() * 1000).toFixed(1) + "μs";
   }
   return m.milliseconds().toFixed(1) + "ms";
@@ -220,7 +220,8 @@ Units 1=1 logical core">CPU-Usage</div>
                   <div class="col"> {{ moment.duration(aboutData.serverInfo.currentMachine.machineUptime).humanize() }}
                   </div>
                 </div>
-                <div class="row" title="How many threads in each (logical) processors Run-Q on average. 0 means no use, 1 means ALL cores fully used with no Q, and 2 means all cores fully utilized and each core with a Q length of 1">
+                <div class="row"
+                  title="How many threads in each (logical) processors Run-Q on average. 0 means no use, 1 means ALL cores fully used with no Q, and 2 means all cores fully utilized and each core with a Q length of 1">
                   <div class="col-3">
                     Run-Q</div>
                   <div class="col" v-if="aboutData.serverInfo.currentMachine.runQLength != null"> {{
@@ -285,11 +286,11 @@ Units 1=1 logical core">
 </template>
 
 <style lang="scss" scoped>
-
 .text-h6 {
   font-size: 11pt;
   line-height: 15pt;
 }
+
 .pageCard {
   margin-bottom: 1.2em;
   max-width: 750px;

@@ -1,6 +1,6 @@
-import { IGeographicLocation } from "../network/IGeographicLocation";
-import { IInternetServiceProvider } from "../network/IInternetServiceProvider";
-import { IDateTimeRange } from "../common/IDateTimeRange"
+import { IGeographicLocation } from '../network/IGeographicLocation';
+import { IInternetServiceProvider } from '../network/IInternetServiceProvider';
+import { IDateTimeRange } from '../common/IDateTimeRange';
 
 export interface INetwork {
   id: string;
@@ -16,7 +16,7 @@ export interface INetwork {
   geographicLocation?: IGeographicLocation;
   internetServiceProvider: IInternetServiceProvider;
   networkAddresses: string[];
-  names: { name: string, priority: number }[];
+  names: { name: string; priority: number }[];
   seen?: IDateTimeRange;
   debugProps?: object;
 }

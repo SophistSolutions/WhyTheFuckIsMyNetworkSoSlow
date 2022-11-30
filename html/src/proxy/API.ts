@@ -15,11 +15,11 @@ import { gRuntimeConfiguration } from 'boot/configuration';
 import { Logger } from '../utils/Logger';
 import { IDateTimeRange } from 'src/models/common/IDateTimeRange';
 
-// On Chrome, CORS frequently fails - not sure why. In chrome debugger, Access-Control-Allow-Origin 
+// On Chrome, CORS frequently fails - not sure why. In chrome debugger, Access-Control-Allow-Origin
 // lines not showing up but do in other browsers (edge)
 // --LGP 2022-11-24
 //const kFetchOptions_: RequestInit = { mode: 'no-cors' };
-const kFetchOptions_: RequestInit = {}
+const kFetchOptions_: RequestInit = {};
 
 export async function fetchNetworks(): Promise<INetwork[]> {
   return fetch(

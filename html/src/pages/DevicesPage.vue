@@ -165,7 +165,7 @@ function rowClicked(props: object) {
 
 let allAvailableNetworks: ComputedRef<INetwork[]> = computed(() => store.getAvailableNetworks);
 
-function mkTblHdr_(o: {name: string, classes?: string, align?: string, sortable?: boolean, headerClasses?: string, label: string, headerStyle?:string, sort?:any, field?:any}) {
+function mkTblHdr_(o: { name: string, classes?: string, align?: string, sortable?: boolean, headerClasses?: string, label: string, headerStyle?: string, sort?: any, field?: any }) {
   return {
     ...o,
     field: o.field ?? o.name,
@@ -257,7 +257,7 @@ function clearFilter() {
 
 let filteredExtendedDevices: ComputedRef<object[]> = computed(() => {
   const result: object[] = [];
-  allDevices.value.forEach((i:IDevice) => {
+  allDevices.value.forEach((i: IDevice) => {
     let passedFilter = true;
     if (
       passedFilter &&
@@ -446,7 +446,8 @@ const pagination = ref({
                 </span>
               </q-td>
               <q-td :props="props" key="lastSeenAt">
-                <ReadOnlyTextWithHover v-if="props.row.seen?.Ever?.upperBound" :message="moment(props.row.seen.Ever.upperBound).fromNow()" />
+                <ReadOnlyTextWithHover v-if="props.row.seen?.Ever?.upperBound"
+                  :message="moment(props.row.seen.Ever.upperBound).fromNow()" />
               </q-td>
               <q-td :props="props" key="manufacturerSummary">
                 <ReadOnlyTextWithHover :message="props.row.manufacturerSummary" />
@@ -469,10 +470,9 @@ const pagination = ref({
                 <ReadOnlyTextWithHover :message="props.row.localAddresses" />
               </q-td>
               <q-td :props="props" key="networksSummary">
-                <span v-for="anw in GetAttachedNetworksAsNetworks(props.row.attachedNetworks, allAvailableNetworks)" :key="anw.id">
-                  <ReadOnlyTextWithHover 
-                    :message="GetNetworkName(anw)"
-                    :link="GetNetworkLink(anw)" />&nbsp;
+                <span v-for="anw in GetAttachedNetworksAsNetworks(props.row.attachedNetworks, allAvailableNetworks)"
+                  :key="anw.id">
+                  <ReadOnlyTextWithHover :message="GetNetworkName(anw)" :link="GetNetworkLink(anw)" />&nbsp;
                 </span>
               </q-td>
               <q-td :props="props" key="expand">
