@@ -4,17 +4,17 @@ Add to html - standalone network interface page
    (so easier to test mostly but also to link to in below ticket/issue)
 
 		>> @todo add links TO this page (page now works)
-
-	- Seen value not being dynamically updated on network interfaces (stays stuck on when found).
-		"15 minutes ago up until 14 minutes ago" when actively changing
-	- dynamic changes like unplugign etihernet and going to wireless and then plugging in and back not properly reflected
-	- Show baud rate better than 10000000 (3.4Mbps eg.)
+		>> @todo better NAMES for Network-Interfaces (name for aggregator and timerange for aggregated)
+		>> In Network (and device pages) where we mention network interfaces, have link to standalone page
 
 ----
 Network-interface GUI
-		(mostly done above but:)
-			- review why some link speed numbers look iffy on windows (bluetooth)
+	- Show baud rate better than 10000000 (3.4Mbps eg.)
+	- review why some link speed numbers look iffy on windows (bluetooth)
+	- Seen value not being dynamically updated on network interfaces (stays stuck on when found).
+		"15 minutes ago up until 14 minutes ago" when actively changing
 	- verify etag conditional gets working properly (chrome debugger makes it look like not working right)
+	- dynamic changes like unplugign etihernet and going to wireless and then plugging in and back not properly reflected
 
 ---
 
