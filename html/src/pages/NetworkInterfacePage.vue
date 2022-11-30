@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import { defineComponent, defineProps, onMounted, defineEmits, onUnmounted, onBeforeUnmount, nextTick, ref, computed, ComputedRef } from 'vue';
+import { defineProps, onMounted, defineEmits, onUnmounted, computed, ComputedRef } from 'vue';
 import { useRoute } from 'vue-router'
 import { useQuasar } from 'quasar';
 import { watch } from 'vue'
-import { INetwork } from "../models/network/INetwork";
-import { GetNetworkName } from "../models/network/Utils";
+import { INetworkInterface } from "../models/network/INetworkInterface";
 
-import NetworkDetails from '../components/NetworkDetails.vue';
+import NetworkInterfaceDetails from '../components/NetworkInterfaceDetails.vue';
 
 import { useNetStateStore } from '../stores/Net-State-store'
 
@@ -24,12 +23,12 @@ const emit = defineEmits(['update:breadcrumbs'])
 
 onMounted(() => {
   // first time check quickly, then more gradually
-  store.fetchNetworks([route.params.id as string]);
+  store.fetchNetworkInterfaces([route.params.id as string]);
   if (polling) {
     clearInterval(polling);
   }
   polling = setInterval(() => {
-    store.fetchNetworks([route.params.id as string]);
+    store.fetchNetworkInterfaces([route.params.id as string]);
   }, 15 * 1000);
 })
 
@@ -37,31 +36,29 @@ onUnmounted(() => {
   clearInterval(polling);
 })
 
-let network: ComputedRef<INetwork> = computed(() => {
-  return store.getNetwork(route.params.id as string);
+let networkInterface: ComputedRef<INetworkInterface> = computed(() => {
+  return store.getNetworkInterface(route.params.id as string);
 });
 
 watch(
-  () => network.value,
-  async network => {
+  () => networkInterface.value,
+  async networkInterface => {
     // @todo - check network.names[0] - LENGTH - handle emopty case
     // @todo CODE sharing with predefined routes
-    if (network) {
-      if (network.aggregatedBy) {
+    if (networkInterface) {
+      if (networkInterface.aggregatedBy) {
         emit('update:breadcrumbs',  [
           { text: 'Home', href: '/#/' },
-          { text: 'Networks', href: '/#/networks' },
           // @todo wrong name for parent network name possibly - must fetch aggregated by and use its name - but not worth the trouble now since almost certainly the same
-          { text: network.names[0].name, href: '/#/network/' + network.aggregatedBy,  },
+          { text: networkInterface.friendlyName, href: '/#/network-interface/' + networkInterface.aggregatedBy,  },
           // @todo replace this name with the 'pretty seen' string we use 
-          { text: network.names[0].name, disabled: true },
+          { text: networkInterface.friendlyName, disabled: true },
         ])
       }
       else {
         emit('update:breadcrumbs',  [
           { text: 'Home', href: '/#/' },
-          { text: 'Networks', href: '/#/networks' },
-          { text: network.names[0].name, disabled: true },
+          { text: networkInterface.friendlyName, disabled: true },
         ])
       }
     }
@@ -73,10 +70,10 @@ watch(
   <q-page padding class=" justify-center row">
     <q-card class="pageCard col-11">
       <q-card-section class="text-subtitle2" style="margin: 0 0 0 0">
-        Network {{ network == null ? "loading..." : '"' + GetNetworkName(network) + '"' }}
+        NetworkInterface {{ networkInterface == null ? "loading..." : '"' + networkInterface.friendlyName + '"' }}
       </q-card-section>
       <q-card-section style="margin-top: 0">
-        <NetworkDetails :network="network" v-if="network" :showExtraDetails="true" />
+        <NetworkInterfaceDetails :networkInterface="networkInterface" v-if="networkInterface" :showExtraDetails="true" />
       </q-card-section>
     </q-card>
   </q-page>

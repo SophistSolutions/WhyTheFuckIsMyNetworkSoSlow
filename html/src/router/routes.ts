@@ -104,6 +104,20 @@ const routes: RouteRecordRaw[] = [
       showInDotDotDotMenu: true,
     },
   },
+  {
+    path: '/network-interface/:id',
+    name: 'Network-Interface',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      { path: '/network-interface/:id', component: () => import('pages/NetworkInterfacePage.vue') },
+    ],
+    meta: {
+      breadcrumbs: [
+        { text: 'Home', href: '/#/' },
+        { text: 'Network', disabled: true },
+      ],
+    },
+  },
   // {
   //   path: "/networks-DEPRECATED",
   //   name: "Networks-DEPRECATED",

@@ -28,7 +28,8 @@ import { INetwork } from 'src/models/network/INetwork';
 const store = useNetStateStore()
 
 const props = defineProps({
-  networkInterfaceId: { type: String, required: true },
+  networkInterface: { type: Object, required: false },
+  networkInterfaceId: { type: String, required: false },
   includeLinkToDetailsPage: { type: Boolean, required: false, default: false },
   showExtraDetails: { type: Boolean, required: false, default: false },
 })
@@ -38,11 +39,13 @@ let polling: undefined | NodeJS.Timeout;
 let allDevices: ComputedRef<IDevice[]> = computed(() => store.getDevices);
 
 let currentNetworkInterface = computed<INetworkInterface | undefined>(
-  () => store.getNetworkInterface(props.networkInterfaceId)
+  () => props.networkInterface as INetworkInterface?? store.getNetworkInterface(props.networkInterfaceId)
 )
 
 function doFetches() {
-  store.fetchNetworkInterfaces([props.networkInterfaceId]);
+  if (props.networkInterfaceId) {
+    store.fetchNetworkInterfaces([props.networkInterfaceId]);
+  }
 };
 
 onMounted(() => {
@@ -59,7 +62,6 @@ onMounted(() => {
 onUnmounted(() => {
   clearInterval(polling);
 })
-
 </script>
 
 <template>
