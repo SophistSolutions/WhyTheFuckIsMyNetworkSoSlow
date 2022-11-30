@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { defineProps, onMounted, onUnmounted, ref, computed, ComputedRef } from 'vue';
+import { defineProps, onMounted, onUnmounted, ref, computed, ComputedRef } from "vue";
 
-import JsonViewer from 'vue-json-viewer';
+import JsonViewer from "vue-json-viewer";
 
 import { INetworkInterface } from "../models/network/INetworkInterface";
 
@@ -13,37 +13,39 @@ import {
   GetNetworkName,
 } from "../models/network/Utils";
 
-import { PluralizeNoun } from 'src/utils/Linguistics';
+import { PluralizeNoun } from "src/utils/Linguistics";
 
-import ReadOnlyTextWithHover from '../components/ReadOnlyTextWithHover.vue';
+import ReadOnlyTextWithHover from "../components/ReadOnlyTextWithHover.vue";
 
-import { useNetStateStore } from '../stores/Net-State-store'
+import { useNetStateStore } from "../stores/Net-State-store";
 
-const store = useNetStateStore()
+const store = useNetStateStore();
 
 interface Props {
   // EITHER networkInterface or networkInterfaceId - EXCLUSIVE and ONE required
-  networkInterface?: INetworkInterface,
-  networkInterfaceId?: string,
-  includeLinkToDetailsPage?: boolean,
-  showExtraDetails?: boolean,
+  networkInterface?: INetworkInterface;
+  networkInterfaceId?: string;
+  includeLinkToDetailsPage?: boolean;
+  showExtraDetails?: boolean;
 }
 const props = withDefaults(defineProps<Props>(), {
   includeLinkToDetailsPage: false,
   showExtraDetails: false,
-})
+});
 
 let polling: undefined | NodeJS.Timeout;
 
 let currentNetworkInterface = computed<INetworkInterface | undefined>(
-  () => props.networkInterface ?? store.getNetworkInterface(props.networkInterfaceId as string)
-)
+  () =>
+    props.networkInterface ??
+    store.getNetworkInterface(props.networkInterfaceId as string)
+);
 
 function doFetches() {
   if (props.networkInterfaceId) {
     store.fetchNetworkInterfaces([props.networkInterfaceId]);
   }
-};
+}
 
 onMounted(() => {
   // first time check immediately, then more gradually for updates
@@ -54,11 +56,11 @@ onMounted(() => {
   polling = setInterval(() => {
     doFetches();
   }, 30 * 1000);
-})
+});
 
 onUnmounted(() => {
   clearInterval(polling);
-})
+});
 </script>
 
 <template>
@@ -70,75 +72,118 @@ onUnmounted(() => {
   <div v-if="currentNetworkInterface || true" class="q-pa-sm">
     <div class="row" v-if="currentNetworkInterface?.friendlyName">
       <div class="col-3">Friendly Name</div>
-      <div class="col"> {{ currentNetworkInterface.friendlyName }} <span class="snapshot"
-          v-if="currentNetworkInterface.aggregatedBy">{snapshot}</span></div>
+      <div class="col">
+        {{ currentNetworkInterface.friendlyName }}
+        <span class="snapshot" v-if="currentNetworkInterface.aggregatedBy"
+          >{snapshot}</span
+        >
+      </div>
     </div>
     <div class="row" v-if="currentNetworkInterface?.type">
       <div class="col-3">Type</div>
-      <div class="col"> {{ currentNetworkInterface.type }} </div>
+      <div class="col">{{ currentNetworkInterface.type }}</div>
     </div>
     <div class="row" v-if="currentNetworkInterface?.description">
       <div class="col-3">Description</div>
-      <div class="col"> {{ currentNetworkInterface.description }} </div>
+      <div class="col">{{ currentNetworkInterface.description }}</div>
     </div>
     <div class="row" v-if="currentNetworkInterface?.platformInterfaceID">
       <div class="col-3">Platform Interface ID</div>
-      <div class="col"> {{ currentNetworkInterface.platformInterfaceID }} </div>
+      <div class="col">{{ currentNetworkInterface.platformInterfaceID }}</div>
     </div>
     <div class="row" v-if="currentNetworkInterface?.status">
       <div class="col-3">Status</div>
-      <div class="col"> {{ currentNetworkInterface.status.join(", ") }} </div>
+      <div class="col">{{ currentNetworkInterface.status.join(", ") }}</div>
     </div>
     <div class="row">
       <div class="col-3">ID</div>
       <div class="col">
-        <ReadOnlyTextWithHover :message="((props.networkInterfaceId || currentNetworkInterface?.id) as string)"
-          :link="('/#/network-interface/' + (props.networkInterfaceId || currentNetworkInterface?.id))" />
+        <ReadOnlyTextWithHover
+          :message="((props.networkInterfaceId || currentNetworkInterface?.id) as string)"
+          :link="
+            '/#/network-interface/' +
+            (props.networkInterfaceId || currentNetworkInterface?.id)
+          "
+        />
       </div>
     </div>
     <div class="row" v-if="currentNetworkInterface?.hardwareAddress">
       <div class="col-3">Hardware Address</div>
-      <div class="col"> {{ currentNetworkInterface.hardwareAddress }} </div>
+      <div class="col">{{ currentNetworkInterface.hardwareAddress }}</div>
     </div>
     <div class="row" v-if="currentNetworkInterface?.boundAddressRanges">
       <div class="col-3">CIDRs</div>
-      <div class="col"> {{ currentNetworkInterface.boundAddressRanges.join(", ") }} </div>
+      <div class="col">{{ currentNetworkInterface.boundAddressRanges.join(", ") }}</div>
     </div>
     <div class="row" v-if="currentNetworkInterface?.boundAddresses">
       <div class="col-3">Bindings</div>
-      <div class="col"> {{ currentNetworkInterface.boundAddresses.join(", ") }} </div>
+      <div class="col">{{ currentNetworkInterface.boundAddresses.join(", ") }}</div>
     </div>
-    <div class="row" v-if="currentNetworkInterface?.transmitSpeedBaud || currentNetworkInterface?.receiveLinkSpeedBaud">
+    <div
+      class="row"
+      v-if="
+        currentNetworkInterface?.transmitSpeedBaud ||
+        currentNetworkInterface?.receiveLinkSpeedBaud
+      "
+    >
       <div class="col-3">Speed (tx/rx)</div>
-      <div class="col"> {{ currentNetworkInterface.transmitSpeedBaud }}/{{ currentNetworkInterface.receiveLinkSpeedBaud }}
+      <div class="col">
+        {{ currentNetworkInterface.transmitSpeedBaud }}/{{
+          currentNetworkInterface.receiveLinkSpeedBaud
+        }}
       </div>
     </div>
     <div class="row" v-if="currentNetworkInterface?.DNSServers">
       <div class="col-3">DNS Servers</div>
-      <div class="col"> {{ currentNetworkInterface.DNSServers.join(", ") }} </div>
+      <div class="col">{{ currentNetworkInterface.DNSServers.join(", ") }}</div>
     </div>
     <div class="row" v-if="currentNetworkInterface?.gateways">
       <div class="col-3">Gateways</div>
-      <div class="col"> {{ currentNetworkInterface.gateways.join(", ") }} </div>
+      <div class="col">{{ currentNetworkInterface.gateways.join(", ") }}</div>
     </div>
-    <div class="row"
-      v-if="(currentNetworkInterface?.aggregatesReversibly && currentNetworkInterface.aggregatesReversibly.length && props.showExtraDetails)">
+    <div
+      class="row"
+      v-if="
+        currentNetworkInterface?.aggregatesReversibly &&
+        currentNetworkInterface.aggregatesReversibly.length &&
+        props.showExtraDetails
+      "
+    >
       <div class="col-3">Aggregates Reversibly</div>
       <div class="col">
-        <div class="row wrap"><span v-for="aggregate in currentNetworkInterface.aggregatesReversibly"
-            v-bind:key="aggregate" class="aggregatesItem">
-            <ReadOnlyTextWithHover :message="aggregate" :link="'/#/network-interface/' + aggregate" />;&nbsp;
-          </span></div>
+        <div class="row wrap">
+          <span
+            v-for="aggregate in currentNetworkInterface.aggregatesReversibly"
+            v-bind:key="aggregate"
+            class="aggregatesItem"
+          >
+            <ReadOnlyTextWithHover
+              :message="aggregate"
+              :link="'/#/network-interface/' + aggregate"
+            />;&nbsp;
+          </span>
+        </div>
       </div>
     </div>
-    <div class="row"
-      v-if="(currentNetworkInterface?.aggregatesIrreversibly && currentNetworkInterface.aggregatesIrreversibly.length && props.showExtraDetails)">
+    <div
+      class="row"
+      v-if="
+        currentNetworkInterface?.aggregatesIrreversibly &&
+        currentNetworkInterface.aggregatesIrreversibly.length &&
+        props.showExtraDetails
+      "
+    >
       <div class="col-3">Aggregates Irreversibly</div>
       <div class="col">
-        <div class="row wrap"><span v-for="aggregate in currentNetworkInterface.aggregatesIrreversibly"
-            v-bind:key="aggregate" class="aggregatesItem">
+        <div class="row wrap">
+          <span
+            v-for="aggregate in currentNetworkInterface.aggregatesIrreversibly"
+            v-bind:key="aggregate"
+            class="aggregatesItem"
+          >
             <ReadOnlyTextWithHover :message="aggregate" />;&nbsp;
-          </span></div>
+          </span>
+        </div>
       </div>
     </div>
     <div class="row" v-if="currentNetworkInterface?.wirelessInformation">
@@ -148,7 +193,10 @@ onUnmounted(() => {
           <div class="col-4">SSID</div>
           <div>{{ currentNetworkInterface?.wirelessInformation.SSID }}</div>
         </div>
-        <div class="row wrap" v-if="currentNetworkInterface?.wirelessInformation.profileName">
+        <div
+          class="row wrap"
+          v-if="currentNetworkInterface?.wirelessInformation.profileName"
+        >
           <div class="col-4">profileName</div>
           <div>{{ currentNetworkInterface?.wirelessInformation.profileName }}</div>
         </div>
@@ -156,15 +204,24 @@ onUnmounted(() => {
           <div class="col-4">State</div>
           <div>{{ currentNetworkInterface?.wirelessInformation.state }}</div>
         </div>
-        <div class="row wrap" v-if="currentNetworkInterface?.wirelessInformation.signalQuality">
+        <div
+          class="row wrap"
+          v-if="currentNetworkInterface?.wirelessInformation.signalQuality"
+        >
           <div class="col-4">Signal Quality</div>
           <div>{{ currentNetworkInterface?.wirelessInformation.signalQuality }}</div>
         </div>
-        <div class="row wrap" v-if="currentNetworkInterface?.wirelessInformation.MACAddress">
+        <div
+          class="row wrap"
+          v-if="currentNetworkInterface?.wirelessInformation.MACAddress"
+        >
           <div class="col-4">MACAddress</div>
           <div>{{ currentNetworkInterface?.wirelessInformation.MACAddress }}</div>
         </div>
-        <div class="row wrap" v-if="currentNetworkInterface?.wirelessInformation.authAlgorithm">
+        <div
+          class="row wrap"
+          v-if="currentNetworkInterface?.wirelessInformation.authAlgorithm"
+        >
           <div class="col-4">Auth Algorithm</div>
           <div>{{ currentNetworkInterface?.wirelessInformation.authAlgorithm }}</div>
         </div>
@@ -176,19 +233,39 @@ onUnmounted(() => {
           <div class="col-4">BSSType</div>
           <div>{{ currentNetworkInterface?.wirelessInformation.BSSType }}</div>
         </div>
-        <div class="row wrap" v-if="currentNetworkInterface?.wirelessInformation.physicalConnectionType">
+        <div
+          class="row wrap"
+          v-if="currentNetworkInterface?.wirelessInformation.physicalConnectionType"
+        >
           <div class="col-4">Physical Connection Type</div>
-          <div>{{ currentNetworkInterface?.wirelessInformation.physicalConnectionType }}</div>
+          <div>
+            {{ currentNetworkInterface?.wirelessInformation.physicalConnectionType }}
+          </div>
         </div>
-        <div class="row wrap" v-if="currentNetworkInterface?.wirelessInformation.securityEnabled">
+        <div
+          class="row wrap"
+          v-if="currentNetworkInterface?.wirelessInformation.securityEnabled"
+        >
           <div class="col-4">Security</div>
-          <div>{{ currentNetworkInterface?.wirelessInformation.securityEnabled == true ? "enabled" : "disabled" }}</div>
+          <div>
+            {{
+              currentNetworkInterface?.wirelessInformation.securityEnabled == true
+                ? "enabled"
+                : "disabled"
+            }}
+          </div>
         </div>
-        <div class="row wrap" v-if="currentNetworkInterface?.wirelessInformation.x8021Enabled">
+        <div
+          class="row wrap"
+          v-if="currentNetworkInterface?.wirelessInformation.x8021Enabled"
+        >
           <div class="col-4">8021x Enabled</div>
           <div>{{ currentNetworkInterface?.wirelessInformation.x8021Enabled }}</div>
         </div>
-        <div class="row wrap" v-if="currentNetworkInterface?.wirelessInformation.connectionMode">
+        <div
+          class="row wrap"
+          v-if="currentNetworkInterface?.wirelessInformation.connectionMode"
+        >
           <div class="col-4">Connection Mode</div>
           <div>{{ currentNetworkInterface?.wirelessInformation.connectionMode }}</div>
         </div>
@@ -197,8 +274,13 @@ onUnmounted(() => {
     <div class="row" v-if="currentNetworkInterface?.debugProps && props.showExtraDetails">
       <div class="col-3">DEBUG INFO</div>
       <div class="col">
-        <json-viewer :value="currentNetworkInterface.debugProps" :expand-depth="0" copyable sort
-          class="debugInfoJSONViewers" />
+        <json-viewer
+          :value="currentNetworkInterface.debugProps"
+          :expand-depth="0"
+          copyable
+          sort
+          class="debugInfoJSONViewers"
+        />
       </div>
     </div>
   </div>
@@ -210,6 +292,6 @@ onUnmounted(() => {
 }
 
 .aggregatesItem {
-  min-width: 10em
+  min-width: 10em;
 }
 </style>
