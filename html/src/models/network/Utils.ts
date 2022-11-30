@@ -1,8 +1,43 @@
+import { IDateTimeRange } from 'src/models/common/IDateTimeRange';
 import moment from 'moment';
 
 import { IDevice, INetworkAttachmentInfo } from '../../models/device/IDevice';
 import { IGeographicLocation } from '../../models/network/IGeographicLocation';
 import { INetwork } from '../../models/network/INetwork';
+
+
+/**
+ *  Format as 'an hour ago up until now' - and if summaryOnly true, then just return most recent time.
+ * 
+ * @param seenRange  
+ * @param summaryOnly 
+ * @returns undefined if bad or missing data in date range
+ */
+ export function FormatIDateTimeRange (
+  seenRange?: IDateTimeRange,
+  summaryOnly?: boolean
+): string | undefined {
+  if (seenRange) {
+    const toText: string | undefined = seenRange?.upperBound? moment(seenRange.upperBound).fromNow(): undefined;
+    if (summaryOnly) {
+      return toText;
+    }
+    const fromText: string | undefined = seenRange?.lowerBound? moment(seenRange.lowerBound).fromNow(): undefined;
+    if (fromText || toText) {
+      return (fromText?? "") + ' up until ' +  (toText?? "");
+    }
+  }
+  return undefined;
+}
+export function FormatSeenMap (
+  seenRange?:  { [key: string]: IDateTimeRange },
+  summaryOnly?: boolean
+): string | undefined {
+  if (seenRange && seenRange['ever']) {
+    return FormatIDateTimeRange (seenRange['ever'], summaryOnly)
+  }
+  return undefined;
+}
 
 /*
  *  returns empty string if network address list is missing or empty
@@ -46,7 +81,7 @@ export function GetNetworkByID(
   networkID: string,
   networks: INetwork[]
 ): INetwork {
-  const n: INetwork|undefined  = GetNetworkByIDQuietly(networkID, networks);
+  const n: INetwork | undefined = GetNetworkByIDQuietly(networkID, networks);
   if (n === undefined) {
     throw new Error('no such network id found');
   }

@@ -29,6 +29,7 @@ export interface INetworkInterface {
   DNSServers?: string[];
   status?: string[];
   aggregatedBy?: string;
+  attachedToDevices?: string[];
   aggregatesReversibly?: string[];
   aggregatesIrreversibly?: string[];
   idIsPersistent?: boolean;

@@ -699,6 +699,11 @@ namespace {
         {
         }
 
+        optional<GUID> GetThisDeviceID () const
+        {
+            return sCachedValue_.load ();
+        }
+
     private:
         static void DiscoveryChecker_ ()
         {
@@ -735,6 +740,7 @@ namespace {
                                 return tmp;
                             }
                         }();
+                        sCachedValue_.store (di.fGUID);
                         // copy most/all fields -- @todo cleanup - do more automatically - all but GUID??? Need merge??
                         di.fTypes           = thisDevice->fTypes;
                         di.fThisDevice      = thisDevice->fThisDevice;
@@ -818,6 +824,8 @@ namespace {
 #endif
             return newDev;
         }
+
+        static inline Synchronized<optional<GUID>> sCachedValue_;
     };
 
     unique_ptr<MyDeviceDiscoverer_> sMyDeviceDiscoverer_;
@@ -1551,6 +1559,14 @@ Discovery::DevicesMgr::Activator::~Activator ()
  ********************************************************************************
  */
 DevicesMgr DevicesMgr::sThe;
+
+optional<GUID> Discovery::DevicesMgr::GetThisDeviceID () const
+{
+    if (sMyDeviceDiscoverer_ != nullptr) {
+        return sMyDeviceDiscoverer_->GetThisDeviceID ();
+    }
+    return nullopt;
+}
 
 Collection<Discovery::Device> Discovery::DevicesMgr::GetActiveDevices (optional<Time::DurationSecondsType> allowedStaleness) const
 {

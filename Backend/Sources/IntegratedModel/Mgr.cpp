@@ -7,6 +7,7 @@
 #include "Stroika/Foundation/Common/GUID.h"
 #include "Stroika/Foundation/Common/KeyValuePair.h"
 #include "Stroika/Foundation/Common/Property.h"
+#include "Stroika/Foundation/Containers/Association.h"
 #include "Stroika/Foundation/Containers/KeyedCollection.h"
 #include "Stroika/Foundation/Containers/Set.h"
 #include "Stroika/Foundation/DataExchange/ObjectVariantMapper.h"
@@ -227,6 +228,11 @@ namespace {
             }
 #endif
             return nwi;
+        }
+
+        optional<GUID> GetMyDeviceID_ ()
+        {
+            return Discovery::DevicesMgr::sThe.GetThisDeviceID ();
         }
 
         /**
@@ -769,11 +775,41 @@ namespace {
          *  \note   \em Thread-Safety   <a href="Thread-Safety.md#C++-Standard-Thread-Safety">C++-Standard-Thread-Safety</a>
          */
         struct RolledUpNetworkInterfaces {
-        public:
-            RolledUpNetworkInterfaces (const Iterable<NetworkInterface>& nets2MergeIn = {})
+        private:
+            RolledUpNetworkInterfaces (const Iterable<Device>& devices, const Iterable<NetworkInterface>& nets2MergeIn)
             {
-                MergeIn (nets2MergeIn);
+                DbgTrace ("devicesCnt = %d", devices.size ());
+                DbgTrace ("nets2MergeInCnt = %d", nets2MergeIn.size ());
+
+#if qDebug
+                Set<GUID> netIDs2Add = nets2MergeIn.Map<GUID, Set<GUID>> ([] (const auto& i) { return i.fGUID; });
+                Set<GUID> netsAdded;
+                #endif
+                NetworkInterfaceCollection_ nets2MergeInCollected{nets2MergeIn};
+                for (const Device& d : devices) {
+                    if (d.fAttachedNetworkInterfaces) {
+                        DbgTrace (L"d.guid=%s has interaces %s", Characters::ToString (d.fGUID).c_str (), Characters::ToString (d.fAttachedNetworkInterfaces).c_str ());
+                        d.fAttachedNetworkInterfaces->Apply ([&] (const GUID& netInterfaceID) {
+#if qDebug
+                            netsAdded.Add (netInterfaceID);
+#endif
+                            MergeIn_ (d.fGUID, Memory::ValueOf (nets2MergeInCollected.Lookup (netInterfaceID)));
+                        });
+                    }
+                    else {
+                        DbgTrace (L"d=%s", Characters::ToString (d).c_str ());
+                    }
+                }
+#if qDebug
+                WeakAssert (netIDs2Add == netsAdded);
+#endif
+                DbgTrace (L"orphaned interface Cnt %d", (netIDs2Add - netsAdded).size ());
+                for (const auto& netInterfaceWithoutDevice : (netIDs2Add - netsAdded)) {
+                    DbgTrace (L"netInterfaceWithoutDevice = %s", Characters::ToString (netInterfaceWithoutDevice).c_str ());
+                    MergeIn_ (nullopt, Memory::ValueOf (nets2MergeInCollected.Lookup (netInterfaceWithoutDevice)));
+                }
             }
+        public:
             RolledUpNetworkInterfaces (const RolledUpNetworkInterfaces&)            = default;
             RolledUpNetworkInterfaces (RolledUpNetworkInterfaces&&)                 = default;
             RolledUpNetworkInterfaces& operator= (RolledUpNetworkInterfaces&&)      = default;
@@ -788,14 +824,13 @@ namespace {
                 return fRolledUpNetworkInterfaces_;
             }
 
-        public:
+        private:
             /**
              */
-            nonvirtual void MergeIn (const Iterable<NetworkInterface>& netInterfaces2MergeIn)
+            nonvirtual void MergeIn_ (const optional<GUID>& forDeviceID, const Iterable<NetworkInterface>& netInterfaces2MergeIn)
             {
-                netInterfaces2MergeIn.Apply ([this] (const NetworkInterface& n) {
-                    fRawNetworkInterfaces_ += n;
-                    MergeIn_ (n);
+                netInterfaces2MergeIn.Apply ([this, forDeviceID] (const NetworkInterface& n) {
+                    MergeIn_ (forDeviceID, n);
                 });
             }
 
@@ -804,7 +839,7 @@ namespace {
              *  Given a rollup network interface id, apply F to all the matching concrete interfaces.
              *      \req rollupID is contained in this rollup object as a valid rollup id
              */
-            nonvirtual Set<GUID> GetConcreteIDsForRollup (const GUID& rollupID)
+            nonvirtual Set<GUID> GetConcreteIDsForRollup (const GUID& rollupID) const
             {
                 Set<GUID>        result;
                 NetworkInterface rolledUpNI = Memory::ValueOf (fRolledUpNetworkInterfaces_.Lookup (rollupID));
@@ -841,12 +876,22 @@ namespace {
             }
 
         public:
+            optional<Set<GUID>> GetAttachedToDeviceIDs(const GUID& networkInterfaceID) const
+            {
+                Set<GUID> r{fAssociateNetInterface2OwningDeviceID.Lookup (networkInterfaceID)};
+                if (r.empty ()) {
+                    return nullopt;
+                }
+                return r;
+            }
+
+        public:
             /**
              *  \brief return the actual (concrete not rollup) NetworkInterface objects associated with the argument ids
              * 
              *      \req each concreteIDs is a valid concrete id contains in this rollup.
              */
-            nonvirtual NetworkInterfaceCollection_ GetConcreteNeworkInterfaces (const Set<GUID>& concreteIDs)
+            nonvirtual NetworkInterfaceCollection_ GetConcreteNeworkInterfaces (const Set<GUID>& concreteIDs) const
             {
                 Require (Set<GUID>{fRawNetworkInterfaces_.Keys ()}.ContainsAll (concreteIDs));
                 return fRawNetworkInterfaces_.Where ([&concreteIDs] (const auto& i) { return concreteIDs.Contains (i.fGUID); });
@@ -855,7 +900,7 @@ namespace {
         public:
             /**
              */
-            nonvirtual NetworkInterface GetRollupNetworkInterface (const GUID& id)
+            nonvirtual NetworkInterface GetRollupNetworkInterface (const GUID& id) const
             {
                 return Memory::ValueOf (fRolledUpNetworkInterfaces_.Lookup (id));
             }
@@ -863,7 +908,7 @@ namespace {
         public:
             /**
              */
-            nonvirtual NetworkInterfaceCollection_ GetRollupNetworkInterfaces (const Set<GUID>& rollupIDs)
+            nonvirtual NetworkInterfaceCollection_ GetRollupNetworkInterfaces (const Set<GUID>& rollupIDs) const
             {
                 Require (Set<GUID>{fRolledUpNetworkInterfaces_.Keys ()}.ContainsAll (rollupIDs));
                 return fRolledUpNetworkInterfaces_.Where ([&rollupIDs] (const auto& i) { return rollupIDs.Contains (i.fGUID); });
@@ -872,7 +917,7 @@ namespace {
         public:
             /**
              */
-            nonvirtual NetworkInterfaceCollection_ GetRawNetworkInterfaces (const Set<GUID>& rawIDs)
+            nonvirtual NetworkInterfaceCollection_ GetRawNetworkInterfaces (const Set<GUID>& rawIDs) const
             {
                 Require (Set<GUID>{fRawNetworkInterfaces_.Keys ()}.ContainsAll (rawIDs));
                 return fRawNetworkInterfaces_.Where ([&rawIDs] (const auto& i) { return rawIDs.Contains (i.fGUID); });
@@ -918,12 +963,12 @@ namespace {
                             // @todo add more stuff here - empty preset rules from DB
                             // merge two tables - ID to fingerprint and user settings tables and store those in this rollup early
                             // maybe make CTOR for rolledupnetworks take in ital DB netwworks and rules, and have copyis CTOR taking orig networks and new rules?
-                            lk.store (RolledUpNetworkInterfaces{sDBAccessMgr_->GetRawNetworkInterfaces ()});
+                            lk.store (RolledUpNetworkInterfaces{sDBAccessMgr_->GetRawDevices (), sDBAccessMgr_->GetRawNetworkInterfaces ()});
                         }
                         return Memory::ValueOf (lk.load ());
                     }();
                     // not sure we want to allow this? @todo consider throwing here or asserting out cuz nets rollup IDs would change after this
-                    result.MergeIn (DiscoveryWrapper_::GetNetworkInterfaces_ ());
+                    result.MergeIn_ (DiscoveryWrapper_::GetMyDeviceID_ (), DiscoveryWrapper_::GetNetworkInterfaces_ ());
                     sRolledUpNetworksInterfaces_.store (result); // save here so we can update rollup networks instead of creating anew each time
                     return result;
                 });
@@ -947,8 +992,9 @@ namespace {
             }
 
         private:
-            void MergeIn_ (const NetworkInterface& net2MergeIn)
+            void MergeIn_ (const optional<GUID>& forDeviceID, const NetworkInterface& net2MergeIn)
             {
+                fRawNetworkInterfaces_ += net2MergeIn;
                 // @todo same FAIL logic we have in Network objects needed here
                 // friendly name - for example - of network interface can change while running, so must be able to invalidate and recompute this list
 
@@ -956,12 +1002,16 @@ namespace {
                 auto                     rolledUpNetworkInterace         = NetworkInterface::Rollup (fRolledUpNetworkInterfaces_.Lookup (netInterface2MergeInFingerprint), net2MergeIn);
                 fRolledUpNetworkInterfaces_.Add (rolledUpNetworkInterace);
                 fMapAggregatedNetInterfaceID2RollupID_.Add (net2MergeIn.fGUID, rolledUpNetworkInterace.fGUID);
+                if (forDeviceID) {
+                    fAssociateNetInterface2OwningDeviceID.Add (net2MergeIn.fGUID, *forDeviceID);
+                }
             }
 
         private:
             NetworkInterfaceCollection_ fRawNetworkInterfaces_; // used for RecomputeAll_
             NetworkInterfaceCollection_ fRolledUpNetworkInterfaces_;
             Mapping<GUID, GUID>         fMapAggregatedNetInterfaceID2RollupID_; // each aggregate net interface id is mapped to at most one rollup id)
+            Association<GUID, GUID> fAssociateNetInterface2OwningDeviceID;
 
         private:
             static Synchronized<optional<RolledUpNetworkInterfaces>> sRolledUpNetworksInterfaces_;
@@ -1737,6 +1787,7 @@ optional<IntegratedModel::NetworkInterface> IntegratedModel::Mgr::GetNetworkInte
         if (result) {
             result->fIDPersistent = true;
             result->fAggregatedBy = networkInterfacesCache.MapAggregatedID2ItsRollupID (id);
+            result->fAttachedToDevices = networkInterfacesCache.GetAttachedToDeviceIDs (id);
             // @todo MUST FIX THIS - sometimes need more info to tell if its a recent one or ancient
             *ttl = kTTLForActiveObjectsReturned_;
         }

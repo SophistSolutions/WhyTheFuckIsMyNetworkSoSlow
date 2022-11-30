@@ -19,6 +19,7 @@ import {
   GetDevicesForNetworkLink,
   GetNetworkCIDRs,
   GetNetworkName,
+  FormatIDateTimeRange,
 } from '../models/network/Utils';
 
 import { PluralizeNoun } from 'src/utils/Linguistics';
@@ -97,28 +98,7 @@ function SortNetworkIDsByMostRecentFirst_(ids: Array<string>): Array<string> {
 }
 
 function GetSubNetworkDisplay_(id: string, summaryOnly: boolean): string {
-  let r = store.getNetwork(id);
-  let shortEverText: string | null = null;
-  let longEverText: string | null = null;
-  if (r != null) {
-    if (r && r.seen && r.seen) {
-      const seenRange = r.seen;
-      if (seenRange.upperBound) {
-        shortEverText = moment(seenRange.upperBound).fromNow();
-      }
-      longEverText =
-        moment(seenRange.lowerBound).fromNow() +
-        ' up until ' +
-        (shortEverText ?? '?');
-    }
-  }
-  if (summaryOnly && shortEverText != null) {
-    return shortEverText;
-  }
-  if (longEverText == null) {
-    return id;
-  }
-  return longEverText + '; ID: ' + id;
+  return FormatIDateTimeRange (store.getNetwork(id)?.seen, summaryOnly) ?? id;
 }
 </script>
 

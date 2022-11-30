@@ -176,6 +176,9 @@ String NetworkInterface::ToString () const
     if (fAggregatedBy) {
         sb += L"AggregatedBy: " + Characters::ToString (*fAggregatedBy) + L", ";
     }
+    if (fAttachedToDevices) {
+        sb += L"AttachedToDevices: " + Characters::ToString (*fAttachedToDevices) + L", ";
+    }
     if (fAggregatesReversibly) {
         sb += L"AggregatesReversibly: " + Characters::ToString (fAggregatesReversibly) + L", ";
     }
@@ -266,6 +269,7 @@ const ObjectVariantMapper NetworkInterface::kMapper = [] () {
         {L"platformInterfaceID", StructFieldMetaInfo{&NetworkInterface::fInternalInterfaceID}},
         {L"id", StructFieldMetaInfo{&NetworkInterface::fGUID}},
         {L"aggregatedBy"sv, StructFieldMetaInfo{&NetworkInterface::fAggregatedBy}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"attachedToDevices"sv, StructFieldMetaInfo{&NetworkInterface::fAttachedToDevices}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"friendlyName", StructFieldMetaInfo{&NetworkInterface::fFriendlyName}},
         {L"description", StructFieldMetaInfo{&NetworkInterface::fDescription}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"type", StructFieldMetaInfo{&NetworkInterface::fType}},

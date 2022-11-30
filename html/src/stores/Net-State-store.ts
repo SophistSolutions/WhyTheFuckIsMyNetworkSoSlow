@@ -64,7 +64,7 @@ export const useNetStateStore = defineStore('Net-State-Store', {
       return (id: string) => state.networkDetails[id];
     },
     getNetworkInterface: (state) => {
-      return (id: string): INetworkInterface => state.networkInterfaces[id];
+      return (id: string): INetworkInterface|undefined => state.networkInterfaces[id];
     },
     getNetworkInterfaces: (state) => {
       // untested as of 2022-11-24 - not sure the reduce part is right
@@ -104,7 +104,7 @@ export const useNetStateStore = defineStore('Net-State-Store', {
       ids.forEach(async (i: string) => {
         if (this.networkInterfacesLoading.has(i)) {
           console.log(
-            'Suppressing fetchNetworkInterface ${i} since in progress (throttling)'
+            `Suppressing fetchNetworkInterface ${i} since in progress (throttling)`
           );
         } else {
           this.networkInterfacesLoading.add(i);

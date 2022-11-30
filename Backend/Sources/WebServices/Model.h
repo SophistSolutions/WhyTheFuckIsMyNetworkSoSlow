@@ -241,6 +241,12 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         optional<GUID> fAggregatedBy;
 
         /**
+         *  This information is not stored, or settable, but some WSAPI interfaces may return this information.
+         *  If provided, this set will typically have a single member.
+         */
+        optional <Set<GUID>> fAttachedToDevices;
+
+        /**
          * This NetworkInterface summary represents an aggregation of the following NetworkInterface objects.
          */
         optional<Set<GUID>> fAggregatesReversibly;
