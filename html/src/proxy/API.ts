@@ -21,11 +21,22 @@ import { IDateTimeRange } from 'src/models/common/IDateTimeRange';
 //const kFetchOptions_: RequestInit = { mode: 'no-cors' };
 const kFetchOptions_: RequestInit = {};
 
+function throwIfError_(response: Response): Response {
+  if (response.status >= 400 && response.status < 500) {
+    throw new Error('Client Request Error from the Server');
+  }
+  if (response.status >= 500 && response.status < 600) {
+    throw new Error('Server Error');
+  }
+  return response;
+}
+
 export async function fetchNetworks(): Promise<INetwork[]> {
   return fetch(
     `${gRuntimeConfiguration.API_ROOT}/api/v1/networks?recurse=true`,
     kFetchOptions_
   )
+    .then((response) => throwIfError_(response))
     .then((response) => response.json())
     .then((data) => {
       return data;
@@ -93,6 +104,7 @@ export async function fetchNetwork(id: string): Promise<INetwork> {
     `${gRuntimeConfiguration.API_ROOT}/api/v1/networks/${id}`,
     kFetchOptions_
   )
+    .then((response) => throwIfError_(response))
     .then((response) => response.json())
     .then((data) => {
       jsonPatch2INetwork_(data);
@@ -108,6 +120,7 @@ export async function fetchAllActiveNetworkInterfaces(): Promise<
     `${gRuntimeConfiguration.API_ROOT}/api/v1/network-interfaces?recurse=true`,
     kFetchOptions_
   )
+    .then((response) => throwIfError_(response))
     .then((response) => response.json())
     .then((data) => {
       return data;
@@ -122,6 +135,7 @@ export async function fetchNetworkInterface(
     `${gRuntimeConfiguration.API_ROOT}/api/v1/network-interfaces/${id}`,
     kFetchOptions_
   )
+    .then((response) => throwIfError_(response))
     .then((response) => response.json())
     .then((data) => {
       return data;
@@ -134,6 +148,7 @@ export async function rescanDevice(deviceID: string): Promise<void> {
     `${gRuntimeConfiguration.API_ROOT}/api/v1/operations/scan/FullRescan?deviceID=${deviceID}`,
     kFetchOptions_
   )
+    .then((response) => throwIfError_(response))
     .then((response) => response.json())
     .then((data) => {
       return data;
@@ -173,6 +188,7 @@ export async function fetchDevices(
     )}`,
     kFetchOptions_
   )
+    .then((response) => throwIfError_(response))
     .then((response) => response.json())
     .then((data) => {
       data.forEach((d: IDevice) => {
@@ -191,6 +207,7 @@ export async function fetchDevice(id: string): Promise<IDevice> {
     `${gRuntimeConfiguration.API_ROOT}/api/v1/devices/${id}`,
     kFetchOptions_
   )
+    .then((response) => throwIfError_(response))
     .then((response) => response.json())
     .then((data) => {
       jsonPatch2IDevice_(data);
@@ -204,6 +221,7 @@ export async function fetchDevice(id: string): Promise<IDevice> {
 
 export async function fetchAboutInfo(): Promise<IAbout> {
   return fetch(`${gRuntimeConfiguration.API_ROOT}/api/v1/about`, kFetchOptions_)
+    .then((response) => throwIfError_(response))
     .then((response) => response.json())
     .then((data) => {
       return data;
