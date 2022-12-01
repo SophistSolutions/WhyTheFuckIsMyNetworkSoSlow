@@ -781,16 +781,16 @@ namespace {
                 DbgTrace ("devicesCnt = %d", devices.size ());
                 DbgTrace ("nets2MergeInCnt = %d", nets2MergeIn.size ());
 
-#if qDebug
+#if qDebug || 1
                 Set<GUID> netIDs2Add = nets2MergeIn.Map<GUID, Set<GUID>> ([] (const auto& i) { return i.fGUID; });
                 Set<GUID> netsAdded;
-                #endif
+#endif
                 NetworkInterfaceCollection_ nets2MergeInCollected{nets2MergeIn};
                 for (const Device& d : devices) {
                     if (d.fAttachedNetworkInterfaces) {
                         DbgTrace (L"d.guid=%s has interaces %s", Characters::ToString (d.fGUID).c_str (), Characters::ToString (d.fAttachedNetworkInterfaces).c_str ());
                         d.fAttachedNetworkInterfaces->Apply ([&] (const GUID& netInterfaceID) {
-#if qDebug
+#if qDebug || 1
                             netsAdded.Add (netInterfaceID);
 #endif
                             MergeIn_ (d.fGUID, Memory::ValueOf (nets2MergeInCollected.Lookup (netInterfaceID)));
