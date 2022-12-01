@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import {
-  defineProps,
   onMounted,
   onUnmounted,
   computed,

@@ -1,16 +1,11 @@
 <script setup lang="ts">
-import { defineProps, onMounted, onUnmounted, ref, computed, ComputedRef } from "vue";
+import { onMounted, onUnmounted, computed } from "vue";
 
 import JsonViewer from "vue-json-viewer";
 
 import { INetworkInterface } from "../models/network/INetworkInterface";
 
 import {
-  FormatLocation,
-  GetDeviceIDsInNetwork,
-  GetDevicesForNetworkLink,
-  GetNetworkCIDRs,
-  GetNetworkName,
   FormatIDateTimeRange,
 } from "../models/network/Utils";
 

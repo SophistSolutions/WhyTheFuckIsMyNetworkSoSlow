@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, defineProps, watch, ref, Ref } from 'vue';
+import { onMounted, watch, ref, Ref } from 'vue';
 
 const props = defineProps({
     message: { type: String, required: true },

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { defineProps } from 'vue';
 
 const props = defineProps({
     link: { type: String, required: false, default: undefined },

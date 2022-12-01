@@ -1,6 +1,6 @@
 
 <script setup lang="ts">
-import { watch, defineProps, onMounted, onUnmounted, computed, ComputedRef } from 'vue';
+import { watch, onMounted, onUnmounted, computed, ComputedRef } from 'vue';
 import { useRoute } from 'vue-router'
 
 import { IDevice } from "../models/device/IDevice";

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PropType, defineProps } from 'vue';
+import { PropType } from 'vue';
 
 import NetworkInterfaceDetails from '../components/NetworkInterfaceDetails.vue';
 

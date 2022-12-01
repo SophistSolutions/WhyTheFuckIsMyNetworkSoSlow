@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, defineProps, watch, ref } from 'vue';
+import { onMounted, watch, ref } from 'vue';
 
 const props = defineProps({
   nTotalItems: { type: Number, required: true },

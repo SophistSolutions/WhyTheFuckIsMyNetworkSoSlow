@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, onMounted, defineEmits, onUnmounted, computed, ComputedRef } from 'vue';
+import { onMounted, onUnmounted, computed, ComputedRef } from 'vue';
 import { useRoute } from 'vue-router'
 import { useQuasar } from 'quasar';
 import { watch } from 'vue'

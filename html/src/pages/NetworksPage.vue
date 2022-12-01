@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { defineComponent, defineProps, onMounted, onUnmounted, nextTick, ref, computed, ComputedRef } from 'vue';
-import { useRoute, useRouter } from 'vue-router'
-import moment from 'moment';
-import { useQuasar } from 'quasar';
-import { useStorage } from '@vueuse/core'
+import { onMounted, onUnmounted, nextTick, ref, computed, ComputedRef } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import moment from "moment";
+import { useQuasar } from "quasar";
+import { useStorage } from "@vueuse/core";
 
 import { IDevice } from "../models/device/IDevice";
 import { INetwork } from "../models/network/INetwork";
@@ -13,25 +13,25 @@ import {
   FormatLocation,
   GetDeviceIDsInNetwork,
   GetDevicesForNetworkLink,
-  SortNetworks
+  SortNetworks,
 } from "../models/network/Utils";
 
 // Components
-import Search from '../components/Search.vue';
-import ClearButton from '../components/ClearButton.vue';
-import NetworkDetails from '../components/NetworkDetails.vue';
-import ReadOnlyTextWithHover from '../components/ReadOnlyTextWithHover.vue';
-import Link2DetailsPage from '../components/Link2DetailsPage.vue';
-import FilterSummaryMessage from '../components/FilterSummaryMessage.vue';
+import Search from "../components/Search.vue";
+import ClearButton from "../components/ClearButton.vue";
+import NetworkDetails from "../components/NetworkDetails.vue";
+import ReadOnlyTextWithHover from "../components/ReadOnlyTextWithHover.vue";
+import Link2DetailsPage from "../components/Link2DetailsPage.vue";
+import FilterSummaryMessage from "../components/FilterSummaryMessage.vue";
 
-import { useNetStateStore } from '../stores/Net-State-store'
-const $q = useQuasar()
+import { useNetStateStore } from "../stores/Net-State-store";
+const $q = useQuasar();
 
-const store = useNetStateStore()
+const store = useNetStateStore();
 
 const props = defineProps({
   selectedNetworkink: { type: String, required: false, default: null },
-})
+});
 
 let polling: undefined | NodeJS.Timeout;
 var search = ref("");
@@ -39,20 +39,20 @@ var sortBy: any = [];
 var sortDesc: any = [];
 var expanded: any[] = [];
 
-
 // store page options in local storage, but eventually add many more options here (like collapsed or open show filter section etc)
 // COULD POSSIBLY also store stuff like selected filter (search string etc) - but no need for now....
-const pageUserOptions = useStorage('Networks-Page-User-Options', {
-  VisibleColumns: ['name',
-    'CIDRs',
-    'active',
-    'status',
-    'location',
-    'internetInfo',
-    'devices',
-    'expand']
-})
-
+const pageUserOptions = useStorage("Networks-Page-User-Options", {
+  VisibleColumns: [
+    "name",
+    "CIDRs",
+    "active",
+    "status",
+    "location",
+    "internetInfo",
+    "devices",
+    "expand",
+  ],
+});
 
 function filterAllowAllServices() {
   return selectedServices.length === selectableServices.value.length;
@@ -78,83 +78,77 @@ function selectServicesFilter_ToggleSelectAll() {
   });
 }
 
-const selectableNetworks = computed<object[]>(
-  () => {
-    const r: object[] = [
-      {
-        title: "Any",
-        value: null,
-      },
-    ];
-    allAvailableNetworks.value.forEach((n) => {
-      r.push({
-        title: GetNetworkName(n),
-        value: n.id,
-      });
-    });
-    return r;
-  }
-)
-let selectedNetworkCurrent: string | undefined = undefined;
-
-const selectableTimeframes = ref<object[]>(
-  [
+const selectableNetworks = computed<object[]>(() => {
+  const r: object[] = [
     {
-      title: "Ever",
+      title: "Any",
       value: null,
     },
-    {
-      title: "Last Few Minutes",
-      value: "PT3.9M",
-    },
-    {
-      title: "Last Hour",
-      value: "PT1H",
-    },
-    {
-      title: "Last Day",
-      value: "P1D",
-    },
-    {
-      title: ">15 Min Ago",
-      value: "-PT15M",
-    },
-    {
-      title: ">1 Day Ago",
-      value: "-P1D",
-    },
-  ]
-);
+  ];
+  allAvailableNetworks.value.forEach((n) => {
+    r.push({
+      title: GetNetworkName(n),
+      value: n.id,
+    });
+  });
+  return r;
+});
+let selectedNetworkCurrent: string | undefined = undefined;
+
+const selectableTimeframes = ref<object[]>([
+  {
+    title: "Ever",
+    value: null,
+  },
+  {
+    title: "Last Few Minutes",
+    value: "PT3.9M",
+  },
+  {
+    title: "Last Hour",
+    value: "PT1H",
+  },
+  {
+    title: "Last Day",
+    value: "P1D",
+  },
+  {
+    title: ">15 Min Ago",
+    value: "-PT15M",
+  },
+  {
+    title: ">1 Day Ago",
+    value: "-P1D",
+  },
+]);
 let selectedTimeframe: string | undefined = undefined;
 
-const selectableServices = ref<Array<{ text: string; value: string }>>(
-  [
-    {
-      text: "Other",
-      value: "other",
-    },
-    {
-      text: "Print",
-      value: "print",
-    },
-    {
-      text: "RDP (Remote Desktop)",
-      value: "rdp",
-    },
-    {
-      text: "SSH",
-      value: "ssh",
-    },
-    {
-      text: "SMB (Windows Network FS)",
-      value: "smb",
-    },
-    {
-      text: "Web (HTTP/HTTPS)",
-      value: "web",
-    },
-  ]
-);
+const selectableServices = ref<Array<{ text: string; value: string }>>([
+  {
+    text: "Other",
+    value: "other",
+  },
+  {
+    text: "Print",
+    value: "print",
+  },
+  {
+    text: "RDP (Remote Desktop)",
+    value: "rdp",
+  },
+  {
+    text: "SSH",
+    value: "ssh",
+  },
+  {
+    text: "SMB (Windows Network FS)",
+    value: "smb",
+  },
+  {
+    text: "Web (HTTP/HTTPS)",
+    value: "web",
+  },
+]);
 
 var selectedServices: string[] = selectableServices.value.map((x) => x.value);
 
@@ -162,78 +156,82 @@ function rowClicked(props: object) {
   props.expand = !props.expand;
 }
 
-let allAvailableNetworks: ComputedRef<INetwork[]> = computed(() => store.getAvailableNetworks);
+let allAvailableNetworks: ComputedRef<INetwork[]> = computed(
+  () => store.getAvailableNetworks
+);
 
-function mkTblHdr_(o: { name: string, field?: string, classes?: string, align?: string, sortable?: boolean, headerClasses?: string, label: string, headerStyle?: string }) {
+function mkTblHdr_(o: {
+  name: string;
+  field?: string;
+  classes?: string;
+  align?: string;
+  sortable?: boolean;
+  headerClasses?: string;
+  label: string;
+  headerStyle?: string;
+}) {
   return {
     ...o,
     field: o.field ?? o.name,
     classes: o.classes ?? "truncateWithElipsis",
     align: o.align ?? "left",
     sortable: o.sortable === undefined ? true : o.sortable,
-    headerClasses: o.headerClasses ?? "truncateWithElipsis cellNoScribble"
+    headerClasses: o.headerClasses ?? "truncateWithElipsis cellNoScribble",
   };
 }
 const headers = ref([
   mkTblHdr_({
-    name: 'name',
+    name: "name",
     label: "Name",
-    headerStyle: 'width: 20%; ',
+    headerStyle: "width: 20%; ",
   }),
   mkTblHdr_({
-    name: 'CIDRs',
+    name: "CIDRs",
     label: "CIDRs",
-    headerStyle: 'width: 10%; ',
+    headerStyle: "width: 10%; ",
   }),
   mkTblHdr_({
-    name: 'active',
+    name: "active",
     label: "Active",
     align: "left",
-    headerStyle: 'width: 10%; ',
+    headerStyle: "width: 10%; ",
   }),
   mkTblHdr_({
-    name: 'status',
+    name: "status",
     label: "Status",
-    headerStyle: 'width: 10%; ',
+    headerStyle: "width: 10%; ",
   }),
   mkTblHdr_({
-    name: 'location',
+    name: "location",
     label: "Location",
-    headerStyle: 'width: 20%; ',
+    headerStyle: "width: 20%; ",
   }),
   mkTblHdr_({
-    name: 'internetInfo',
+    name: "internetInfo",
     label: "Internet",
-    headerStyle: 'width: 20%; ',
+    headerStyle: "width: 20%; ",
   }),
   mkTblHdr_({
-    name: 'devices',
+    name: "devices",
     label: "Devices",
-    headerStyle: 'width: 10%; ',
+    headerStyle: "width: 10%; ",
   }),
   mkTblHdr_({
-    name: 'expand',
+    name: "expand",
     label: "Details",
-    align: 'center',
-    headerStyle: 'width: 6.7em; ',
+    align: "center",
+    headerStyle: "width: 6.7em; ",
   }),
 ]);
 
-
-
-const route = useRoute()
-const router = useRouter()
+const route = useRoute();
+const router = useRouter();
 
 let allDevices: ComputedRef<IDevice[]> = computed(() => store.getDevices);
 
 let allNetworks: ComputedRef<INetwork[]> = computed(() => store.getAvailableNetworks);
 
-
-
-
-let filtered: ComputedRef<boolean> = computed(() =>
-  search.value != ""
-);
+let filtered: ComputedRef<boolean> = computed(() => search.value != "");
 
 function clearFilter() {
   selectedNetworkCurrent = undefined;
@@ -242,19 +240,20 @@ function clearFilter() {
   search.value = "";
 }
 
-
 const loading = computed<boolean>(
   // could use numberOfOutstandingLoadRequests or numberOfTimesLoaded depending if we want to show when 'reloading'
   () => store.getLoading_Networks.numberOfOutstandingLoadRequests > 0
-)
-
+);
 
 let filteredExtendedNetworks: ComputedRef<object[]> = computed(() => {
   const result: object[] = [];
   SortNetworks(allNetworks.value).forEach((i: INetwork) => {
     let lastSeenStr = moment(i.seen?.upperBound).fromNow();
     let statusStr = "?";
-    if (i.seen?.upperBound != null && moment().diff(moment(i.seen?.upperBound), "seconds") < 60) {
+    if (
+      i.seen?.upperBound != null &&
+      moment().diff(moment(i.seen?.upperBound), "seconds") < 60
+    ) {
       lastSeenStr = "active";
       statusStr = "healthy"; // tmphack
     }
@@ -265,16 +264,16 @@ let filteredExtendedNetworks: ComputedRef<object[]> = computed(() => {
       active: lastSeenStr,
       internetInfo:
         (i.gateways == null ? "" : i.gateways.join(", ")) +
-        (i.internetServiceProvider == null ? " " : " (" + i.internetServiceProvider.name + ")"),
+        (i.internetServiceProvider == null
+          ? " "
+          : " (" + i.internetServiceProvider.name + ")"),
       devices: GetDeviceIDsInNetwork(i, allDevices.value).length,
       status: statusStr,
       location: FormatLocation(i.geographicLocation) ?? "?",
     };
     if (
       search.value === "" ||
-      JSON.stringify(r)
-        .toLowerCase()
-        .includes(search.value.toLowerCase())
+      JSON.stringify(r).toLowerCase().includes(search.value.toLowerCase())
     ) {
       // console.log("MATCH: this.search=", this.search, " and r=", JSON.stringify(r));
       result.push(r);
@@ -293,18 +292,6 @@ let filteredExtendedNetworks: ComputedRef<object[]> = computed(() => {
   //   return 0;
   // });
   return result;
-}
-);
-
-defineComponent({
-  components: {
-    ClearButton,
-    ReadOnlyTextWithHover,
-    Link2DetailsPage,
-    NetworkDetails,
-    Search,
-    FilterSummaryMessage,
-  },
 });
 
 // See https://github.com/storybookjs/storybook/issues/17954 for why we need this hack
@@ -335,46 +322,74 @@ onMounted(() => {
   }, 15 * 1000);
 
   addHeaderSectionBugWorkaround.value = true;
-})
+});
 
 onUnmounted(() => {
   clearInterval(polling);
-})
+});
 
 // disable pagination
 const pagination = ref({
   page: 1,
-  rowsPerPage: 0
-})
+  rowsPerPage: 0,
+});
 </script>
 
 <template>
   <Teleport to="#CHILD_HEADER_SECTION" v-if="addHeaderSectionBugWorkaround">
     <q-toolbar class="justify-between secondary-toolbar">
       <Search v-model:searchFor="search" />
-      <FilterSummaryMessage dense :filtered="filtered" :nItemsSelected="filteredExtendedNetworks.length"
-        :nTotalItems="allNetworks?.length" itemsName="networks" />
+      <FilterSummaryMessage
+        dense
+        :filtered="filtered"
+        :nItemsSelected="filteredExtendedNetworks.length"
+        :nTotalItems="allNetworks?.length"
+        itemsName="networks"
+      />
       <ClearButton v-if="filtered" @click="clearFilter" />
     </q-toolbar>
     <q-toolbar class="justify-between secondary-toolbar">
-      <q-select v-model="pageUserOptions.VisibleColumns" multiple dense options-dense
-        :display-value="$q.lang.table.columns" emit-value map-options :options="headers" option-value="name"
-        style="min-width: 150px" label="Shown" dark :options-dark="false" />
+      <q-select
+        v-model="pageUserOptions.VisibleColumns"
+        multiple
+        dense
+        options-dense
+        :display-value="$q.lang.table.columns"
+        emit-value
+        map-options
+        :options="headers"
+        option-value="name"
+        style="min-width: 150px"
+        label="Shown"
+        dark
+        :options-dark="false"
+      />
     </q-toolbar>
   </Teleport>
   <q-page padding class="justify-center row">
     <q-card class="pageCard listCard col-11">
       <q-card-section>
-        <div class="row text-h5">
-          Networks
-        </div>
-        <q-table table-class="itemList" :rows="filteredExtendedNetworks" :columns="headers" row-key="id" dense
-          separator="none" :visible-columns="pageUserOptions.VisibleColumns" :pagination.sync="pagination" hide-bottom
-          :loading="loading" flat>
+        <div class="row text-h5">Networks</div>
+        <q-table
+          table-class="itemList"
+          :rows="filteredExtendedNetworks"
+          :columns="headers"
+          row-key="id"
+          dense
+          separator="none"
+          :visible-columns="pageUserOptions.VisibleColumns"
+          :pagination.sync="pagination"
+          hide-bottom
+          :loading="loading"
+          flat
+        >
           <template v-slot:body="props">
             <q-tr :props="props" @click="rowClicked(props)">
               <q-td :props="props" key="name">
-                <ReadOnlyTextWithHover :message="props.row.name" :link="'/#/network/' + props.row.id" />
+                <ReadOnlyTextWithHover
+                  :message="props.row.name"
+                  :link="'/#/network/' + props.row.id"
+                />
               </q-td>
               <q-td :props="props" key="CIDRs">
                 <ReadOnlyTextWithHover :message="props.row.CIDRs" />
@@ -392,15 +407,22 @@ const pagination = ref({
                 <ReadOnlyTextWithHover :message="props.row.internetInfo" />
               </q-td>
               <q-td :props="props" key="devices">
-                <a :href="GetDevicesForNetworkLink(props.row.id)">{{ props.row.devices }}</a>
+                <a :href="GetDevicesForNetworkLink(props.row.id)">{{
+                  props.row.devices
+                }}</a>
               </q-td>
               <q-td :props="props" key="manufacturerSummary">
                 <ReadOnlyTextWithHover :message="props.row.manufacturerSummary" />
               </q-td>
               <q-td :props="props" key="expand">
                 <div class="row no-wrap items-baseline">
-                  <q-btn :icon="props.expand ? 'mdi-chevron-up' : 'mdi-chevron-down'" flat round dense
-                    title="Toggle details expanded"></q-btn>
+                  <q-btn
+                    :icon="props.expand ? 'mdi-chevron-up' : 'mdi-chevron-down'"
+                    flat
+                    round
+                    dense
+                    title="Toggle details expanded"
+                  ></q-btn>
                   <Link2DetailsPage :link="'/#/network/' + props.row.id" />
                 </div>
               </q-td>
@@ -415,9 +437,7 @@ const pagination = ref({
       </q-card-section>
     </q-card>
   </q-page>
-
 </template>
-
 
 <style lang="scss" scoped>
 // Based on .q-layout__section--marginal
@@ -447,9 +467,7 @@ const pagination = ref({
 }
 </style>
 
-
-
-<style lang="scss" >
+<style lang="scss">
 .listCard table {
   table-layout: fixed;
 }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, defineEmits, ref, Ref, ToRef, toRef, watch } from 'vue';
+import { ref, Ref, ToRef, toRef, watch } from 'vue';
 
 const props = defineProps({
   searchFor: { type: String, required: false },
