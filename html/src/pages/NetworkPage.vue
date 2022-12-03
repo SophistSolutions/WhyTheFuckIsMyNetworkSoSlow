@@ -13,10 +13,6 @@ import { useNetStateStore } from '../stores/Net-State-store'
 const $q = useQuasar()
 const store = useNetStateStore()
 
-const props = defineProps({
-  selectedNetworkink: { type: String, required: false, default: null },
-})
-
 let polling: undefined | NodeJS.Timeout;
 const route = useRoute()
 

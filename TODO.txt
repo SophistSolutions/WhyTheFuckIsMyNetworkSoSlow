@@ -1,9 +1,14 @@
+API	
+	netowrk-intefaces
+	attachedToDevices missing from aggreagted level.
+	Would be handy there too.
+
+
 ----
 Add to html - standalone network interface page
 - Do Network-Interace/ID PAGE (not just component - so trivail) - but not linked directly from top level menus.
    (so easier to test mostly but also to link to in below ticket/issue)
 
-		>> @todo add links TO this page (page now works)
 		>> @todo better NAMES for Network-Interfaces (name for aggregator and timerange for aggregated)
 		>> In Network (and device pages) where we mention network interfaces, have link to standalone page
 

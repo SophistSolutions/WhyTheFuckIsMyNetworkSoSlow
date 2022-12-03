@@ -141,6 +141,10 @@ function getSeenForNetworkInterfaceID(netInterfaceID: string) {
       <div class="col-3">Hardware Address</div>
       <div class="col">{{ currentNetworkInterface.hardwareAddress }}</div>
     </div>
+    <div class="row" v-if="currentNetworkInterface">
+      <div class="col-3">Seen</div>
+      <div class="col">{{ FormatIDateTimeRange(getSeenForNetworkInterface(currentNetworkInterface)) }}</div>
+    </div>
     <div class="row" v-if="currentNetworkInterface?.boundAddressRanges">
       <div class="col-3">CIDRs</div>
       <div class="col">{{ currentNetworkInterface.boundAddressRanges.join(", ") }}</div>
