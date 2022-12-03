@@ -789,6 +789,7 @@ namespace {
                         });
                     }
                 }
+                // https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/80 - could avoid this maybe??? and the bookkeeping above to compute this list...
                 DbgTrace (L"orphaned interface Cnt %d", (netIDs2Add - netsAdded).size ());  // We (temporarily) store network interfaces not associated with any device - if they are not interesting.
                                                                                             // OR, could come from just bad data in database
                                                                                             // Either way, just track them, and don't worry for now --LGP 2022-12-03
@@ -964,12 +965,14 @@ namespace {
                                 auto orphanedRawInterfaces = rollup.GetRawNetworkInterfaces ().Where ([&] (auto ni) { return rollup.GetAttachedToDeviceIDs (ni.fGUID) == nullopt; });
                                 if (not orphanedRawInterfaces.empty ()) {
                                     DbgTrace (L"Found: orphanedRawInterfaces=%s", Characters::ToString (orphanedRawInterfaces).c_str ());
+                                    // https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/80
                                     // remove from DB, and re-run...
                                     // AND/OR see if found in NETWORK objects...
                                     // We (temporarily) store network interfaces not associated with any device - if they are not interesting.
                                     // OR, could come from just bad data in database
                                     // Either way, just track them, and don't worry for now --LGP 2022-12-03
                                     // Find a better place/process to handle this, but not important...
+                                    // NOTE - we OMIT 
                                 }
                             }
 
