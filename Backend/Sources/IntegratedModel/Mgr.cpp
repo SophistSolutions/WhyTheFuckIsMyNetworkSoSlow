@@ -778,34 +778,21 @@ namespace {
         private:
             RolledUpNetworkInterfaces (const Iterable<Device>& devices, const Iterable<NetworkInterface>& nets2MergeIn)
             {
-                DbgTrace ("devicesCnt = %d", devices.size ());
-                DbgTrace ("nets2MergeInCnt = %d", nets2MergeIn.size ());
-
-#if qDebug || 1
                 Set<GUID> netIDs2Add = nets2MergeIn.Map<GUID, Set<GUID>> ([] (const auto& i) { return i.fGUID; });
                 Set<GUID> netsAdded;
-#endif
                 NetworkInterfaceCollection_ nets2MergeInCollected{nets2MergeIn};
                 for (const Device& d : devices) {
                     if (d.fAttachedNetworkInterfaces) {
-                        DbgTrace (L"d.guid=%s has interaces %s", Characters::ToString (d.fGUID).c_str (), Characters::ToString (d.fAttachedNetworkInterfaces).c_str ());
                         d.fAttachedNetworkInterfaces->Apply ([&] (const GUID& netInterfaceID) {
-#if qDebug || 1
                             netsAdded.Add (netInterfaceID);
-#endif
                             MergeIn_ (d.fGUID, Memory::ValueOf (nets2MergeInCollected.Lookup (netInterfaceID)));
                         });
                     }
-                    else {
-                        DbgTrace (L"d=%s", Characters::ToString (d).c_str ());
-                    }
                 }
-#if qDebug
-                WeakAssert (netIDs2Add == netsAdded);
-#endif
-                DbgTrace (L"orphaned interface Cnt %d", (netIDs2Add - netsAdded).size ());
+                DbgTrace (L"orphaned interface Cnt %d", (netIDs2Add - netsAdded).size ());  // We (temporarily) store network interfaces not associated with any device - if they are not interesting.
+                                                                                            // OR, could come from just bad data in database
+                                                                                            // Either way, just track them, and don't worry for now --LGP 2022-12-03
                 for (const auto& netInterfaceWithoutDevice : (netIDs2Add - netsAdded)) {
-                    DbgTrace (L"netInterfaceWithoutDevice = %s", Characters::ToString (netInterfaceWithoutDevice).c_str ());
                     MergeIn_ (nullopt, Memory::ValueOf (nets2MergeInCollected.Lookup (netInterfaceWithoutDevice)));
                 }
             }
@@ -876,6 +863,9 @@ namespace {
             }
 
         public:
+            /**
+             *  Argument networkInterfaceID can be either aggregated or rollup, and returns either aggrateged or rollup deviceids accordingly.
+             */
             optional<Set<GUID>> GetAttachedToDeviceIDs(const GUID& networkInterfaceID) const
             {
                 Set<GUID> r{fAssociateNetInterface2OwningDeviceID.Lookup (networkInterfaceID)};
@@ -917,6 +907,10 @@ namespace {
         public:
             /**
              */
+            nonvirtual NetworkInterfaceCollection_ GetRawNetworkInterfaces () const
+            {
+                return fRawNetworkInterfaces_;
+            }
             nonvirtual NetworkInterfaceCollection_ GetRawNetworkInterfaces (const Set<GUID>& rawIDs) const
             {
                 Require (Set<GUID>{fRawNetworkInterfaces_.Keys ()}.ContainsAll (rawIDs));
@@ -963,7 +957,23 @@ namespace {
                             // @todo add more stuff here - empty preset rules from DB
                             // merge two tables - ID to fingerprint and user settings tables and store those in this rollup early
                             // maybe make CTOR for rolledupnetworks take in ital DB netwworks and rules, and have copyis CTOR taking orig networks and new rules?
-                            lk.store (RolledUpNetworkInterfaces{sDBAccessMgr_->GetRawDevices (), sDBAccessMgr_->GetRawNetworkInterfaces ()});
+                            RolledUpNetworkInterfaces rollup = RolledUpNetworkInterfaces{sDBAccessMgr_->GetRawDevices (), sDBAccessMgr_->GetRawNetworkInterfaces ()};
+
+                            // handle orphaned network interfaces
+                            {
+                                auto orphanedRawInterfaces = rollup.GetRawNetworkInterfaces ().Where ([&] (auto ni) { return rollup.GetAttachedToDeviceIDs (ni.fGUID) == nullopt; });
+                                if (not orphanedRawInterfaces.empty ()) {
+                                    DbgTrace (L"Found: orphanedRawInterfaces=%s", Characters::ToString (orphanedRawInterfaces).c_str ());
+                                    // remove from DB, and re-run...
+                                    // AND/OR see if found in NETWORK objects...
+                                    // We (temporarily) store network interfaces not associated with any device - if they are not interesting.
+                                    // OR, could come from just bad data in database
+                                    // Either way, just track them, and don't worry for now --LGP 2022-12-03
+                                    // Find a better place/process to handle this, but not important...
+                                }
+                            }
+
+                            lk.store (rollup);
                         }
                         return Memory::ValueOf (lk.load ());
                     }();
