@@ -245,7 +245,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
         /**
          *  If this device has been discovered yet, return its associated device Id
          */
-        nonvirtual optional < GUID> GetThisDeviceID () const;
+        nonvirtual optional<GUID> GetThisDeviceID () const;
 
     public:
         nonvirtual Collection<Device> GetActiveDevices (optional<Time::DurationSecondsType> allowedStaleness = {}) const;

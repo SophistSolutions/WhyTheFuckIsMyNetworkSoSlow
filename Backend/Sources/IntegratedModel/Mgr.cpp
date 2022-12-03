@@ -778,8 +778,8 @@ namespace {
         private:
             RolledUpNetworkInterfaces (const Iterable<Device>& devices, const Iterable<NetworkInterface>& nets2MergeIn)
             {
-                Set<GUID> netIDs2Add = nets2MergeIn.Map<GUID, Set<GUID>> ([] (const auto& i) { return i.fGUID; });
-                Set<GUID> netsAdded;
+                Set<GUID>                   netIDs2Add = nets2MergeIn.Map<GUID, Set<GUID>> ([] (const auto& i) { return i.fGUID; });
+                Set<GUID>                   netsAdded;
                 NetworkInterfaceCollection_ nets2MergeInCollected{nets2MergeIn};
                 for (const Device& d : devices) {
                     if (d.fAttachedNetworkInterfaces) {
@@ -790,13 +790,14 @@ namespace {
                     }
                 }
                 // https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/80 - could avoid this maybe??? and the bookkeeping above to compute this list...
-                DbgTrace (L"orphaned interface Cnt %d", (netIDs2Add - netsAdded).size ());  // We (temporarily) store network interfaces not associated with any device - if they are not interesting.
-                                                                                            // OR, could come from just bad data in database
-                                                                                            // Either way, just track them, and don't worry for now --LGP 2022-12-03
+                DbgTrace (L"orphaned interface Cnt %d", (netIDs2Add - netsAdded).size ()); // We (temporarily) store network interfaces not associated with any device - if they are not interesting.
+                                                                                           // OR, could come from just bad data in database
+                                                                                           // Either way, just track them, and don't worry for now --LGP 2022-12-03
                 for (const auto& netInterfaceWithoutDevice : (netIDs2Add - netsAdded)) {
                     MergeIn_ (nullopt, Memory::ValueOf (nets2MergeInCollected.Lookup (netInterfaceWithoutDevice)));
                 }
             }
+
         public:
             RolledUpNetworkInterfaces (const RolledUpNetworkInterfaces&)            = default;
             RolledUpNetworkInterfaces (RolledUpNetworkInterfaces&&)                 = default;
@@ -865,11 +866,11 @@ namespace {
 
         public:
             /**
-             *  Argument networkInterfaceID can be either aggregated or rollup, and returns either aggrateged or rollup deviceids accordingly.
+             *  Argument networkInterfaceID must be aggregated network interfaceid, and returns aggrateged deviceids.
              */
-            optional<Set<GUID>> GetAttachedToDeviceIDs(const GUID& networkInterfaceID) const
+            optional<Set<GUID>> GetAttachedToDeviceIDs (const GUID& aggregatedNetworkInterfaceID) const
             {
-                Set<GUID> r{fAssociateNetInterface2OwningDeviceID.Lookup (networkInterfaceID)};
+                Set<GUID> r{fAssociateAggregatedNetInterface2OwningDeviceID.Lookup (aggregatedNetworkInterfaceID)};
                 if (r.empty ()) {
                     return nullopt;
                 }
@@ -959,7 +960,6 @@ namespace {
                             // merge two tables - ID to fingerprint and user settings tables and store those in this rollup early
                             // maybe make CTOR for rolledupnetworks take in ital DB netwworks and rules, and have copyis CTOR taking orig networks and new rules?
                             RolledUpNetworkInterfaces rollup = RolledUpNetworkInterfaces{sDBAccessMgr_->GetRawDevices (), sDBAccessMgr_->GetRawNetworkInterfaces ()};
-
                             // handle orphaned network interfaces
                             {
                                 auto orphanedRawInterfaces = rollup.GetRawNetworkInterfaces ().Where ([&] (auto ni) { return rollup.GetAttachedToDeviceIDs (ni.fGUID) == nullopt; });
@@ -972,10 +972,9 @@ namespace {
                                     // OR, could come from just bad data in database
                                     // Either way, just track them, and don't worry for now --LGP 2022-12-03
                                     // Find a better place/process to handle this, but not important...
-                                    // NOTE - we OMIT 
+                                    // NOTE - we OMIT
                                 }
                             }
-
                             lk.store (rollup);
                         }
                         return Memory::ValueOf (lk.load ());
@@ -1016,7 +1015,7 @@ namespace {
                 fRolledUpNetworkInterfaces_.Add (rolledUpNetworkInterace);
                 fMapAggregatedNetInterfaceID2RollupID_.Add (net2MergeIn.fGUID, rolledUpNetworkInterace.fGUID);
                 if (forDeviceID) {
-                    fAssociateNetInterface2OwningDeviceID.Add (net2MergeIn.fGUID, *forDeviceID);
+                    fAssociateAggregatedNetInterface2OwningDeviceID.Add (net2MergeIn.fGUID, *forDeviceID);
                 }
             }
 
@@ -1024,7 +1023,7 @@ namespace {
             NetworkInterfaceCollection_ fRawNetworkInterfaces_; // used for RecomputeAll_
             NetworkInterfaceCollection_ fRolledUpNetworkInterfaces_;
             Mapping<GUID, GUID>         fMapAggregatedNetInterfaceID2RollupID_; // each aggregate net interface id is mapped to at most one rollup id)
-            Association<GUID, GUID> fAssociateNetInterface2OwningDeviceID;
+            Association<GUID, GUID>     fAssociateAggregatedNetInterface2OwningDeviceID;
 
         private:
             static Synchronized<optional<RolledUpNetworkInterfaces>> sRolledUpNetworksInterfaces_;
@@ -1787,19 +1786,24 @@ Collection<IntegratedModel::NetworkInterface> IntegratedModel::Mgr::GetNetworkIn
 
 optional<IntegratedModel::NetworkInterface> IntegratedModel::Mgr::GetNetworkInterface (const GUID& id, optional<Duration>* ttl) const
 {
-    // AS OF 2022-11-02 this returns the currently active network interfaces, but changed to mimic other accessors (rollups returned by default then raw records)
+    // AS OF 2022-11-02 this returned the currently active network interfaces, but changed (2022-11-02) to mimic other accessors (rollups returned by default then raw records)
     auto networkInterfacesCache = RollupSummary_::RolledUpNetworkInterfaces::GetCached ();
     auto result                 = networkInterfacesCache.GetNetworkInterfacess ().Lookup (id);
     if (result) {
         if (ttl != nullptr) {
             *ttl = kTTLForRollupsReturned_;
         }
+        auto deviceRollupCache = RollupSummary_::RolledUpDevices::GetCached ();
+        // could cache this info so dont need to search...
+        if (auto i = deviceRollupCache.GetDevices ().First ([&id] (const Device& d) { return d.fAttachedNetworkInterfaces and d.fAttachedNetworkInterfaces->Contains (id); })) {
+            result->fAttachedToDevices = Set<GUID>{i->fGUID};
+        }
     }
     else {
         result = sDBAccessMgr_->GetRawNetworkInterfaces ().Lookup (id);
         if (result) {
-            result->fIDPersistent = true;
-            result->fAggregatedBy = networkInterfacesCache.MapAggregatedID2ItsRollupID (id);
+            result->fIDPersistent      = true;
+            result->fAggregatedBy      = networkInterfacesCache.MapAggregatedID2ItsRollupID (id);
             result->fAttachedToDevices = networkInterfacesCache.GetAttachedToDeviceIDs (id);
             // @todo MUST FIX THIS - sometimes need more info to tell if its a recent one or ancient
             *ttl = kTTLForActiveObjectsReturned_;
