@@ -8,7 +8,7 @@ import { INetworkInterface } from "../models/network/INetworkInterface";
 
 import NetworkInterfaceDetails from "../components/NetworkInterfaceDetails.vue";
 
-import {FormatIDateTimeRange} from "../models/network/Utils";
+import { FormatIDateTimeRange } from "../models/network/Utils";
 import { useNetStateStore } from "../stores/Net-State-store";
 
 const $q = useQuasar();
@@ -34,32 +34,31 @@ onUnmounted(() => {
   clearInterval(polling);
 });
 
-let networkInterface: ComputedRef<INetworkInterface| undefined> = computed(() => {
+let networkInterface: ComputedRef<INetworkInterface | undefined> = computed(() => {
   return store.getNetworkInterface(route.params.id as string);
 });
-let owningDeviceID: ComputedRef<string| undefined> = computed(() => {
+let owningDeviceID: ComputedRef<string | undefined> = computed(() => {
   if (networkInterface.value && networkInterface.value.attachedToDevices) {
     return networkInterface.value.attachedToDevices[0]; // @todo consider how to handle if more than one - zero sb undefined
   }
   return undefined;
 });
-let owningDevice: ComputedRef<IDevice| undefined> = computed(() => {
+let owningDevice: ComputedRef<IDevice | undefined> = computed(() => {
   if (owningDeviceID.value) {
     return store.getDevice(owningDeviceID.value);
   }
   return undefined;
 });
-let networkInterfaceSeen: ComputedRef<object| undefined> = computed(() => {
+let networkInterfaceSeen: ComputedRef<object | undefined> = computed(() => {
   if (owningDevice.value && owningDevice.value.seen) {
     return owningDevice.value.seen["Ever"];
   }
   return undefined;
 });
 
-function doFetches()
-{
+function doFetches() {
   store.fetchNetworkInterfaces([route.params.id as string]);
-  console.log ("owningDeviceID.value=", owningDeviceID.value)
+  console.log("owningDeviceID.value=", owningDeviceID.value);
   if (owningDeviceID.value) {
     store.fetchDevice(owningDeviceID.value);
   }
@@ -80,7 +79,12 @@ watch(
             href: "/#/network-interface/" + networkInterface.aggregatedBy,
           },
           // @todo replace this name with the 'pretty seen' string we use
-          { text: networkInterfaceSeen.value? FormatIDateTimeRange(networkInterfaceSeen.value, true) : "?", disabled: true },
+          {
+            text: networkInterfaceSeen.value
+              ? FormatIDateTimeRange(networkInterfaceSeen.value, true)
+              : "?",
+            disabled: true,
+          },
         ]);
       } else {
         emit("update:breadcrumbs", [
