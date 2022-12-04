@@ -5,6 +5,7 @@ import { useRoute } from 'vue-router'
 
 import { IDevice } from "../models/device/IDevice";
 import { useQuasar } from 'quasar';
+import { FormatSeenMap } from "../models/network/Utils"
 
 // Components
 import DeviceDetails from '../components/DeviceDetails.vue';
@@ -62,7 +63,7 @@ watch(
           // @todo wrong name for parent network name possibly - must fetch aggregated by and use its name - but not worth the trouble now since almost certainly the same
           { text: device.names[0].name, href: '/#/device/' + device.aggregatedBy, },
           // @todo replace this name with the 'pretty seen' string we use 
-          { text: device.names[0].name, disabled: true },
+          { text: FormatSeenMap(device.seen, true) ?? "?", disabled: true },
         ])
       }
       else {

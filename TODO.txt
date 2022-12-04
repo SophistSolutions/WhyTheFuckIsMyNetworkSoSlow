@@ -1,21 +1,4 @@
-API	
-	netowrk-intefaces
-	attachedToDevices missing from aggreagted level.
-	Would be handy there too.
-
-
-----
-Add to html - standalone network interface page
-- Do Network-Interace/ID PAGE (not just component - so trivail) - but not linked directly from top level menus.
-   (so easier to test mostly but also to link to in below ticket/issue)
-
-		>> @todo better NAMES for Network-Interfaces (name for aggregator and timerange for aggregated)
-		>> In Network (and device pages) where we mention network interfaces, have link to standalone page
-
-----
 Network-interface GUI
-	- Show baud rate better than 10000000 (3.4Mbps eg.)
-	- review why some link speed numbers look iffy on windows (bluetooth)
 	- Seen value not being dynamically updated on network interfaces (stays stuck on when found).
 		"15 minutes ago up until 14 minutes ago" when actively changing
 	- verify etag conditional gets working properly (chrome debugger makes it look like not working right)
@@ -29,17 +12,9 @@ Cleanup NetworkInterface (WSMODEL) stuff so fewer useless things included, and m
 fix in html display of 'daterange' summary for aggregated network interfaces (and maybe 
 other stuff - refactoring)
 ----
-
 Device details component should take id or value - as we did for network component
----
-
-Change display of RAW-DISAGGRATED items in breadcrumbs to short name we use to summarize seen info (first ove that
-function to utility)
-
 ----
 	For Device and Network and NetworkInterface (if that makes sense) add section (in debug only) to display user settings.
-
-
 ----
 	FIX PLURALS EVERYWHERE IN GUI TO USE PluralizeNoun() function
 ----

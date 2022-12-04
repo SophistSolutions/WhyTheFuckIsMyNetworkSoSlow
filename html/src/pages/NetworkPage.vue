@@ -4,7 +4,7 @@ import { useRoute } from 'vue-router'
 import { useQuasar } from 'quasar';
 import { watch } from 'vue'
 import { INetwork } from "../models/network/INetwork";
-import { GetNetworkName } from "../models/network/Utils";
+import { GetNetworkName, FormatIDateTimeRange } from "../models/network/Utils";
 
 import NetworkDetails from '../components/NetworkDetails.vue';
 
@@ -49,8 +49,7 @@ watch(
           { text: 'Networks', href: '/#/networks' },
           // @todo wrong name for parent network name possibly - must fetch aggregated by and use its name - but not worth the trouble now since almost certainly the same
           { text: network.names[0].name, href: '/#/network/' + network.aggregatedBy, },
-          // @todo replace this name with the 'pretty seen' string we use 
-          { text: network.names[0].name, disabled: true },
+          { text: FormatIDateTimeRange(network.seen, true)?? "?", disabled: true },
         ])
       }
       else {

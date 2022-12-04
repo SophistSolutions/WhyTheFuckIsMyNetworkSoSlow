@@ -80,9 +80,7 @@ watch(
           },
           // @todo replace this name with the 'pretty seen' string we use
           {
-            text: networkInterfaceSeen.value
-              ? FormatIDateTimeRange(networkInterfaceSeen.value, true)
-              : "?",
+            text: FormatIDateTimeRange(networkInterfaceSeen.value, true) ?? "?",
             disabled: true,
           },
         ]);

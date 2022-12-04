@@ -7,6 +7,31 @@ import { INetwork } from '../../models/network/INetwork';
 
 
 /**
+ * if arg undefined, returns undefined
+ * @param b 
+ */
+export function FormatBaudRate(b?: number): string|undefined
+{
+  if (b && b >= 0) {
+    const kKilo = 1000;
+    const kMB = kKilo * 1000;
+    const kGB = kMB * 1000;
+    const kThresholdFactor = 1/2;
+    if (b > kGB * kThresholdFactor) {
+      return `${(b/kGB).toFixed(1)}Gbps`
+    }
+    if (b > kMB * kThresholdFactor) {
+      return `${(b/kMB).toFixed(1)}Mbps`
+    }
+    if (b > kKilo * kThresholdFactor) {
+      return `${(b/kKilo).toFixed(1)}Kbps`
+    }
+    return `${b}bps`
+  }
+  return undefined;
+}
+
+/**
  *  Format as 'an hour ago up until now' - and if summaryOnly true, then just return most recent time.
  * 
  * @param seenRange  
@@ -33,8 +58,8 @@ export function FormatSeenMap (
   seenRange?:  { [key: string]: IDateTimeRange },
   summaryOnly?: boolean
 ): string | undefined {
-  if (seenRange && seenRange['ever']) {
-    return FormatIDateTimeRange (seenRange['ever'], summaryOnly)
+  if (seenRange && seenRange['Ever']) {
+    return FormatIDateTimeRange (seenRange['Ever'], summaryOnly)
   }
   return undefined;
 }

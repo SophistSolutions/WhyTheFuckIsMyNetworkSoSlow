@@ -6,7 +6,7 @@ import JsonViewer from "vue-json-viewer";
 import { INetworkInterface } from "../models/network/INetworkInterface";
 
 import {
-  FormatIDateTimeRange,
+  FormatIDateTimeRange,FormatBaudRate
 } from "../models/network/Utils";
 
 import { PluralizeNoun } from "src/utils/Linguistics";
@@ -160,10 +160,10 @@ function getSeenForNetworkInterfaceID(netInterfaceID: string) {
         currentNetworkInterface?.receiveLinkSpeedBaud
       "
     >
-      <div class="col-3">Speed (tx/rx)</div>
+      <div class="col-3">Speed (tx / rx)</div>
       <div class="col">
-        {{ currentNetworkInterface.transmitSpeedBaud }}/{{
-          currentNetworkInterface.receiveLinkSpeedBaud
+        {{ FormatBaudRate(currentNetworkInterface.transmitSpeedBaud) }} / {{
+          FormatBaudRate(currentNetworkInterface.receiveLinkSpeedBaud)
         }}
       </div>
     </div>
