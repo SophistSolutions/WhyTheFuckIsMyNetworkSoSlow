@@ -145,6 +145,7 @@ String NetworkInterface::ToString () const
 {
     Characters::StringBuilder sb;
     sb += L"{";
+    sb += L"ID: " + Characters::ToString (fID) + L", ";
     sb += L"Internal-Interface-ID: " + Characters::ToString (fInternalInterfaceID) + L", ";
     sb += L"Friendly-Name: " + Characters::ToString (fFriendlyName) + L", ";
     if (fDescription) {
@@ -172,7 +173,6 @@ String NetworkInterface::ToString () const
     if (fStatus) {
         sb += L"Status: " + Characters::ToString (*fStatus) + L", ";
     }
-    sb += L"GUID: " + Characters::ToString (fGUID) + L", ";
     if (fAggregatedBy) {
         sb += L"AggregatedBy: " + Characters::ToString (*fAggregatedBy) + L", ";
     }
@@ -267,7 +267,7 @@ const ObjectVariantMapper NetworkInterface::kMapper = [] () {
 
     mapper.AddClass<NetworkInterface> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
         {L"platformInterfaceID", StructFieldMetaInfo{&NetworkInterface::fInternalInterfaceID}},
-        {L"id", StructFieldMetaInfo{&NetworkInterface::fGUID}},
+        {L"id", StructFieldMetaInfo{&NetworkInterface::fID}},
         {L"aggregatedBy"sv, StructFieldMetaInfo{&NetworkInterface::fAggregatedBy}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"attachedToDevices"sv, StructFieldMetaInfo{&NetworkInterface::fAttachedToDevices}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"friendlyName", StructFieldMetaInfo{&NetworkInterface::fFriendlyName}},
@@ -339,23 +339,23 @@ NetworkInterface NetworkInterface::Rollup (const optional<NetworkInterface>& pre
 {
     if (previousRollupNetworkInterface) {
         NetworkInterface r = *previousRollupNetworkInterface;
-        Assert (r.fGUID == instanceNetwork2Add.GenerateFingerprintFromProperties ());
+        Assert (r.fID == instanceNetwork2Add.GenerateFingerprintFromProperties ());
         Assert (r.GenerateFingerprintFromProperties () == instanceNetwork2Add.GenerateFingerprintFromProperties ());
         Assert (r.fAggregatesReversibly); // because already its a rollup of something
-        r.fAggregatesReversibly->Add (instanceNetwork2Add.fGUID);
+        r.fAggregatesReversibly->Add (instanceNetwork2Add.fID);
         Ensure (r.GenerateFingerprintFromProperties () == instanceNetwork2Add.GenerateFingerprintFromProperties ());
         return r;
     }
     else {
         NetworkInterface r;
-        r.fGUID                 = instanceNetwork2Add.GenerateFingerprintFromProperties ();
+        r.fID                   = instanceNetwork2Add.GenerateFingerprintFromProperties ();
         r.fFriendlyName         = instanceNetwork2Add.fFriendlyName;
         r.fDescription          = instanceNetwork2Add.fDescription;
         r.fType                 = instanceNetwork2Add.fType;
         r.fHardwareAddress      = instanceNetwork2Add.fHardwareAddress;
         r.fInternalInterfaceID  = instanceNetwork2Add.fInternalInterfaceID;
-        r.fAggregatesReversibly = Set<GUID>{instanceNetwork2Add.fGUID};
-        Assert (r.GenerateFingerprintFromProperties () == r.fGUID); // captured all that matters/part of fingerprint    return rollupNetwork;
+        r.fAggregatesReversibly = Set<GUID>{instanceNetwork2Add.fID};
+        Assert (r.GenerateFingerprintFromProperties () == r.fID); // captured all that matters/part of fingerprint    return rollupNetwork;
         Ensure (r.GenerateFingerprintFromProperties () == instanceNetwork2Add.GenerateFingerprintFromProperties ());
         return r;
     }

@@ -614,7 +614,7 @@ Collection<String> WSImpl::GetNetworkInterfaces () const
     Debug::TimingTrace                              ttrc{L"WSImpl::GetNetworkInterfaces_Recurse", 0.1};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
     return IntegratedModel::Mgr::sThe.GetNetworkInterfaces ().Map<String, Collection<String>> ([=] (const auto& ni) -> optional<String> {
-        return ni.fGUID.ToString ();
+        return ni.fID.ToString ();
     });
 }
 

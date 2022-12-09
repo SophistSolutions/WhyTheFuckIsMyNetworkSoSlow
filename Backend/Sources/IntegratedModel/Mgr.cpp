@@ -105,7 +105,7 @@ namespace {
     using NetworkKeyedCollection_ = KeyedCollection<IntegratedModel::Network, GUID, KeyedCollection_DefaultTraits<IntegratedModel::Network, GUID, Network_Key_Extractor_>>;
 
     struct NetworkInterface_Key_Extractor_ {
-        GUID operator() (const IntegratedModel::NetworkInterface& t) const { return t.fGUID; };
+        GUID operator() (const IntegratedModel::NetworkInterface& t) const { return t.fID; };
     };
     using NetworkInterfaceCollection_ = Containers::KeyedCollection<IntegratedModel::NetworkInterface, GUID, Containers::KeyedCollection_DefaultTraits<IntegratedModel::NetworkInterface, GUID, NetworkInterface_Key_Extractor_>>;
 }
@@ -221,7 +221,7 @@ namespace {
             nwi.fGateways             = n.fGateways;
             nwi.fDNSServers           = n.fDNSServers;
             nwi.fStatus               = n.fStatus;
-            nwi.fGUID                 = n.fGUID;
+            nwi.fID                 = n.fGUID;
 #if qDebug
             if (not n.fDebugProps.empty ()) {
                 nwi.fDebugProps = n.fDebugProps;
@@ -778,7 +778,7 @@ namespace {
         private:
             RolledUpNetworkInterfaces (const Iterable<Device>& devices, const Iterable<NetworkInterface>& nets2MergeIn)
             {
-                Set<GUID>                   netIDs2Add = nets2MergeIn.Map<GUID, Set<GUID>> ([] (const auto& i) { return i.fGUID; });
+                Set<GUID>                   netIDs2Add = nets2MergeIn.Map<GUID, Set<GUID>> ([] (const auto& i) { return i.fID; });
                 Set<GUID>                   netsAdded;
                 NetworkInterfaceCollection_ nets2MergeInCollected{nets2MergeIn};
                 for (const Device& d : devices) {
@@ -886,7 +886,7 @@ namespace {
             nonvirtual NetworkInterfaceCollection_ GetConcreteNeworkInterfaces (const Set<GUID>& concreteIDs) const
             {
                 Require (Set<GUID>{fRawNetworkInterfaces_.Keys ()}.ContainsAll (concreteIDs));
-                return fRawNetworkInterfaces_.Where ([&concreteIDs] (const auto& i) { return concreteIDs.Contains (i.fGUID); });
+                return fRawNetworkInterfaces_.Where ([&concreteIDs] (const auto& i) { return concreteIDs.Contains (i.fID); });
             }
 
         public:
@@ -903,7 +903,7 @@ namespace {
             nonvirtual NetworkInterfaceCollection_ GetRollupNetworkInterfaces (const Set<GUID>& rollupIDs) const
             {
                 Require (Set<GUID>{fRolledUpNetworkInterfaces_.Keys ()}.ContainsAll (rollupIDs));
-                return fRolledUpNetworkInterfaces_.Where ([&rollupIDs] (const auto& i) { return rollupIDs.Contains (i.fGUID); });
+                return fRolledUpNetworkInterfaces_.Where ([&rollupIDs] (const auto& i) { return rollupIDs.Contains (i.fID); });
             }
 
         public:
@@ -916,7 +916,7 @@ namespace {
             nonvirtual NetworkInterfaceCollection_ GetRawNetworkInterfaces (const Set<GUID>& rawIDs) const
             {
                 Require (Set<GUID>{fRawNetworkInterfaces_.Keys ()}.ContainsAll (rawIDs));
-                return fRawNetworkInterfaces_.Where ([&rawIDs] (const auto& i) { return rawIDs.Contains (i.fGUID); });
+                return fRawNetworkInterfaces_.Where ([&rawIDs] (const auto& i) { return rawIDs.Contains (i.fID); });
             }
 
         public:
@@ -962,7 +962,7 @@ namespace {
                             RolledUpNetworkInterfaces rollup = RolledUpNetworkInterfaces{sDBAccessMgr_->GetRawDevices (), sDBAccessMgr_->GetRawNetworkInterfaces ()};
                             // handle orphaned network interfaces
                             {
-                                auto orphanedRawInterfaces = rollup.GetRawNetworkInterfaces ().Where ([&] (auto ni) { return rollup.GetAttachedToDeviceIDs (ni.fGUID) == nullopt; });
+                                auto orphanedRawInterfaces = rollup.GetRawNetworkInterfaces ().Where ([&] (auto ni) { return rollup.GetAttachedToDeviceIDs (ni.fID) == nullopt; });
                                 if (not orphanedRawInterfaces.empty ()) {
                                     DbgTrace (L"Found: orphanedRawInterfaces=%s", Characters::ToString (orphanedRawInterfaces).c_str ());
                                     // https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/80
@@ -1013,9 +1013,9 @@ namespace {
                 Network::FingerprintType netInterface2MergeInFingerprint = net2MergeIn.GenerateFingerprintFromProperties ();
                 auto                     rolledUpNetworkInterace         = NetworkInterface::Rollup (fRolledUpNetworkInterfaces_.Lookup (netInterface2MergeInFingerprint), net2MergeIn);
                 fRolledUpNetworkInterfaces_.Add (rolledUpNetworkInterace);
-                fMapAggregatedNetInterfaceID2RollupID_.Add (net2MergeIn.fGUID, rolledUpNetworkInterace.fGUID);
+                fMapAggregatedNetInterfaceID2RollupID_.Add (net2MergeIn.fID, rolledUpNetworkInterace.fID);
                 if (forDeviceID) {
-                    fAssociateAggregatedNetInterface2OwningDeviceID.Add (net2MergeIn.fGUID, *forDeviceID);
+                    fAssociateAggregatedNetInterface2OwningDeviceID.Add (net2MergeIn.fID, *forDeviceID);
                 }
             }
 

@@ -148,13 +148,28 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         using SystemIDType = IO::Network::Interface::SystemIDType;
 
         /**
+         *  GUID for this interface - MANUFACTURED by WTF
+         // @todo rename fID, and actually auto-generate it uniquely somehow (or OK to use windows based one)
+         */
+        GUID fID;
+
+        /**
          *  \brief platformInterfaceID
+         *
          * @see IO::Network::Interface::fInternalInterfaceID
+         *
+         *      UNIX:
+         *          interface name - e.g. eth0 - in the first column reported in ifconfig.
+         *
+         *      WINDOWS:
+         *          IP_ADAPTER_ADDRESSES::fAdapterName
+         *
+         *          This is interface AdapterName, which is not particularly printable (usualy a GUID)
          */
         SystemIDType fInternalInterfaceID;
 
         /**
-        * @see IO::Network::Interface::fFriendlyName
+         * @see IO::Network::Interface::fFriendlyName
          */
         String fFriendlyName;
 
@@ -225,12 +240,6 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         * @see IO::Network::Interface::fStatus
          */
         optional<Containers::Set<Status>> fStatus;
-
-        /**
-         *  GUID for this interface - MANUFACTURED by WTF
-         // @todo rename fID, and actually auto-generate it uniquely somehow (or OK to use windows based one)
-         */
-        GUID fGUID;
 
         /**
          *  In WSAPI, we show this record/value in objects which are rolled up into other objects.
