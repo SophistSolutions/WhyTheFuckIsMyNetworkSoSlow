@@ -220,9 +220,9 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
           <div class="col">
             <div class="row">
               <div class="col no-wrap truncateWithElipsis">
-                <ReadOnlyTextWithHover :message="currentDeviceDetails.attachedNetworks[attachedNet.id].name"
+                <ReadOnlyTextWithHover :message="GetNetworkName(attachedNet)"
                   :popupTitle="
-                  currentDeviceDetails.attachedNetworks[attachedNet.id].name +
+                  GetNetworkName(attachedNet) +
                   ' (' +
                   attachedNet.id +
                   ')'" :link="GetNetworkLink(attachedNet.id)" title="Network Name" />
