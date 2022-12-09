@@ -1688,7 +1688,8 @@ optional<IntegratedModel::Device> IntegratedModel::Mgr::GetDevice (const GUID& i
             result->fAggregatedBy = devicesRollupCache.MapAggregatedID2ItsRollupID (id);
             if (ttl != nullptr) {
                 auto everSeen = result->fSeen.EverSeen ();
-                if (everSeen and everSeen->GetUpperBound () >= (DateTime::Now () - 30s)) {
+                // This isn't a super-reliable way to check - find a better more reliable way to set the ttl
+                if (everSeen and everSeen->GetUpperBound () >= (DateTime::Now () - 1h)) {
                     *ttl = kTTLForActiveObjectsReturned_;
                 }
                 else {
@@ -1753,7 +1754,8 @@ optional<IntegratedModel::Network> IntegratedModel::Mgr::GetNetwork (const GUID&
             result->fIDPersistent = true;
             result->fAggregatedBy = networkRollupsCache.MapAggregatedID2ItsRollupID (id);
             auto everSeen         = result->fSeen;
-            if (everSeen.GetUpperBound () >= (DateTime::Now () - 30s)) {
+            // This isn't a super-reliable way to check - find a better more reliable way to set the ttl
+            if (everSeen.GetUpperBound () >= (DateTime::Now () - 1h)) {
                 *ttl = kTTLForActiveObjectsReturned_;
             }
             else {

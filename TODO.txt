@@ -1,12 +1,6 @@
-Network-interface GUI
-	- Seen value not being dynamically updated on network interfaces (stays stuck on when found).
-		"15 minutes ago up until 14 minutes ago" when actively changing
-	- verify etag conditional gets working properly (chrome debugger makes it look like not working right)
-	- dynamic changes like unplugign etihernet and going to wireless and then plugging in and back not properly reflected
-
----
-
 Cleanup NetworkInterface (WSMODEL) stuff so fewer useless things included, and maybe cleanup names of fields (fID?)
+----
+in device attached network section, sort by active first, and recent secondary sort characterisitic
 
 ----
 fix in html display of 'daterange' summary for aggregated network interfaces (and maybe 
@@ -18,6 +12,10 @@ Device details component should take id or value - as we did for network compone
 ----
 	FIX PLURALS EVERYWHERE IN GUI TO USE PluralizeNoun() function
 ----
+destructure NEtwork and Device code to fetch by ID (not use recurse=true)
+
+----
+
 
 	Once I restructure html code (maybe before) to separately fetch each network (and other object) by ID, I can 
 	redo teh atttachedNetworks field of a device to be JUST the ID, not a mapping of ID to a few interesting key values.
