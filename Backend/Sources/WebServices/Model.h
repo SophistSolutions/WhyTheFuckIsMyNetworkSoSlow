@@ -324,8 +324,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         nonvirtual Network& operator= (Network&& rhs)      = default;
         nonvirtual Network& operator= (const Network& rhs) = default;
 
-        // @todo - WTF allocated ID - and one inherited from network interface (windows only) - CLARIFY - probably call OURs just fID (and change others in this module to match)
-        GUID fGUID;
+        /**
+         *  WTF allocated ID (copies from discovery layer or ?? for rollups)
+         */
+        GUID fID;
 
         /**
          *  In WSAPI, we show this record/value in objects which are rolled up into other objects.

@@ -100,7 +100,7 @@ namespace {
     using DeviceKeyedCollection_ = KeyedCollection<IntegratedModel::Device, GUID, KeyedCollection_DefaultTraits<IntegratedModel::Device, GUID, Device_Key_Extractor_>>;
 
     struct Network_Key_Extractor_ {
-        GUID operator() (const IntegratedModel::Network& t) const { return t.fGUID; };
+        GUID operator() (const IntegratedModel::Network& t) const { return t.fID; };
     };
     using NetworkKeyedCollection_ = KeyedCollection<IntegratedModel::Network, GUID, KeyedCollection_DefaultTraits<IntegratedModel::Network, GUID, Network_Key_Extractor_>>;
 
@@ -187,7 +187,7 @@ namespace {
         Network Discovery2Model_ (const Discovery::Network& n)
         {
             Network nw{n.fNetworkAddresses};
-            nw.fGUID                     = n.fGUID;
+            nw.fID                       = n.fGUID;
             nw.fNames                    = n.fNames;
             nw.fNetworkAddresses         = n.fNetworkAddresses;
             nw.fAttachedInterfaces       = n.fAttachedNetworkInterfaces;
@@ -221,7 +221,7 @@ namespace {
             nwi.fGateways             = n.fGateways;
             nwi.fDNSServers           = n.fDNSServers;
             nwi.fStatus               = n.fStatus;
-            nwi.fID                 = n.fGUID;
+            nwi.fID                   = n.fGUID;
 #if qDebug
             if (not n.fDebugProps.empty ()) {
                 nwi.fDebugProps = n.fDebugProps;
@@ -1046,7 +1046,7 @@ namespace {
                 fStarterRollups_ = userOverrides.Map<Network> (
                     [] (const auto& guid2UOTPair) -> Network {
                         Network nw;
-                        nw.fGUID          = guid2UOTPair.fKey;
+                        nw.fID            = guid2UOTPair.fKey;
                         nw.fUserOverrides = guid2UOTPair.fValue;
                         if (nw.fUserOverrides and nw.fUserOverrides->fName) {
                             nw.fNames.Add (*nw.fUserOverrides->fName, 500);
@@ -1076,7 +1076,7 @@ namespace {
                 fStarterRollups_ = userOverrides.Map<Network> (
                     [] (const auto& guid2UOTPair) -> Network {
                         Network nw;
-                        nw.fGUID          = guid2UOTPair.fKey;
+                        nw.fID            = guid2UOTPair.fKey;
                         nw.fUserOverrides = guid2UOTPair.fValue;
                         if (nw.fUserOverrides and nw.fUserOverrides->fName) {
                             nw.fNames.Add (*nw.fUserOverrides->fName, 500);
@@ -1257,7 +1257,7 @@ namespace {
                     if (riu->fAggregateGatewayHardwareAddresses and riu->fAggregateGatewayHardwareAddresses->Intersects (net2MergeIn.fGatewayHardwareAddresses)) {
                         return true;
                     }
-                    if (riu->fAggregateNetworks and riu->fAggregateNetworks->Contains (net2MergeIn.fGUID)) {
+                    if (riu->fAggregateNetworks and riu->fAggregateNetworks->Contains (net2MergeIn.fID)) {
                         return true;
                     }
                     if (riu->fAggregateNetworkInterfacesMatching) {
@@ -1281,39 +1281,39 @@ namespace {
                 newRolledUpNetwork.fAttachedInterfaces += fUseNetworkInterfaceRollups.MapAggregatedNetInterfaceID2ItsRollupID (net2MergeIn.fAttachedInterfaces);
                 Assert (addNet2MergeFromThisRollup.fAggregatesFingerprints == newRolledUpNetwork.fAggregatesFingerprints); // spot check - should be same...
                 fRolledUpNetworks_.Add (newRolledUpNetwork);
-                fMapAggregatedNetID2RollupID_.Add (net2MergeIn.fGUID, newRolledUpNetwork.fGUID);
-                fMapFingerprint2RollupID.Add (net2MergeInFingerprint, newRolledUpNetwork.fGUID);
+                fMapAggregatedNetID2RollupID_.Add (net2MergeIn.fID, newRolledUpNetwork.fID);
+                fMapFingerprint2RollupID.Add (net2MergeInFingerprint, newRolledUpNetwork.fID);
             }
             void AddNewIn_ (const Network& net2MergeIn, const Network::FingerprintType& net2MergeInFingerprint)
             {
                 Assert (net2MergeIn.GenerateFingerprintFromProperties () == net2MergeInFingerprint); // provided to avoid cost of recompute
                 Network newRolledUpNetwork                 = net2MergeIn;
                 newRolledUpNetwork.fAttachedInterfaces     = fUseNetworkInterfaceRollups.MapAggregatedNetInterfaceID2ItsRollupID (net2MergeIn.fAttachedInterfaces);
-                newRolledUpNetwork.fAggregatesReversibly   = Set<GUID>{net2MergeIn.fGUID};
+                newRolledUpNetwork.fAggregatesReversibly   = Set<GUID>{net2MergeIn.fID};
                 newRolledUpNetwork.fAggregatesFingerprints = Set<Network::FingerprintType>{net2MergeInFingerprint};
                 // @todo fix this code so each time through we UPDATE sDBAccessMgr_ with latest 'fingerprint' of each dynamic network
-                newRolledUpNetwork.fGUID = sDBAccessMgr_->GenNewNetworkID (newRolledUpNetwork, net2MergeIn);
-                if (fRolledUpNetworks_.Contains (newRolledUpNetwork.fGUID)) {
+                newRolledUpNetwork.fID = sDBAccessMgr_->GenNewNetworkID (newRolledUpNetwork, net2MergeIn);
+                if (fRolledUpNetworks_.Contains (newRolledUpNetwork.fID)) {
                     // Should probably never happen, but since depends on data in database, program defensively
 
                     // at this point we have a net2MergeIn that said 'no' to ShouldRollup to all existing networks we've rolled up before
                     // and yet somehow, result contains a network that used our ID?
-                    auto shouldntRollUpButTookOurIDNet = Memory::ValueOf (fRolledUpNetworks_.Lookup (newRolledUpNetwork.fGUID));
+                    auto shouldntRollUpButTookOurIDNet = Memory::ValueOf (fRolledUpNetworks_.Lookup (newRolledUpNetwork.fID));
                     DbgTrace (L"shouldntRollUpButTookOurIDNet=%s", Characters::ToString (shouldntRollUpButTookOurIDNet).c_str ());
                     DbgTrace (L"net2MergeIn=%s", Characters::ToString (net2MergeIn).c_str ());
                     //Assert (not ShouldRollup_ (shouldntRollUpButTookOurIDNet, net2MergeIn));
-                    Logger::sThe.Log (Logger::eWarning, L"Got rollup network ID from cache that is already in use: %s (for external address %s)", Characters::ToString (newRolledUpNetwork.fGUID).c_str (), Characters::ToString (newRolledUpNetwork.fExternalAddresses).c_str ());
-                    newRolledUpNetwork.fGUID = GUID::GenerateNew ();
+                    Logger::sThe.Log (Logger::eWarning, L"Got rollup network ID from cache that is already in use: %s (for external address %s)", Characters::ToString (newRolledUpNetwork.fID).c_str (), Characters::ToString (newRolledUpNetwork.fExternalAddresses).c_str ());
+                    newRolledUpNetwork.fID = GUID::GenerateNew ();
                 }
-                newRolledUpNetwork.fUserOverrides = sDBAccessMgr_->LookupNetworkUserSettings (newRolledUpNetwork.fGUID);
+                newRolledUpNetwork.fUserOverrides = sDBAccessMgr_->LookupNetworkUserSettings (newRolledUpNetwork.fID);
                 if (newRolledUpNetwork.fUserOverrides && newRolledUpNetwork.fUserOverrides->fName) {
                     newRolledUpNetwork.fNames.Add (*newRolledUpNetwork.fUserOverrides->fName, 500);
                 }
                 fRolledUpNetworks_.Add (newRolledUpNetwork);
-                fMapAggregatedNetID2RollupID_.Add (net2MergeIn.fGUID, newRolledUpNetwork.fGUID);
+                fMapAggregatedNetID2RollupID_.Add (net2MergeIn.fID, newRolledUpNetwork.fID);
 
                 // is this guarnateed unique?
-                fMapFingerprint2RollupID.Add (net2MergeInFingerprint, newRolledUpNetwork.fGUID);
+                fMapFingerprint2RollupID.Add (net2MergeInFingerprint, newRolledUpNetwork.fID);
             }
             void RecomputeAll_ ()
             {

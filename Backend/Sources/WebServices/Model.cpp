@@ -452,7 +452,7 @@ Network Network::Merge (const Network& baseNetwork, const Network& priorityNetwo
     // Items that are structured, if (most of the time) you want to just conditionally replace the ones
     // that are present, iterate and copy2if or add subelements.
     Network merged = baseNetwork;
-    merged.fGUID   = priorityNetwork.fGUID;
+    merged.fID     = priorityNetwork.fID;
     for (const auto& i : priorityNetwork.fNames) {
         merged.fNames.Add (i.fName, i.fPriority);
     }
@@ -493,16 +493,16 @@ Network Network::Rollup (const Network& rollupNetwork, const Network& instanceNe
                          ? Merge (rollupNetwork, instanceNetwork2Add)
                          : Merge (instanceNetwork2Add, rollupNetwork);
     // regardless of dates, keep the rollupDevice GUID and original rolled up interface ids
-    merged.fGUID                   = rollupNetwork.fGUID;
+    merged.fID                     = rollupNetwork.fID;
     merged.fAttachedInterfaces     = rollupNetwork.fAttachedInterfaces;
     merged.fAggregatesReversibly   = rollupNetwork.fAggregatesReversibly;
     merged.fAggregatesIrreversibly = rollupNetwork.fAggregatesIrreversibly;
 
     if (merged.fAggregatesReversibly.has_value ()) {
-        merged.fAggregatesReversibly->Add (instanceNetwork2Add.fGUID);
+        merged.fAggregatesReversibly->Add (instanceNetwork2Add.fID);
     }
     else {
-        merged.fAggregatesReversibly = Set<GUID>{instanceNetwork2Add.fGUID};
+        merged.fAggregatesReversibly = Set<GUID>{instanceNetwork2Add.fID};
     }
     // merged.fAggregatesIrreversibly = nullopt;
     merged.fIDPersistent = false;
@@ -593,9 +593,9 @@ String Network::ToString () const
 {
     Characters::StringBuilder sb;
     sb += L"{";
+    sb += L"ID: " + Characters::ToString (fID) + L", ";
     sb += L"Network-Addresses: " + Characters::ToString (fNetworkAddresses) + L", ";
     sb += L"Names: " + Characters::ToString (fNames) + L", ";
-    sb += L"GUID: " + Characters::ToString (fGUID) + L", ";
     if (fAggregatedBy) {
         sb += L"AggregatedBy: " + Characters::ToString (fAggregatedBy) + L", ";
     }
@@ -671,6 +671,7 @@ const ObjectVariantMapper Network::kMapper = [] () {
     mapper.AddCommonType<optional<UserOverridesType>> ();
 
     mapper.AddClass<Network> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+        {L"id"sv, StructFieldMetaInfo{&Network::fID}},
         {L"names"sv, StructFieldMetaInfo{&Network::fNames}},
         {L"networkAddresses"sv, StructFieldMetaInfo{&Network::fNetworkAddresses}},
         {L"attachedInterfaces"sv, StructFieldMetaInfo{&Network::fAttachedInterfaces}},
@@ -680,7 +681,6 @@ const ObjectVariantMapper Network::kMapper = [] () {
         {L"externalAddresses"sv, StructFieldMetaInfo{&Network::fExternalAddresses}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"geographicLocation"sv, StructFieldMetaInfo{&Network::fGEOLocInformation}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"internetServiceProvider"sv, StructFieldMetaInfo{&Network::fInternetServiceProvider}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"id"sv, StructFieldMetaInfo{&Network::fGUID}},
         {L"aggregatedBy"sv, StructFieldMetaInfo{&Network::fAggregatedBy}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"seen"sv, StructFieldMetaInfo{&Network::fSeen}, kDateRangeMapper_},
         {L"aggregatesReversibly"sv, StructFieldMetaInfo{&Network::fAggregatesReversibly}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},

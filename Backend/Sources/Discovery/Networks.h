@@ -61,7 +61,11 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
      *  we need to know about active networks for discovery.
      */
     struct Network {
-        GUID                     fGUID;
+        /**
+         *  This GUID is generated uniquely per lifetime of this process
+         */
+        GUID fGUID;
+
         Set<CIDR>                fNetworkAddresses;
         Common::PrioritizedNames fNames;
         Range<DateTime>          fSeen;

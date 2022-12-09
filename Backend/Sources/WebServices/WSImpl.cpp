@@ -485,7 +485,7 @@ Sequence<String> WSImpl::GetNetworks (const optional<Set<GUID>>& ids) const
         Sequence<String> result;
         for (auto i : *ids) {
             if (auto n = IntegratedModel::Mgr::sThe.GetNetwork (i)) {
-                result += n->fGUID.ToString ();
+                result += n->fID.ToString ();
             }
             else {
                 // should drop on floor or throw? - but if throw whats the point of thie API taking guids and returning guids? Maybe none
@@ -494,7 +494,7 @@ Sequence<String> WSImpl::GetNetworks (const optional<Set<GUID>>& ids) const
         return result;
     }
     else {
-        return Sequence<String>{IntegratedModel::Mgr::sThe.GetNetworks ().Map<String> ([] (const auto& n) { return n.fGUID.ToString (); })};
+        return IntegratedModel::Mgr::sThe.GetNetworks ().Map<String, Sequence<String>> ([] (const auto& n) { return n.fID.ToString (); });
     }
 }
 
