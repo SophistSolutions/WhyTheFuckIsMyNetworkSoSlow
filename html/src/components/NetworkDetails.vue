@@ -9,7 +9,7 @@ import {
 import JsonViewer from 'vue-json-viewer';
 import moment from 'moment';
 
-import { IDevice, INetworkAttachmentInfo } from '../models/device/IDevice';
+import { IDevice } from '../models/device/IDevice';
 import { INetworkInterface } from '../models/network/INetworkInterface';
 
 import {
