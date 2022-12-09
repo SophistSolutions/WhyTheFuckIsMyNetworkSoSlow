@@ -95,7 +95,7 @@ namespace {
 
 namespace {
     struct Device_Key_Extractor_ {
-        GUID operator() (const IntegratedModel::Device& t) const { return t.fGUID; };
+        GUID operator() (const IntegratedModel::Device& t) const { return t.fID; };
     };
     using DeviceKeyedCollection_ = KeyedCollection<IntegratedModel::Device, GUID, KeyedCollection_DefaultTraits<IntegratedModel::Device, GUID, Device_Key_Extractor_>>;
 
@@ -127,7 +127,7 @@ namespace {
         Device Discovery2Model_ (const Discovery::Device& d)
         {
             Device newDev;
-            newDev.fGUID  = d.fGUID;
+            newDev.fID    = d.fGUID;
             newDev.fNames = d.fNames;
             if (not d.fTypes.empty ()) {
                 newDev.fTypes = d.fTypes; // leave missing if no discovered types
@@ -785,7 +785,7 @@ namespace {
                     if (d.fAttachedNetworkInterfaces) {
                         d.fAttachedNetworkInterfaces->Apply ([&] (const GUID& netInterfaceID) {
                             netsAdded.Add (netInterfaceID);
-                            MergeIn_ (d.fGUID, Memory::ValueOf (nets2MergeInCollected.Lookup (netInterfaceID)));
+                            MergeIn_ (d.fID, Memory::ValueOf (nets2MergeInCollected.Lookup (netInterfaceID)));
                         });
                     }
                 }
@@ -1358,7 +1358,7 @@ namespace {
                 fStarterRollups_ = userOverrides.Map<Device> (
                     [] (const auto& guid2UOTPair) -> Device {
                         Device d;
-                        d.fGUID          = guid2UOTPair.fKey;
+                        d.fID            = guid2UOTPair.fKey;
                         d.fUserOverrides = guid2UOTPair.fValue;
                         if (d.fUserOverrides and d.fUserOverrides->fName) {
                             d.fNames.Add (*d.fUserOverrides->fName, 500);
@@ -1412,7 +1412,7 @@ namespace {
                 fStarterRollups_                                  = userOverrides.Map<Device> (
                     [] (const auto& guid2UOTPair) -> Device {
                         Device d;
-                        d.fGUID          = guid2UOTPair.fKey;
+                        d.fID            = guid2UOTPair.fKey;
                         d.fUserOverrides = guid2UOTPair.fValue;
                         if (d.fUserOverrides and d.fUserOverrides->fName) {
                             d.fNames.Add (*d.fUserOverrides->fName, 500);
@@ -1510,7 +1510,7 @@ namespace {
             PassFailType_ MergeIn_ (const Device& d2MergeIn)
             {
                 // see if it still should be rolled up in the place it was last rolled up as a shortcut
-                if (optional<GUID> prevRollupID = fRaw2RollupIDMap_.Lookup (d2MergeIn.fGUID)) {
+                if (optional<GUID> prevRollupID = fRaw2RollupIDMap_.Lookup (d2MergeIn.fID)) {
                     Device rollupDevice = Memory::ValueOf (fRolledUpDevices.Lookup (*prevRollupID)); // must be there cuz in sync with fRaw2RollupIDMap_
                     if (ShouldRollup_ (rollupDevice, d2MergeIn)) {
                         MergeInUpdate_ (rollupDevice, d2MergeIn);
@@ -1537,7 +1537,7 @@ namespace {
                 d2MergeInPatched.fAttachedNetworks = MapAggregatedAttachments2Rollups_ (d2MergeInPatched.fAttachedNetworks);
                 Device tmp                         = Device::Rollup (rollupDevice, d2MergeInPatched);
 
-                Assert (tmp.fGUID == rollupDevice.fGUID); // rollup cannot change device ID
+                Assert (tmp.fID == rollupDevice.fID); // rollup cannot change device ID
 
                 tmp.fAttachedNetworkInterfaces = rollupDevice.fAttachedNetworkInterfaces;
                 if (newDevice2MergeIn.fAttachedNetworkInterfaces) {
@@ -1549,29 +1549,29 @@ namespace {
 
                 // userSettings already added on first rollup
                 fRolledUpDevices += tmp;
-                fRaw2RollupIDMap_.Add (newDevice2MergeIn.fGUID, tmp.fGUID);
+                fRaw2RollupIDMap_.Add (newDevice2MergeIn.fID, tmp.fID);
             }
             void MergeInNew_ (const Device& d2MergeIn)
             {
                 Assert (not d2MergeIn.fAggregatesReversibly.has_value ());
                 Device newRolledUpDevice                = d2MergeIn;
-                newRolledUpDevice.fAggregatesReversibly = Set<GUID>{d2MergeIn.fGUID};
-                newRolledUpDevice.fGUID                 = sDBAccessMgr_->GenNewDeviceID (d2MergeIn.GetHardwareAddresses ());
-                if (GetDevices ().Contains (newRolledUpDevice.fGUID)) {
+                newRolledUpDevice.fAggregatesReversibly = Set<GUID>{d2MergeIn.fID};
+                newRolledUpDevice.fID                   = sDBAccessMgr_->GenNewDeviceID (d2MergeIn.GetHardwareAddresses ());
+                if (GetDevices ().Contains (newRolledUpDevice.fID)) {
                     // Should probably never happen, but since depends on data in database, program defensively
-                    Logger::sThe.Log (Logger::eWarning, L"Got rollup device ID from cache that is already in use: %s (for hardware addresses %s)", Characters::ToString (newRolledUpDevice.fGUID).c_str (), Characters::ToString (d2MergeIn.GetHardwareAddresses ()).c_str ());
-                    newRolledUpDevice.fGUID = GUID::GenerateNew ();
+                    Logger::sThe.Log (Logger::eWarning, L"Got rollup device ID from cache that is already in use: %s (for hardware addresses %s)", Characters::ToString (newRolledUpDevice.fID).c_str (), Characters::ToString (d2MergeIn.GetHardwareAddresses ()).c_str ());
+                    newRolledUpDevice.fID = GUID::GenerateNew ();
                 }
                 newRolledUpDevice.fAttachedNetworks = MapAggregatedAttachments2Rollups_ (newRolledUpDevice.fAttachedNetworks);
                 if (d2MergeIn.fAttachedNetworkInterfaces) {
                     newRolledUpDevice.fAttachedNetworkInterfaces = fUseNetworkInterfaceRollups.MapAggregatedNetInterfaceID2ItsRollupID (*d2MergeIn.fAttachedNetworkInterfaces);
                 }
-                newRolledUpDevice.fUserOverrides = sDBAccessMgr_->LookupDevicesUserSettings (newRolledUpDevice.fGUID);
+                newRolledUpDevice.fUserOverrides = sDBAccessMgr_->LookupDevicesUserSettings (newRolledUpDevice.fID);
                 if (newRolledUpDevice.fUserOverrides && newRolledUpDevice.fUserOverrides->fName) {
                     newRolledUpDevice.fNames.Add (*newRolledUpDevice.fUserOverrides->fName, 500);
                 }
                 fRolledUpDevices += newRolledUpDevice;
-                fRaw2RollupIDMap_.Add (d2MergeIn.fGUID, newRolledUpDevice.fGUID);
+                fRaw2RollupIDMap_.Add (d2MergeIn.fID, newRolledUpDevice.fID);
             }
             void RecomputeAll_ ()
             {
@@ -1594,7 +1594,7 @@ namespace {
             };
             static bool ShouldRollup_ (const Device& exisingRolledUpDevice, const Device& d2PotentiallyMergeIn)
             {
-                if ((exisingRolledUpDevice.fAggregatesIrreversibly and exisingRolledUpDevice.fAggregatesIrreversibly->Contains (d2PotentiallyMergeIn.fGUID)) or (exisingRolledUpDevice.fAggregatesIrreversibly and exisingRolledUpDevice.fAggregatesIrreversibly->Contains (d2PotentiallyMergeIn.fGUID))) {
+                if ((exisingRolledUpDevice.fAggregatesIrreversibly and exisingRolledUpDevice.fAggregatesIrreversibly->Contains (d2PotentiallyMergeIn.fID)) or (exisingRolledUpDevice.fAggregatesIrreversibly and exisingRolledUpDevice.fAggregatesIrreversibly->Contains (d2PotentiallyMergeIn.fID))) {
                     // we retry the same 'discovered' networks repeatedly and re-roll them up.
                     // mostly this is handled by having the same hardware addresses, but sometimes (like for main discovered device)
                     // MAY not yet / always have network interface). And besides, this check cheaper/faster probably.
@@ -1715,7 +1715,7 @@ void IntegratedModel::Mgr::SetDeviceUserSettings (const Common::GUID& id, const 
 
 std::optional<GUID> IntegratedModel::Mgr::GetCorrespondingDynamicDeviceID (const GUID& id) const
 {
-    Set<GUID> dynamicDevices{Discovery::DevicesMgr::sThe.GetActiveDevices ().Map<GUID> ([] (const auto& d) { return d.fGUID; })};
+    Set<GUID> dynamicDevices{Discovery::DevicesMgr::sThe.GetActiveDevices ().Map<GUID, Set<GUID>> ([] (const auto& d) { return d.fGUID; })};
     if (dynamicDevices.Contains (id)) {
         return id;
     }
@@ -1798,7 +1798,7 @@ optional<IntegratedModel::NetworkInterface> IntegratedModel::Mgr::GetNetworkInte
         auto deviceRollupCache = RollupSummary_::RolledUpDevices::GetCached ();
         // could cache this info so dont need to search...
         if (auto i = deviceRollupCache.GetDevices ().First ([&id] (const Device& d) { return d.fAttachedNetworkInterfaces and d.fAttachedNetworkInterfaces->Contains (id); })) {
-            result->fAttachedToDevices = Set<GUID>{i->fGUID};
+            result->fAttachedToDevices = Set<GUID>{i->fID};
         }
     }
     else {

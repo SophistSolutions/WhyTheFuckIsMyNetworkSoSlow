@@ -556,7 +556,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         Device& operator= (const Device&) = default;
         Device& operator= (Device&&)      = default;
 
-        GUID fGUID;
+        /**
+         *  fID comes from discovery layer (matches id from there if snapshot) or from rollup code.
+         */
+        GUID fID;
 
         /**
          *  In WSAPI, we show this record/value in objects which are rolled up into other objects.

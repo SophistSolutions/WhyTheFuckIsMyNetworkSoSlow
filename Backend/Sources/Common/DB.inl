@@ -32,7 +32,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         SQL::Transaction t{dbConnTable->pConnection ()->mkTransaction ()};
         std::optional<T> result;
         Assert (kRepresentIDAs_ == VariantValue::Type::eString or kRepresentIDAs_ == VariantValue::Type::eBLOB);
-        VariantValue id = (kRepresentIDAs_ == VariantValue::Type::eString) ? VariantValue{d.fGUID.template As<String> ()} : VariantValue{d.fGUID.template As<Memory::BLOB> ()};
+        VariantValue id = (kRepresentIDAs_ == VariantValue::Type::eString) ? VariantValue{d.fID.template As<String> ()} : VariantValue{d.fID.template As<Memory::BLOB> ()};
         if (auto dbObj = dbConnTable->Get (id)) {
             result = T::Merge (*dbObj, d);
             dbConnTable->Update (*result);

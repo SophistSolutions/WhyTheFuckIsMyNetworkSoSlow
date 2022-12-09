@@ -234,7 +234,7 @@ Sequence<String> WSImpl::GetDevices (const optional<Set<GUID>>& ids, const optio
 {
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
     return GetDevices_Recurse (ids, sort).Map<String, Sequence<String>> ([] (const WebServices::Device& n) {
-        return n.fGUID.As<String> ();
+        return n.fID.As<String> ();
     });
 }
 

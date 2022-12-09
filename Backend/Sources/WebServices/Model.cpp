@@ -889,7 +889,7 @@ const ObjectVariantMapper Device::kMapper = [] () {
     mapper.AddCommonType<Mapping<GUID, NetworkAttachmentInfo>> ();
 
     mapper.AddClass<Device> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-        {L"id", StructFieldMetaInfo{&Device::fGUID}},
+        {L"id", StructFieldMetaInfo{&Device::fID}},
         {L"aggregatedBy"sv, StructFieldMetaInfo{&Device::fAggregatedBy}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"names", StructFieldMetaInfo{&Device::fNames}},
         {L"type", StructFieldMetaInfo{&Device::fTypes}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
@@ -944,7 +944,7 @@ Device Device::Merge (const Device& baseDevice, const Device& priorityDevice)
     for (const auto& i : priorityDevice.fNames) {
         merged.fNames.Add (i.fName, i.fPriority);
     }
-    merged.fGUID = priorityDevice.fGUID;
+    merged.fID = priorityDevice.fID;
     Memory::AccumulateIf (&merged.fTypes, priorityDevice.fTypes);
     Memory::CopyToIf (&merged.fIcon, priorityDevice.fIcon);
     MergeSeen_ (&merged.fSeen, priorityDevice.fSeen);
@@ -978,12 +978,12 @@ Device Device::Rollup (const Device& rollupDevice, const Device& instanceDevice2
     Device d = (rollupDevice.fSeen.EverSeen () == nullopt or rollupDevice.fSeen.EverSeen ()->GetUpperBound () < instanceDevice2Add.fSeen.EverSeen ()->GetUpperBound ())
                    ? Merge (rollupDevice, instanceDevice2Add)
                    : Merge (instanceDevice2Add, rollupDevice);
-    d.fGUID  = rollupDevice.fGUID; // regardless of dates, keep the rollupDevice GUID
+    d.fID    = rollupDevice.fID; // regardless of dates, keep the rollupDevice GUID
     if (d.fAggregatesReversibly.has_value ()) {
-        d.fAggregatesReversibly->Add (instanceDevice2Add.fGUID);
+        d.fAggregatesReversibly->Add (instanceDevice2Add.fID);
     }
     else {
-        d.fAggregatesReversibly = Set<GUID>{instanceDevice2Add.fGUID};
+        d.fAggregatesReversibly = Set<GUID>{instanceDevice2Add.fID};
     }
     d.fAggregatesIrreversibly = nullopt;
     d.fIDPersistent           = false;
