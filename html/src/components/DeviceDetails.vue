@@ -5,7 +5,7 @@ import JsonViewer from 'vue-json-viewer';
 
 import { IDevice, INetworkAttachmentInfo } from "../models/device/IDevice";
 import { ComputeServiceTypeIconURL } from "../models/device/Utils";
-import { GetNetworkLink, GetNetworkName, GetServices, SortNetworks } from "../models/network/Utils";
+import { GetNetworkLink, GetNetworkName, GetServices, SortNetworks, FormatIDateTimeRange } from "../models/network/Utils";
 import { rescanDevice } from "../proxy/API";
 
 import ReadOnlyTextWithHover from '../components/ReadOnlyTextWithHover.vue';
@@ -242,6 +242,14 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
               <div class="col no-wrap truncateWithElipsis">
                 <ReadOnlyTextWithHover
                   :message="currentDevice.attachedNetworks[attachedNet.id].localAddresses.join(', ')" />
+              </div>
+            </div>
+            <div class="row" v-if="attachedNet.seen">
+              <div class="col-1" />
+              <div class="col no-wrap truncateWithElipsis">Seen</div>
+              <div class="col no-wrap truncateWithElipsis">
+                <ReadOnlyTextWithHover
+                  :message="FormatIDateTimeRange(attachedNet.seen)" />
               </div>
             </div>
           </div>
