@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, Ref, ref, computed } from 'vue';
 import moment from 'moment';
+import { DateTime } from "luxon";
 import JsonViewer from 'vue-json-viewer';
 
 import { IDevice, INetworkAttachmentInfo } from "../models/device/IDevice";
@@ -21,6 +22,8 @@ const props = defineProps({
   deviceId: { type: String, required: true },
   includeLinkToDetailsPage: { type: Boolean, required: false, default: false },
   showExtraDetails: { type: Boolean, required: false, default: false },
+  showOldNetworks: { type: Boolean, required: false, default: false },
+  showInactiveInterfaces: { type: Boolean, required: false, default: false },
 })
 
 let polling: undefined | NodeJS.Timeout;
@@ -217,7 +220,11 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
       <div class="col">
         <div class="row" v-for="attachedNet in currentDeviceDetails.attachedFullNetworkObjects"
           v-bind:key="attachedNet.id">
-          <div class="col">
+          <div class="col" v-if="
+            props.showOldNetworks ||
+            (attachedNet.seen?.upperBound && DateTime.fromJSDate(attachedNet.seen?.upperBound).diffNow('minutes').minutes >
+            -10)
+          ">
             <div class="row">
               <div class="col no-wrap truncateWithElipsis">
                 <ReadOnlyTextWithHover :message="GetNetworkName(attachedNet)" :popupTitle="
@@ -282,10 +289,10 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
         <span v-if="currentDevice.openPorts">{{ currentDevice.openPorts.join(", ") }}</span>
       </div>
     </div>
-    <div class="row" v-if="currentDevice.aggregatesReversibly && currentDevice.aggregatesReversibly.length">
-      <div class="col-3">Aggregates Reversibly</div>
+    <div class="row" v-if="(currentDevice.aggregatesReversibly && currentDevice.aggregatesReversibly.length) || (currentDevice.aggregatesIrreversibly && currentDevice.aggregatesIrreversibly.length)">
+      <div class="col-3">Aggregates</div>
       <div class="col">
-        <div class="row wrap"><span
+        <div class="row wrap" v-if="currentDevice.aggregatesReversibly && currentDevice.aggregatesReversibly.length"><span
             v-for="aggregate in SortDeviceIDsByMostRecentFirst_(currentDevice.aggregatesReversibly)"
             v-bind:key="aggregate" class="aggregatesItem">
             <ReadOnlyTextWithHover :message="GetSubDeviceDisplay_(aggregate, true)"
@@ -307,7 +314,7 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
     <div class="row" v-if="currentDevice.attachedNetworkInterfaces && props.showExtraDetails">
       <div class="col-3">Attached Network Interfaces</div>
       <div class="col">
-        <NetworkInterfacesDetails :network-interface-ids="currentDevice.attachedNetworkInterfaces" />
+        <NetworkInterfacesDetails :network-interface-ids="currentDevice.attachedNetworkInterfaces" :showInactiveInterfaces="props.showInactiveInterfaces" />
       </div>
     </div>
     <div class="row" v-if="currentDevice.debugProps && props.showExtraDetails">

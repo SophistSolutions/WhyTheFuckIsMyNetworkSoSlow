@@ -1,6 +1,6 @@
 
 <script setup lang="ts">
-import { watch, onMounted, onUnmounted, computed, ComputedRef } from 'vue';
+import { watch, onMounted, onUnmounted, computed, ComputedRef, ref } from 'vue';
 import { useRoute } from 'vue-router'
 
 import { IDevice } from "../models/device/IDevice";
@@ -37,6 +37,8 @@ onMounted(() => {
     store.fetchDevice(route.params.id as string);
     store.fetchAvailableNetworks();
   }, kRefreshFrequencyInSeconds_ * 1000);
+
+  addHeaderSectionBugWorkaround.value = true;
 })
 
 onUnmounted(() => {
@@ -76,16 +78,28 @@ watch(
     }
   }
 )
+
+// See https://github.com/storybookjs/storybook/issues/17954 for why we need this hack
+var addHeaderSectionBugWorkaround = ref(false);
+
+var showOldNetworks = ref(false)
+var showInactiveInterfaces = ref(false)
 </script>
 
 <template>
+  <Teleport to="#CHILD_HEADER_SECTION" v-if="addHeaderSectionBugWorkaround">
+    <q-checkbox dense v-model="showOldNetworks" label="Show Old Networks" />
+    <q-checkbox dense v-model="showInactiveInterfaces" label="Show Inactive Network Interfaces" />
+  </Teleport>
   <q-page padding class=" justify-center row">
     <q-card class="pageCard col-11">
       <q-card-section class="text-subtitle2">
         Device Details for {{ device == null ? "loading..." : '"' + device.name + '"' }}
       </q-card-section>
       <q-card-section>
-        <DeviceDetails v-if="device" :deviceId="device.id" :showExtraDetails="true" />
+        <DeviceDetails v-if="device" :deviceId="device.id" :showExtraDetails="true"
+          :showOldNetworks="showOldNetworks"
+          :showInactiveInterfaces="showInactiveInterfaces" />
       </q-card-section>
     </q-card>
   </q-page>

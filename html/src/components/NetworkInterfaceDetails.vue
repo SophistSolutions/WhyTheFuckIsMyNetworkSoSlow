@@ -23,10 +23,12 @@ interface Props {
   networkInterfaceId?: string;
   includeLinkToDetailsPage?: boolean;
   showExtraDetails?: boolean;
+  showInactiveInterfaces?: boolean;
 }
 const props = withDefaults(defineProps<Props>(), {
   includeLinkToDetailsPage: false,
   showExtraDetails: false,
+  showInactiveInterfaces: true,
 });
 
 let polling: undefined | NodeJS.Timeout;
@@ -91,6 +93,19 @@ function getSeenForNetworkInterface(netIFace?: INetworkInterface) {
 function getSeenForNetworkInterfaceID(netInterfaceID: string) {
   return getSeenForNetworkInterface(store.getNetworkInterface(netInterfaceID));
 }
+function isShown()
+{
+  if (props.showInactiveInterfaces) {
+    return true;
+  }
+  if (!currentNetworkInterface.value) {
+    return false; // don't show if nothing loaded yet
+  }
+  if (!currentNetworkInterface.value.status) {
+    return true; // harder - really in this case - if we are a rollup, want to check if any rolled up items active, but do this for now.
+  }
+  return currentNetworkInterface.value.status.includes ("Running");
+}
 </script>
 
 <template>
@@ -99,7 +114,7 @@ function getSeenForNetworkInterfaceID(netInterfaceID: string) {
     in 'aggreates' below point ot that page so you can easily link/view one of the detail interfaces... (now you have to
     follow the dated network or device itself to find corresponding link)
   -->
-  <div v-if="currentNetworkInterface || true" class="q-pa-sm">
+  <div v-if="currentNetworkInterface && isShown ()" class="q-pa-sm">
     <div class="row" v-if="currentNetworkInterface?.friendlyName">
       <div class="col-3">Friendly Name</div>
       <div class="col">
