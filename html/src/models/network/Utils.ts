@@ -1,5 +1,6 @@
 import { IDateTimeRange } from 'src/models/common/IDateTimeRange';
 import moment from 'moment';
+import { DateTime } from "luxon";
 
 import { IDevice, INetworkAttachmentInfo } from '../../models/device/IDevice';
 import { IGeographicLocation } from '../../models/network/IGeographicLocation';
@@ -43,11 +44,13 @@ export function FormatBaudRate(b?: number): string|undefined
   summaryOnly?: boolean
 ): string | undefined {
   if (seenRange) {
-    const toText: string | undefined = seenRange?.upperBound? moment(seenRange.upperBound).fromNow(): undefined;
+    //const toText: string | undefined = seenRange?.upperBound? moment(seenRange.upperBound).fromNow(): undefined;
+    const toText: string | undefined = seenRange?.upperBound? DateTime.fromJSDate(seenRange.upperBound).toRelative() as string: undefined;
     if (summaryOnly) {
       return toText;
     }
-    const fromText: string | undefined = seenRange?.lowerBound? moment(seenRange.lowerBound).fromNow(): undefined;
+    //const fromText: string | undefined = seenRange?.lowerBound? moment(seenRange.lowerBound).fromNow(): undefined;
+    const fromText: string | undefined = seenRange?.lowerBound? DateTime.fromJSDate(seenRange.lowerBound).toRelative() as string: undefined;
     if (fromText || toText) {
       return (fromText?? "") + ' up until ' +  (toText?? "");
     }
@@ -87,7 +90,8 @@ export function GetNetworkName(n: INetwork): string {
 export function SortNetworks(nws: INetwork[]) {
   const result = Object.assign([], nws);
   result.sort((l: INetwork, r: INetwork) => {
-    let res = -moment(l.seen?.upperBound).diff(r.seen?.upperBound);
+    //let res = -moment(l.seen?.upperBound).diff(r.seen?.upperBound);
+    let res = -DateTime.fromJSDate(l.seen?.upperBound)?.diff (DateTime.fromJSDate (r.seen?.upperBound));
     if (res == 0) {
       const lex = l.externalAddresses ? l.externalAddresses.length : 0;
       const rex = r.externalAddresses ? r.externalAddresses.length : 0;
