@@ -1,6 +1,10 @@
-Cleanup NetworkInterface (WSMODEL) stuff so fewer useless things included, and maybe cleanup names of fields (fID?)
-----
-in device attached network section, sort by active first, and recent secondary sort characterisitic
+
+---
+in device details page, add FILTER on top, and option to only list active networks (checkbox only active networks)
+
+---
+
+in device attached network interface section, sort by active first, and recent secondary sort characterisitic
 
 ----
 fix in html display of 'daterange' summary for aggregated network interfaces (and maybe 
@@ -12,10 +16,11 @@ Device details component should take id or value - as we did for network compone
 ----
 	FIX PLURALS EVERYWHERE IN GUI TO USE PluralizeNoun() function
 ----
-destructure NEtwork and Device code to fetch by ID (not use recurse=true)
-
+restructure NEtwork and Device code to fetch by ID (not use recurse=true)
 ----
+Look at fetch traffic. I think too much.
 
+---
 
 	Once I restructure html code (maybe before) to separately fetch each network (and other object) by ID, I can 
 	redo teh atttachedNetworks field of a device to be JUST the ID, not a mapping of ID to a few interesting key values.
@@ -23,18 +28,6 @@ destructure NEtwork and Device code to fetch by ID (not use recurse=true)
 
 
 --------------------- GUI ABOVE and BACKEND directly below -----------------
-
-
-
-
-
-TO DEBUG see if fHoldWriteLockDuringCacheFill gets rid of rare/sporadic failure with Reverse DNS Lookup Cache.
-
-	Turning that to true causes (at least in debug builds) horrible delays so SW unusable. So may need another way.
-	MAYBE I can do to debug?
-	- havent seen issue since 11/23 --LGP 2022-11-23
-
-----
 
 	Network INterface IDENTITY
 		+	Rollup interface must allow changing hardwareAddress, or not including hardware address (or set of hardare addresses).
@@ -45,7 +38,7 @@ TO DEBUG see if fHoldWriteLockDuringCacheFill gets rid of rare/sporadic failure 
 			 "hardwareAddress": "00:15:5d:dc:3a:a0",
 			but earlier   "hardwareAddress": "00:15:5d:98:09:e6",
 
-	ipconfig/all
+	ipconfig/all 
 		Ethernet adapter vEthernet (nat):
 
 		Connection-specific DNS Suffix  . :
@@ -66,26 +59,10 @@ TO DEBUG see if fHoldWriteLockDuringCacheFill gets rid of rare/sporadic failure 
 
 		MAYBE just not an issue... Need to be able to better hide unintesting networks from UI.
 		That maybe the fix.
-
----
-	// USE CACHEABILIYT HEADERS ON RESULTS FROM WSAPI that are IMMUTABLE, SAYING THEY CNA BE CACHED (largely forever) - but maybe say 1 day).
-	// so for snapshots that are old - they can be cahced long time. For snapshots that are actuively being updated, say not cachable or just a few seconds\
-	THEN can probably GET RID OF idPersistable attribute, since can be inferred from cachablity header intead (just better way to say same thign)
-	STILL need 'historicalSnapshot' cuz (bette rdocument) means its NOT a rollup (could have used noARollup as the name). Thoguh a little weird
-	cuz in a ssense, everything is a rollup?? MAYBE dont need that flag either.
-
-		PROBABLY DONT NEED EITHER FLAG - horizcatsnapshot - since equiv to == aggregatopns.isEmpty () and otheragg.isEmpty ();
-		MAYBE need flag saying 'ID-PERSISTENT'. Since only then do you know its an ID you can save in a database (which corresponds
-		to the historical guys pretty much)
-
-		(done ENUF for now, and just do the change in logic so we dont need thos isHistorical flag - see if we can 
-		access cache control header from html))
-
 ----
  curl -v -X PATCH --output - -H "Content-Type: application/json" -d '[{"op":"add","path":"/userOverrides/name","value":"airplane-greece2boston-2022-10-02"}]' http://localhost/api/v1/networks/340ceb50-e337-7669-4d5a-5c6f7a03dbb6
 
  issue is when we recompute we dont get the auto-add of the fingerprint rule. So new item created.
-
 
 >>> maybe fix is to add 'temporary in ram' usersettings for these assocs? No. Cuz then on restart it fails.
 >>> MAYBE ALL the fake fingerprint rules I cons up MUST be created through consed up user assoc rule? 
@@ -95,10 +72,8 @@ TO DEBUG see if fHoldWriteLockDuringCacheFill gets rid of rare/sporadic failure 
 
 ---
 
-
 hibernate on airplane, and wakeup PC at home, and confused about networks. Need to treat after wakeup
 as new set of discovered devices/new session. (and net networks)
-
 
 ---
 + Create network through usersettings. Then delete it. Its creation causes add to startNetworks in rollup (on restart).
