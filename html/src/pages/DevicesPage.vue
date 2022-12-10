@@ -437,7 +437,7 @@ const pagination = ref({
           <template v-slot:body="props">
             <q-tr :props="props" @click="rowClicked(props)">
               <q-td :props="props" key="name">
-                <ReadOnlyTextWithHover :message="props.row.name" :link="'/#/device/' + props.row.id" />
+                <ReadOnlyTextWithHover :message="props.row.name" />
               </q-td>
               <q-td :props="props" key="type">
                 <span v-for="(t, i) in ComputeDeviceTypeIconURLs(props.row.type)" :key="i">
@@ -485,7 +485,7 @@ const pagination = ref({
             </q-tr>
             <q-tr v-if="props.expand" :props="props">
               <q-td :colspan="pageUserOptions.VisibleColumns.length">
-                <DeviceDetails class="detailsSection z-top" :deviceId="props.row.id" />
+                <DeviceDetails class="detailsSection z-top" :deviceId="props.row.id" :includeLinkToDetailsPage="true" />
               </q-td>
             </q-tr>
           </template>

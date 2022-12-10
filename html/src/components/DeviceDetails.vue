@@ -159,8 +159,6 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
 
 <template>
   <div v-if="currentDevice" class="q-pa-sm">
-    <Link2DetailsPage :link="'/#/device/' + currentDevice.id" v-if="props.includeLinkToDetailsPage"
-      style="padding-top: 5px; float:right" />
     <div class="row">
       <div class="col-3">Name</div>
       <div class="col"> {{ currentDevice.name }} </div>
@@ -173,7 +171,10 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
     <div class="row">
       <div class="col-3">ID</div>
       <div class="col"> {{ currentDevice.id }} <span class="snapshot"
-          v-if="currentDevice.aggregatedBy">{snapshot}</span></div>
+          v-if="currentDevice.aggregatedBy">{snapshot}</span>
+          <Link2DetailsPage :link="'/#/device/' + currentDevice.id" v-if="props.includeLinkToDetailsPage"
+       />
+          </div>
     </div>
     <div class="row" v-if="currentDevice.type">
       <div class="col-3">Types</div>
