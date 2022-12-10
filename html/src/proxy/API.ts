@@ -28,6 +28,9 @@ function throwIfError_(response: Response): Response {
   if (response.status >= 500 && response.status < 600) {
     throw new Error('Server Error');
   }
+  if (!response.ok) {
+    throw new Error('Server Error(nonstandard)');
+  }
   return response;
 }
 
@@ -39,6 +42,16 @@ export async function fetchNetworks(): Promise<INetwork[]> {
     .then((response) => throwIfError_(response))
     .then((response) => response.json())
     .then((data) => {
+      if (!Array.isArray (data)) {
+        console.log ("Server error - fetchNetworks didnt return array");
+        // @todo DEBUG why cannot throw here???
+        //throw new Error('Server Error');
+      }
+      if (data) {
+        data.forEach((e:INetwork) => {
+          jsonPatch2INetwork_(e);
+        });
+      }
       return data;
     })
     .catch((error) => Logger.error(error));
