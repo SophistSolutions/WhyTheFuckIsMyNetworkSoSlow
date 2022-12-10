@@ -1,3 +1,10 @@
+in top level devices page
+ in details section
+ ShowSeenDetails OFF  (new option in compoent).
+ new 'show more details' button, to popout page with all the details - same as 
+ blue link icon does direclty - put same icon here. (next to ID)
+ lose blue link in devices summary page on computer name (force click on blue arrow link)
+
 
 ---
 in device details page, add FILTER on top, and option to only list active networks (checkbox only active networks)
