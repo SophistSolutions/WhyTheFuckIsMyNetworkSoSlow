@@ -220,12 +220,11 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
           <div class="col">
             <div class="row">
               <div class="col no-wrap truncateWithElipsis">
-                <ReadOnlyTextWithHover :message="GetNetworkName(attachedNet)"
-                  :popupTitle="
-                  GetNetworkName(attachedNet) +
-                  ' (' +
-                  attachedNet.id +
-                  ')'" :link="GetNetworkLink(attachedNet.id)" title="Network Name" />
+                <ReadOnlyTextWithHover :message="GetNetworkName(attachedNet)" :popupTitle="
+                GetNetworkName(attachedNet) +
+                ' (' +
+                attachedNet.id +
+                ')'" :link="GetNetworkLink(attachedNet.id)" title="Network Name" />
               </div>
             </div>
             <div class="row" v-if="currentDevice.attachedNetworks[attachedNet.id].hardwareAddresses">
@@ -248,8 +247,7 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
               <div class="col-1" />
               <div class="col no-wrap truncateWithElipsis">Seen</div>
               <div class="col no-wrap truncateWithElipsis">
-                <ReadOnlyTextWithHover
-                  :message="FormatIDateTimeRange(attachedNet.seen)" />
+                <ReadOnlyTextWithHover :message="FormatIDateTimeRange(attachedNet.seen)" />
               </div>
             </div>
           </div>
