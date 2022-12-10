@@ -298,12 +298,8 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
             <ReadOnlyTextWithHover :message="GetSubDeviceDisplay_(aggregate, true)"
               :popup-title="GetSubDeviceDisplay_(aggregate, false)" :link="'/#/device/' + aggregate" />;&nbsp;
           </span></div>
-      </div>
-    </div>
-    <div class="row" v-if="currentDevice.aggregatesIrreversibly && currentDevice.aggregatesIrreversibly.length">
-      <div class="col-3">Aggregates Irreversibly</div>
-      <div class="col">
-        <div class="row wrap"> <span
+          <!--not supported yet, and nothing much to see here so generally won't bother listing except in details mode-->
+          <div class="row wrap" v-if="currentDevice.aggregatesIrreversibly && currentDevice.aggregatesIrreversibly.length"><span
             v-for="aggregate in SortDeviceIDsByMostRecentFirst_(currentDevice.aggregatesIrreversibly)"
             v-bind:key="aggregate" class="aggregatesItem">
             <ReadOnlyTextWithHover :message="GetSubDeviceDisplay_(aggregate, true)"
