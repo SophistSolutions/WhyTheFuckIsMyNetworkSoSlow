@@ -101,7 +101,7 @@ var showSeenDetails = ref(false)
         Device Details for {{ device == null ? "loading..." : '"' + device.name + '"' }}
       </q-card-section>
       <q-card-section>
-        <DeviceDetails v-if="device" :deviceId="device.id" :showExtraDetails="true" :showOldNetworks="showOldNetworks"
+        <DeviceDetails v-if="device" :device="device" :showExtraDetails="true" :showOldNetworks="showOldNetworks"
           :showInactiveInterfaces="showInactiveInterfaces" :showSeenDetails="showSeenDetails" />
       </q-card-section>
     </q-card>

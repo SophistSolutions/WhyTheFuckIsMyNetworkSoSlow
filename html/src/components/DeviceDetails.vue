@@ -18,14 +18,35 @@ import { INetwork } from 'src/models/network/INetwork';
 
 const store = useNetStateStore()
 
-const props = defineProps({
-  deviceId: { type: String, required: true },
-  includeLinkToDetailsPage: { type: Boolean, required: false, default: false },
-  showExtraDetails: { type: Boolean, required: false, default: false },
-  showOldNetworks: { type: Boolean, required: false, default: false },
-  showInactiveInterfaces: { type: Boolean, required: false, default: false },
-  showSeenDetails: { type: Boolean, required: false, default: false },
-})
+
+
+interface Props {
+  // EITHER device or deviceId - EXCLUSIVE and ONE required
+  device?: IDevice;
+  deviceId?: string;
+  includeLinkToDetailsPage?: boolean;
+  showExtraDetails?: boolean;
+  showOldNetworks?: boolean;
+  showInactiveInterfaces?: boolean;
+  showSeenDetails?: boolean;
+}
+const props = withDefaults(defineProps<Props>(), {
+  includeLinkToDetailsPage: false,
+  showExtraDetails: false,
+  showOldNetworks: false,
+  showInactiveInterfaces: true,
+  showSeenDetails: false,
+});
+
+
+// const props = defineProps({
+//   deviceId: { type: String, required: true },
+//   includeLinkToDetailsPage: { type: Boolean, required: false, default: false },
+//   showExtraDetails: { type: Boolean, required: false, default: false },
+//   showOldNetworks: { type: Boolean, required: false, default: false },
+//   showInactiveInterfaces: { type: Boolean, required: false, default: false },
+//   showSeenDetails: { type: Boolean, required: false, default: false },
+// })
 
 let polling: undefined | NodeJS.Timeout;
 var isRescanning: Ref<boolean> = ref(false);
@@ -41,7 +62,9 @@ function localNetworkAddresses(): string[] {
 }
 
 function doFetches() {
-  store.fetchDevice(props.deviceId);
+  if (!props.device) {
+    store.fetchDevice(props.deviceId as string);
+  }
   if (currentDevice.value) {
     store.fetchNetworks(Object.keys(currentDevice.value.attachedNetworks));
     if (currentDevice.value.aggregatesIrreversibly != null) {
@@ -71,15 +94,17 @@ onUnmounted(() => {
 async function rescanSelectedDevice(): Promise<void> {
   isRescanning.value = true;
   try {
-    await rescanDevice(props.deviceId);
-    store.fetchDevice(props.deviceId);
+    if (currentDevice?.value) {
+      await rescanDevice(currentDevice.value.id);
+      store.fetchDevice(currentDevice.value.id);
+    }
   } finally {
     isRescanning.value = false;
   }
 }
 
 const currentDevice = computed<IDevice | undefined>(
-  () => store.getDevice(props.deviceId)
+  () => props.device ?? store.getDevice(props.deviceId as string)
 )
 
 function SortDeviceIDsByMostRecentFirst_(ids: Array<string>): Array<string> {

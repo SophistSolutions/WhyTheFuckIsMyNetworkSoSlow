@@ -1,5 +1,3 @@
-Device details component should take id or value - as we did for network component
-----
 	For Device and Network and NetworkInterface (if that makes sense) add section (in debug only) to display user settings.
 ----
 	FIX PLURALS EVERYWHERE IN GUI TO USE PluralizeNoun() function
