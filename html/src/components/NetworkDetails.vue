@@ -10,14 +10,12 @@ import JsonViewer from 'vue-json-viewer';
 import moment from 'moment';
 
 import { IDevice } from '../models/device/IDevice';
-import { INetworkInterface } from '../models/network/INetworkInterface';
 
 import {
   FormatLocation,
   GetDeviceIDsInNetwork,
   GetDevicesForNetworkLink,
   GetNetworkCIDRs,
-  GetNetworkName,
   FormatIDateTimeRange,
 } from '../models/network/Utils';
 
