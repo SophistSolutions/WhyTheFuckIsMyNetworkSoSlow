@@ -170,7 +170,7 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
     </div>
     <div class="row">
       <div class="col-3">ID</div>
-      <div class="col"> {{ currentDevice.id }} <span class="snapshot"
+      <div class="col"><ReadOnlyTextWithHover :message="currentDevice.id" :link="props.includeLinkToDetailsPage? `/#/device/${currentDevice.id}` : undefined" /> <span class="snapshot"
           v-if="currentDevice.aggregatedBy">{snapshot}</span>
           <Link2DetailsPage :link="'/#/device/' + currentDevice.id" v-if="props.includeLinkToDetailsPage"
        />

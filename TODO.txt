@@ -1,8 +1,8 @@
-in device attached network interface section, sort by active first, and recent secondary sort characterisitic
-
-----
 fix in html display of 'daterange' summary for aggregated network interfaces (and maybe 
 other stuff - refactoring)
+	(see all our code that prints 'date ranges' uses new FormatDateRange procedure) - ITHINK thats all this means
+
+	
 ----
 Device details component should take id or value - as we did for network component
 ----
