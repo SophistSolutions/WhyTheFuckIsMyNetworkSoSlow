@@ -84,12 +84,14 @@ var addHeaderSectionBugWorkaround = ref(false);
 
 var showOldNetworks = ref(false)
 var showInactiveInterfaces = ref(false)
+var showSeenDetails = ref (false)
 </script>
 
 <template>
   <Teleport to="#CHILD_HEADER_SECTION" v-if="addHeaderSectionBugWorkaround">
     <q-checkbox dense v-model="showOldNetworks" label="Show Old Networks" />
     <q-checkbox dense v-model="showInactiveInterfaces" label="Show Inactive Network Interfaces" />
+    <q-checkbox dense v-model="showSeenDetails" label="Show Seen Details" />
   </Teleport>
   <q-page padding class=" justify-center row">
     <q-card class="pageCard col-11">
@@ -99,7 +101,8 @@ var showInactiveInterfaces = ref(false)
       <q-card-section>
         <DeviceDetails v-if="device" :deviceId="device.id" :showExtraDetails="true"
           :showOldNetworks="showOldNetworks"
-          :showInactiveInterfaces="showInactiveInterfaces" />
+          :showInactiveInterfaces="showInactiveInterfaces" 
+          :showSeenDetails="showSeenDetails"/>
       </q-card-section>
     </q-card>
   </q-page>

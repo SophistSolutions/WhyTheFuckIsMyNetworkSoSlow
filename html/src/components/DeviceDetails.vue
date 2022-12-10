@@ -24,6 +24,7 @@ const props = defineProps({
   showExtraDetails: { type: Boolean, required: false, default: false },
   showOldNetworks: { type: Boolean, required: false, default: false },
   showInactiveInterfaces: { type: Boolean, required: false, default: false },
+  showSeenDetails: { type: Boolean, required: false, default: false },
 })
 
 let polling: undefined | NodeJS.Timeout;
@@ -206,12 +207,12 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
 
       <div class="col">
         <div class="row" v-for=" [seenType, seenRange] in Object.entries(currentDevice.seen)" v-bind:key="seenType">
-          <div class="col no-wrap truncateWithElipsis" style="min-width: 18em; max-width: 24em">
+          <div v-if="props.showSeenDetails || seenType == 'Ever'" class="col no-wrap truncateWithElipsis" style="min-width: 18em; max-width: 24em">
             <ReadOnlyTextWithHover
               :message="moment(seenRange.lowerBound).fromNow() + ' up until ' + moment(seenRange.upperBound).fromNow()"
               class="nowrap" />
           </div>
-          <div class="col no-wrap truncateWithElipsis"><span v-if="seenType != 'Ever'">via</span> {{ seenType }}</div>
+          <div v-if="props.showSeenDetails " class="col no-wrap truncateWithElipsis"><span v-if="seenType != 'Ever'">via</span> {{ seenType }}</div>
         </div>
       </div>
     </div>
@@ -223,7 +224,7 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
           <div class="col" v-if="
             props.showOldNetworks ||
             (attachedNet.seen?.upperBound && DateTime.fromJSDate(attachedNet.seen?.upperBound).diffNow('minutes').minutes >
-            -10)
+              -10)
           ">
             <div class="row">
               <div class="col no-wrap truncateWithElipsis">
@@ -289,17 +290,20 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
         <span v-if="currentDevice.openPorts">{{ currentDevice.openPorts.join(", ") }}</span>
       </div>
     </div>
-    <div class="row" v-if="(currentDevice.aggregatesReversibly && currentDevice.aggregatesReversibly.length) || (currentDevice.aggregatesIrreversibly && currentDevice.aggregatesIrreversibly.length)">
+    <div class="row"
+      v-if="(currentDevice.aggregatesReversibly && currentDevice.aggregatesReversibly.length) || (currentDevice.aggregatesIrreversibly && currentDevice.aggregatesIrreversibly.length)">
       <div class="col-3">Aggregates</div>
       <div class="col">
-        <div class="row wrap" v-if="currentDevice.aggregatesReversibly && currentDevice.aggregatesReversibly.length"><span
-            v-for="aggregate in SortDeviceIDsByMostRecentFirst_(currentDevice.aggregatesReversibly)"
+        <div class="row wrap" v-if="currentDevice.aggregatesReversibly && currentDevice.aggregatesReversibly.length">
+          <span v-for="aggregate in SortDeviceIDsByMostRecentFirst_(currentDevice.aggregatesReversibly)"
             v-bind:key="aggregate" class="aggregatesItem">
             <ReadOnlyTextWithHover :message="GetSubDeviceDisplay_(aggregate, true)"
               :popup-title="GetSubDeviceDisplay_(aggregate, false)" :link="'/#/device/' + aggregate" />;&nbsp;
-          </span></div>
-          <!--not supported yet, and nothing much to see here so generally won't bother listing except in details mode-->
-          <div class="row wrap" v-if="currentDevice.aggregatesIrreversibly && currentDevice.aggregatesIrreversibly.length"><span
+          </span>
+        </div>
+        <!--not supported yet, and nothing much to see here so generally won't bother listing except in details mode-->
+        <div class="row wrap"
+          v-if="currentDevice.aggregatesIrreversibly && currentDevice.aggregatesIrreversibly.length"><span
             v-for="aggregate in SortDeviceIDsByMostRecentFirst_(currentDevice.aggregatesIrreversibly)"
             v-bind:key="aggregate" class="aggregatesItem">
             <ReadOnlyTextWithHover :message="GetSubDeviceDisplay_(aggregate, true)"
@@ -310,7 +314,8 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
     <div class="row" v-if="currentDevice.attachedNetworkInterfaces && props.showExtraDetails">
       <div class="col-3">Attached Network Interfaces</div>
       <div class="col">
-        <NetworkInterfacesDetails :network-interface-ids="currentDevice.attachedNetworkInterfaces" :showInactiveInterfaces="props.showInactiveInterfaces" />
+        <NetworkInterfacesDetails :network-interface-ids="currentDevice.attachedNetworkInterfaces"
+          :showInactiveInterfaces="props.showInactiveInterfaces" />
       </div>
     </div>
     <div class="row" v-if="currentDevice.debugProps && props.showExtraDetails">
