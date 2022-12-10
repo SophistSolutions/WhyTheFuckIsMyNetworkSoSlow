@@ -1,7 +1,3 @@
-in device details page, add FILTER on top, and option to only list active networks (checkbox only active networks)
-
----
-
 in device attached network interface section, sort by active first, and recent secondary sort characterisitic
 
 ----
