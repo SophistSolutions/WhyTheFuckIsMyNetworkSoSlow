@@ -1,9 +1,3 @@
-fix in html display of 'daterange' summary for aggregated network interfaces (and maybe 
-other stuff - refactoring)
-	(see all our code that prints 'date ranges' uses new FormatDateRange procedure) - ITHINK thats all this means
-
-	
-----
 Device details component should take id or value - as we did for network component
 ----
 	For Device and Network and NetworkInterface (if that makes sense) add section (in debug only) to display user settings.

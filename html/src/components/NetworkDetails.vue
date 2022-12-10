@@ -143,8 +143,7 @@ function GetSubNetworkDisplay_(id: string, summaryOnly: boolean): string {
     <div class="row" v-if="currentNetwork.seen">
       <div class="col-3">Seen</div>
       <div class="col">
-        {{ moment(currentNetwork.seen.lowerBound).fromNow() }} up until
-        {{ moment(currentNetwork.seen.upperBound).fromNow() }}
+      {{FormatIDateTimeRange(currentNetwork.seen)}}
       </div>
     </div>
     <div class="row">

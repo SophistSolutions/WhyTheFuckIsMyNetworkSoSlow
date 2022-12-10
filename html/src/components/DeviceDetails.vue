@@ -6,7 +6,7 @@ import JsonViewer from 'vue-json-viewer';
 
 import { IDevice, INetworkAttachmentInfo } from "../models/device/IDevice";
 import { ComputeServiceTypeIconURL } from "../models/device/Utils";
-import { GetNetworkLink, GetNetworkName, GetServices, SortNetworks, FormatIDateTimeRange } from "../models/network/Utils";
+import { GetNetworkLink, GetNetworkName, GetServices, SortNetworks, FormatIDateTimeRange, FormatSeenMap } from "../models/network/Utils";
 import { rescanDevice } from "../proxy/API";
 
 import ReadOnlyTextWithHover from '../components/ReadOnlyTextWithHover.vue';
@@ -99,25 +99,20 @@ function SortDeviceIDsByMostRecentFirst_(ids: Array<string>): Array<string> {
 }
 
 function GetSubDeviceDisplay_(id: string, summaryOnly: boolean): string {
-  let r = store.getDevice(id);
-  let shortEverText: string | null = null;
-  let longEverText: string | null = null;
-  if (r != null) {
-    if (r && r.seen && r.seen['Ever']) {
-      const seenRange = r.seen.Ever;
-      if (seenRange.upperBound) {
-        shortEverText = moment(seenRange.upperBound).fromNow();
+  let result: string = "";
+  {
+    let r = store.getDevice(id);
+    if (r) {
+      const seenText = FormatSeenMap(r.seen, summaryOnly);
+      if (seenText) {
+        result += seenText;
       }
-      longEverText = moment(seenRange.lowerBound).fromNow() + ' up until ' + (shortEverText ?? "?");
     }
   }
-  if (summaryOnly && shortEverText != null) {
-    return shortEverText;
+  if (result.length == 0 || !summaryOnly) {
+    result += "; ID: " + id;
   }
-  if (longEverText == null) {
-    return id;
-  }
-  return longEverText + "; ID: " + id;
+  return result;
 }
 
 
@@ -170,11 +165,12 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
     </div>
     <div class="row">
       <div class="col-3">ID</div>
-      <div class="col"><ReadOnlyTextWithHover :message="currentDevice.id" :link="props.includeLinkToDetailsPage? `/#/device/${currentDevice.id}` : undefined" /> <span class="snapshot"
+      <div class="col">
+        <ReadOnlyTextWithHover :message="currentDevice.id"
+          :link="props.includeLinkToDetailsPage ? `/#/device/${currentDevice.id}` : undefined" /> <span class="snapshot"
           v-if="currentDevice.aggregatedBy">{snapshot}</span>
-          <Link2DetailsPage :link="'/#/device/' + currentDevice.id" v-if="props.includeLinkToDetailsPage"
-       />
-          </div>
+        <Link2DetailsPage :link="'/#/device/' + currentDevice.id" v-if="props.includeLinkToDetailsPage" />
+      </div>
     </div>
     <div class="row" v-if="currentDevice.type">
       <div class="col-3">Types</div>
@@ -208,12 +204,12 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
 
       <div class="col">
         <div class="row" v-for=" [seenType, seenRange] in Object.entries(currentDevice.seen)" v-bind:key="seenType">
-          <div v-if="props.showSeenDetails || seenType == 'Ever'" class="col no-wrap truncateWithElipsis" style="min-width: 18em; max-width: 24em">
-            <ReadOnlyTextWithHover
-              :message="moment(seenRange.lowerBound).fromNow() + ' up until ' + moment(seenRange.upperBound).fromNow()"
-              class="nowrap" />
+          <div v-if="props.showSeenDetails || seenType == 'Ever'" class="col no-wrap truncateWithElipsis"
+            style="min-width: 18em; max-width: 24em">
+            <ReadOnlyTextWithHover :message="FormatIDateTimeRange(seenRange) ?? ''" class="nowrap" />
           </div>
-          <div v-if="props.showSeenDetails " class="col no-wrap truncateWithElipsis"><span v-if="seenType != 'Ever'">via</span> {{ seenType }}</div>
+          <div v-if="props.showSeenDetails" class="col no-wrap truncateWithElipsis"><span
+              v-if="seenType != 'Ever'">via</span> {{ seenType }}</div>
         </div>
       </div>
     </div>
