@@ -72,6 +72,11 @@ function jsonPatch2IDevice_(d: IDevice) {
   if (d.names && d.names.length >= 1) {
     d.name = d.names[0].name;
   }
+  else {
+    d.name = "";  // So we don't fail later - can assume d.name valid string (but should debug any data where we get this)
+    // @tod only log if Vue.config.devtools???
+    console.log (`got bad device record with no names, and id=${d.id}`);
+  }
   // Compute the seen.Ever 'virtual field'
   if (d.seen) {
     let mn: Date | undefined;
