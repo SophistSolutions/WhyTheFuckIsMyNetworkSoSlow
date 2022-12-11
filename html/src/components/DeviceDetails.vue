@@ -1,24 +1,30 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, Ref, ref, computed } from 'vue';
-import moment from 'moment';
+import { onMounted, onUnmounted, Ref, ref, computed } from "vue";
+import moment from "moment";
 import { DateTime } from "luxon";
-import JsonViewer from 'vue-json-viewer';
+import JsonViewer from "vue-json-viewer";
+import { PluralizeNoun } from "src/utils/Linguistics";
 
 import { IDevice, INetworkAttachmentInfo } from "../models/device/IDevice";
 import { ComputeServiceTypeIconURL } from "../models/device/Utils";
-import { GetNetworkLink, GetNetworkName, GetServices, SortNetworks, FormatIDateTimeRange, FormatSeenMap } from "../models/network/Utils";
+import {
+  GetNetworkLink,
+  GetNetworkName,
+  GetServices,
+  SortNetworks,
+  FormatIDateTimeRange,
+  FormatSeenMap,
+} from "../models/network/Utils";
 import { rescanDevice } from "../proxy/API";
 
-import ReadOnlyTextWithHover from '../components/ReadOnlyTextWithHover.vue';
-import Link2DetailsPage from '../components/Link2DetailsPage.vue';
-import NetworkInterfacesDetails from '../components/NetworkInterfacesDetails.vue';
+import ReadOnlyTextWithHover from "../components/ReadOnlyTextWithHover.vue";
+import Link2DetailsPage from "../components/Link2DetailsPage.vue";
+import NetworkInterfacesDetails from "../components/NetworkInterfacesDetails.vue";
 
-import { useNetStateStore } from '../stores/Net-State-store'
-import { INetwork } from 'src/models/network/INetwork';
+import { useNetStateStore } from "../stores/Net-State-store";
+import { INetwork } from "src/models/network/INetwork";
 
-const store = useNetStateStore()
-
-
+const store = useNetStateStore();
 
 interface Props {
   // EITHER device or deviceId - EXCLUSIVE and ONE required
@@ -37,7 +43,6 @@ const props = withDefaults(defineProps<Props>(), {
   showInactiveInterfaces: true,
   showSeenDetails: false,
 });
-
 
 // const props = defineProps({
 //   deviceId: { type: String, required: true },
@@ -67,14 +72,11 @@ function doFetches() {
   }
   if (currentDevice.value) {
     store.fetchNetworks(Object.keys(currentDevice.value.attachedNetworks));
-    if (currentDevice.value.aggregatesIrreversibly != null) {
-      store.fetchDevices(currentDevice.value.aggregatesIrreversibly);
-    }
     if (currentDevice.value.aggregatesReversibly != null) {
       store.fetchDevices(currentDevice.value.aggregatesReversibly);
     }
   }
-};
+}
 
 onMounted(() => {
   doFetches();
@@ -85,11 +87,11 @@ onMounted(() => {
   polling = setInterval(() => {
     doFetches();
   }, 15 * 1000);
-})
+});
 
 onUnmounted(() => {
   clearInterval(polling);
-})
+});
 
 async function rescanSelectedDevice(): Promise<void> {
   isRescanning.value = true;
@@ -105,10 +107,10 @@ async function rescanSelectedDevice(): Promise<void> {
 
 const currentDevice = computed<IDevice | undefined>(
   () => props.device ?? store.getDevice(props.deviceId as string)
-)
+);
 
 function SortDeviceIDsByMostRecentFirst_(ids: Array<string>): Array<string> {
-  let r: Array<string> = ids.filter(x => true);
+  let r: Array<string> = ids.filter((x) => true);
   r.sort((l, r) => {
     let lSeen = store.getDevice(l)?.seen?.Ever;
     let rSeen = store.getDevice(r)?.seen?.Ever;
@@ -140,144 +142,212 @@ function GetSubDeviceDisplay_(id: string, summaryOnly: boolean): string {
   return result;
 }
 
-
 interface IExtendedDevice extends IDevice {
   localAddresses: string;
   attachedNetworks: any;
   attachedFullNetworkObjects: INetwork[];
 }
 
-let currentDeviceDetails = computed<IExtendedDevice | undefined>(
-  () => {
-    if (currentDevice.value) {
-      let attachedFullNetworkObjects = [] as INetwork[];
-      let attachedNetworkInfo = {} as { [key: string]: object };
-      Object.keys(currentDevice.value.attachedNetworks).forEach((element: any) => {
-        const thisNWI = currentDevice.value.attachedNetworks[element] as INetworkAttachmentInfo;
-        let netName = "?";
-        const thisNetObj: INetwork = store.getNetwork(element);
-        if (thisNetObj) {
-          netName = GetNetworkName(thisNetObj);
-          attachedFullNetworkObjects.push(thisNetObj);
-        }
-        attachedNetworkInfo[element] = { ...thisNWI, name: netName };
-      });
-      attachedFullNetworkObjects = SortNetworks(attachedFullNetworkObjects)
-      return {
-        ...currentDevice.value,
-        ...{
-          localAddresses: localNetworkAddresses().join(", "),
-          attachedNetworks: attachedNetworkInfo,
-          attachedFullNetworkObjects: attachedFullNetworkObjects
-        },
-      };
-    }
-    return undefined;
+let currentDeviceDetails = computed<IExtendedDevice | undefined>(() => {
+  if (currentDevice.value) {
+    let attachedFullNetworkObjects = [] as INetwork[];
+    let attachedNetworkInfo = {} as { [key: string]: object };
+    Object.keys(currentDevice.value.attachedNetworks).forEach((element: any) => {
+      const thisNWI = currentDevice.value.attachedNetworks[
+        element
+      ] as INetworkAttachmentInfo;
+      let netName = "?";
+      const thisNetObj: INetwork = store.getNetwork(element);
+      if (thisNetObj) {
+        netName = GetNetworkName(thisNetObj);
+        attachedFullNetworkObjects.push(thisNetObj);
+      }
+      attachedNetworkInfo[element] = { ...thisNWI, name: netName };
+    });
+    attachedFullNetworkObjects = SortNetworks(attachedFullNetworkObjects);
+    return {
+      ...currentDevice.value,
+      ...{
+        localAddresses: localNetworkAddresses().join(", "),
+        attachedNetworks: attachedNetworkInfo,
+        attachedFullNetworkObjects: attachedFullNetworkObjects,
+      },
+    };
   }
-)
+  return undefined;
+});
+
+const aliases = computed<string[] | undefined>(() => {
+  // priority 0 names are all terrible - basically IP addresses
+  return currentDevice.value?.names
+    ?.filter((m) => m.priority > 1)
+    .map((m) => m.name)
+    .slice(1);
+});
 </script>
 
 <template>
   <div v-if="currentDevice" class="q-pa-sm">
     <div class="row">
       <div class="col-3">Name</div>
-      <div class="col"> {{ currentDevice.name }} </div>
+      <div class="col">{{ currentDevice.name }}</div>
     </div>
-    <div class="row" v-if="currentDevice.names.filter(m => m.priority > 1).length > 1">
-      <div class="col-3">Aliases</div>
-      <div class="col"> {{ currentDevice.names.filter(m => m.priority > 1).map(m => m.name).slice(1).join(", ") }}
-      </div>
+    <div class="row" v-if="aliases && aliases.length >= 1">
+      <div class="col-3">{{ PluralizeNoun("Alias", aliases.length) }}</div>
+      <div class="col">{{ aliases.join(", ") }}</div>
     </div>
     <div class="row">
       <div class="col-3">ID</div>
       <div class="col">
-        <ReadOnlyTextWithHover :message="currentDevice.id"
-          :link="props.includeLinkToDetailsPage ? `/#/device/${currentDevice.id}` : undefined" /> <span class="snapshot"
-          v-if="currentDevice.aggregatedBy">{snapshot}</span>
-        <Link2DetailsPage :link="'/#/device/' + currentDevice.id" v-if="props.includeLinkToDetailsPage" />
+        <ReadOnlyTextWithHover
+          :message="currentDevice.id"
+          :link="
+            props.includeLinkToDetailsPage ? `/#/device/${currentDevice.id}` : undefined
+          "
+        />
+        <span class="snapshot" v-if="currentDevice.aggregatedBy">{snapshot}</span>
+        <Link2DetailsPage
+          :link="'/#/device/' + currentDevice.id"
+          v-if="props.includeLinkToDetailsPage"
+        />
       </div>
     </div>
     <div class="row" v-if="currentDevice.type">
-      <div class="col-3">Types</div>
-      <div class="col"> {{ currentDevice.type.join(", ") }}</div>
+      <div class="col-3">{{ PluralizeNoun("Type", currentDevice.type.length) }}</div>
+      <div class="col">{{ currentDevice.type.join(", ") }}</div>
     </div>
     <div class="row" v-if="currentDevice.icon">
       <div class="col-3">Icon</div>
-      <div class="col"> <img :src="currentDevice.icon.toString()" width="24" height="24" /></div>
+      <div class="col">
+        <img :src="currentDevice.icon.toString()" width="24" height="24" />
+      </div>
     </div>
     <div class="row" v-if="currentDevice.manufacturer">
       <div class="col-3">Manufacturer</div>
       <div class="col">
-        <span v-if="currentDevice.manufacturer.shortName || currentDevice.manufacturer.fullName">{{
+        <span
+          v-if="
             currentDevice.manufacturer.shortName || currentDevice.manufacturer.fullName
-        }}</span>
+          "
+          >{{
+            currentDevice.manufacturer.shortName || currentDevice.manufacturer.fullName
+          }}</span
+        >
         <span v-if="currentDevice.manufacturer.webSiteURL">
-          <span v-if="currentDevice.manufacturer.shortName || currentDevice.manufacturer.fullName">; </span>
+          <span
+            v-if="
+              currentDevice.manufacturer.shortName || currentDevice.manufacturer.fullName
+            "
+            >;
+          </span>
           Link:
           <a :href="currentDevice.manufacturer.webSiteURL" target="_blank">{{
-              currentDevice.manufacturer.webSiteURL
+            currentDevice.manufacturer.webSiteURL
           }}</a>
         </span>
       </div>
     </div>
     <div class="row" v-if="currentDevice.operatingSystem">
       <div class="col-3">OS</div>
-      <div class="col"> {{ currentDevice.operatingSystem.fullVersionedName }}</div>
+      <div class="col">{{ currentDevice.operatingSystem.fullVersionedName }}</div>
     </div>
     <div class="row" v-if="currentDevice.seen">
       <div class="col-3">Seen</div>
 
       <div class="col">
-        <div class="row" v-for=" [seenType, seenRange] in Object.entries(currentDevice.seen)" v-bind:key="seenType">
-          <div v-if="props.showSeenDetails || seenType == 'Ever'" class="col no-wrap truncateWithElipsis"
-            style="min-width: 18em; max-width: 24em">
-            <ReadOnlyTextWithHover :message="FormatIDateTimeRange(seenRange) ?? ''" class="nowrap" />
+        <div
+          class="row"
+          v-for="[seenType, seenRange] in Object.entries(currentDevice.seen)"
+          v-bind:key="seenType"
+        >
+          <div
+            v-if="props.showSeenDetails || seenType == 'Ever'"
+            class="col no-wrap truncateWithElipsis"
+            style="min-width: 18em; max-width: 24em"
+          >
+            <ReadOnlyTextWithHover
+              :message="FormatIDateTimeRange(seenRange) ?? ''"
+              class="nowrap"
+            />
           </div>
-          <div v-if="props.showSeenDetails" class="col no-wrap truncateWithElipsis"><span
-              v-if="seenType != 'Ever'">via</span> {{ seenType }}</div>
+          <div v-if="props.showSeenDetails" class="col no-wrap truncateWithElipsis">
+            <span v-if="seenType != 'Ever'">via</span> {{ seenType }}
+          </div>
         </div>
       </div>
     </div>
     <div class="row" v-if="currentDevice.attachedNetworks && currentDeviceDetails">
-      <div class="col-3">Networks</div>
+      <div class="col-3">
+        {{
+          PluralizeNoun("Network", currentDeviceDetails.attachedFullNetworkObjects.length)
+        }}
+      </div>
       <div class="col">
-        <div class="row" v-for="attachedNet in currentDeviceDetails.attachedFullNetworkObjects"
-          v-bind:key="attachedNet.id">
-          <div class="col" v-if="
-            props.showOldNetworks ||
-            (attachedNet.seen?.upperBound && DateTime.fromJSDate(attachedNet.seen?.upperBound).diffNow('minutes').minutes >
-              -10)
-          ">
+        <div
+          class="row"
+          v-for="attachedNet in currentDeviceDetails.attachedFullNetworkObjects"
+          v-bind:key="attachedNet.id"
+        >
+          <div
+            class="col"
+            v-if="
+              props.showOldNetworks ||
+              (attachedNet.seen?.upperBound &&
+                DateTime.fromJSDate(attachedNet.seen?.upperBound).diffNow('minutes')
+                  .minutes > -10)
+            "
+          >
             <div class="row">
               <div class="col no-wrap truncateWithElipsis">
-                <ReadOnlyTextWithHover :message="GetNetworkName(attachedNet)" :popupTitle="
-                GetNetworkName(attachedNet) +
-                ' (' +
-                attachedNet.id +
-                ')'" :link="GetNetworkLink(attachedNet.id)" title="Network Name" />
+                <ReadOnlyTextWithHover
+                  :message="GetNetworkName(attachedNet)"
+                  :popupTitle="GetNetworkName(attachedNet) + ' (' + attachedNet.id + ')'"
+                  :link="GetNetworkLink(attachedNet.id)"
+                  title="Network Name"
+                />
               </div>
             </div>
-            <div class="row" v-if="currentDevice.attachedNetworks[attachedNet.id].hardwareAddresses">
+            <div
+              class="row"
+              v-if="currentDevice.attachedNetworks[attachedNet.id].hardwareAddresses"
+            >
               <div class="col-1" />
-              <div class="col no-wrap truncateWithElipsis">Hardware Address(es)</div>
+              <div class="col no-wrap truncateWithElipsis">{{PluralizeNoun("Hardware Address", currentDevice.attachedNetworks[attachedNet.id].hardwareAddresses.length)}}</div>
               <div class="col no-wrap truncateWithElipsis">
                 <ReadOnlyTextWithHover
-                  :message="currentDevice.attachedNetworks[attachedNet.id].hardwareAddresses.join(', ')" />
+                  :message="
+                    currentDevice.attachedNetworks[attachedNet.id].hardwareAddresses.join(
+                      ', '
+                    )
+                  "
+                />
               </div>
             </div>
-            <div class="row" v-if="currentDevice.attachedNetworks[attachedNet.id].localAddresses">
+            <div
+              class="row"
+              v-if="currentDevice.attachedNetworks[attachedNet.id].localAddresses"
+            >
               <div class="col-1" />
-              <div class="col no-wrap truncateWithElipsis">Network Address Binding(s)</div>
+              <div class="col no-wrap truncateWithElipsis">
+               {{ PluralizeNoun("Network Address Binding", currentDevice.attachedNetworks[attachedNet.id].localAddresses.length)}}
+              </div>
               <div class="col no-wrap truncateWithElipsis">
                 <ReadOnlyTextWithHover
-                  :message="currentDevice.attachedNetworks[attachedNet.id].localAddresses.join(', ')" />
+                  :message="
+                    currentDevice.attachedNetworks[attachedNet.id].localAddresses.join(
+                      ', '
+                    )
+                  "
+                />
               </div>
             </div>
             <div class="row" v-if="attachedNet.seen">
               <div class="col-1" />
               <div class="col no-wrap truncateWithElipsis">Seen</div>
               <div class="col no-wrap truncateWithElipsis">
-                <ReadOnlyTextWithHover :message="FormatIDateTimeRange(attachedNet.seen)" />
+                <ReadOnlyTextWithHover
+                  :message="FormatIDateTimeRange(attachedNet.seen)"
+                />
               </div>
             </div>
           </div>
@@ -285,19 +355,31 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
       </div>
     </div>
     <div class="row">
-      <div class="col-3">Services</div>
+      <div class="col-3">
+        {{ PluralizeNoun("Service", GetServices(currentDevice).length) }}
+      </div>
       <div class="col">
         <div class="row" v-for="svc in GetServices(currentDevice)" v-bind:key="svc.name">
           <div class="col-1">
-            <img v-if="ComputeServiceTypeIconURL(svc.name).url" :src="ComputeServiceTypeIconURL(svc.name).url"
-              height="20" width="20" />
+            <img
+              v-if="ComputeServiceTypeIconURL(svc.name).url"
+              :src="ComputeServiceTypeIconURL(svc.name).url"
+              height="20"
+              width="20"
+            />
           </div>
           <div class="col-1">{{ svc.name }}</div>
           <div class="col">
-            <div class="row wrap"> <a v-for="l in svc.links" v-bind:href="l.href" v-bind:key="l.href" class="list-items"
-                target="_blank">{{
-                    l.href
-                }}</a></div>
+            <div class="row wrap">
+              <a
+                v-for="l in svc.links"
+                v-bind:href="l.href"
+                v-bind:key="l.href"
+                class="list-items"
+                target="_blank"
+                >{{ l.href }}</a
+              >
+            </div>
           </div>
         </div>
       </div>
@@ -305,51 +387,119 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
     <div class="row">
       <div class="col-3">Open Ports</div>
       <div class="col">
-        <q-btn class="smallBtnMargin" elevation="2" dense size="sm" @click="rescanSelectedDevice"
-          v-if="!currentDevice.aggregatedBy" :disabled="isRescanning"> {{ isRescanning ? "**SCANNING**" :
-              "Rescan"
-          }} </q-btn>
-        <span v-if="currentDevice.openPorts">{{ currentDevice.openPorts.join(", ") }}</span>
+        <q-btn
+          class="smallBtnMargin"
+          elevation="2"
+          dense
+          size="sm"
+          @click="rescanSelectedDevice"
+          v-if="!currentDevice.aggregatedBy"
+          :disabled="isRescanning"
+        >
+          {{ isRescanning ? "**SCANNING**" : "Rescan" }}
+        </q-btn>
+        <span v-if="currentDevice.openPorts">{{
+          currentDevice.openPorts.join(", ")
+        }}</span>
       </div>
     </div>
-    <div class="row"
-      v-if="(currentDevice.aggregatesReversibly && currentDevice.aggregatesReversibly.length) || (currentDevice.aggregatesIrreversibly && currentDevice.aggregatesIrreversibly.length)">
+    <div
+      class="row"
+      v-if="
+        (currentDevice.aggregatesReversibly &&
+          currentDevice.aggregatesReversibly.length) ||
+        (currentDevice.aggregatesIrreversibly &&
+          currentDevice.aggregatesIrreversibly.length)
+      "
+    >
       <div class="col-3">Aggregates</div>
       <div class="col">
-        <div class="row wrap" v-if="currentDevice.aggregatesReversibly && currentDevice.aggregatesReversibly.length">
-          <span v-for="aggregate in SortDeviceIDsByMostRecentFirst_(currentDevice.aggregatesReversibly)"
-            v-bind:key="aggregate" class="aggregatesItem">
-            <ReadOnlyTextWithHover :message="GetSubDeviceDisplay_(aggregate, true)"
-              :popup-title="GetSubDeviceDisplay_(aggregate, false)" :link="'/#/device/' + aggregate" />;&nbsp;
+        <div
+          class="row wrap"
+          v-if="
+            currentDevice.aggregatesReversibly &&
+            currentDevice.aggregatesReversibly.length
+          "
+        >
+          <span
+            v-for="aggregate in SortDeviceIDsByMostRecentFirst_(
+              currentDevice.aggregatesReversibly
+            )"
+            v-bind:key="aggregate"
+            class="aggregatesItem"
+          >
+            <ReadOnlyTextWithHover
+              :message="GetSubDeviceDisplay_(aggregate, true)"
+              :popup-title="GetSubDeviceDisplay_(aggregate, false)"
+              :link="'/#/device/' + aggregate"
+            />;&nbsp;
           </span>
         </div>
         <!--not supported yet, and nothing much to see here so generally won't bother listing except in details mode-->
-        <div class="row wrap"
-          v-if="currentDevice.aggregatesIrreversibly && currentDevice.aggregatesIrreversibly.length"><span
-            v-for="aggregate in SortDeviceIDsByMostRecentFirst_(currentDevice.aggregatesIrreversibly)"
-            v-bind:key="aggregate" class="aggregatesItem">
-            <ReadOnlyTextWithHover :message="GetSubDeviceDisplay_(aggregate, true)"
-              :popup-title="GetSubDeviceDisplay_(aggregate, false)" />;&nbsp;
-          </span></div>
+        <div
+          class="row wrap"
+          v-if="
+            currentDevice.aggregatesIrreversibly &&
+            currentDevice.aggregatesIrreversibly.length &&
+            props.showExtraDetails
+          "
+        >
+          <span
+            v-for="aggregate in SortDeviceIDsByMostRecentFirst_(
+              currentDevice.aggregatesIrreversibly
+            )"
+            v-bind:key="aggregate"
+            class="aggregatesItem"
+          >
+            <ReadOnlyTextWithHover
+              :message="GetSubDeviceDisplay_(aggregate, true)"
+              :popup-title="GetSubDeviceDisplay_(aggregate, false)"
+            />;&nbsp;
+          </span>
+        </div>
       </div>
     </div>
-    <div class="row" v-if="currentDevice.attachedNetworkInterfaces && props.showExtraDetails">
-      <div class="col-3">Attached Network Interfaces</div>
+    <div
+      class="row"
+      v-if="currentDevice.attachedNetworkInterfaces && props.showExtraDetails"
+    >
+      <div class="col-3">
+        {{
+          PluralizeNoun(
+            "Attached Network Interface",
+            currentDevice.attachedNetworkInterfaces.length
+          )
+        }}
+      </div>
       <div class="col">
-        <NetworkInterfacesDetails :network-interface-ids="currentDevice.attachedNetworkInterfaces"
-          :showInactiveInterfaces="props.showInactiveInterfaces" />
+        <NetworkInterfacesDetails
+          :network-interface-ids="currentDevice.attachedNetworkInterfaces"
+          :showInactiveInterfaces="props.showInactiveInterfaces"
+        />
       </div>
     </div>
     <div class="row" v-if="currentDevice.userOverrides && props.showExtraDetails">
       <div class="col-3">USEROVERRIDES</div>
       <div class="col">
-        <json-viewer :value="currentDevice.userOverrides" :expand-depth="0" copyable sort class="debugInfoJSONViewers" />
+        <json-viewer
+          :value="currentDevice.userOverrides"
+          :expand-depth="0"
+          copyable
+          sort
+          class="debugInfoJSONViewers"
+        />
       </div>
     </div>
     <div class="row" v-if="currentDevice.debugProps && props.showExtraDetails">
       <div class="col-3">DEBUG INFO</div>
       <div class="col">
-        <json-viewer :value="currentDevice.debugProps" :expand-depth="0" copyable sort class="debugInfoJSONViewers" />
+        <json-viewer
+          :value="currentDevice.debugProps"
+          :expand-depth="0"
+          copyable
+          sort
+          class="debugInfoJSONViewers"
+        />
       </div>
     </div>
   </div>
@@ -370,6 +520,6 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
 }
 
 .aggregatesItem {
-  min-width: 10em
+  min-width: 10em;
 }
 </style>

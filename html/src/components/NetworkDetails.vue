@@ -97,6 +97,12 @@ function SortNetworkIDsByMostRecentFirst_(ids: Array<string>): Array<string> {
 function GetSubNetworkDisplay_(id: string, summaryOnly: boolean): string {
   return FormatIDateTimeRange (store.getNetwork(id)?.seen, summaryOnly) ?? id;
 }
+
+const aliases = computed<string[]|undefined>(
+  () => {
+    return currentNetwork.value?.names?.map(m => m.name).slice(1);
+  }
+)
 </script>
 
 <template>
@@ -112,23 +118,12 @@ function GetSubNetworkDisplay_(id: string, summaryOnly: boolean): string {
         }}
       </div>
     </div>
-    <div class="row" v-if="currentNetwork.names.filter((m) => m.priority > 1).length > 1">
+    <div class="row" v-if="aliases && aliases.length > 1">
       <div class="col-3">
-        {{
-            PluralizeNoun(
-              'Alias',
-              currentNetwork.names.filter((m) => m.priority > 1).length - 1
-            )
-        }}
+        {{PluralizeNoun( 'Alias',  aliases.length ) }}
       </div>
       <div class="col">
-        {{
-            currentNetwork.names
-              .filter((m) => m.priority > 1)
-              .map((m) => m.name)
-              .slice(1)
-              .join(', ')
-        }}
+        {{ aliases .join(', ') }}
       </div>
     </div>
     <div class="row">
@@ -214,12 +209,12 @@ function GetSubNetworkDisplay_(id: string, summaryOnly: boolean): string {
       <div class="col">{{ currentNetwork.DNSServers.join(', ') }}</div>
     </div>
     <div class="row" v-if="
-      currentNetwork.aggregatesReversibly &&
-      currentNetwork.aggregatesReversibly.length
+    (currentNetwork.aggregatesReversibly &&  currentNetwork.aggregatesReversibly.length) ||
+    (currentNetwork.aggregatesIrreversibly &&  currentNetwork.aggregatesIrreversibly.length) 
     ">
-      <div class="col-3">Aggregates Reversibly</div>
+      <div class="col-3">Aggregates</div>
       <div class="col">
-        <div class="row wrap">
+        <div class="row wrap" v-if="currentNetwork.aggregatesReversibly">
           <span v-for="aggregate in SortNetworkIDsByMostRecentFirst_(
             currentNetwork.aggregatesReversibly
           )" v-bind:key="aggregate" class="aggregatesItem">
@@ -227,15 +222,8 @@ function GetSubNetworkDisplay_(id: string, summaryOnly: boolean): string {
               :popup-title="GetSubNetworkDisplay_(aggregate, false)" :link="'/#/network/' + aggregate" />;&nbsp;
           </span>
         </div>
-      </div>
-    </div>
-    <div class="row" v-if="
-      currentNetwork.aggregatesIrreversibly &&
-      currentNetwork.aggregatesIrreversibly.length
-    ">
-      <div class="col-3">Aggregates Irreversibly</div>
-      <div class="col">
-        <div class="row wrap">
+        <!--not supported yet, and nothing much to see here so generally won't bother listing except in details mode-->
+        <div class="row wrap" v-if="currentNetwork.aggregatesIrreversibly && props.showExtraDetails">
           <span v-for="aggregate in SortNetworkIDsByMostRecentFirst_(
             currentNetwork.aggregatesIrreversibly
           )" v-bind:key="aggregate" class="aggregatesItem">

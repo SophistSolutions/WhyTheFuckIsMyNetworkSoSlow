@@ -1,4 +1,5 @@
-	FIX PLURALS EVERYWHERE IN GUI TO USE PluralizeNoun() function
+Debug why churgeSt router icon missing
+
 ----
 restructure NEtwork and Device code to fetch by ID (not use recurse=true)
 ----
@@ -9,6 +10,11 @@ Look at fetch traffic. I think too much.
 	Once I restructure html code (maybe before) to separately fetch each network (and other object) by ID, I can 
 	redo teh atttachedNetworks field of a device to be JUST the ID, not a mapping of ID to a few interesting key values.
 
+----
+API server stops responding after a while on linux. NO - nevermind - just very slow. Took a minute to wakeup.
+and respond. Not sure what happened.
+
+device?recurse=truee took one minute on hercuels. Machine not even busy. Subsequent calls slow - but onl 7 seconds.
 --
 
 Support EDITING

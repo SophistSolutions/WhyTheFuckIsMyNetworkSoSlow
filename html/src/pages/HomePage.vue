@@ -4,6 +4,7 @@ import moment from 'moment';
 
 import { IDevice } from "../models/device/IDevice";
 import { INetwork } from "../models/network/INetwork";
+import { PluralizeNoun } from 'src/utils/Linguistics';
 import {
   GetDeviceIDsInNetwork,
   GetDevicesForNetworkLink,
@@ -139,7 +140,7 @@ let allDevices: ComputedRef<IDevice[]> = computed(() => store.getDevices);
                   </div>
                   <div>
                     : {{ GetDeviceIDsInNetwork(network.originalNetwork, allDevices).length }}
-                    <a :href="GetDevicesForNetworkLink(network.originalNetwork.id)">devices</a>
+                    <a :href="GetDevicesForNetworkLink(network.originalNetwork.id)">{{PluralizeNoun("device", GetDeviceIDsInNetwork(network.originalNetwork, allDevices).length)}}</a>
                     , operating normally
                   </div>
                 </li>
