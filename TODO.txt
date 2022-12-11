@@ -1,5 +1,3 @@
-	For Device and Network and NetworkInterface (if that makes sense) add section (in debug only) to display user settings.
-----
 	FIX PLURALS EVERYWHERE IN GUI TO USE PluralizeNoun() function
 ----
 restructure NEtwork and Device code to fetch by ID (not use recurse=true)
@@ -11,6 +9,13 @@ Look at fetch traffic. I think too much.
 	Once I restructure html code (maybe before) to separately fetch each network (and other object) by ID, I can 
 	redo teh atttachedNetworks field of a device to be JUST the ID, not a mapping of ID to a few interesting key values.
 
+--
+
+Support EDITING
+	+	Support RENAME device
+	+	Support RENAME network
+	+	Support add/remove aggregation rules for Device
+	+	Support add/remove aggregation rules for Network
 
 
 --------------------- GUI ABOVE and BACKEND directly below -----------------

@@ -340,6 +340,12 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(
           :showInactiveInterfaces="props.showInactiveInterfaces" />
       </div>
     </div>
+    <div class="row" v-if="currentDevice.userOverrides && props.showExtraDetails">
+      <div class="col-3">USEROVERRIDES</div>
+      <div class="col">
+        <json-viewer :value="currentDevice.userOverrides" :expand-depth="0" copyable sort class="debugInfoJSONViewers" />
+      </div>
+    </div>
     <div class="row" v-if="currentDevice.debugProps && props.showExtraDetails">
       <div class="col-3">DEBUG INFO</div>
       <div class="col">

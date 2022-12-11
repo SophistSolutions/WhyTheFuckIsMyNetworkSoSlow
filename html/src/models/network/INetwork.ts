@@ -2,6 +2,20 @@ import { IGeographicLocation } from '../network/IGeographicLocation';
 import { IInternetServiceProvider } from '../network/IInternetServiceProvider';
 import { IDateTimeRange } from '../common/IDateTimeRange';
 
+
+
+
+
+
+export interface IDevice_UserOverridesType {
+  name?: string;
+  tags?: string[];
+  notes?: string;
+  aggregateDevices?: string[];
+  aggregateDeviceHardwareAddresses?: string[];
+  aggregateGatewayHardwareAddresses?: string[];
+}
+
 export interface INetwork {
   id: string;
   aggregatedBy?: string;
@@ -18,5 +32,6 @@ export interface INetwork {
   networkAddresses: string[];
   names: { name: string; priority: number }[];
   seen?: IDateTimeRange;
+  userOverrides? :INetwork_UserOverridesType;
   debugProps?: object;
 }
