@@ -1,6 +1,3 @@
-Debug why churgeSt router icon missing
-
-----
 restructure NEtwork and Device code to fetch by ID (not use recurse=true)
 ----
 Look at fetch traffic. I think too much.
