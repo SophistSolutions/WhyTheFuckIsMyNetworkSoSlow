@@ -11,7 +11,6 @@ import {
   fetchAboutInfo,
   fetchDevice,
   fetchDevices,
-  fetchDevicesRecursive,
   fetchNetwork,
   fetchNetworkInterface,
   fetchNetworks,

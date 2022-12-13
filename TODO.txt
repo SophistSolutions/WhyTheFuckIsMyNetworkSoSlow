@@ -1,12 +1,24 @@
+see if I can simplify - no .then stuff - but async and try/catch - and see if that filteredExtendedDevices
+funny no throw error issue
+
+
 restructure NEtwork and Device code to fetch by ID (not use recurse=true)
+	https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/71
+
+
 ----
 Look at fetch traffic. I think too much.
+	-- hard - mostly wrong in chrome debugger - must look at my webservice logs...
 
 ---
 
 	Once I restructure html code (maybe before) to separately fetch each network (and other object) by ID, I can 
 	redo teh atttachedNetworks field of a device to be JUST the ID, not a mapping of ID to a few interesting key values.
 
+
+----
+	>	Do ServerSide filter/sort.
+	
 ----
 API server stops responding after a while on linux. NO - nevermind - just very slow. Took a minute to wakeup.
 and respond. Not sure what happened.
