@@ -1,10 +1,7 @@
-see if I can simplify - no .then stuff - but async and try/catch - and see if that filteredExtendedDevices
-funny no throw error issue
-
-
 restructure NEtwork and Device code to fetch by ID (not use recurse=true)
 	https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/71
 
+	(still todo lose remaining recurse=true calls)
 
 ----
 Look at fetch traffic. I think too much.

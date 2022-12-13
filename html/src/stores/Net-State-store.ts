@@ -13,7 +13,7 @@ import {
   fetchDevices,
   fetchNetwork,
   fetchNetworkInterface,
-  fetchNetworks,
+  fetchNetworks_Recurse,
 } from '../proxy/API';
 
 import {kCompileTimeConfiguration} from '../config/config';
@@ -101,7 +101,7 @@ export const useNetStateStore = defineStore('Net-State-Store', {
   },
   actions: {
     async fetchAvailableNetworks() {
-      const networks: INetwork[] = await fetchNetworks();
+      const networks: INetwork[] = await fetchNetworks_Recurse();
       this.rolledUpAvailableNetworkIDs = networks.map((x) => x.id);
       networks.forEach((x) => (this.networkDetails[x.id] = x));
     },

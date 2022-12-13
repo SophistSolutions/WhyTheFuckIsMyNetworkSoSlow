@@ -4,7 +4,6 @@ import { IDevice } from '../models/device/IDevice';
 import {
   ISortBy,
   SearchSpecification,
-  SortFieldEnum,
 } from '../models/device/SearchSpecification';
 import { IAbout } from '../models/IAbout';
 import { INetwork } from '../models/network/INetwork';
@@ -38,7 +37,27 @@ function throwIfError_(response: Response): Response {
   return response;
 }
 
-export async function fetchNetworks(): Promise<INetwork[]> {
+export async function fetchNetworks(): Promise<string[]> {
+  try {
+    const response: Response = await fetch(
+      `${gRuntimeConfiguration.API_ROOT}/api/v1/networks`,
+      kFetchOptions_
+    );
+    throwIfError_(response);
+    const data = await response.json()as string[];
+    // should validate array of strings (using json schema)
+    if (!Array.isArray(data)) {
+      throw new Error('Server Data Format Error');
+    }
+    return data;
+  } catch (e) {
+    Logger.error(e);
+    throw e;
+  }
+}
+
+
+export async function fetchNetworks_Recurse(): Promise<INetwork[]> {
   try {
     const response: Response = await fetch(
       `${gRuntimeConfiguration.API_ROOT}/api/v1/networks?recurse=true`,
@@ -46,9 +65,9 @@ export async function fetchNetworks(): Promise<INetwork[]> {
     );
     throwIfError_(response);
     const data = await response.json()as INetwork[];
-    // should validate array
+    // should validate array (using json schema)
     if (!Array.isArray(data)) {
-      throw new Error('Server Error');
+      throw new Error('Server Data Format Error');
     }
     data.forEach((e: INetwork) => {
       jsonPatch2INetwork_(e);
@@ -129,9 +148,9 @@ export async function fetchNetwork(id: string): Promise<INetwork> {
     );
     throwIfError_(response);
     const data = await response.json() as INetwork;
-    // Could enhance validation
+    // Could enhance validation (using json schema)
     if (typeof data !== 'object') {
-      throw new Error('Server Error');
+      throw new Error('Server Data Format Error');
     }
     jsonPatch2INetwork_(data);
     return data;
@@ -142,15 +161,15 @@ export async function fetchNetwork(id: string): Promise<INetwork> {
 }
 
 export async function fetchAllActiveNetworkInterfaces(): Promise<
-  INetworkInterface[]
+  string[]
 > {
   try {
     const response: Response = await fetch(
-      `${gRuntimeConfiguration.API_ROOT}/api/v1/network-interfaces?recurse=true`,
+      `${gRuntimeConfiguration.API_ROOT}/api/v1/network-interfaces`,
       kFetchOptions_
     );
     throwIfError_(response);
-    const data = await response.json() as INetworkInterface[];
+    const data = await response.json() as string[];
     return data;
   } catch (e) {
     Logger.error(e);
@@ -168,9 +187,9 @@ export async function fetchNetworkInterface(
     );
     throwIfError_(response);
     const data = await response.json() as INetworkInterface;  
-    // Could enhance validation
+    // Could enhance validation (using json schema)
     if (typeof data !== 'object') {
-      throw new Error('Server Error');
+      throw new Error('Server Data Format Error');
     }
     return data;
   } catch (e) {
@@ -217,9 +236,9 @@ export async function fetchDevices(
     const response: Response = await fetch(url, kFetchOptions_);
     throwIfError_(response);
     const data = await response.json();
-    // should validate array of strings
+    // should validate array of strings (using json schema)
     if (!Array.isArray(data)) {
-      throw new Error('Server Error');
+      throw new Error('Server Data Format Error');
     }
     return data;
   } catch (e) {
