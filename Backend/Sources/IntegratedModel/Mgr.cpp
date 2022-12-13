@@ -670,7 +670,7 @@ namespace {
                             };
                             auto all = fDeviceTableConnection_->GetAll (errorHandler);
                             if constexpr (qDebug) {
-                                all.Apply ([] (const Model::Device& d) { Assert (!d.fUserOverrides); }); // tracked on rollup devices, not snapshot devices
+                                all.Apply ([] ([[maybe_unused]]const Model::Device& d) { Assert (!d.fUserOverrides); }); // tracked on rollup devices, not snapshot devices
                             }
                             deviceSnapshotsLoaded = static_cast<unsigned int> (all.size ());
                             fDBDevices_.store (DeviceKeyedCollection_{all}); // pre-load in memory copy with whatever we had stored in the database
@@ -1679,7 +1679,15 @@ optional<IntegratedModel::Device> IntegratedModel::Mgr::GetDevice (const GUID& i
     auto result             = devicesRollupCache.GetDevices ().Lookup (id);
     if (result) {
         if (ttl != nullptr) {
-            *ttl = kTTLForRollupsReturned_;
+            bool justStarted = Time::GetTickCount () < 60;  // if just started, this trick of looking at EverSeen() doesn't work (cuz maybe just not discovered yet)
+            auto everSeen = result->fSeen.EverSeen ();
+            // This isn't a super-reliable way to check - find a better more reliable way to set the ttl
+            if (not justStarted and everSeen and everSeen->GetUpperBound () + 15min < DateTime::Now ()) {
+                *ttl = 2min;
+            }
+            else {
+                *ttl = kTTLForRollupsReturned_;
+            }
         }
     }
     else {
