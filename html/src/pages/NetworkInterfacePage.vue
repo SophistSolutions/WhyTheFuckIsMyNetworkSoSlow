@@ -58,7 +58,6 @@ let networkInterfaceSeen: ComputedRef<object | undefined> = computed(() => {
 
 function doFetches() {
   store.fetchNetworkInterfaces([route.params.id as string]);
-  console.log("owningDeviceID.value=", owningDeviceID.value);
   if (owningDeviceID.value) {
     store.fetchDevice(owningDeviceID.value);
   }

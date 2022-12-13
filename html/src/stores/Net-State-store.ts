@@ -6,16 +6,19 @@ import { INetworkInterface } from '../models/network/INetworkInterface';
 import { IDevice } from '../models/device/IDevice';
 import { ISortBy } from '../models/device/SearchSpecification';
 import { IAbout } from '../models/IAbout';
+import { Equals } from '../utils/Objects';
 import {
   fetchAboutInfo,
   fetchDevice,
   fetchDevices,
+  fetchDevicesRecursive,
   fetchNetwork,
   fetchNetworkInterface,
   fetchNetworks,
 } from '../proxy/API';
 
-const debug = process.env.NODE_ENV !== 'production';
+import {kCompileTimeConfiguration} from '../config/config';
+
 
 // @todo perhaps add in 'lasttimerequested' and 'lastTimeSuccessfulResponse' and throttle/dont request
 // (not sure where in model) if outtsanding requests etc) and maybe show in UI if data stale
@@ -38,7 +41,7 @@ export const useNetStateStore = defineStore('Net-State-Store', {
     } as ILoading,
     networkInterfaces: {} as { [key: string]: INetworkInterface },
     selectedNetworkId: {} as string,
-    rolledUpDeviceIDs: [] as string[],
+    rolledUpDeviceIDs: new Set() as Set<string>,
     // cache of objects, some of which maybe primary devices (rollups) and some maybe details
     deviceDetails: {} as { [key: string]: IDevice },
     devicesLoading: {
@@ -77,7 +80,10 @@ export const useNetStateStore = defineStore('Net-State-Store', {
           }, {});
     },
     getDevices: (state) => {
-      return state.rolledUpDeviceIDs.map((di) => state.deviceDetails[di]);
+      return [...state.rolledUpDeviceIDs].map((di) => state.deviceDetails[di]);
+    },
+    getNonNullDevices: (state) => {
+      return [...state.rolledUpDeviceIDs].map((di) => state.deviceDetails[di]).filter ((di) => di != null);
     },
     getDevice: (state) => {
       return (id: string) => state.deviceDetails[id];
@@ -124,12 +130,21 @@ export const useNetStateStore = defineStore('Net-State-Store', {
       }
       this.loadingNetworks.numberOfOutstandingLoadRequests++;
       try {
-        ids.forEach(
-          async (id) => (this.networkDetails[id] = await fetchNetwork(id))
-        );
+        ids.forEach( async (id) =>await this.fetchNetwork(id) );
         this.loadingNetworks.numberOfTimesLoaded++;
       } finally {
         this.loadingNetworks.numberOfOutstandingLoadRequests--;
+      }
+    },
+    async fetchNetwork(id: string) {
+      // Suprising and disapointing that Equals optimization helps so much
+      // I would have expected Pinia to do this check
+      const r = await fetchNetwork(id);
+      if (!Equals (r, this.networkDetails[id])) {
+        if (kCompileTimeConfiguration.DEBUG_MODE) {
+          console.log("new network value: id=", r.id)
+        }
+        this.networkDetails[id] = r;
       }
     },
     async fetchAboutInfo() {
@@ -143,19 +158,27 @@ export const useNetStateStore = defineStore('Net-State-Store', {
       }
       this.devicesLoading.numberOfOutstandingLoadRequests++;
       try {
-        const devices: IDevice[] = await fetchDevices(searchSpecs);
-        this.rolledUpDeviceIDs = devices.map((x) => x.id);
-        devices.forEach((x) => (this.deviceDetails[x.id] = x));
+        const devices: string[] = await fetchDevices(searchSpecs);
+        devices.forEach (async (i:string)  => this.rolledUpDeviceIDs.add (i))
+        this.fetchDevices(devices);
         this.devicesLoading.numberOfTimesLoaded++;
       } finally {
         this.devicesLoading.numberOfOutstandingLoadRequests--;
       }
     },
     async fetchDevice(id: string) {
-      this.deviceDetails[id] = await fetchDevice(id);
+      // Suprising and disapointing that Equals optimization helps so much
+      // I would have expected Pinia to do this check
+      const r = await fetchDevice(id);
+      if (!Equals (r, this.deviceDetails[id])) {
+        if (kCompileTimeConfiguration.DEBUG_MODE) {
+          console.log("new device value: named=", r.name)
+        }
+        this.deviceDetails[id] = r;
+      }
     },
     async fetchDevices(ids: Array<string>) {
-      ids.forEach(async (i) => (this.deviceDetails[i] = await fetchDevice(i)));
+      ids.forEach(async (i) => (this.fetchDevice(i)));
     },
     setSelectedNetwork(networkId: string) {
       this.selectedNetworkId = networkId;

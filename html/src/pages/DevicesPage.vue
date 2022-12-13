@@ -258,7 +258,7 @@ function clearFilter() {
 let filteredExtendedDevices: ComputedRef<object[]> = computed(() => {
   const result: object[] = [];
   allDevices.value.forEach((i: IDevice) => {
-    let passedFilter = true;
+    let passedFilter = i != null;
     if (
       passedFilter &&
       !(

@@ -132,7 +132,7 @@ export async function fetchNetwork(id: string): Promise<INetwork> {
       jsonPatch2INetwork_(data);
       return data;
     })
-    .catch((error) => Logger.error(error));
+    .catch((error) => {Logger.error(error); throw error;} );
 }
 
 export async function fetchAllActiveNetworkInterfaces(): Promise<
@@ -178,7 +178,42 @@ export async function rescanDevice(deviceID: string): Promise<void> {
     .catch((error) => Logger.error(error));
 }
 
+
 export async function fetchDevices(
+  searchCriteria?: ISortBy
+): Promise<string[]> {
+  // @todo make these search params depend on parameters,
+  // and especially make compareNetwork depend on current active network
+  // (and maybe sometimes omit)
+
+  const searchSpecification: ISortBy[] = [];
+
+  if (!searchCriteria) {
+    // if no criteria specified, let WSAPI return defaults...
+    // searchSpecification.push({ by: SortFieldEnum.ADDRESS, ascending: true });
+    // searchSpecification.push({ by: SortFieldEnum.TYPE, ascending: true });
+    // searchSpecification.push({ by: SortFieldEnum.PRIORITY, ascending: true });
+  } else {
+    searchSpecification.push(searchCriteria);
+  }
+  const searchSpecs = new SearchSpecification(
+    searchSpecification
+  );
+  const url=searchCriteria? `${gRuntimeConfiguration.API_ROOT}/api/v1/devices?sort=${encodeURI(JSON.stringify(searchSpecs))}` : `${gRuntimeConfiguration.API_ROOT}/api/v1/devices`
+  return fetch(  url, kFetchOptions_)
+    .then((response) => throwIfError_(response))
+    .then((response) => response.json())
+    .then((data) => {
+      return data;
+    })
+    .then((data) => {
+      return data;
+    })
+    .catch((error) => Logger.error(error));
+}
+
+
+export async function fetchDevicesRecursive(
   searchCriteria?: ISortBy
 ): Promise<IDevice[]> {
   // @todo make these search params depend on parameters,
@@ -196,10 +231,8 @@ export async function fetchDevices(
     searchSpecification.push(searchCriteria);
   }
 
-  // TODO correct hardcoded compareNetwork
   const searchSpecs = new SearchSpecification(
-    searchSpecification,
-    '192.168.244.0/24'
+    searchSpecification
   );
 
   return fetch(
