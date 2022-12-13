@@ -1,3 +1,15 @@
+CLEANUP race in 
+async fetchAvailableNetworks() {
+      const networkIDs = await fetchNetworks();
+      // for now, fetch network before adding to rolledUpAvailableNetworkIDs, but really should
+      // do other way and make calling code more OK with when details still null
+      // if you reorder with teh code as is (--LGP 2022-12-13) - get sporadic failures running hitting nulls
+      // as stuff loads
+      networkIDs.forEach(async (i:string) => await this.fetchNetwork(i));
+      networkIDs.forEach (async (i:string)  => this.rolledUpAvailableNetworkIDs.add (i))
+    },
+
+---
 http://hercules/#/device/9d9f8193-4373-8252-7d15-6dfe47bad765
 	is MISSING ICON FOR ROUTER!!! - confusing
 
