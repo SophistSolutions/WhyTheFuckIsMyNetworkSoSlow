@@ -1,9 +1,8 @@
-restructure NEtwork and Device code to fetch by ID (not use recurse=true)
-	https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/71
+http://hercules/#/device/9d9f8193-4373-8252-7d15-6dfe47bad765
+	is MISSING ICON FOR ROUTER!!! - confusing
 
-	(still todo lose remaining recurse=true calls)
+	----
 
-----
 Look at fetch traffic. I think too much.
 	-- hard - mostly wrong in chrome debugger - must look at my webservice logs...
 

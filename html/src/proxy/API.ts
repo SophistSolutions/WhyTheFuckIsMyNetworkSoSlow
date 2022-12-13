@@ -56,29 +56,6 @@ export async function fetchNetworks(): Promise<string[]> {
   }
 }
 
-
-export async function fetchNetworks_Recurse(): Promise<INetwork[]> {
-  try {
-    const response: Response = await fetch(
-      `${gRuntimeConfiguration.API_ROOT}/api/v1/networks?recurse=true`,
-      kFetchOptions_
-    );
-    throwIfError_(response);
-    const data = await response.json()as INetwork[];
-    // should validate array (using json schema)
-    if (!Array.isArray(data)) {
-      throw new Error('Server Data Format Error');
-    }
-    data.forEach((e: INetwork) => {
-      jsonPatch2INetwork_(e);
-    });
-    return data;
-  } catch (e) {
-    Logger.error(e);
-    throw e;
-  }
-}
-
 function jsonPatch2IDateRange_(d: IDateTimeRange) {
   if (d.upperBound) {
     d.upperBound = DateTime.fromISO(

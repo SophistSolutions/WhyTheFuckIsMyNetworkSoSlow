@@ -12,8 +12,8 @@ import {
   fetchDevice,
   fetchDevices,
   fetchNetwork,
+  fetchNetworks,
   fetchNetworkInterface,
-  fetchNetworks_Recurse,
 } from '../proxy/API';
 
 import {kCompileTimeConfiguration} from '../config/config';
@@ -31,7 +31,7 @@ interface ILoading {
 export const useNetStateStore = defineStore('Net-State-Store', {
   state: () => ({
     about: undefined as IAbout | undefined,
-    rolledUpAvailableNetworkIDs: [] as string[],
+    rolledUpAvailableNetworkIDs: new Set() as Set<string>,
     // cache of objects, some of which maybe primary networks (rollups) and some maybe details
     networkDetails: {} as { [key: string]: INetwork },
     loadingNetworks: {
@@ -58,9 +58,7 @@ export const useNetStateStore = defineStore('Net-State-Store', {
       return state.devicesLoading;
     },
     getAvailableNetworks: (state) => {
-      return state.rolledUpAvailableNetworkIDs.map(
-        (di) => state.networkDetails[di]
-      );
+      return [...state.rolledUpAvailableNetworkIDs].map((ni) => state.networkDetails[ni]);
     },
     getNetwork: (state) => {
       return (id: string) => state.networkDetails[id];
@@ -93,17 +91,16 @@ export const useNetStateStore = defineStore('Net-State-Store', {
     getAboutInfo: (state) => {
       return state.about;
     },
-    getSelectedNetworkObject: (state) => {
-      return state.rolledUpAvailableNetworkIDs.find(
-        (network) => network === state.selectedNetworkId
-      );
-    },
   },
   actions: {
     async fetchAvailableNetworks() {
-      const networks: INetwork[] = await fetchNetworks_Recurse();
-      this.rolledUpAvailableNetworkIDs = networks.map((x) => x.id);
-      networks.forEach((x) => (this.networkDetails[x.id] = x));
+      const networkIDs = await fetchNetworks();
+      // for now, fetch network before adding to rolledUpAvailableNetworkIDs, but really should
+      // do other way and make calling code more OK with when details still null
+      // if you reorder with teh code as is (--LGP 2022-12-13) - get sporadic failures running hitting nulls
+      // as stuff loads
+      networkIDs.forEach(async (i:string) => await this.fetchNetwork(i));
+      networkIDs.forEach (async (i:string)  => this.rolledUpAvailableNetworkIDs.add (i))
     },
     async fetchNetworkInterfaces(ids: string[]) {
       ids.forEach(async (i: string) => {
@@ -129,7 +126,7 @@ export const useNetStateStore = defineStore('Net-State-Store', {
       }
       this.loadingNetworks.numberOfOutstandingLoadRequests++;
       try {
-        ids.forEach( async (id) =>await this.fetchNetwork(id) );
+        ids.forEach( async (id) => await this.fetchNetwork(id) );
         this.loadingNetworks.numberOfTimesLoaded++;
       } finally {
         this.loadingNetworks.numberOfOutstandingLoadRequests--;
