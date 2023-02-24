@@ -820,7 +820,7 @@ namespace {
                     }
                 }
                 // https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/80 - could avoid this maybe??? and the bookkeeping above to compute this list...
-                DbgTrace (L"orphaned interface Cnt %d", (netIDs2Add - netsAdded).size ()); // We (temporarily) store network interfaces not associated with any device - if they are not interesting.
+                DbgTrace (L"orphaned interface cnt %d", (netIDs2Add - netsAdded).size ()); // We (temporarily) store network interfaces not associated with any device - if they are not interesting.
                                                                                            // OR, could come from just bad data in database
                 // Either way, just track them, and don't worry for now --LGP 2022-12-03
                 for (const auto& netInterfaceWithoutDevice : (netIDs2Add - netsAdded)) {
@@ -1015,15 +1015,16 @@ namespace {
 
         public:
             /**
-             *  Given an aggregated (device) network interface id, map to the correspoding rollup ID
+             *  Given an aggregated (device) network interface id, map to the correspoding rollup ID, if present.
+             *  \note return optional<GUID> because this can the caches of devices and networks and network interfaces
+             *        can be slightly out of sync
              */
-            nonvirtual auto MapAggregatedNetInterfaceID2ItsRollupID (const GUID& netID) const -> GUID
+            nonvirtual auto MapAggregatedNetInterfaceID2ItsRollupID (const GUID& netID) const -> optional < GUID>
             {
                 if (auto r = fMapAggregatedNetInterfaceID2RollupID_.Lookup (netID)) {
-                    return *r;
+                    return r;
                 }
-                AssertNotReached ();
-                return netID;
+                return nullopt;
             }
             nonvirtual auto MapAggregatedNetInterfaceID2ItsRollupID (const Set<GUID>& netIDs) const -> Set<GUID>
             {
