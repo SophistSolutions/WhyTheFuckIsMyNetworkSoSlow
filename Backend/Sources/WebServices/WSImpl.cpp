@@ -529,7 +529,7 @@ tuple<Network, Duration> WSImpl::GetNetwork (const String& id) const
 
 void WSImpl::PatchNetwork (const String& id, const JSONPATCH::OperationItemsType& patchDoc) const
 {
-    DbgTrace (L"WSImpl::PatchNetwork (%s, %s)", id.c_str (), Characters::ToString (patchDoc).c_str ());
+    DbgTrace (L"WSImpl::PatchNetwork (%s, %s)", id.As<wstring> ().c_str (), Characters::ToString (patchDoc).As<wstring> ().c_str ());
     GUID objID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
     for (auto op : patchDoc) {
         switch (op.op) {
@@ -749,7 +749,7 @@ Time::Duration WSImpl::Operation_DNS_CalculateNegativeLookupTime (optional<unsig
 
 Operations::DNSLookupResults WSImpl::Operation_DNS_Lookup (const String& name) const
 {
-    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_DNS_Lookup", L"name=%s", name.c_str ())};
+    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_DNS_Lookup", L"name=%s", name.As<wstring> ().c_str ())};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
     Operations::DNSLookupResults                    result;
     Time::DurationSecondsType                       startAt = Time::GetTickCount ();
