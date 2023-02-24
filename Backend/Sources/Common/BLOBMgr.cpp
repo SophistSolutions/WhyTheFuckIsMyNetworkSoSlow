@@ -117,9 +117,9 @@ namespace {
                                                      {.fName = L"blobid"sv, .fRequired = true, .fVariantValueType = VariantValue::eBLOB},
                                                      {.fName = L"etag"sv, .fVariantValueType = VariantValue::eString},
 #else
-                                                      {L"uri", nullopt, true, VariantValue::eString, nullopt, true},
-                                                      {L"blobid", nullopt, true, VariantValue::eBLOB},
-                                                      {L"etag", nullopt, false, VariantValue::eString},
+                                                     {L"uri", nullopt, true, VariantValue::eString, nullopt, true},
+                                                     {L"blobid", nullopt, true, VariantValue::eBLOB},
+                                                     {L"etag", nullopt, false, VariantValue::eString},
 #endif
                                                  }};
 

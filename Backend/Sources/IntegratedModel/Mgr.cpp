@@ -556,9 +556,9 @@ namespace {
                                                                   .fDefaultExpression = GenRandomIDString_ (kRepresentIDAs_)},
                                                                  {.fName = L"name"sv, .fVariantValueType = VariantValue::eString},
 #else
-                                                                  {L"ID", L"id"sv, true, kRepresentIDAs_, nullopt, true, nullopt,
-                                                                   GenRandomIDString_ (kRepresentIDAs_)},
-                                                                  {L"name", nullopt, false, VariantValue::eString},
+                                                                 {L"ID", L"id"sv, true, kRepresentIDAs_, nullopt, true, nullopt,
+                                                                  GenRandomIDString_ (kRepresentIDAs_)},
+                                                                 {L"name", nullopt, false, VariantValue::eString},
 #endif
                                                              },
                                                              Schema_CatchAllField{}};
@@ -601,9 +601,9 @@ namespace {
                                                                    .fDefaultExpression = GenRandomIDString_ (kRepresentIDAs_)},
                                                                   {.fName = L"friendlyName"sv, .fVariantValueType = VariantValue::eString},
 #else
-                                                                   {L"ID", L"id"sv, true, kRepresentIDAs_, nullopt, true, nullopt,
-                                                                    GenRandomIDString_ (kRepresentIDAs_)},
-                                                                   {L"friendlyName", nullopt, false, VariantValue::eString},
+                                                                  {L"ID", L"id"sv, true, kRepresentIDAs_, nullopt, true, nullopt,
+                                                                   GenRandomIDString_ (kRepresentIDAs_)},
+                                                                  {L"friendlyName", nullopt, false, VariantValue::eString},
 #endif
                                                               },
                                                               Schema_CatchAllField{}};
@@ -822,7 +822,7 @@ namespace {
                 // https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/80 - could avoid this maybe??? and the bookkeeping above to compute this list...
                 DbgTrace (L"orphaned interface Cnt %d", (netIDs2Add - netsAdded).size ()); // We (temporarily) store network interfaces not associated with any device - if they are not interesting.
                                                                                            // OR, could come from just bad data in database
-                    // Either way, just track them, and don't worry for now --LGP 2022-12-03
+                // Either way, just track them, and don't worry for now --LGP 2022-12-03
                 for (const auto& netInterfaceWithoutDevice : (netIDs2Add - netsAdded)) {
                     MergeIn_ (nullopt, Memory::ValueOf (nets2MergeInCollected.Lookup (netInterfaceWithoutDevice)));
                 }
@@ -897,7 +897,7 @@ namespace {
              */
             optional<Set<GUID>> GetAttachedToDeviceIDs (const GUID& aggregatedNetworkInterfaceID) const
             {
-                Set<GUID> r{fAssociateAggregatedNetInterface2OwningDeviceID.Lookup (aggregatedNetworkInterfaceID)};
+                Set<GUID> r{fAssociateAggregatedNetInterface2OwningDeviceID_.Lookup (aggregatedNetworkInterfaceID)};
                 if (r.empty ()) {
                     return nullopt;
                 }
@@ -1043,7 +1043,7 @@ namespace {
                 fRolledUpNetworkInterfaces_.Add (rolledUpNetworkInterace);
                 fMapAggregatedNetInterfaceID2RollupID_.Add (net2MergeIn.fID, rolledUpNetworkInterace.fID);
                 if (forDeviceID) {
-                    fAssociateAggregatedNetInterface2OwningDeviceID.Add (net2MergeIn.fID, *forDeviceID);
+                    fAssociateAggregatedNetInterface2OwningDeviceID_.Add (net2MergeIn.fID, *forDeviceID);
                 }
             }
 
@@ -1051,7 +1051,7 @@ namespace {
             NetworkInterfaceCollection_ fRawNetworkInterfaces_; // used for RecomputeAll_
             NetworkInterfaceCollection_ fRolledUpNetworkInterfaces_;
             Mapping<GUID, GUID> fMapAggregatedNetInterfaceID2RollupID_; // each aggregate net interface id is mapped to at most one rollup id)
-            Association<GUID, GUID> fAssociateAggregatedNetInterface2OwningDeviceID;
+            Association<GUID, GUID> fAssociateAggregatedNetInterface2OwningDeviceID_;
 
         private:
             static Synchronized<optional<RolledUpNetworkInterfaces>> sRolledUpNetworksInterfaces_;
