@@ -1021,10 +1021,7 @@ namespace {
              */
             nonvirtual auto MapAggregatedNetInterfaceID2ItsRollupID (const GUID& netID) const -> optional < GUID>
             {
-                if (auto r = fMapAggregatedNetInterfaceID2RollupID_.Lookup (netID)) {
-                    return r;
-                }
-                return nullopt;
+                return fMapAggregatedNetInterfaceID2RollupID_.Lookup (netID);
             }
             nonvirtual auto MapAggregatedNetInterfaceID2ItsRollupID (const Set<GUID>& netIDs) const -> Set<GUID>
             {
