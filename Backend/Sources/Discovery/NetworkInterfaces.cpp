@@ -129,10 +129,8 @@ namespace {
                 ni.fGUID = MapCurrentProcessInternalInterfaceIDToReportedProcessLifetimeGUID_ (i.fInternalInterfaceID);
 #if qDebug
                 // nothing useful to add yet
-                ni.fDebugProps.Add (L"test"sv,
-                                    VariantValue{
-                                        Mapping<String, VariantValue>{
-                                            pair<String, VariantValue>{L"updatedAt"sv, Time::DateTime::Now ()}}});
+                ni.fDebugProps.Add (
+                    L"test"sv, VariantValue{Mapping<String, VariantValue>{pair<String, VariantValue>{L"updatedAt"sv, Time::DateTime::Now ()}}});
 #endif
             }
             results.push_back (ni);
@@ -160,9 +158,8 @@ Collection<NetworkInterface> Discovery::NetworkInterfacesMgr::CollectAllNetworkI
     Collection<NetworkInterface> results;
     using Cache::SynchronizedCallerStalenessCache;
     static SynchronizedCallerStalenessCache<void, Collection<NetworkInterface>> sCache_;
-    results = sCache_.LookupValue (sCache_.Ago (allowedStaleness.value_or (kDefaultItemCacheLifetime_)), [] () -> Collection<NetworkInterface> {
-        return CollectAllNetworkInterfaces_ ();
-    });
+    results = sCache_.LookupValue (sCache_.Ago (allowedStaleness.value_or (kDefaultItemCacheLifetime_)),
+                                   [] () -> Collection<NetworkInterface> { return CollectAllNetworkInterfaces_ (); });
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
     DbgTrace (L"returns: %s", Characters::ToString (results).c_str ());
 #endif
@@ -175,7 +172,9 @@ Collection<NetworkInterface> Discovery::NetworkInterfacesMgr::CollectActiveNetwo
     Debug::TraceContextBumper ctx{L"Discovery::CollectActiveNetworkInterfaces"};
 #endif
     Require (sActive_);
-    Collection<NetworkInterface> results = CollectAllNetworkInterfaces (allowedStaleness).Where ([] (const NetworkInterface& i) { return i.fType != Interface::Type::eLoopback and i.fStatus and i.fStatus->Contains (Interface::Status::eRunning); });
+    Collection<NetworkInterface> results = CollectAllNetworkInterfaces (allowedStaleness).Where ([] (const NetworkInterface& i) {
+        return i.fType != Interface::Type::eLoopback and i.fStatus and i.fStatus->Contains (Interface::Status::eRunning);
+    });
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
     DbgTrace (L"returns: %s", Characters::ToString (results).c_str ());
 #endif

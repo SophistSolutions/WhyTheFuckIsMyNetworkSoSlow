@@ -27,12 +27,14 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
     T DB::AddOrMergeUpdate (ORM::TableConnection<T>* dbConnTable, const T& d)
     {
         using namespace Stroika::Foundation;
-        Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"DB::AddOrMergeUpdate", L"...,d=%s", Characters::ToString (d).c_str ())};
+        Debug::TraceContextBumper ctx{
+            Stroika_Foundation_Debug_OptionalizeTraceArgs (L"DB::AddOrMergeUpdate", L"...,d=%s", Characters::ToString (d).c_str ())};
         RequireNotNull (dbConnTable);
         SQL::Transaction t{dbConnTable->pConnection ()->mkTransaction ()};
         std::optional<T> result;
         Assert (kRepresentIDAs_ == VariantValue::Type::eString or kRepresentIDAs_ == VariantValue::Type::eBLOB);
-        VariantValue id = (kRepresentIDAs_ == VariantValue::Type::eString) ? VariantValue{d.fID.template As<String> ()} : VariantValue{d.fID.template As<Memory::BLOB> ()};
+        VariantValue id = (kRepresentIDAs_ == VariantValue::Type::eString) ? VariantValue{d.fID.template As<String> ()}
+                                                                           : VariantValue{d.fID.template As<Memory::BLOB> ()};
         if (auto dbObj = dbConnTable->Get (id)) {
             result = T::Merge (*dbObj, d);
             dbConnTable->Update (*result);
@@ -78,7 +80,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         constexpr bool                                          kIncludeLastSQK_ = true;
         conditional_t<kIncludeLastSQK_, optional<String>, void> lastSQL;
         // @todo note - COULD use same shared_ptr object to store a Debug::TraceContextBumper object so we get /DBRead messages elided from log most of the time (when quick and /DBWrite).
-        auto r = [=] (typename TABLE_CONNECTION::Operation op, const TABLE_CONNECTION* /*tableConn*/, const Statement* s, const exception_ptr& e) mutable noexcept {
+        auto r = [=] (typename TABLE_CONNECTION::Operation op, const TABLE_CONNECTION* /*tableConn*/, const Statement* s,
+                      const exception_ptr& e) mutable noexcept {
             switch (op) {
                 case TABLE_CONNECTION::Operation::eStartingRead:
                     RequireNotNull (s);
@@ -114,10 +117,12 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
                     break;
                 case TABLE_CONNECTION::Operation::eNotifyError:
                     if (kIncludeLastSQK_) {
-                        Execution::Logger::sThe.Log (Execution::Logger::eWarning, L"Database operation exception: %s (lastsql %s)", Characters::ToString (e).c_str (), Characters::ToString (lastSQL).c_str ());
+                        Execution::Logger::sThe.Log (Execution::Logger::eWarning, L"Database operation exception: %s (lastsql %s)",
+                                                     Characters::ToString (e).c_str (), Characters::ToString (lastSQL).c_str ());
                     }
                     else {
-                        Execution::Logger::sThe.Log (Execution::Logger::eWarning, L"Database operation exception: %s", Characters::ToString (e).c_str ());
+                        Execution::Logger::sThe.Log (Execution::Logger::eWarning, L"Database operation exception: %s",
+                                                     Characters::ToString (e).c_str ());
                     }
                     tmp->NoteError ();
                     break;

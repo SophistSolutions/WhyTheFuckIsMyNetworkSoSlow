@@ -47,29 +47,30 @@ ReadOnlyProperty<filesystem::path> WhyTheFuckIsMyNetworkSoSlow::BackendApp::Comm
         return IO::FileSystem::WellKnownLocations::GetApplicationData () / "WhyTheFuckIsMyNetworkSoSlow" / "db-v16.db";
     }};
 
-ReadOnlyProperty<uintmax_t> WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB::pFileSize{[qStroika_Foundation_Common_Property_ExtraCaptureStuff] ([[maybe_unused]] const auto* property) -> uintmax_t {
-    // add sizes of various component files (WAL, etc)
-    uintmax_t szTotal{};
-    auto      incSize = [&] (const filesystem::path& p) {
-        error_code ec{};
-        uintmax_t  sz = filesystem::file_size (p, ec);
-        if (!ec) {
-            szTotal += sz;
-        }
-    };
-    filesystem::path p = pFileName ();
-    incSize (p);
-    p = pFileName ();
-    p += "-journal";
-    incSize (p);
-    p = pFileName ();
-    p += "-shm";
-    incSize (p);
-    p = pFileName ();
-    p += "-wal";
-    incSize (p);
-    return szTotal;
-}};
+ReadOnlyProperty<uintmax_t> WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB::pFileSize{
+    [qStroika_Foundation_Common_Property_ExtraCaptureStuff] ([[maybe_unused]] const auto* property) -> uintmax_t {
+        // add sizes of various component files (WAL, etc)
+        uintmax_t szTotal{};
+        auto      incSize = [&] (const filesystem::path& p) {
+            error_code ec{};
+            uintmax_t  sz = filesystem::file_size (p, ec);
+            if (!ec) {
+                szTotal += sz;
+            }
+        };
+        filesystem::path p = pFileName ();
+        incSize (p);
+        p = pFileName ();
+        p += "-journal";
+        incSize (p);
+        p = pFileName ();
+        p += "-shm";
+        incSize (p);
+        p = pFileName ();
+        p += "-wal";
+        incSize (p);
+        return szTotal;
+    }};
 
 WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB::DB (Version targetDBVersion, const Iterable<ORM::Schema::Table>& tables)
     : fTargetDBVersion_{targetDBVersion}

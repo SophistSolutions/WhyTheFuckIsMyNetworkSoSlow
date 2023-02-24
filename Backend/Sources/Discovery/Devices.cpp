@@ -94,15 +94,14 @@ namespace {
     optional<String> ReverseDNSLookup_ (const InternetAddress& inetAddr)
     {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
-        Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"{}::ReverseDNSLookup_", L"inetAddr=%s", Characters::ToString (inetAddr).c_str ())};
+        Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"{}::ReverseDNSLookup_", L"inetAddr=%s",
+                                                                                     Characters::ToString (inetAddr).c_str ())};
 #endif
-        static const Time::Duration                                             kCacheTTL_{5min}; // @todo fix when Stroika Duration bug supports constexpr this should
+        static const Time::Duration kCacheTTL_{5min}; // @todo fix when Stroika Duration bug supports constexpr this should
         static Cache::SynchronizedTimedCache<InternetAddress, optional<String>> sCache_{kCacheTTL_};
         //sCache_.fHoldWriteLockDuringCacheFill = true; // see random false positive - see if this affects -LGP 2022-11-21 - assertexternally...https://stroika.atlassian.net/browse/STK-956
         try {
-            return sCache_.LookupValue (inetAddr, [] (const InternetAddress& inetAddr) {
-                return DNS::kThe.ReverseLookup (inetAddr);
-            });
+            return sCache_.LookupValue (inetAddr, [] (const InternetAddress& inetAddr) { return DNS::kThe.ReverseLookup (inetAddr); });
         }
         catch (...) {
             sCache_.Add (inetAddr, nullopt); // negative cache for kCacheTTL_
@@ -112,9 +111,10 @@ namespace {
     Set<InternetAddress> DNSLookup_ (const String& hostOrIPAddress)
     {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
-        Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"{}::DNSLookup_", L"hostOrIPAddress=%s", Characters::ToString (hostOrIPAddress).c_str ())};
+        Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"{}::DNSLookup_", L"hostOrIPAddress=%s",
+                                                                                     Characters::ToString (hostOrIPAddress).c_str ())};
 #endif
-        static const Time::Duration                                        kCacheTTL_{5min}; // @todo fix when Stroika Duration bug supports constexpr this should
+        static const Time::Duration kCacheTTL_{5min}; // @todo fix when Stroika Duration bug supports constexpr this should
         static Cache::SynchronizedTimedCache<String, Set<InternetAddress>> sCache_{kCacheTTL_};
         return sCache_.LookupValue (hostOrIPAddress, [] (const String& hostOrIPAddress) -> Set<InternetAddress> {
             return Set<InternetAddress>{DNS::kThe.GetHostAddresses (hostOrIPAddress)};
@@ -226,7 +226,8 @@ namespace {
         Set<GUID> LookupNetworksGUIDs (const Iterable<InternetAddress>& ia) const
         {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
-            Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"{}::NetAndNetInterfaceMapper_::LookupNetworksGUIDs", L"ia=%s", Characters::ToString (ia).c_str ())};
+            Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (
+                L"{}::NetAndNetInterfaceMapper_::LookupNetworksGUIDs", L"ia=%s", Characters::ToString (ia).c_str ())};
 #endif
             Set<GUID> results;
             for (const Discovery::Network& nw : Discovery::NetworksMgr::sThe.CollectActiveNetworks ()) {
@@ -244,7 +245,8 @@ namespace {
         Set<GUID> LookupNetworksGUIDs (const InternetAddress& ia) const
         {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
-            Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"{}::NetAndNetInterfaceMapper_::LookupNetworksGUIDs", L"ia=%s", Characters::ToString (ia).c_str ())};
+            Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (
+                L"{}::NetAndNetInterfaceMapper_::LookupNetworksGUIDs", L"ia=%s", Characters::ToString (ia).c_str ())};
 #endif
             Set<GUID> results;
             for (const Discovery::Network& nw : Discovery::NetworksMgr::sThe.CollectActiveNetworks ()) {
@@ -289,15 +291,15 @@ namespace {
     struct DiscoveryInfo_ : Discovery::Device {
 
         struct SSDPInfo {
-            optional<bool>          fAlive; // else Bye notification, or empty if neither -- probably replace with TIMINGS of last ALIVE, or Bye
-            Set<String>             fUSNs;
-            Set<URI>                fLocations;
-            optional<String>        fServer;
-            optional<String>        fManufacturer;
-            optional<URI>           fManufacturerURI;
+            optional<bool>   fAlive; // else Bye notification, or empty if neither -- probably replace with TIMINGS of last ALIVE, or Bye
+            Set<String>      fUSNs;
+            Set<URI>         fLocations;
+            optional<String> fServer;
+            optional<String> fManufacturer;
+            optional<URI>    fManufacturerURI;
             Mapping<String, String> fDeviceType2FriendlyNameMap; //  http://upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v1.1.pdf - <deviceType> - Page 44
-            optional<URI>           fPresentationURL;
-            Time::DateTime          fLastSSDPMessageRecievedAt{Time::DateTime::Now ()};
+            optional<URI>  fPresentationURL;
+            Time::DateTime fLastSSDPMessageRecievedAt{Time::DateTime::Now ()};
 #if qDebug
             optional<SSDP::Advertisement> fLastAdvertisement;
 #endif
@@ -339,10 +341,7 @@ namespace {
 #endif
                 return true;
             }
-            bool operator!= (const SSDPInfo& rhs) const
-            {
-                return not(*this == rhs);
-            }
+            bool operator!= (const SSDPInfo& rhs) const { return not(*this == rhs); }
 #else
             auto operator<=> (const SSDPInfo&) const = default;
 #endif
@@ -407,9 +406,12 @@ namespace {
                 constexpr bool kExtraDebugging_ = true;
                 if (kExtraDebugging_) {
                     // Debug why we get "Unknown" device on hercules/linux with Found-By-MyNeighborDiscoverer_-I looking good, but no networks (and docker appears as an active network)
-                    DbgTrace (L"AddNetworkAddresses_: totalAddrs=%d, totalAddrsSuppressedQuietly=%d, totalAdds=%d", totalAddrs, totalAddrsSuppressedQuietly, totalAdds);
-                    DbgTrace (L"AddNetworkAddresses_: NetAndNetInterfaceMapper_::sThe.LookupNetworksGUIDs (ia)=%s", Characters::ToString (NetAndNetInterfaceMapper_::sThe.LookupNetworksGUIDs (addrs)).c_str ());
-                    DbgTrace (L"AddNetworkAddresses_: Discovery::NetworksMgr::sThe.CollectActiveNetworks ()=%s", Characters::ToString (Discovery::NetworksMgr::sThe.CollectActiveNetworks ()).c_str ());
+                    DbgTrace (L"AddNetworkAddresses_: totalAddrs=%d, totalAddrsSuppressedQuietly=%d, totalAdds=%d", totalAddrs,
+                              totalAddrsSuppressedQuietly, totalAdds);
+                    DbgTrace (L"AddNetworkAddresses_: NetAndNetInterfaceMapper_::sThe.LookupNetworksGUIDs (ia)=%s",
+                              Characters::ToString (NetAndNetInterfaceMapper_::sThe.LookupNetworksGUIDs (addrs)).c_str ());
+                    DbgTrace (L"AddNetworkAddresses_: Discovery::NetworksMgr::sThe.CollectActiveNetworks ()=%s",
+                              Characters::ToString (Discovery::NetworksMgr::sThe.CollectActiveNetworks ()).c_str ());
                 }
             }
         }
@@ -472,17 +474,15 @@ namespace {
 
             fNames.Add (GetPreferredDisplayInternetAddresses ().Join (), 1); // default/backup name
 
-            if (fSSDPInfo.has_value () and
-                (fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_SpeakerGroup_) or
-                 fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_ZonePlayer_))) {
+            if (fSSDPInfo.has_value () and (fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_SpeakerGroup_) or
+                                            fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_ZonePlayer_))) {
                 fTypes.Add (Discovery::DeviceType::eSpeaker);
             }
 
-            if (fSSDPInfo.has_value () and
-                (fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_WFADevice_) or
-                 fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_WANConnectionDevice_) or
-                 fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_WLANAccessPointDevice_) or
-                 fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_WANDevice_))) {
+            if (fSSDPInfo.has_value () and (fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_WFADevice_) or
+                                            fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_WANConnectionDevice_) or
+                                            fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_WLANAccessPointDevice_) or
+                                            fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_WANDevice_))) {
                 fTypes.Add (Discovery::DeviceType::eNetworkInfrastructure);
             }
 
@@ -493,17 +493,15 @@ namespace {
                 fTypes.Add (Discovery::DeviceType::eSpeaker);
             }
 
-            if (fSSDPInfo.has_value () and
-                (
-                    // @todo - need a better way to detect - look at services not device type?
-                    fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_Roku_))) {
+            if (fSSDPInfo.has_value () and (
+                                               // @todo - need a better way to detect - look at services not device type?
+                                               fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_Roku_))) {
                 fTypes.Add (Discovery::DeviceType::eMediaPlayer);
             }
 
             // So far only seen used for Amazon Fire Stick, but could be used for TV, according to
             // http://www.dial-multiscreen.org/dial-protocol-specification
-            if (fSSDPInfo.has_value () and
-                (fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_DIALServer_))) {
+            if (fSSDPInfo.has_value () and (fSSDPInfo->fDeviceType2FriendlyNameMap.ContainsKey (kDeviceType_DIALServer_))) {
                 // @todo look more closely at firestick - I think dialserver isnt neceesarily a media player
                 fTypes.Add (Discovery::DeviceType::eMediaPlayer);
                 //fTypes.Add (Discovery::DeviceType::eTV);
@@ -565,7 +563,8 @@ namespace {
                         if (o == L"Oracle VirtualBox virtual NIC"sv) {
                             fTypes.Add (Discovery::DeviceType::eVirtualMachine);
                         }
-                        if ((o == L"Synology Incorporated"sv or o == L"Buffalo.inc"sv or o == L"Seagate Technology"sv or o == L"Seagate Cloud Systems"sv) and fOpenPorts and fOpenPorts->Contains (kSMBPort_)) {
+                        if ((o == L"Synology Incorporated"sv or o == L"Buffalo.inc"sv or o == L"Seagate Technology"sv or o == L"Seagate Cloud Systems"sv) and
+                            fOpenPorts and fOpenPorts->Contains (kSMBPort_)) {
                             fTypes.Add (Discovery::DeviceType::eNetworkAttachedStorage);
                         }
                     }
@@ -574,7 +573,9 @@ namespace {
 
             static const String kIPPPort_ = Characters::Format (L"tcp:%d", IO::Network::WellKnownPorts::TCP::kIPP);
             static const String kLPDPort_ = Characters::Format (L"tcp:%d", IO::Network::WellKnownPorts::TCP::kLPD);
-            if (fOpenPorts and (fOpenPorts->Contains (kIPPPort_) or fOpenPorts->Contains (kLPDPort_)) and (fManufacturer and (fManufacturer->Contains (L"Hewlett Packard"_k) or fManufacturer->Contains (L"Epson"_k) or fManufacturer->Contains (L"Canon"_k) or fManufacturer->Contains (L"Brother"_k)))) {
+            if (fOpenPorts and (fOpenPorts->Contains (kIPPPort_) or fOpenPorts->Contains (kLPDPort_)) and
+                (fManufacturer and (fManufacturer->Contains (L"Hewlett Packard"_k) or fManufacturer->Contains (L"Epson"_k) or
+                                    fManufacturer->Contains (L"Canon"_k) or fManufacturer->Contains (L"Brother"_k)))) {
                 fTypes.Add (DeviceType::ePrinter);
             }
 
@@ -582,19 +583,22 @@ namespace {
 
 #if qDebug
             if (fSSDPInfo) {
-                fDebugProps.Add (L"SSDPInfo"sv,
-                                 VariantValue{
-                                     Mapping<String, VariantValue> {
-                                         pair<String, VariantValue>{L"deviceType2FriendlyNameMap"sv, Mapping<String, VariantValue> { fSSDPInfo->fDeviceType2FriendlyNameMap }},
-                                         pair<String, VariantValue>{L"USNs"sv, kMyMapper_.FromObject (fSSDPInfo->fUSNs)},
-                                         pair<String, VariantValue>{L"server"sv, fSSDPInfo->fServer},
-                                         pair<String, VariantValue>{L"manufacturer"sv, fSSDPInfo->fManufacturer},
-                                         pair<String, VariantValue>{L"manufacturer-URL"sv, kMyMapper_.FromObject (fSSDPInfo->fManufacturerURI)},
-                                         pair<String, VariantValue>{L"lastAdvertisement"sv, kMyMapper_.FromObject (fSSDPInfo->fLastAdvertisement)},
-                                         pair<String, VariantValue>{L"lastSSDPMessageRecievedAt"sv, fSSDPInfo->fLastSSDPMessageRecievedAt},
-                                         pair<String, VariantValue> { L"locations"sv,
-                                                                      kMyMapper_.FromObject (fSSDPInfo->fLocations) }
-                                     }});
+                fDebugProps.Add (L"SSDPInfo"sv, VariantValue{Mapping<String, VariantValue> {
+                                     pair<String, VariantValue>{L"deviceType2FriendlyNameMap"sv,
+                                                                Mapping<String, VariantValue> {
+                                                                    fSSDPInfo->fDeviceType2FriendlyNameMap
+                                                                }},
+                                     pair<String, VariantValue>{L"USNs"sv, kMyMapper_.FromObject (fSSDPInfo->fUSNs)},
+                                     pair<String, VariantValue>{L"server"sv, fSSDPInfo->fServer},
+                                     pair<String, VariantValue>{L"manufacturer"sv, fSSDPInfo->fManufacturer},
+                                     pair<String, VariantValue>{L"manufacturer-URL"sv, kMyMapper_.FromObject (fSSDPInfo->fManufacturerURI)},
+                                     pair<String, VariantValue>{L"lastAdvertisement"sv, kMyMapper_.FromObject (fSSDPInfo->fLastAdvertisement)},
+                                     pair<String, VariantValue>{L"lastSSDPMessageRecievedAt"sv, fSSDPInfo->fLastSSDPMessageRecievedAt},
+                                     pair<String, VariantValue> {
+                                         L"locations"sv,
+                                         kMyMapper_.FromObject (fSSDPInfo->fLocations)
+                                     }
+                                 }});
             }
 #endif
 
@@ -614,10 +618,7 @@ namespace {
             }
             return true;
         }
-        bool operator!= (const DiscoveryInfo_& rhs) const
-        {
-            return not(*this == rhs);
-        }
+        bool operator!= (const DiscoveryInfo_& rhs) const { return not(*this == rhs); }
 #else
         auto operator<=> (const DiscoveryInfo_&) const = default;
 #endif
@@ -634,7 +635,8 @@ namespace {
     struct Device_Key_Extractor_ {
         GUID operator() (const DiscoveryInfo_& t) const { return t.fGUID; };
     };
-    using DiscoveryDeviceCollection_ = KeyedCollection<DiscoveryInfo_, GUID, KeyedCollection_DefaultTraits<DiscoveryInfo_, GUID, Device_Key_Extractor_>>;
+    using DiscoveryDeviceCollection_ =
+        KeyedCollection<DiscoveryInfo_, GUID, KeyedCollection_DefaultTraits<DiscoveryInfo_, GUID, Device_Key_Extractor_>>;
 
     // NB: RWSynchronized because most accesses will be to read/lookup in this list; use Mapping<> because KeyedCollection NYI
     // Note, when we first start, there will be more contention, so we'll get conflicts (and we dbgtrace log them to be sure
@@ -694,15 +696,11 @@ namespace {
     // @todo redo this with IDs, and have the thread keep running to update network info
     struct MyDeviceDiscoverer_ {
         MyDeviceDiscoverer_ ()
-            : fMyDeviceDiscovererThread_{
-                  Thread::CleanupPtr::eAbortBeforeWaiting, Thread::New (DiscoveryChecker_, Thread::eAutoStart, L"MyDeviceDiscoverer"_k)}
+            : fMyDeviceDiscovererThread_{Thread::CleanupPtr::eAbortBeforeWaiting, Thread::New (DiscoveryChecker_, Thread::eAutoStart, L"MyDeviceDiscoverer"_k)}
         {
         }
 
-        optional<GUID> GetThisDeviceID () const
-        {
-            return sCachedValue_.load ();
-        }
+        optional<GUID> GetThisDeviceID () const { return sCachedValue_.load (); }
 
     private:
         static void DiscoveryChecker_ ()
@@ -764,7 +762,8 @@ namespace {
 
                         Assert (di.fGUID != GUID{});
                         if (not sDiscoveredDevices_.UpgradeLockNonAtomicallyQuietly (
-                                &l, [&] (auto&& writeLock) {
+                                &l,
+                                [&] (auto&& writeLock) {
                                     writeLock.rwref ().Add (di);
 #if qLOCK_DEBUGGING_
                                     DbgTrace (L"!!! succeeded  updating writelock ***MyDeviceDiscoverer_");
@@ -806,12 +805,11 @@ namespace {
             SystemInterfacesMgr interfacesMgr;
             for (const Interface& i : interfacesMgr.GetAll ()) {
                 if (i.fType != Interface::Type::eLoopback and i.fStatus and i.fStatus->Contains (Interface::Status::eRunning)) {
-                    i.fBindings.fAddresses.Apply ([&] (const InternetAddress& ia) {
-                        newDev.AddNetworkAddresses_ (ia, i.fHardwareAddress);
-                    });
+                    i.fBindings.fAddresses.Apply ([&] (const InternetAddress& ia) { newDev.AddNetworkAddresses_ (ia, i.fHardwareAddress); });
                 }
             }
-            newDev.fAttachedInterfaces = Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ().Map<GUID, Set<GUID>> ([] (const auto& iFace) { return iFace.fGUID; });
+            newDev.fAttachedInterfaces = Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ().Map<GUID, Set<GUID>> (
+                [] (const auto& iFace) { return iFace.fGUID; });
 
             if (newDev.GetHardwareAddresses ().empty ()) {
                 DbgTrace ("no hardware address, so returning no 'MyDevice'");
@@ -846,16 +844,15 @@ namespace {
     class SSDPDeviceDiscoverer_ {
     public:
         SSDPDeviceDiscoverer_ ()
-            : fIntervalTimerAdder_{
-                  [this] () {
-                      Debug::TraceContextBumper ctx{"SSDPDeviceDiscoverer_ TIMER HANDLER"}; // to debug https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/78
-                      // @todo must be able to detect nework change, or reason to make this change
-                      // for now - just do if missing
-                      if (fListener_ == nullptr or fSearcher_ == nullptr) {
-                          IgnoreExceptionsExceptThreadAbortForCall (ConstructSearcherAndListener_ (true));
-                      }
-                  },
-                  1min}
+            : fIntervalTimerAdder_{[this] () {
+                                       Debug::TraceContextBumper ctx{"SSDPDeviceDiscoverer_ TIMER HANDLER"}; // to debug https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/78
+                                       // @todo must be able to detect nework change, or reason to make this change
+                                       // for now - just do if missing
+                                       if (fListener_ == nullptr or fSearcher_ == nullptr) {
+                                           IgnoreExceptionsExceptThreadAbortForCall (ConstructSearcherAndListener_ (true));
+                                       }
+                                   },
+                                   1min}
         {
             IgnoreExceptionsExceptThreadAbortForCall (ConstructSearcherAndListener_ (false));
         }
@@ -868,29 +865,30 @@ namespace {
             if (fListener_ == nullptr) {
                 try {
                     fListener_ = make_unique<SSDP::Client::Listener> (
-                        [this] (const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); },
-                        SSDP::Client::Listener::eAutoStart);
+                        [this] (const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); }, SSDP::Client::Listener::eAutoStart);
                     if (notifyOfSuccess) {
                         Logger::sThe.Log (Logger::eInfo, L"(Re-)Started SSDP Listener");
                     }
                 }
                 catch (...) {
-                    Logger::sThe.Log (Logger::eError, L"Problem starting SSDP Listener - so that source of discovery will be (temporarily - will retry) unavailable: %s", Characters::ToString (current_exception ()).c_str ());
+                    Logger::sThe.Log (Logger::eError, L"Problem starting SSDP Listener - so that source of discovery will be (temporarily - will retry) unavailable: %s",
+                                      Characters::ToString (current_exception ()).c_str ());
                 }
             }
             if (fSearcher_ == nullptr) {
                 try {
                     static const Time::Duration kReSearchInterval_{10min}; // not sure what interval makes sense
-                    fSearcher_ = make_unique<SSDP::Client::Search> (
-                        [this] (const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); },
-                        SSDP::Client::Search::kRootDevice, kReSearchInterval_);
+                    fSearcher_ =
+                        make_unique<SSDP::Client::Search> ([this] (const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); },
+                                                           SSDP::Client::Search::kRootDevice, kReSearchInterval_);
                     if (notifyOfSuccess) {
                         Logger::sThe.Log (Logger::eInfo, L"(Re-)Started SSDP Searcher");
                     }
                 }
                 catch (...) {
                     // only warning because searcher much less important - just helpful at very start of discovery
-                    Logger::sThe.Log (Logger::eWarning, L"Problem starting SSDP Searcher - so that source of discovery will be (temporarily - will retry) unavailable: %s", Characters::ToString (current_exception ()).c_str ());
+                    Logger::sThe.Log (Logger::eWarning, L"Problem starting SSDP Searcher - so that source of discovery will be (temporarily - will retry) unavailable: %s",
+                                      Characters::ToString (current_exception ()).c_str ());
                 }
             }
         }
@@ -904,7 +902,8 @@ namespace {
         void RecieveSSDPAdvertisement_ (const SSDP::Advertisement& d)
         {
             constexpr Activity        kInterprettingSSDPMessageRecieved_{L"interpretting SSDP advertisement"sv};
-            Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"RecieveSSDPAdvertisement_", L"d=%s", Characters::ToString (d).c_str ())};
+            Debug::TraceContextBumper ctx{
+                Stroika_Foundation_Debug_OptionalizeTraceArgs (L"RecieveSSDPAdvertisement_", L"d=%s", Characters::ToString (d).c_str ())};
 
             DeclareActivity activity{&kInterprettingSSDPMessageRecieved_};
 
@@ -985,7 +984,9 @@ namespace {
                     }
                 }();
                 if (di.fAttachedNetworks.empty ()) {
-                    DbgTrace (L"Ignorning SSDP message for device on no network (possibly because of kIncludeLinkLocalAddressesInDiscovery etc suppression): %s", Characters::ToString (di).c_str ());
+                    DbgTrace (L"Ignorning SSDP message for device on no network (possibly because of kIncludeLinkLocalAddressesInDiscovery "
+                              L"etc suppression): %s",
+                              Characters::ToString (di).c_str ());
                     return;
                 }
                 Assert (not di.GetInternetAddresses ().empty ()); // can happen if we find address in tmp.AddIPAddress_() thats not bound to any adapter (but that shouldnt happen so investigate but is for now so ignore breifly)
@@ -1014,7 +1015,7 @@ namespace {
                 Memory::CopyToIf (&di.fSSDPInfo->fManufacturer, manufactureName);
 
                 di.fSSDPInfo->fLastSSDPMessageRecievedAt = Time::DateTime::Now (); // update each message, even if already created
-                di.fSeen.fUDP                            = Memory::NullCoalesce (di.fSeen.fUDP).Extend (di.fSSDPInfo->fLastSSDPMessageRecievedAt);
+                di.fSeen.fUDP = Memory::NullCoalesce (di.fSeen.fUDP).Extend (di.fSSDPInfo->fLastSSDPMessageRecievedAt);
 
 #if qDebug
                 di.fSSDPInfo->fLastAdvertisement = d;
@@ -1031,7 +1032,8 @@ namespace {
                 di.PatchDerivedFields ();
                 Assert (di.fGUID != GUID{});
                 if (not sDiscoveredDevices_.UpgradeLockNonAtomicallyQuietly (
-                        &l, [&] (auto&& writeLock) {
+                        &l,
+                        [&] (auto&& writeLock) {
                             writeLock.rwref ().Add (di);
 #if qLOCK_DEBUGGING_
                             DbgTrace (L"!!! succeeded  updating writelock ***RecieveSSDPAdvertisement_");
@@ -1117,7 +1119,8 @@ namespace {
                         }();
 
                         if (di.fAttachedNetworks.empty ()) {
-                            DbgTrace (L"Ignorning MyNeighborDiscoverer_ device %s because it was not on a known network (neighbor: %s)", Characters::ToString (di).c_str (), Characters::ToString (i).c_str ());
+                            DbgTrace (L"Ignorning MyNeighborDiscoverer_ device %s because it was not on a known network (neighbor: %s)",
+                                      Characters::ToString (di).c_str (), Characters::ToString (i).c_str ());
                             return;
                         }
                         Assert (not di.GetInternetAddresses ().empty ()); // can happen if we find address in tmp.AddIPAddress_() thats not bound to any adapter (but that shouldnt happen so investigate but is for now so ignore breifly)
@@ -1140,7 +1143,8 @@ namespace {
 
                         Assert (di.fGUID != GUID{});
                         if (not sDiscoveredDevices_.UpgradeLockNonAtomicallyQuietly (
-                                &l, [&] (auto&& writeLock) {
+                                &l,
+                                [&] (auto&& writeLock) {
                                     writeLock.rwref ().Add (di);
 #if qLOCK_DEBUGGING_
                                     DbgTrace (L"!!! succeeded  updating with writelock ***MyNeighborDiscoverer_");
@@ -1202,7 +1206,7 @@ namespace {
             optional<DiscreteRange<InternetAddress>> scanAddressRange;
             unique_ptr<Cache::BloomFilter<int>>      addressesProbablyUsed;
 
-            double sizeFactor{1};                       // (DOESNT APPEAR NEEDED) - use more bloom filter bits than needed for full set, cuz otherwise get too many collisions as adding
+            double sizeFactor{1}; // (DOESNT APPEAR NEEDED) - use more bloom filter bits than needed for full set, cuz otherwise get too many collisions as adding
             double maxFalsePositivesAllowed      = .5;  // bloom filter stops working well if much past this probability limit
             double maxFractionOfAddrSpaceScanned = .75; // our algorithm wastes alot of time computing random numbers past this limit
 
@@ -1236,7 +1240,8 @@ namespace {
                             }
                         }
                         if (scanAddressRange) {
-                            addressesProbablyUsed = make_unique<Cache::BloomFilter<int>> (static_cast<size_t> (sizeFactor * scanAddressRange->GetNumberOfContainedPoints ()));
+                            addressesProbablyUsed = make_unique<Cache::BloomFilter<int>> (
+                                static_cast<size_t> (sizeFactor * scanAddressRange->GetNumberOfContainedPoints ()));
                         }
                     }
                     if (not scanAddressRange) {
@@ -1263,7 +1268,8 @@ namespace {
                         selected = uniform_int_distribution<unsigned int>{1, scanAddressRange->GetNumberOfContainedPoints () - 2}(sRng_);
                     }
                     else {
-                        DbgTrace (L"Completed full (%d/%d => %f fraction) scan of (scanAddressRange=%s), with randomCollisions=%d, resetting list, to start rescanning...",
+                        DbgTrace (L"Completed full (%d/%d => %f fraction) scan of (scanAddressRange=%s), with randomCollisions=%d, "
+                                  L"resetting list, to start rescanning...",
                                   bloomFilterStats.fApparentlyDistinctAddCalls, scanAddressRange->GetNumberOfContainedPoints (),
                                   double (bloomFilterStats.fApparentlyDistinctAddCalls) / scanAddressRange->GetNumberOfContainedPoints (),
                                   Characters::ToString (scanAddressRange).c_str (),
@@ -1286,7 +1292,8 @@ namespace {
 
                         // then flag found device and when via random pings/portscan, and record portscan result.
                         if (scanResults.fDiscoveredOpenPorts.empty ()) {
-                            DbgTrace (L"No obvious device at ip %s for because no scan results (ScanOptions::eQuick)", Characters::ToString (ia).c_str ());
+                            DbgTrace (L"No obvious device at ip %s for because no scan results (ScanOptions::eQuick)",
+                                      Characters::ToString (ia).c_str ());
                         }
                         else {
                             DiscoveryInfo_ tmp{};
@@ -1307,7 +1314,8 @@ namespace {
                                 tmp.fDebugProps.Add (L"Updated-By-RandomWalkThroughSubnetDiscoverer_-At", DateTime::Now ());
 #endif
                                 l.rwref ().Add (tmp);
-                                DbgTrace (L"Updated device %s for fKnownOpenPorts: %s", Characters::ToString (tmp.fGUID).c_str (), Characters::ToString (scanResults.fDiscoveredOpenPorts).c_str ());
+                                DbgTrace (L"Updated device %s for fKnownOpenPorts: %s", Characters::ToString (tmp.fGUID).c_str (),
+                                          Characters::ToString (scanResults.fDiscoveredOpenPorts).c_str ());
                             }
                             else {
                                 tmp.fGUID = GUID::GenerateNew ();
@@ -1321,7 +1329,8 @@ namespace {
 #endif
                                 Assert (tmp.fGUID != GUID{});
                                 l.rwref ().Add (tmp);
-                                DbgTrace (L"Added device %s for fKnownOpenPorts: %s", Characters::ToString (tmp.fGUID).c_str (), Characters::ToString (scanResults.fDiscoveredOpenPorts).c_str ());
+                                DbgTrace (L"Added device %s for fKnownOpenPorts: %s", Characters::ToString (tmp.fGUID).c_str (),
+                                          Characters::ToString (scanResults.fDiscoveredOpenPorts).c_str ());
                             }
                             Assert (not tmp.GetInternetAddresses ().empty ()); // shouldn't happen
                         }
@@ -1337,7 +1346,7 @@ namespace {
                          */
                         bool need2CheckAddr{true};
                         {
-                            auto           l = sDiscoveredDevices_.cget (); // grab write lock because almost assured of making changes (at least last seen)
+                            auto l = sDiscoveredDevices_.cget (); // grab write lock because almost assured of making changes (at least last seen)
                             DiscoveryInfo_ tmp{};
                             tmp.AddNetworkAddresses_ (ia);
                             if (optional<DiscoveryInfo_> oo = FindMatchingDevice_ (l, tmp)) {
@@ -1411,7 +1420,8 @@ namespace {
                     auto runPingCheck = [] (const GUID& deviceID, const InternetAddress& ia) {
                         PortScanResults scanResults = ScanPorts (ia, ScanOptions{ScanOptions::eRandomBasicOne});
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
-                        DbgTrace (L"Port scanning on existing device %s (addr %s) returned these ports: %s", Characters::ToString (deviceID).c_str (), Characters::ToString (ia).c_str (), Characters::ToString (scanResults.fDiscoveredOpenPorts).c_str ());
+                        DbgTrace (L"Port scanning on existing device %s (addr %s) returned these ports: %s", Characters::ToString (deviceID).c_str (),
+                                  Characters::ToString (ia).c_str (), Characters::ToString (scanResults.fDiscoveredOpenPorts).c_str ());
 #endif
 
                         {
@@ -1442,7 +1452,8 @@ namespace {
                                 tmp.fDebugProps.Add (L"Updated-By-KnownDevicePortScanner_-At", DateTime::Now ());
 #endif
                                 l.rwref ().Add (tmp);
-                                DbgTrace (L"Updated device %s for fKnownOpenPorts: %s", Characters::ToString (tmp.fGUID).c_str (), Characters::ToString (scanResults.fDiscoveredOpenPorts).c_str ());
+                                DbgTrace (L"Updated device %s for fKnownOpenPorts: %s", Characters::ToString (tmp.fGUID).c_str (),
+                                          Characters::ToString (scanResults.fDiscoveredOpenPorts).c_str ());
                             }
                             else {
                                 WeakAsserteNotReached (); // objects CAN disappear from list of devices (eventually we will support expiring/deleting)
@@ -1579,14 +1590,13 @@ Collection<Discovery::Device> Discovery::DevicesMgr::GetActiveDevices (optional<
     Collection<Discovery::Device> results;
     using Cache::SynchronizedCallerStalenessCache;
     static SynchronizedCallerStalenessCache<void, Collection<Discovery::Device>> sCache_;
-    results = sCache_.LookupValue (sCache_.Ago (allowedStaleness.value_or (kDefaultItemCacheLifetime_)),
-                                   [] () {
+    results = sCache_.LookupValue (sCache_.Ago (allowedStaleness.value_or (kDefaultItemCacheLifetime_)), [] () {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
-                                       DbgTrace (L"sDiscoveredDevices_: %s", Characters::ToString (sDiscoveredDevices_.load ()).c_str ());
+        DbgTrace (L"sDiscoveredDevices_: %s", Characters::ToString (sDiscoveredDevices_.load ()).c_str ());
 #endif
-                                       // NOTE - intentionally omit devices with no hardware addresses
-                                       return sDiscoveredDevices_.load ().Where ([] (const Discovery::Device& d) { return not d.GetHardwareAddresses ().empty (); }); // intentionally object-spice
-                                   });
+        // NOTE - intentionally omit devices with no hardware addresses
+        return sDiscoveredDevices_.load ().Where ([] (const Discovery::Device& d) { return not d.GetHardwareAddresses ().empty (); }); // intentionally object-spice
+    });
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
     DbgTrace (L"returns: %s", Characters::ToString (results).c_str ());
 #endif
@@ -1638,7 +1648,8 @@ void Discovery::DevicesMgr::ReScan (const GUID& deviceID)
             tmp.PatchDerivedFields ();
             Assert (tmp.fGUID != GUID{});
             l.rwref ().Add (tmp);
-            DbgTrace (L"Updated device %s for fKnownOpenPorts: %s", Characters::ToString (tmp.fGUID).c_str (), Characters::ToString (portScanResults.fDiscoveredOpenPorts).c_str ());
+            DbgTrace (L"Updated device %s for fKnownOpenPorts: %s", Characters::ToString (tmp.fGUID).c_str (),
+                      Characters::ToString (portScanResults.fDiscoveredOpenPorts).c_str ());
         }
         else {
             AssertNotReached ();

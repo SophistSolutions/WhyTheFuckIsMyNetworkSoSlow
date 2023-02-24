@@ -31,10 +31,12 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
     };
 
     struct ScanOptions {
-        enum Style { eQuick,
-                     eBasic,
-                     eRandomBasicOne,
-                     eFull };
+        enum Style {
+            eQuick,
+            eBasic,
+            eRandomBasicOne,
+            eFull
+        };
         optional<Style> fStyle;
     };
 

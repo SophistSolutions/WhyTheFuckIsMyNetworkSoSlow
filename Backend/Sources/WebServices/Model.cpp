@@ -36,9 +36,11 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model;
 
 namespace {
     // lower-camel-case names happier in javascript?
-    const ObjectVariantMapper::TypeMappingDetails kDateRangeMapper_ = ObjectVariantMapper::MakeCommonSerializer<Range<DateTime>> (ObjectVariantMapper::RangeSerializerOptions{L"lowerBound"sv, L"upperBound"sv});
+    const ObjectVariantMapper::TypeMappingDetails kDateRangeMapper_ =
+        ObjectVariantMapper::MakeCommonSerializer<Range<DateTime>> (ObjectVariantMapper::RangeSerializerOptions{L"lowerBound"sv, L"upperBound"sv});
 
-    const ObjectVariantMapper::TypeMappingDetails kOptionalDateRangeMapper_ = ObjectVariantMapper::MakeCommonSerializer<optional<Range<DateTime>>> (ObjectVariantMapper::OptionalSerializerOptions{kDateRangeMapper_});
+    const ObjectVariantMapper::TypeMappingDetails kOptionalDateRangeMapper_ =
+        ObjectVariantMapper::MakeCommonSerializer<optional<Range<DateTime>>> (ObjectVariantMapper::OptionalSerializerOptions{kDateRangeMapper_});
 }
 
 namespace {
@@ -249,7 +251,8 @@ const ObjectVariantMapper NetworkInterface::kMapper = [] () {
         {L"profileName", StructFieldMetaInfo{&NetworkInterface::WirelessInfo::fProfileName}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"BSSType", StructFieldMetaInfo{&NetworkInterface::WirelessInfo::fBSSType}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"MACAddress", StructFieldMetaInfo{&NetworkInterface::WirelessInfo::fMACAddress}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"physicalConnectionType", StructFieldMetaInfo{&NetworkInterface::WirelessInfo::fPhysicalConnectionType}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"physicalConnectionType", StructFieldMetaInfo{&NetworkInterface::WirelessInfo::fPhysicalConnectionType},
+         ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"signalQuality", StructFieldMetaInfo{&NetworkInterface::WirelessInfo::fSignalQuality}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"securityEnabled", StructFieldMetaInfo{&NetworkInterface::WirelessInfo::fSecurityEnabled}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"802.1XEnabled", StructFieldMetaInfo{&NetworkInterface::WirelessInfo::f8021XEnabled}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
@@ -282,32 +285,35 @@ const ObjectVariantMapper NetworkInterface::kMapper = [] () {
         // StructFieldMetaInfo{} doesn't work with nested members - https://stackoverflow.com/questions/1929887/is-pointer-to-inner-struct-member-forbidden
         // @todo when we decompose this so we have our own (not just inherited from stroika) class can make bindings OPTIONAL and only show here if present.
         // SIMULATE SORT OF - FOR NOW -- LGP 2022-11-04
-        {
-            L"boundAddressRanges",
-            TypeMappingDetails{ObjectVariantMapper::FromObjectMapperType<NetworkInterface> ([] (const ObjectVariantMapper& mapper, const NetworkInterface* objOfType) -> VariantValue {
-                                   if (not objOfType->fBindings.fAddressRanges.empty ()) {
-                                       return mapper.FromObject (objOfType->fBindings.fAddressRanges);
-                                   }
-                                   return VariantValue{};
-                               }),
-                               ObjectVariantMapper::ToObjectMapperType<NetworkInterface> ([=] (const ObjectVariantMapper& mapper, const VariantValue& d, NetworkInterface* intoObj) -> void {
-                                   if (d != VariantValue{}) {
-                                       intoObj->fBindings.fAddressRanges = mapper.ToObject<Containers::Collection<CIDR>> (d);
-                                   }
-                               })},
-            ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"boundAddressRanges",
+         TypeMappingDetails{ObjectVariantMapper::FromObjectMapperType<NetworkInterface> (
+                                [] (const ObjectVariantMapper& mapper, const NetworkInterface* objOfType) -> VariantValue {
+                                    if (not objOfType->fBindings.fAddressRanges.empty ()) {
+                                        return mapper.FromObject (objOfType->fBindings.fAddressRanges);
+                                    }
+                                    return VariantValue{};
+                                }),
+                            ObjectVariantMapper::ToObjectMapperType<NetworkInterface> (
+                                [=] (const ObjectVariantMapper& mapper, const VariantValue& d, NetworkInterface* intoObj) -> void {
+                                    if (d != VariantValue{}) {
+                                        intoObj->fBindings.fAddressRanges = mapper.ToObject<Containers::Collection<CIDR>> (d);
+                                    }
+                                })},
+         ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"boundAddresses",
-         TypeMappingDetails{ObjectVariantMapper::FromObjectMapperType<NetworkInterface> ([] (const ObjectVariantMapper& mapper, const NetworkInterface* objOfType) -> VariantValue {
-                                if (not objOfType->fBindings.fAddresses.empty ()) {
-                                    return mapper.FromObject (objOfType->fBindings.fAddresses);
-                                }
-                                return VariantValue{};
-                            }),
-                            ObjectVariantMapper::ToObjectMapperType<NetworkInterface> ([=] (const ObjectVariantMapper& mapper, const VariantValue& d, NetworkInterface* intoObj) -> void {
-                                if (d != VariantValue{}) {
-                                    intoObj->fBindings.fAddresses = mapper.ToObject<Containers::Collection<InternetAddress>> (d);
-                                }
-                            })},
+         TypeMappingDetails{ObjectVariantMapper::FromObjectMapperType<NetworkInterface> (
+                                [] (const ObjectVariantMapper& mapper, const NetworkInterface* objOfType) -> VariantValue {
+                                    if (not objOfType->fBindings.fAddresses.empty ()) {
+                                        return mapper.FromObject (objOfType->fBindings.fAddresses);
+                                    }
+                                    return VariantValue{};
+                                }),
+                            ObjectVariantMapper::ToObjectMapperType<NetworkInterface> (
+                                [=] (const ObjectVariantMapper& mapper, const VariantValue& d, NetworkInterface* intoObj) -> void {
+                                    if (d != VariantValue{}) {
+                                        intoObj->fBindings.fAddresses = mapper.ToObject<Containers::Collection<InternetAddress>> (d);
+                                    }
+                                })},
          ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"gateways", StructFieldMetaInfo{&NetworkInterface::fGateways}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"DNSServers", StructFieldMetaInfo{&NetworkInterface::fDNSServers}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
@@ -323,11 +329,11 @@ const ObjectVariantMapper NetworkInterface::kMapper = [] () {
 #endif
     if constexpr (kIncludeFingerprintsInOutputTMP2Test_) {
         mapper.AddSubClass<NetworkInterface, NetworkInterface> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-            {L"fingerprint", TypeMappingDetails{
-                                 ObjectVariantMapper::FromObjectMapperType<NetworkInterface> ([] (const ObjectVariantMapper&, const NetworkInterface* objOfType) -> VariantValue {
-                                     return VariantValue{objOfType->GenerateFingerprintFromProperties ().As<String> ()};
-                                 }),
-                                 ObjectVariantMapper::ToObjectMapperType<NetworkInterface> (nullptr)}},
+            {L"fingerprint", TypeMappingDetails{ObjectVariantMapper::FromObjectMapperType<NetworkInterface> (
+                                                    [] (const ObjectVariantMapper&, const NetworkInterface* objOfType) -> VariantValue {
+                                                        return VariantValue{objOfType->GenerateFingerprintFromProperties ().As<String> ()};
+                                                    }),
+                                                ObjectVariantMapper::ToObjectMapperType<NetworkInterface> (nullptr)}},
         });
     }
 
@@ -383,7 +389,8 @@ String Model::Network::UserOverridesType::NetworkInterfaceAggregateRule::ToStrin
  */
 bool Model::Network::UserOverridesType::IsNonTrivial () const
 {
-    return fName or fTags or fNotes or fAggregateNetworks or fAggregateFingerprints or fAggregateGatewayHardwareAddresses or fAggregateNetworkInterfacesMatching;
+    return fName or fTags or fNotes or fAggregateNetworks or fAggregateFingerprints or fAggregateGatewayHardwareAddresses or
+           fAggregateNetworkInterfacesMatching;
 }
 
 String Model::Network::UserOverridesType::ToString () const
@@ -435,8 +442,10 @@ const DataExchange::ObjectVariantMapper Model::Network::UserOverridesType::kMapp
         {L"notes"sv, StructFieldMetaInfo{&UserOverridesType::fNotes}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"aggregateNetworks"sv, StructFieldMetaInfo{&UserOverridesType::fAggregateNetworks}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"aggregateFingerprints"sv, StructFieldMetaInfo{&UserOverridesType::fAggregateFingerprints}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"aggregateGatewayHardwareAddresses"sv, StructFieldMetaInfo{&UserOverridesType::fAggregateGatewayHardwareAddresses}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"aggregateNetworkInterfacesMatching"sv, StructFieldMetaInfo{&UserOverridesType::fAggregateNetworkInterfacesMatching}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"aggregateGatewayHardwareAddresses"sv, StructFieldMetaInfo{&UserOverridesType::fAggregateGatewayHardwareAddresses},
+         ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"aggregateNetworkInterfacesMatching"sv, StructFieldMetaInfo{&UserOverridesType::fAggregateNetworkInterfacesMatching},
+         ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
     return mapper;
 }();
@@ -536,14 +545,16 @@ Network::FingerprintType Network::GenerateFingerprintFromProperties () const
         // for some reason, gateway list sometimes contains IPv4 only, and sometimes IPv4 and IPv6 addresses
         // treat the list the same if the gateway list ipv4s at least are the same (and non-empty)
         // if IPv4 CIDRs same (and non-empty), then ignore differences in IPv4 addressses
-        Set<CIDR> ipv4s{ias.Where ([] (const CIDR& i) { return i.GetBaseInternetAddress ().GetAddressFamily () == InternetAddress::AddressFamily::V4; })};
+        Set<CIDR> ipv4s{
+            ias.Where ([] (const CIDR& i) { return i.GetBaseInternetAddress ().GetAddressFamily () == InternetAddress::AddressFamily::V4; })};
         return ipv4s.empty () ? ias : ipv4s;
     };
     auto useAddresses = [] (const Set<InternetAddress>& ias) {
         // for some reason, gateway list sometimes contains IPv4 only, and sometimes IPv4 and IPv6 addresses
         // treat the list the same if the gateway list ipv4s at least are the same (and non-empty)
         // if IPv4 CIDRs same (and non-empty), then ignore differences in IPv4 addressses
-        Set<InternetAddress> ipv4s{ias.Where ([] (const InternetAddress& i) { return i.GetAddressFamily () == InternetAddress::AddressFamily::V4; })};
+        Set<InternetAddress> ipv4s{
+            ias.Where ([] (const InternetAddress& i) { return i.GetAddressFamily () == InternetAddress::AddressFamily::V4; })};
         return ipv4s.empty () ? ias : ipv4s;
     };
 
@@ -644,8 +655,13 @@ const ObjectVariantMapper Network::kMapper = [] () {
             {L"longitude"sv, StructFieldMetaInfo{&laglon_::lon}},
         });
         mapper.Add<tuple<float, float>> (
-            [] (const ObjectVariantMapper& mapper, const tuple<float, float>* obj) -> VariantValue { return mapper.FromObject (laglon_{get<0> (*obj), get<1> (*obj)}); },
-            [] (const ObjectVariantMapper& mapper, const VariantValue& d, tuple<float, float>* intoObj) -> void { auto tmp{ mapper.ToObject<laglon_> (d) }; *intoObj = make_tuple (tmp.lat, tmp.lon); });
+            [] (const ObjectVariantMapper& mapper, const tuple<float, float>* obj) -> VariantValue {
+                return mapper.FromObject (laglon_{get<0> (*obj), get<1> (*obj)});
+            },
+            [] (const ObjectVariantMapper& mapper, const VariantValue& d, tuple<float, float>* intoObj) -> void {
+                auto tmp{mapper.ToObject<laglon_> (d)};
+                *intoObj = make_tuple (tmp.lat, tmp.lon);
+            });
     }
     else {
         mapper.AddCommonType<tuple<float, float>> (); // works but represents as an array
@@ -696,11 +712,12 @@ const ObjectVariantMapper Network::kMapper = [] () {
 #endif
     if constexpr (kIncludeFingerprintsInOutputTMP2Test_) {
         mapper.AddSubClass<Network, Network> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-            {L"fingerprint", ObjectVariantMapper::TypeMappingDetails{
-                                 ObjectVariantMapper::FromObjectMapperType<Network> ([] (const ObjectVariantMapper&, const Network* objOfType) -> VariantValue {
-                                     return VariantValue{objOfType->GenerateFingerprintFromProperties ().As<String> ()};
-                                 }),
-                                 ObjectVariantMapper::ToObjectMapperType<Network> (nullptr)}},
+            {L"fingerprint",
+             ObjectVariantMapper::TypeMappingDetails{
+                 ObjectVariantMapper::FromObjectMapperType<Network> ([] (const ObjectVariantMapper&, const Network* objOfType) -> VariantValue {
+                     return VariantValue{objOfType->GenerateFingerprintFromProperties ().As<String> ()};
+                 }),
+                 ObjectVariantMapper::ToObjectMapperType<Network> (nullptr)}},
         });
     }
     mapper.AddCommonType<Sequence<Network>> ();
@@ -838,7 +855,8 @@ const DataExchange::ObjectVariantMapper Model::Device::UserOverridesType::kMappe
         {L"tags"sv, StructFieldMetaInfo{&UserOverridesType::fTags}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"notes"sv, StructFieldMetaInfo{&UserOverridesType::fNotes}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"aggregateDevices"sv, StructFieldMetaInfo{&UserOverridesType::fAggregateDevices}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"aggregateDeviceHardwareAddresses"sv, StructFieldMetaInfo{&UserOverridesType::fAggregateDeviceHardwareAddresses}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"aggregateDeviceHardwareAddresses"sv, StructFieldMetaInfo{&UserOverridesType::fAggregateDeviceHardwareAddresses},
+         ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
     return mapper;
 }();
@@ -933,10 +951,7 @@ Set<InternetAddress> Device::GetInternetAddresses () const
     return result;
 }
 
-String Device::ToString () const
-{
-    return DataExchange::Variant::JSON::Writer{}.WriteAsString (Device::kMapper.FromObject (*this));
-}
+String Device::ToString () const { return DataExchange::Variant::JSON::Writer{}.WriteAsString (Device::kMapper.FromObject (*this)); }
 
 Device Device::Merge (const Device& baseDevice, const Device& priorityDevice)
 {
@@ -975,7 +990,8 @@ Device Device::Rollup (const Device& rollupDevice, const Device& instanceDevice2
 {
     // Use seen.Ever() to decide which 'device' gets precedence in merging. Give the most
     // recent device precedence
-    Device d = (rollupDevice.fSeen.EverSeen () == nullopt or rollupDevice.fSeen.EverSeen ()->GetUpperBound () < instanceDevice2Add.fSeen.EverSeen ()->GetUpperBound ())
+    Device d = (rollupDevice.fSeen.EverSeen () == nullopt or
+                rollupDevice.fSeen.EverSeen ()->GetUpperBound () < instanceDevice2Add.fSeen.EverSeen ()->GetUpperBound ())
                    ? Merge (rollupDevice, instanceDevice2Add)
                    : Merge (instanceDevice2Add, rollupDevice);
     d.fID    = rollupDevice.fID; // regardless of dates, keep the rollupDevice GUID
@@ -1201,8 +1217,12 @@ const ObjectVariantMapper About::kMapper = [] () {
     mapper.AddCommonType<optional<double>> ();
 
     mapper.Add<Configuration::Version> (
-        [] ([[maybe_unused]] const ObjectVariantMapper& mapper, const Configuration::Version* obj) -> VariantValue { return obj->AsPrettyVersionString (); },
-        [] ([[maybe_unused]] const ObjectVariantMapper& mapper, const VariantValue& d, Configuration::Version* intoObj) -> void { *intoObj = Configuration::Version::FromPrettyVersionString (d.As<String> ()); });
+        [] ([[maybe_unused]] const ObjectVariantMapper& mapper, const Configuration::Version* obj) -> VariantValue {
+            return obj->AsPrettyVersionString ();
+        },
+        [] ([[maybe_unused]] const ObjectVariantMapper& mapper, const VariantValue& d, Configuration::Version* intoObj) -> void {
+            *intoObj = Configuration::Version::FromPrettyVersionString (d.As<String> ());
+        });
 
     mapper.AddClass<About::APIServerInfo::ComponentInfo> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
         {L"name", StructFieldMetaInfo{&About::APIServerInfo::ComponentInfo::fName}},
@@ -1220,10 +1240,14 @@ const ObjectVariantMapper About::kMapper = [] () {
 
     mapper.AddClass<About::APIServerInfo::CurrentProcess> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
         {L"processUptime", StructFieldMetaInfo{&About::APIServerInfo::CurrentProcess::fProcessUptime}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"averageCPUTimeUsed", StructFieldMetaInfo{&About::APIServerInfo::CurrentProcess::fAverageCPUTimeUsed}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"workingOrResidentSetSize", StructFieldMetaInfo{&About::APIServerInfo::CurrentProcess::fWorkingOrResidentSetSize}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"combinedIOReadRate", StructFieldMetaInfo{&About::APIServerInfo::CurrentProcess::fCombinedIOReadRate}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"combinedIOWriteRate", StructFieldMetaInfo{&About::APIServerInfo::CurrentProcess::fCombinedIOWriteRate}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"averageCPUTimeUsed", StructFieldMetaInfo{&About::APIServerInfo::CurrentProcess::fAverageCPUTimeUsed},
+         ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"workingOrResidentSetSize", StructFieldMetaInfo{&About::APIServerInfo::CurrentProcess::fWorkingOrResidentSetSize},
+         ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"combinedIOReadRate", StructFieldMetaInfo{&About::APIServerInfo::CurrentProcess::fCombinedIOReadRate},
+         ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"combinedIOWriteRate", StructFieldMetaInfo{&About::APIServerInfo::CurrentProcess::fCombinedIOWriteRate},
+         ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
 
     mapper.AddCommonType<optional<float>> ();
@@ -1233,9 +1257,12 @@ const ObjectVariantMapper About::kMapper = [] () {
         {L"medianDuration", StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fMedianDuration}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"meanDuration", StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fMeanDuration}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
         {L"maxDuration", StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fMaxDuration}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"medianWebServerConnections", StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fMedianWebServerConnections}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"medianProcessingWebServerConnections", StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fMedianProcessingWebServerConnections}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"medianRunningAPITasks", StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fMedianRunningAPITasks}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"medianWebServerConnections", StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fMedianWebServerConnections},
+         ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"medianProcessingWebServerConnections", StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fMedianProcessingWebServerConnections},
+         ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {L"medianRunningAPITasks", StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fMedianRunningAPITasks},
+         ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
 
     mapper.AddCommonType<optional<About::APIServerInfo::APIEndpoint>> ();

@@ -78,15 +78,19 @@ optional<tuple<GEOLocationInformation, InternetServiceProvider>> BackendApp::Com
             Debug::TraceContextBumper ctx{L"GEOLocAndISPLookup::{}... real lookup - cache miss"};
 
             auto&&                        connection = Connection::New ();
-            Mapping<String, VariantValue> m          = Variant::JSON::Reader ().Read (connection.GET (URI{L"http://ip-api.com/json/" + ia.ToString ()}).GetDataTextInputStream ()).As<Mapping<String, VariantValue>> ();
-            GEOLocationInformation        geoloc{};
-            auto                          cvt = [] (optional<VariantValue> v) -> optional<String> { return v ? optional<String>{v->As<String> ()} : optional<String>{}; };
-            geoloc.fRegionCode                = cvt (m.Lookup (L"region"_k));
-            geoloc.fCountryCode               = cvt (m.Lookup (L"countryCode"_k));
-            geoloc.fCity                      = cvt (m.Lookup (L"city"_k));
-            geoloc.fPostalCode                = cvt (m.Lookup (L"zip"_k));
-            optional<VariantValue> lat        = m.Lookup (L"lat"_k);
-            optional<VariantValue> lon        = m.Lookup (L"lon"_k);
+            Mapping<String, VariantValue> m          = Variant::JSON::Reader ()
+                                                  .Read (connection.GET (URI{L"http://ip-api.com/json/" + ia.ToString ()}).GetDataTextInputStream ())
+                                                  .As<Mapping<String, VariantValue>> ();
+            GEOLocationInformation geoloc{};
+            auto                   cvt = [] (optional<VariantValue> v) -> optional<String> {
+                return v ? optional<String>{v->As<String> ()} : optional<String>{};
+            };
+            geoloc.fRegionCode         = cvt (m.Lookup (L"region"_k));
+            geoloc.fCountryCode        = cvt (m.Lookup (L"countryCode"_k));
+            geoloc.fCity               = cvt (m.Lookup (L"city"_k));
+            geoloc.fPostalCode         = cvt (m.Lookup (L"zip"_k));
+            optional<VariantValue> lat = m.Lookup (L"lat"_k);
+            optional<VariantValue> lon = m.Lookup (L"lon"_k);
             if (lat and lon) {
                 geoloc.fLatitudeAndLongitude = make_tuple (lat->As<float> (), lon->As<float> ());
             }

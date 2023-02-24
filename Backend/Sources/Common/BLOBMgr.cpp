@@ -99,45 +99,44 @@ namespace {
     }};
 
     const Table kBLOBTableSchema_{
-        L"BLOB",
-        Collection<Field>{
+        L"BLOB", Collection<Field>{
 #if __cpp_designated_initializers
-            {.fName = L"id"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = L"randomblob(16)"sv},
-            {.fName = L"blob"sv, .fRequired = true, .fVariantValueType = VariantValue::eBLOB},
-            {.fName = L"contentType"sv, .fRequired = false, .fVariantValueType = VariantValue::eString},
+                     {.fName = L"id"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = L"randomblob(16)"sv},
+                     {.fName = L"blob"sv, .fRequired = true, .fVariantValueType = VariantValue::eBLOB},
+                     {.fName = L"contentType"sv, .fRequired = false, .fVariantValueType = VariantValue::eString},
 #else
-            {L"id", nullopt, true, kRepresentIDAs_, nullopt, true, nullopt, L"randomblob(16)"sv},
-            {L"blob", nullopt, true, VariantValue::eBLOB},
-            {L"contentType", nullopt, false, VariantValue::eString},
+                     {L"id", nullopt, true, kRepresentIDAs_, nullopt, true, nullopt, L"randomblob(16)"sv},
+                     {L"blob", nullopt, true, VariantValue::eBLOB},
+                     {L"contentType", nullopt, false, VariantValue::eString},
 #endif
-        }};
+                 }};
 
-    const Table kBLOBURLTableSchema_{
-        L"BLOBURL",
-        Collection<Field>{
+    const Table kBLOBURLTableSchema_{L"BLOBURL", Collection<Field>{
 #if __cpp_designated_initializers
-            {.fName = L"uri"sv, .fRequired = true, .fVariantValueType = VariantValue::eString, .fIsKeyField = true},
-            {.fName = L"blobid"sv, .fRequired = true, .fVariantValueType = VariantValue::eBLOB},
-            {.fName = L"etag"sv, .fVariantValueType = VariantValue::eString},
+                                                     {.fName = L"uri"sv, .fRequired = true, .fVariantValueType = VariantValue::eString, .fIsKeyField = true},
+                                                     {.fName = L"blobid"sv, .fRequired = true, .fVariantValueType = VariantValue::eBLOB},
+                                                     {.fName = L"etag"sv, .fVariantValueType = VariantValue::eString},
 #else
-            {L"uri", nullopt, true, VariantValue::eString, nullopt, true},
-            {L"blobid", nullopt, true, VariantValue::eBLOB},
-            {L"etag", nullopt, false, VariantValue::eString},
+                                                      {L"uri", nullopt, true, VariantValue::eString, nullopt, true},
+                                                      {L"blobid", nullopt, true, VariantValue::eBLOB},
+                                                      {L"etag", nullopt, false, VariantValue::eString},
 #endif
-        }};
+                                                 }};
 
     struct DBConn_ {
-        using BLOBURLTableConnection_ = SQL::ORM::TableConnection<DBRecs_::BLOBURL_, SQL::ORM::TableConnectionTraits<DBRecs_::BLOBURL_, IO::Network::URI>>;
+        using BLOBURLTableConnection_ =
+            SQL::ORM::TableConnection<DBRecs_::BLOBURL_, SQL::ORM::TableConnectionTraits<DBRecs_::BLOBURL_, IO::Network::URI>>;
         DBConn_ ()
         {
             constexpr Configuration::Version kCurrentVersion_ = Configuration::Version{1, 0, Configuration::VersionStage::Alpha, 0};
-            BackendApp::Common::DB           db{
-                kCurrentVersion_,
-                Traversal::Iterable<Database::SQL::ORM::Schema::Table>{kBLOBTableSchema_, kBLOBURLTableSchema_}};
-            SQL::Connection::Ptr conn        = db.NewConnection ();
-            fBLOBs                           = make_shared<SQL::ORM::TableConnection<DBRecs_::BLOB_>> (conn, kBLOBTableSchema_, kDBObjectMapper_, mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<DBRecs_::BLOB_>> ());
-            fBLOBURLs                        = make_shared<BLOBURLTableConnection_> (conn, kBLOBURLTableSchema_, kDBObjectMapper_, mkOperationalStatisticsMgrProcessDBCmd<BLOBURLTableConnection_> ());
-            fLookupBLOBByValueAndContentType = make_shared<SQL::Statement> (conn.mkStatement (L"SELECT * from BLOB where blob=:b and contentType=:ct;"sv));
+            BackendApp::Common::DB db{kCurrentVersion_, Traversal::Iterable<Database::SQL::ORM::Schema::Table>{kBLOBTableSchema_, kBLOBURLTableSchema_}};
+            SQL::Connection::Ptr conn = db.NewConnection ();
+            fBLOBs                    = make_shared<SQL::ORM::TableConnection<DBRecs_::BLOB_>> (
+                conn, kBLOBTableSchema_, kDBObjectMapper_, mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<DBRecs_::BLOB_>> ());
+            fBLOBURLs = make_shared<BLOBURLTableConnection_> (conn, kBLOBURLTableSchema_, kDBObjectMapper_,
+                                                              mkOperationalStatisticsMgrProcessDBCmd<BLOBURLTableConnection_> ());
+            fLookupBLOBByValueAndContentType =
+                make_shared<SQL::Statement> (conn.mkStatement (L"SELECT * from BLOB where blob=:b and contentType=:ct;"sv));
         }
         shared_ptr<SQL::ORM::TableConnection<DBRecs_::BLOB_>> fBLOBs;
         shared_ptr<BLOBURLTableConnection_>                   fBLOBURLs;

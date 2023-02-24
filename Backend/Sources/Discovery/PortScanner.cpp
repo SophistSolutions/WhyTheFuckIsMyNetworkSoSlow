@@ -73,7 +73,8 @@ namespace {
             DbgTrace (L"ICMPPingScan_(ia=%s): Dest Unreachable: Typically means router blocking", Characters::ToString (ia).c_str ());
         }
         catch (...) {
-            DbgTrace (L"ICMPPingScan_ (addr %s): Ignoring exception: %s", Characters::ToString (ia).c_str (), Characters::ToString (current_exception ()).c_str ());
+            DbgTrace (L"ICMPPingScan_ (addr %s): Ignoring exception: %s", Characters::ToString (ia).c_str (),
+                      Characters::ToString (current_exception ()).c_str ());
         }
     }
 }
@@ -81,7 +82,8 @@ namespace {
 PortScanResults Discovery::ScanPorts (const InternetAddress& ia, const optional<ScanOptions>& options)
 {
     PortScanResults results{};
-    auto            scanningThisAddress = LazyEvalActivity ([&] () -> String { return Characters::Format (L"scanning ports on %s", Characters::ToString (ia).c_str ()); });
+    auto            scanningThisAddress =
+        LazyEvalActivity ([&] () -> String { return Characters::Format (L"scanning ports on %s", Characters::ToString (ia).c_str ()); });
     DeclareActivity da{&scanningThisAddress};
 
     if (options and options->fStyle == ScanOptions::eQuick) {

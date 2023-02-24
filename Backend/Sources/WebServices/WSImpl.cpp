@@ -104,10 +104,7 @@ namespace {
             mkProcessInstrumentOptions_ ()
 #endif
         };
-        MyCapturer_ ()
-        {
-            AddCaptureSet (CaptureSet{kCaptureFrequency_, {fCPUInstrument, fProcessInstrument}});
-        }
+        MyCapturer_ () { AddCaptureSet (CaptureSet{kCaptureFrequency_, {fCPUInstrument, fProcessInstrument}}); }
     };
 }
 
@@ -153,12 +150,13 @@ About WSImpl::GetAbout () const
         ComponentInfo{L"sqlite"sv, String::FromASCII (SQLITE_VERSION), URI{"https://www.sqlite.org"}}
 #endif
     }};
-    auto now          = DateTime::Now ();
+    auto now = DateTime::Now ();
     auto measurements = fRep_->fMyCapturer.pMostRecentMeasurements (); // capture results on a regular cadence with MyCapturer, and just report the latest stats
 
     CurrentMachine machineInfo = [this, now, &measurements] () {
         CurrentMachine    result;
-        static const auto kOS_  = OperatingSystem{Configuration::GetSystemConfiguration_ActualOperatingSystem ().fTokenName, Configuration::GetSystemConfiguration_ActualOperatingSystem ().fPrettyNameWithVersionDetails};
+        static const auto kOS_  = OperatingSystem{Configuration::GetSystemConfiguration_ActualOperatingSystem ().fTokenName,
+                                                 Configuration::GetSystemConfiguration_ActualOperatingSystem ().fPrettyNameWithVersionDetails};
         result.fOperatingSystem = kOS_;
         if (auto o = Configuration::GetSystemConfiguration_BootInformation ().fBootedAt) {
             result.fMachineUptime = now - *o;
@@ -213,15 +211,7 @@ About WSImpl::GetAbout () const
         return r;
     }();
 
-    return About{
-        AppVersion::kVersion,
-        APIServerInfo{
-            AppVersion::kVersion,
-            kAPIServerComponents_,
-            machineInfo,
-            processInfo,
-            apiStats,
-            dbStats}};
+    return About{AppVersion::kVersion, APIServerInfo{AppVersion::kVersion, kAPIServerComponents_, machineInfo, processInfo, apiStats, dbStats}};
 }
 
 tuple<Memory::BLOB, optional<DataExchange::InternetMediaType>> WSImpl::GetBLOB (const GUID& guid) const
@@ -233,15 +223,14 @@ tuple<Memory::BLOB, optional<DataExchange::InternetMediaType>> WSImpl::GetBLOB (
 Sequence<String> WSImpl::GetDevices (const optional<Set<GUID>>& ids, const optional<DeviceSortParamters>& sort) const
 {
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
-    return GetDevices_Recurse (ids, sort).Map<String, Sequence<String>> ([] (const WebServices::Device& n) {
-        return n.fID.As<String> ();
-    });
+    return GetDevices_Recurse (ids, sort).Map<String, Sequence<String>> ([] (const WebServices::Device& n) { return n.fID.As<String> (); });
 }
 
 Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const optional<Set<GUID>>& ids, const optional<DeviceSortParamters>& sort) const
 {
     using BackendApp::WebServices::Device;
-    Debug::TraceContextBumper                       ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::GetDevices_Recurse", L"sort=%s", Characters::ToString (sort).c_str ())};
+    Debug::TraceContextBumper ctx{
+        Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::GetDevices_Recurse", L"sort=%s", Characters::ToString (sort).c_str ())};
     Debug::TimingTrace                              ttrc{L"WSImpl::GetDevices_Recurse", .1};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
 
@@ -329,7 +318,8 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
                 });
                 break;
                 case DeviceSortParamters::SearchTerm::By::eAddress: {
-                    devices = devices.OrderBy ([st, sortCompareNetwork] (const BackendApp::WebServices::Device& lhs, const BackendApp::WebServices::Device& rhs) -> bool {
+                    devices = devices.OrderBy ([st, sortCompareNetwork] (const BackendApp::WebServices::Device& lhs,
+                                                                         const BackendApp::WebServices::Device& rhs) -> bool {
                         Assert (st.fAscending);
                         bool ascending = *st.fAscending;
                         auto lookup    = [=] (const BackendApp::WebServices::Device& d) -> InternetAddress {
@@ -353,14 +343,16 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
                     });
                 } break;
                 case DeviceSortParamters::SearchTerm::By::eName: {
-                    devices = devices.OrderBy ([st, sortCompareNetwork] (const BackendApp::WebServices::Device& lhs, const BackendApp::WebServices::Device& rhs) -> bool {
+                    devices = devices.OrderBy ([st, sortCompareNetwork] (const BackendApp::WebServices::Device& lhs,
+                                                                         const BackendApp::WebServices::Device& rhs) -> bool {
                         Assert (st.fAscending);
                         bool ascending = *st.fAscending;
                         return ascending ? (lhs.fNames.GetName () < rhs.fNames.GetName ()) : (lhs.fNames.GetName () > rhs.fNames.GetName ());
                     });
                 } break;
                 case DeviceSortParamters::SearchTerm::By::eType: {
-                    devices = devices.OrderBy ([st, sortCompareNetwork] (const BackendApp::WebServices::Device& lhs, const BackendApp::WebServices::Device& rhs) -> bool {
+                    devices = devices.OrderBy ([st, sortCompareNetwork] (const BackendApp::WebServices::Device& lhs,
+                                                                         const BackendApp::WebServices::Device& rhs) -> bool {
                         Assert (st.fAscending);
                         bool ascending = *st.fAscending;
                         // tricky to compare types cuz we have a set of types. And types in those sets have subtypes
@@ -396,7 +388,8 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
                             }
                             return f;
                         };
-                        return ascending ? (mapTypeToOrder2 (lhs.fTypes) < mapTypeToOrder2 (rhs.fTypes)) : (mapTypeToOrder2 (lhs.fTypes) > mapTypeToOrder2 (rhs.fTypes));
+                        return ascending ? (mapTypeToOrder2 (lhs.fTypes) < mapTypeToOrder2 (rhs.fTypes))
+                                         : (mapTypeToOrder2 (lhs.fTypes) > mapTypeToOrder2 (rhs.fTypes));
                     });
                 } break;
                 default: {
@@ -412,8 +405,8 @@ tuple<Device, Duration> WSImpl::GetDevice (const String& id) const
 {
     Debug::TimingTrace                              ttrc{L"WSImpl::GetDevice", 0.1};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
-    GUID                                            compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
-    optional<Duration>                              ttl;
+    GUID               compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
+    optional<Duration> ttl;
     if (auto d = IntegratedModel::Mgr::sThe.GetDevice (compareWithID, &ttl)) {
         return make_tuple (*d, Memory::ValueOf (ttl));
     }
@@ -427,7 +420,8 @@ void WSImpl::PatchDevice (const String& id, const JSONPATCH::OperationItemsType&
     for (auto op : patchDoc) {
         switch (op.op) {
             case JSONPATCH::OperationType::eAdd: {
-                Device::UserOverridesType updateVal = IntegratedModel::Mgr::sThe.GetDeviceUserSettings (objID).value_or (Device::UserOverridesType{});
+                Device::UserOverridesType updateVal =
+                    IntegratedModel::Mgr::sThe.GetDeviceUserSettings (objID).value_or (Device::UserOverridesType{});
                 if (not op.value) {
                     Execution::Throw (ClientErrorException{L"JSON-Patch add requires a value"_k});
                 }
@@ -439,7 +433,8 @@ void WSImpl::PatchDevice (const String& id, const JSONPATCH::OperationItemsType&
                 }
                 else if (op.path == L"/userOverrides/tags") {
                     // for now only support replacing the whole array at a time
-                    updateVal.fTags = op.value->As<Sequence<VariantValue>> ().Map<String, Set<String>> ([] (const VariantValue& vv) { return vv.As<String> (); });
+                    updateVal.fTags = op.value->As<Sequence<VariantValue>> ().Map<String, Set<String>> (
+                        [] (const VariantValue& vv) { return vv.As<String> (); });
                 }
                 else {
                     Execution::Throw (ClientErrorException{L"JSON-Patch add of unsupported op.path"_k});
@@ -452,7 +447,8 @@ void WSImpl::PatchDevice (const String& id, const JSONPATCH::OperationItemsType&
                 }
             } break;
             case JSONPATCH::OperationType::eRemove: {
-                Device::UserOverridesType updateVal = IntegratedModel::Mgr::sThe.GetDeviceUserSettings (objID).value_or (Device::UserOverridesType{});
+                Device::UserOverridesType updateVal =
+                    IntegratedModel::Mgr::sThe.GetDeviceUserSettings (objID).value_or (Device::UserOverridesType{});
                 if (op.path == L"/userOverrides/name") {
                     updateVal.fName = optional<String>{};
                 }
@@ -523,8 +519,8 @@ tuple<Network, Duration> WSImpl::GetNetwork (const String& id) const
 {
     Debug::TimingTrace                              ttrc{L"WSImpl::GetNetwork", 0.1};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
-    GUID                                            compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
-    optional<Duration>                              ttl;
+    GUID               compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
+    optional<Duration> ttl;
     if (auto d = IntegratedModel::Mgr::sThe.GetNetwork (compareWithID, &ttl)) {
         return make_tuple (*d, Memory::ValueOf (ttl));
     }
@@ -538,7 +534,8 @@ void WSImpl::PatchNetwork (const String& id, const JSONPATCH::OperationItemsType
     for (auto op : patchDoc) {
         switch (op.op) {
             case JSONPATCH::OperationType::eAdd: {
-                Network::UserOverridesType updateVal = IntegratedModel::Mgr::sThe.GetNetworkUserSettings (objID).value_or (Network::UserOverridesType{});
+                Network::UserOverridesType updateVal =
+                    IntegratedModel::Mgr::sThe.GetNetworkUserSettings (objID).value_or (Network::UserOverridesType{});
                 if (not op.value) {
                     Execution::Throw (ClientErrorException{L"JSON-Patch add requires a value"_k});
                 }
@@ -550,19 +547,24 @@ void WSImpl::PatchNetwork (const String& id, const JSONPATCH::OperationItemsType
                 }
                 else if (op.path == L"/userOverrides/tags") {
                     // for now only support replacing the whole array at a time
-                    updateVal.fTags = Set<String>{op.value->As<Sequence<VariantValue>> ().Map<String> ([] (const VariantValue& vv) { return vv.As<String> (); })};
+                    updateVal.fTags = Set<String>{
+                        op.value->As<Sequence<VariantValue>> ().Map<String> ([] (const VariantValue& vv) { return vv.As<String> (); })};
                 }
                 else if (op.path == L"/userOverrides/aggregateFingerprints") {
                     // for now only support replacing the whole array at a time
-                    updateVal.fAggregateFingerprints = Set<GUID>{op.value->As<Sequence<VariantValue>> ().Map<GUID> ([] (const VariantValue& vv) { return vv.As<String> (); })};
+                    updateVal.fAggregateFingerprints =
+                        Set<GUID>{op.value->As<Sequence<VariantValue>> ().Map<GUID> ([] (const VariantValue& vv) { return vv.As<String> (); })};
                 }
                 else if (op.path == L"/userOverrides/aggregateGatewayHardwareAddresses") {
                     // for now only support replacing the whole array at a time
-                    updateVal.fAggregateGatewayHardwareAddresses = Set<String>{op.value->As<Sequence<VariantValue>> ().Map<String> ([] (const VariantValue& vv) { return vv.As<String> (); })};
+                    updateVal.fAggregateGatewayHardwareAddresses = Set<String>{
+                        op.value->As<Sequence<VariantValue>> ().Map<String> ([] (const VariantValue& vv) { return vv.As<String> (); })};
                 }
                 else if (op.path == L"/userOverrides/aggregateNetworkInterfacesMatching") {
                     // for now only support replacing the whole array at a time
-                    updateVal.fAggregateNetworkInterfacesMatching = Model::Network::UserOverridesType::kMapper.ToObject<Sequence<Model::Network::UserOverridesType::NetworkInterfaceAggregateRule>> (*op.value);
+                    updateVal.fAggregateNetworkInterfacesMatching =
+                        Model::Network::UserOverridesType::kMapper.ToObject<Sequence<Model::Network::UserOverridesType::NetworkInterfaceAggregateRule>> (
+                            *op.value);
                 }
                 else {
                     Execution::Throw (ClientErrorException{L"JSON-Patch add of unsupported op.path"_k});
@@ -575,7 +577,8 @@ void WSImpl::PatchNetwork (const String& id, const JSONPATCH::OperationItemsType
                 }
             } break;
             case JSONPATCH::OperationType::eRemove: {
-                Network::UserOverridesType updateVal = IntegratedModel::Mgr::sThe.GetNetworkUserSettings (objID).value_or (Network::UserOverridesType{});
+                Network::UserOverridesType updateVal =
+                    IntegratedModel::Mgr::sThe.GetNetworkUserSettings (objID).value_or (Network::UserOverridesType{});
                 if (op.path == L"/userOverrides/name") {
                     updateVal.fName = optional<String>{};
                 }
@@ -613,9 +616,8 @@ Collection<String> WSImpl::GetNetworkInterfaces () const
 {
     Debug::TimingTrace                              ttrc{L"WSImpl::GetNetworkInterfaces_Recurse", 0.1};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
-    return IntegratedModel::Mgr::sThe.GetNetworkInterfaces ().Map<String, Collection<String>> ([=] (const auto& ni) -> optional<String> {
-        return ni.fID.ToString ();
-    });
+    return IntegratedModel::Mgr::sThe.GetNetworkInterfaces ().Map<String, Collection<String>> (
+        [=] (const auto& ni) -> optional<String> { return ni.fID.ToString (); });
 }
 
 Collection<BackendApp::WebServices::NetworkInterface> WSImpl::GetNetworkInterfaces_Recurse () const
@@ -629,8 +631,8 @@ tuple<NetworkInterface, Duration> WSImpl::GetNetworkInterface (const String& id)
 {
     Debug::TimingTrace                              ttrc{L"WSImpl::GetNetworkInterface", 0.1};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
-    GUID                                            compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
-    optional<Duration>                              ttl;
+    GUID               compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
+    optional<Duration> ttl;
     if (auto ni = IntegratedModel::Mgr::sThe.GetNetworkInterface (compareWithID, &ttl)) {
         return make_tuple (*ni, Memory::ValueOf (ttl));
     }
@@ -639,7 +641,8 @@ tuple<NetworkInterface, Duration> WSImpl::GetNetworkInterface (const String& id)
 
 double WSImpl::Operation_Ping (const String& address) const
 {
-    Debug::TraceContextBumper                       ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_Ping", L"address=%s", Characters::ToString (address).c_str ())};
+    Debug::TraceContextBumper ctx{
+        Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_Ping", L"address=%s", Characters::ToString (address).c_str ())};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
 
     using namespace Stroika::Foundation::IO::Network;
@@ -648,7 +651,7 @@ double WSImpl::Operation_Ping (const String& address) const
     using namespace Stroika::Frameworks;
     using namespace Stroika::Frameworks::NetworkMonitor;
 
-    size_t                packetSize  = Ping::Options::kDefaultPayloadSize + sizeof (ICMP::V4::PacketHeader); // historically, the app ping has measured this including ICMP packet header, but not ip packet header size
+    size_t packetSize = Ping::Options::kDefaultPayloadSize + sizeof (ICMP::V4::PacketHeader); // historically, the app ping has measured this including ICMP packet header, but not ip packet header size
     unsigned int          maxHops     = Ping::Options::kDefaultMaxHops;
     unsigned int          sampleCount = 3;
     static const Duration kInterSampleTime_{"PT.1S"};
@@ -674,7 +677,9 @@ double WSImpl::Operation_Ping (const String& address) const
 
 Operations::TraceRouteResults WSImpl::Operation_TraceRoute (const String& address, optional<bool> reverseDNSResults) const
 {
-    Debug::TraceContextBumper                       ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_TraceRoute", L"address=%s, reverseDNSResults=%s", Characters::ToString (address).c_str (), Characters::ToString (reverseDNSResults).c_str ())};
+    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_TraceRoute", L"address=%s, reverseDNSResults=%s",
+                                                                                 Characters::ToString (address).c_str (),
+                                                                                 Characters::ToString (reverseDNSResults).c_str ())};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
 
     using namespace Stroika::Foundation::IO::Network;
@@ -685,7 +690,7 @@ Operations::TraceRouteResults WSImpl::Operation_TraceRoute (const String& addres
 
     bool revDNS = reverseDNSResults.value_or (true);
 
-    size_t                packetSize  = Ping::Options::kDefaultPayloadSize + sizeof (ICMP::V4::PacketHeader); // historically, the app ping has measured this including ICMP packet header, but not ip packet header size
+    size_t packetSize = Ping::Options::kDefaultPayloadSize + sizeof (ICMP::V4::PacketHeader); // historically, the app ping has measured this including ICMP packet header, but not ip packet header size
     unsigned int          maxHops     = Ping::Options::kDefaultMaxHops;
     unsigned int          sampleCount = 3;
     static const Duration kInterSampleTime_{"PT.1S"};
@@ -722,7 +727,7 @@ Operations::TraceRouteResults WSImpl::Operation_TraceRoute (const String& addres
 
 Time::Duration WSImpl::Operation_DNS_CalculateNegativeLookupTime (optional<unsigned int> samples) const
 {
-    Debug::TraceContextBumper                       ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_DNS_CalculateNegativeLookupTime")};
+    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_DNS_CalculateNegativeLookupTime")};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
     constexpr unsigned int                          kDefault_Samples = 7;
     unsigned int                                    useSamples       = samples.value_or (kDefault_Samples);
@@ -744,7 +749,7 @@ Time::Duration WSImpl::Operation_DNS_CalculateNegativeLookupTime (optional<unsig
 
 Operations::DNSLookupResults WSImpl::Operation_DNS_Lookup (const String& name) const
 {
-    Debug::TraceContextBumper                       ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_DNS_Lookup", L"name=%s", name.c_str ())};
+    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_DNS_Lookup", L"name=%s", name.c_str ())};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
     Operations::DNSLookupResults                    result;
     Time::DurationSecondsType                       startAt = Time::GetTickCount ();
@@ -761,7 +766,9 @@ double WSImpl::Operation_DNS_CalculateScore () const
     constexpr double kNegLookupWeight = 2.5;
     totalWeightedTime += kNegLookupWeight * Operation_DNS_CalculateNegativeLookupTime ({}).As<double> ();
     constexpr double kPosLookupWeight = 25; // much higher than kNegLookupWeight because this is the time for cached entries lookup which will naturally be much smaller
-    totalWeightedTime += kPosLookupWeight * (0 + Operation_DNS_Lookup (L"www.google.com"sv).fLookupTime.As<double> () + Operation_DNS_Lookup (L"www.amazon.com"sv).fLookupTime.As<double> () + Operation_DNS_Lookup (L"www.youtube.com"sv).fLookupTime.As<double> ());
+    totalWeightedTime += kPosLookupWeight * (0 + Operation_DNS_Lookup (L"www.google.com"sv).fLookupTime.As<double> () +
+                                             Operation_DNS_Lookup (L"www.amazon.com"sv).fLookupTime.As<double> () +
+                                             Operation_DNS_Lookup (L"www.youtube.com"sv).fLookupTime.As<double> ());
     Assert (totalWeightedTime >= 0);
     constexpr double kScoreCutOff_               = 10.0;
     constexpr double kShiftAndScaleVerticallyBy_ = 10;
@@ -781,7 +788,7 @@ DataExchange::VariantValue WSImpl::Operation_Scan_FullRescan (const String& devi
     Debug::TraceContextBumper                       ctx{L"WSImpl::Operation_Scan_FullRescan"};
     DataExchange::VariantValue                      x;
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
-    GUID                                            useDeviceID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{deviceID}; });
+    GUID useDeviceID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{deviceID}; });
     // @todo if the device has no dynamic device (cuz it hasn't been discovered - yet) - we don't force an attempt to rediscover
     // because Discovery::DevicesMgr doesn't have API for this. Maybe add one --LGP 2022-06-22
     if (auto useDevID = IntegratedModel::Mgr::sThe.GetCorrespondingDynamicDeviceID (useDeviceID)) {
@@ -794,6 +801,7 @@ DataExchange::VariantValue WSImpl::Operation_Scan_Scan (const String& addr) cons
 {
     Debug::TraceContextBumper                       ctx{L"WSImpl::Operation_Scan_Scan"};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
-    InternetAddress                                 useAddr = ClientErrorException::TreatExceptionsAsClientError ([&] () { return IO::Network::DNS::kThe.GetHostAddress (addr); });
+    InternetAddress                                 useAddr =
+        ClientErrorException::TreatExceptionsAsClientError ([&] () { return IO::Network::DNS::kThe.GetHostAddress (addr); });
     return Discovery::DevicesMgr::sThe.ScanAndReturnReport (useAddr);
 }

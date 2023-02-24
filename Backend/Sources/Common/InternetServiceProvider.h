@@ -36,10 +36,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
             }
             return true;
         }
-        bool operator!= (const InternetServiceProvider& rhs) const
-        {
-            return not(*this == rhs);
-        }
+        bool operator!= (const InternetServiceProvider& rhs) const { return not(*this == rhs); }
 #else
         auto operator<=> (const InternetServiceProvider&) const = default;
 #endif

@@ -73,7 +73,8 @@ namespace {
             }
         }
         catch (const std::system_error& e) {
-            Logger::sThe.Log (Logger::eWarning, L"Database update: ignoring exception in TransformURL2LocalStorage_: %s", Characters::ToString (e).c_str ());
+            Logger::sThe.Log (Logger::eWarning, L"Database update: ignoring exception in TransformURL2LocalStorage_: %s",
+                              Characters::ToString (e).c_str ());
             Assert (e.code () == errc::device_or_resource_busy); // this can happen talking to database (SQLITE_BUSY or SQLITE_LOCKED)
                                                                  // might be better to up timeout so more rare
         }
@@ -81,7 +82,8 @@ namespace {
             Execution::ReThrow ();
         }
         catch (...) {
-            Logger::sThe.Log (Logger::eWarning, L"Database update: ignoring exception in TransformURL2LocalStorage_: %s", Characters::ToString (current_exception ()).c_str ());
+            Logger::sThe.Log (Logger::eWarning, L"Database update: ignoring exception in TransformURL2LocalStorage_: %s",
+                              Characters::ToString (current_exception ()).c_str ());
             AssertNotReached ();
         }
         DbgTrace (L"Failed to cache url (%s) - so returning original", Characters::ToString (url).c_str ());
@@ -97,17 +99,20 @@ namespace {
     struct Device_Key_Extractor_ {
         GUID operator() (const IntegratedModel::Device& t) const { return t.fID; };
     };
-    using DeviceKeyedCollection_ = KeyedCollection<IntegratedModel::Device, GUID, KeyedCollection_DefaultTraits<IntegratedModel::Device, GUID, Device_Key_Extractor_>>;
+    using DeviceKeyedCollection_ =
+        KeyedCollection<IntegratedModel::Device, GUID, KeyedCollection_DefaultTraits<IntegratedModel::Device, GUID, Device_Key_Extractor_>>;
 
     struct Network_Key_Extractor_ {
         GUID operator() (const IntegratedModel::Network& t) const { return t.fID; };
     };
-    using NetworkKeyedCollection_ = KeyedCollection<IntegratedModel::Network, GUID, KeyedCollection_DefaultTraits<IntegratedModel::Network, GUID, Network_Key_Extractor_>>;
+    using NetworkKeyedCollection_ =
+        KeyedCollection<IntegratedModel::Network, GUID, KeyedCollection_DefaultTraits<IntegratedModel::Network, GUID, Network_Key_Extractor_>>;
 
     struct NetworkInterface_Key_Extractor_ {
         GUID operator() (const IntegratedModel::NetworkInterface& t) const { return t.fID; };
     };
-    using NetworkInterfaceCollection_ = Containers::KeyedCollection<IntegratedModel::NetworkInterface, GUID, Containers::KeyedCollection_DefaultTraits<IntegratedModel::NetworkInterface, GUID, NetworkInterface_Key_Extractor_>>;
+    using NetworkInterfaceCollection_ =
+        Containers::KeyedCollection<IntegratedModel::NetworkInterface, GUID, Containers::KeyedCollection_DefaultTraits<IntegratedModel::NetworkInterface, GUID, NetworkInterface_Key_Extractor_>>;
 }
 
 namespace {
@@ -155,10 +160,10 @@ namespace {
                 newDev.fAttachedNetworks.Add (i.fKey, NetworkAttachmentInfo{i.fValue.hardwareAddresses, addrs2Report});
             }
             newDev.fAttachedNetworkInterfaces = d.fAttachedInterfaces; // @todo must merge += (but only when merging across differnt discoverers/networks)
-            newDev.fPresentationURL           = d.fPresentationURL;
-            newDev.fManufacturer              = d.fManufacturer;
-            newDev.fIcon                      = TransformURL2LocalStorage_ (d.fIcon);
-            newDev.fOperatingSystem           = d.fOperatingSystem;
+            newDev.fPresentationURL = d.fPresentationURL;
+            newDev.fManufacturer    = d.fManufacturer;
+            newDev.fIcon            = TransformURL2LocalStorage_ (d.fIcon);
+            newDev.fOperatingSystem = d.fOperatingSystem;
 #if qDebug
             if (not d.fDebugProps.empty ()) {
                 newDev.fDebugProps = d.fDebugProps;
@@ -230,10 +235,7 @@ namespace {
             return nwi;
         }
 
-        optional<GUID> GetMyDeviceID_ ()
-        {
-            return Discovery::DevicesMgr::sThe.GetThisDeviceID ();
-        }
+        optional<GUID> GetMyDeviceID_ () { return Discovery::DevicesMgr::sThe.GetThisDeviceID (); }
 
         /**
          * Map all the 'Discovery::Device' objects to 'Model::Device' objects.
@@ -244,9 +246,8 @@ namespace {
         {
             Debug::TimingTrace ttrc{L"DiscoveryWrapper_::GetDevices_", .1};
             // Fetch (UNSORTED) list of devices
-            return Discovery::DevicesMgr::sThe.GetActiveDevices ().Map<Device, Sequence<Device>> ([] (const Discovery::Device& d) {
-                return Discovery2Model_ (d);
-            });
+            return Discovery::DevicesMgr::sThe.GetActiveDevices ().Map<Device, Sequence<Device>> (
+                [] (const Discovery::Device& d) { return Discovery2Model_ (d); });
         }
         /**
          * Map all the 'Discovery::Network' objects to 'Model::Network' objects.
@@ -256,9 +257,8 @@ namespace {
         Sequence<Network> GetNetworks_ ()
         {
             Debug::TimingTrace ttrc{L"DiscoveryWrapper_::GetNetworks_", 0.1};
-            Sequence<Network>  result = Discovery::NetworksMgr::sThe.CollectActiveNetworks ().Map<Network, Sequence<Network>> ([] (const Discovery::Network& n) {
-                return Discovery2Model_ (n);
-            });
+            Sequence<Network>  result = Discovery::NetworksMgr::sThe.CollectActiveNetworks ().Map<Network, Sequence<Network>> (
+                [] (const Discovery::Network& n) { return Discovery2Model_ (n); });
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
             DbgTrace (L"returns: %s", Characters::ToString (result).c_str ());
 #endif
@@ -273,9 +273,9 @@ namespace {
         Sequence<NetworkInterface> GetNetworkInterfaces_ ()
         {
             Debug::TimingTrace         ttrc{L"DiscoveryWrapper_::GetNetworkInterfaces_", 0.1};
-            Sequence<NetworkInterface> result = Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ().Map<NetworkInterface, Sequence<NetworkInterface>> ([] (const Discovery::NetworkInterface& n) {
-                return Discovery2Model_ (n);
-            });
+            Sequence<NetworkInterface> result =
+                Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ().Map<NetworkInterface, Sequence<NetworkInterface>> (
+                    [] (const Discovery::NetworkInterface& n) { return Discovery2Model_ (n); });
 
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
             DbgTrace (L"returns: %s", Characters::ToString (result).c_str ());
@@ -304,27 +304,47 @@ namespace {
         DBAccessMgr_ ()
         {
             Debug::TraceContextBumper ctx{L"IntegratedModel::{}::Mgr_::CTOR"};
-            fDeviceUserSettingsTableConnection_  = make_unique<SQL::ORM::TableConnection<ExternalDeviceUserSettingsElt_>> (fDBConnectionPtr_, kDeviceUserSettingsSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<ExternalDeviceUserSettingsElt_>> ());
-            fNetworkUserSettingsTableConnection_ = make_unique<SQL::ORM::TableConnection<ExternalNetworkUserSettingsElt_>> (fDBConnectionPtr_, kNetworkUserSettingsSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<ExternalNetworkUserSettingsElt_>> ());
-            fDeviceTableConnection_              = make_unique<SQL::ORM::TableConnection<IntegratedModel::Device>> (fDBConnectionPtr_, kDeviceTableSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<IntegratedModel::Device>> ());
-            fNetworkTableConnection_             = make_unique<SQL::ORM::TableConnection<IntegratedModel::Network>> (fDBConnectionPtr_, kNetworkTableSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<IntegratedModel::Network>> ());
-            fNetworkInterfaceTableConnection_    = make_unique<SQL::ORM::TableConnection<IntegratedModel::NetworkInterface>> (fDBConnectionPtr_, kNetworkInterfaceTableSchema_, kDBObjectMapper_, BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<IntegratedModel::NetworkInterface>> ());
+            fDeviceUserSettingsTableConnection_ = make_unique<SQL::ORM::TableConnection<ExternalDeviceUserSettingsElt_>> (
+                fDBConnectionPtr_, kDeviceUserSettingsSchema_, kDBObjectMapper_,
+                BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<ExternalDeviceUserSettingsElt_>> ());
+            fNetworkUserSettingsTableConnection_ = make_unique<SQL::ORM::TableConnection<ExternalNetworkUserSettingsElt_>> (
+                fDBConnectionPtr_, kNetworkUserSettingsSchema_, kDBObjectMapper_,
+                BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<ExternalNetworkUserSettingsElt_>> ());
+            fDeviceTableConnection_ = make_unique<SQL::ORM::TableConnection<IntegratedModel::Device>> (
+                fDBConnectionPtr_, kDeviceTableSchema_, kDBObjectMapper_,
+                BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<IntegratedModel::Device>> ());
+            fNetworkTableConnection_ = make_unique<SQL::ORM::TableConnection<IntegratedModel::Network>> (
+                fDBConnectionPtr_, kNetworkTableSchema_, kDBObjectMapper_,
+                BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<IntegratedModel::Network>> ());
+            fNetworkInterfaceTableConnection_ = make_unique<SQL::ORM::TableConnection<IntegratedModel::NetworkInterface>> (
+                fDBConnectionPtr_, kNetworkInterfaceTableSchema_, kDBObjectMapper_,
+                BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<IntegratedModel::NetworkInterface>> ());
             try {
                 Debug::TimingTrace ttrc{L"...load of fCachedDeviceUserSettings_ from database ", 1};
                 lock_guard         lock{this->fDBConnectionPtr_};
-                fCachedDeviceUserSettings_.store (Mapping<GUID, Model::Device::UserOverridesType>{fDeviceUserSettingsTableConnection_.rwget ().cref ()->GetAll ().Map<KeyValuePair<GUID, Model::Device::UserOverridesType>> ([] (const auto& i) { return KeyValuePair<GUID, Model::Device::UserOverridesType>{i.fDeviceID, i.fUserSettings}; })});
+                fCachedDeviceUserSettings_.store (Mapping<GUID, Model::Device::UserOverridesType>{
+                    fDeviceUserSettingsTableConnection_.rwget ().cref ()->GetAll ().Map<KeyValuePair<GUID, Model::Device::UserOverridesType>> (
+                        [] (const auto& i) {
+                            return KeyValuePair<GUID, Model::Device::UserOverridesType>{i.fDeviceID, i.fUserSettings};
+                        })});
             }
             catch (...) {
-                Logger::sThe.Log (Logger::eCriticalError, L"Failed to load fCachedDeviceUserSettings_ from db: %s", Characters::ToString (current_exception ()).c_str ());
+                Logger::sThe.Log (Logger::eCriticalError, L"Failed to load fCachedDeviceUserSettings_ from db: %s",
+                                  Characters::ToString (current_exception ()).c_str ());
                 Execution::ReThrow ();
             }
             try {
                 Debug::TimingTrace ttrc{L"...load of fCachedNetworkUserSettings_ from database ", 1};
                 lock_guard         lock{this->fDBConnectionPtr_};
-                fCachedNetworkUserSettings_.store (Mapping<GUID, Model::Network::UserOverridesType>{fNetworkUserSettingsTableConnection_.rwget ().cref ()->GetAll ().Map<KeyValuePair<GUID, Model::Network::UserOverridesType>> ([] (const auto& i) { return KeyValuePair<GUID, Model::Network::UserOverridesType>{i.fNetworkID, i.fUserSettings}; })});
+                fCachedNetworkUserSettings_.store (Mapping<GUID, Model::Network::UserOverridesType>{
+                    fNetworkUserSettingsTableConnection_.rwget ().cref ()->GetAll ().Map<KeyValuePair<GUID, Model::Network::UserOverridesType>> (
+                        [] (const auto& i) {
+                            return KeyValuePair<GUID, Model::Network::UserOverridesType>{i.fNetworkID, i.fUserSettings};
+                        })});
             }
             catch (...) {
-                Logger::sThe.Log (Logger::eCriticalError, L"Failed to load fCachedNetworkUserSettings_ from db: %s", Characters::ToString (current_exception ()).c_str ());
+                Logger::sThe.Log (Logger::eCriticalError, L"Failed to load fCachedNetworkUserSettings_ from db: %s",
+                                  Characters::ToString (current_exception ()).c_str ());
                 Execution::ReThrow ();
             }
 
@@ -335,7 +355,7 @@ namespace {
         DBAccessMgr_& operator= (const DBAccessMgr_&) = delete;
         ~DBAccessMgr_ ()
         {
-            Debug::TraceContextBumper                        ctx{L"IntegratedModel::{}::DBAccessMgr_::DTOR"};
+            Debug::TraceContextBumper ctx{L"IntegratedModel::{}::DBAccessMgr_::DTOR"};
             Execution::Thread::SuppressInterruptionInContext suppressInterruption; // must complete this abort and wait for done - this cannot abort/throw
             fDatabaseSyncThread_.AbortAndWaitForDone ();
         }
@@ -435,22 +455,10 @@ namespace {
                 return fCachedNetworkUserSettings_.rwget ().rwref ().RemoveIf (id);
             }
         }
-        nonvirtual NetworkInterfaceCollection_ GetRawNetworkInterfaces () const
-        {
-            return fDBNetworkInterfaces_;
-        }
-        nonvirtual NetworkKeyedCollection_ GetRawNetworks () const
-        {
-            return fDBNetworks_;
-        }
-        nonvirtual DeviceKeyedCollection_ GetRawDevices () const
-        {
-            return fDBDevices_;
-        }
-        nonvirtual bool GetFinishedInitialDBLoad () const
-        {
-            return fFinishedInitialDBLoad_;
-        }
+        nonvirtual NetworkInterfaceCollection_ GetRawNetworkInterfaces () const { return fDBNetworkInterfaces_; }
+        nonvirtual NetworkKeyedCollection_     GetRawNetworks () const { return fDBNetworks_; }
+        nonvirtual DeviceKeyedCollection_      GetRawDevices () const { return fDBDevices_; }
+        nonvirtual bool                        GetFinishedInitialDBLoad () const { return fFinishedInitialDBLoad_; }
 
     private:
         static String GenRandomIDString_ (VariantValue::Type t)
@@ -460,7 +468,9 @@ namespace {
                     return L"randomblob (16)";
                 case VariantValue::Type::eBLOB:
                     // https://stackoverflow.com/questions/10104662/is-there-uid-datatype-in-sqlite-if-yes-then-how-to-generate-value-for-that
-                    return L"select substr(u,1,8)||'-'||substr(u,9,4)||'-4'||substr(u,13,3)|| '-' || v || substr (u, 17, 3) || '-' || substr (u, 21, 12) from (select lower (hex (randomblob (16))) as u, substr ('89ab', abs (random ()) % 4 + 1, 1) as v) ";
+                    return L"select substr(u,1,8)||'-'||substr(u,9,4)||'-4'||substr(u,13,3)|| '-' || v || substr (u, 17, 3) || '-' || "
+                           L"substr (u, 21, 12) from (select lower (hex (randomblob (16))) as u, substr ('89ab', abs (random ()) % 4 + 1, "
+                           L"1) as v) ";
                 default:
                     RequireNotReached ();
                     return L"";
@@ -528,25 +538,30 @@ namespace {
 #endif
             },
             Schema_CatchAllField{}};
-        static inline const Schema_Table kDeviceTableSchema_{
-            L"Devices"sv,
-            /*
+        static inline const Schema_Table kDeviceTableSchema_{L"Devices"sv,
+                                                             /*
              *  use the same names as the ObjectVariantMapper for simpler mapping, or specify an alternate name
              *  for ID, just as an example.
              */
-            Collection<Schema_Field>{
+                                                             Collection<Schema_Field>{
 #if __cpp_designated_initializers
-                /**
+                                                                 /**
                  *  For ID, generate random GUID (BLOB) automatically in database
                  */
-                {.fName = L"ID"sv, .fVariantValueName = L"id"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = GenRandomIDString_ (kRepresentIDAs_)},
-                {.fName = L"name"sv, .fVariantValueType = VariantValue::eString},
+                                                                 {.fName              = L"ID"sv,
+                                                                  .fVariantValueName  = L"id"sv,
+                                                                  .fRequired          = true,
+                                                                  .fVariantValueType  = kRepresentIDAs_,
+                                                                  .fIsKeyField        = true,
+                                                                  .fDefaultExpression = GenRandomIDString_ (kRepresentIDAs_)},
+                                                                 {.fName = L"name"sv, .fVariantValueType = VariantValue::eString},
 #else
-                {L"ID", L"id"sv, true, kRepresentIDAs_, nullopt, true, nullopt, GenRandomIDString_ (kRepresentIDAs_)},
-                {L"name", nullopt, false, VariantValue::eString},
+                                                                  {L"ID", L"id"sv, true, kRepresentIDAs_, nullopt, true, nullopt,
+                                                                   GenRandomIDString_ (kRepresentIDAs_)},
+                                                                  {L"name", nullopt, false, VariantValue::eString},
 #endif
-            },
-            Schema_CatchAllField{}};
+                                                             },
+                                                             Schema_CatchAllField{}};
 
         static inline const Schema_Table kNetworkInterfaceTableSchema_{
             L"NetworkInteraces"sv,
@@ -568,45 +583,49 @@ namespace {
 #endif
             },
             Schema_CatchAllField{}};
-        static inline const Schema_Table kNetworkTableSchema_{
-            L"Networks"sv,
-            /*
+        static inline const Schema_Table kNetworkTableSchema_{L"Networks"sv,
+                                                              /*
              *  use the same names as the ObjectVariantMapper for simpler mapping, or specify an alternate name
              *  for ID, just as an example.
              */
-            Collection<Schema_Field>{
+                                                              Collection<Schema_Field>{
 #if __cpp_designated_initializers
-                /**
+                                                                  /**
                  *  For ID, generate random GUID (BLOB) automatically in database
                  */
-                {.fName = L"ID"sv, .fVariantValueName = L"id"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = GenRandomIDString_ (kRepresentIDAs_)},
-                {.fName = L"friendlyName"sv, .fVariantValueType = VariantValue::eString},
+                                                                  {.fName              = L"ID"sv,
+                                                                   .fVariantValueName  = L"id"sv,
+                                                                   .fRequired          = true,
+                                                                   .fVariantValueType  = kRepresentIDAs_,
+                                                                   .fIsKeyField        = true,
+                                                                   .fDefaultExpression = GenRandomIDString_ (kRepresentIDAs_)},
+                                                                  {.fName = L"friendlyName"sv, .fVariantValueType = VariantValue::eString},
 #else
-                {L"ID", L"id"sv, true, kRepresentIDAs_, nullopt, true, nullopt, GenRandomIDString_ (kRepresentIDAs_)},
-                {L"friendlyName", nullopt, false, VariantValue::eString},
+                                                                   {L"ID", L"id"sv, true, kRepresentIDAs_, nullopt, true, nullopt,
+                                                                    GenRandomIDString_ (kRepresentIDAs_)},
+                                                                   {L"friendlyName", nullopt, false, VariantValue::eString},
 #endif
-            },
-            Schema_CatchAllField{}};
+                                                              },
+                                                              Schema_CatchAllField{}};
 
     private:
         static constexpr Configuration::Version kCurrentVersion_ = Configuration::Version{1, 0, Configuration::VersionStage::Alpha, 0};
-        BackendApp::Common::DB                  fDB_{
-            kCurrentVersion_,
-            Traversal::Iterable<Schema_Table>{
-                                 kDeviceTableSchema_, kDeviceUserSettingsSchema_, kNetworkTableSchema_, kNetworkInterfaceTableSchema_, kNetworkUserSettingsSchema_}};
-        Synchronized<SQL::Connection::Ptr>                                                   fDBConnectionPtr_{fDB_.NewConnection ()};
-        Execution::Thread::Ptr                                                               fDatabaseSyncThread_{};
+        BackendApp::Common::DB                  fDB_{kCurrentVersion_,
+                                    Traversal::Iterable<Schema_Table>{kDeviceTableSchema_, kDeviceUserSettingsSchema_, kNetworkTableSchema_,
+                                                                                       kNetworkInterfaceTableSchema_, kNetworkUserSettingsSchema_}};
+        Synchronized<SQL::Connection::Ptr>      fDBConnectionPtr_{fDB_.NewConnection ()};
+        Execution::Thread::Ptr                  fDatabaseSyncThread_{};
         Synchronized<Mapping<GUID, IntegratedModel::Device::UserOverridesType>>              fCachedDeviceUserSettings_;
         Synchronized<unique_ptr<SQL::ORM::TableConnection<ExternalDeviceUserSettingsElt_>>>  fDeviceUserSettingsTableConnection_;
         Synchronized<Mapping<GUID, IntegratedModel::Network::UserOverridesType>>             fCachedNetworkUserSettings_;
         Synchronized<unique_ptr<SQL::ORM::TableConnection<ExternalNetworkUserSettingsElt_>>> fNetworkUserSettingsTableConnection_;
-        unique_ptr<SQL::ORM::TableConnection<IntegratedModel::Device>>                       fDeviceTableConnection_;           // only accessed from a background database thread
-        unique_ptr<SQL::ORM::TableConnection<IntegratedModel::Network>>                      fNetworkTableConnection_;          // ''
-        unique_ptr<SQL::ORM::TableConnection<IntegratedModel::NetworkInterface>>             fNetworkInterfaceTableConnection_; // ''
-        Synchronized<DeviceKeyedCollection_>                                                 fDBDevices_;                       // mirror database contents in RAM
-        Synchronized<NetworkKeyedCollection_>                                                fDBNetworks_;                      // ''
-        Synchronized<NetworkInterfaceCollection_>                                            fDBNetworkInterfaces_;             // ''
-        atomic<bool>                                                                         fFinishedInitialDBLoad_{false};
+        unique_ptr<SQL::ORM::TableConnection<IntegratedModel::Device>> fDeviceTableConnection_; // only accessed from a background database thread
+        unique_ptr<SQL::ORM::TableConnection<IntegratedModel::Network>>          fNetworkTableConnection_;          // ''
+        unique_ptr<SQL::ORM::TableConnection<IntegratedModel::NetworkInterface>> fNetworkInterfaceTableConnection_; // ''
+        Synchronized<DeviceKeyedCollection_>                                     fDBDevices_;           // mirror database contents in RAM
+        Synchronized<NetworkKeyedCollection_>                                    fDBNetworks_;          // ''
+        Synchronized<NetworkInterfaceCollection_>                                fDBNetworkInterfaces_; // ''
+        atomic<bool>                                                             fFinishedInitialDBLoad_{false};
 
         // the latest copy of what is in the DB (manually kept up to date)
         // NOTE: These are all non-rolled up objects
@@ -629,9 +648,11 @@ namespace {
                     if (not netInterfaceSnapshotsLoaded.has_value ()) {
                         try {
                             Debug::TimingTrace ttrc{L"...initial load of fDBNetworkInterfaces_ from database ", 1};
-                            auto               errorHandler = [] ([[maybe_unused]] const SQL::Statement::Row& r, const exception_ptr& e) -> optional<IntegratedModel::NetworkInterface> {
+                            auto               errorHandler = [] ([[maybe_unused]] const SQL::Statement::Row& r,
+                                                    const exception_ptr& e) -> optional<IntegratedModel::NetworkInterface> {
                                 // Just drop the record on the floor after logging
-                                Logger::sThe.Log (Logger::eError, L"Error reading database of persisted network interfaces snapshot ('%s'): %s", Characters::ToString (r).c_str (), Characters::ToString (e).c_str ());
+                                Logger::sThe.Log (Logger::eError, L"Error reading database of persisted network interfaces snapshot ('%s'): %s",
+                                                                Characters::ToString (r).c_str (), Characters::ToString (e).c_str ());
                                 return nullopt;
                             };
                             auto all                    = fNetworkInterfaceTableConnection_->GetAll (errorHandler);
@@ -639,16 +660,19 @@ namespace {
                             fDBNetworkInterfaces_.store (NetworkInterfaceCollection_{all});
                         }
                         catch (...) {
-                            Logger::sThe.Log (Logger::eError, L"Probably important error reading database of old network interfaces data: %s", Characters::ToString (current_exception ()).c_str ());
+                            Logger::sThe.Log (Logger::eError, L"Probably important error reading database of old network interfaces data: %s",
+                                              Characters::ToString (current_exception ()).c_str ());
                             Execution::ReThrow ();
                         }
                     }
                     if (not netSnapshotsLoaded.has_value ()) {
                         try {
                             Debug::TimingTrace ttrc{L"...initial load of fDBNetworks_ from database ", 1};
-                            auto               errorHandler = [] ([[maybe_unused]] const SQL::Statement::Row& r, const exception_ptr& e) -> optional<IntegratedModel::Network> {
+                            auto               errorHandler = [] ([[maybe_unused]] const SQL::Statement::Row& r,
+                                                    const exception_ptr&                        e) -> optional<IntegratedModel::Network> {
                                 // Just drop the record on the floor after logging
-                                Logger::sThe.Log (Logger::eError, L"Error reading database of persisted network snapshot ('%s'): %s", Characters::ToString (r).c_str (), Characters::ToString (e).c_str ());
+                                Logger::sThe.Log (Logger::eError, L"Error reading database of persisted network snapshot ('%s'): %s",
+                                                                Characters::ToString (r).c_str (), Characters::ToString (e).c_str ());
                                 return nullopt;
                             };
                             auto all           = fNetworkTableConnection_->GetAll (errorHandler);
@@ -656,27 +680,31 @@ namespace {
                             fDBNetworks_.store (NetworkKeyedCollection_{all});
                         }
                         catch (...) {
-                            Logger::sThe.Log (Logger::eError, L"Probably important error reading database of old networks data: %s", Characters::ToString (current_exception ()).c_str ());
+                            Logger::sThe.Log (Logger::eError, L"Probably important error reading database of old networks data: %s",
+                                              Characters::ToString (current_exception ()).c_str ());
                             Execution::ReThrow ();
                         }
                     }
                     if (not deviceSnapshotsLoaded.has_value ()) {
                         try {
                             Debug::TimingTrace ttrc{L"...initial load of fDBDevices_ from database ", 1};
-                            auto               errorHandler = [] ([[maybe_unused]] const SQL::Statement::Row& r, const exception_ptr& e) -> optional<IntegratedModel::Device> {
+                            auto               errorHandler = [] ([[maybe_unused]] const SQL::Statement::Row& r,
+                                                    const exception_ptr&                        e) -> optional<IntegratedModel::Device> {
                                 // Just drop the record on the floor after logging
-                                Logger::sThe.Log (Logger::eError, L"Error reading database of persisted device snapshot ('%s'): %s", Characters::ToString (r).c_str (), Characters::ToString (e).c_str ());
+                                Logger::sThe.Log (Logger::eError, L"Error reading database of persisted device snapshot ('%s'): %s",
+                                                                Characters::ToString (r).c_str (), Characters::ToString (e).c_str ());
                                 return nullopt;
                             };
                             auto all = fDeviceTableConnection_->GetAll (errorHandler);
                             if constexpr (qDebug) {
-                                all.Apply ([] ([[maybe_unused]]const Model::Device& d) { Assert (!d.fUserOverrides); }); // tracked on rollup devices, not snapshot devices
+                                all.Apply ([] ([[maybe_unused]] const Model::Device& d) { Assert (!d.fUserOverrides); }); // tracked on rollup devices, not snapshot devices
                             }
                             deviceSnapshotsLoaded = static_cast<unsigned int> (all.size ());
                             fDBDevices_.store (DeviceKeyedCollection_{all}); // pre-load in memory copy with whatever we had stored in the database
                         }
                         catch (...) {
-                            Logger::sThe.Log (Logger::eError, L"Probably important error reading database of old device data: %s", Characters::ToString (current_exception ()).c_str ());
+                            Logger::sThe.Log (Logger::eError, L"Probably important error reading database of old device data: %s",
+                                              Characters::ToString (current_exception ()).c_str ());
                             Execution::ReThrow ();
                         }
                     }
@@ -684,14 +712,15 @@ namespace {
                         Assert (deviceSnapshotsLoaded);
                         Assert (netSnapshotsLoaded);
                         Assert (netInterfaceSnapshotsLoaded);
-                        Logger::sThe.Log (Logger::eInfo, L"Loaded %d network interface snapshots, %d network snapshots and %d device snapshots from database", *netInterfaceSnapshotsLoaded, *netSnapshotsLoaded, *deviceSnapshotsLoaded);
+                        Logger::sThe.Log (Logger::eInfo, L"Loaded %d network interface snapshots, %d network snapshots and %d device snapshots from database",
+                                          *netInterfaceSnapshotsLoaded, *netSnapshotsLoaded, *deviceSnapshotsLoaded);
                         fFinishedInitialDBLoad_ = true;
                     }
                     // periodically write the latest discovered data to the database
 
                     // UPDATE fDBNetworkInterfaces_ INCREMENTALLY to reflect reflect these merges
                     DiscoveryWrapper_::GetNetworkInterfaces_ ().Apply ([this] (const Model::NetworkInterface& ni) {
-                        lock_guard lock{this->fDBConnectionPtr_};     //tmphack fix underlying SQL orm wrapper stuff so not needed --LGP 2022-11-23
+                        lock_guard lock{this->fDBConnectionPtr_}; //tmphack fix underlying SQL orm wrapper stuff so not needed --LGP 2022-11-23
                         Assert (ni.fAggregatesReversibly == nullopt); // dont write these summary values
                         fNetworkInterfaceTableConnection_->AddOrUpdate (ni);
                         fDBNetworkInterfaces_.rwget ()->Add (ni);
@@ -699,8 +728,8 @@ namespace {
 
                     // UPDATE fDBNetworks_ INCREMENTALLY to reflect reflect these merges
                     DiscoveryWrapper_::GetNetworks_ ().Apply ([this] (const Model::Network& n) {
-                        Assert (n.fSeen);                            // don't track/write items which have never been seen
-                        lock_guard lock{this->fDBConnectionPtr_};    //tmphack fix underlying SQL orm wrapper stuff so not needed --LGP 2022-11-23
+                        Assert (n.fSeen);                         // don't track/write items which have never been seen
+                        lock_guard lock{this->fDBConnectionPtr_}; //tmphack fix underlying SQL orm wrapper stuff so not needed --LGP 2022-11-23
                         Assert (n.fAggregatesReversibly == nullopt); // dont write these summary values
                         fNetworkTableConnection_->AddOrUpdate (n);
                         fDBNetworks_.rwget ()->Add (n);
@@ -709,9 +738,9 @@ namespace {
                     // UPDATE fDBDevices_ INCREMENTALLY to reflect reflect these merges
                     DiscoveryWrapper_::GetDevices_ ().Apply ([this] (const Model::Device& d) {
                         Assert (d.fSeen.EverSeen ());
-                        Assert (d.fSeen.EverSeen ());                // don't track/write items which have never been seen
-                        Assert (d.fUserOverrides == nullopt);        // tracked on rollup devices, not snapshot devices
-                        lock_guard lock{this->fDBConnectionPtr_};    //tmphack fix underlying SQL orm wrapper stuff so not needed --LGP 2022-11-23
+                        Assert (d.fSeen.EverSeen ());             // don't track/write items which have never been seen
+                        Assert (d.fUserOverrides == nullopt);     // tracked on rollup devices, not snapshot devices
+                        lock_guard lock{this->fDBConnectionPtr_}; //tmphack fix underlying SQL orm wrapper stuff so not needed --LGP 2022-11-23
                         Assert (d.fAggregatesReversibly == nullopt); // dont write these summary values
                         auto rec2Update = fDB_.AddOrMergeUpdate (fDeviceTableConnection_.get (), d);
                         fDBDevices_.rwget ()->Add (rec2Update);
@@ -725,7 +754,8 @@ namespace {
                 }
                 catch (...) {
                     //DbgTrace (L"Ignoring (will retry in 30 seconds) exception in BackgroundDatabaseThread_ loop: %s", Characters::ToString (current_exception ()).c_str ());
-                    Logger::sThe.Log (Logger::eWarning, L"Database update: ignoring exception in BackgroundDatabaseThread_ loop (will retry in 30 seconds): %s", Characters::ToString (current_exception ()).c_str ());
+                    Logger::sThe.Log (Logger::eWarning, L"Database update: ignoring exception in BackgroundDatabaseThread_ loop (will retry in 30 seconds): %s",
+                                      Characters::ToString (current_exception ()).c_str ());
                     Execution::Sleep (30s);
                 }
             }
@@ -792,7 +822,7 @@ namespace {
                 // https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/80 - could avoid this maybe??? and the bookkeeping above to compute this list...
                 DbgTrace (L"orphaned interface Cnt %d", (netIDs2Add - netsAdded).size ()); // We (temporarily) store network interfaces not associated with any device - if they are not interesting.
                                                                                            // OR, could come from just bad data in database
-                                                                                           // Either way, just track them, and don't worry for now --LGP 2022-12-03
+                    // Either way, just track them, and don't worry for now --LGP 2022-12-03
                 for (const auto& netInterfaceWithoutDevice : (netIDs2Add - netsAdded)) {
                     MergeIn_ (nullopt, Memory::ValueOf (nets2MergeInCollected.Lookup (netInterfaceWithoutDevice)));
                 }
@@ -808,19 +838,14 @@ namespace {
             /**
              *  This returns the current rolled up network interface objects.
              */
-            nonvirtual NetworkInterfaceCollection_ GetNetworkInterfacess () const
-            {
-                return fRolledUpNetworkInterfaces_;
-            }
+            nonvirtual NetworkInterfaceCollection_ GetNetworkInterfacess () const { return fRolledUpNetworkInterfaces_; }
 
         private:
             /**
              */
             nonvirtual void MergeIn_ (const optional<GUID>& forDeviceID, const Iterable<NetworkInterface>& netInterfaces2MergeIn)
             {
-                netInterfaces2MergeIn.Apply ([this, forDeviceID] (const NetworkInterface& n) {
-                    MergeIn_ (forDeviceID, n);
-                });
+                netInterfaces2MergeIn.Apply ([this, forDeviceID] (const NetworkInterface& n) { MergeIn_ (forDeviceID, n); });
             }
 
         public:
@@ -853,13 +878,15 @@ namespace {
                     return *r;
                 }
                 // shouldn't get past here - debug if/why this hapepns - see comments below
-                Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"MapAggregatedID2ItsRollupID failed to find aggregatedNetInterfaceID=%s", Characters::ToString (aggregatedNetInterfaceID).c_str ())};
+                Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (
+                    L"MapAggregatedID2ItsRollupID failed to find aggregatedNetInterfaceID=%s",
+                    Characters::ToString (aggregatedNetInterfaceID).c_str ())};
                 if constexpr (qDebug) {
                     for ([[maybe_unused]] const auto& i : fRolledUpNetworkInterfaces_) {
                         DbgTrace (L"rolledupNetInterface=%s", Characters::ToString (i).c_str ());
                     }
                 }
-                Assert (false);     // @todo fix - because we guarantee each item rolled up exactly once - but happens sometimes on change of network - I think due to outdated device records referring to newer network not yet in this cache...
+                Assert (false); // @todo fix - because we guarantee each item rolled up exactly once - but happens sometimes on change of network - I think due to outdated device records referring to newer network not yet in this cache...
                 WeakAssert (false); // @todo fix - because we guarantee each item rolled up exactly once - but happens sometimes on change of network - I think due to outdated device records referring to newer network not yet in this cache...
                 return aggregatedNetInterfaceID;
             }
@@ -909,10 +936,7 @@ namespace {
         public:
             /**
              */
-            nonvirtual NetworkInterfaceCollection_ GetRawNetworkInterfaces () const
-            {
-                return fRawNetworkInterfaces_;
-            }
+            nonvirtual NetworkInterfaceCollection_ GetRawNetworkInterfaces () const { return fRawNetworkInterfaces_; }
             nonvirtual NetworkInterfaceCollection_ GetRawNetworkInterfaces (const Set<GUID>& rawIDs) const
             {
                 Require (Set<GUID>{fRawNetworkInterfaces_.Keys ()}.ContainsAll (rawIDs));
@@ -941,8 +965,9 @@ namespace {
                      *      Since this can be called while rolling up DEVICES, its important that this code not call anything involving device rollup since
                      *      that could trigger a deadlock.
                      */
-                    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...RolledUpNetworkInterfaces::GetCached...cachefiller")};
-                    Debug::TimingTrace        ttrc{L"RolledUpNetworkInterfaces::GetCached...cachefiller", 1};
+                    Debug::TraceContextBumper ctx{
+                        Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...RolledUpNetworkInterfaces::GetCached...cachefiller")};
+                    Debug::TimingTrace ttrc{L"RolledUpNetworkInterfaces::GetCached...cachefiller", 1};
 
                     // Start with the existing rolled up objects
                     // and merge in any more recent discovery changes
@@ -959,10 +984,12 @@ namespace {
                             // @todo add more stuff here - empty preset rules from DB
                             // merge two tables - ID to fingerprint and user settings tables and store those in this rollup early
                             // maybe make CTOR for rolledupnetworks take in ital DB netwworks and rules, and have copyis CTOR taking orig networks and new rules?
-                            RolledUpNetworkInterfaces rollup = RolledUpNetworkInterfaces{sDBAccessMgr_->GetRawDevices (), sDBAccessMgr_->GetRawNetworkInterfaces ()};
+                            RolledUpNetworkInterfaces rollup =
+                                RolledUpNetworkInterfaces{sDBAccessMgr_->GetRawDevices (), sDBAccessMgr_->GetRawNetworkInterfaces ()};
                             // handle orphaned network interfaces
                             {
-                                auto orphanedRawInterfaces = rollup.GetRawNetworkInterfaces ().Where ([&] (auto ni) { return rollup.GetAttachedToDeviceIDs (ni.fID) == nullopt; });
+                                auto orphanedRawInterfaces = rollup.GetRawNetworkInterfaces ().Where (
+                                    [&] (auto ni) { return rollup.GetAttachedToDeviceIDs (ni.fID) == nullopt; });
                                 if (not orphanedRawInterfaces.empty ()) {
                                     DbgTrace (L"Found: orphanedRawInterfaces=%s", Characters::ToString (orphanedRawInterfaces).c_str ());
                                     // https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/80
@@ -1011,7 +1038,8 @@ namespace {
                 // friendly name - for example - of network interface can change while running, so must be able to invalidate and recompute this list
 
                 Network::FingerprintType netInterface2MergeInFingerprint = net2MergeIn.GenerateFingerprintFromProperties ();
-                auto                     rolledUpNetworkInterace         = NetworkInterface::Rollup (fRolledUpNetworkInterfaces_.Lookup (netInterface2MergeInFingerprint), net2MergeIn);
+                auto                     rolledUpNetworkInterace =
+                    NetworkInterface::Rollup (fRolledUpNetworkInterfaces_.Lookup (netInterface2MergeInFingerprint), net2MergeIn);
                 fRolledUpNetworkInterfaces_.Add (rolledUpNetworkInterace);
                 fMapAggregatedNetInterfaceID2RollupID_.Add (net2MergeIn.fID, rolledUpNetworkInterace.fID);
                 if (forDeviceID) {
@@ -1022,8 +1050,8 @@ namespace {
         private:
             NetworkInterfaceCollection_ fRawNetworkInterfaces_; // used for RecomputeAll_
             NetworkInterfaceCollection_ fRolledUpNetworkInterfaces_;
-            Mapping<GUID, GUID>         fMapAggregatedNetInterfaceID2RollupID_; // each aggregate net interface id is mapped to at most one rollup id)
-            Association<GUID, GUID>     fAssociateAggregatedNetInterface2OwningDeviceID;
+            Mapping<GUID, GUID> fMapAggregatedNetInterfaceID2RollupID_; // each aggregate net interface id is mapped to at most one rollup id)
+            Association<GUID, GUID> fAssociateAggregatedNetInterface2OwningDeviceID;
 
         private:
             static Synchronized<optional<RolledUpNetworkInterfaces>> sRolledUpNetworksInterfaces_;
@@ -1040,19 +1068,19 @@ namespace {
          */
         struct RolledUpNetworks {
         public:
-            RolledUpNetworks (const Iterable<Network>& nets2MergeIn, const Mapping<GUID, Network::UserOverridesType>& userOverrides, const RolledUpNetworkInterfaces& useNetworkInterfaceRollups)
+            RolledUpNetworks (const Iterable<Network>& nets2MergeIn, const Mapping<GUID, Network::UserOverridesType>& userOverrides,
+                              const RolledUpNetworkInterfaces& useNetworkInterfaceRollups)
                 : fUseNetworkInterfaceRollups{useNetworkInterfaceRollups}
             {
-                fStarterRollups_ = userOverrides.Map<Network> (
-                    [] (const auto& guid2UOTPair) -> Network {
-                        Network nw;
-                        nw.fID            = guid2UOTPair.fKey;
-                        nw.fUserOverrides = guid2UOTPair.fValue;
-                        if (nw.fUserOverrides and nw.fUserOverrides->fName) {
-                            nw.fNames.Add (*nw.fUserOverrides->fName, 500);
-                        }
-                        return nw;
-                    });
+                fStarterRollups_   = userOverrides.Map<Network> ([] (const auto& guid2UOTPair) -> Network {
+                    Network nw;
+                    nw.fID            = guid2UOTPair.fKey;
+                    nw.fUserOverrides = guid2UOTPair.fValue;
+                    if (nw.fUserOverrides and nw.fUserOverrides->fName) {
+                        nw.fNames.Add (*nw.fUserOverrides->fName, 500);
+                    }
+                    return nw;
+                });
                 fRolledUpNetworks_ = fStarterRollups_;
                 MergeIn (nets2MergeIn);
             }
@@ -1065,24 +1093,20 @@ namespace {
             /**
              *  This returns the current rolled up network objects.
              */
-            nonvirtual NetworkKeyedCollection_ GetNetworks () const
-            {
-                return fRolledUpNetworks_;
-            }
+            nonvirtual NetworkKeyedCollection_ GetNetworks () const { return fRolledUpNetworks_; }
 
         public:
             nonvirtual void ResetUserOverrides (const Mapping<GUID, Network::UserOverridesType>& userOverrides)
             {
-                fStarterRollups_ = userOverrides.Map<Network> (
-                    [] (const auto& guid2UOTPair) -> Network {
-                        Network nw;
-                        nw.fID            = guid2UOTPair.fKey;
-                        nw.fUserOverrides = guid2UOTPair.fValue;
-                        if (nw.fUserOverrides and nw.fUserOverrides->fName) {
-                            nw.fNames.Add (*nw.fUserOverrides->fName, 500);
-                        }
-                        return nw;
-                    });
+                fStarterRollups_ = userOverrides.Map<Network> ([] (const auto& guid2UOTPair) -> Network {
+                    Network nw;
+                    nw.fID            = guid2UOTPair.fKey;
+                    nw.fUserOverrides = guid2UOTPair.fValue;
+                    if (nw.fUserOverrides and nw.fUserOverrides->fName) {
+                        nw.fNames.Add (*nw.fUserOverrides->fName, 500);
+                    }
+                    return nw;
+                });
                 RecomputeAll_ ();
             }
 
@@ -1098,13 +1122,14 @@ namespace {
                     return *r;
                 }
                 // shouldn't get past here - debug if/why this hapepns - see comments below
-                Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"MapAggregatedID2ItsRollupID failed to find netID=%s", Characters::ToString (netID).c_str ())};
+                Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (
+                    L"MapAggregatedID2ItsRollupID failed to find netID=%s", Characters::ToString (netID).c_str ())};
                 if constexpr (qDebug) {
                     for ([[maybe_unused]] const auto& i : fRolledUpNetworks_) {
                         DbgTrace (L"rolledupNet=%s", Characters::ToString (i).c_str ());
                     }
                 }
-                Assert (false);     // @todo fix - because we guarantee each item rolled up exactly once - but happens sometimes on change of network - I think due to outdated device records referring to newer network not yet in this cache...
+                Assert (false); // @todo fix - because we guarantee each item rolled up exactly once - but happens sometimes on change of network - I think due to outdated device records referring to newer network not yet in this cache...
                 WeakAssert (false); // @todo fix - because we guarantee each item rolled up exactly once - but happens sometimes on change of network - I think due to outdated device records referring to newer network not yet in this cache...
                 return netID;
             }
@@ -1155,14 +1180,15 @@ namespace {
                      *      Since this can be called while rolling up DEVICES, its important that this code not call anything involving device rollup since
                      *      that could trigger a deadlock.
                      */
-                    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...RolledUpNetworks::GetCached...cachefiller")};
-                    Debug::TimingTrace        ttrc{L"RolledUpNetworks::GetCached...cachefiller", 1};
+                    Debug::TraceContextBumper ctx{
+                        Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...RolledUpNetworks::GetCached...cachefiller")};
+                    Debug::TimingTrace ttrc{L"RolledUpNetworks::GetCached...cachefiller", 1};
 
                     // Start with the existing rolled up objects
                     // and merge in any more recent discovery changes
                     RolledUpNetworks result = [allowedStaleness] () {
                         auto rolledUpNetworkInterfacess = RolledUpNetworkInterfaces::GetCached (allowedStaleness * 3.0); // longer allowedStaleness cuz we dont care much about this and the parts
-                                                                                                                         // we look at really dont change
+                            // we look at really dont change
                         auto lk = sRolledUpNetworks_.rwget ();
                         if (not lk.cref ().has_value ()) {
                             if (not sDBAccessMgr_->GetFinishedInitialDBLoad ()) {
@@ -1199,8 +1225,10 @@ namespace {
             }
 
         private:
-            enum class PassFailType_ { ePass,
-                                       eFail };
+            enum class PassFailType_ {
+                ePass,
+                eFail
+            };
             // if fails simple merge, returns false, so must call recomputeall
             PassFailType_ MergeIn_ (const Network& net2MergeIn)
             {
@@ -1248,13 +1276,15 @@ namespace {
                 }
                 return make_tuple (nullopt, PassFailType_::eFail);
             }
-            bool ShouldRollupInto_CheckIsCompatibleWithTarget_ (const Network& net2MergeIn, const Network::FingerprintType& net2MergeInFingerprint, const Network& targetRollup)
+            bool ShouldRollupInto_CheckIsCompatibleWithTarget_ (const Network& net2MergeIn, const Network::FingerprintType& net2MergeInFingerprint,
+                                                                const Network& targetRollup)
             {
                 if (auto riu = targetRollup.fUserOverrides) {
                     if (riu->fAggregateFingerprints and riu->fAggregateFingerprints->Contains (net2MergeInFingerprint)) {
                         return true;
                     }
-                    if (riu->fAggregateGatewayHardwareAddresses and riu->fAggregateGatewayHardwareAddresses->Intersects (net2MergeIn.fGatewayHardwareAddresses)) {
+                    if (riu->fAggregateGatewayHardwareAddresses and
+                        riu->fAggregateGatewayHardwareAddresses->Intersects (net2MergeIn.fGatewayHardwareAddresses)) {
                         return true;
                     }
                     if (riu->fAggregateNetworks and riu->fAggregateNetworks->Contains (net2MergeIn.fID)) {
@@ -1278,7 +1308,8 @@ namespace {
             {
                 Assert (net2MergeIn.GenerateFingerprintFromProperties () == net2MergeInFingerprint); // provided to avoid cost of recompute
                 Network newRolledUpNetwork = Network::Rollup (addNet2MergeFromThisRollup, net2MergeIn);
-                newRolledUpNetwork.fAttachedInterfaces += fUseNetworkInterfaceRollups.MapAggregatedNetInterfaceID2ItsRollupID (net2MergeIn.fAttachedInterfaces);
+                newRolledUpNetwork.fAttachedInterfaces +=
+                    fUseNetworkInterfaceRollups.MapAggregatedNetInterfaceID2ItsRollupID (net2MergeIn.fAttachedInterfaces);
                 Assert (addNet2MergeFromThisRollup.fAggregatesFingerprints == newRolledUpNetwork.fAggregatesFingerprints); // spot check - should be same...
                 fRolledUpNetworks_.Add (newRolledUpNetwork);
                 fMapAggregatedNetID2RollupID_.Add (net2MergeIn.fID, newRolledUpNetwork.fID);
@@ -1287,8 +1318,9 @@ namespace {
             void AddNewIn_ (const Network& net2MergeIn, const Network::FingerprintType& net2MergeInFingerprint)
             {
                 Assert (net2MergeIn.GenerateFingerprintFromProperties () == net2MergeInFingerprint); // provided to avoid cost of recompute
-                Network newRolledUpNetwork                 = net2MergeIn;
-                newRolledUpNetwork.fAttachedInterfaces     = fUseNetworkInterfaceRollups.MapAggregatedNetInterfaceID2ItsRollupID (net2MergeIn.fAttachedInterfaces);
+                Network newRolledUpNetwork = net2MergeIn;
+                newRolledUpNetwork.fAttachedInterfaces =
+                    fUseNetworkInterfaceRollups.MapAggregatedNetInterfaceID2ItsRollupID (net2MergeIn.fAttachedInterfaces);
                 newRolledUpNetwork.fAggregatesReversibly   = Set<GUID>{net2MergeIn.fID};
                 newRolledUpNetwork.fAggregatesFingerprints = Set<Network::FingerprintType>{net2MergeInFingerprint};
                 // @todo fix this code so each time through we UPDATE sDBAccessMgr_ with latest 'fingerprint' of each dynamic network
@@ -1302,7 +1334,9 @@ namespace {
                     DbgTrace (L"shouldntRollUpButTookOurIDNet=%s", Characters::ToString (shouldntRollUpButTookOurIDNet).c_str ());
                     DbgTrace (L"net2MergeIn=%s", Characters::ToString (net2MergeIn).c_str ());
                     //Assert (not ShouldRollup_ (shouldntRollUpButTookOurIDNet, net2MergeIn));
-                    Logger::sThe.Log (Logger::eWarning, L"Got rollup network ID from cache that is already in use: %s (for external address %s)", Characters::ToString (newRolledUpNetwork.fID).c_str (), Characters::ToString (newRolledUpNetwork.fExternalAddresses).c_str ());
+                    Logger::sThe.Log (Logger::eWarning, L"Got rollup network ID from cache that is already in use: %s (for external address %s)",
+                                      Characters::ToString (newRolledUpNetwork.fID).c_str (),
+                                      Characters::ToString (newRolledUpNetwork.fExternalAddresses).c_str ());
                     newRolledUpNetwork.fID = GUID::GenerateNew ();
                 }
                 newRolledUpNetwork.fUserOverrides = sDBAccessMgr_->LookupNetworkUserSettings (newRolledUpNetwork.fID);
@@ -1330,12 +1364,12 @@ namespace {
             }
 
         private:
-            RolledUpNetworkInterfaces               fUseNetworkInterfaceRollups;
-            NetworkKeyedCollection_                 fRawNetworks_; // used for RecomputeAll_
-            NetworkKeyedCollection_                 fStarterRollups_;
-            NetworkKeyedCollection_                 fRolledUpNetworks_;
-            Mapping<GUID, GUID>                     fMapAggregatedNetID2RollupID_; // each aggregate netid is mapped to at most one rollup id)
-            Mapping<Network::FingerprintType, GUID> fMapFingerprint2RollupID;      // each fingerprint can map to at most one rollup...
+            RolledUpNetworkInterfaces fUseNetworkInterfaceRollups;
+            NetworkKeyedCollection_   fRawNetworks_; // used for RecomputeAll_
+            NetworkKeyedCollection_   fStarterRollups_;
+            NetworkKeyedCollection_   fRolledUpNetworks_;
+            Mapping<GUID, GUID>       fMapAggregatedNetID2RollupID_;          // each aggregate netid is mapped to at most one rollup id)
+            Mapping<Network::FingerprintType, GUID> fMapFingerprint2RollupID; // each fingerprint can map to at most one rollup...
         private:
             static Synchronized<optional<RolledUpNetworks>> sRolledUpNetworks_;
         };
@@ -1351,20 +1385,20 @@ namespace {
          */
         struct RolledUpDevices {
         public:
-            RolledUpDevices (const Iterable<Device>& devices2MergeIn, const Mapping<GUID, Device::UserOverridesType>& userOverrides, const RolledUpNetworks& useRolledUpNetworks, const RolledUpNetworkInterfaces& useNetworkInterfaceRollups)
+            RolledUpDevices (const Iterable<Device>& devices2MergeIn, const Mapping<GUID, Device::UserOverridesType>& userOverrides,
+                             const RolledUpNetworks& useRolledUpNetworks, const RolledUpNetworkInterfaces& useNetworkInterfaceRollups)
                 : fUseRolledUpNetworks{useRolledUpNetworks}
                 , fUseNetworkInterfaceRollups{useNetworkInterfaceRollups}
             {
-                fStarterRollups_ = userOverrides.Map<Device> (
-                    [] (const auto& guid2UOTPair) -> Device {
-                        Device d;
-                        d.fID            = guid2UOTPair.fKey;
-                        d.fUserOverrides = guid2UOTPair.fValue;
-                        if (d.fUserOverrides and d.fUserOverrides->fName) {
-                            d.fNames.Add (*d.fUserOverrides->fName, 500);
-                        }
-                        return d;
-                    });
+                fStarterRollups_ = userOverrides.Map<Device> ([] (const auto& guid2UOTPair) -> Device {
+                    Device d;
+                    d.fID            = guid2UOTPair.fKey;
+                    d.fUserOverrides = guid2UOTPair.fValue;
+                    if (d.fUserOverrides and d.fUserOverrides->fName) {
+                        d.fNames.Add (*d.fUserOverrides->fName, 500);
+                    }
+                    return d;
+                });
                 fRolledUpDevices = fStarterRollups_;
                 MergeIn (devices2MergeIn);
             }
@@ -1377,10 +1411,7 @@ namespace {
             /**
              *  This returns the current rolled up device objects.
              */
-            nonvirtual DeviceKeyedCollection_ GetDevices () const
-            {
-                return fRolledUpDevices;
-            }
+            nonvirtual DeviceKeyedCollection_ GetDevices () const { return fRolledUpDevices; }
 
         public:
             /**
@@ -1394,7 +1425,8 @@ namespace {
                     return *r;
                 }
                 // shouldn't get past here - debug if/why this hapepns - see comments below
-                Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"MapAggregatedID2ItsRollupID failed to find netID=%s", Characters::ToString (aggregatedDeviceID).c_str ())};
+                Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (
+                    L"MapAggregatedID2ItsRollupID failed to find netID=%s", Characters::ToString (aggregatedDeviceID).c_str ())};
                 if constexpr (qDebug) {
                     for ([[maybe_unused]] const auto& i : fRolledUpDevices) {
                         DbgTrace (L"rolledupDevice=%s", Characters::ToString (i).c_str ());
@@ -1409,16 +1441,15 @@ namespace {
             nonvirtual void ResetUserOverrides (const Mapping<GUID, Device::UserOverridesType>& userOverrides)
             {
                 RolledUpNetworkInterfaces networkInterfacesRollup = RolledUpNetworkInterfaces::GetCached ();
-                fStarterRollups_                                  = userOverrides.Map<Device> (
-                    [] (const auto& guid2UOTPair) -> Device {
-                        Device d;
-                        d.fID            = guid2UOTPair.fKey;
-                        d.fUserOverrides = guid2UOTPair.fValue;
-                        if (d.fUserOverrides and d.fUserOverrides->fName) {
-                            d.fNames.Add (*d.fUserOverrides->fName, 500);
-                        }
-                        return d;
-                    });
+                fStarterRollups_                                  = userOverrides.Map<Device> ([] (const auto& guid2UOTPair) -> Device {
+                    Device d;
+                    d.fID            = guid2UOTPair.fKey;
+                    d.fUserOverrides = guid2UOTPair.fValue;
+                    if (d.fUserOverrides and d.fUserOverrides->fName) {
+                        d.fNames.Add (*d.fUserOverrides->fName, 500);
+                    }
+                    return d;
+                });
                 RecomputeAll_ ();
             }
 
@@ -1455,13 +1486,14 @@ namespace {
                 //      See https://stroika.atlassian.net/browse/STK-907 - about needing some new mechanism in Stroika for deadlock detection/avoidance.
                 // sCache_.fHoldWriteLockDuringCacheFill = true; // so only one call to filler lambda at a time
                 return sCache_.LookupValue (sCache_.Ago (allowedStaleness), [=] () -> RolledUpDevices {
-                    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...RolledUpDevices::GetCached...cachefiller")};
-                    Debug::TimingTrace        ttrc{L"RolledUpDevices::GetCached...cachefiller", 1};
+                    Debug::TraceContextBumper ctx{
+                        Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...RolledUpDevices::GetCached...cachefiller")};
+                    Debug::TimingTrace ttrc{L"RolledUpDevices::GetCached...cachefiller", 1};
 
-                    auto rolledUpNetworks = RolledUpNetworks::GetCached (allowedStaleness * 3.0);                    // longer allowedStaleness cuz we dont care much about this and the parts
-                                                                                                                     // we look at really dont change
+                    auto rolledUpNetworks = RolledUpNetworks::GetCached (allowedStaleness * 3.0); // longer allowedStaleness cuz we dont care much about this and the parts
+                                                                                                  // we look at really dont change
                     auto rolledUpNetworkInterfacess = RolledUpNetworkInterfaces::GetCached (allowedStaleness * 3.0); // longer allowedStaleness cuz we dont care much about this and the parts
-                                                                                                                     // we look at really dont change
+                        // we look at really dont change
 
                     // Start with the existing rolled up objects
                     // and merge in any more recent discovery changes
@@ -1478,7 +1510,8 @@ namespace {
                             // @todo add more stuff here - empty preset rules from DB
                             // merge two tables - ID to fingerprint and user settings tables and store those in this rollup early
                             // maybe make CTOR for rolledupnetworks take in ital DB netwworks and rules, and have copyis CTOR taking orig networks and new rules?
-                            RolledUpDevices initialDBDevices{sDBAccessMgr_->GetRawDevices (), sDBAccessMgr_->GetDeviceUserSettings (), rolledUpNetworks, rolledUpNetworkInterfacess};
+                            RolledUpDevices initialDBDevices{sDBAccessMgr_->GetRawDevices (), sDBAccessMgr_->GetDeviceUserSettings (),
+                                                             rolledUpNetworks, rolledUpNetworkInterfacess};
                             lk.store (initialDBDevices);
                         }
                         return Memory::ValueOf (lk.load ());
@@ -1504,8 +1537,10 @@ namespace {
             }
 
         private:
-            enum class PassFailType_ { ePass,
-                                       eFail };
+            enum class PassFailType_ {
+                ePass,
+                eFail
+            };
             // if fails simple merge, returns false, so must call recomputeall
             PassFailType_ MergeIn_ (const Device& d2MergeIn)
             {
@@ -1522,7 +1557,8 @@ namespace {
                 }
                 else {
                     // then see if it SHOULD be rolled into an existing rollup device, or if we should create a new one
-                    if (auto i = fRolledUpDevices.First ([&d2MergeIn] (const auto& exisingRolledUpDevice) { return ShouldRollup_ (exisingRolledUpDevice, d2MergeIn); })) {
+                    if (auto i = fRolledUpDevices.First (
+                            [&d2MergeIn] (const auto& exisingRolledUpDevice) { return ShouldRollup_ (exisingRolledUpDevice, d2MergeIn); })) {
                         MergeInUpdate_ (*i, d2MergeIn);
                     }
                     else {
@@ -1544,7 +1580,8 @@ namespace {
                     if (tmp.fAttachedNetworkInterfaces == nullopt) {
                         tmp.fAttachedNetworkInterfaces = Set<GUID>{};
                     }
-                    *tmp.fAttachedNetworkInterfaces += fUseNetworkInterfaceRollups.MapAggregatedNetInterfaceID2ItsRollupID (*newDevice2MergeIn.fAttachedNetworkInterfaces);
+                    *tmp.fAttachedNetworkInterfaces +=
+                        fUseNetworkInterfaceRollups.MapAggregatedNetInterfaceID2ItsRollupID (*newDevice2MergeIn.fAttachedNetworkInterfaces);
                 }
 
                 // userSettings already added on first rollup
@@ -1559,12 +1596,15 @@ namespace {
                 newRolledUpDevice.fID                   = sDBAccessMgr_->GenNewDeviceID (d2MergeIn.GetHardwareAddresses ());
                 if (GetDevices ().Contains (newRolledUpDevice.fID)) {
                     // Should probably never happen, but since depends on data in database, program defensively
-                    Logger::sThe.Log (Logger::eWarning, L"Got rollup device ID from cache that is already in use: %s (for hardware addresses %s)", Characters::ToString (newRolledUpDevice.fID).c_str (), Characters::ToString (d2MergeIn.GetHardwareAddresses ()).c_str ());
+                    Logger::sThe.Log (Logger::eWarning, L"Got rollup device ID from cache that is already in use: %s (for hardware addresses %s)",
+                                      Characters::ToString (newRolledUpDevice.fID).c_str (),
+                                      Characters::ToString (d2MergeIn.GetHardwareAddresses ()).c_str ());
                     newRolledUpDevice.fID = GUID::GenerateNew ();
                 }
                 newRolledUpDevice.fAttachedNetworks = MapAggregatedAttachments2Rollups_ (newRolledUpDevice.fAttachedNetworks);
                 if (d2MergeIn.fAttachedNetworkInterfaces) {
-                    newRolledUpDevice.fAttachedNetworkInterfaces = fUseNetworkInterfaceRollups.MapAggregatedNetInterfaceID2ItsRollupID (*d2MergeIn.fAttachedNetworkInterfaces);
+                    newRolledUpDevice.fAttachedNetworkInterfaces =
+                        fUseNetworkInterfaceRollups.MapAggregatedNetInterfaceID2ItsRollupID (*d2MergeIn.fAttachedNetworkInterfaces);
                 }
                 newRolledUpDevice.fUserOverrides = sDBAccessMgr_->LookupDevicesUserSettings (newRolledUpDevice.fID);
                 if (newRolledUpDevice.fUserOverrides && newRolledUpDevice.fUserOverrides->fName) {
@@ -1594,7 +1634,10 @@ namespace {
             };
             static bool ShouldRollup_ (const Device& exisingRolledUpDevice, const Device& d2PotentiallyMergeIn)
             {
-                if ((exisingRolledUpDevice.fAggregatesIrreversibly and exisingRolledUpDevice.fAggregatesIrreversibly->Contains (d2PotentiallyMergeIn.fID)) or (exisingRolledUpDevice.fAggregatesIrreversibly and exisingRolledUpDevice.fAggregatesIrreversibly->Contains (d2PotentiallyMergeIn.fID))) {
+                if ((exisingRolledUpDevice.fAggregatesIrreversibly and
+                     exisingRolledUpDevice.fAggregatesIrreversibly->Contains (d2PotentiallyMergeIn.fID)) or
+                    (exisingRolledUpDevice.fAggregatesIrreversibly and
+                     exisingRolledUpDevice.fAggregatesIrreversibly->Contains (d2PotentiallyMergeIn.fID))) {
                     // we retry the same 'discovered' networks repeatedly and re-roll them up.
                     // mostly this is handled by having the same hardware addresses, but sometimes (like for main discovered device)
                     // MAY not yet / always have network interface). And besides, this check cheaper/faster probably.
@@ -1617,7 +1660,8 @@ namespace {
                 if (existingRollupHWAddresses.empty () or d2PotentiallyMergeInHardwareAddresses.empty ()) {
                     // then fold together if they have the same IP Addresses
                     // return d1.GetInternetAddresses () == d2.GetInternetAddresses ();
-                    return Set<InternetAddress>::Intersects (exisingRolledUpDevice.GetInternetAddresses (), d2PotentiallyMergeIn.GetInternetAddresses ());
+                    return Set<InternetAddress>::Intersects (exisingRolledUpDevice.GetInternetAddresses (),
+                                                             d2PotentiallyMergeIn.GetInternetAddresses ());
                 }
                 // unclear if above test should be if EITHER set is empty, maybe then do if timeframes very close?
                 return false;
@@ -1653,7 +1697,7 @@ IntegratedModel::Mgr::Activator::Activator ()
 
 IntegratedModel::Mgr::Activator::~Activator ()
 {
-    Debug::TraceContextBumper                        ctx{L"IntegratedModel::Mgr::Activator::~Activator"};
+    Debug::TraceContextBumper ctx{L"IntegratedModel::Mgr::Activator::~Activator"};
     Execution::Thread::SuppressInterruptionInContext suppressInterruption; // must complete this abort and wait for done - this cannot abort/throw
     sDBAccessMgr_ = nullopt;
 }
@@ -1679,7 +1723,7 @@ optional<IntegratedModel::Device> IntegratedModel::Mgr::GetDevice (const GUID& i
     auto result             = devicesRollupCache.GetDevices ().Lookup (id);
     if (result) {
         if (ttl != nullptr) {
-            bool justStarted = Time::GetTickCount () < 60;  // if just started, this trick of looking at EverSeen() doesn't work (cuz maybe just not discovered yet)
+            bool justStarted = Time::GetTickCount () < 60; // if just started, this trick of looking at EverSeen() doesn't work (cuz maybe just not discovered yet)
             auto everSeen = result->fSeen.EverSeen ();
             // This isn't a super-reliable way to check - find a better more reliable way to set the ttl
             if (not justStarted and everSeen and everSeen->GetUpperBound () + 15min < DateTime::Now ()) {
@@ -1734,7 +1778,8 @@ std::optional<GUID> IntegratedModel::Mgr::GetCorrespondingDynamicDeviceID (const
             Assert (dynamicDevices.Contains (*ff));
             return *ff;
         }
-        DbgTrace (L"Info: GetCorrespondingDynamicDeviceID found rollup device with no corresponding dynamic device (can happen if its a hisorical device not on network right now)");
+        DbgTrace (L"Info: GetCorrespondingDynamicDeviceID found rollup device with no corresponding dynamic device (can happen if its a "
+                  L"hisorical device not on network right now)");
     }
     return nullopt;
 }
@@ -1805,7 +1850,8 @@ optional<IntegratedModel::NetworkInterface> IntegratedModel::Mgr::GetNetworkInte
         }
         auto deviceRollupCache = RollupSummary_::RolledUpDevices::GetCached ();
         // could cache this info so dont need to search...
-        if (auto i = deviceRollupCache.GetDevices ().First ([&id] (const Device& d) { return d.fAttachedNetworkInterfaces and d.fAttachedNetworkInterfaces->Contains (id); })) {
+        if (auto i = deviceRollupCache.GetDevices ().First (
+                [&id] (const Device& d) { return d.fAttachedNetworkInterfaces and d.fAttachedNetworkInterfaces->Contains (id); })) {
             result->fAttachedToDevices = Set<GUID>{i->fID};
         }
     }

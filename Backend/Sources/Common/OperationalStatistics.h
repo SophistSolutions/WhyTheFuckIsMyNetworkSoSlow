@@ -30,8 +30,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         static OperationalStatisticsMgr sThe;
 
     public:
-        enum DBCommandType { eRead,
-                             eWrite };
+        enum DBCommandType {
+            eRead,
+            eWrite
+        };
 
     public:
         static inline const Time::Duration kLookbackInterval{5min};
@@ -66,15 +68,16 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
     private:
         mutable mutex fMutex_; // protect all data with single quick access mutex
         struct Rec_ {
-            enum class Kind { eNull,
-                              eAPI,
-                              eAPIError,
-                              eDBRead,
-                              eDBWrite,
-                              eDBError,
-                              eAPIActiveRunningTasks,
-                              eAPIOpenConnectionCount,
-                              eAPIProcessingConnectionCount,
+            enum class Kind {
+                eNull,
+                eAPI,
+                eAPIError,
+                eDBRead,
+                eDBWrite,
+                eDBError,
+                eAPIActiveRunningTasks,
+                eAPIOpenConnectionCount,
+                eAPIProcessingConnectionCount,
             };
             Kind                      fKind;
             Time::DurationSecondsType fAt;

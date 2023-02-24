@@ -150,8 +150,9 @@ Discovery::NetworksMgr::Activator::Activator ()
 {
     DbgTrace (L"Discovery::NetworksMgr::Activator::Activator: activating network discovery");
     Require (not sActive_);
-    sActive_             = true;
-    sIntervalTimerAdder_ = make_unique<IntervalTimer::Adder> ([] () { sKeepCachedMonitorsUpToDate_.DoOnce (); }, 1min, IntervalTimer::Adder::eRunImmediately);
+    sActive_ = true;
+    sIntervalTimerAdder_ =
+        make_unique<IntervalTimer::Adder> ([] () { sKeepCachedMonitorsUpToDate_.DoOnce (); }, 1min, IntervalTimer::Adder::eRunImmediately);
 }
 
 Discovery::NetworksMgr::Activator::~Activator ()
@@ -198,7 +199,8 @@ namespace {
                 if (not kIncludeMulticastAddressesInDiscovery) {
                     if (nib.GetBaseInternetAddress ().IsMulticastAddress ()) {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
-                        DbgTrace (L"CollectActiveNetworks_: interface=%s; ia=%s binding ignored because IsMulticastAddress", Characters::ToString (i.fGUID).c_str (), Characters::ToString (nib.fInternetAddress).c_str ());
+                        DbgTrace (L"CollectActiveNetworks_: interface=%s; ia=%s binding ignored because IsMulticastAddress",
+                                  Characters::ToString (i.fGUID).c_str (), Characters::ToString (nib.fInternetAddress).c_str ());
 #endif
                         continue; // skip multicast addresses, because they don't really refer to a device
                     }
@@ -206,7 +208,8 @@ namespace {
                 if (not kIncludeLinkLocalAddressesInDiscovery) {
                     if (nib.GetBaseInternetAddress ().IsLinkLocalAddress ()) {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
-                        DbgTrace (L"CollectActiveNetworks_: interface=%s; ia=%s binding ignored because IsLinkLocalAddress", Characters::ToString (i.fGUID).c_str (), Characters::ToString (nib.fInternetAddress).c_str ());
+                        DbgTrace (L"CollectActiveNetworks_: interface=%s; ia=%s binding ignored because IsLinkLocalAddress",
+                                  Characters::ToString (i.fGUID).c_str (), Characters::ToString (nib.fInternetAddress).c_str ());
 #endif
                         continue; // skip link-local addresses, they are only used for special purposes like discovery, and aren't part of the network
                     }
@@ -222,7 +225,8 @@ namespace {
                 for (const CIDR& maybeSubsumerCIDR : cidrs) {
                     if (maybeSubsumerCIDR.GetNumberOfSignificantBits () > ci->GetNumberOfSignificantBits ()) {
                         if (maybeSubsumerCIDR.GetRange ().Contains (ci->GetRange ())) {
-                            DbgTrace ("Removing subsumed CIDR %s inside %s", Characters::ToString (*ci).c_str (), Characters::ToString (maybeSubsumerCIDR).c_str ());
+                            DbgTrace ("Removing subsumed CIDR %s inside %s", Characters::ToString (*ci).c_str (),
+                                      Characters::ToString (maybeSubsumerCIDR).c_str ());
                             cidrs.Remove (ci);
                         }
                     }
@@ -290,10 +294,8 @@ namespace {
 
 #if qDebug
                     // nothing useful to add yet
-                    nw.fDebugProps.Add (L"test"sv,
-                                        VariantValue{
-                                            Mapping<String, VariantValue>{
-                                                pair<String, VariantValue>{L"updatedAt"sv, Time::DateTime::Now ()}}});
+                    nw.fDebugProps.Add (
+                        L"test"sv, VariantValue{Mapping<String, VariantValue>{pair<String, VariantValue>{L"updatedAt"sv, Time::DateTime::Now ()}}});
 #endif
 
                     accumResults += nw;
@@ -338,9 +340,8 @@ namespace {
 #endif
             netScores.Add (i->fGUID, score);
         }
-        Sequence<Network> results = Sequence<Network>{accumResults.OrderBy ([&] (const Network& l, const Network& r) {
-            return netScores.Lookup (l.fGUID) > netScores.Lookup (r.fGUID);
-        })};
+        Sequence<Network> results = Sequence<Network>{accumResults.OrderBy (
+            [&] (const Network& l, const Network& r) { return netScores.Lookup (l.fGUID) > netScores.Lookup (r.fGUID); })};
         Assert (results.size () == accumResults.size ());
         Assert (results.size () == netScores.size ());
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
@@ -359,9 +360,8 @@ Sequence<Network> Discovery::NetworksMgr::CollectActiveNetworks (optional<Time::
     Require (sActive_);
     Sequence<Network>                                                       results;
     static Cache::SynchronizedCallerStalenessCache<void, Sequence<Network>> sCache_;
-    results = sCache_.LookupValue (sCache_.Ago (allowedStaleness.value_or (kDefaultItemCacheLifetime_)), [] () {
-        return CollectActiveNetworks_ ();
-    });
+    results = sCache_.LookupValue (sCache_.Ago (allowedStaleness.value_or (kDefaultItemCacheLifetime_)),
+                                   [] () { return CollectActiveNetworks_ (); });
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
     DbgTrace (L"returns: %s", Characters::ToString (results).c_str ());
 #endif

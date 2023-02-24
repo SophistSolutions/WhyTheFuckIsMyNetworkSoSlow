@@ -69,31 +69,46 @@ namespace {
         }
         cerr << "Usage: " << m.GetServiceDescription ().fRegistrationName.AsNarrowSDKString () << " [options] where options can be :\n ";
         if (m.GetServiceIntegrationFeatures ().Contains (Main::ServiceIntegrationFeatures::eInstall)) {
-            cerr << "\t--" << Characters::WideStringToNarrowSDKString (Main::CommandNames::kInstall) << "               /* Install service (only when debugging - should use real installer like WIX) */" << endl;
-            cerr << "\t--" << Characters::WideStringToNarrowSDKString (Main::CommandNames::kUnInstall) << "             /* UnInstall service (only when debugging - should use real installer like WIX) */" << endl;
+            cerr << "\t--" << Characters::WideStringToNarrowSDKString (Main::CommandNames::kInstall)
+                 << "               /* Install service (only when debugging - should use real installer like WIX) */" << endl;
+            cerr << "\t--" << Characters::WideStringToNarrowSDKString (Main::CommandNames::kUnInstall)
+                 << "             /* UnInstall service (only when debugging - should use real installer like WIX) */" << endl;
         }
-        cerr << "\t--" << Characters::WideStringToNarrowSDKString (Main::CommandNames::kRunAsService) << "        /* Run this process as a service (doesn't exit until the serivce is done ...) */" << endl;
-        cerr << "\t--" << Characters::WideStringToNarrowSDKString (Main::CommandNames::kRunDirectly) << "          /* Run this process as a directly (doesn't exit until the serivce is done or ARGUMENT TIMEOUT seconds elapsed ...) but not using service infrastructure */" << endl;
-        cerr << "\t--" << Characters::WideStringToNarrowSDKString (Main::CommandNames::kStart) << "                 /* Service/Control Function: Start the service */" << endl;
-        cerr << "\t--" << Characters::WideStringToNarrowSDKString (Main::CommandNames::kStop) << "                  /* Service/Control Function: Stop the service */" << endl;
-        cerr << "\t--" << Characters::WideStringToNarrowSDKString (Main::CommandNames::kForcedStop) << "            /* Service/Control Function: Forced stop the service (after trying to normally stop) */" << endl;
-        cerr << "\t--" << Characters::WideStringToNarrowSDKString (Main::CommandNames::kRestart) << "               /* Service/Control Function: Stop and then re-start the service (ok if already stopped) */" << endl;
-        cerr << "\t--" << Characters::WideStringToNarrowSDKString (Main::CommandNames::kForcedRestart) << "         /* Service/Control Function: Stop (force if needed) and then re-start the service (ok if already stopped) */" << endl;
-        cerr << "\t--" << Characters::WideStringToNarrowSDKString (Main::CommandNames::kReloadConfiguration) << "  /* Reload service configuration */" << endl;
-        cerr << "\t--" << Characters::WideStringToNarrowSDKString (Main::CommandNames::kPause) << "                 /* Service/Control Function: Pause the service */" << endl;
-        cerr << "\t--" << Characters::WideStringToNarrowSDKString (Main::CommandNames::kContinue) << "              /* Service/Control Function: Continue the paused service */" << endl;
+        cerr << "\t--" << Characters::WideStringToNarrowSDKString (Main::CommandNames::kRunAsService)
+             << "        /* Run this process as a service (doesn't exit until the serivce is done ...) */" << endl;
+        cerr << "\t--" << Characters::WideStringToNarrowSDKString (Main::CommandNames::kRunDirectly) << "          /* Run this process as a directly (doesn't exit until the serivce is done or ARGUMENT TIMEOUT seconds elapsed ...) but not using service infrastructure */"
+             << endl;
+        cerr << "\t--" << Characters::WideStringToNarrowSDKString (Main::CommandNames::kStart)
+             << "                 /* Service/Control Function: Start the service */" << endl;
+        cerr << "\t--" << Characters::WideStringToNarrowSDKString (Main::CommandNames::kStop)
+             << "                  /* Service/Control Function: Stop the service */" << endl;
+        cerr << "\t--" << Characters::WideStringToNarrowSDKString (Main::CommandNames::kForcedStop)
+             << "            /* Service/Control Function: Forced stop the service (after trying to normally stop) */" << endl;
+        cerr << "\t--" << Characters::WideStringToNarrowSDKString (Main::CommandNames::kRestart)
+             << "               /* Service/Control Function: Stop and then re-start the service (ok if already stopped) */" << endl;
+        cerr << "\t--" << Characters::WideStringToNarrowSDKString (Main::CommandNames::kForcedRestart)
+             << "         /* Service/Control Function: Stop (force if needed) and then re-start the service (ok if already stopped) */" << endl;
+        cerr << "\t--" << Characters::WideStringToNarrowSDKString (Main::CommandNames::kReloadConfiguration)
+             << "  /* Reload service configuration */" << endl;
+        cerr << "\t--" << Characters::WideStringToNarrowSDKString (Main::CommandNames::kPause)
+             << "                 /* Service/Control Function: Pause the service */" << endl;
+        cerr << "\t--" << Characters::WideStringToNarrowSDKString (Main::CommandNames::kContinue)
+             << "              /* Service/Control Function: Continue the paused service */" << endl;
         cerr << "\t--Status                /* Service/Control Function: Print status of running service */ " << endl;
         cerr << "\t--Version               /* print this application version */ " << endl;
         cerr << "\t--help                  /* Print this help. */ " << endl;
         cerr << endl
-             << "\tExtra unrecognized parameters for start/restart, and forcedrestart operations will be passed along to the actual service process" << endl;
+             << "\tExtra unrecognized parameters for start/restart, and forcedrestart operations will be passed along to the actual "
+                "service process"
+             << endl;
         cerr << endl;
     }
 }
 
 int main (int argc, const char* argv[])
 {
-    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"main", L"argv=%s", Characters::ToString (vector<const char*> (argv, argv + argc)).c_str ())};
+    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (
+        L"main", L"argv=%s", Characters::ToString (vector<const char*> (argv, argv + argc)).c_str ())};
     DbgTrace (L"Running as user %s", Characters::ToString (GetCurrentUserName ()).c_str ());
 
 #if qStroika_Foundation_Exection_Thread_SupportThreadStatistics
@@ -162,19 +177,11 @@ int main (int argc, const char* argv[])
     try {
         static constexpr Activity kSettingUpFirewall_{L"setting up firewall"sv};
         DeclareActivity           da{&kSettingUpFirewall_};
-        IO::Network::SystemFirewall::Manager{}.Register (
-            IO::Network::SystemFirewall::Rule{
-                L"WhyTheFuckIsMyNetworkSoSlow Recieve SSDP Notify UDP Access Allowed"sv,
-                L"Allow UDP/multicast (NOTIFY) traffic for WhyTheFuckIsMyNetworkSoSlow so SSDP listen works (search works without this)"sv,
-                L"WhyTheFuckIsMyNetworkSoSlow"sv,
-                Execution::GetEXEPath (),
-                NET_FW_PROFILE2_ALL,
-                NET_FW_RULE_DIR_IN,
-                NET_FW_IP_PROTOCOL_UDP,
-                L"1900"sv,
-                L"*"sv,
-                NET_FW_ACTION_ALLOW,
-                true});
+        IO::Network::SystemFirewall::Manager{}.Register (IO::Network::SystemFirewall::Rule{
+            L"WhyTheFuckIsMyNetworkSoSlow Recieve SSDP Notify UDP Access Allowed"sv,
+            L"Allow UDP/multicast (NOTIFY) traffic for WhyTheFuckIsMyNetworkSoSlow so SSDP listen works (search works without this)"sv,
+            L"WhyTheFuckIsMyNetworkSoSlow"sv, Execution::GetEXEPath (), NET_FW_PROFILE2_ALL, NET_FW_RULE_DIR_IN, NET_FW_IP_PROTOCOL_UDP,
+            L"1900"sv, L"*"sv, NET_FW_ACTION_ALLOW, true});
     }
     catch (...) {
         String exceptMsg   = Characters::ToString (current_exception ());
@@ -182,7 +189,8 @@ int main (int argc, const char* argv[])
         if (auto errCode = GetAssociatedErrorCode (current_exception ())) {
             if (errCode == errc::permission_denied) {
                 warningOnly = true;
-                exceptMsg += L" Some device discovery features (SSDP Listen) may not function properly. Run as administrator once, or re-run the installer to fix this.";
+                exceptMsg += L" Some device discovery features (SSDP Listen) may not function properly. Run as administrator once, or "
+                             L"re-run the installer to fix this.";
             }
         }
         if (warningOnly) {
@@ -221,7 +229,8 @@ int main (int argc, const char* argv[])
             return EXIT_SUCCESS;
         }
         else if (Execution::MatchesCommandLineArgument (args, L"version")) {
-            cout << m.GetServiceDescription ().fPrettyName.AsNarrowSDKString () << ": " << Characters::ToString (AppVersion::kVersion).AsNarrowSDKString () << endl;
+            cout << m.GetServiceDescription ().fPrettyName.AsNarrowSDKString () << ": "
+                 << Characters::ToString (AppVersion::kVersion).AsNarrowSDKString () << endl;
             return EXIT_SUCCESS;
         }
         else {

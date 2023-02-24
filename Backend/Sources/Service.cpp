@@ -40,9 +40,7 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices;
 using Execution::Logger;
 
 namespace {
-    const Main::ServiceDescription kServiceDescription_{
-        L"WhyTheFuckIsMyNetworkSoSlow-Service"sv,
-        L"WhyTheFuckIsMyNetworkSoSlow Service"sv};
+    const Main::ServiceDescription kServiceDescription_{L"WhyTheFuckIsMyNetworkSoSlow-Service"sv, L"WhyTheFuckIsMyNetworkSoSlow Service"sv};
 }
 
 void WTFAppServiceRep::MainLoop (const std::function<void ()>& startedCB)
@@ -58,7 +56,8 @@ void WTFAppServiceRep::MainLoop (const std::function<void ()>& startedCB)
     IntegratedModel::Mgr::Activator            integratedModelMgrActivator;
     WebServer                                  webServer{make_shared<WSImpl> ()};
     startedCB (); // Notify service control mgr that the service has started
-    Logger::sThe.Log (Logger::eInfo, L"%s (version %s) service started successfully", kServiceDescription_.fPrettyName.c_str (), Characters::ToString (AppVersion::kVersion).c_str ());
+    Logger::sThe.Log (Logger::eInfo, L"%s (version %s) service started successfully", kServiceDescription_.fPrettyName.c_str (),
+                      Characters::ToString (AppVersion::kVersion).c_str ());
 
     [[maybe_unused]] auto&& cleanup = Execution::Finally ([&] () {
         Execution::Thread::SuppressInterruptionInContext suppressSoWeActuallyShutDownOtherTaskWhenWereBeingShutDown;
@@ -69,7 +68,4 @@ void WTFAppServiceRep::MainLoop (const std::function<void ()>& startedCB)
     Execution::WaitableEvent{Execution::WaitableEvent::eAutoReset}.Wait (); // wait til service shutdown ThreadAbortException
 }
 
-Main::ServiceDescription WTFAppServiceRep::GetServiceDescription () const
-{
-    return kServiceDescription_;
-}
+Main::ServiceDescription WTFAppServiceRep::GetServiceDescription () const { return kServiceDescription_; }

@@ -98,9 +98,7 @@ namespace {
     }();
     Config_ GetConfig_ ()
     {
-        return Config_{
-            nullopt,
-            gAppConfiguration.Get ().WebServerPort.value_or (AppConfigurationType::kWebServerPort_Default)};
+        return Config_{nullopt, gAppConfiguration.Get ().WebServerPort.value_or (AppConfigurationType::kWebServerPort_Default)};
     }
 }
 
@@ -161,10 +159,13 @@ namespace {
         Sequence<pair<RegularExpression, CacheControl>> kFSCacheControlSettings_
         {
 #if __cpp_designated_initializers
-            pair<RegularExpression, CacheControl>{RegularExpression{L".*[0-9a-fA-F]+\\.(js|css|js\\.map)", CompareOptions::eCaseInsensitive}, CacheControl::kImmutable},
-                pair<RegularExpression, CacheControl>{RegularExpression::kAny, CacheControl{.fCacheability = CacheControl::ePublic, .fMaxAge = Duration{24h}.As<int32_t> ()}},
+            pair<RegularExpression, CacheControl>{RegularExpression{L".*[0-9a-fA-F]+\\.(js|css|js\\.map)", CompareOptions::eCaseInsensitive},
+                                                  CacheControl::kImmutable},
+                pair<RegularExpression, CacheControl>{
+                    RegularExpression::kAny, CacheControl{.fCacheability = CacheControl::ePublic, .fMaxAge = Duration{24h}.As<int32_t> ()}},
 #else
-            pair<RegularExpression, CacheControl>{RegularExpression{L".*[0-9a-fA-F]+\\.(js|css|js\\.map)", CompareOptions::eCaseInsensitive}, CacheControl::kImmutable},
+            pair<RegularExpression, CacheControl>{RegularExpression{L".*[0-9a-fA-F]+\\.(js|css|js\\.map)", CompareOptions::eCaseInsensitive},
+                                                  CacheControl::kImmutable},
                 pair<RegularExpression, CacheControl>{RegularExpression::kAny, CacheControl{CacheControl::ePublic, Duration{24h}.As<int32_t> ()}},
 #endif
         };
@@ -200,10 +201,7 @@ private:
         {
             ++r.fActiveCallCnt_;
         }
-        ~ActiveCallCounter_ ()
-        {
-            --fRep_.fActiveCallCnt_;
-        }
+        ~ActiveCallCounter_ () { --fRep_.fActiveCallCnt_; }
         Rep_& fRep_;
     };
     IntervalTimer::Adder fIntervalTimerAdder_;
@@ -459,17 +457,16 @@ public:
     }
     static void DefaultPage_ ([[maybe_unused]] Request* request, Response* response)
     {
-        WriteDocsPage (
-            response,
-            Sequence<WebServiceMethodDescription>{
-                kAbout_,
-                kBlob_,
-                kDevices_,
-                kNetworkInterfaces_,
-                kNetworks_,
-                kOperations_,
-            },
-            DocsOptions{L"Web Methods"sv});
+        WriteDocsPage (response,
+                       Sequence<WebServiceMethodDescription>{
+                           kAbout_,
+                           kBlob_,
+                           kDevices_,
+                           kNetworkInterfaces_,
+                           kNetworks_,
+                           kOperations_,
+                       },
+                       DocsOptions{L"Web Methods"sv});
     }
 };
 
@@ -499,16 +496,13 @@ const WebServiceMethodDescription WebServer::Rep_::kDevices_{
     DataExchange::InternetMediaTypes::kJSON,
     {},
     Sequence<String>{
-        L"curl http://localhost/api/v1/devices"sv,
-        L"curl http://localhost/api/v1/devices?recurse=true"sv,
+        L"curl http://localhost/api/v1/devices"sv, L"curl http://localhost/api/v1/devices?recurse=true"sv,
         L"curl 'http://localhost/api/v1/devices?recurse=true&sort=%7b\"searchTerms\":[%7b\"by\":\"Address\"%7d],\"compareNetwork\":\"192.168.244.0/24\"%7d'"sv,
         L"curl 'http://localhost/api/v1/devices?recurse=true&sort={\"searchTerms\":[{\"by\":\"Address\"},{\"by\":\"Priority\"}],\"compareNetwork\":\"192.168.244.0/24\"}'"sv,
         L"curl http://localhost/api/v1/devices?recurse=true&sortBy=Address&sortCompareNetwork=192.168.244.0/24"sv,
-        L"curl http://localhost/api/v1/devices/60c59f9c-9a69-c89e-9d99-99c7976869c5"sv,
-        L"curl -v -X PATCH --output - -H \"Content-Type: application/json\" -d '[{\"op\":\"add\",\"path\":\"/userOverrides/name\",\"value\":\"PROTY\"}]' http://localhost/api/v1/devices/a1fe525c-6bb7-271a-0f57-70d50f889dd3",
-        L"curl -v -X PATCH --output - -H \"Content-Type: application/json\" -d '[{\"op\":\"add\",\"path\":\"/userOverrides/notes\",\"value\":\"## Note1\\n##Note2\"}]' http://localhost/api/v1/devices/a1fe525c-6bb7-271a-0f57-70d50f889dd3",
-        L"curl -v -X PATCH --output - -H \"Content-Type: application/json\" -d '[{\"op\":\"add\",\"path\":\"/userOverrides/tags\",\"value\":[\"tag1\",\"tag2\"]}]' http://localhost/api/v1/devices/a1fe525c-6bb7-271a-0f57-70d50f889dd3",
-        L"curl -v -X PATCH --output - -H \"Content-Type: application/json\" -d '[{\"op\":\"remove\",\"path\":\"/userOverrides/tags\"}]' http://localhost/api/v1/devices/a1fe525c-6bb7-271a-0f57-70d50f889dd3"},
+        L"curl http://localhost/api/v1/devices/60c59f9c-9a69-c89e-9d99-99c7976869c5"sv, L"curl -v -X PATCH --output - -H \"Content-Type: application/json\" -d '[{\"op\":\"add\",\"path\":\"/userOverrides/name\",\"value\":\"PROTY\"}]' http://localhost/api/v1/devices/a1fe525c-6bb7-271a-0f57-70d50f889dd3", L"curl -v -X PATCH --output - -H \"Content-Type: application/json\" -d '[{\"op\":\"add\",\"path\":\"/userOverrides/notes\",\"value\":\"## Note1\\n##Note2\"}]' http://localhost/api/v1/devices/a1fe525c-6bb7-271a-0f57-70d50f889dd3", L"curl -v -X PATCH --output - -H \"Content-Type: application/json\" -d '[{\"op\":\"add\",\"path\":\"/userOverrides/tags\",\"value\":[\"tag1\",\"tag2\"]}]' http://localhost/api/v1/devices/a1fe525c-6bb7-271a-0f57-70d50f889dd3",
+        L"curl -v -X PATCH --output - -H \"Content-Type: application/json\" -d '[{\"op\":\"remove\",\"path\":\"/userOverrides/tags\"}]' "
+        L"http://localhost/api/v1/devices/a1fe525c-6bb7-271a-0f57-70d50f889dd3"},
     Sequence<String>{
         L"Fetch the list of known devices for the currently connected network. By default, this list is sorted so the most interesting devices come first (like this machine is first)"sv,
         L"query-string: sort={[by: Address|Priority|Name|Type, ascending: true|false]+, compareNetwork?: CIDR|network-id}; sort=ARG is JSON encoded SearchTerm={by: string, ascending?: bool}, {searchTerms: SearchTerm[], compareNetwork: string}"sv,
@@ -522,20 +516,23 @@ const WebServiceMethodDescription WebServer::Rep_::kNetworks_{
     Set<String>{IO::Network::HTTP::Methods::kGet},
     DataExchange::InternetMediaTypes::kJSON,
     {},
-    Sequence<String>{L"curl http://localhost/api/v1/networks"sv,
-                     L"curl http://localhost/api/v1/networks?recurse=true"sv,
-                     L"curl http://localhost/api/v1/networks/{ID}"sv,
-                     L"curl -v -X PATCH --output - -H \"Content-Type: application/json\" -d '[{\"op\":\"add\",\"path\":\"/userOverrides/name\",\"value\":\"34churchst\"}]' http://localhost/api/v1/networks/d4a16729-ba16-5c2f-6187-0925a2f7025d",
-                     L"curl -v -X PATCH --output - -H \"Content-Type: application/json\" -d '[{\"op\":\"add\",\"path\":\"/userOverrides/notes\",\"value\":\"## Note1\\n##Note2\"}]' http://localhost/api/v1/networks/d4a16729-ba16-5c2f-6187-0925a2f7025d",
-                     L"curl -v -X PATCH --output - -H \"Content-Type: application/json\" -d '[{\"op\":\"add\",\"path\":\"/userOverrides/tags\",\"value\":[\"tag1\",\"tag2\"]}]' http://localhost/api/v1/networks/d4a16729-ba16-5c2f-6187-0925a2f7025d",
-                     L"curl -v -X PATCH --output - -H \"Content-Type: application/json\" -d '[{\"op\":\"remove\",\"path\":\"/userOverrides/tags\"}]' http://localhost/api/v1/networks/d4a16729-ba16-5c2f-6187-0925a2f7025d",
-                     L"curl -v -X PATCH --output - -H \"Content-Type: application/json\" -d '[{\"op\":\"add\",\"path\":\"/userOverrides/aggregateFingerprints\",\"value\":[\"449b7f39-0cba-6cf6-dc7d-1b1998566098\",\"27ea14ab-04c8-e8f5-ddff-a3bd24503497\"]}]' http://localhost/api/v1/networks/4b0103ed-5dfc-8639-0fb4-7dbcd62fb9fb",
-                     L"curl -v -X PATCH --output - -H \"Content-Type: application/json\" -d '[{\"op\":\"remove\",\"path\":\"/userOverrides/aggregateFingerprints\"}]' http://localhost/api/v1/networks/1e0dba3d-55f9-cdee-5d81-0a83aae5ab43",
-                     L"curl -v -X PATCH --output - -H \"Content-Type: application/json\" -d '[{\"op\":\"add\",\"path\":\"/userOverrides/aggregateGatewayHardwareAddresses\",\"value\":[\"70:97:41:94:1a:00\"]}]' http://localhost/api/v1/networks/d4a16729-ba16-5c2f-6187-0925a2f7025d",
-                     L"curl -v -X PATCH --output - -H \"Content-Type: application/json\" -d '[{\"op\":\"remove\",\"path\":\"/userOverrides/aggregateGatewayHardwareAddresses\"}]' http://localhost/api/v1/networks/d4a16729-ba16-5c2f-6187-0925a2f7025d",
-                     L"curl -v -X PATCH --output - -H \"Content-Type: application/json\" -d '[{\"op\":\"add\",\"path\":\"/userOverrides/aggregateNetworkInterfacesMatching\",\"value\":[{\"fingerprint\": \"9da26b0d-0ff5-8e69-5610-c4fe39f84794\", \"interfaceType\": \"Device-Virtual-Internal-Network\" } ]}]' http://localhost/api/v1/networks/a4fbd565-cea8-3885-8393-2d7ac6954457"},
-    Sequence<String>{L"Fetch the list of known Networks."sv,
-                     L"query-string: ids=[a,b,c] - optional - if omitted returns all)"sv,
+    Sequence<String>{
+        L"curl http://localhost/api/v1/networks"sv, L"curl http://localhost/api/v1/networks?recurse=true"sv,
+        L"curl http://localhost/api/v1/networks/{ID}"sv, L"curl -v -X PATCH --output - -H \"Content-Type: application/json\" -d '[{\"op\":\"add\",\"path\":\"/userOverrides/name\",\"value\":\"34churchst\"}]' http://localhost/api/v1/networks/d4a16729-ba16-5c2f-6187-0925a2f7025d", L"curl -v -X PATCH --output - -H \"Content-Type: application/json\" -d '[{\"op\":\"add\",\"path\":\"/userOverrides/notes\",\"value\":\"## Note1\\n##Note2\"}]' http://localhost/api/v1/networks/d4a16729-ba16-5c2f-6187-0925a2f7025d", L"curl -v -X PATCH --output - -H \"Content-Type: application/json\" -d '[{\"op\":\"add\",\"path\":\"/userOverrides/tags\",\"value\":[\"tag1\",\"tag2\"]}]' http://localhost/api/v1/networks/d4a16729-ba16-5c2f-6187-0925a2f7025d", L"curl -v -X PATCH --output - -H \"Content-Type: application/json\" -d '[{\"op\":\"remove\",\"path\":\"/userOverrides/tags\"}]' http://localhost/api/v1/networks/d4a16729-ba16-5c2f-6187-0925a2f7025d", L"curl -v -X PATCH --output - -H \"Content-Type: application/json\" -d '[{\"op\":\"add\",\"path\":\"/userOverrides/aggregateFingerprints\",\"value\":[\"449b7f39-0cba-6cf6-dc7d-1b1998566098\",\"27ea14ab-04c8-e8f5-ddff-a3bd24503497\"]}]' http://localhost/api/v1/networks/4b0103ed-5dfc-8639-0fb4-7dbcd62fb9fb",
+        L"curl -v -X PATCH --output - -H \"Content-Type: application/json\" -d "
+        L"'[{\"op\":\"remove\",\"path\":\"/userOverrides/aggregateFingerprints\"}]' "
+        L"http://localhost/api/v1/networks/1e0dba3d-55f9-cdee-5d81-0a83aae5ab43",
+        L"curl -v -X PATCH --output - -H \"Content-Type: application/json\" -d "
+        L"'[{\"op\":\"add\",\"path\":\"/userOverrides/aggregateGatewayHardwareAddresses\",\"value\":[\"70:97:41:94:1a:00\"]}]' "
+        L"http://localhost/api/v1/networks/d4a16729-ba16-5c2f-6187-0925a2f7025d",
+        L"curl -v -X PATCH --output - -H \"Content-Type: application/json\" -d "
+        L"'[{\"op\":\"remove\",\"path\":\"/userOverrides/aggregateGatewayHardwareAddresses\"}]' "
+        L"http://localhost/api/v1/networks/d4a16729-ba16-5c2f-6187-0925a2f7025d",
+        L"curl -v -X PATCH --output - -H \"Content-Type: application/json\" -d "
+        L"'[{\"op\":\"add\",\"path\":\"/userOverrides/aggregateNetworkInterfacesMatching\",\"value\":[{\"fingerprint\": "
+        L"\"9da26b0d-0ff5-8e69-5610-c4fe39f84794\", \"interfaceType\": \"Device-Virtual-Internal-Network\" } ]}]' "
+        L"http://localhost/api/v1/networks/a4fbd565-cea8-3885-8393-2d7ac6954457"},
+    Sequence<String>{L"Fetch the list of known Networks."sv, L"query-string: ids=[a,b,c] - optional - if omitted returns all)"sv,
                      L"@todo - in the future - add support for parameters to this fetch - which can be used to filter/subset etc"sv,
                      L"For PATCH API, only supported operations are 'add /userSettings/name' and 'delete /userSettings/name' (and /userSettings/tags, /userSettings/notes)"sv},
 };
@@ -545,8 +542,7 @@ const WebServiceMethodDescription WebServer::Rep_::kNetworkInterfaces_{
     DataExchange::InternetMediaTypes::kJSON,
     {},
     Sequence<String>{L"curl http://localhost/api/v1/network-interfaces", L"curl http://localhost/api/v1/network-interfaces?recurse=true"sv},
-    Sequence<String>{L"Fetch the list of known Network Interfaces."sv,
-                     L"[recurse=true|false]?"sv},
+    Sequence<String>{L"Fetch the list of known Network Interfaces."sv, L"[recurse=true|false]?"sv},
 };
 const WebServiceMethodDescription WebServer::Rep_::kOperations_{
     L"api/v1/operations"sv,
