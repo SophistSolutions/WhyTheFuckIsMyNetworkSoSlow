@@ -28,7 +28,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
 
         bool operator== (const PrioritizedName& rhs) const;
 #if __cpp_impl_three_way_comparison < 201711
-        bool operator!= (const PrioritizedName& rhs) const { return not(*this == rhs); }
+        bool operator!= (const PrioritizedName& rhs) const
+        {
+            return not(*this == rhs);
+        }
 #endif
 
         String ToString () const;

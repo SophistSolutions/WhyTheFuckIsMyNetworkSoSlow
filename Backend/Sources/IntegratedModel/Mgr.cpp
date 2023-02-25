@@ -160,10 +160,10 @@ namespace {
                 newDev.fAttachedNetworks.Add (i.fKey, NetworkAttachmentInfo{i.fValue.hardwareAddresses, addrs2Report});
             }
             newDev.fAttachedNetworkInterfaces = d.fAttachedInterfaces; // @todo must merge += (but only when merging across differnt discoverers/networks)
-            newDev.fPresentationURL = d.fPresentationURL;
-            newDev.fManufacturer    = d.fManufacturer;
-            newDev.fIcon            = TransformURL2LocalStorage_ (d.fIcon);
-            newDev.fOperatingSystem = d.fOperatingSystem;
+            newDev.fPresentationURL           = d.fPresentationURL;
+            newDev.fManufacturer              = d.fManufacturer;
+            newDev.fIcon                      = TransformURL2LocalStorage_ (d.fIcon);
+            newDev.fOperatingSystem           = d.fOperatingSystem;
 #if qDebug
             if (not d.fDebugProps.empty ()) {
                 newDev.fDebugProps = d.fDebugProps;
@@ -355,7 +355,7 @@ namespace {
         DBAccessMgr_& operator= (const DBAccessMgr_&) = delete;
         ~DBAccessMgr_ ()
         {
-            Debug::TraceContextBumper ctx{L"IntegratedModel::{}::DBAccessMgr_::DTOR"};
+            Debug::TraceContextBumper                        ctx{L"IntegratedModel::{}::DBAccessMgr_::DTOR"};
             Execution::Thread::SuppressInterruptionInContext suppressInterruption; // must complete this abort and wait for done - this cannot abort/throw
             fDatabaseSyncThread_.AbortAndWaitForDone ();
         }
@@ -609,23 +609,23 @@ namespace {
                                                               Schema_CatchAllField{}};
 
     private:
-        static constexpr Configuration::Version kCurrentVersion_ = Configuration::Version{1, 0, Configuration::VersionStage::Alpha, 0};
-        BackendApp::Common::DB                  fDB_{kCurrentVersion_,
+        static constexpr Configuration::Version                                              kCurrentVersion_ = Configuration::Version{1, 0, Configuration::VersionStage::Alpha, 0};
+        BackendApp::Common::DB                                                               fDB_{kCurrentVersion_,
                                     Traversal::Iterable<Schema_Table>{kDeviceTableSchema_, kDeviceUserSettingsSchema_, kNetworkTableSchema_,
-                                                                                       kNetworkInterfaceTableSchema_, kNetworkUserSettingsSchema_}};
-        Synchronized<SQL::Connection::Ptr>      fDBConnectionPtr_{fDB_.NewConnection ()};
-        Execution::Thread::Ptr                  fDatabaseSyncThread_{};
+                                                                                                                                    kNetworkInterfaceTableSchema_, kNetworkUserSettingsSchema_}};
+        Synchronized<SQL::Connection::Ptr>                                                   fDBConnectionPtr_{fDB_.NewConnection ()};
+        Execution::Thread::Ptr                                                               fDatabaseSyncThread_{};
         Synchronized<Mapping<GUID, IntegratedModel::Device::UserOverridesType>>              fCachedDeviceUserSettings_;
         Synchronized<unique_ptr<SQL::ORM::TableConnection<ExternalDeviceUserSettingsElt_>>>  fDeviceUserSettingsTableConnection_;
         Synchronized<Mapping<GUID, IntegratedModel::Network::UserOverridesType>>             fCachedNetworkUserSettings_;
         Synchronized<unique_ptr<SQL::ORM::TableConnection<ExternalNetworkUserSettingsElt_>>> fNetworkUserSettingsTableConnection_;
-        unique_ptr<SQL::ORM::TableConnection<IntegratedModel::Device>> fDeviceTableConnection_; // only accessed from a background database thread
-        unique_ptr<SQL::ORM::TableConnection<IntegratedModel::Network>>          fNetworkTableConnection_;          // ''
-        unique_ptr<SQL::ORM::TableConnection<IntegratedModel::NetworkInterface>> fNetworkInterfaceTableConnection_; // ''
-        Synchronized<DeviceKeyedCollection_>                                     fDBDevices_;           // mirror database contents in RAM
-        Synchronized<NetworkKeyedCollection_>                                    fDBNetworks_;          // ''
-        Synchronized<NetworkInterfaceCollection_>                                fDBNetworkInterfaces_; // ''
-        atomic<bool>                                                             fFinishedInitialDBLoad_{false};
+        unique_ptr<SQL::ORM::TableConnection<IntegratedModel::Device>>                       fDeviceTableConnection_;           // only accessed from a background database thread
+        unique_ptr<SQL::ORM::TableConnection<IntegratedModel::Network>>                      fNetworkTableConnection_;          // ''
+        unique_ptr<SQL::ORM::TableConnection<IntegratedModel::NetworkInterface>>             fNetworkInterfaceTableConnection_; // ''
+        Synchronized<DeviceKeyedCollection_>                                                 fDBDevices_;                       // mirror database contents in RAM
+        Synchronized<NetworkKeyedCollection_>                                                fDBNetworks_;                      // ''
+        Synchronized<NetworkInterfaceCollection_>                                            fDBNetworkInterfaces_;             // ''
+        atomic<bool>                                                                         fFinishedInitialDBLoad_{false};
 
         // the latest copy of what is in the DB (manually kept up to date)
         // NOTE: These are all non-rolled up objects
@@ -649,7 +649,7 @@ namespace {
                         try {
                             Debug::TimingTrace ttrc{L"...initial load of fDBNetworkInterfaces_ from database ", 1};
                             auto               errorHandler = [] ([[maybe_unused]] const SQL::Statement::Row& r,
-                                                    const exception_ptr& e) -> optional<IntegratedModel::NetworkInterface> {
+                                                    const exception_ptr&                        e) -> optional<IntegratedModel::NetworkInterface> {
                                 // Just drop the record on the floor after logging
                                 Logger::sThe.Log (Logger::eError, L"Error reading database of persisted network interfaces snapshot ('%s'): %s",
                                                                 Characters::ToString (r).c_str (), Characters::ToString (e).c_str ());
@@ -720,7 +720,7 @@ namespace {
 
                     // UPDATE fDBNetworkInterfaces_ INCREMENTALLY to reflect reflect these merges
                     DiscoveryWrapper_::GetNetworkInterfaces_ ().Apply ([this] (const Model::NetworkInterface& ni) {
-                        lock_guard lock{this->fDBConnectionPtr_}; //tmphack fix underlying SQL orm wrapper stuff so not needed --LGP 2022-11-23
+                        lock_guard lock{this->fDBConnectionPtr_};     //tmphack fix underlying SQL orm wrapper stuff so not needed --LGP 2022-11-23
                         Assert (ni.fAggregatesReversibly == nullopt); // dont write these summary values
                         fNetworkInterfaceTableConnection_->AddOrUpdate (ni);
                         fDBNetworkInterfaces_.rwget ()->Add (ni);
@@ -728,8 +728,8 @@ namespace {
 
                     // UPDATE fDBNetworks_ INCREMENTALLY to reflect reflect these merges
                     DiscoveryWrapper_::GetNetworks_ ().Apply ([this] (const Model::Network& n) {
-                        Assert (n.fSeen);                         // don't track/write items which have never been seen
-                        lock_guard lock{this->fDBConnectionPtr_}; //tmphack fix underlying SQL orm wrapper stuff so not needed --LGP 2022-11-23
+                        Assert (n.fSeen);                            // don't track/write items which have never been seen
+                        lock_guard lock{this->fDBConnectionPtr_};    //tmphack fix underlying SQL orm wrapper stuff so not needed --LGP 2022-11-23
                         Assert (n.fAggregatesReversibly == nullopt); // dont write these summary values
                         fNetworkTableConnection_->AddOrUpdate (n);
                         fDBNetworks_.rwget ()->Add (n);
@@ -738,9 +738,9 @@ namespace {
                     // UPDATE fDBDevices_ INCREMENTALLY to reflect reflect these merges
                     DiscoveryWrapper_::GetDevices_ ().Apply ([this] (const Model::Device& d) {
                         Assert (d.fSeen.EverSeen ());
-                        Assert (d.fSeen.EverSeen ());             // don't track/write items which have never been seen
-                        Assert (d.fUserOverrides == nullopt);     // tracked on rollup devices, not snapshot devices
-                        lock_guard lock{this->fDBConnectionPtr_}; //tmphack fix underlying SQL orm wrapper stuff so not needed --LGP 2022-11-23
+                        Assert (d.fSeen.EverSeen ());                // don't track/write items which have never been seen
+                        Assert (d.fUserOverrides == nullopt);        // tracked on rollup devices, not snapshot devices
+                        lock_guard lock{this->fDBConnectionPtr_};    //tmphack fix underlying SQL orm wrapper stuff so not needed --LGP 2022-11-23
                         Assert (d.fAggregatesReversibly == nullopt); // dont write these summary values
                         auto rec2Update = fDB_.AddOrMergeUpdate (fDeviceTableConnection_.get (), d);
                         fDBDevices_.rwget ()->Add (rec2Update);
@@ -886,7 +886,7 @@ namespace {
                         DbgTrace (L"rolledupNetInterface=%s", Characters::ToString (i).c_str ());
                     }
                 }
-                Assert (false); // @todo fix - because we guarantee each item rolled up exactly once - but happens sometimes on change of network - I think due to outdated device records referring to newer network not yet in this cache...
+                Assert (false);     // @todo fix - because we guarantee each item rolled up exactly once - but happens sometimes on change of network - I think due to outdated device records referring to newer network not yet in this cache...
                 WeakAssert (false); // @todo fix - because we guarantee each item rolled up exactly once - but happens sometimes on change of network - I think due to outdated device records referring to newer network not yet in this cache...
                 return aggregatedNetInterfaceID;
             }
@@ -1019,7 +1019,7 @@ namespace {
              *  \note return optional<GUID> because this can the caches of devices and networks and network interfaces
              *        can be slightly out of sync
              */
-            nonvirtual auto MapAggregatedNetInterfaceID2ItsRollupID (const GUID& netID) const -> optional < GUID>
+            nonvirtual auto MapAggregatedNetInterfaceID2ItsRollupID (const GUID& netID) const -> optional<GUID>
             {
                 return fMapAggregatedNetInterfaceID2RollupID_.Lookup (netID);
             }
@@ -1048,8 +1048,8 @@ namespace {
         private:
             NetworkInterfaceCollection_ fRawNetworkInterfaces_; // used for RecomputeAll_
             NetworkInterfaceCollection_ fRolledUpNetworkInterfaces_;
-            Mapping<GUID, GUID> fMapAggregatedNetInterfaceID2RollupID_; // each aggregate net interface id is mapped to at most one rollup id)
-            Association<GUID, GUID> fAssociateAggregatedNetInterface2OwningDeviceID_;
+            Mapping<GUID, GUID>         fMapAggregatedNetInterfaceID2RollupID_; // each aggregate net interface id is mapped to at most one rollup id)
+            Association<GUID, GUID>     fAssociateAggregatedNetInterface2OwningDeviceID_;
 
         private:
             static Synchronized<optional<RolledUpNetworkInterfaces>> sRolledUpNetworksInterfaces_;
@@ -1127,7 +1127,7 @@ namespace {
                         DbgTrace (L"rolledupNet=%s", Characters::ToString (i).c_str ());
                     }
                 }
-                Assert (false); // @todo fix - because we guarantee each item rolled up exactly once - but happens sometimes on change of network - I think due to outdated device records referring to newer network not yet in this cache...
+                Assert (false);     // @todo fix - because we guarantee each item rolled up exactly once - but happens sometimes on change of network - I think due to outdated device records referring to newer network not yet in this cache...
                 WeakAssert (false); // @todo fix - because we guarantee each item rolled up exactly once - but happens sometimes on change of network - I think due to outdated device records referring to newer network not yet in this cache...
                 return netID;
             }
@@ -1362,12 +1362,12 @@ namespace {
             }
 
         private:
-            RolledUpNetworkInterfaces fUseNetworkInterfaceRollups;
-            NetworkKeyedCollection_   fRawNetworks_; // used for RecomputeAll_
-            NetworkKeyedCollection_   fStarterRollups_;
-            NetworkKeyedCollection_   fRolledUpNetworks_;
-            Mapping<GUID, GUID>       fMapAggregatedNetID2RollupID_;          // each aggregate netid is mapped to at most one rollup id)
-            Mapping<Network::FingerprintType, GUID> fMapFingerprint2RollupID; // each fingerprint can map to at most one rollup...
+            RolledUpNetworkInterfaces               fUseNetworkInterfaceRollups;
+            NetworkKeyedCollection_                 fRawNetworks_; // used for RecomputeAll_
+            NetworkKeyedCollection_                 fStarterRollups_;
+            NetworkKeyedCollection_                 fRolledUpNetworks_;
+            Mapping<GUID, GUID>                     fMapAggregatedNetID2RollupID_; // each aggregate netid is mapped to at most one rollup id)
+            Mapping<Network::FingerprintType, GUID> fMapFingerprint2RollupID;      // each fingerprint can map to at most one rollup...
         private:
             static Synchronized<optional<RolledUpNetworks>> sRolledUpNetworks_;
         };
@@ -1488,8 +1488,8 @@ namespace {
                         Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...RolledUpDevices::GetCached...cachefiller")};
                     Debug::TimingTrace ttrc{L"RolledUpDevices::GetCached...cachefiller", 1};
 
-                    auto rolledUpNetworks = RolledUpNetworks::GetCached (allowedStaleness * 3.0); // longer allowedStaleness cuz we dont care much about this and the parts
-                                                                                                  // we look at really dont change
+                    auto rolledUpNetworks = RolledUpNetworks::GetCached (allowedStaleness * 3.0);                    // longer allowedStaleness cuz we dont care much about this and the parts
+                                                                                                                     // we look at really dont change
                     auto rolledUpNetworkInterfacess = RolledUpNetworkInterfaces::GetCached (allowedStaleness * 3.0); // longer allowedStaleness cuz we dont care much about this and the parts
                         // we look at really dont change
 
@@ -1695,7 +1695,7 @@ IntegratedModel::Mgr::Activator::Activator ()
 
 IntegratedModel::Mgr::Activator::~Activator ()
 {
-    Debug::TraceContextBumper ctx{L"IntegratedModel::Mgr::Activator::~Activator"};
+    Debug::TraceContextBumper                        ctx{L"IntegratedModel::Mgr::Activator::~Activator"};
     Execution::Thread::SuppressInterruptionInContext suppressInterruption; // must complete this abort and wait for done - this cannot abort/throw
     sDBAccessMgr_ = nullopt;
 }
@@ -1722,7 +1722,7 @@ optional<IntegratedModel::Device> IntegratedModel::Mgr::GetDevice (const GUID& i
     if (result) {
         if (ttl != nullptr) {
             bool justStarted = Time::GetTickCount () < 60; // if just started, this trick of looking at EverSeen() doesn't work (cuz maybe just not discovered yet)
-            auto everSeen = result->fSeen.EverSeen ();
+            auto everSeen    = result->fSeen.EverSeen ();
             // This isn't a super-reliable way to check - find a better more reliable way to set the ttl
             if (not justStarted and everSeen and everSeen->GetUpperBound () + 15min < DateTime::Now ()) {
                 *ttl = 2min;

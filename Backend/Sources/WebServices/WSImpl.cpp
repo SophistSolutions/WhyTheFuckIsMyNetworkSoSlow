@@ -150,7 +150,7 @@ About WSImpl::GetAbout () const
         ComponentInfo{L"sqlite"sv, String::FromASCII (SQLITE_VERSION), URI{"https://www.sqlite.org"}}
 #endif
     }};
-    auto now = DateTime::Now ();
+    auto now          = DateTime::Now ();
     auto measurements = fRep_->fMyCapturer.pMostRecentMeasurements (); // capture results on a regular cadence with MyCapturer, and just report the latest stats
 
     CurrentMachine machineInfo = [this, now, &measurements] () {
@@ -405,8 +405,8 @@ tuple<Device, Duration> WSImpl::GetDevice (const String& id) const
 {
     Debug::TimingTrace                              ttrc{L"WSImpl::GetDevice", 0.1};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
-    GUID               compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
-    optional<Duration> ttl;
+    GUID                                            compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
+    optional<Duration>                              ttl;
     if (auto d = IntegratedModel::Mgr::sThe.GetDevice (compareWithID, &ttl)) {
         return make_tuple (*d, Memory::ValueOf (ttl));
     }
@@ -519,8 +519,8 @@ tuple<Network, Duration> WSImpl::GetNetwork (const String& id) const
 {
     Debug::TimingTrace                              ttrc{L"WSImpl::GetNetwork", 0.1};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
-    GUID               compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
-    optional<Duration> ttl;
+    GUID                                            compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
+    optional<Duration>                              ttl;
     if (auto d = IntegratedModel::Mgr::sThe.GetNetwork (compareWithID, &ttl)) {
         return make_tuple (*d, Memory::ValueOf (ttl));
     }
@@ -631,8 +631,8 @@ tuple<NetworkInterface, Duration> WSImpl::GetNetworkInterface (const String& id)
 {
     Debug::TimingTrace                              ttrc{L"WSImpl::GetNetworkInterface", 0.1};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
-    GUID               compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
-    optional<Duration> ttl;
+    GUID                                            compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
+    optional<Duration>                              ttl;
     if (auto ni = IntegratedModel::Mgr::sThe.GetNetworkInterface (compareWithID, &ttl)) {
         return make_tuple (*ni, Memory::ValueOf (ttl));
     }
@@ -651,7 +651,7 @@ double WSImpl::Operation_Ping (const String& address) const
     using namespace Stroika::Frameworks;
     using namespace Stroika::Frameworks::NetworkMonitor;
 
-    size_t packetSize = Ping::Options::kDefaultPayloadSize + sizeof (ICMP::V4::PacketHeader); // historically, the app ping has measured this including ICMP packet header, but not ip packet header size
+    size_t                packetSize  = Ping::Options::kDefaultPayloadSize + sizeof (ICMP::V4::PacketHeader); // historically, the app ping has measured this including ICMP packet header, but not ip packet header size
     unsigned int          maxHops     = Ping::Options::kDefaultMaxHops;
     unsigned int          sampleCount = 3;
     static const Duration kInterSampleTime_{"PT.1S"};
@@ -677,9 +677,9 @@ double WSImpl::Operation_Ping (const String& address) const
 
 Operations::TraceRouteResults WSImpl::Operation_TraceRoute (const String& address, optional<bool> reverseDNSResults) const
 {
-    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_TraceRoute", L"address=%s, reverseDNSResults=%s",
-                                                                                 Characters::ToString (address).c_str (),
-                                                                                 Characters::ToString (reverseDNSResults).c_str ())};
+    Debug::TraceContextBumper                       ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_TraceRoute", L"address=%s, reverseDNSResults=%s",
+                                                                                                       Characters::ToString (address).c_str (),
+                                                                                                       Characters::ToString (reverseDNSResults).c_str ())};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
 
     using namespace Stroika::Foundation::IO::Network;
@@ -690,7 +690,7 @@ Operations::TraceRouteResults WSImpl::Operation_TraceRoute (const String& addres
 
     bool revDNS = reverseDNSResults.value_or (true);
 
-    size_t packetSize = Ping::Options::kDefaultPayloadSize + sizeof (ICMP::V4::PacketHeader); // historically, the app ping has measured this including ICMP packet header, but not ip packet header size
+    size_t                packetSize  = Ping::Options::kDefaultPayloadSize + sizeof (ICMP::V4::PacketHeader); // historically, the app ping has measured this including ICMP packet header, but not ip packet header size
     unsigned int          maxHops     = Ping::Options::kDefaultMaxHops;
     unsigned int          sampleCount = 3;
     static const Duration kInterSampleTime_{"PT.1S"};
@@ -727,7 +727,7 @@ Operations::TraceRouteResults WSImpl::Operation_TraceRoute (const String& addres
 
 Time::Duration WSImpl::Operation_DNS_CalculateNegativeLookupTime (optional<unsigned int> samples) const
 {
-    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_DNS_CalculateNegativeLookupTime")};
+    Debug::TraceContextBumper                       ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_DNS_CalculateNegativeLookupTime")};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
     constexpr unsigned int                          kDefault_Samples = 7;
     unsigned int                                    useSamples       = samples.value_or (kDefault_Samples);
@@ -749,7 +749,7 @@ Time::Duration WSImpl::Operation_DNS_CalculateNegativeLookupTime (optional<unsig
 
 Operations::DNSLookupResults WSImpl::Operation_DNS_Lookup (const String& name) const
 {
-    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_DNS_Lookup", L"name=%s", name.As<wstring> ().c_str ())};
+    Debug::TraceContextBumper                       ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_DNS_Lookup", L"name=%s", name.As<wstring> ().c_str ())};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
     Operations::DNSLookupResults                    result;
     Time::DurationSecondsType                       startAt = Time::GetTickCount ();
@@ -788,7 +788,7 @@ DataExchange::VariantValue WSImpl::Operation_Scan_FullRescan (const String& devi
     Debug::TraceContextBumper                       ctx{L"WSImpl::Operation_Scan_FullRescan"};
     DataExchange::VariantValue                      x;
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
-    GUID useDeviceID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{deviceID}; });
+    GUID                                            useDeviceID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{deviceID}; });
     // @todo if the device has no dynamic device (cuz it hasn't been discovered - yet) - we don't force an attempt to rediscover
     // because Discovery::DevicesMgr doesn't have API for this. Maybe add one --LGP 2022-06-22
     if (auto useDevID = IntegratedModel::Mgr::sThe.GetCorrespondingDynamicDeviceID (useDeviceID)) {
