@@ -12,6 +12,7 @@
 
 #include "Stroika/Foundation/Characters/String.h"
 #include "Stroika/Foundation/Configuration/Version.h"
+#include "Stroika/Foundation/Containers/KeyedCollection.h"
 #include "Stroika/Foundation/Containers/Mapping.h"
 #include "Stroika/Foundation/Containers/Sequence.h"
 #include "Stroika/Foundation/DataExchange/ObjectVariantMapper.h"
@@ -33,6 +34,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
     using namespace Stroika::Foundation;
     using Characters::String;
+    using Containers::KeyedCollection;
     using Containers::Mapping;
     using Containers::Sequence;
     using Containers::Set;
@@ -304,6 +306,17 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         static NetworkInterface Rollup (const optional<NetworkInterface>& previousRollupNetworkInterface, const NetworkInterface& instanceNetwork2Add);
     };
 
+    namespace Private_ {
+        struct NetworkInterface_Key_Extractor_ {
+            GUID operator() (const NetworkInterface& t) const { return t.fID; };
+        };
+    }
+    /**
+     *  \brief NetworkInterfaceCollection = KeyedCollection<NetworkInterface by ID>
+     */
+    using NetworkInterfaceCollection =
+        Containers::KeyedCollection<NetworkInterface, GUID, Containers::KeyedCollection_DefaultTraits<NetworkInterface, GUID, Private_::NetworkInterface_Key_Extractor_>>;
+
     /**
      */
     struct Network {
@@ -523,6 +536,17 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         static Network Merge (const Network& baseNetwork, const Network& priorityNetwork);
         static Network Rollup (const Network& rollupNetwork, const Network& instanceNetwork2Add);
     };
+
+    namespace Private_ {
+        struct Network_Key_Extractor_ {
+            GUID operator() (const Network& t) const { return t.fID; };
+        };
+    }
+    /**
+     *  \brief NetworkCollection = KeyedCollection<Network by ID>
+     */
+    using NetworkCollection =
+        KeyedCollection<Network, GUID, Containers::KeyedCollection_DefaultTraits<Network, GUID, Private_::Network_Key_Extractor_>>;
 
     /**
      * Subset of (interesting) intformation about a Network (wrt its attachment to a device)
@@ -750,6 +774,17 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
          */
         static Device Rollup (const Device& rollupDevice, const Device& instanceDevice2Add);
     };
+
+    namespace Private_ {
+        struct Device_Key_Extractor_ {
+            GUID operator() (const Device& t) const { return t.fID; };
+        };
+    }
+    /**
+     *  \brief DeviceCollection = KeyedCollection<Device by ID>
+     */
+    using DeviceCollection =
+        KeyedCollection<Device, GUID, Containers::KeyedCollection_DefaultTraits<Device, GUID, Private_::Device_Key_Extractor_>>;
 
     /**
      */

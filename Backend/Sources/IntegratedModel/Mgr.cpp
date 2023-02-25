@@ -56,25 +56,13 @@ using Stroika::Foundation::Common::ConstantProperty;
 using Stroika::Foundation::Common::GUID;
 using Stroika::Foundation::Traversal::Range;
 
-namespace {
-    struct Device_Key_Extractor_ {
-        GUID operator() (const IntegratedModel::Device& t) const { return t.fID; };
-    };
-    using DeviceKeyedCollection_ =
-        KeyedCollection<IntegratedModel::Device, GUID, KeyedCollection_DefaultTraits<IntegratedModel::Device, GUID, Device_Key_Extractor_>>;
-
-    struct Network_Key_Extractor_ {
-        GUID operator() (const IntegratedModel::Network& t) const { return t.fID; };
-    };
-    using NetworkKeyedCollection_ =
-        KeyedCollection<IntegratedModel::Network, GUID, KeyedCollection_DefaultTraits<IntegratedModel::Network, GUID, Network_Key_Extractor_>>;
-
-    struct NetworkInterface_Key_Extractor_ {
-        GUID operator() (const IntegratedModel::NetworkInterface& t) const { return t.fID; };
-    };
-    using NetworkInterfaceCollection_ =
-        Containers::KeyedCollection<IntegratedModel::NetworkInterface, GUID, Containers::KeyedCollection_DefaultTraits<IntegratedModel::NetworkInterface, GUID, NetworkInterface_Key_Extractor_>>;
-}
+using WebServices::Model::Device;
+using WebServices::Model::DeviceCollection;
+using WebServices::Model::Network;
+using WebServices::Model::NetworkAttachmentInfo;
+using WebServices::Model::NetworkCollection;
+using WebServices::Model::NetworkInterface;
+using WebServices::Model::NetworkInterfaceCollection;
 
 namespace {
     /**
@@ -246,10 +234,10 @@ namespace {
                 return fCachedNetworkUserSettings_.rwget ().rwref ().RemoveIf (id);
             }
         }
-        nonvirtual NetworkInterfaceCollection_ GetRawNetworkInterfaces () const { return fDBNetworkInterfaces_; }
-        nonvirtual NetworkKeyedCollection_     GetRawNetworks () const { return fDBNetworks_; }
-        nonvirtual DeviceKeyedCollection_      GetRawDevices () const { return fDBDevices_; }
-        nonvirtual bool                        GetFinishedInitialDBLoad () const { return fFinishedInitialDBLoad_; }
+        nonvirtual NetworkInterfaceCollection GetRawNetworkInterfaces () const { return fDBNetworkInterfaces_; }
+        nonvirtual NetworkCollection          GetRawNetworks () const { return fDBNetworks_; }
+        nonvirtual DeviceCollection           GetRawDevices () const { return fDBDevices_; }
+        nonvirtual bool                       GetFinishedInitialDBLoad () const { return fFinishedInitialDBLoad_; }
 
     private:
         static String GenRandomIDString_ (VariantValue::Type t)
@@ -413,9 +401,9 @@ namespace {
         unique_ptr<SQL::ORM::TableConnection<IntegratedModel::Device>>                       fDeviceTableConnection_;           // only accessed from a background database thread
         unique_ptr<SQL::ORM::TableConnection<IntegratedModel::Network>>                      fNetworkTableConnection_;          // ''
         unique_ptr<SQL::ORM::TableConnection<IntegratedModel::NetworkInterface>>             fNetworkInterfaceTableConnection_; // ''
-        Synchronized<DeviceKeyedCollection_>                                                 fDBDevices_;                       // mirror database contents in RAM
-        Synchronized<NetworkKeyedCollection_>                                                fDBNetworks_;                      // ''
-        Synchronized<NetworkInterfaceCollection_>                                            fDBNetworkInterfaces_;             // ''
+        Synchronized<DeviceCollection>                                                       fDBDevices_;                       // mirror database contents in RAM
+        Synchronized<NetworkCollection>                                                      fDBNetworks_;                      // ''
+        Synchronized<NetworkInterfaceCollection>                                             fDBNetworkInterfaces_;             // ''
         atomic<bool>                                                                         fFinishedInitialDBLoad_{false};
 
         // the latest copy of what is in the DB (manually kept up to date)
@@ -448,7 +436,7 @@ namespace {
                             };
                             auto all                    = fNetworkInterfaceTableConnection_->GetAll (errorHandler);
                             netInterfaceSnapshotsLoaded = static_cast<unsigned int> (all.size ());
-                            fDBNetworkInterfaces_.store (NetworkInterfaceCollection_{all});
+                            fDBNetworkInterfaces_.store (NetworkInterfaceCollection{all});
                         }
                         catch (...) {
                             Logger::sThe.Log (Logger::eError, L"Probably important error reading database of old network interfaces data: %s",
@@ -468,7 +456,7 @@ namespace {
                             };
                             auto all           = fNetworkTableConnection_->GetAll (errorHandler);
                             netSnapshotsLoaded = static_cast<unsigned int> (all.size ());
-                            fDBNetworks_.store (NetworkKeyedCollection_{all});
+                            fDBNetworks_.store (NetworkCollection{all});
                         }
                         catch (...) {
                             Logger::sThe.Log (Logger::eError, L"Probably important error reading database of old networks data: %s",
@@ -491,7 +479,7 @@ namespace {
                                 all.Apply ([] ([[maybe_unused]] const Model::Device& d) { Assert (!d.fUserOverrides); }); // tracked on rollup devices, not snapshot devices
                             }
                             deviceSnapshotsLoaded = static_cast<unsigned int> (all.size ());
-                            fDBDevices_.store (DeviceKeyedCollection_{all}); // pre-load in memory copy with whatever we had stored in the database
+                            fDBDevices_.store (DeviceCollection{all}); // pre-load in memory copy with whatever we had stored in the database
                         }
                         catch (...) {
                             Logger::sThe.Log (Logger::eError, L"Probably important error reading database of old device data: %s",
@@ -599,9 +587,9 @@ namespace {
         private:
             RolledUpNetworkInterfaces (const Iterable<Device>& devices, const Iterable<NetworkInterface>& nets2MergeIn)
             {
-                Set<GUID>                   netIDs2Add = nets2MergeIn.Map<GUID, Set<GUID>> ([] (const auto& i) { return i.fID; });
-                Set<GUID>                   netsAdded;
-                NetworkInterfaceCollection_ nets2MergeInCollected{nets2MergeIn};
+                Set<GUID>                  netIDs2Add = nets2MergeIn.Map<GUID, Set<GUID>> ([] (const auto& i) { return i.fID; });
+                Set<GUID>                  netsAdded;
+                NetworkInterfaceCollection nets2MergeInCollected{nets2MergeIn};
                 for (const Device& d : devices) {
                     if (d.fAttachedNetworkInterfaces) {
                         d.fAttachedNetworkInterfaces->Apply ([&] (const GUID& netInterfaceID) {
@@ -629,7 +617,7 @@ namespace {
             /**
              *  This returns the current rolled up network interface objects.
              */
-            nonvirtual NetworkInterfaceCollection_ GetNetworkInterfacess () const { return fRolledUpNetworkInterfaces_; }
+            nonvirtual NetworkInterfaceCollection GetNetworkInterfacess () const { return fRolledUpNetworkInterfaces_; }
 
         private:
             /**
@@ -701,7 +689,7 @@ namespace {
              * 
              *      \req each concreteIDs is a valid concrete id contains in this rollup.
              */
-            nonvirtual NetworkInterfaceCollection_ GetConcreteNeworkInterfaces (const Set<GUID>& concreteIDs) const
+            nonvirtual NetworkInterfaceCollection GetConcreteNeworkInterfaces (const Set<GUID>& concreteIDs) const
             {
                 Require (Set<GUID>{fRawNetworkInterfaces_.Keys ()}.ContainsAll (concreteIDs));
                 return fRawNetworkInterfaces_.Where ([&concreteIDs] (const auto& i) { return concreteIDs.Contains (i.fID); });
@@ -718,7 +706,7 @@ namespace {
         public:
             /**
              */
-            nonvirtual NetworkInterfaceCollection_ GetRollupNetworkInterfaces (const Set<GUID>& rollupIDs) const
+            nonvirtual NetworkInterfaceCollection GetRollupNetworkInterfaces (const Set<GUID>& rollupIDs) const
             {
                 Require (Set<GUID>{fRolledUpNetworkInterfaces_.Keys ()}.ContainsAll (rollupIDs));
                 return fRolledUpNetworkInterfaces_.Where ([&rollupIDs] (const auto& i) { return rollupIDs.Contains (i.fID); });
@@ -727,8 +715,8 @@ namespace {
         public:
             /**
              */
-            nonvirtual NetworkInterfaceCollection_ GetRawNetworkInterfaces () const { return fRawNetworkInterfaces_; }
-            nonvirtual NetworkInterfaceCollection_ GetRawNetworkInterfaces (const Set<GUID>& rawIDs) const
+            nonvirtual NetworkInterfaceCollection GetRawNetworkInterfaces () const { return fRawNetworkInterfaces_; }
+            nonvirtual NetworkInterfaceCollection GetRawNetworkInterfaces (const Set<GUID>& rawIDs) const
             {
                 Require (Set<GUID>{fRawNetworkInterfaces_.Keys ()}.ContainsAll (rawIDs));
                 return fRawNetworkInterfaces_.Where ([&rawIDs] (const auto& i) { return rawIDs.Contains (i.fID); });
@@ -837,10 +825,10 @@ namespace {
             }
 
         private:
-            NetworkInterfaceCollection_ fRawNetworkInterfaces_; // used for RecomputeAll_
-            NetworkInterfaceCollection_ fRolledUpNetworkInterfaces_;
-            Mapping<GUID, GUID>         fMapAggregatedNetInterfaceID2RollupID_; // each aggregate net interface id is mapped to at most one rollup id)
-            Association<GUID, GUID>     fAssociateAggregatedNetInterface2OwningDeviceID_;
+            NetworkInterfaceCollection fRawNetworkInterfaces_; // used for RecomputeAll_
+            NetworkInterfaceCollection fRolledUpNetworkInterfaces_;
+            Mapping<GUID, GUID>        fMapAggregatedNetInterfaceID2RollupID_; // each aggregate net interface id is mapped to at most one rollup id)
+            Association<GUID, GUID>    fAssociateAggregatedNetInterface2OwningDeviceID_;
 
         private:
             static Synchronized<optional<RolledUpNetworkInterfaces>> sRolledUpNetworksInterfaces_;
@@ -882,7 +870,7 @@ namespace {
             /**
              *  This returns the current rolled up network objects.
              */
-            nonvirtual NetworkKeyedCollection_ GetNetworks () const { return fRolledUpNetworks_; }
+            nonvirtual NetworkCollection GetNetworks () const { return fRolledUpNetworks_; }
 
         public:
             nonvirtual void ResetUserOverrides (const Mapping<GUID, Network::UserOverridesType>& userOverrides)
@@ -1154,9 +1142,9 @@ namespace {
 
         private:
             RolledUpNetworkInterfaces               fUseNetworkInterfaceRollups;
-            NetworkKeyedCollection_                 fRawNetworks_; // used for RecomputeAll_
-            NetworkKeyedCollection_                 fStarterRollups_;
-            NetworkKeyedCollection_                 fRolledUpNetworks_;
+            NetworkCollection                       fRawNetworks_; // used for RecomputeAll_
+            NetworkCollection                       fStarterRollups_;
+            NetworkCollection                       fRolledUpNetworks_;
             Mapping<GUID, GUID>                     fMapAggregatedNetID2RollupID_; // each aggregate netid is mapped to at most one rollup id)
             Mapping<Network::FingerprintType, GUID> fMapFingerprint2RollupID;      // each fingerprint can map to at most one rollup...
         private:
@@ -1200,7 +1188,7 @@ namespace {
             /**
              *  This returns the current rolled up device objects.
              */
-            nonvirtual DeviceKeyedCollection_ GetDevices () const { return fRolledUpDevices; }
+            nonvirtual DeviceCollection GetDevices () const { return fRolledUpDevices; }
 
         public:
             /**
@@ -1457,9 +1445,9 @@ namespace {
             }
 
         private:
-            DeviceKeyedCollection_    fStarterRollups_;
-            DeviceKeyedCollection_    fRolledUpDevices;
-            DeviceKeyedCollection_    fRawDevices_;
+            DeviceCollection          fStarterRollups_;
+            DeviceCollection          fRolledUpDevices;
+            DeviceCollection          fRawDevices_;
             Mapping<GUID, GUID>       fRaw2RollupIDMap_; // each aggregate deviceid is mapped to at most one rollup id)
             RolledUpNetworks          fUseRolledUpNetworks;
             RolledUpNetworkInterfaces fUseNetworkInterfaceRollups;

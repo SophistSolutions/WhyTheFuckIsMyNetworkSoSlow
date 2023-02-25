@@ -25,9 +25,12 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel {
     using Stroika::Foundation::Time::Duration;
 
     using WebServices::Model::Device;
+    using WebServices::Model::DeviceCollection;
     using WebServices::Model::Network;
     using WebServices::Model::NetworkAttachmentInfo;
+    using WebServices::Model::NetworkCollection;
     using WebServices::Model::NetworkInterface;
+    using WebServices::Model::NetworkInterfaceCollection;
 
     /**
      *  Wrapper on the discovered devices and networks, as well as persistence. It adds its own IDs, separate
