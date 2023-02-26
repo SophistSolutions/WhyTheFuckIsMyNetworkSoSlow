@@ -33,6 +33,7 @@
 
 #include "Private_/DBAccess.h"
 #include "Private_/FromDiscovery.h"
+#include "Private_/RolledUpNetworkInterfaces.h"
 
 #include "Mgr.h"
 
@@ -99,266 +100,7 @@ namespace {
         using IntegratedModel::NetworkAttachmentInfo;
         using IntegratedModel::NetworkInterface;
 
-        /**
-         *  Data structure representing a copy of currently rolled up network interfaces data (copyable).
-         * 
-         *  Unlike most othter rollup structures, we have no USER_SETTINGS here, so we ALWAYS rollup the same
-         *  way. That means there is no ResetUserSettings, and no need to ever INVALIDATE the network interface settings.
-         *  (note this refers something computed from historical database data, not soemthign where dynaic data still rolling in).
-         * 
-         *  \note   \em Thread-Safety   <a href="Thread-Safety.md#C++-Standard-Thread-Safety">C++-Standard-Thread-Safety</a>
-         */
-        struct RolledUpNetworkInterfaces {
-        private:
-            RolledUpNetworkInterfaces (const Iterable<Device>& devices, const Iterable<NetworkInterface>& nets2MergeIn)
-            {
-                Set<GUID>                  netIDs2Add = nets2MergeIn.Map<GUID, Set<GUID>> ([] (const auto& i) { return i.fID; });
-                Set<GUID>                  netsAdded;
-                NetworkInterfaceCollection nets2MergeInCollected{nets2MergeIn};
-                for (const Device& d : devices) {
-                    if (d.fAttachedNetworkInterfaces) {
-                        d.fAttachedNetworkInterfaces->Apply ([&] (const GUID& netInterfaceID) {
-                            netsAdded.Add (netInterfaceID);
-                            MergeIn_ (d.fID, Memory::ValueOf (nets2MergeInCollected.Lookup (netInterfaceID)));
-                        });
-                    }
-                }
-                // https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/80 - could avoid this maybe??? and the bookkeeping above to compute this list...
-                DbgTrace (L"orphaned interface cnt %d", (netIDs2Add - netsAdded).size ()); // We (temporarily) store network interfaces not associated with any device - if they are not interesting.
-                                                                                           // OR, could come from just bad data in database
-                // Either way, just track them, and don't worry for now --LGP 2022-12-03
-                for (const auto& netInterfaceWithoutDevice : (netIDs2Add - netsAdded)) {
-                    MergeIn_ (nullopt, Memory::ValueOf (nets2MergeInCollected.Lookup (netInterfaceWithoutDevice)));
-                }
-            }
-
-        public:
-            RolledUpNetworkInterfaces (const RolledUpNetworkInterfaces&)            = default;
-            RolledUpNetworkInterfaces (RolledUpNetworkInterfaces&&)                 = default;
-            RolledUpNetworkInterfaces& operator= (RolledUpNetworkInterfaces&&)      = default;
-            RolledUpNetworkInterfaces& operator= (const RolledUpNetworkInterfaces&) = default;
-
-        public:
-            /**
-             *  This returns the current rolled up network interface objects.
-             */
-            nonvirtual NetworkInterfaceCollection GetNetworkInterfacess () const { return fRolledUpNetworkInterfaces_; }
-
-        private:
-            /**
-             */
-            nonvirtual void MergeIn_ (const optional<GUID>& forDeviceID, const Iterable<NetworkInterface>& netInterfaces2MergeIn)
-            {
-                netInterfaces2MergeIn.Apply ([this, forDeviceID] (const NetworkInterface& n) { MergeIn_ (forDeviceID, n); });
-            }
-
-        public:
-            /*
-             *  Given a rollup network interface id, apply F to all the matching concrete interfaces.
-             *      \req rollupID is contained in this rollup object as a valid rollup id
-             */
-            nonvirtual Set<GUID> GetConcreteIDsForRollup (const GUID& rollupID) const
-            {
-                Set<GUID>        result;
-                NetworkInterface rolledUpNI = Memory::ValueOf (fRolledUpNetworkInterfaces_.Lookup (rollupID));
-                if (rolledUpNI.fAggregatesReversibly) {
-                    result = *rolledUpNI.fAggregatesReversibly;
-                }
-                if (rolledUpNI.fAggregatesIrreversibly) {
-                    result += *rolledUpNI.fAggregatesIrreversibly;
-                }
-                return result;
-            }
-
-        public:
-            /**
-             *  Given an aggregated network id, map to the correspoding rollup ID (todo do we need to handle missing case)
-             * 
-             *  \req is already valid rollup net ID.
-             */
-            nonvirtual auto MapAggregatedID2ItsRollupID (const GUID& aggregatedNetInterfaceID) const -> GUID
-            {
-                if (auto r = fMapAggregatedNetInterfaceID2RollupID_.Lookup (aggregatedNetInterfaceID)) {
-                    return *r;
-                }
-                // shouldn't get past here - debug if/why this hapepns - see comments below
-                Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (
-                    L"MapAggregatedID2ItsRollupID failed to find aggregatedNetInterfaceID=%s",
-                    Characters::ToString (aggregatedNetInterfaceID).c_str ())};
-                if constexpr (qDebug) {
-                    for ([[maybe_unused]] const auto& i : fRolledUpNetworkInterfaces_) {
-                        DbgTrace (L"rolledupNetInterface=%s", Characters::ToString (i).c_str ());
-                    }
-                }
-                Assert (false);     // @todo fix - because we guarantee each item rolled up exactly once - but happens sometimes on change of network - I think due to outdated device records referring to newer network not yet in this cache...
-                WeakAssert (false); // @todo fix - because we guarantee each item rolled up exactly once - but happens sometimes on change of network - I think due to outdated device records referring to newer network not yet in this cache...
-                return aggregatedNetInterfaceID;
-            }
-
-        public:
-            /**
-             *  Argument networkInterfaceID must be aggregated network interfaceid, and returns aggrateged deviceids.
-             */
-            optional<Set<GUID>> GetAttachedToDeviceIDs (const GUID& aggregatedNetworkInterfaceID) const
-            {
-                Set<GUID> r{fAssociateAggregatedNetInterface2OwningDeviceID_.Lookup (aggregatedNetworkInterfaceID)};
-                if (r.empty ()) {
-                    return nullopt;
-                }
-                return r;
-            }
-
-        public:
-            /**
-             *  \brief return the actual (concrete not rollup) NetworkInterface objects associated with the argument ids
-             * 
-             *      \req each concreteIDs is a valid concrete id contains in this rollup.
-             */
-            nonvirtual NetworkInterfaceCollection GetConcreteNeworkInterfaces (const Set<GUID>& concreteIDs) const
-            {
-                Require (Set<GUID>{fRawNetworkInterfaces_.Keys ()}.ContainsAll (concreteIDs));
-                return fRawNetworkInterfaces_.Where ([&concreteIDs] (const auto& i) { return concreteIDs.Contains (i.fID); });
-            }
-
-        public:
-            /**
-             */
-            nonvirtual NetworkInterface GetRollupNetworkInterface (const GUID& id) const
-            {
-                return Memory::ValueOf (fRolledUpNetworkInterfaces_.Lookup (id));
-            }
-
-        public:
-            /**
-             */
-            nonvirtual NetworkInterfaceCollection GetRollupNetworkInterfaces (const Set<GUID>& rollupIDs) const
-            {
-                Require (Set<GUID>{fRolledUpNetworkInterfaces_.Keys ()}.ContainsAll (rollupIDs));
-                return fRolledUpNetworkInterfaces_.Where ([&rollupIDs] (const auto& i) { return rollupIDs.Contains (i.fID); });
-            }
-
-        public:
-            /**
-             */
-            nonvirtual NetworkInterfaceCollection GetRawNetworkInterfaces () const { return fRawNetworkInterfaces_; }
-            nonvirtual NetworkInterfaceCollection GetRawNetworkInterfaces (const Set<GUID>& rawIDs) const
-            {
-                Require (Set<GUID>{fRawNetworkInterfaces_.Keys ()}.ContainsAll (rawIDs));
-                return fRawNetworkInterfaces_.Where ([&rawIDs] (const auto& i) { return rawIDs.Contains (i.fID); });
-            }
-
-        public:
-            /**
-             *  \note   \em Thread-Safety   <a href="Thread-Safety.md#Internally-Synchronized-Thread-Safety">Internally-Synchronized-Thread-Safety</a>
-             */
-            static RolledUpNetworkInterfaces GetCached (Time::DurationSecondsType allowedStaleness = 5.0)
-            {
-                Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...RolledUpNetworkInterfaces::GetCached")};
-                Debug::TimingTrace        ttrc{L"RolledUpNetworkInterfaces::GetCached", 1};
-                // SynchronizedCallerStalenessCache object just assures one rollup RUNS internally at a time, and
-                // that two calls in rapid succession, the second call re-uses the previous value
-                static Cache::SynchronizedCallerStalenessCache<void, RolledUpNetworkInterfaces> sCache_;
-                // Disable fHoldWriteLockDuringCacheFill due to https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/23
-                // See also
-                //      https://stroika.atlassian.net/browse/STK-906 - possible enhancement to this configuration to work better avoiding
-                //      See https://stroika.atlassian.net/browse/STK-907 - about needing some new mechanism in Stroika for deadlock detection/avoidance.
-                // sCache_.fHoldWriteLockDuringCacheFill = true; // so only one call to filler lambda at a time
-                return sCache_.LookupValue (sCache_.Ago (allowedStaleness), [] () -> RolledUpNetworkInterfaces {
-                    /*
-                     *  DEADLOCK NOTE
-                     *      Since this can be called while rolling up DEVICES, its important that this code not call anything involving device rollup since
-                     *      that could trigger a deadlock.
-                     */
-                    Debug::TraceContextBumper ctx{
-                        Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...RolledUpNetworkInterfaces::GetCached...cachefiller")};
-                    Debug::TimingTrace ttrc{L"RolledUpNetworkInterfaces::GetCached...cachefiller", 1};
-
-                    // Start with the existing rolled up objects
-                    // and merge in any more recent discovery changes
-                    RolledUpNetworkInterfaces result = [] () {
-                        auto lk = sRolledUpNetworksInterfaces_.rwget ();
-                        if (not lk.cref ().has_value ()) {
-                            if (not sDBAccessMgr_->GetFinishedInitialDBLoad ()) {
-                                // Design Choice - could return non-standardized rollup IDs if DB not loaded, but then those IDs would
-                                // disappear later in the run, leading to possible client confusion. Best to just not say anything til DB loaded
-                                // Could ALSO do 2 stage DB load - critical stuff for IDs, and the detailed DB records. All we need is first
-                                // stage for here...
-                                Execution::Throw (HTTP::Exception{HTTP::StatusCodes::kServiceUnavailable, L"Database not yet loaded"_k});
-                            };
-                            // @todo add more stuff here - empty preset rules from DB
-                            // merge two tables - ID to fingerprint and user settings tables and store those in this rollup early
-                            // maybe make CTOR for rolledupnetworks take in ital DB netwworks and rules, and have copyis CTOR taking orig networks and new rules?
-                            RolledUpNetworkInterfaces rollup =
-                                RolledUpNetworkInterfaces{sDBAccessMgr_->GetRawDevices (), sDBAccessMgr_->GetRawNetworkInterfaces ()};
-                            // handle orphaned network interfaces
-                            {
-                                auto orphanedRawInterfaces = rollup.GetRawNetworkInterfaces ().Where (
-                                    [&] (auto ni) { return rollup.GetAttachedToDeviceIDs (ni.fID) == nullopt; });
-                                if (not orphanedRawInterfaces.empty ()) {
-                                    DbgTrace (L"Found: orphanedRawInterfaces=%s", Characters::ToString (orphanedRawInterfaces).c_str ());
-                                    // https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/80
-                                    // remove from DB, and re-run...
-                                    // AND/OR see if found in NETWORK objects...
-                                    // We (temporarily) store network interfaces not associated with any device - if they are not interesting.
-                                    // OR, could come from just bad data in database
-                                    // Either way, just track them, and don't worry for now --LGP 2022-12-03
-                                    // Find a better place/process to handle this, but not important...
-                                    // NOTE - we OMIT
-                                }
-                            }
-                            lk.store (rollup);
-                        }
-                        return Memory::ValueOf (lk.load ());
-                    }();
-                    // not sure we want to allow this? @todo consider throwing here or asserting out cuz nets rollup IDs would change after this
-                    result.MergeIn_ (IntegratedModel::Private_::FromDiscovery::GetMyDeviceID (), IntegratedModel::Private_::FromDiscovery::GetNetworkInterfaces ());
-                    sRolledUpNetworksInterfaces_.store (result); // save here so we can update rollup networks instead of creating anew each time
-                    return result;
-                });
-            }
-
-        public:
-            /**
-             *  Given an aggregated (device) network interface id, map to the correspoding rollup ID, if present.
-             *  \note return optional<GUID> because this can the caches of devices and networks and network interfaces
-             *        can be slightly out of sync
-             */
-            nonvirtual auto MapAggregatedNetInterfaceID2ItsRollupID (const GUID& netID) const -> optional<GUID>
-            {
-                return fMapAggregatedNetInterfaceID2RollupID_.Lookup (netID);
-            }
-            nonvirtual auto MapAggregatedNetInterfaceID2ItsRollupID (const Set<GUID>& netIDs) const -> Set<GUID>
-            {
-                return netIDs.Map<GUID, Set<GUID>> ([this] (const auto& i) { return MapAggregatedNetInterfaceID2ItsRollupID (i); });
-            }
-
-        private:
-            void MergeIn_ (const optional<GUID>& forDeviceID, const NetworkInterface& net2MergeIn)
-            {
-                fRawNetworkInterfaces_ += net2MergeIn;
-                // @todo same FAIL logic we have in Network objects needed here
-                // friendly name - for example - of network interface can change while running, so must be able to invalidate and recompute this list
-
-                Network::FingerprintType netInterface2MergeInFingerprint = net2MergeIn.GenerateFingerprintFromProperties ();
-                auto                     rolledUpNetworkInterace =
-                    NetworkInterface::Rollup (fRolledUpNetworkInterfaces_.Lookup (netInterface2MergeInFingerprint), net2MergeIn);
-                fRolledUpNetworkInterfaces_.Add (rolledUpNetworkInterace);
-                fMapAggregatedNetInterfaceID2RollupID_.Add (net2MergeIn.fID, rolledUpNetworkInterace.fID);
-                if (forDeviceID) {
-                    fAssociateAggregatedNetInterface2OwningDeviceID_.Add (net2MergeIn.fID, *forDeviceID);
-                }
-            }
-
-        private:
-            NetworkInterfaceCollection fRawNetworkInterfaces_; // used for RecomputeAll_
-            NetworkInterfaceCollection fRolledUpNetworkInterfaces_;
-            Mapping<GUID, GUID>        fMapAggregatedNetInterfaceID2RollupID_; // each aggregate net interface id is mapped to at most one rollup id)
-            Association<GUID, GUID>    fAssociateAggregatedNetInterface2OwningDeviceID_;
-
-        private:
-            static Synchronized<optional<RolledUpNetworkInterfaces>> sRolledUpNetworksInterfaces_;
-        };
-        Synchronized<optional<RolledUpNetworkInterfaces>> RolledUpNetworkInterfaces::sRolledUpNetworksInterfaces_;
+        using IntegratedModel::Private_::RolledUpNetworkInterfaces;
 
         /**
          *  Data structure representing a copy of currently rolled up networks data (copyable).
@@ -489,7 +231,7 @@ namespace {
                     // Start with the existing rolled up objects
                     // and merge in any more recent discovery changes
                     RolledUpNetworks result = [allowedStaleness] () {
-                        auto rolledUpNetworkInterfacess = RolledUpNetworkInterfaces::GetCached (allowedStaleness * 3.0); // longer allowedStaleness cuz we dont care much about this and the parts
+                        auto rolledUpNetworkInterfacess = RolledUpNetworkInterfaces::GetCached (&sDBAccessMgr_.value (), allowedStaleness * 3.0); // longer allowedStaleness cuz we dont care much about this and the parts
                             // we look at really dont change
                         auto lk = sRolledUpNetworks_.rwget ();
                         if (not lk.cref ().has_value ()) {
@@ -742,7 +484,7 @@ namespace {
         public:
             nonvirtual void ResetUserOverrides (const Mapping<GUID, Device::UserOverridesType>& userOverrides)
             {
-                RolledUpNetworkInterfaces networkInterfacesRollup = RolledUpNetworkInterfaces::GetCached ();
+                RolledUpNetworkInterfaces networkInterfacesRollup = RolledUpNetworkInterfaces::GetCached (&sDBAccessMgr_.value ());
                 fStarterRollups_                                  = userOverrides.Map<Device> ([] (const auto& guid2UOTPair) -> Device {
                     Device d;
                     d.fID            = guid2UOTPair.fKey;
@@ -792,9 +534,9 @@ namespace {
                         Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...RolledUpDevices::GetCached...cachefiller")};
                     Debug::TimingTrace ttrc{L"RolledUpDevices::GetCached...cachefiller", 1};
 
-                    auto rolledUpNetworks = RolledUpNetworks::GetCached (allowedStaleness * 3.0);                    // longer allowedStaleness cuz we dont care much about this and the parts
-                                                                                                                     // we look at really dont change
-                    auto rolledUpNetworkInterfacess = RolledUpNetworkInterfaces::GetCached (allowedStaleness * 3.0); // longer allowedStaleness cuz we dont care much about this and the parts
+                    auto rolledUpNetworks = RolledUpNetworks::GetCached (allowedStaleness * 3.0);                                             // longer allowedStaleness cuz we dont care much about this and the parts
+                                                                                                                                              // we look at really dont change
+                    auto rolledUpNetworkInterfacess = RolledUpNetworkInterfaces::GetCached (&sDBAccessMgr_.value (), allowedStaleness * 3.0); // longer allowedStaleness cuz we dont care much about this and the parts
                         // we look at really dont change
 
                     // Start with the existing rolled up objects
@@ -1138,13 +880,13 @@ Collection<IntegratedModel::NetworkInterface> IntegratedModel::Mgr::GetNetworkIn
     // AS OF 2022-11-02 this returns the currently active network interfaces, but changed to mimic other accessors (rollups returned)
     Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"IntegratedModel::Mgr::GetNetworkInterfaces")};
     Debug::TimingTrace        ttrc{L"IntegratedModel::Mgr::GetNetworkInterfaces", 0.1};
-    return Collection<IntegratedModel::NetworkInterface>{RollupSummary_::RolledUpNetworkInterfaces::GetCached ().GetNetworkInterfacess ()};
+    return Collection<IntegratedModel::NetworkInterface>{RollupSummary_::RolledUpNetworkInterfaces::GetCached (&sDBAccessMgr_.value ()).GetNetworkInterfacess ()};
 }
 
 optional<IntegratedModel::NetworkInterface> IntegratedModel::Mgr::GetNetworkInterface (const GUID& id, optional<Duration>* ttl) const
 {
     // AS OF 2022-11-02 this returned the currently active network interfaces, but changed (2022-11-02) to mimic other accessors (rollups returned by default then raw records)
-    auto networkInterfacesCache = RollupSummary_::RolledUpNetworkInterfaces::GetCached ();
+    auto networkInterfacesCache = RollupSummary_::RolledUpNetworkInterfaces::GetCached (&sDBAccessMgr_.value ());
     auto result                 = networkInterfacesCache.GetNetworkInterfacess ().Lookup (id);
     if (result) {
         if (ttl != nullptr) {

@@ -81,6 +81,7 @@
     <None Include="..\..\Sources\IntegratedModel\Private_\DBAccess.inl" />
     <None Include="..\..\Sources\IntegratedModel\Private_\FromDiscovery.inl" />
     <None Include="..\..\Sources\IntegratedModel\Private_\Makefile" />
+    <None Include="..\..\Sources\IntegratedModel\Private_\RolledUpNetworkInterfaces.inl" />
     <None Include="..\..\Sources\Makefile" />
     <None Include="..\..\Sources\Service.inl" />
     <None Include="..\..\Sources\WebServices\IWSAPI.inl" />
@@ -106,6 +107,7 @@
     <ClCompile Include="..\..\Sources\IntegratedModel\Mgr.cpp" />
     <ClCompile Include="..\..\Sources\IntegratedModel\Private_\DBAccess.cpp" />
     <ClCompile Include="..\..\Sources\IntegratedModel\Private_\FromDiscovery.cpp" />
+    <ClCompile Include="..\..\Sources\IntegratedModel\Private_\RolledUpNetworkInterfaces.cpp" />
     <ClCompile Include="..\..\Sources\Main.cpp" />
     <ClCompile Include="..\..\Sources\Service.cpp" />
     <ClCompile Include="..\..\Sources\WebServices\IWSAPI.cpp" />
@@ -131,6 +133,7 @@
     <ClInclude Include="..\..\Sources\IntegratedModel\Mgr.h" />
     <ClInclude Include="..\..\Sources\IntegratedModel\Private_\DBAccess.h" />
     <ClInclude Include="..\..\Sources\IntegratedModel\Private_\FromDiscovery.h" />
+    <ClInclude Include="..\..\Sources\IntegratedModel\Private_\RolledUpNetworkInterfaces.h" />
     <ClInclude Include="..\..\Sources\Service.h" />
     <ClInclude Include="..\..\Sources\WebServices\IWSAPI.h" />
     <ClInclude Include="..\..\Sources\WebServices\JSONPATCH.h" />

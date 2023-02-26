@@ -20,5 +20,7 @@ CXXFLAGS += -I"$(call FUNCTION_CONVERT_FILEPATH_TO_COMPILER_NATIVE,$(TOP_ROOT)In
 Objs	=	\
 	$(ObjDir)DBAccess${OBJ_SUFFIX}\
 	$(ObjDir)FromDiscovery${OBJ_SUFFIX}\
+	$(ObjDir)RolledUpNetworkInterfaces${OBJ_SUFFIX}\
+
 
 all:$(ObjDir) $(Objs)
