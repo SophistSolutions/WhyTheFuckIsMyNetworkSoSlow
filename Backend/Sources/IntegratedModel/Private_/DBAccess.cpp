@@ -56,6 +56,12 @@ using Schema_Table         = SQL::ORM::Schema::Table;
 using Schema_Field         = SQL::ORM::Schema::Field;
 using Schema_CatchAllField = SQL::ORM::Schema::CatchAllField;
 
+
+/*
+ ********************************************************************************
+ ****************** IntegratedModel::Private_::DBAccess::Mgr ********************
+ ********************************************************************************
+ */
 const ConstantProperty<ObjectVariantMapper> IntegratedModel::Private_::DBAccess::Mgr::kDBObjectMapper_{[] () {
     ObjectVariantMapper mapper;
 
@@ -83,7 +89,7 @@ const ConstantProperty<ObjectVariantMapper> IntegratedModel::Private_::DBAccess:
 const Schema_Table IntegratedModel::Private_::DBAccess::Mgr::kDeviceUserSettingsSchema_{
     L"DeviceUserSettings"sv,
     /*
-             */
+     */
     Collection<Schema_Field>{
 #if __cpp_designated_initializers
         {.fName = L"DeviceID"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true},
@@ -133,9 +139,9 @@ const Schema_Table IntegratedModel::Private_::DBAccess::Mgr::kDeviceTableSchema_
 const Schema_Table IntegratedModel::Private_::DBAccess::Mgr::kNetworkInterfaceTableSchema_{
     L"NetworkInteraces"sv,
     /*
-             *  use the same names as the ObjectVariantMapper for simpler mapping, or specify an alternate name
-             *  for ID, just as an example.
-             */
+     *  use the same names as the ObjectVariantMapper for simpler mapping, or specify an alternate name
+     *  for ID, just as an example.
+     */
     Collection<Schema_Field>{
 #if __cpp_designated_initializers
         {.fName = L"ID"sv, .fVariantValueName = L"id"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true},
@@ -159,8 +165,8 @@ const Schema_Table IntegratedModel::Private_::DBAccess::Mgr::kNetworkTableSchema
     Collection<Schema_Field>{
 #if __cpp_designated_initializers
         /**
-                 *  For ID, generate random GUID (BLOB) automatically in database
-                 */
+         *  For ID, generate random GUID (BLOB) automatically in database
+         */
         {.fName              = L"ID"sv,
          .fVariantValueName  = L"id"sv,
          .fRequired          = true,
@@ -277,18 +283,6 @@ GUID IntegratedModel::Private_::DBAccess::Mgr::GenNewNetworkID ([[maybe_unused]]
     return newRes;
 }
 
-Mapping<GUID, Model::Device::UserOverridesType> IntegratedModel::Private_::DBAccess::Mgr::GetDeviceUserSettings () const
-{
-    Debug::TimingTrace ttrc{L"IntegratedModel...LookupDevicesUserSettings ()", 0.001};
-    return fCachedDeviceUserSettings_.cget ().cref ();
-}
-
-optional<Model::Device::UserOverridesType> IntegratedModel::Private_::DBAccess::Mgr::LookupDevicesUserSettings (const GUID& guid) const
-{
-    Debug::TimingTrace ttrc{L"IntegratedModel...LookupDevicesUserSettings ()", 0.001};
-    return fCachedDeviceUserSettings_.cget ().cref ().Lookup (guid);
-}
-
 bool IntegratedModel::Private_::DBAccess::Mgr::SetDeviceUserSettings (const GUID& id, const std::optional<Device::UserOverridesType>& settings)
 {
     Debug::TimingTrace ttrc{L"IntegratedModel ... SetDeviceUserSettings", 0.1};
@@ -310,18 +304,6 @@ bool IntegratedModel::Private_::DBAccess::Mgr::SetDeviceUserSettings (const GUID
     }
 }
 
-Mapping<GUID, Model::Network::UserOverridesType> IntegratedModel::Private_::DBAccess::Mgr::GetNetworkUserSettings () const
-{
-    Debug::TimingTrace ttrc{L"IntegratedModel...GetNetworkUserSettings ()", 0.001};
-    return fCachedNetworkUserSettings_.cget ().cref ();
-}
-
-optional<Model::Network::UserOverridesType> IntegratedModel::Private_::DBAccess::Mgr::LookupNetworkUserSettings (const GUID& guid) const
-{
-    Debug::TimingTrace ttrc{L"IntegratedModel...LookupNetworkUserSettings ()", 0.001};
-    return fCachedNetworkUserSettings_.cget ().cref ().Lookup (guid);
-}
-
 bool IntegratedModel::Private_::DBAccess::Mgr::SetNetworkUserSettings (const GUID& id, const std::optional<Network::UserOverridesType>& settings)
 {
     Debug::TimingTrace ttrc{L"IntegratedModel ... SetNetworkUserSettings", 0.1};
@@ -340,26 +322,6 @@ bool IntegratedModel::Private_::DBAccess::Mgr::SetNetworkUserSettings (const GUI
         fNetworkUserSettingsTableConnection_.rwget ().cref ()->Delete (id);
         return fCachedNetworkUserSettings_.rwget ().rwref ().RemoveIf (id);
     }
-}
-
-NetworkInterfaceCollection IntegratedModel::Private_::DBAccess::Mgr::GetRawNetworkInterfaces () const
-{
-    return fDBNetworkInterfaces_;
-}
-
-NetworkCollection IntegratedModel::Private_::DBAccess::Mgr::GetRawNetworks () const
-{
-    return fDBNetworks_;
-}
-
-DeviceCollection IntegratedModel::Private_::DBAccess::Mgr::GetRawDevices () const
-{
-    return fDBDevices_;
-}
-
-bool IntegratedModel::Private_::DBAccess::Mgr::GetFinishedInitialDBLoad () const
-{
-    return fFinishedInitialDBLoad_;
 }
 
 String IntegratedModel::Private_::DBAccess::Mgr::GenRandomIDString_ (VariantValue::Type t)
