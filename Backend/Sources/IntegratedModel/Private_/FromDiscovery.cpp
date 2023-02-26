@@ -202,7 +202,7 @@ optional<GUID> IntegratedModel::Private_::FromDiscovery::GetMyDeviceID ()
 
 Sequence<NetworkInterface> IntegratedModel::Private_::FromDiscovery::GetNetworkInterfaces ()
 {
-    Debug::TimingTrace         ttrc{L"DiscoveryWrapper_::GetNetworkInterfaces_", 0.1};
+    Debug::TimingTrace         ttrc{L"FromDiscovery::GetNetworkInterfaces_", 0.1};
     Sequence<NetworkInterface> result =
         Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ().Map<NetworkInterface, Sequence<NetworkInterface>> (
             [] (const Discovery::NetworkInterface& n) { return Discovery2Model_ (n); });
@@ -214,7 +214,7 @@ Sequence<NetworkInterface> IntegratedModel::Private_::FromDiscovery::GetNetworkI
 
 Sequence<Network> IntegratedModel::Private_::FromDiscovery::GetNetworks ()
 {
-    Debug::TimingTrace ttrc{L"DiscoveryWrapper_::GetNetworks_", 0.1};
+    Debug::TimingTrace ttrc{L"FromDiscovery::GetNetworks_", 0.1};
     Sequence<Network>  result = Discovery::NetworksMgr::sThe.CollectActiveNetworks ().Map<Network, Sequence<Network>> (
         [] (const Discovery::Network& n) { return Discovery2Model_ (n); });
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
@@ -225,7 +225,7 @@ Sequence<Network> IntegratedModel::Private_::FromDiscovery::GetNetworks ()
 
 Sequence<Device> IntegratedModel::Private_::FromDiscovery::GetDevices ()
 {
-    Debug::TimingTrace ttrc{L"DiscoveryWrapper_::GetDevices_", .1};
+    Debug::TimingTrace ttrc{L"FromDiscovery::GetDevices_", .1};
     // Fetch (UNSORTED) list of devices
     return Discovery::DevicesMgr::sThe.GetActiveDevices ().Map<Device, Sequence<Device>> (
         [] (const Discovery::Device& d) { return Discovery2Model_ (d); });

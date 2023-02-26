@@ -465,7 +465,7 @@ void IntegratedModel::Private_::DBAccess::Mgr::BackgroundDatabaseThread_ ()
             // periodically write the latest discovered data to the database
 
             // UPDATE fDBNetworkInterfaces_ INCREMENTALLY to reflect reflect these merges
-            IntegratedModel::Private_::FromDiscovery::GetNetworkInterfaces ().Apply ([this] (const Model::NetworkInterface& ni) {
+            FromDiscovery::GetNetworkInterfaces ().Apply ([this] (const Model::NetworkInterface& ni) {
                 lock_guard lock{this->fDBConnectionPtr_};     //tmphack fix underlying SQL orm wrapper stuff so not needed --LGP 2022-11-23
                 Assert (ni.fAggregatesReversibly == nullopt); // dont write these summary values
                 fNetworkInterfaceTableConnection_->AddOrUpdate (ni);
@@ -473,7 +473,7 @@ void IntegratedModel::Private_::DBAccess::Mgr::BackgroundDatabaseThread_ ()
             });
 
             // UPDATE fDBNetworks_ INCREMENTALLY to reflect reflect these merges
-            IntegratedModel::Private_::FromDiscovery::GetNetworks ().Apply ([this] (const Model::Network& n) {
+            FromDiscovery::GetNetworks ().Apply ([this] (const Model::Network& n) {
                 Assert (n.fSeen);                            // don't track/write items which have never been seen
                 lock_guard lock{this->fDBConnectionPtr_};    //tmphack fix underlying SQL orm wrapper stuff so not needed --LGP 2022-11-23
                 Assert (n.fAggregatesReversibly == nullopt); // dont write these summary values
@@ -482,7 +482,7 @@ void IntegratedModel::Private_::DBAccess::Mgr::BackgroundDatabaseThread_ ()
             });
 
             // UPDATE fDBDevices_ INCREMENTALLY to reflect reflect these merges
-            IntegratedModel::Private_::FromDiscovery::GetDevices ().Apply ([this] (const Model::Device& d) {
+            FromDiscovery::GetDevices ().Apply ([this] (const Model::Device& d) {
                 Assert (d.fSeen.EverSeen ());
                 Assert (d.fSeen.EverSeen ());                // don't track/write items which have never been seen
                 Assert (d.fUserOverrides == nullopt);        // tracked on rollup devices, not snapshot devices

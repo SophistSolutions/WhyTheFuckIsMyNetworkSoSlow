@@ -17,8 +17,11 @@
  *  Wrappers on the discovery manager APIs, that just fetch the discovered devices and convert to common
  *  integrated model (no datebase awareness)
  * 
- *  Note - IDs are simple to manage/maintain - they come from the discovery layer, and we SIMPLY RE-USE those IDs in this DiscoveryWrapper
+ *  Note - IDs are simply to manage/maintain - they come from the discovery layer, and we SIMPLY RE-USE those IDs in this DiscoveryWrapper
  *  layer. That makes all ID/Pointers consistent.
+ * 
+ *  These IDs should remain coherent (constant for a particular 'device') for the lifetime of a single process run, but not
+ *  necessarily further).
  */
 namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_::FromDiscovery {
 
@@ -35,6 +38,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_::Fr
     using Stroika::Foundation::Time::Duration;
 
     /**
+     *  \note   \em Thread-Safety   <a href="Thread-Safety.md#Internally-Synchronized-Thread-Safety">Internally-Synchronized-Thread-Safety</a>
      */
     optional<GUID> GetMyDeviceID ();
 

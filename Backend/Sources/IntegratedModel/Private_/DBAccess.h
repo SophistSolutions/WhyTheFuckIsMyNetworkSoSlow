@@ -8,9 +8,9 @@
 
 #include <optional>
 
+#include "Stroika/Foundation/Configuration/Version.h"
 #include "Stroika/Foundation/Containers/Collection.h"
 #include "Stroika/Foundation/Containers/Sequence.h"
-#include "Stroika/Foundation/Configuration/Version.h"
 #include "Stroika/Foundation/DataExchange/ObjectVariantMapper.h"
 #include "Stroika/Foundation/Database/SQL/ORM/Schema.h"
 #include "Stroika/Foundation/Database/SQL/ORM/TableConnection.h"
@@ -37,9 +37,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_::DB
     using namespace Stroika::Foundation::Containers;
     using namespace Stroika::Foundation::Database;
     using namespace Stroika::Foundation::Debug;
-    
-    using Stroika::Foundation::Common::GUID;
+
     using Stroika::Foundation::Common::ConstantProperty;
+    using Stroika::Foundation::Common::GUID;
     using Stroika::Foundation::Containers::Collection;
     using Stroika::Foundation::Containers::Sequence;
     using Stroika::Foundation::DataExchange::ObjectVariantMapper;
@@ -55,7 +55,6 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_::DB
     using WebServices::Model::NetworkInterface;
     using WebServices::Model::NetworkInterfaceCollection;
 
-
     /**
      *  Wrapper on Database access all goes in this DBAccess::Mgr_ module
      *
@@ -64,7 +63,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_::DB
     class Mgr {
     public:
         Mgr ();
-        Mgr (const Mgr&)            = delete;
+        Mgr (const Mgr&) = delete;
 
     public:
         Mgr& operator= (const Mgr&) = delete;
@@ -95,13 +94,13 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_::DB
 
     public:
         // return true if changed
-        nonvirtual bool                       SetNetworkUserSettings (const GUID& id, const std::optional<Network::UserOverridesType>& settings);
+        nonvirtual bool SetNetworkUserSettings (const GUID& id, const std::optional<Network::UserOverridesType>& settings);
 
     public:
         nonvirtual NetworkInterfaceCollection GetRawNetworkInterfaces () const;
 
     public:
-        nonvirtual NetworkCollection          GetRawNetworks () const;
+        nonvirtual NetworkCollection GetRawNetworks () const;
 
     public:
         nonvirtual DeviceCollection GetRawDevices () const;
@@ -122,13 +121,13 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_::DB
 
     private:
         struct ExternalDeviceUserSettingsElt_ {
-            GUID                             fDeviceID; // rolled up device id
+            GUID                      fDeviceID; // rolled up device id
             Device::UserOverridesType fUserSettings;
         };
 
     private:
         struct ExternalNetworkUserSettingsElt_ {
-            GUID                              fNetworkID; // rolled up network id
+            GUID                       fNetworkID; // rolled up network id
             Network::UserOverridesType fUserSettings;
         };
 

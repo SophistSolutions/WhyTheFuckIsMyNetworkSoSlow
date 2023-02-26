@@ -37,6 +37,11 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel {
      *  from discovered ids (and map them and provide apis to adjust mapping).
      * 
      *  This is where all the object identity logic and rollup logic lies.
+     * 
+     *  This delegates to the layer that does database storage, and discovery. And it provides access to settings
+     *  that configure how rollup is done.
+     * 
+     *  \note   \em Thread-Safety   <a href="Thread-Safety.md#Internally-Synchronized-Thread-Safety">Internally-Synchronized-Thread-Safety</a>
      */
     class Mgr {
     private:
