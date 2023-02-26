@@ -27,19 +27,12 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_ {
     using namespace Stroika::Foundation;
     using Stroika::Foundation::Common::GUID;
     using Stroika::Foundation::Containers::Association;
-    using Stroika::Foundation::Containers::Collection;
     using Stroika::Foundation::Containers::Mapping;
-    using Stroika::Foundation::Containers::Sequence;
     using Stroika::Foundation::Containers::Set;
     using Stroika::Foundation::Execution::Synchronized;
-    using Stroika::Foundation::Time::Duration;
     using Stroika::Foundation::Traversal::Iterable;
 
     using WebServices::Model::Device;
-    using WebServices::Model::DeviceCollection;
-    using WebServices::Model::Network;
-    using WebServices::Model::NetworkAttachmentInfo;
-    using WebServices::Model::NetworkCollection;
     using WebServices::Model::NetworkInterface;
     using WebServices::Model::NetworkInterfaceCollection;
 
