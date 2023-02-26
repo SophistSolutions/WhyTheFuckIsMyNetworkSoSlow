@@ -21,6 +21,7 @@ Objs	=	\
 	$(ObjDir)DBAccess${OBJ_SUFFIX}\
 	$(ObjDir)FromDiscovery${OBJ_SUFFIX}\
 	$(ObjDir)RolledUpNetworkInterfaces${OBJ_SUFFIX}\
+	$(ObjDir)RolledUpNetworks${OBJ_SUFFIX}\
 
 
 all:$(ObjDir) $(Objs)

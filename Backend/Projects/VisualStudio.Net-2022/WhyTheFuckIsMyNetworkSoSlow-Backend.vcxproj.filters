@@ -109,6 +109,9 @@
     <None Include="..\..\Sources\IntegratedModel\Private_\RolledUpNetworkInterfaces.inl">
       <Filter>Sources\IntegratedModel\Private_</Filter>
     </None>
+    <None Include="..\..\Sources\IntegratedModel\Private_\RolledUpNetworks.inl">
+      <Filter>Sources\IntegratedModel\Private_</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Main.cpp">
@@ -180,6 +183,9 @@
     <ClCompile Include="..\..\Sources\IntegratedModel\Private_\RolledUpNetworkInterfaces.cpp">
       <Filter>Sources\IntegratedModel\Private_</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\IntegratedModel\Private_\RolledUpNetworks.cpp">
+      <Filter>Sources\IntegratedModel\Private_</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Service.h">
@@ -249,6 +255,9 @@
       <Filter>Sources\IntegratedModel\Private_</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\IntegratedModel\Private_\RolledUpNetworkInterfaces.h">
+      <Filter>Sources\IntegratedModel\Private_</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\IntegratedModel\Private_\RolledUpNetworks.h">
       <Filter>Sources\IntegratedModel\Private_</Filter>
     </ClInclude>
   </ItemGroup>
