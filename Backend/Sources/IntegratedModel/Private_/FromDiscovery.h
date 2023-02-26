@@ -1,8 +1,8 @@
 /*
  * Copyright(c) Sophist Solutions, Inc. 1990-2021.  All rights reserved
  */
-#ifndef _WhyTheFuckIsMyNetworkSoSlow_BackendApp_IntegratedModel_Mgr_Private_Discovery_h_
-#define _WhyTheFuckIsMyNetworkSoSlow_BackendApp_IntegratedModel_Mgr_Private_Discovery_h_ 1
+#ifndef _WhyTheFuckIsMyNetworkSoSlow_BackendApp_IntegratedModel_Private_Discovery_h_
+#define _WhyTheFuckIsMyNetworkSoSlow_BackendApp_IntegratedModel_Private_Discovery_h_ 1
 
 #include "Stroika/Frameworks/StroikaPreComp.h"
 
@@ -72,4 +72,4 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_::Fr
  */
 #include "FromDiscovery.inl"
 
-#endif /*_WhyTheFuckIsMyNetworkSoSlow_BackendApp_IntegratedModel_Mgr_Private_Discovery_h_*/
+#endif /*_WhyTheFuckIsMyNetworkSoSlow_BackendApp_IntegratedModel_Private_Discovery_h_*/
