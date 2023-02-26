@@ -35,6 +35,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel {
     /**
      *  Wrapper on the discovered devices and networks, as well as persistence. It adds its own IDs, separate
      *  from discovered ids (and map them and provide apis to adjust mapping).
+     * 
+     *  This is where all the object identity logic and rollup logic lies.
      */
     class Mgr {
     private:

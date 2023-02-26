@@ -103,6 +103,9 @@
     <None Include="..\..\Sources\IntegratedModel\Private_\Makefile">
       <Filter>Sources\IntegratedModel\Private_</Filter>
     </None>
+    <None Include="..\..\Sources\IntegratedModel\Private_\DBAccess.inl">
+      <Filter>Sources\IntegratedModel\Private_</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Sources\Main.cpp">
@@ -168,6 +171,9 @@
     <ClCompile Include="..\..\Sources\IntegratedModel\Private_\FromDiscovery.cpp">
       <Filter>Sources\IntegratedModel\Private_</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\IntegratedModel\Private_\DBAccess.cpp">
+      <Filter>Sources\IntegratedModel\Private_</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Sources\Service.h">
@@ -231,6 +237,9 @@
       <Filter>Sources\WebServices</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\IntegratedModel\Private_\FromDiscovery.h">
+      <Filter>Sources\IntegratedModel\Private_</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Sources\IntegratedModel\Private_\DBAccess.h">
       <Filter>Sources\IntegratedModel\Private_</Filter>
     </ClInclude>
   </ItemGroup>

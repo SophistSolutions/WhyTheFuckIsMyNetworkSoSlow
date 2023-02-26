@@ -1,3 +1,10 @@
+
+factorign Integrated Model code
+THEN - fixup logic to not create empty rules (or to clean those up after).
+Maybe auto-[iurge and maybe auto rollup logic]
+
+---
+
 CLEANUP race in 
 async fetchAvailableNetworks() {
       const networkIDs = await fetchNetworks();

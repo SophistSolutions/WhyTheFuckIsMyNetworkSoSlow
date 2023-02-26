@@ -78,6 +78,7 @@
     <None Include="..\..\Sources\Discovery\PortScanner.inl" />
     <None Include="..\..\Sources\IntegratedModel\Makefile" />
     <None Include="..\..\Sources\IntegratedModel\Mgr.inl" />
+    <None Include="..\..\Sources\IntegratedModel\Private_\DBAccess.inl" />
     <None Include="..\..\Sources\IntegratedModel\Private_\FromDiscovery.inl" />
     <None Include="..\..\Sources\IntegratedModel\Private_\Makefile" />
     <None Include="..\..\Sources\Makefile" />
@@ -103,6 +104,7 @@
     <ClCompile Include="..\..\Sources\Discovery\Networks.cpp" />
     <ClCompile Include="..\..\Sources\Discovery\PortScanner.cpp" />
     <ClCompile Include="..\..\Sources\IntegratedModel\Mgr.cpp" />
+    <ClCompile Include="..\..\Sources\IntegratedModel\Private_\DBAccess.cpp" />
     <ClCompile Include="..\..\Sources\IntegratedModel\Private_\FromDiscovery.cpp" />
     <ClCompile Include="..\..\Sources\Main.cpp" />
     <ClCompile Include="..\..\Sources\Service.cpp" />
@@ -127,6 +129,7 @@
     <ClInclude Include="..\..\Sources\Discovery\Networks.h" />
     <ClInclude Include="..\..\Sources\Discovery\PortScanner.h" />
     <ClInclude Include="..\..\Sources\IntegratedModel\Mgr.h" />
+    <ClInclude Include="..\..\Sources\IntegratedModel\Private_\DBAccess.h" />
     <ClInclude Include="..\..\Sources\IntegratedModel\Private_\FromDiscovery.h" />
     <ClInclude Include="..\..\Sources\Service.h" />
     <ClInclude Include="..\..\Sources\WebServices\IWSAPI.h" />
