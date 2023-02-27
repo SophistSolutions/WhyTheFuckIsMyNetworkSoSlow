@@ -234,7 +234,7 @@ optional<GUID> BLOBMgr::AsyncAddBLOBFromURL (const URI& url, bool recheckIfExpir
         }
     }
     if (not storeGUID.has_value ()) {
-        fThreadPool_.rwget ().rwref ()->AddTask ([=, this] () {
+        fThreadPool_.rwget ().rwref ()->AddTask ([url, recheckIfExpired, this] () {
             AddBLOBFromURL (url, recheckIfExpired); // @todo if this fails (CATCH) - then negative cache, so we dont try too often
         });
     }
