@@ -1603,19 +1603,6 @@ Collection<Discovery::Device> Discovery::DevicesMgr::GetActiveDevices (optional<
     return results;
 }
 
-namespace {
-    auto ICMPPing_ = [] (const InternetAddress& ia) -> bool {
-        Frameworks::NetworkMonitor::Ping::Pinger p{ia};
-        try {
-            auto r = p.RunOnce (); //incomplete
-            return true;
-        }
-        catch (...) {
-            return false;
-        }
-    };
-}
-
 void Discovery::DevicesMgr::ReScan (const GUID& deviceID)
 {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
