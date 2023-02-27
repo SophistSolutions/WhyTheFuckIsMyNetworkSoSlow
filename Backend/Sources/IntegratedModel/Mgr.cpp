@@ -76,7 +76,8 @@ namespace {
                 // disappear later in the run, leading to possible client confusion. Best to just not say anything til DB loaded
                 // Could ALSO do 2 stage DB load - critical stuff for IDs, and the detailed DB records. All we need is first
                 // stage for here...
-                Execution::Throw (HTTP::Exception{HTTP::StatusCodes::kServiceUnavailable, L"Database initialization not yet completed"_k});
+                static const auto kException_ = HTTP::Exception{HTTP::StatusCodes::kServiceUnavailable, L"Database initialization not yet completed"_k};
+                Execution::Throw (kException_);
             }
         }
         virtual void _OneTimeStartupLoadDB () override
