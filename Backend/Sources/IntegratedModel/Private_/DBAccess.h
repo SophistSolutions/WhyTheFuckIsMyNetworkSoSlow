@@ -56,7 +56,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_::DB
     using WebServices::Model::NetworkInterfaceCollection;
 
     /**
-     *  Wrapper on Database access all goes in this DBAccess::Mgr_ module
+     *  Wrapper on Database access all goes in this DBAccess::Mgr_ module;
+     * 
+     *  \note not a singleton in of itself. Lifetime externally managed.
      *
      *  \note   \em Thread-Safety   <a href="Thread-Safety.md#Internally-Synchronized-Thread-Safety">Internally-Synchronized-Thread-Safety</a>
      */
@@ -106,7 +108,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_::DB
         nonvirtual DeviceCollection GetRawDevices () const;
 
     public:
-        nonvirtual bool GetFinishedInitialDBLoad () const;
+        /**
+         *  Throw if dbload/setup not yet completed.
+         */
+        virtual void CheckDatabaseLoadCompleted () = 0;
 
     private:
         using Schema_Table         = SQL::ORM::Schema::Table;
@@ -159,7 +164,6 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_::DB
         Synchronized<DeviceCollection>                                                       fDBDevices_;                       // mirror database contents in RAM
         Synchronized<NetworkCollection>                                                      fDBNetworks_;                      // ''
         Synchronized<NetworkInterfaceCollection>                                             fDBNetworkInterfaces_;             // ''
-        atomic<bool>                                                                         fFinishedInitialDBLoad_{false};
 
         // the latest copy of what is in the DB (manually kept up to date)
         // NOTE: These are all non-rolled up objects
@@ -167,6 +171,13 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_::DB
 
     private:
         void BackgroundDatabaseThread_ ();
+
+    protected:
+        /*
+         *  Called to load the database. Even if the database is not present (being created) - this will be called once
+         *  and must succeeed. Subclasses can override it to report back/know when database load is done.
+         */
+        virtual void _OneTimeStartupLoadDB ();
     };
 
 }

@@ -155,13 +155,7 @@ RolledUpDevices RolledUpDevices::GetCached (DBAccess::Mgr* dbAccessMgr, Time::Du
         RolledUpDevices result = [&] () {
             auto lk = sRolledUpDevicesSoFar_.rwget ();
             if (not lk.cref ().has_value ()) {
-                if (not dbAccessMgr->GetFinishedInitialDBLoad ()) {
-                    // Design Choice - could return non-standardized rollup IDs if DB not loaded, but then those IDs would
-                    // disappear later in the run, leading to possible client confusion. Best to just not say anything til DB loaded
-                    // Could ALSO do 2 stage DB load - critical stuff for IDs, and the detailed DB records. All we need is first
-                    // stage for here...
-                    Execution::Throw (HTTP::Exception{HTTP::StatusCodes::kServiceUnavailable, L"Database not yet loaded"_k});
-                }
+                dbAccessMgr->CheckDatabaseLoadCompleted ();
                 // @todo add more stuff here - empty preset rules from DB
                 // merge two tables - ID to fingerprint and user settings tables and store those in this rollup early
                 // maybe make CTOR for rolledupnetworks take in ital DB netwworks and rules, and have copyis CTOR taking orig networks and new rules?

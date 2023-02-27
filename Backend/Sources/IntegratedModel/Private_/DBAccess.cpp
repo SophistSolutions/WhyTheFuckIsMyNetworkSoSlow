@@ -56,13 +56,14 @@ using Schema_Table         = SQL::ORM::Schema::Table;
 using Schema_Field         = SQL::ORM::Schema::Field;
 using Schema_CatchAllField = SQL::ORM::Schema::CatchAllField;
 
+using IntegratedModel::Private_::DBAccess::Mgr;
 
 /*
  ********************************************************************************
  ****************** IntegratedModel::Private_::DBAccess::Mgr ********************
  ********************************************************************************
  */
-const ConstantProperty<ObjectVariantMapper> IntegratedModel::Private_::DBAccess::Mgr::kDBObjectMapper_{[] () {
+const ConstantProperty<ObjectVariantMapper> Mgr::kDBObjectMapper_{[] () {
     ObjectVariantMapper mapper;
 
     mapper += NetworkInterface::kMapper;
@@ -86,7 +87,7 @@ const ConstantProperty<ObjectVariantMapper> IntegratedModel::Private_::DBAccess:
     return mapper;
 }};
 
-const Schema_Table IntegratedModel::Private_::DBAccess::Mgr::kDeviceUserSettingsSchema_{
+const Schema_Table Mgr::kDeviceUserSettingsSchema_{
     L"DeviceUserSettings"sv,
     /*
      */
@@ -98,7 +99,7 @@ const Schema_Table IntegratedModel::Private_::DBAccess::Mgr::kDeviceUserSettings
 #endif
     },
     Schema_CatchAllField{}};
-const Schema_Table IntegratedModel::Private_::DBAccess::Mgr::kNetworkUserSettingsSchema_{
+const Schema_Table Mgr::kNetworkUserSettingsSchema_{
     L"NetworkUserSettings"sv,
     /*
              */
@@ -110,7 +111,8 @@ const Schema_Table IntegratedModel::Private_::DBAccess::Mgr::kNetworkUserSetting
 #endif
     },
     Schema_CatchAllField{}};
-const Schema_Table IntegratedModel::Private_::DBAccess::Mgr::kDeviceTableSchema_{
+
+const Schema_Table Mgr::kDeviceTableSchema_{
     L"Devices"sv,
     /*
      *  use the same names as the ObjectVariantMapper for simpler mapping, or specify an alternate name
@@ -136,7 +138,7 @@ const Schema_Table IntegratedModel::Private_::DBAccess::Mgr::kDeviceTableSchema_
     },
     Schema_CatchAllField{}};
 
-const Schema_Table IntegratedModel::Private_::DBAccess::Mgr::kNetworkInterfaceTableSchema_{
+const Schema_Table Mgr::kNetworkInterfaceTableSchema_{
     L"NetworkInteraces"sv,
     /*
      *  use the same names as the ObjectVariantMapper for simpler mapping, or specify an alternate name
@@ -156,7 +158,8 @@ const Schema_Table IntegratedModel::Private_::DBAccess::Mgr::kNetworkInterfaceTa
 #endif
     },
     Schema_CatchAllField{}};
-const Schema_Table IntegratedModel::Private_::DBAccess::Mgr::kNetworkTableSchema_{
+
+const Schema_Table Mgr::kNetworkTableSchema_{
     L"Networks"sv,
     /*
      *  use the same names as the ObjectVariantMapper for simpler mapping, or specify an alternate name
@@ -182,7 +185,7 @@ const Schema_Table IntegratedModel::Private_::DBAccess::Mgr::kNetworkTableSchema
     },
     Schema_CatchAllField{}};
 
-IntegratedModel::Private_::DBAccess::Mgr::Mgr ()
+Mgr::Mgr ()
     : fDB_{kCurrentVersion_,
            Traversal::Iterable<Schema_Table>{kDeviceTableSchema_,
                                              kDeviceUserSettingsSchema_,
@@ -239,14 +242,14 @@ IntegratedModel::Private_::DBAccess::Mgr::Mgr ()
     fDatabaseSyncThread_ = Thread::New ([this] () { BackgroundDatabaseThread_ (); }, Thread::eAutoStart, L"BackgroundDatabaseThread"sv);
 }
 
-IntegratedModel::Private_::DBAccess::Mgr::~Mgr ()
+Mgr::~Mgr ()
 {
     Debug::TraceContextBumper                        ctx{L"IntegratedModel::{}::Mgr::DTOR"};
     Execution::Thread::SuppressInterruptionInContext suppressInterruption; // must complete this abort and wait for done - this cannot abort/throw
     fDatabaseSyncThread_.AbortAndWaitForDone ();
 }
 
-GUID IntegratedModel::Private_::DBAccess::Mgr::GenNewDeviceID (const Set<String>& hwAddresses)
+GUID Mgr::GenNewDeviceID (const Set<String>& hwAddresses)
 {
     GUID newRes = GUID::GenerateNew ();
     if (hwAddresses.empty ()) {
@@ -260,7 +263,7 @@ GUID IntegratedModel::Private_::DBAccess::Mgr::GenNewDeviceID (const Set<String>
     return newRes;
 }
 
-GUID IntegratedModel::Private_::DBAccess::Mgr::GenNewNetworkID ([[maybe_unused]] const Model::Network& rollupNetwork, const Model::Network& containedNetwork)
+GUID Mgr::GenNewNetworkID ([[maybe_unused]] const Model::Network& rollupNetwork, const Model::Network& containedNetwork)
 {
     Debug::TimingTrace                ttrc{L"GenNewNetworkID", 0.001}; // sb very quick
     GUID                              newRes = GUID::GenerateNew ();
@@ -283,7 +286,7 @@ GUID IntegratedModel::Private_::DBAccess::Mgr::GenNewNetworkID ([[maybe_unused]]
     return newRes;
 }
 
-bool IntegratedModel::Private_::DBAccess::Mgr::SetDeviceUserSettings (const GUID& id, const std::optional<Device::UserOverridesType>& settings)
+bool Mgr::SetDeviceUserSettings (const GUID& id, const std::optional<Device::UserOverridesType>& settings)
 {
     Debug::TimingTrace ttrc{L"IntegratedModel ... SetDeviceUserSettings", 0.1};
     // first check if legit id, and then store
@@ -304,7 +307,7 @@ bool IntegratedModel::Private_::DBAccess::Mgr::SetDeviceUserSettings (const GUID
     }
 }
 
-bool IntegratedModel::Private_::DBAccess::Mgr::SetNetworkUserSettings (const GUID& id, const std::optional<Network::UserOverridesType>& settings)
+bool Mgr::SetNetworkUserSettings (const GUID& id, const std::optional<Network::UserOverridesType>& settings)
 {
     Debug::TimingTrace ttrc{L"IntegratedModel ... SetNetworkUserSettings", 0.1};
     // first check if legit id, and then store
@@ -324,7 +327,7 @@ bool IntegratedModel::Private_::DBAccess::Mgr::SetNetworkUserSettings (const GUI
     }
 }
 
-String IntegratedModel::Private_::DBAccess::Mgr::GenRandomIDString_ (VariantValue::Type t)
+String Mgr::GenRandomIDString_ (VariantValue::Type t)
 {
     switch (t) {
         case VariantValue::Type::eString:
@@ -340,90 +343,12 @@ String IntegratedModel::Private_::DBAccess::Mgr::GenRandomIDString_ (VariantValu
     }
 }
 
-void IntegratedModel::Private_::DBAccess::Mgr::BackgroundDatabaseThread_ ()
+void Mgr::BackgroundDatabaseThread_ ()
 {
     Debug::TraceContextBumper ctx{L"BackgroundDatabaseThread_ loop"};
-    optional<unsigned int>    netInterfaceSnapshotsLoaded{};
-    optional<unsigned int>    netSnapshotsLoaded{};
-    optional<unsigned int>    deviceSnapshotsLoaded{};
+    _OneTimeStartupLoadDB (); // if this fails we fail (has internal retry where appropriate)
     while (true) {
         try {
-            // @todo Consider if we should do this logic in CTOR so we can lose the flag saying if we've started up...
-            // advantage of keeping this way is we get to starting to accept commands sooner. BUt so many of those
-            // commands we just need to reject cuz we aren't ready. UNSURE.
-
-            // load networks before devices because devices depend on networks but not the reverse
-            if (not netInterfaceSnapshotsLoaded.has_value ()) {
-                try {
-                    Debug::TimingTrace ttrc{L"...initial load of fDBNetworkInterfaces_ from database ", 1};
-                    auto               errorHandler = [] ([[maybe_unused]] const SQL::Statement::Row& r,
-                                            const exception_ptr&                        e) -> optional<NetworkInterface> {
-                        // Just drop the record on the floor after logging
-                        Logger::sThe.Log (Logger::eError, L"Error reading database of persisted network interfaces snapshot ('%s'): %s",
-                                                        Characters::ToString (r).c_str (), Characters::ToString (e).c_str ());
-                        return nullopt;
-                    };
-                    auto all                    = fNetworkInterfaceTableConnection_->GetAll (errorHandler);
-                    netInterfaceSnapshotsLoaded = static_cast<unsigned int> (all.size ());
-                    fDBNetworkInterfaces_.store (NetworkInterfaceCollection{all});
-                }
-                catch (...) {
-                    Logger::sThe.Log (Logger::eError, L"Probably important error reading database of old network interfaces data: %s",
-                                      Characters::ToString (current_exception ()).c_str ());
-                    Execution::ReThrow ();
-                }
-            }
-            if (not netSnapshotsLoaded.has_value ()) {
-                try {
-                    Debug::TimingTrace ttrc{L"...initial load of fDBNetworks_ from database ", 1};
-                    auto               errorHandler = [] ([[maybe_unused]] const SQL::Statement::Row& r,
-                                            const exception_ptr&                        e) -> optional<Network> {
-                        // Just drop the record on the floor after logging
-                        Logger::sThe.Log (Logger::eError, L"Error reading database of persisted network snapshot ('%s'): %s",
-                                                        Characters::ToString (r).c_str (), Characters::ToString (e).c_str ());
-                        return nullopt;
-                    };
-                    auto all           = fNetworkTableConnection_->GetAll (errorHandler);
-                    netSnapshotsLoaded = static_cast<unsigned int> (all.size ());
-                    fDBNetworks_.store (NetworkCollection{all});
-                }
-                catch (...) {
-                    Logger::sThe.Log (Logger::eError, L"Probably important error reading database of old networks data: %s",
-                                      Characters::ToString (current_exception ()).c_str ());
-                    Execution::ReThrow ();
-                }
-            }
-            if (not deviceSnapshotsLoaded.has_value ()) {
-                try {
-                    Debug::TimingTrace ttrc{L"...initial load of fDBDevices_ from database ", 1};
-                    auto               errorHandler = [] ([[maybe_unused]] const SQL::Statement::Row& r,
-                                            const exception_ptr&                        e) -> optional<Device> {
-                        // Just drop the record on the floor after logging
-                        Logger::sThe.Log (Logger::eError, L"Error reading database of persisted device snapshot ('%s'): %s",
-                                                        Characters::ToString (r).c_str (), Characters::ToString (e).c_str ());
-                        return nullopt;
-                    };
-                    auto all = fDeviceTableConnection_->GetAll (errorHandler);
-                    if constexpr (qDebug) {
-                        all.Apply ([] ([[maybe_unused]] const Device& d) { Assert (!d.fUserOverrides); }); // tracked on rollup devices, not snapshot devices
-                    }
-                    deviceSnapshotsLoaded = static_cast<unsigned int> (all.size ());
-                    fDBDevices_.store (DeviceCollection{all}); // pre-load in memory copy with whatever we had stored in the database
-                }
-                catch (...) {
-                    Logger::sThe.Log (Logger::eError, L"Probably important error reading database of old device data: %s",
-                                      Characters::ToString (current_exception ()).c_str ());
-                    Execution::ReThrow ();
-                }
-            }
-            if (not fFinishedInitialDBLoad_) {
-                Assert (deviceSnapshotsLoaded);
-                Assert (netSnapshotsLoaded);
-                Assert (netInterfaceSnapshotsLoaded);
-                Logger::sThe.Log (Logger::eInfo, L"Loaded %d network interface snapshots, %d network snapshots and %d device snapshots from database",
-                                  *netInterfaceSnapshotsLoaded, *netSnapshotsLoaded, *deviceSnapshotsLoaded);
-                fFinishedInitialDBLoad_ = true;
-            }
             // periodically write the latest discovered data to the database
 
             // UPDATE fDBNetworkInterfaces_ INCREMENTALLY to reflect reflect these merges
@@ -465,6 +390,110 @@ void IntegratedModel::Private_::DBAccess::Mgr::BackgroundDatabaseThread_ ()
             Logger::sThe.Log (Logger::eWarning, L"Database update: ignoring exception in BackgroundDatabaseThread_ loop (will retry in 30 seconds): %s",
                               Characters::ToString (current_exception ()).c_str ());
             Execution::Sleep (30s);
+        }
+    }
+}
+
+void Mgr::_OneTimeStartupLoadDB ()
+{
+    /*
+     *  Considered loading this from CTOR, but then the rest of APP load would be delayed by this DB load. Better to
+     *  let what can startup do so, and just block the webservices and things that depend on database load 
+     *  elsewhere.
+     */
+    Debug::TraceContextBumper ctx{L"OneTimeStartup_"};
+    optional<unsigned int>    netInterfaceSnapshotsLoaded{};
+    optional<unsigned int>    netSnapshotsLoaded{};
+    optional<unsigned int>    deviceSnapshotsLoaded{};
+    auto                      fetchInterfacesNetworks = [this] () -> unsigned int {
+        try {
+            Debug::TimingTrace ttrc{L"...initial load of fDBNetworkInterfaces_ from database ", 1};
+            auto               errorHandler = [] ([[maybe_unused]] const SQL::Statement::Row& r,
+                                    const exception_ptr&                        e) -> optional<NetworkInterface> {
+                // Just drop the record on the floor after logging
+                Logger::sThe.Log (Logger::eError, L"Error reading database of persisted network interfaces snapshot ('%s'): %s",
+                                                                     Characters::ToString (r).c_str (), Characters::ToString (e).c_str ());
+                return nullopt;
+            };
+            auto all = fNetworkInterfaceTableConnection_->GetAll (errorHandler);
+            fDBNetworkInterfaces_.store (NetworkInterfaceCollection{all});
+            return static_cast<unsigned int> (all.size ());
+        }
+        catch (...) {
+            Logger::sThe.Log (Logger::eError, L"Probably important error reading database of old network interfaces data: %s",
+                                                   Characters::ToString (current_exception ()).c_str ());
+            Execution::ReThrow ();
+        }
+    };
+    auto fetchNets = [this] () -> unsigned int {
+        try {
+            Debug::TimingTrace ttrc{L"...initial load of fDBNetworks_ from database ", 1};
+            auto               errorHandler = [] ([[maybe_unused]] const SQL::Statement::Row& r,
+                                    const exception_ptr&                        e) -> optional<Network> {
+                // Just drop the record on the floor after logging
+                Logger::sThe.Log (Logger::eError, L"Error reading database of persisted network snapshot ('%s'): %s",
+                                                Characters::ToString (r).c_str (), Characters::ToString (e).c_str ());
+                return nullopt;
+            };
+            auto all = fNetworkTableConnection_->GetAll (errorHandler);
+            fDBNetworks_.store (NetworkCollection{all});
+            return static_cast<unsigned int> (all.size ());
+        }
+        catch (...) {
+            Logger::sThe.Log (Logger::eError, L"Probably important error reading database of old networks data: %s",
+                              Characters::ToString (current_exception ()).c_str ());
+            Execution::ReThrow ();
+        }
+    };
+    auto fetchDevices = [this] () -> unsigned int {
+        try {
+            Debug::TimingTrace ttrc{L"...initial load of fDBDevices_ from database ", 1};
+            auto               errorHandler = [] ([[maybe_unused]] const SQL::Statement::Row& r,
+                                    const exception_ptr&                        e) -> optional<Device> {
+                // Just drop the record on the floor after logging
+                Logger::sThe.Log (Logger::eError, L"Error reading database of persisted device snapshot ('%s'): %s",
+                                                Characters::ToString (r).c_str (), Characters::ToString (e).c_str ());
+                return nullopt;
+            };
+            auto all = fDeviceTableConnection_->GetAll (errorHandler);
+            if constexpr (qDebug) {
+                all.Apply ([] ([[maybe_unused]] const Device& d) { Assert (!d.fUserOverrides); }); // tracked on rollup devices, not snapshot devices
+            }
+            fDBDevices_.store (DeviceCollection{all}); // pre-load in memory copy with whatever we had stored in the database
+            return static_cast<unsigned int> (all.size ());
+        }
+        catch (...) {
+            Logger::sThe.Log (Logger::eError, L"Probably important error reading database of old device data: %s",
+                              Characters::ToString (current_exception ()).c_str ());
+            Execution::ReThrow ();
+        }
+    };
+
+    // retry in case of failure
+    while (true) {
+        try {
+            // load networks before devices because devices depend on networks but not the reverse
+            // each loader local-function succeeds or throws
+            if (not netInterfaceSnapshotsLoaded.has_value ()) {
+                netInterfaceSnapshotsLoaded = fetchInterfacesNetworks ();
+            }
+            if (not netSnapshotsLoaded.has_value ()) {
+                netSnapshotsLoaded = fetchNets ();
+            }
+            if (not deviceSnapshotsLoaded.has_value ()) {
+                deviceSnapshotsLoaded = fetchDevices ();
+            }
+            // If we get this far without throwing, we are DONE
+            return;
+        }
+        catch (const Thread::AbortException&) {
+            Execution::ReThrow ();
+        }
+        catch (...) {
+            //DbgTrace (L"Ignoring (will retry in 30 seconds) exception in BackgroundDatabaseThread_ loop: %s", Characters::ToString (current_exception ()).c_str ());
+            Logger::sThe.Log (Logger::eWarning, L"Database error: ignoring exception in OneTimeStartup_ loop (will retry in 10 seconds): %s",
+                              Characters::ToString (current_exception ()).c_str ());
+            Execution::Sleep (10s);
         }
     }
 }

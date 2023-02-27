@@ -50,10 +50,6 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_::DB
     {
         return fDBDevices_;
     }
-    inline bool Mgr::GetFinishedInitialDBLoad () const
-    {
-        return fFinishedInitialDBLoad_;
-    }
 
 }
 

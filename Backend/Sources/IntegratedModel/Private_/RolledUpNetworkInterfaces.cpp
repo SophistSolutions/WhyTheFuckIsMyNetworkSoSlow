@@ -147,10 +147,10 @@ RolledUpNetworkInterfaces RolledUpNetworkInterfaces::GetCached (DBAccess::Mgr* d
     // sCache_.fHoldWriteLockDuringCacheFill = true; // so only one call to filler lambda at a time
     return sCache_.LookupValue (sCache_.Ago (allowedStaleness), [dbAccessMgr] () -> RolledUpNetworkInterfaces {
         /*
-                     *  DEADLOCK NOTE
-                     *      Since this can be called while rolling up DEVICES, its important that this code not call anything involving device rollup since
-                     *      that could trigger a deadlock.
-                     */
+         *  DEADLOCK NOTE
+         *      Since this can be called while rolling up DEVICES, its important that this code not call anything involving device rollup since
+         *      that could trigger a deadlock.
+         */
         Debug::TraceContextBumper ctx{
             Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...RolledUpNetworkInterfaces::GetCached...cachefiller")};
         Debug::TimingTrace ttrc{L"RolledUpNetworkInterfaces::GetCached...cachefiller", 1};
@@ -160,13 +160,7 @@ RolledUpNetworkInterfaces RolledUpNetworkInterfaces::GetCached (DBAccess::Mgr* d
         RolledUpNetworkInterfaces result = [dbAccessMgr] () {
             auto lk = sRolledUpNetworksInterfaces_.rwget ();
             if (not lk.cref ().has_value ()) {
-                if (not dbAccessMgr->GetFinishedInitialDBLoad ()) {
-                    // Design Choice - could return non-standardized rollup IDs if DB not loaded, but then those IDs would
-                    // disappear later in the run, leading to possible client confusion. Best to just not say anything til DB loaded
-                    // Could ALSO do 2 stage DB load - critical stuff for IDs, and the detailed DB records. All we need is first
-                    // stage for here...
-                    Execution::Throw (HTTP::Exception{HTTP::StatusCodes::kServiceUnavailable, L"Database not yet loaded"_k});
-                };
+                dbAccessMgr->CheckDatabaseLoadCompleted ();
                 // @todo add more stuff here - empty preset rules from DB
                 // merge two tables - ID to fingerprint and user settings tables and store those in this rollup early
                 // maybe make CTOR for rolledupnetworks take in ital DB netwworks and rules, and have copyis CTOR taking orig networks and new rules?
