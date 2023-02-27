@@ -68,6 +68,7 @@ using WebServices::Model::NetworkInterfaceCollection;
 
 namespace {
     struct MyDBAccessRep_ : IntegratedModel::Private_::DBAccess::Mgr {
+        using inherited = IntegratedModel::Private_::DBAccess::Mgr;
         atomic<bool> fFinishedInitialDBLoad_{false};
         virtual void CheckDatabaseLoadCompleted () override
         {
@@ -81,8 +82,8 @@ namespace {
             }
         }
         virtual void _OneTimeStartupLoadDB () override
-
         {
+            inherited::_OneTimeStartupLoadDB ();
             Logger::sThe.Log (Logger::eInfo, L"Loaded %d network interface snapshots, %d network snapshots and %d device snapshots from databas",
                               GetRawNetworkInterfaces ().size (), GetRawNetworks ().size (), GetRawDevices ().size ());
 
