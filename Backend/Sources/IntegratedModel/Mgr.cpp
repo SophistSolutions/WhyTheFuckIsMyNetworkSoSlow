@@ -163,7 +163,7 @@ optional<IntegratedModel::Device> IntegratedModel::Mgr::GetDevice (const GUID& i
         }
     }
     else {
-        if (result = sDBAccessMgr_->GetRawDevices ().Lookup (id)) {
+        if ((result = sDBAccessMgr_->GetRawDevices ().Lookup (id)) != nullopt) {
             result->fIDPersistent = true;
             result->fAggregatedBy = devicesRollupCache.MapAggregatedID2ItsRollupID (id);
             if (ttl != nullptr) {
