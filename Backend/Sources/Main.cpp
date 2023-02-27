@@ -41,7 +41,7 @@ namespace {
     {
         Thread::SuppressInterruptionInContext suppressCtx;
         DbgTrace (SDKSTR ("Fatal Error %s encountered"), msg);
-        Logger::sThe.Log (Logger::eCriticalError, L"Fatal Error: %s; Aborting...", String (msg).AsNarrowSDKString ().c_str ());
+        Logger::sThe.Log (Logger::eCriticalError, L"Fatal Error: %s; Aborting...", String::FromSDKString (msg).As<wstring> ().c_str ());
         Logger::sThe.Log (Logger::eCriticalError, L"Backtrace: %s", Debug::BackTrace::Capture ().c_str ());
         if (std::exception_ptr exc = std::current_exception ()) {
             Logger::sThe.Log (Logger::eCriticalError, L"Uncaught exception: %s", Characters::ToString (exc).c_str ());
