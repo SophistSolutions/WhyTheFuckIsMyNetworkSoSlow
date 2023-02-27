@@ -237,9 +237,6 @@ Mgr::Mgr ()
                           Characters::ToString (current_exception ()).c_str ());
         Execution::ReThrow ();
     }
-
-    Require (fDatabaseSyncThread_ == nullptr);
-    fDatabaseSyncThread_ = Thread::New ([this] () { BackgroundDatabaseThread_ (); }, Thread::eAutoStart, L"BackgroundDatabaseThread"sv);
 }
 
 Mgr::~Mgr ()
@@ -302,7 +299,12 @@ bool Mgr::SetDeviceUserSettings (const GUID& id, const std::optional<Device::Use
         return false;
     }
     else {
-        fDeviceUserSettingsTableConnection_.rwget ().cref ()->Delete (id);
+        if constexpr (kRepresentIDAs_ == VariantValue::Type::eString) {
+            fDeviceUserSettingsTableConnection_.rwget ().cref ()->Delete (VariantValue{id.As<String> ()});
+        }
+        else {
+            fDeviceUserSettingsTableConnection_.rwget ().cref ()->Delete (id);
+        }
         return fCachedDeviceUserSettings_.rwget ().rwref ().RemoveIf (id);
     }
 }
@@ -322,7 +324,12 @@ bool Mgr::SetNetworkUserSettings (const GUID& id, const std::optional<Network::U
         return false;
     }
     else {
-        fNetworkUserSettingsTableConnection_.rwget ().cref ()->Delete (id);
+        if constexpr (kRepresentIDAs_ == VariantValue::Type::eString) {
+            fNetworkUserSettingsTableConnection_.rwget ().cref ()->Delete (VariantValue{id.As<String> ()});
+        }
+        else {
+            fNetworkUserSettingsTableConnection_.rwget ().cref ()->Delete (id);
+        }
         return fCachedNetworkUserSettings_.rwget ().rwref ().RemoveIf (id);
     }
 }
@@ -341,6 +348,13 @@ String Mgr::GenRandomIDString_ (VariantValue::Type t)
             RequireNotReached ();
             return L"";
     }
+}
+
+void Mgr::_StartBackgroundThread ()
+{
+
+    Require (fDatabaseSyncThread_ == nullptr);
+    fDatabaseSyncThread_ = Thread::New ([this] () { BackgroundDatabaseThread_ (); }, Thread::eAutoStart, L"BackgroundDatabaseThread"sv);
 }
 
 void Mgr::BackgroundDatabaseThread_ ()

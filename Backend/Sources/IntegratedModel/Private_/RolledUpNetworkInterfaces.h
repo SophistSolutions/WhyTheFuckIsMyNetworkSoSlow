@@ -46,10 +46,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_ {
      *  \note   \em Thread-Safety   <a href="Thread-Safety.md#C++-Standard-Thread-Safety">C++-Standard-Thread-Safety</a>
      */
     struct RolledUpNetworkInterfaces {
-    private:
-        RolledUpNetworkInterfaces (const Iterable<Device>& devices, const Iterable<NetworkInterface>& nets2MergeIn);
-
     public:
+        RolledUpNetworkInterfaces (const Iterable<Device>& devices, const Iterable<NetworkInterface>& nets2MergeIn);
         RolledUpNetworkInterfaces (const RolledUpNetworkInterfaces&)            = default;
         RolledUpNetworkInterfaces (RolledUpNetworkInterfaces&&)                 = default;
         RolledUpNetworkInterfaces& operator= (RolledUpNetworkInterfaces&&)      = default;

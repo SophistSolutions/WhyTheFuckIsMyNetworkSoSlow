@@ -3,6 +3,13 @@ factorign Integrated Model code
 THEN - fixup logic to not create empty rules (or to clean those up after).
 Maybe auto-[iurge and maybe auto rollup logic]
 
+
+
+----
+	> Replace NetworkAttachmentInfo in device with just NetworkID (so list). Simpler
+	  and cleaner and wroks better with new caching logic. PLUS then fix the PruneBadNetworks_ to 
+	  check the device referenced ones (not sure can happen so probably no biggie there)
+
 ---
 
 CLEANUP race in 

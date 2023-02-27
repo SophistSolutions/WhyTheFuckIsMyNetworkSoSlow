@@ -70,6 +70,10 @@ namespace {
     struct MyDBAccessRep_ : IntegratedModel::Private_::DBAccess::Mgr {
         using inherited = IntegratedModel::Private_::DBAccess::Mgr;
         atomic<bool> fFinishedInitialDBLoad_{false};
+        MyDBAccessRep_ ()
+        {
+            _StartBackgroundThread ();
+        }
         virtual void CheckDatabaseLoadCompleted () override
         {
             if (not fFinishedInitialDBLoad_) {
@@ -83,22 +87,65 @@ namespace {
         }
         virtual void _OneTimeStartupLoadDB () override
         {
+            Debug::TraceContextBumper ctx{L"MyDBAccessRep_::_OneTimeStartupLoadDB"};
             inherited::_OneTimeStartupLoadDB ();
             Logger::sThe.Log (Logger::eInfo, L"Loaded %d network interface snapshots, %d network snapshots and %d device snapshots from databas",
                               GetRawNetworkInterfaces ().size (), GetRawNetworks ().size (), GetRawDevices ().size ());
-
             // @todo post-procesing, maybe deleting some user settings
-
-            // Later, this will be much more rich (rollup and store rollups) - but for now just look for
-            // empty network objects created by pointless UserOverride records...
-            //Mapping<GUID, Network::UserOverridesType> netUserSettings = fCachedNetworkUserSettings_.load ();
-
-            Mapping<GUID, Network::UserOverridesType> netUserSettings = GetNetworkUserSettings ();
-
+            PruneBadNetworks_ ();
+            Logger::sThe.Log (Logger::eInfo, L"Successully post-processed database");
             fFinishedInitialDBLoad_ = true;
         }
-
-        inline bool GetFinishedInitialDBLoad () const
+        void PruneBadNetworks_ ()
+        {
+            Debug::TraceContextBumper ctx{L"MyDBAccessRep_::PruneBadNetworks_"};
+            using namespace IntegratedModel::Private_;
+            try {
+                Mapping<GUID, Network::UserOverridesType> netUserSettings = GetNetworkUserSettings ();
+                RolledUpNetworkInterfaces                 tmpNetInterfacerollups{this->GetRawDevices (), this->GetRawNetworkInterfaces ()};
+                RolledUpNetworks                          tmpNetworkRollup{this, this->GetRawNetworks (), netUserSettings, tmpNetInterfacerollups};
+                auto                                      isBad = [&] (const KeyValuePair<GUID, Network::UserOverridesType> kvp) {
+                    // @todo check for bad and remove
+                    // See if it has BOTH zero concrete networks inside, and is not referenced by any devices
+                    try {
+                        Network nw = Memory::ValueOf (tmpNetworkRollup.GetNetworks ().Lookup (kvp.fKey));
+                        size_t  aggCnt{};
+                        if (nw.fAggregatesIrreversibly) {
+                            aggCnt += nw.fAggregatesIrreversibly->size ();
+                        }
+                        if (nw.fAggregatesReversibly) {
+                            aggCnt += nw.fAggregatesReversibly->size ();
+                        }
+                        if (aggCnt == 0) {
+                            // Not sure if this is ever legit
+                            DbgTrace (L"Found net to remove: %s", Characters::ToString (kvp.fKey).c_str ());
+                            return true;
+                        }
+                        return false;
+                    }
+                    catch (...) {
+                        AssertNotReached ();
+                        return true;
+                    }
+                };
+                Set<GUID> toRemove;
+                for (auto i : netUserSettings) {
+                    if (isBad (i)) {
+                        toRemove += i.fKey;
+                    }
+                }
+                if (not toRemove.empty ()) {
+                    Logger::sThe.Log (Logger::eWarning, L"Networks marked for purge: %s", Characters::ToString (toRemove).c_str ());
+                    for (auto i : toRemove) {
+                        this->SetNetworkUserSettings (i, nullopt);
+                    }
+                }
+            }
+            catch (...) {
+                AssertNotReached (); // would be bad...
+            }
+        }
+        bool GetFinishedInitialDBLoad () const
         {
             return fFinishedInitialDBLoad_;
         }

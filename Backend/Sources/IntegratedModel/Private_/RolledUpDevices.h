@@ -43,11 +43,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_ {
      *  \note   \em Thread-Safety   <a href="Thread-Safety.md#C++-Standard-Thread-Safety">C++-Standard-Thread-Safety</a>
      */
     struct RolledUpDevices {
-    private:
+    public:
         RolledUpDevices (DBAccess::Mgr* dbAccessMgr, const Iterable<Device>& devices2MergeIn, const Mapping<GUID, Device::UserOverridesType>& userOverrides,
                          const RolledUpNetworks& useRolledUpNetworks, const RolledUpNetworkInterfaces& useNetworkInterfaceRollups);
-
-    public:
         RolledUpDevices (const RolledUpDevices&)            = default;
         RolledUpDevices (RolledUpDevices&&)                 = default;
         RolledUpDevices& operator= (const RolledUpDevices&) = default;

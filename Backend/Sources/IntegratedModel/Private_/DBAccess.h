@@ -169,6 +169,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_::DB
         // NOTE: These are all non-rolled up objects
         Synchronized<Mapping<String, GUID>> fAdvisoryHWAddr2GUIDCache_;
 
+    protected:
+        void _StartBackgroundThread ();
+
     private:
         void BackgroundDatabaseThread_ ();
 
