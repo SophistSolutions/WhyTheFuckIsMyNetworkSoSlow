@@ -80,12 +80,15 @@ WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB::DB (Version targetDBVersion
 
 SQL::Connection::Ptr WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB::NewConnection ()
 {
-    auto dbPath = pFileName ();
+    // Logically I THINK (from docs) - should use eMultiThread but experiemnt with eSerialized to see if fixes sporadic failures (mostly on unix)- but maybe just now saw on windows - flying...--LGP 2023-03-92
+    //constexpr auto kThreadModel_ = Options::ThreadingMode::eMultiThread;
+    constexpr auto kThreadModel_ = Options::ThreadingMode::eSerialized;
+    auto           dbPath        = pFileName ();
     filesystem::create_directories (dbPath.parent_path ());
 #if __cpp_designated_initializers
-    auto options = Options{.fDBPath = dbPath, .fThreadingMode = Options::ThreadingMode::eMultiThread};
+    auto options = Options{.fDBPath = dbPath, .fThreadingMode = kThreadModel_};
 #else
-    auto options = Options{dbPath, true, nullopt, nullopt, Options::ThreadingMode::eMultiThread};
+    auto options = Options{dbPath, true, nullopt, nullopt, kThreadModel_};
 #endif
 
     /*
