@@ -1,38 +1,20 @@
-HTML UI:
-	- when I run underr debugger, get alot of noise from view aboud fails/crashes/bad ids etc. Debug that - and reduce the noise	
-	  at least (seems to work but noise confusing/disconcernting.)
 
 
----
-
-factorign Integrated Model code
-THEN - fixup logic to not create empty rules (or to clean those up after).
-Maybe auto-[iurge and maybe auto rollup logic]
-
+https://www.npmjs.com/package/assert-plus
 
 
 ----
 SQLITE_OPEN_NOMUTEX
 	Verufy this is the rgith mode and we handle it correctly
 	DESPITE DOCS - MABE BETTER TO USE FULL_MUTEX
+	(changed/testing as of 2022-03-02)
 
 ----
-	> Replace NetworkAttachmentInfo in device with just NetworkID (so list). Simpler
+	> @todo Replace NetworkAttachmentInfo in device with just NetworkID (so list). Simpler
 	  and cleaner and wroks better with new caching logic. PLUS then fix the PruneBadNetworks_ to 
 	  check the device referenced ones (not sure can happen so probably no biggie there)
 
 ---
-
-CLEANUP race in 
-async fetchAvailableNetworks() {
-      const networkIDs = await fetchNetworks();
-      // for now, fetch network before adding to rolledUpAvailableNetworkIDs, but really should
-      // do other way and make calling code more OK with when details still null
-      // if you reorder with teh code as is (--LGP 2022-12-13) - get sporadic failures running hitting nulls
-      // as stuff loads
-      networkIDs.forEach(async (i:string) => await this.fetchNetwork(i));
-      networkIDs.forEach (async (i:string)  => this.rolledUpAvailableNetworkIDs.add (i))
-    },
 
 ---
 http://hercules/#/device/9d9f8193-4373-8252-7d15-6dfe47bad765

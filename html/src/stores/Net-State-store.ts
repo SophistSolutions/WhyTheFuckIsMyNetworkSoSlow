@@ -58,7 +58,7 @@ export const useNetStateStore = defineStore('Net-State-Store', {
       return state.loadingActiveDevices;
     },
     getAvailableNetworks: (state) => {
-      return [...state.rolledUpAvailableNetworkIDs].map((ni) => state.networkDetails[ni]);
+      return [...state.rolledUpAvailableNetworkIDs].flatMap((ni) => state.networkDetails[ni]?[state.networkDetails[ni]]:[] );
     },
     getNetwork: (state) => {
       return (id: string) => state.networkDetails[id];
@@ -77,10 +77,7 @@ export const useNetStateStore = defineStore('Net-State-Store', {
           }, {});
     },
     getDevices: (state) => {
-      return [...state.rolledUpDeviceIDs].map((di) => state.deviceDetails[di]);
-    },
-    getNonNullDevices: (state) => {
-      return [...state.rolledUpDeviceIDs].map((di) => state.deviceDetails[di]).filter((di) => di != null);
+      return [...state.rolledUpDeviceIDs].flatMap((di) => state.deviceDetails[di]?[state.deviceDetails[di]]:[]);
     },
     getDevice: (state) => {
       return (id: string) => state.deviceDetails[id];

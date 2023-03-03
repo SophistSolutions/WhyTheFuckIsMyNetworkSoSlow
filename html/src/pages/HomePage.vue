@@ -111,7 +111,7 @@ let shownNetworksAsDisplayed: ComputedRef<IDisplayedNetwork[]> = computed(() => 
   return result;
 });
 
-let allDevices: ComputedRef<IDevice[]> = computed(() => store.getNonNullDevices);
+let allDevices: ComputedRef<IDevice[]> = computed(() => store.getDevices);
 </script>
 
 <template>
