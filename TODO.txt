@@ -1,3 +1,9 @@
+HTML UI:
+	- when I run underr debugger, get alot of noise from view aboud fails/crashes/bad ids etc. Debug that - and reduce the noise	
+	  at least (seems to work but noise confusing/disconcernting.)
+
+
+---
 
 factorign Integrated Model code
 THEN - fixup logic to not create empty rules (or to clean those up after).
