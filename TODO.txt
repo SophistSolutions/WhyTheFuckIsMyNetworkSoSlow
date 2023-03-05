@@ -2,6 +2,20 @@
 
 https://www.npmjs.com/package/assert-plus
 
+---
+rename network and rename device ui
+	- first / for now - just allow in Netwwork/ID field
+	  for 'name' feild. Make it an edit box (maybe icon so melts to editable?)
+
+
+	  -- got basic ui working but need to do watchiner
+
+	  SEARCH CODE HAS GOOD EXAMPLE OF WATCHER.
+
+	  define props userOverride properties, and emit when chnagnes - watch text field and then update override object
+	  and watch prop in networ PAGE and do ws call.
+
+	
 
 ----
 SQLITE_OPEN_NOMUTEX
@@ -16,7 +30,6 @@ SQLITE_OPEN_NOMUTEX
 
 ---
 
----
 http://hercules/#/device/9d9f8193-4373-8252-7d15-6dfe47bad765
 	is MISSING ICON FOR ROUTER!!! - confusing
 

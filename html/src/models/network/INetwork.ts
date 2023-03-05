@@ -6,8 +6,8 @@ import { IDateTimeRange } from '../common/IDateTimeRange';
 
 
 
-
-export interface IDevice_UserOverridesType {
+// @todo PROBABLY WRONG - MUST REVSIIT
+export interface INetwork_UserOverridesType {
   name?: string;
   tags?: string[];
   notes?: string;

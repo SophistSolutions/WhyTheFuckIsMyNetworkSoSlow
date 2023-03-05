@@ -4,12 +4,18 @@ import {
   onUnmounted,
   computed,
   ComputedRef,
-} from 'vue';
+  ref,
+  Ref,
+  ToRef,
+  toRef,
+  watch,
+  watchEffect,
+} from "vue";
 
-import JsonViewer from 'vue-json-viewer';
-import moment from 'moment';
+import JsonViewer from "vue-json-viewer";
+import moment from "moment";
 
-import { IDevice } from '../models/device/IDevice';
+import { IDevice } from "../models/device/IDevice";
 
 import {
   FormatLocation,
@@ -17,19 +23,21 @@ import {
   GetDevicesForNetworkLink,
   GetNetworkCIDRs,
   FormatIDateTimeRange,
-} from '../models/network/Utils';
+} from "../models/network/Utils";
 
-import { PluralizeNoun } from 'src/utils/Linguistics';
+import { PluralizeNoun } from "src/utils/Linguistics";
 
 // Components
-import ReadOnlyTextWithHover from '../components/ReadOnlyTextWithHover.vue';
-import Link2DetailsPage from '../components/Link2DetailsPage.vue';
-import NetworkInterfacesDetails from '../components/NetworkInterfacesDetails.vue';
+import ReadOnlyTextWithHover from "../components/ReadOnlyTextWithHover.vue";
+import Link2DetailsPage from "../components/Link2DetailsPage.vue";
+import NetworkInterfacesDetails from "../components/NetworkInterfacesDetails.vue";
 
-import { useNetStateStore } from '../stores/Net-State-store';
-import { INetwork } from 'src/models/network/INetwork';
+import { useNetStateStore } from "../stores/Net-State-store";
+import { INetwork } from "src/models/network/INetwork";
 
 const store = useNetStateStore();
+
+let networkName = ref("");
 
 const props = defineProps({
   // Allow specify EITHER network or networkId, but not both, and not neither
@@ -37,7 +45,10 @@ const props = defineProps({
   networkId: { type: String, required: false },
   includeLinkToDetailsPage: { type: Boolean, required: false, default: false },
   showExtraDetails: { type: Boolean, required: false, default: false },
+  alllowEdit: { type: Boolean, required: false, default: false },
 });
+
+const emit = defineEmits(["update:userOverrides"]);
 
 let polling: undefined | NodeJS.Timeout;
 
@@ -48,8 +59,22 @@ let currentNetwork = computed<INetwork | undefined>(
   () => (props.network as INetwork) || store.getNetwork(props.networkId)
 );
 
+watchEffect(
+  () => {
+    if (currentNetwork.value?.userOverrides?.name) {
+      networkName.value = currentNetwork.value.userOverrides.name;
+    }
+    else if (currentNetwork.value?.names && currentNetwork.value.names.length > 0 && currentNetwork.value?.names[0].name) {
+      networkName.value = currentNetwork.value.names[0].name;
+    }
+    else {
+      networkName.value = "";
+    }
+  }
+);
+
 function doFetches() {
-  if (props.network === undefined) {
+  if (props.network === undefined && props.networkId) {
     store.fetchNetworks([props.networkId]);
   }
   store.fetchActiveDevices();
@@ -95,35 +120,43 @@ function SortNetworkIDsByMostRecentFirst_(ids: Array<string>): Array<string> {
 }
 
 function GetSubNetworkDisplay_(id: string, summaryOnly: boolean): string {
-  return FormatIDateTimeRange (store.getNetwork(id)?.seen, summaryOnly) ?? id;
+  return FormatIDateTimeRange(store.getNetwork(id)?.seen, summaryOnly) ?? id;
 }
 
-const aliases = computed<string[]|undefined>(
-  () => {
-    return currentNetwork.value?.names?.map(m => m.name).slice(1);
-  }
-)
+const aliases = computed<string[] | undefined>(() => {
+  return currentNetwork.value?.names?.map((m) => m.name).slice(1);
+});
 </script>
 
 <template>
   <div v-if="currentNetwork" class="q-pa-sm">
     <Link2DetailsPage :link="'/#/network/' + currentNetwork.id" v-if="props.includeLinkToDetailsPage"
       style="padding-top: 5px; float: right" />
-
     <div class="row">
       <div class="col-3">Name</div>
       <div class="col">
-        {{
-            currentNetwork.names.length > 0 ? currentNetwork.names[0].name : ''
-        }}
+        <span>{{ currentNetwork.names.length > 0 ? currentNetwork.names[0].name : "" }}</span>
+        <q-icon dense dark size="xs" name="edit" v-if="props.alllowEdit" />
+        <q-popup-edit v-if="props.alllowEdit" v-model="networkName" v-slot="scope">
+          <q-input autofocus dense v-model="scope.value" :model-value="scope.value" hint="Edit Network Name" :rules="[
+            val => scope.validate(val) || 'More than 5 chars required'
+          ]">
+            <template v-slot:after>
+              <q-btn flat dense color="negative" icon="cancel" @click.stop.prevent="scope.cancel" title="Make no changes" />
+              <q-btn flat dense color="positive" icon="check_circle" @click.stop.prevent="scope.set"
+                :disable="scope.validate(scope.value) === false || scope.initialValue === scope.value" />
+                <q-btn flat dense color="black" icon="check_circle" title="Use Default" />
+            </template>
+          </q-input>
+        </q-popup-edit>
       </div>
     </div>
     <div class="row" v-if="aliases && aliases.length > 1">
       <div class="col-3">
-        {{PluralizeNoun( 'Alias',  aliases.length ) }}
+        {{ PluralizeNoun("Alias", aliases.length) }}
       </div>
       <div class="col">
-        {{ aliases .join(', ') }}
+        {{ aliases.join(", ") }}
       </div>
     </div>
     <div class="row">
@@ -136,19 +169,19 @@ const aliases = computed<string[]|undefined>(
     <div class="row" v-if="currentNetwork.seen">
       <div class="col-3">Seen</div>
       <div class="col">
-      {{FormatIDateTimeRange(currentNetwork.seen)}}
+        {{ FormatIDateTimeRange(currentNetwork.seen) }}
       </div>
     </div>
     <div class="row">
       <div class="col-3">
-        {{ PluralizeNoun('CIDR', currentNetwork.networkAddresses.length) }}
+        {{ PluralizeNoun("CIDR", currentNetwork.networkAddresses.length) }}
       </div>
       <div class="col">{{ GetNetworkCIDRs(currentNetwork) }}</div>
     </div>
     <div class="row" v-if="currentNetwork.geographicLocation">
       <div class="col-3">Geographic Location</div>
       <div class="col">
-        {{ FormatLocation(currentNetwork.geographicLocation) ?? '?' }}
+        {{ FormatLocation(currentNetwork.geographicLocation) ?? "?" }}
       </div>
     </div>
     <div class="row" v-if="currentNetwork.internetServiceProvider">
@@ -158,27 +191,24 @@ const aliases = computed<string[]|undefined>(
     <div class="row" v-if="currentNetwork.historicalSnapshot != true">
       <div class="col-3">
         {{
-            PluralizeNoun(
-              'Device',
-              GetDeviceIDsInNetwork(currentNetwork, allDevices).length
-            )
+          PluralizeNoun(
+            "Device",
+            GetDeviceIDsInNetwork(currentNetwork, allDevices).length
+          )
         }}
       </div>
       <div class="col">
         <a :href="GetDevicesForNetworkLink(currentNetwork.id)">{{
-            GetDeviceIDsInNetwork(currentNetwork, allDevices).length
+          GetDeviceIDsInNetwork(currentNetwork, allDevices).length
         }}</a>
       </div>
     </div>
-    <div class="row" v-if="
-      currentNetwork.externalAddresses &&
-      currentNetwork.externalAddresses.length
-    ">
+    <div class="row" v-if="currentNetwork.externalAddresses && currentNetwork.externalAddresses.length">
       <div class="col-3">
         External IP
-        {{ PluralizeNoun('Address', currentNetwork.externalAddresses.length) }}
+        {{ PluralizeNoun("Address", currentNetwork.externalAddresses.length) }}
       </div>
-      <div class="col">{{ currentNetwork.externalAddresses.join(', ') }}</div>
+      <div class="col">{{ currentNetwork.externalAddresses.join(", ") }}</div>
     </div>
     <div class="row" v-if="
       (currentNetwork.gateways && currentNetwork.gateways.length) ||
@@ -188,29 +218,31 @@ const aliases = computed<string[]|undefined>(
       <div class="col-3">
         Gateway (IP/Hardware)
         {{
-            PluralizeNoun(
-              'Address',
-              Math.max(
-                currentNetwork.gateways?.length,
-                currentNetwork.gatewayHardwareAddresses?.length
-              )
+          PluralizeNoun(
+            "Address",
+            Math.max(
+              currentNetwork.gateways?.length,
+              currentNetwork.gatewayHardwareAddresses?.length
             )
+          )
         }}
       </div>
       <div class="col">
-        {{ currentNetwork.gateways?.join(', ') }} /
-        {{ currentNetwork.gatewayHardwareAddresses?.join(', ') }}
+        {{ currentNetwork.gateways?.join(", ") }} /
+        {{ currentNetwork.gatewayHardwareAddresses?.join(", ") }}
       </div>
     </div>
     <div class="row" v-if="currentNetwork.DNSServers && currentNetwork.DNSServers.length">
       <div class="col-3">
-        {{ PluralizeNoun('DNS Server', currentNetwork.DNSServers.length) }}
+        {{ PluralizeNoun("DNS Server", currentNetwork.DNSServers.length) }}
       </div>
-      <div class="col">{{ currentNetwork.DNSServers.join(', ') }}</div>
+      <div class="col">{{ currentNetwork.DNSServers.join(", ") }}</div>
     </div>
     <div class="row" v-if="
-    (currentNetwork.aggregatesReversibly &&  currentNetwork.aggregatesReversibly.length) ||
-    (currentNetwork.aggregatesIrreversibly &&  currentNetwork.aggregatesIrreversibly.length) 
+      (currentNetwork.aggregatesReversibly &&
+        currentNetwork.aggregatesReversibly.length) ||
+      (currentNetwork.aggregatesIrreversibly &&
+        currentNetwork.aggregatesIrreversibly.length)
     ">
       <div class="col-3">Aggregates</div>
       <div class="col">
@@ -236,9 +268,7 @@ const aliases = computed<string[]|undefined>(
     <div class="row" v-if="currentNetwork.attachedInterfaces && props.showExtraDetails">
       <div class="col-3">
         Attached Network
-        {{
-            PluralizeNoun('Interface', currentNetwork.attachedInterfaces.length)
-        }}
+        {{ PluralizeNoun("Interface", currentNetwork.attachedInterfaces.length) }}
       </div>
       <div class="col">
         <NetworkInterfacesDetails :network-interface-ids="currentNetwork.attachedInterfaces" />

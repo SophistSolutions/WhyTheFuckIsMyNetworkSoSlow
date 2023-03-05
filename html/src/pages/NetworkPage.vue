@@ -71,7 +71,7 @@ watch(
         Network {{ network == null ? "loading..." : '"' + GetNetworkName(network) + '"' }}
       </q-card-section>
       <q-card-section style="margin-top: 0">
-        <NetworkDetails :network="network" v-if="network" :showExtraDetails="true" />
+        <NetworkDetails :network="network" v-if="network" :showExtraDetails="true" :alllowEdit="true" />
       </q-card-section>
     </q-card>
   </q-page>

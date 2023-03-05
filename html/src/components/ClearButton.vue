@@ -8,7 +8,7 @@ const onClick = () => {
 
 <template>
   <q-btn fab-mini dense dark size="sm" @click="onClick">
-    <q-icon dense dark size="sm" name="mdi-close" />
+    <q-icon dense dark size="xs" name="close" />
   </q-btn>
 </template>
 
