@@ -1,6 +1,15 @@
+----
+SQLITE_OPEN_NOMUTEX (PRIORITY _ TRY NEXT)
+	Verufy this is the rgith mode and we handle it correctly
+	DESPITE DOCS - MABE BETTER TO USE FULL_MUTEX
+	(changed/testing as of 2022-03-02)
 
+	DIDNT SEEM TO help : as of 2023-03-09 at home:
+Mar 09 10:13:20 Hercules WhyTheFuckIsMyNetworkSoSlow[1933441]: Database operation exception: Exception: Device or resource busy (lastsql 'INSERT INTO DeviceUserSettings (DeviceID, _other_fields_) VALUES ('57d641a7-2976-bae4-f50c-0c2b04f9…')
+Mar 09 10:13:50 Hercules WhyTheFuckIsMyNetworkSoSlow[1933441]: Database operation exception: Exception: Device or resource busy (lastsql 'INSERT INTO DeviceUserSettings (DeviceID, _other_fields_) VALUES ('918dc28c-e3eb-bd54-ea19-379a01bb…')
+Mar 09 10:14:20 Hercules WhyTheFuckIsMyNetworkSoSlow[1933441]: Database operation exception: Exception: Device or resource busy (lastsql 'INSERT INTO DeviceUserSettings (DeviceID, _other_fields_) VALUES ('e66b958f-076d-15de-0baa-6560
 
-https://www.npmjs.com/package/assert-plus
+	So must try something else - maybe as a test - do my own mutex around this stuff and see if works stably with that (just as a test).
 
 ---
 rename network and rename device ui
@@ -15,13 +24,10 @@ rename network and rename device ui
 	  define props userOverride properties, and emit when chnagnes - watch text field and then update override object
 	  and watch prop in networ PAGE and do ws call.
 
-	
 
-----
-SQLITE_OPEN_NOMUTEX
-	Verufy this is the rgith mode and we handle it correctly
-	DESPITE DOCS - MABE BETTER TO USE FULL_MUTEX
-	(changed/testing as of 2022-03-02)
+-
+
+https://www.npmjs.com/package/assert-plus
 
 ----
 	> @todo Replace NetworkAttachmentInfo in device with just NetworkID (so list). Simpler
