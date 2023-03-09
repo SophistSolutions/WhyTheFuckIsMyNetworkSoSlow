@@ -5,9 +5,7 @@ import {
   computed,
   ComputedRef,
   ref,
-  Ref,
-  ToRef,
-  toRef,
+  reactive,
   watch,
   watchEffect,
 } from "vue";
@@ -34,10 +32,9 @@ import NetworkInterfacesDetails from "../components/NetworkInterfacesDetails.vue
 
 import { useNetStateStore } from "../stores/Net-State-store";
 import { INetwork } from "src/models/network/INetwork";
+import { validate } from "json-schema";
 
 const store = useNetStateStore();
-
-let networkName = ref("");
 
 const props = defineProps({
   // Allow specify EITHER network or networkId, but not both, and not neither
@@ -45,7 +42,7 @@ const props = defineProps({
   networkId: { type: String, required: false },
   includeLinkToDetailsPage: { type: Boolean, required: false, default: false },
   showExtraDetails: { type: Boolean, required: false, default: false },
-  alllowEdit: { type: Boolean, required: false, default: false },
+  allowEdit: { type: Boolean, required: false, default: false },
 });
 
 const emit = defineEmits(["update:userOverrides"]);
@@ -59,19 +56,47 @@ let currentNetwork = computed<INetwork | undefined>(
   () => (props.network as INetwork) || store.getNetwork(props.networkId)
 );
 
+
+let userSettingsNetworkName: {
+  // This is the value - if newSetValue===null, that will be used; this is just used for display so no need to set to null sometimes
+  default: string,
+  // cache/copy of currentNetwork.value?.userOverrides?.name
+  lastReadUserValue: string | undefined,
+  // if newSetUserValue undefined, it hasn't been set by user yet. If ===  null, means CLEARED TO DEFAULT
+  newSetUserValue: string | undefined | null
+  // Like newSetUserValue, but live updated and not pushed to actual value until right time
+  newUserSetValueUI: string | undefined | null
+} = reactive({ default: "", lastReadUserValue: undefined, newSetUserValue: undefined });
+
+// Pointer to DOM field, to use internally in selectall UI flourish
+let userSettingsNetworkNameField = ref(null)
+
+
 watchEffect(
   () => {
-    if (currentNetwork.value?.userOverrides?.name) {
-      networkName.value = currentNetwork.value.userOverrides.name;
+    userSettingsNetworkName.lastReadUserValue = currentNetwork.value?.userOverrides?.name;
+    // Now set default to be (sb) - what you get if there is no userOverride.name, either the first or second item in list
+    if (currentNetwork.value?.userOverrides?.name && currentNetwork.value?.names?.length > 1) {
+      userSettingsNetworkName.default = currentNetwork.value.names[1].name;
     }
-    else if (currentNetwork.value?.names && currentNetwork.value.names.length > 0 && currentNetwork.value?.names[0].name) {
-      networkName.value = currentNetwork.value.names[0].name;
+    else if (currentNetwork.value?.names?.length && currentNetwork.value?.names?.length > 0) {
+      userSettingsNetworkName.default = currentNetwork.value.names[0].name;
     }
     else {
-      networkName.value = "";
+      userSettingsNetworkName.default = "";
     }
   }
 );
+
+watch(
+  userSettingsNetworkName,
+  () => {
+    // For now to debug, but soon to emit event to parent
+    // emit userOverrides event - already published event
+    console.log(`userSettingsNetworkName.newSetUserValue=${userSettingsNetworkName.newSetUserValue}`)
+  }
+);
+
 
 function doFetches() {
   if (props.network === undefined && props.networkId) {
@@ -102,6 +127,38 @@ onMounted(() => {
 onUnmounted(() => {
   clearInterval(polling);
 });
+
+function editNetworkBeforeShow(e: any): void {
+  // @todo FIX = this sets RIGHT VALUE TO RIGHT PLACE, but apparently TOO LATE, so must do earlier
+  // or set something else???
+  // to  reproduce PROBLEM WITH THIS CODE - - click edit name, and first time it shows wrong name
+  // and second time shows right name
+  if (userSettingsNetworkName.newSetUserValue === undefined) {  // never set
+    userSettingsNetworkName.newUserSetValueUI = userSettingsNetworkName.lastReadUserValue;
+    console.log('in editBEFORESHOW1  set NEWFLDFVAL=', userSettingsNetworkName.newSetUserValue)
+  }
+  else {
+    userSettingsNetworkName.newUserSetValueUI = userSettingsNetworkName.newSetUserValue;  // last value ACTUALLY set (not canceled)
+    console.log('in editBEFORESHOW2  set NEWFLDFVAL=', userSettingsNetworkName.newSetUserValue)
+  }
+}
+
+function validateNetworkName(v: any) {
+  // console.log('enter validateNetworkName v=', v?.value)
+  // @todo test/fix this validation code - not validating yet (cuz too much else to debug first)
+  return true;
+  if (v && v.value && v.value.length > 1) {
+    return true;
+
+  }
+  return false;
+  return v.length >= 1
+}
+
+function updateNetworkName(event: any, scope: any) {
+  // console.log('Enter updateNetworkName userSettingsNetworkNameField=', userSettingsNetworkNameField?.value)
+  scope.set();
+}
 
 function SortNetworkIDsByMostRecentFirst_(ids: Array<string>): Array<string> {
   let r: Array<string> = ids.filter((x) => true);
@@ -136,16 +193,22 @@ const aliases = computed<string[] | undefined>(() => {
       <div class="col-3">Name</div>
       <div class="col">
         <span>{{ currentNetwork.names.length > 0 ? currentNetwork.names[0].name : "" }}</span>
-        <q-icon dense dark size="xs" name="edit" v-if="props.alllowEdit" />
-        <q-popup-edit v-if="props.alllowEdit" v-model="networkName" v-slot="scope">
-          <q-input autofocus dense v-model="scope.value" :model-value="scope.value" hint="Edit Network Name" :rules="[
-            val => scope.validate(val) || 'More than 5 chars required'
-          ]">
+        <q-icon dense dark size="xs" name="edit" v-if="props.allowEdit" />
+        <q-popup-edit v-if="props.allowEdit" v-model="userSettingsNetworkName.newUserSetValueUI" v-slot="scope"
+          @hide="validateNetworkName" :validate="validateNetworkName" @before-show="editNetworkBeforeShow">
+          <q-input ref="userSettingsNetworkNameField" autofocus dense v-model="scope.value"
+            :hint="`Use Network Name (default: ${userSettingsNetworkName.default})`"
+            :placeholder="userSettingsNetworkName.default" :rules="[
+              val => scope.validate(val) || 'More than 1 chars required'
+            ]" @focus="this.$refs?.userSettingsNetworkNameField.select()">
             <template v-slot:after>
-              <q-btn flat dense color="negative" icon="cancel" @click.stop.prevent="scope.cancel" title="Make no changes" />
-              <q-btn flat dense color="positive" icon="check_circle" @click.stop.prevent="scope.set"
-                :disable="scope.validate(scope.value) === false || scope.initialValue === scope.value" />
-                <q-btn flat dense color="black" icon="check_circle" title="Use Default" />
+              <q-btn flat dense color="black" icon="cancel" @click.stop.prevent="scope.cancel" title="Make no changes" />
+              <q-btn flat dense color="positive" icon="check_circle"
+                @click.stop.prevent="updateNetworkName($event, scope)"
+                :disable="scope.validate(scope.value) === false || scope.initialValue === scope.value"
+                title="Use this as Network Name" />
+              <q-btn flat dense color="negative" icon="delete" title="Clear override: use default"
+                @click.stop.prevent="{ scope.value = null; scope.set(); }" :disable="scope.value == null" />
             </template>
           </q-input>
         </q-popup-edit>
