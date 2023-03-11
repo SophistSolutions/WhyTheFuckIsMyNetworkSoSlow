@@ -29,10 +29,10 @@ function throwIfError_(response: Response): Response {
     throw new Error('Client Request Error from the Server');
   }
   if (response.status >= 500 && response.status < 600) {
-    throw new Error('Server Error');
+    throw new Error(`Server Error ${response.status}`);
   }
   if (!response.ok) {
-    throw new Error('Server Error(nonstandard)');
+    throw new Error(`Server Error status: ${response.status}, type:${response.type}`);
   }
   return response;
 }
@@ -187,6 +187,38 @@ export async function rescanDevice(deviceID: string): Promise<void> {
     throw e;
   }
 }
+
+async function patchCallHelper_(url: string, ops: object[]): Promise<void>
+{
+  try {
+    const response: Response = await fetch(
+      url,
+      {...kFetchOptions_,
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(ops),
+      }
+    );
+    throwIfError_(response);
+  } catch (e) {
+    Logger.error(e);
+    throw e;
+  }
+}
+
+export async function patchNetworkUserProps_name(id: string, newName: string|null): Promise<void> {
+  const ops=[];
+  if (newName) {
+    ops.push ({op: 'add', path:"/userOverrides/name",value:newName});
+  }
+  else {
+    ops.push ({op: 'remove', path:"/userOverrides/name"});
+  }
+  return await patchCallHelper_(`${gRuntimeConfiguration.API_ROOT}/api/v1/networks/${id}`, ops);
+}
+
 
 export async function fetchDevices(
   searchCriteria?: ISortBy
