@@ -206,7 +206,8 @@ const aliases = computed<string[] | undefined>(() => {
         <q-icon dense dark size="xs" name="edit" v-if="props.allowEdit" />
         <PopupEditTextField v-if="props.allowEdit" :defaultValue="userSettingsNetworkName.default"
           :initialValue="userSettingsNetworkName.lastReadUserValue" @update:userSetValue="newNotifyChange"
-          :validator="validateNetworkName" />
+          :validator="validateNetworkName" validateFailedMsg="More than 1 chars required"
+          thingBeingEdited="Network Name" />
       </div>
     </div>
     <div class="row" v-if="aliases && aliases.length > 1">

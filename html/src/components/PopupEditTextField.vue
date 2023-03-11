@@ -11,7 +11,10 @@ const props = defineProps({
   defaultValue: { type: String, required: true },
   // This is the value of the field being edited. If null, means using default value, and if not-null, must be valid string
   initialValue: { type: String, required: false },
-  validator: { type: Function, required: false }
+  // Valled before allowing 'userSetValue' event
+  validator: { type: Function, required: false },
+  validateFailedMsg: { type: String, required: false },
+  thingBeingEdited: { type: String, required: true },
 })
 
 const emit = defineEmits(['update:userSetValue'])
@@ -21,7 +24,7 @@ const updateEditValue = (newValue: string | null) => {
   emit('update:userSetValue', newValue)
 }
 
-let userSettingsNetworkName: {
+let reactiveData: {
   defaultValue: string,
   initialValue: string | undefined,
   // if newSetUserValue undefined, it hasn't been set by user yet. If ===  null, means CLEARED TO DEFAULT
@@ -30,17 +33,15 @@ let userSettingsNetworkName: {
   newUserSetValueUI: string | undefined | null
 } = reactive({ defaultValue: props.defaultValue, initialValue: undefined, newSetUserValue: undefined, newUserSetValueUI:undefined });
 
-// Forward props changes to reactive userSettingsNetworkName we use in component
-watch(toRef(props, 'defaultValue'), () => userSettingsNetworkName.defaultValue = props.defaultValue || "");
-watch(toRef(props, 'initialValue'), () => userSettingsNetworkName.initialValue = props.initialValue || "");
-
+// Forward props changes to reactiveData we use in component
+watch(toRef(props, 'defaultValue'), () => reactiveData.defaultValue = props.defaultValue || "");
+watch(toRef(props, 'initialValue'), () => reactiveData.initialValue = props.initialValue || "");
 
 // Pointer to DOM field, to use internally in select-all UI flourish
-let userSettingsNetworkNameField = ref(null)
+let thisInputFieldName = ref(null)
 
-
-function validateNetworkName(v: any) {
-  // console.log('enter validateNetworkName v=', v, v && v.length >= 1)
+function doValidate_(v: any) {
+  // console.log('enter doValidate_ v=', v, v && v.length >= 1)
   if (props.validator) {
     return props.validator(v);
   }
@@ -49,41 +50,41 @@ function validateNetworkName(v: any) {
 
 watchEffect(
   () => {
-    if (userSettingsNetworkName.newSetUserValue === undefined) {  // never set
-      userSettingsNetworkName.newUserSetValueUI = userSettingsNetworkName.initialValue;
-      // console.log('CHANGE: since newSetUserValue=undefined, SETTING newUserSetValueUI=', userSettingsNetworkName.newUserSetValueUI)
+    if (reactiveData.newSetUserValue === undefined) {  // never set
+      reactiveData.newUserSetValueUI = reactiveData.initialValue;
+      // console.log('CHANGE: since newSetUserValue=undefined, SETTING newUserSetValueUI=', reactiveData.newUserSetValueUI)
     }
     else {
-      userSettingsNetworkName.newUserSetValueUI = userSettingsNetworkName.newSetUserValue;  // last value ACTUALLY set (not canceled)
-      // console.log('CHANGE: since newSetUserValue DEFINED, SETTING newUserSetValueUI=', userSettingsNetworkName.newUserSetValueUI)
+      reactiveData.newUserSetValueUI = reactiveData.newSetUserValue;  // last value ACTUALLY set (not canceled)
+      // console.log('CHANGE: since newSetUserValue DEFINED, SETTING newUserSetValueUI=', reactiveData.newUserSetValueUI)
     }
   }
 )
 
-function updateNetworkName(event: any, scope: any, newValue: string | null) {
-  // console.log('Enter updateNetworkName newSetUserValue BEING SET TO=', newValue)
-  userSettingsNetworkName.newSetUserValue = newValue;
+function updateValue_(event: any, scope: any, newValue: string | null) {
+  // console.log('CHANGE: updateValue newSetUserValue BEING SET TO=', newValue)
+  reactiveData.newSetUserValue = newValue;
   scope.value = newValue;
   scope.set();
 }
 </script>
 
 <template>
-  <q-popup-edit v-model="userSettingsNetworkName.newUserSetValueUI" v-slot="scope" @hide="validateNetworkName"
-    :validate="validateNetworkName" @update:modelValue="updateEditValue">
-    <q-input ref="userSettingsNetworkNameField" autofocus dense v-model="scope.value"
-      :hint="`Use Network Name (${userSettingsNetworkName.newUserSetValueUI == null ? 'using ' : ''}default: ${userSettingsNetworkName.defaultValue})`"
-      :placeholder="userSettingsNetworkName.defaultValue" :rules="[
-        val => scope.validate(val) || 'More than 1 chars required'
-      ]" @focus="this.$refs?.userSettingsNetworkNameField.select()">
+  <q-popup-edit v-model="reactiveData.newUserSetValueUI" v-slot="scope" @hide="doValidate_"
+    :validate="doValidate_" @update:modelValue="updateEditValue">
+    <q-input ref="thisInputFieldName" autofocus dense v-model="scope.value"
+      :hint="`Use ${props.thingBeingEdited} (${reactiveData.newUserSetValueUI == null ? 'using ' : ''}default: ${reactiveData.defaultValue})`"
+      :placeholder="reactiveData.defaultValue" :rules="[
+        val => scope.validate(val) || props.validateFailedMsg || 'Failed validation'
+      ]" @focus="this.$refs?.thisInputFieldName.select()">
       <template v-slot:after>
         <q-btn flat dense color="black" icon="cancel" @click.stop.prevent="scope.cancel" title="Make no changes" />
         <q-btn flat dense color="positive" icon="check_circle"
-          @click.stop.prevent="updateNetworkName($event, scope, scope.value)"
+          @click.stop.prevent="updateValue_($event, scope, scope.value)"
           :disable="scope.validate(scope.value) === false || scope.value == null"
-          title="Use this as (override) Network Name" />
+          :title="`Use this as (override) ${props.thingBeingEdited}`" />
         <q-btn flat dense color="negative" icon="delete" title="Clear override: use default"
-          @click.stop.prevent="updateNetworkName($event, scope, null)" />
+          @click.stop.prevent="updateValue_($event, scope, null)" />
       </template>
     </q-input>
   </q-popup-edit>
