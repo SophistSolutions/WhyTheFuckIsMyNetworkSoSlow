@@ -23,7 +23,10 @@ rename network and rename device ui
 
 	  define props userOverride properties, and emit when chnagnes - watch text field and then update override object
 	  and watch prop in networ PAGE and do ws call.
+...FIRST TURN INTO COMPONTENT (or maybe after I get event stuff working) - but before trying to use in second page
 
+---
+ONCE EDIT NAME IS WORKING - ADD NOTES FIELD TO DEVICE AND NETWORK AS WELL (I THINK WS there, just need GUI)
 
 -
 

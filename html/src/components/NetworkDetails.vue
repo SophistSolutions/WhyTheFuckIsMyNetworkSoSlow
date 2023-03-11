@@ -110,9 +110,10 @@ watchEffect(
   }
 )
 
-function updateNetworkName(event: any, scope: any, newValue: string|null) {
+function updateNetworkName(event: any, scope: any, newValue: string | null) {
   // console.log('Enter updateNetworkName newSetUserValue BEING SET TO=', newValue)
   userSettingsNetworkName.newSetUserValue = newValue;
+  scope.value = newValue;
   scope.set();
 }
 
@@ -148,15 +149,14 @@ onUnmounted(() => {
 
 
 function validateNetworkName(v: any) {
-  // console.log('enter validateNetworkName v=', v?.value)
-  // @todo test/fix this validation code - not validating yet (cuz too much else to debug first)
-  return true;
-  if (v && v.value && v.value.length > 1) {
-    return true;
+  console.log('enter validateNetworkName v=', v, v && v.length >= 1)
+  if (v) {
+    return v.length >= 1
+  }
+  else {
+    return v === null;
 
   }
-  return false;
-  return v.length >= 1
 }
 
 
@@ -195,20 +195,19 @@ const aliases = computed<string[] | undefined>(() => {
         <span>{{ currentNetwork.names.length > 0 ? currentNetwork.names[0].name : "" }}</span>
         <q-icon dense dark size="xs" name="edit" v-if="props.allowEdit" />
         <q-popup-edit v-if="props.allowEdit" v-model="userSettingsNetworkName.newUserSetValueUI" v-slot="scope"
-          @xxxxhide="validateNetworkName" :xxxvalidate="validateNetworkName">
+          @hide="validateNetworkName" :validate="validateNetworkName">
           <q-input ref="userSettingsNetworkNameField" autofocus dense v-model="scope.value"
-            :hint="`Use Network Name (default: ${userSettingsNetworkName.default})`"
-            :placeholder="userSettingsNetworkName.default" :xxxrules="[
+            :hint="`Use Network Name (${userSettingsNetworkName.newUserSetValueUI == null ? 'using ' : ''}default: ${userSettingsNetworkName.default})`"
+            :placeholder="userSettingsNetworkName.default" :rules="[
               val => scope.validate(val) || 'More than 1 chars required'
             ]" @focus="this.$refs?.userSettingsNetworkNameField.select()">
             <template v-slot:after>
               <q-btn flat dense color="black" icon="cancel" @click.stop.prevent="scope.cancel" title="Make no changes" />
               <q-btn flat dense color="positive" icon="check_circle"
                 @click.stop.prevent="updateNetworkName($event, scope, scope.value)"
-                :disable="scope.validate(scope.value) === false || scope.initialValue === scope.value"
-                title="Use this as Network Name" />
+                :disable="scope.validate(scope.value) === false || scope.value == null" title="Use this as (override) Network Name" />
               <q-btn flat dense color="negative" icon="delete" title="Clear override: use default"
-              @click.stop.prevent="updateNetworkName($event, scope, null)" :disable="scope.value == null" />
+                @click.stop.prevent="updateNetworkName($event, scope, null)" />
             </template>
           </q-input>
         </q-popup-edit>
