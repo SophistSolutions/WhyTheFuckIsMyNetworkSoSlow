@@ -57,66 +57,17 @@ let currentNetwork = computed<INetwork | undefined>(
   () => (props.network as INetwork) || store.getNetwork(props.networkId)
 );
 
-
-let userSettingsNetworkName: {
-  // This is the value - if newSetValue===null, that will be used; this is just used for display so no need to set to null sometimes
-  default: string,
-  // cache/copy of currentNetwork.value?.userOverrides?.name
-  lastReadUserValue: string | undefined,
-  // if newSetUserValue undefined, it hasn't been set by user yet. If ===  null, means CLEARED TO DEFAULT
-  newSetUserValue: string | undefined | null
-  // Like newSetUserValue, but live updated and not pushed to actual value until right time
-  newUserSetValueUI: string | undefined | null
-} = reactive({ default: "", lastReadUserValue: undefined, newSetUserValue: undefined });
-
-// Pointer to DOM field, to use internally in selectall UI flourish
-let userSettingsNetworkNameField = ref(null)
-
-
-watchEffect(
-  () => {
-    userSettingsNetworkName.lastReadUserValue = currentNetwork.value?.userOverrides?.name;
-    // Now set default to be (sb) - what you get if there is no userOverride.name, either the first or second item in list
+let defaultDisplayedNameForPopup_ = computed<string>(
+  () =>  {
     if (currentNetwork.value?.userOverrides?.name && currentNetwork.value?.names?.length > 1) {
-      userSettingsNetworkName.default = currentNetwork.value.names[1].name;
+      return currentNetwork.value.names[1].name;
     }
     else if (currentNetwork.value?.names?.length && currentNetwork.value?.names?.length > 0) {
-      userSettingsNetworkName.default = currentNetwork.value.names[0].name;
+      return currentNetwork.value.names[0].name;
     }
-    else {
-      userSettingsNetworkName.default = "";
-    }
-    // console.log(`CHANGE: lastReadUserValue=${userSettingsNetworkName.lastReadUserValue} and default=${userSettingsNetworkName.default}`)
+    return "";
   }
 );
-
-watchEffect(
-  () => {
-    // For now to debug, but soon to emit event to parent
-    // emit userOverrides event - already published event
-    console.log(`CHANGE: newSetUserValue=${userSettingsNetworkName.newSetUserValue}`)
-  }
-);
-
-watchEffect(
-  () => {
-    if (userSettingsNetworkName.newSetUserValue === undefined) {  // never set
-      userSettingsNetworkName.newUserSetValueUI = userSettingsNetworkName.lastReadUserValue;
-      // console.log('CHANGE: since newSetUserValue=undefined, SETTING newUserSetValueUI=', userSettingsNetworkName.newUserSetValueUI)
-    }
-    else {
-      userSettingsNetworkName.newUserSetValueUI = userSettingsNetworkName.newSetUserValue;  // last value ACTUALLY set (not canceled)
-      // console.log('CHANGE: since newSetUserValue DEFINED, SETTING newUserSetValueUI=', userSettingsNetworkName.newUserSetValueUI)
-    }
-  }
-)
-
-function updateNetworkName(event: any, scope: any, newValue: string | null) {
-  // console.log('Enter updateNetworkName newSetUserValue BEING SET TO=', newValue)
-  userSettingsNetworkName.newSetUserValue = newValue;
-  scope.value = newValue;
-  scope.set();
-}
 
 function doFetches() {
   if (props.network === undefined && props.networkId) {
@@ -148,27 +99,19 @@ onUnmounted(() => {
   clearInterval(polling);
 });
 
-
-
-function newNotifyChange(v: any) {
-  console.log('***enter newNotifyChange v=', v,)
-
-  //tmphack
-  userSettingsNetworkName.lastReadUserValue = v;  // not really a good idea - instead this must do a WS call, but we can pretend so we can do editing
-
+function notifyOfNetworkNameEdit_(v: any) {
+  console.log('***enter notifyOfNetworkNameEdit_ v=', v,)
+  // need WSAPI to update this field...
 }
 
-function validateNetworkName(v: any) {
-  console.log('enter validateNetworkName v=', v, v && v.length >= 1)
+function validateNetworkName_(v: any) {
   if (v) {
     return v.length >= 1
   }
   else {
-    return v === null;
-
+    return v === null;  // allow null - meaning set to null, but undefined just means user made no changes
   }
 }
-
 
 function SortNetworkIDsByMostRecentFirst_(ids: Array<string>): Array<string> {
   let r: Array<string> = ids.filter((x) => true);
@@ -204,9 +147,9 @@ const aliases = computed<string[] | undefined>(() => {
       <div class="col">
         <span>{{ currentNetwork.names.length > 0 ? currentNetwork.names[0].name : "" }}</span>
         <q-icon dense dark size="xs" name="edit" v-if="props.allowEdit" />
-        <PopupEditTextField v-if="props.allowEdit" :defaultValue="userSettingsNetworkName.default"
-          :initialValue="userSettingsNetworkName.lastReadUserValue" @update:userSetValue="newNotifyChange"
-          :validator="validateNetworkName" validateFailedMsg="More than 1 chars required"
+        <PopupEditTextField v-if="props.allowEdit" :defaultValue="defaultDisplayedNameForPopup_"
+          :initialValue="currentNetwork?.userOverrides?.name" @update:userSetValue="notifyOfNetworkNameEdit_"
+          :validator="validateNetworkName_" validateFailedMsg="More than 1 chars required"
           thingBeingEdited="Network Name" />
       </div>
     </div>

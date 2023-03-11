@@ -31,7 +31,7 @@ let reactiveData: {
   newSetUserValue: string | undefined | null
   // Like newSetUserValue, but live updated and not pushed to actual value until right time
   newUserSetValueUI: string | undefined | null
-} = reactive({ defaultValue: props.defaultValue, initialValue: undefined, newSetUserValue: undefined, newUserSetValueUI:undefined });
+} = reactive({ defaultValue: props.defaultValue, initialValue: props.initialValue, newSetUserValue: undefined, newUserSetValueUI:undefined });
 
 // Forward props changes to reactiveData we use in component
 watch(toRef(props, 'defaultValue'), () => reactiveData.defaultValue = props.defaultValue || "");
