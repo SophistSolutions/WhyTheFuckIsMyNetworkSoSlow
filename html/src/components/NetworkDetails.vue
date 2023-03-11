@@ -85,18 +85,36 @@ watchEffect(
     else {
       userSettingsNetworkName.default = "";
     }
+    // console.log(`CHANGE: lastReadUserValue=${userSettingsNetworkName.lastReadUserValue} and default=${userSettingsNetworkName.default}`)
   }
 );
 
-watch(
-  userSettingsNetworkName,
+watchEffect(
   () => {
     // For now to debug, but soon to emit event to parent
     // emit userOverrides event - already published event
-    console.log(`userSettingsNetworkName.newSetUserValue=${userSettingsNetworkName.newSetUserValue}`)
+    console.log(`CHANGE: newSetUserValue=${userSettingsNetworkName.newSetUserValue}`)
   }
 );
 
+watchEffect(
+  () => {
+    if (userSettingsNetworkName.newSetUserValue === undefined) {  // never set
+      userSettingsNetworkName.newUserSetValueUI = userSettingsNetworkName.lastReadUserValue;
+      // console.log('CHANGE: since newSetUserValue=undefined, SETTING newUserSetValueUI=', userSettingsNetworkName.newUserSetValueUI)
+    }
+    else {
+      userSettingsNetworkName.newUserSetValueUI = userSettingsNetworkName.newSetUserValue;  // last value ACTUALLY set (not canceled)
+      // console.log('CHANGE: since newSetUserValue DEFINED, SETTING newUserSetValueUI=', userSettingsNetworkName.newUserSetValueUI)
+    }
+  }
+)
+
+function updateNetworkName(event: any, scope: any, newValue: string|null) {
+  // console.log('Enter updateNetworkName newSetUserValue BEING SET TO=', newValue)
+  userSettingsNetworkName.newSetUserValue = newValue;
+  scope.set();
+}
 
 function doFetches() {
   if (props.network === undefined && props.networkId) {
@@ -128,20 +146,6 @@ onUnmounted(() => {
   clearInterval(polling);
 });
 
-function editNetworkBeforeShow(e: any): void {
-  // @todo FIX = this sets RIGHT VALUE TO RIGHT PLACE, but apparently TOO LATE, so must do earlier
-  // or set something else???
-  // to  reproduce PROBLEM WITH THIS CODE - - click edit name, and first time it shows wrong name
-  // and second time shows right name
-  if (userSettingsNetworkName.newSetUserValue === undefined) {  // never set
-    userSettingsNetworkName.newUserSetValueUI = userSettingsNetworkName.lastReadUserValue;
-    console.log('in editBEFORESHOW1  set NEWFLDFVAL=', userSettingsNetworkName.newSetUserValue)
-  }
-  else {
-    userSettingsNetworkName.newUserSetValueUI = userSettingsNetworkName.newSetUserValue;  // last value ACTUALLY set (not canceled)
-    console.log('in editBEFORESHOW2  set NEWFLDFVAL=', userSettingsNetworkName.newSetUserValue)
-  }
-}
 
 function validateNetworkName(v: any) {
   // console.log('enter validateNetworkName v=', v?.value)
@@ -155,10 +159,6 @@ function validateNetworkName(v: any) {
   return v.length >= 1
 }
 
-function updateNetworkName(event: any, scope: any) {
-  // console.log('Enter updateNetworkName userSettingsNetworkNameField=', userSettingsNetworkNameField?.value)
-  scope.set();
-}
 
 function SortNetworkIDsByMostRecentFirst_(ids: Array<string>): Array<string> {
   let r: Array<string> = ids.filter((x) => true);
@@ -195,20 +195,20 @@ const aliases = computed<string[] | undefined>(() => {
         <span>{{ currentNetwork.names.length > 0 ? currentNetwork.names[0].name : "" }}</span>
         <q-icon dense dark size="xs" name="edit" v-if="props.allowEdit" />
         <q-popup-edit v-if="props.allowEdit" v-model="userSettingsNetworkName.newUserSetValueUI" v-slot="scope"
-          @hide="validateNetworkName" :validate="validateNetworkName" @before-show="editNetworkBeforeShow">
+          @xxxxhide="validateNetworkName" :xxxvalidate="validateNetworkName">
           <q-input ref="userSettingsNetworkNameField" autofocus dense v-model="scope.value"
             :hint="`Use Network Name (default: ${userSettingsNetworkName.default})`"
-            :placeholder="userSettingsNetworkName.default" :rules="[
+            :placeholder="userSettingsNetworkName.default" :xxxrules="[
               val => scope.validate(val) || 'More than 1 chars required'
             ]" @focus="this.$refs?.userSettingsNetworkNameField.select()">
             <template v-slot:after>
               <q-btn flat dense color="black" icon="cancel" @click.stop.prevent="scope.cancel" title="Make no changes" />
               <q-btn flat dense color="positive" icon="check_circle"
-                @click.stop.prevent="updateNetworkName($event, scope)"
+                @click.stop.prevent="updateNetworkName($event, scope, scope.value)"
                 :disable="scope.validate(scope.value) === false || scope.initialValue === scope.value"
                 title="Use this as Network Name" />
               <q-btn flat dense color="negative" icon="delete" title="Clear override: use default"
-                @click.stop.prevent="{ scope.value = null; scope.set(); }" :disable="scope.value == null" />
+              @click.stop.prevent="updateNetworkName($event, scope, null)" :disable="scope.value == null" />
             </template>
           </q-input>
         </q-popup-edit>
