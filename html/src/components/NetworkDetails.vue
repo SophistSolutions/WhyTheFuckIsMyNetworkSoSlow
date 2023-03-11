@@ -29,6 +29,7 @@ import { PluralizeNoun } from "src/utils/Linguistics";
 import ReadOnlyTextWithHover from "../components/ReadOnlyTextWithHover.vue";
 import Link2DetailsPage from "../components/Link2DetailsPage.vue";
 import NetworkInterfacesDetails from "../components/NetworkInterfacesDetails.vue";
+import PopupEditTextField from "../components/PopupEditTextField.vue";
 
 import { useNetStateStore } from "../stores/Net-State-store";
 import { INetwork } from "src/models/network/INetwork";
@@ -148,6 +149,15 @@ onUnmounted(() => {
 });
 
 
+
+function newNotifyChange(v: any) {
+  console.log('***enter newNotifyChange v=', v,)
+
+  //tmphack
+  userSettingsNetworkName.lastReadUserValue = v;  // not really a good idea - instead this must do a WS call, but we can pretend so we can do editing
+
+}
+
 function validateNetworkName(v: any) {
   console.log('enter validateNetworkName v=', v, v && v.length >= 1)
   if (v) {
@@ -194,23 +204,9 @@ const aliases = computed<string[] | undefined>(() => {
       <div class="col">
         <span>{{ currentNetwork.names.length > 0 ? currentNetwork.names[0].name : "" }}</span>
         <q-icon dense dark size="xs" name="edit" v-if="props.allowEdit" />
-        <q-popup-edit v-if="props.allowEdit" v-model="userSettingsNetworkName.newUserSetValueUI" v-slot="scope"
-          @hide="validateNetworkName" :validate="validateNetworkName">
-          <q-input ref="userSettingsNetworkNameField" autofocus dense v-model="scope.value"
-            :hint="`Use Network Name (${userSettingsNetworkName.newUserSetValueUI == null ? 'using ' : ''}default: ${userSettingsNetworkName.default})`"
-            :placeholder="userSettingsNetworkName.default" :rules="[
-              val => scope.validate(val) || 'More than 1 chars required'
-            ]" @focus="this.$refs?.userSettingsNetworkNameField.select()">
-            <template v-slot:after>
-              <q-btn flat dense color="black" icon="cancel" @click.stop.prevent="scope.cancel" title="Make no changes" />
-              <q-btn flat dense color="positive" icon="check_circle"
-                @click.stop.prevent="updateNetworkName($event, scope, scope.value)"
-                :disable="scope.validate(scope.value) === false || scope.value == null" title="Use this as (override) Network Name" />
-              <q-btn flat dense color="negative" icon="delete" title="Clear override: use default"
-                @click.stop.prevent="updateNetworkName($event, scope, null)" />
-            </template>
-          </q-input>
-        </q-popup-edit>
+        <PopupEditTextField v-if="props.allowEdit" :defaultValue="userSettingsNetworkName.default"
+          :initialValue="userSettingsNetworkName.lastReadUserValue" @update:userSetValue="newNotifyChange"
+          :validator="validateNetworkName" />
       </div>
     </div>
     <div class="row" v-if="aliases && aliases.length > 1">
