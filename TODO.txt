@@ -6,6 +6,8 @@ https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/86
 	(VERY LITTLE HAPPENS ACROSS THREADS)
 ---
 	>	Add NOTES support for networks/devices (nearly identical to what I've already done with names).
+		(in details section - put notes near the top if present but just not editable in expando mode)
+		https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/39
 
 	>	PERHAPS add support to merge two networks / devices by fingerprint? Not 100% sure how todo
 	    but I have WSAPI at least.
@@ -25,6 +27,9 @@ MAYBE in devices page
 	(this would retain (wiithin groups) same sorting
 	(unclear how to sort group elts- maybe separeate sort indicator for those and that prefs shows only when grouped)
 	 ..
+
+---
+
 ---
 
 https://www.npmjs.com/package/assert-plus
