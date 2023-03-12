@@ -5,9 +5,12 @@ https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/86
 	(ALL IN DBACCESS MODULE).
 	(VERY LITTLE HAPPENS ACROSS THREADS)
 ---
-	>	Add NOTES support for networks/devices (nearly identical to what I've already done with names).
+	>	Add TAGS support for networks/devices (nearly identical to what I've already done with names).
 		(in details section - put notes near the top if present but just not editable in expando mode)
 		https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/39
+
+		tricky part with tags - must map between space separated list and array
+
 
 	>	PERHAPS add support to merge two networks / devices by fingerprint? Not 100% sure how todo
 	    but I have WSAPI at least.
