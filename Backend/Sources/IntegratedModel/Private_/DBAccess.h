@@ -56,10 +56,12 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_::DB
     using WebServices::Model::NetworkInterfaceCollection;
 
     /**
-     *  Wrapper on Database access all goes in this DBAccess::Mgr_ module;
+     *  Wrapper on Database access all goes in this DBAccess::Mgr_ module; All ORM/data mapping etc
+     *  goes on inside this module. All data upgrade etc processes in this module. All DB IO in this module.
+     *  WebServices::Model objects  (Devices etc) go in and out.
      * 
-     *  \note not a singleton in of itself. Lifetime externally managed.
-     *
+     *  \note not a singleton in of itself. Lifetime externally managed. But there exists at most one of them.
+     * 
      *  \note   \em Thread-Safety   <a href="Thread-Safety.md#Internally-Synchronized-Thread-Safety">Internally-Synchronized-Thread-Safety</a>
      */
     class Mgr {
