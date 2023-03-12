@@ -12,7 +12,7 @@ import moment from "moment";
 
 import { IDevice } from "../models/device/IDevice";
 
-import { patchNetworkUserProps_name } from "../proxy/API";
+import { patchNetworkUserProps_name, patchNetworkUserProps_notes } from "../proxy/API";
 
 import {
   FormatLocation,
@@ -111,6 +111,17 @@ async function notifyOfNetworkNameEdit_(v: any) {
     }
   }
 }
+async function notifyOfNetworkNotesEdit_(v: any) {
+  if (currentNetwork.value?.id) {
+    try {
+      await patchNetworkUserProps_notes(currentNetwork.value?.id, v);
+      store.fetchNetworks([currentNetwork.value?.id]);
+      Notify.create("updated");
+    } catch (e) {
+      Notify.create(`Failed updating network notes: ${e.message}!`);
+    }
+  }
+}
 
 function validateNetworkName_(v: any) {
   if (v) {
@@ -189,6 +200,22 @@ const aliases = computed<string[] | undefined>(() => {
       <div class="col-3">Seen</div>
       <div class="col">
         {{ FormatIDateTimeRange(currentNetwork.seen) }}
+      </div>
+    </div>
+    <div class="row" v-if="props.allowEdit || currentNetwork?.userOverrides?.notes">
+      <div class="col-3">Notes</div>
+      <div class="col">
+        <span>{{
+          currentNetwork?.userOverrides?.notes
+        }}</span>
+        <q-icon dense dark size="xs" name="edit" v-if="props.allowEdit" />
+        <PopupEditTextField
+          v-if="props.allowEdit"
+          defaultValue=""
+          :initialValue="currentNetwork?.userOverrides?.notes"
+          @update:userSetValue="notifyOfNetworkNotesEdit_"
+          thingBeingEdited="Notes"
+        />
       </div>
     </div>
     <div class="row">

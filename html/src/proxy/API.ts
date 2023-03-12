@@ -219,6 +219,17 @@ export async function patchDeviceUserProps_name(id: string, newName: string|null
   return await patchCallHelper_(`${gRuntimeConfiguration.API_ROOT}/api/v1/devices/${id}`, ops);
 }
 
+export async function patchDeviceUserProps_notes(id: string, newNotes: string|null): Promise<void> {
+  const ops=[];
+  if (newNotes) {
+    ops.push ({op: 'add', path:"/userOverrides/notes",value:newNotes});
+  }
+  else {
+    ops.push ({op: 'remove', path:"/userOverrides/notes"});
+  }
+  return await patchCallHelper_(`${gRuntimeConfiguration.API_ROOT}/api/v1/devices/${id}`, ops);
+}
+
 export async function patchNetworkUserProps_name(id: string, newName: string|null): Promise<void> {
   const ops=[];
   if (newName) {
@@ -226,6 +237,17 @@ export async function patchNetworkUserProps_name(id: string, newName: string|nul
   }
   else {
     ops.push ({op: 'remove', path:"/userOverrides/name"});
+  }
+  return await patchCallHelper_(`${gRuntimeConfiguration.API_ROOT}/api/v1/networks/${id}`, ops);
+}
+
+export async function patchNetworkUserProps_notes(id: string, newNotes: string|null): Promise<void> {
+  const ops=[];
+  if (newNotes) {
+    ops.push ({op: 'add', path:"/userOverrides/notes",value:newNotes});
+  }
+  else {
+    ops.push ({op: 'remove', path:"/userOverrides/notes"});
   }
   return await patchCallHelper_(`${gRuntimeConfiguration.API_ROOT}/api/v1/networks/${id}`, ops);
 }

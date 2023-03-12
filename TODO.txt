@@ -13,7 +13,7 @@ https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/86
 	    but I have WSAPI at least.
 
 ---
-Icon for WTFCollecotr
+Icon for WTFCollecotr - https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/88
 -
 
 MAYBE in devices page
@@ -27,8 +27,6 @@ MAYBE in devices page
 	(this would retain (wiithin groups) same sorting
 	(unclear how to sort group elts- maybe separeate sort indicator for those and that prefs shows only when grouped)
 	 ..
-
----
 
 ---
 

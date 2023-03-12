@@ -27,7 +27,7 @@ import PopupEditTextField from "../components/PopupEditTextField.vue";
 import { useNetStateStore } from "../stores/Net-State-store";
 import { INetwork } from "src/models/network/INetwork";
 
-import { patchDeviceUserProps_name } from "../proxy/API";
+import { patchDeviceUserProps_name, patchDeviceUserProps_notes } from "../proxy/API";
 
 const store = useNetStateStore();
 
@@ -123,6 +123,19 @@ async function notifyOfDeviceNameEdit_(v: any) {
   if (currentDevice.value?.id) {
     try {
       await patchDeviceUserProps_name(currentDevice.value?.id, v);
+      store.fetchDevices([currentDevice.value?.id]);
+      Notify.create("updated");
+    } catch (e) {
+      Notify.create(`Failed updating network name: ${e.message}!`);
+    }
+  }
+}
+
+
+async function notifyOfDeviceNotesEdit_(v: any) {
+  if (currentDevice.value?.id) {
+    try {
+      await patchDeviceUserProps_notes(currentDevice.value?.id, v);
       store.fetchDevices([currentDevice.value?.id]);
       Notify.create("updated");
     } catch (e) {
@@ -267,6 +280,22 @@ const aliases = computed<string[] | undefined>(() => {
         <Link2DetailsPage
           :link="'/#/device/' + currentDevice.id"
           v-if="props.includeLinkToDetailsPage"
+        />
+      </div>
+    </div>
+    <div class="row" v-if="props.allowEdit || currentDevice?.userOverrides?.notes">
+      <div class="col-3">Notes</div>
+      <div class="col">
+        <span>{{
+          currentDevice?.userOverrides?.notes
+        }}</span>
+        <q-icon dense dark size="xs" name="edit" v-if="props.allowEdit" />
+        <PopupEditTextField
+          v-if="props.allowEdit"
+          defaultValue=""
+          :initialValue="currentDevice?.userOverrides?.notes"
+          @update:userSetValue="notifyOfDeviceNotesEdit_"
+          thingBeingEdited="Notes"
         />
       </div>
     </div>
