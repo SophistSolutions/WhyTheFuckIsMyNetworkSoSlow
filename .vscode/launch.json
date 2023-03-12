@@ -8,8 +8,8 @@
       "name": "(gdb-UNIX) Launch EXE",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/Builds/${command:cpptools.activeConfigName}/phred123/phred123",
-      "args": ["-m"],
+      "program": "${workspaceFolder}/Builds/${command:cpptools.activeConfigName}/WhyTheFuckIsMyNetworkSoSlow/WhyTheFuckIsMyNetworkSoSlow-Backend",
+      "args": ["--run-directly"],
       "stopAtEntry": true,
       "cwd": "${workspaceFolder}",
       "environment": [
@@ -22,6 +22,15 @@
         {
           "description": "Enable pretty-printing for gdb",
           "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        },
+        {
+          "text": "-exec handle SIGUSR2 nostop",
+          "description": "This line FAILS - trying to figure out why - but same thing in DEBUG CONSOLE works",
+          "ignoreFailures": true
+        },
+        {
+          "text": "-handle SIGUSR2 nostop",
           "ignoreFailures": true
         }
       ],
