@@ -435,9 +435,12 @@ const pagination = ref({
           row-key="id" :visible-columns="pageUserOptions.VisibleColumns" :pagination.sync="pagination" hide-bottom flat
           :loading="loading">
           <template v-slot:body="props">
-            <q-tr :props="props" @click="rowClicked(props)">
+            <q-tr :props="props" @click.passive="rowClicked(props)">
               <q-td :props="props" key="name">
-                <ReadOnlyTextWithHover :message="props.row.name" />
+                <ReadOnlyTextWithHover
+                  :message="props.row.name"
+                  :link="'/#/device/' + props.row.id"
+                />
               </q-td>
               <q-td :props="props" key="type">
                 <span v-for="(t, i) in ComputeDeviceTypeIconURLs(props.row.type)" :key="i">

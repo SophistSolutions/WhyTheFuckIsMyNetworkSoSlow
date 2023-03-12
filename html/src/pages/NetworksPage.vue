@@ -384,7 +384,7 @@ const pagination = ref({
           flat
         >
           <template v-slot:body="props">
-            <q-tr :props="props" @click="rowClicked(props)">
+            <q-tr :props="props" @click.passive="rowClicked(props)">
               <q-td :props="props" key="name">
                 <ReadOnlyTextWithHover
                   :message="props.row.name"

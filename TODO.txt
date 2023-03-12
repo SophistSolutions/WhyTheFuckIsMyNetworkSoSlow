@@ -1,22 +1,10 @@
 ----
-SQLITE_OPEN_NOMUTEX (PRIORITY _ TRY NEXT)
-	Verufy this is the rgith mode and we handle it correctly
-	DESPITE DOCS - MABE BETTER TO USE FULL_MUTEX
-	(changed/testing as of 2022-03-02)
-
-	DIDNT SEEM TO help : as of 2023-03-09 at home:
-Mar 09 10:13:20 Hercules WhyTheFuckIsMyNetworkSoSlow[1933441]: Database operation exception: Exception: Device or resource busy (lastsql 'INSERT INTO DeviceUserSettings (DeviceID, _other_fields_) VALUES ('57d641a7-2976-bae4-f50c-0c2b04f9…')
-Mar 09 10:13:50 Hercules WhyTheFuckIsMyNetworkSoSlow[1933441]: Database operation exception: Exception: Device or resource busy (lastsql 'INSERT INTO DeviceUserSettings (DeviceID, _other_fields_) VALUES ('918dc28c-e3eb-bd54-ea19-379a01bb…')
-Mar 09 10:14:20 Hercules WhyTheFuckIsMyNetworkSoSlow[1933441]: Database operation exception: Exception: Device or resource busy (lastsql 'INSERT INTO DeviceUserSettings (DeviceID, _other_fields_) VALUES ('e66b958f-076d-15de-0baa-6560
-
-	So must try something else - maybe as a test - do my own mutex around this stuff and see if works stably with that (just as a test).
-
+https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/86
+	On Linux (so far only seen on release builds) we sometimes get Device or resource busy storm and then app (get devices at least) hangs
+	(TESTING MORE IF STILL HAPPENS WIHT LOCK FLAG SET)
+	(ALL IN DBACCESS MODULE).
+	(VERY LITTLE HAPPENS ACROSS THREADS)
 ---
-- add link to device details in first column for DEvices the way I did for networks.
----
-	>	When I rename a device (or network I think) - the renamed device doesn't show up renamed
-	    in the list of all networks/devices (at least for a little while)
-
 	>	Add NOTES support for networks/devices (nearly identical to what I've already done with names).
 
 	>	PERHAPS add support to merge two networks / devices by fingerprint? Not 100% sure how todo
@@ -25,6 +13,19 @@ Mar 09 10:14:20 Hercules WhyTheFuckIsMyNetworkSoSlow[1933441]: Database operatio
 ---
 Icon for WTFCollecotr
 -
+
+MAYBE in devices page
+ popup
+   GROUP by
+     - DATETIME (within last day, within last week etc)
+	 - Type (related types grouped together) - unclear what todo about dups - things of multiple type - probs appear in all
+	 - tag (again - uncelar what todo with dups, but proibabyl appear in all)
+	 - network (again - dups issue)
+	 - services (again dups issue)
+	(this would retain (wiithin groups) same sorting
+	(unclear how to sort group elts- maybe separeate sort indicator for those and that prefs shows only when grouped)
+	 ..
+---
 
 https://www.npmjs.com/package/assert-plus
 
@@ -240,9 +241,6 @@ Hints about privacy policy
 
 	   Do mapping from API-Model (keep wire model, api/business-model, and ui-model)
 	   Keep all in vuex store, and have ui driven from ui-model
------
-confusing thing in Networks and Devices views:
-	  click in opened selected box NOT treated as unclick close box - maybe have (x) box to close/collapse?
 ----
 	devices, debugInfo, lastAdvertisement value is a STRING, but should be an OBJECT, so that 
 	its better expandable in the GUI.
