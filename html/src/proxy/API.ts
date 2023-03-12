@@ -208,6 +208,17 @@ async function patchCallHelper_(url: string, ops: object[]): Promise<void>
   }
 }
 
+export async function patchDeviceUserProps_name(id: string, newName: string|null): Promise<void> {
+  const ops=[];
+  if (newName) {
+    ops.push ({op: 'add', path:"/userOverrides/name",value:newName});
+  }
+  else {
+    ops.push ({op: 'remove', path:"/userOverrides/name"});
+  }
+  return await patchCallHelper_(`${gRuntimeConfiguration.API_ROOT}/api/v1/devices/${id}`, ops);
+}
+
 export async function patchNetworkUserProps_name(id: string, newName: string|null): Promise<void> {
   const ops=[];
   if (newName) {

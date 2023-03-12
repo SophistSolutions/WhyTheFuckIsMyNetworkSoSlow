@@ -4,10 +4,6 @@ import {
   onUnmounted,
   computed,
   ComputedRef,
-  ref,
-  reactive,
-  watch,
-  watchEffect,
 } from "vue";
 import { Notify } from "quasar";
 
@@ -48,7 +44,7 @@ const props = defineProps({
   allowEdit: { type: Boolean, required: false, default: false },
 });
 
-const emit = defineEmits(["update:userOverrides"]);
+// const emit = defineEmits(["update:userOverrides"]);
 
 let polling: undefined | NodeJS.Timeout;
 

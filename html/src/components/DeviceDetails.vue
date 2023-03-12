@@ -4,6 +4,7 @@ import moment from "moment";
 import { DateTime } from "luxon";
 import JsonViewer from "vue-json-viewer";
 import { PluralizeNoun } from "src/utils/Linguistics";
+import { Notify } from "quasar";
 
 import { IDevice, INetworkAttachmentInfo } from "../models/device/IDevice";
 import { ComputeServiceTypeIconURL } from "../models/device/Utils";
@@ -17,12 +18,16 @@ import {
 } from "../models/network/Utils";
 import { rescanDevice } from "../proxy/API";
 
+// Components
 import ReadOnlyTextWithHover from "../components/ReadOnlyTextWithHover.vue";
 import Link2DetailsPage from "../components/Link2DetailsPage.vue";
 import NetworkInterfacesDetails from "../components/NetworkInterfacesDetails.vue";
+import PopupEditTextField from "../components/PopupEditTextField.vue";
 
 import { useNetStateStore } from "../stores/Net-State-store";
 import { INetwork } from "src/models/network/INetwork";
+
+import { patchDeviceUserProps_name } from "../proxy/API";
 
 const store = useNetStateStore();
 
@@ -35,6 +40,7 @@ interface Props {
   showOldNetworks?: boolean;
   showInactiveInterfaces?: boolean;
   showSeenDetails?: boolean;
+  allowEdit?: boolean;
 }
 const props = withDefaults(defineProps<Props>(), {
   includeLinkToDetailsPage: false,
@@ -42,7 +48,9 @@ const props = withDefaults(defineProps<Props>(), {
   showOldNetworks: false,
   showInactiveInterfaces: true,
   showSeenDetails: false,
+  allowEdit: false,
 });
+
 
 // const props = defineProps({
 //   deviceId: { type: String, required: true },
@@ -55,6 +63,22 @@ const props = withDefaults(defineProps<Props>(), {
 
 let polling: undefined | NodeJS.Timeout;
 var isRescanning: Ref<boolean> = ref(false);
+
+  
+let defaultDisplayedNameForPopup_ = computed<string>(() => {
+  if (
+    currentDevice.value?.userOverrides?.name &&
+    currentDevice.value?.names?.length > 1
+  ) {
+    return currentDevice.value.names[1].name;
+  } else if (
+    currentDevice.value?.names?.length &&
+    currentDevice.value?.names?.length > 0
+  ) {
+    return currentDevice.value.names[0].name;
+  }
+  return "";
+});
 
 function localNetworkAddresses(): string[] {
   const addresses: string[] = [];
@@ -92,6 +116,28 @@ onMounted(() => {
 onUnmounted(() => {
   clearInterval(polling);
 });
+
+
+
+async function notifyOfDeviceNameEdit_(v: any) {
+  if (currentDevice.value?.id) {
+    try {
+      await patchDeviceUserProps_name(currentDevice.value?.id, v);
+      store.fetchDevices([currentDevice.value?.id]);
+      Notify.create("updated");
+    } catch (e) {
+      Notify.create(`Failed updating network name: ${e.message}!`);
+    }
+  }
+}
+
+function validateDeviceName_(v: any) {
+  if (v) {
+    return v.length >= 1;
+  } else {
+    return v === null; // allow null - meaning set to null, but undefined just means user made no changes
+  }
+}
 
 async function rescanSelectedDevice(): Promise<void> {
   isRescanning.value = true;
@@ -190,7 +236,19 @@ const aliases = computed<string[] | undefined>(() => {
   <div v-if="currentDevice" class="q-pa-sm">
     <div class="row">
       <div class="col-3">Name</div>
-      <div class="col">{{ currentDevice.name }}</div>
+      <div class="col">
+      <span>{{ currentDevice.name }}</span>
+      <q-icon dense dark size="xs" name="edit" v-if="props.allowEdit" />
+        <PopupEditTextField
+          v-if="props.allowEdit"
+          :defaultValue="defaultDisplayedNameForPopup_"
+          :initialValue="currentDevice?.userOverrides?.name"
+          @update:userSetValue="notifyOfDeviceNameEdit_"
+          :validator="validateDeviceName_"
+          validateFailedMsg="More than 1 chars required"
+          thingBeingEdited="Device Name"
+        />
+      </div>
     </div>
     <div class="row" v-if="aliases && aliases.length >= 1">
       <div class="col-3">{{ PluralizeNoun("Alias", aliases.length) }}</div>

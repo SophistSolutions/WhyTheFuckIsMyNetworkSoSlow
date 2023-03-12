@@ -12,23 +12,18 @@ Mar 09 10:14:20 Hercules WhyTheFuckIsMyNetworkSoSlow[1933441]: Database operatio
 	So must try something else - maybe as a test - do my own mutex around this stuff and see if works stably with that (just as a test).
 
 ---
-rename network and rename device ui
-	- first / for now - just allow in Netwwork/ID field
-	  for 'name' feild. Make it an edit box (maybe icon so melts to editable?)
+- add link to device details in first column for DEvices the way I did for networks.
+---
+	>	When I rename a device (or network I think) - the renamed device doesn't show up renamed
+	    in the list of all networks/devices (at least for a little while)
 
+	>	Add NOTES support for networks/devices (nearly identical to what I've already done with names).
 
-	  -- got basic ui working but need to do watchiner
-
-	  SEARCH CODE HAS GOOD EXAMPLE OF WATCHER.
-
-	  define props userOverride properties, and emit when chnagnes - watch text field and then update override object
-	  and watch prop in networ PAGE and do ws call.
-
-...
+	>	PERHAPS add support to merge two networks / devices by fingerprint? Not 100% sure how todo
+	    but I have WSAPI at least.
 
 ---
-ONCE EDIT NAME IS WORKING - ADD NOTES FIELD TO DEVICE AND NETWORK AS WELL (I THINK WS there, just need GUI)
-
+Icon for WTFCollecotr
 -
 
 https://www.npmjs.com/package/assert-plus
