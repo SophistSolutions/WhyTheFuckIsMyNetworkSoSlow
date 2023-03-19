@@ -1,9 +1,30 @@
+- network interfface page needs marking saying HISOTRICAL SNAPSHOT
+  where appropivate (IN TOP AREA - MORE PROMINENT - DIDNT NOTICE AT FIRST)
+
+	- show where we say NetworkInterface "enp0s31f6" (NOT IN FREINDLLY NAME)
+	(maybe adjust likewise for network/decixe)
+	(hostirical snapshot notes seem totally GONE now in device ) - maybe caz of my naming changes!!!
+	(check network too)
+	(omg - no - its in the ID - NOT OBVIOUS)
+
+	MAYBE RENAME "Device Details for "Hercules"" to "Device Historical Snapshot Details for 'Hercules'"?
+	(and for items being live updated) "Device Live Update Details for "Hercules"" - not right
+	find better names
+	
+	MAYBE:
+
+		Device Details: Hercules (current live updating snapshot) vs
+		Device Details: Hercules (historical snapshot) 
+
 ----
 https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/86
 	On Linux (so far only seen on release builds) we sometimes get Device or resource busy storm and then app (get devices at least) hangs
 	(TESTING MORE IF STILL HAPPENS WIHT LOCK FLAG SET)
 	(ALL IN DBACCESS MODULE).
 	(VERY LITTLE HAPPENS ACROSS THREADS)
+	(MAYBE LOOK AT FLAG SAYING NUMBER OF OUTSTANDING ERRORS - which we show in UI) - and if not zero
+	add extra checking logic and logging perhaps
+	or mutext and iostream to /tmp/foo.txt
 ---
 	>	Add TAGS support for networks/devices (nearly identical to what I've already done with names).
 		(in details section - put notes near the top if present but just not editable in expando mode)
@@ -11,9 +32,19 @@ https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/86
 
 		tricky part with tags - must map between space separated list and array
 
+		https://quasar.dev/vue-components/chip
 
 	>	PERHAPS add support to merge two networks / devices by fingerprint? Not 100% sure how todo
 	    but I have WSAPI at least.
+
+		- maybe put EDIT ICON near "Aggregates" in network details page. (perhap for devices too?).
+		  and then have a list of fingerprint choices? Allow adding multiple or xing them out.
+		  Only trick I think is if we add aggregates to one, must REMOVE it from another. Not sure how to show
+		  this clearly in the GUI;
+		  - also - perhaps just as importantly, need a way to show GUI for a 'fingerprint' - what does it mean? Even if its a0
+		  hash, we need an examplar of something that hashes to it (maybe a function to lookup details by fingerprint).
+		  Probbaly OK no API to create fingerprint, but need API to get the exmemplars so user can pick intelliegently.
+
 
 ---
 Icon for WTFCollecotr - https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/88
