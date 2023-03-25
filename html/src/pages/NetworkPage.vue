@@ -42,6 +42,7 @@ watch(
   async (network) => {
     // @todo - check network.names[0] - LENGTH - handle emopty case
     // @todo CODE sharing with predefined routes
+    console.log(`entering watch for network ${network}`)
     if (network) {
       if (network.aggregatedBy) {
         emit('update:breadcrumbs', [
@@ -66,13 +67,14 @@ watch(
       }
     }
   }
+  ,{immediate:true}
 );
 </script>
 
 <template>
   <q-page padding class="justify-center row">
     <q-card class="pageCard col-11">
-      <q-card-section class="text-subtitle2" style="margin: 0 0 0 0">
+      <q-card-section class="text-subtitle2" style="padding-bottom: 0">
         Network
         {{
           network == null ? 'loading...' : '"' + GetNetworkName(network) + '"'

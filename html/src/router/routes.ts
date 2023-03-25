@@ -38,7 +38,7 @@ const routes: RouteRecordRaw[] = [
       breadcrumbs: [
         { text: 'Home', href: '/#/' },
         { text: 'Devices', href: '/#/devices' },
-        { text: 'Device', disabled: true },
+        { text: 'Device...', disabled: true },
       ],
     },
   },
@@ -88,7 +88,7 @@ const routes: RouteRecordRaw[] = [
       breadcrumbs: [
         { text: 'Home', href: '/#/' },
         { text: 'Networks', href: '/#/networks' },
-        { text: 'Network', disabled: true },
+        { text: 'Network...', disabled: true },
       ],
     },
   },
@@ -120,7 +120,7 @@ const routes: RouteRecordRaw[] = [
     meta: {
       breadcrumbs: [
         { text: 'Home', href: '/#/' },
-        { text: 'Network', disabled: true },
+        { text: 'Network Interface...', disabled: true },
       ],
     },
   },

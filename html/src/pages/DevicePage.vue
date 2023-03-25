@@ -4,7 +4,7 @@ import { useRoute } from 'vue-router';
 
 import { IDevice } from '../models/device/IDevice';
 import { useQuasar } from 'quasar';
-import { FormatSeenMap } from '../models/network/Utils';
+import { FormatSeenMap, FormatIDateTimeRange } from '../models/network/Utils';
 
 // Components
 import DeviceDetails from '../components/DeviceDetails.vue';
@@ -48,24 +48,26 @@ const route = useRoute();
 let device: ComputedRef<IDevice | null> = computed(() => {
   return store.getDevice(route.params.id as string);
 });
+let deviceSeen: ComputedRef<object | undefined> = computed(() => {
+  if (device.value?.seen) {
+    return device.value?.seen["Ever"];
+  }
+  return undefined;
+});
+
 
 watch(
   () => device.value,
   async (device) => {
-    // @todo - check network.names[0] - LENGTH - handle emopty case
     // @todo CODE sharing with predefined routes
+    // console.log(`entering wtch device=${device}, device.aggregatedBy=${device?.aggregatedBy}`)
     if (device) {
       if (device.aggregatedBy) {
         emit('update:breadcrumbs', [
           { text: 'Home', href: '/#/' },
           { text: 'Devices', href: '/#/devices' },
-          // @todo wrong name for parent network name possibly - must fetch aggregated by and use its name - but not worth the trouble now since almost certainly the same
-          {
-            text: device.names[0].name,
-            href: '/#/device/' + device.aggregatedBy,
-          },
-          // @todo replace this name with the 'pretty seen' string we use
-          { text: FormatSeenMap(device.seen, true) ?? '?', disabled: true },
+          { text: device.names[0].name, href: '/#/device/' + device.aggregatedBy },
+          { text: FormatIDateTimeRange(deviceSeen.value, true), disabled: true },
         ]);
       } else {
         emit('update:breadcrumbs', [
@@ -75,7 +77,7 @@ watch(
         ]);
       }
     }
-  }
+  } ,{immediate:true}
 );
 
 // See https://github.com/storybookjs/storybook/issues/17954 for why we need this hack
@@ -100,7 +102,7 @@ var showSeenDetails = ref(false);
   </Teleport>
   <q-page padding class="justify-center row">
     <q-card class="pageCard col-11">
-      <q-card-section class="text-subtitle2">
+      <q-card-section class="text-subtitle2" style="padding-bottom: 0">
         Device Details for
         {{ device == null ? 'loading...' : '"' + device.name + '"' }}
       </q-card-section>
