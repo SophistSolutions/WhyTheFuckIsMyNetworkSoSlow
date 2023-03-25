@@ -126,6 +126,15 @@ jobs:
           #   config_name: Debug
           #   extra_config_args: --apply-default-debug-flags --trace2file enable
           #   includeInDevBranchBuilds: false
+          - displayTargetName: ubuntu-22.04-g++-12 (Debug-tsan-ubsan)
+            os: unix
+            compiler: g++-12
+            runs_on: ubuntu-latest
+            container_image: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204
+            cpp_version: c++20
+            config_name: Debug-tsan-ubsan
+            extra_config_args: --apply-default-debug-flags --trace2file enable --sanitize none,thread,undefined
+            includeInDevBranchBuilds: false
           - displayTargetName: ubuntu-22.04-g++-12
             os: unix
             compiler: g++-12
