@@ -55,7 +55,9 @@ export default boot(async (/* { app, router, ... } */) => {
   gRuntimeConfiguration = {
     API_ROOT: API_ROOT ?? '',
   };
-  console.log(`gRuntimeConfiguration: ${JSON.stringify(gRuntimeConfiguration)}`);
+  console.log(
+    `gRuntimeConfiguration: ${JSON.stringify(gRuntimeConfiguration)}`
+  );
 });
 
 /*

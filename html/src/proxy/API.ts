@@ -32,7 +32,9 @@ function throwIfError_(response: Response): Response {
     throw new Error(`Server Error ${response.status}`);
   }
   if (!response.ok) {
-    throw new Error(`Server Error status: ${response.status}, type:${response.type}`);
+    throw new Error(
+      `Server Error status: ${response.status}, type:${response.type}`
+    );
   }
   return response;
 }
@@ -44,7 +46,7 @@ export async function fetchNetworks(): Promise<string[]> {
       kFetchOptions_
     );
     throwIfError_(response);
-    const data = await response.json()as string[];
+    const data = (await response.json()) as string[];
     // should validate array of strings (using json schema)
     if (!Array.isArray(data)) {
       throw new Error('Server Data Format Error');
@@ -124,7 +126,7 @@ export async function fetchNetwork(id: string): Promise<INetwork> {
       kFetchOptions_
     );
     throwIfError_(response);
-    const data = await response.json() as INetwork;
+    const data = (await response.json()) as INetwork;
     // Could enhance validation (using json schema)
     if (typeof data !== 'object') {
       throw new Error('Server Data Format Error');
@@ -137,16 +139,14 @@ export async function fetchNetwork(id: string): Promise<INetwork> {
   }
 }
 
-export async function fetchAllActiveNetworkInterfaces(): Promise<
-  string[]
-> {
+export async function fetchAllActiveNetworkInterfaces(): Promise<string[]> {
   try {
     const response: Response = await fetch(
       `${gRuntimeConfiguration.API_ROOT}/api/v1/network-interfaces`,
       kFetchOptions_
     );
     throwIfError_(response);
-    const data = await response.json() as string[];
+    const data = (await response.json()) as string[];
     return data;
   } catch (e) {
     Logger.error(e);
@@ -163,7 +163,7 @@ export async function fetchNetworkInterface(
       kFetchOptions_
     );
     throwIfError_(response);
-    const data = await response.json() as INetworkInterface;  
+    const data = (await response.json()) as INetworkInterface;
     // Could enhance validation (using json schema)
     if (typeof data !== 'object') {
       throw new Error('Server Data Format Error');
@@ -188,19 +188,16 @@ export async function rescanDevice(deviceID: string): Promise<void> {
   }
 }
 
-async function patchCallHelper_(url: string, ops: object[]): Promise<void>
-{
+async function patchCallHelper_(url: string, ops: object[]): Promise<void> {
   try {
-    const response: Response = await fetch(
-      url,
-      {...kFetchOptions_,
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(ops),
-      }
-    );
+    const response: Response = await fetch(url, {
+      ...kFetchOptions_,
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(ops),
+    });
     throwIfError_(response);
   } catch (e) {
     Logger.error(e);
@@ -208,50 +205,69 @@ async function patchCallHelper_(url: string, ops: object[]): Promise<void>
   }
 }
 
-export async function patchDeviceUserProps_name(id: string, newName: string|null): Promise<void> {
-  const ops=[];
+export async function patchDeviceUserProps_name(
+  id: string,
+  newName: string | null
+): Promise<void> {
+  const ops = [];
   if (newName) {
-    ops.push ({op: 'add', path:"/userOverrides/name",value:newName});
+    ops.push({ op: 'add', path: '/userOverrides/name', value: newName });
+  } else {
+    ops.push({ op: 'remove', path: '/userOverrides/name' });
   }
-  else {
-    ops.push ({op: 'remove', path:"/userOverrides/name"});
-  }
-  return await patchCallHelper_(`${gRuntimeConfiguration.API_ROOT}/api/v1/devices/${id}`, ops);
+  return await patchCallHelper_(
+    `${gRuntimeConfiguration.API_ROOT}/api/v1/devices/${id}`,
+    ops
+  );
 }
 
-export async function patchDeviceUserProps_notes(id: string, newNotes: string|null): Promise<void> {
-  const ops=[];
+export async function patchDeviceUserProps_notes(
+  id: string,
+  newNotes: string | null
+): Promise<void> {
+  const ops = [];
   if (newNotes) {
-    ops.push ({op: 'add', path:"/userOverrides/notes",value:newNotes});
+    ops.push({ op: 'add', path: '/userOverrides/notes', value: newNotes });
+  } else {
+    ops.push({ op: 'remove', path: '/userOverrides/notes' });
   }
-  else {
-    ops.push ({op: 'remove', path:"/userOverrides/notes"});
-  }
-  return await patchCallHelper_(`${gRuntimeConfiguration.API_ROOT}/api/v1/devices/${id}`, ops);
+  return await patchCallHelper_(
+    `${gRuntimeConfiguration.API_ROOT}/api/v1/devices/${id}`,
+    ops
+  );
 }
 
-export async function patchNetworkUserProps_name(id: string, newName: string|null): Promise<void> {
-  const ops=[];
+export async function patchNetworkUserProps_name(
+  id: string,
+  newName: string | null
+): Promise<void> {
+  const ops = [];
   if (newName) {
-    ops.push ({op: 'add', path:"/userOverrides/name",value:newName});
+    ops.push({ op: 'add', path: '/userOverrides/name', value: newName });
+  } else {
+    ops.push({ op: 'remove', path: '/userOverrides/name' });
   }
-  else {
-    ops.push ({op: 'remove', path:"/userOverrides/name"});
-  }
-  return await patchCallHelper_(`${gRuntimeConfiguration.API_ROOT}/api/v1/networks/${id}`, ops);
+  return await patchCallHelper_(
+    `${gRuntimeConfiguration.API_ROOT}/api/v1/networks/${id}`,
+    ops
+  );
 }
 
-export async function patchNetworkUserProps_notes(id: string, newNotes: string|null): Promise<void> {
-  const ops=[];
+export async function patchNetworkUserProps_notes(
+  id: string,
+  newNotes: string | null
+): Promise<void> {
+  const ops = [];
   if (newNotes) {
-    ops.push ({op: 'add', path:"/userOverrides/notes",value:newNotes});
+    ops.push({ op: 'add', path: '/userOverrides/notes', value: newNotes });
+  } else {
+    ops.push({ op: 'remove', path: '/userOverrides/notes' });
   }
-  else {
-    ops.push ({op: 'remove', path:"/userOverrides/notes"});
-  }
-  return await patchCallHelper_(`${gRuntimeConfiguration.API_ROOT}/api/v1/networks/${id}`, ops);
+  return await patchCallHelper_(
+    `${gRuntimeConfiguration.API_ROOT}/api/v1/networks/${id}`,
+    ops
+  );
 }
-
 
 export async function fetchDevices(
   searchCriteria?: ISortBy
@@ -291,9 +307,12 @@ export async function fetchDevices(
 
 export async function fetchDevice(id: string): Promise<IDevice> {
   try {
-    const response: Response = await fetch(`${gRuntimeConfiguration.API_ROOT}/api/v1/devices/${id}`, kFetchOptions_);
+    const response: Response = await fetch(
+      `${gRuntimeConfiguration.API_ROOT}/api/v1/devices/${id}`,
+      kFetchOptions_
+    );
     throwIfError_(response);
-    const data = await response.json() as IDevice; // could embellish validation here
+    const data = (await response.json()) as IDevice; // could embellish validation here
     jsonPatch2IDevice_(data);
     return data;
   } catch (e) {
@@ -304,9 +323,12 @@ export async function fetchDevice(id: string): Promise<IDevice> {
 
 export async function fetchAboutInfo(): Promise<IAbout> {
   try {
-    const response: Response = await fetch(`${gRuntimeConfiguration.API_ROOT}/api/v1/about`, kFetchOptions_);
+    const response: Response = await fetch(
+      `${gRuntimeConfiguration.API_ROOT}/api/v1/about`,
+      kFetchOptions_
+    );
     throwIfError_(response);
-    const data = await response.json() as IAbout; // could embellish validation here
+    const data = (await response.json()) as IAbout; // could embellish validation here
     return data;
   } catch (e) {
     Logger.error(e);

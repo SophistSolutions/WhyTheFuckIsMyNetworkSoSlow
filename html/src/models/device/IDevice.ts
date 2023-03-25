@@ -13,13 +13,10 @@ export interface IManufacturer {
   webSiteURL?: string;
 }
 
-
-
 export interface IDevice_UserOverridesType_NetworkInterfaceAggregateRule {
   interfaceType: string;
   fingerPrint: string;
 }
-
 
 export interface IDevice_UserOverridesType {
   name?: string;
@@ -48,6 +45,6 @@ export interface IDevice {
   type: Array<DeviceTypeEnum | string>;
   presentationURL?: URL;
   operatingSystem?: OperatingSystem;
-  userOverrides? :IDevice_UserOverridesType;
+  userOverrides?: IDevice_UserOverridesType;
   debugProps?: object;
 }

@@ -18,7 +18,6 @@ import {
 
 import { kCompileTimeConfiguration } from '../config/config';
 
-
 // @todo perhaps add in 'lasttimerequested' and 'lastTimeSuccessfulResponse' and throttle/dont request
 // (not sure where in model) if outtsanding requests etc) and maybe show in UI if data stale
 interface ILoading {
@@ -58,13 +57,16 @@ export const useNetStateStore = defineStore('Net-State-Store', {
       return state.loadingActiveDevices;
     },
     getAvailableNetworks: (state) => {
-      return [...state.rolledUpAvailableNetworkIDs].flatMap((ni) => state.networkDetails[ni]?[state.networkDetails[ni]]:[] );
+      return [...state.rolledUpAvailableNetworkIDs].flatMap((ni) =>
+        state.networkDetails[ni] ? [state.networkDetails[ni]] : []
+      );
     },
     getNetwork: (state) => {
       return (id: string) => state.networkDetails[id];
     },
     getNetworkInterface: (state) => {
-      return (id: string): INetworkInterface | undefined => state.networkInterfaces[id];
+      return (id: string): INetworkInterface | undefined =>
+        state.networkInterfaces[id];
     },
     getNetworkInterfaces: (state) => {
       // untested as of 2022-11-24 - not sure the reduce part is right
@@ -77,7 +79,9 @@ export const useNetStateStore = defineStore('Net-State-Store', {
           }, {});
     },
     getDevices: (state) => {
-      return [...state.rolledUpDeviceIDs].flatMap((di) => state.deviceDetails[di]?[state.deviceDetails[di]]:[]);
+      return [...state.rolledUpDeviceIDs].flatMap((di) =>
+        state.deviceDetails[di] ? [state.deviceDetails[di]] : []
+      );
     },
     getDevice: (state) => {
       return (id: string) => state.deviceDetails[id];
@@ -100,11 +104,12 @@ export const useNetStateStore = defineStore('Net-State-Store', {
         // do other way and make calling code more OK with when details still null
         // if you reorder with teh code as is (--LGP 2022-12-13) - get sporadic failures running hitting nulls
         // as stuff loads
-        this.rolledUpAvailableNetworkIDs.clear();//UNSURE but i think best
-        networkIDs.forEach(async (i: string) => this.rolledUpAvailableNetworkIDs.add(i))
+        this.rolledUpAvailableNetworkIDs.clear(); //UNSURE but i think best
+        networkIDs.forEach(async (i: string) =>
+          this.rolledUpAvailableNetworkIDs.add(i)
+        );
         this.loadingActiveNetworks.numberOfTimesLoaded++;
-      }
-      finally {
+      } finally {
         this.loadingActiveNetworks.numberOfOutstandingLoadRequests--;
       }
       //  %todo reconsider - no need to fetch these just cuz we fetched network ids - many need if NEW ones (maybe track those) - but otherwise let soemting
@@ -143,7 +148,7 @@ export const useNetStateStore = defineStore('Net-State-Store', {
           const r = await fetchNetwork(i);
           if (!Equals(r, this.networkDetails[i])) {
             if (kCompileTimeConfiguration.DEBUG_MODE) {
-              console.log("new network value: id=", r.id)
+              console.log('new network value: id=', r.id);
             }
             this.networkDetails[i] = r;
           }
@@ -166,7 +171,7 @@ export const useNetStateStore = defineStore('Net-State-Store', {
       try {
         devices = await fetchDevices(searchSpecs);
         this.rolledUpDeviceIDs.clear(); // unclear but probably sensible - careful of reactivity
-        devices.forEach(async (i: string) => this.rolledUpDeviceIDs.add(i))
+        devices.forEach(async (i: string) => this.rolledUpDeviceIDs.add(i));
         this.loadingActiveDevices.numberOfTimesLoaded++;
       } finally {
         this.loadingActiveDevices.numberOfOutstandingLoadRequests--;
@@ -188,7 +193,7 @@ export const useNetStateStore = defineStore('Net-State-Store', {
           const r = await fetchDevice(i);
           if (!Equals(r, this.deviceDetails[i])) {
             if (kCompileTimeConfiguration.DEBUG_MODE) {
-              console.log("new device value: named=", r.name)
+              console.log('new device value: named=', r.name);
             }
             this.deviceDetails[i] = r;
           }
@@ -198,7 +203,7 @@ export const useNetStateStore = defineStore('Net-State-Store', {
       }
     },
     async fetchDevices(ids: Array<string>) {
-      ids.forEach(async (i) => (this.fetchDevice(i)));
+      ids.forEach(async (i) => this.fetchDevice(i));
     },
   },
 });

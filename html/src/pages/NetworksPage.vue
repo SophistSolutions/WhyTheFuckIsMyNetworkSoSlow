@@ -1,12 +1,19 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, nextTick, ref, computed, ComputedRef } from "vue";
-import { useRoute, useRouter } from "vue-router";
-import moment from "moment";
-import { useQuasar } from "quasar";
-import { useStorage } from "@vueuse/core";
+import {
+  onMounted,
+  onUnmounted,
+  nextTick,
+  ref,
+  computed,
+  ComputedRef,
+} from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import moment from 'moment';
+import { useQuasar } from 'quasar';
+import { useStorage } from '@vueuse/core';
 
-import { IDevice } from "../models/device/IDevice";
-import { INetwork } from "../models/network/INetwork";
+import { IDevice } from '../models/device/IDevice';
+import { INetwork } from '../models/network/INetwork';
 import {
   GetNetworkName,
   GetNetworkCIDRs,
@@ -14,17 +21,17 @@ import {
   GetDeviceIDsInNetwork,
   GetDevicesForNetworkLink,
   SortNetworks,
-} from "../models/network/Utils";
+} from '../models/network/Utils';
 
 // Components
-import Search from "../components/Search.vue";
-import ClearButton from "../components/ClearButton.vue";
-import NetworkDetails from "../components/NetworkDetails.vue";
-import ReadOnlyTextWithHover from "../components/ReadOnlyTextWithHover.vue";
-import Link2DetailsPage from "../components/Link2DetailsPage.vue";
-import FilterSummaryMessage from "../components/FilterSummaryMessage.vue";
+import Search from '../components/Search.vue';
+import ClearButton from '../components/ClearButton.vue';
+import NetworkDetails from '../components/NetworkDetails.vue';
+import ReadOnlyTextWithHover from '../components/ReadOnlyTextWithHover.vue';
+import Link2DetailsPage from '../components/Link2DetailsPage.vue';
+import FilterSummaryMessage from '../components/FilterSummaryMessage.vue';
 
-import { useNetStateStore } from "../stores/Net-State-store";
+import { useNetStateStore } from '../stores/Net-State-store';
 const $q = useQuasar();
 
 const store = useNetStateStore();
@@ -34,23 +41,23 @@ const props = defineProps({
 });
 
 let polling: undefined | NodeJS.Timeout;
-var search = ref("");
+var search = ref('');
 var sortBy: any = [];
 var sortDesc: any = [];
 var expanded: any[] = [];
 
 // store page options in local storage, but eventually add many more options here (like collapsed or open show filter section etc)
 // COULD POSSIBLY also store stuff like selected filter (search string etc) - but no need for now....
-const pageUserOptions = useStorage("Networks-Page-User-Options", {
+const pageUserOptions = useStorage('Networks-Page-User-Options', {
   VisibleColumns: [
-    "name",
-    "CIDRs",
-    "active",
-    "status",
-    "location",
-    "internetInfo",
-    "devices",
-    "expand",
+    'name',
+    'CIDRs',
+    'active',
+    'status',
+    'location',
+    'internetInfo',
+    'devices',
+    'expand',
   ],
 });
 
@@ -60,12 +67,12 @@ function filterAllowAllServices() {
 
 function selectServicesFilter_icon() {
   if (filterAllowAllServices()) {
-    return "mdi-close-box";
+    return 'mdi-close-box';
   }
   if (selectedServices.length > 0 && !filterAllowAllServices()) {
-    return "mdi-minus-box";
+    return 'mdi-minus-box';
   }
-  return "mdi-checkbox-blank-outline";
+  return 'mdi-checkbox-blank-outline';
 }
 
 function selectServicesFilter_ToggleSelectAll() {
@@ -81,7 +88,7 @@ function selectServicesFilter_ToggleSelectAll() {
 const selectableNetworks = computed<object[]>(() => {
   const r: object[] = [
     {
-      title: "Any",
+      title: 'Any',
       value: null,
     },
   ];
@@ -97,56 +104,56 @@ let selectedNetworkCurrent: string | undefined = undefined;
 
 const selectableTimeframes = ref<object[]>([
   {
-    title: "Ever",
+    title: 'Ever',
     value: null,
   },
   {
-    title: "Last Few Minutes",
-    value: "PT3.9M",
+    title: 'Last Few Minutes',
+    value: 'PT3.9M',
   },
   {
-    title: "Last Hour",
-    value: "PT1H",
+    title: 'Last Hour',
+    value: 'PT1H',
   },
   {
-    title: "Last Day",
-    value: "P1D",
+    title: 'Last Day',
+    value: 'P1D',
   },
   {
-    title: ">15 Min Ago",
-    value: "-PT15M",
+    title: '>15 Min Ago',
+    value: '-PT15M',
   },
   {
-    title: ">1 Day Ago",
-    value: "-P1D",
+    title: '>1 Day Ago',
+    value: '-P1D',
   },
 ]);
 let selectedTimeframe: string | undefined = undefined;
 
 const selectableServices = ref<Array<{ text: string; value: string }>>([
   {
-    text: "Other",
-    value: "other",
+    text: 'Other',
+    value: 'other',
   },
   {
-    text: "Print",
-    value: "print",
+    text: 'Print',
+    value: 'print',
   },
   {
-    text: "RDP (Remote Desktop)",
-    value: "rdp",
+    text: 'RDP (Remote Desktop)',
+    value: 'rdp',
   },
   {
-    text: "SSH",
-    value: "ssh",
+    text: 'SSH',
+    value: 'ssh',
   },
   {
-    text: "SMB (Windows Network FS)",
-    value: "smb",
+    text: 'SMB (Windows Network FS)',
+    value: 'smb',
   },
   {
-    text: "Web (HTTP/HTTPS)",
-    value: "web",
+    text: 'Web (HTTP/HTTPS)',
+    value: 'web',
   },
 ]);
 
@@ -173,54 +180,54 @@ function mkTblHdr_(o: {
   return {
     ...o,
     field: o.field ?? o.name,
-    classes: o.classes ?? "truncateWithElipsis",
-    align: o.align ?? "left",
+    classes: o.classes ?? 'truncateWithElipsis',
+    align: o.align ?? 'left',
     sortable: o.sortable === undefined ? true : o.sortable,
-    headerClasses: o.headerClasses ?? "truncateWithElipsis cellNoScribble",
+    headerClasses: o.headerClasses ?? 'truncateWithElipsis cellNoScribble',
   };
 }
 const headers = ref([
   mkTblHdr_({
-    name: "name",
-    label: "Name",
-    headerStyle: "width: 20%; ",
+    name: 'name',
+    label: 'Name',
+    headerStyle: 'width: 20%; ',
   }),
   mkTblHdr_({
-    name: "CIDRs",
-    label: "CIDRs",
-    headerStyle: "width: 10%; ",
+    name: 'CIDRs',
+    label: 'CIDRs',
+    headerStyle: 'width: 10%; ',
   }),
   mkTblHdr_({
-    name: "active",
-    label: "Active",
-    align: "left",
-    headerStyle: "width: 10%; ",
+    name: 'active',
+    label: 'Active',
+    align: 'left',
+    headerStyle: 'width: 10%; ',
   }),
   mkTblHdr_({
-    name: "status",
-    label: "Status",
-    headerStyle: "width: 10%; ",
+    name: 'status',
+    label: 'Status',
+    headerStyle: 'width: 10%; ',
   }),
   mkTblHdr_({
-    name: "location",
-    label: "Location",
-    headerStyle: "width: 20%; ",
+    name: 'location',
+    label: 'Location',
+    headerStyle: 'width: 20%; ',
   }),
   mkTblHdr_({
-    name: "internetInfo",
-    label: "Internet",
-    headerStyle: "width: 20%; ",
+    name: 'internetInfo',
+    label: 'Internet',
+    headerStyle: 'width: 20%; ',
   }),
   mkTblHdr_({
-    name: "devices",
-    label: "Devices",
-    headerStyle: "width: 10%; ",
+    name: 'devices',
+    label: 'Devices',
+    headerStyle: 'width: 10%; ',
   }),
   mkTblHdr_({
-    name: "expand",
-    label: "Details",
-    align: "center",
-    headerStyle: "width: 6.7em; ",
+    name: 'expand',
+    label: 'Details',
+    align: 'center',
+    headerStyle: 'width: 6.7em; ',
   }),
 ]);
 
@@ -229,15 +236,17 @@ const router = useRouter();
 
 let allDevices: ComputedRef<IDevice[]> = computed(() => store.getDevices);
 
-let allNetworks: ComputedRef<INetwork[]> = computed(() => store.getAvailableNetworks);
+let allNetworks: ComputedRef<INetwork[]> = computed(
+  () => store.getAvailableNetworks
+);
 
-let filtered: ComputedRef<boolean> = computed(() => search.value != "");
+let filtered: ComputedRef<boolean> = computed(() => search.value != '');
 
 function clearFilter() {
   selectedNetworkCurrent = undefined;
   selectedTimeframe = undefined;
   selectedServices = selectableServices.value.map((x) => x.value);
-  search.value = "";
+  search.value = '';
 }
 
 const loading = computed<boolean>(
@@ -249,13 +258,13 @@ let filteredExtendedNetworks: ComputedRef<object[]> = computed(() => {
   const result: object[] = [];
   SortNetworks(allNetworks.value).forEach((i: INetwork) => {
     let lastSeenStr = moment(i.seen?.upperBound).fromNow();
-    let statusStr = "?";
+    let statusStr = '?';
     if (
       i.seen?.upperBound != null &&
-      moment().diff(moment(i.seen?.upperBound), "seconds") < 60
+      moment().diff(moment(i.seen?.upperBound), 'seconds') < 60
     ) {
-      lastSeenStr = "active";
-      statusStr = "healthy"; // tmphack
+      lastSeenStr = 'active';
+      statusStr = 'healthy'; // tmphack
     }
     const r: any = {
       ...i,
@@ -263,16 +272,16 @@ let filteredExtendedNetworks: ComputedRef<object[]> = computed(() => {
       CIDRs: GetNetworkCIDRs(i),
       active: lastSeenStr,
       internetInfo:
-        (i.gateways == null ? "" : i.gateways.join(", ")) +
+        (i.gateways == null ? '' : i.gateways.join(', ')) +
         (i.internetServiceProvider == null
-          ? " "
-          : " (" + i.internetServiceProvider.name + ")"),
+          ? ' '
+          : ' (' + i.internetServiceProvider.name + ')'),
       devices: GetDeviceIDsInNetwork(i, allDevices.value).length,
       status: statusStr,
-      location: FormatLocation(i.geographicLocation) ?? "?",
+      location: FormatLocation(i.geographicLocation) ?? '?',
     };
     if (
-      search.value === "" ||
+      search.value === '' ||
       JSON.stringify(r).toLowerCase().includes(search.value.toLowerCase())
     ) {
       // console.log("MATCH: this.search=", this.search, " and r=", JSON.stringify(r));
@@ -412,7 +421,9 @@ const pagination = ref({
                 }}</a>
               </q-td>
               <q-td :props="props" key="manufacturerSummary">
-                <ReadOnlyTextWithHover :message="props.row.manufacturerSummary" />
+                <ReadOnlyTextWithHover
+                  :message="props.row.manufacturerSummary"
+                />
               </q-td>
               <q-td :props="props" key="expand">
                 <div class="row no-wrap items-baseline">
@@ -429,7 +440,10 @@ const pagination = ref({
             </q-tr>
             <q-tr v-if="props.expand" :props="props">
               <q-td :colspan="pageUserOptions.VisibleColumns.length">
-                <NetworkDetails class="detailsSection z-top" :networkId="props.row.id" />
+                <NetworkDetails
+                  class="detailsSection z-top"
+                  :networkId="props.row.id"
+                />
               </q-td>
             </q-tr>
           </template>

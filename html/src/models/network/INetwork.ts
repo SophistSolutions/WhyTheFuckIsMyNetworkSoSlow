@@ -2,10 +2,6 @@ import { IGeographicLocation } from '../network/IGeographicLocation';
 import { IInternetServiceProvider } from '../network/IInternetServiceProvider';
 import { IDateTimeRange } from '../common/IDateTimeRange';
 
-
-
-
-
 // @todo PROBABLY WRONG - MUST REVSIIT
 export interface INetwork_UserOverridesType {
   name?: string;
@@ -32,6 +28,6 @@ export interface INetwork {
   networkAddresses: string[];
   names: { name: string; priority: number }[];
   seen?: IDateTimeRange;
-  userOverrides? :INetwork_UserOverridesType;
+  userOverrides?: INetwork_UserOverridesType;
   debugProps?: object;
 }

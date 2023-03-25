@@ -1,68 +1,70 @@
 import { IDateTimeRange } from 'src/models/common/IDateTimeRange';
 import moment from 'moment';
-import { DateTime } from "luxon";
+import { DateTime } from 'luxon';
 
 import { IDevice, INetworkAttachmentInfo } from '../../models/device/IDevice';
 import { IGeographicLocation } from '../../models/network/IGeographicLocation';
 import { INetwork } from '../../models/network/INetwork';
 
-
 /**
  * if arg undefined, returns undefined
- * @param b 
+ * @param b
  */
-export function FormatBaudRate(b?: number): string|undefined
-{
+export function FormatBaudRate(b?: number): string | undefined {
   if (b && b >= 0) {
     const kKilo = 1000;
     const kMB = kKilo * 1000;
     const kGB = kMB * 1000;
-    const kThresholdFactor = 1/2;
+    const kThresholdFactor = 1 / 2;
     if (b > kGB * kThresholdFactor) {
-      return `${(b/kGB).toFixed(1)}Gbps`
+      return `${(b / kGB).toFixed(1)}Gbps`;
     }
     if (b > kMB * kThresholdFactor) {
-      return `${(b/kMB).toFixed(1)}Mbps`
+      return `${(b / kMB).toFixed(1)}Mbps`;
     }
     if (b > kKilo * kThresholdFactor) {
-      return `${(b/kKilo).toFixed(1)}Kbps`
+      return `${(b / kKilo).toFixed(1)}Kbps`;
     }
-    return `${b}bps`
+    return `${b}bps`;
   }
   return undefined;
 }
 
 /**
  *  Format as 'an hour ago up until now' - and if summaryOnly true, then just return most recent time.
- * 
- * @param seenRange  
- * @param summaryOnly 
+ *
+ * @param seenRange
+ * @param summaryOnly
  * @returns undefined if bad or missing data in date range
  */
- export function FormatIDateTimeRange (
+export function FormatIDateTimeRange(
   seenRange?: IDateTimeRange,
   summaryOnly?: boolean
 ): string | undefined {
   if (seenRange) {
     //const toText: string | undefined = seenRange?.upperBound? moment(seenRange.upperBound).fromNow(): undefined;
-    const toText: string | undefined = seenRange?.upperBound? DateTime.fromJSDate(seenRange.upperBound).toRelative() as string: undefined;
+    const toText: string | undefined = seenRange?.upperBound
+      ? (DateTime.fromJSDate(seenRange.upperBound).toRelative() as string)
+      : undefined;
     if (summaryOnly) {
       return toText;
     }
     //const fromText: string | undefined = seenRange?.lowerBound? moment(seenRange.lowerBound).fromNow(): undefined;
-    const fromText: string | undefined = seenRange?.lowerBound? DateTime.fromJSDate(seenRange.lowerBound).toRelative() as string: undefined;
+    const fromText: string | undefined = seenRange?.lowerBound
+      ? (DateTime.fromJSDate(seenRange.lowerBound).toRelative() as string)
+      : undefined;
     if (fromText || toText) {
-      return (fromText?? "") + ' up until ' +  (toText?? "");
+      return (fromText ?? '') + ' up until ' + (toText ?? '');
     }
   }
   return undefined;
 }
-export function FormatSeenMap (
-  seenRange?:  { [key: string]: IDateTimeRange },
+export function FormatSeenMap(
+  seenRange?: { [key: string]: IDateTimeRange },
   summaryOnly?: boolean
 ): string | undefined {
   if (seenRange && seenRange['Ever']) {
-    return FormatIDateTimeRange (seenRange['Ever'], summaryOnly)
+    return FormatIDateTimeRange(seenRange['Ever'], summaryOnly);
   }
   return undefined;
 }
@@ -91,7 +93,9 @@ export function SortNetworks(nws: INetwork[]) {
   const result = Object.assign([], nws);
   result.sort((l: INetwork, r: INetwork) => {
     //let res = -moment(l.seen?.upperBound).diff(r.seen?.upperBound);
-    let res = -DateTime.fromJSDate(l.seen?.upperBound)?.diff (DateTime.fromJSDate (r.seen?.upperBound));
+    let res = -DateTime.fromJSDate(l.seen?.upperBound)?.diff(
+      DateTime.fromJSDate(r.seen?.upperBound)
+    );
     if (res == 0) {
       const lex = l.externalAddresses ? l.externalAddresses.length : 0;
       const rex = r.externalAddresses ? r.externalAddresses.length : 0;

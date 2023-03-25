@@ -1,4 +1,4 @@
 export interface OperatingSystem {
-    majorOSCategory: string;
-    fullVersionedName: string;
+  majorOSCategory: string;
+  fullVersionedName: string;
 }

@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, Ref, ref, computed } from "vue";
-import moment from "moment";
-import { DateTime } from "luxon";
-import JsonViewer from "vue-json-viewer";
-import { PluralizeNoun } from "src/utils/Linguistics";
-import { Notify } from "quasar";
+import { onMounted, onUnmounted, Ref, ref, computed } from 'vue';
+import moment from 'moment';
+import { DateTime } from 'luxon';
+import JsonViewer from 'vue-json-viewer';
+import { PluralizeNoun } from 'src/utils/Linguistics';
+import { Notify } from 'quasar';
 
-import { IDevice, INetworkAttachmentInfo } from "../models/device/IDevice";
-import { ComputeServiceTypeIconURL } from "../models/device/Utils";
+import { IDevice, INetworkAttachmentInfo } from '../models/device/IDevice';
+import { ComputeServiceTypeIconURL } from '../models/device/Utils';
 import {
   GetNetworkLink,
   GetNetworkName,
@@ -15,19 +15,22 @@ import {
   SortNetworks,
   FormatIDateTimeRange,
   FormatSeenMap,
-} from "../models/network/Utils";
-import { rescanDevice } from "../proxy/API";
+} from '../models/network/Utils';
+import { rescanDevice } from '../proxy/API';
 
 // Components
-import ReadOnlyTextWithHover from "../components/ReadOnlyTextWithHover.vue";
-import Link2DetailsPage from "../components/Link2DetailsPage.vue";
-import NetworkInterfacesDetails from "../components/NetworkInterfacesDetails.vue";
-import PopupEditTextField from "../components/PopupEditTextField.vue";
+import ReadOnlyTextWithHover from '../components/ReadOnlyTextWithHover.vue';
+import Link2DetailsPage from '../components/Link2DetailsPage.vue';
+import NetworkInterfacesDetails from '../components/NetworkInterfacesDetails.vue';
+import PopupEditTextField from '../components/PopupEditTextField.vue';
 
-import { useNetStateStore } from "../stores/Net-State-store";
-import { INetwork } from "src/models/network/INetwork";
+import { useNetStateStore } from '../stores/Net-State-store';
+import { INetwork } from 'src/models/network/INetwork';
 
-import { patchDeviceUserProps_name, patchDeviceUserProps_notes } from "../proxy/API";
+import {
+  patchDeviceUserProps_name,
+  patchDeviceUserProps_notes,
+} from '../proxy/API';
 
 const store = useNetStateStore();
 
@@ -51,7 +54,6 @@ const props = withDefaults(defineProps<Props>(), {
   allowEdit: false,
 });
 
-
 // const props = defineProps({
 //   deviceId: { type: String, required: true },
 //   includeLinkToDetailsPage: { type: Boolean, required: false, default: false },
@@ -64,7 +66,6 @@ const props = withDefaults(defineProps<Props>(), {
 let polling: undefined | NodeJS.Timeout;
 var isRescanning: Ref<boolean> = ref(false);
 
-  
 let defaultDisplayedNameForPopup_ = computed<string>(() => {
   if (
     currentDevice.value?.userOverrides?.name &&
@@ -77,7 +78,7 @@ let defaultDisplayedNameForPopup_ = computed<string>(() => {
   ) {
     return currentDevice.value.names[0].name;
   }
-  return "";
+  return '';
 });
 
 function localNetworkAddresses(): string[] {
@@ -87,7 +88,9 @@ function localNetworkAddresses(): string[] {
       element[1].localAddresses.forEach((e: string) => addresses.push(e));
     });
   }
-  return addresses.filter((value, index, self) => self.indexOf(value) === index);
+  return addresses.filter(
+    (value, index, self) => self.indexOf(value) === index
+  );
 }
 
 function doFetches() {
@@ -117,27 +120,24 @@ onUnmounted(() => {
   clearInterval(polling);
 });
 
-
-
 async function notifyOfDeviceNameEdit_(v: any) {
   if (currentDevice.value?.id) {
     try {
       await patchDeviceUserProps_name(currentDevice.value?.id, v);
       store.fetchDevices([currentDevice.value?.id]);
-      Notify.create("updated");
+      Notify.create('updated');
     } catch (e) {
       Notify.create(`Failed updating network name: ${e.message}!`);
     }
   }
 }
 
-
 async function notifyOfDeviceNotesEdit_(v: any) {
   if (currentDevice.value?.id) {
     try {
       await patchDeviceUserProps_notes(currentDevice.value?.id, v);
       store.fetchDevices([currentDevice.value?.id]);
-      Notify.create("updated");
+      Notify.create('updated');
     } catch (e) {
       Notify.create(`Failed updating network name: ${e.message}!`);
     }
@@ -185,7 +185,7 @@ function SortDeviceIDsByMostRecentFirst_(ids: Array<string>): Array<string> {
 }
 
 function GetSubDeviceDisplay_(id: string, summaryOnly: boolean): string {
-  let result: string = "";
+  let result: string = '';
   {
     let r = store.getDevice(id);
     if (r) {
@@ -196,7 +196,7 @@ function GetSubDeviceDisplay_(id: string, summaryOnly: boolean): string {
     }
   }
   if (result.length == 0 || !summaryOnly) {
-    result += "; ID: " + id;
+    result += '; ID: ' + id;
   }
   return result;
 }
@@ -211,23 +211,25 @@ let currentDeviceDetails = computed<IExtendedDevice | undefined>(() => {
   if (currentDevice.value) {
     let attachedFullNetworkObjects = [] as INetwork[];
     let attachedNetworkInfo = {} as { [key: string]: object };
-    Object.keys(currentDevice.value.attachedNetworks).forEach((element: any) => {
-      const thisNWI = currentDevice.value.attachedNetworks[
-        element
-      ] as INetworkAttachmentInfo;
-      let netName = "?";
-      const thisNetObj: INetwork = store.getNetwork(element);
-      if (thisNetObj) {
-        netName = GetNetworkName(thisNetObj);
-        attachedFullNetworkObjects.push(thisNetObj);
+    Object.keys(currentDevice.value.attachedNetworks).forEach(
+      (element: any) => {
+        const thisNWI = currentDevice.value.attachedNetworks[
+          element
+        ] as INetworkAttachmentInfo;
+        let netName = '?';
+        const thisNetObj: INetwork = store.getNetwork(element);
+        if (thisNetObj) {
+          netName = GetNetworkName(thisNetObj);
+          attachedFullNetworkObjects.push(thisNetObj);
+        }
+        attachedNetworkInfo[element] = { ...thisNWI, name: netName };
       }
-      attachedNetworkInfo[element] = { ...thisNWI, name: netName };
-    });
+    );
     attachedFullNetworkObjects = SortNetworks(attachedFullNetworkObjects);
     return {
       ...currentDevice.value,
       ...{
-        localAddresses: localNetworkAddresses().join(", "),
+        localAddresses: localNetworkAddresses().join(', '),
         attachedNetworks: attachedNetworkInfo,
         attachedFullNetworkObjects: attachedFullNetworkObjects,
       },
@@ -250,8 +252,8 @@ const aliases = computed<string[] | undefined>(() => {
     <div class="row">
       <div class="col-3">Name</div>
       <div class="col">
-      <span>{{ currentDevice.name }}</span>
-      <q-icon dense dark size="xs" name="edit" v-if="props.allowEdit" />
+        <span>{{ currentDevice.name }}</span>
+        <q-icon dense dark size="xs" name="edit" v-if="props.allowEdit" />
         <PopupEditTextField
           v-if="props.allowEdit"
           :defaultValue="defaultDisplayedNameForPopup_"
@@ -264,8 +266,8 @@ const aliases = computed<string[] | undefined>(() => {
       </div>
     </div>
     <div class="row" v-if="aliases && aliases.length >= 1">
-      <div class="col-3">{{ PluralizeNoun("Alias", aliases.length) }}</div>
-      <div class="col">{{ aliases.join(", ") }}</div>
+      <div class="col-3">{{ PluralizeNoun('Alias', aliases.length) }}</div>
+      <div class="col">{{ aliases.join(', ') }}</div>
     </div>
     <div class="row">
       <div class="col-3">ID</div>
@@ -273,22 +275,27 @@ const aliases = computed<string[] | undefined>(() => {
         <ReadOnlyTextWithHover
           :message="currentDevice.id"
           :link="
-            props.includeLinkToDetailsPage ? `/#/device/${currentDevice.id}` : undefined
+            props.includeLinkToDetailsPage
+              ? `/#/device/${currentDevice.id}`
+              : undefined
           "
         />
-        <span class="snapshot" v-if="currentDevice.aggregatedBy">{snapshot}</span>
+        <span class="snapshot" v-if="currentDevice.aggregatedBy"
+          >{snapshot}</span
+        >
         <Link2DetailsPage
           :link="'/#/device/' + currentDevice.id"
           v-if="props.includeLinkToDetailsPage"
         />
       </div>
     </div>
-    <div class="row" v-if="props.allowEdit || currentDevice?.userOverrides?.notes">
+    <div
+      class="row"
+      v-if="props.allowEdit || currentDevice?.userOverrides?.notes"
+    >
       <div class="col-3">Notes</div>
       <div class="col">
-        <span>{{
-          currentDevice?.userOverrides?.notes
-        }}</span>
+        <span>{{ currentDevice?.userOverrides?.notes }}</span>
         <q-icon dense dark size="xs" name="edit" v-if="props.allowEdit" />
         <PopupEditTextField
           v-if="props.allowEdit"
@@ -300,8 +307,10 @@ const aliases = computed<string[] | undefined>(() => {
       </div>
     </div>
     <div class="row" v-if="currentDevice.type">
-      <div class="col-3">{{ PluralizeNoun("Type", currentDevice.type.length) }}</div>
-      <div class="col">{{ currentDevice.type.join(", ") }}</div>
+      <div class="col-3">
+        {{ PluralizeNoun('Type', currentDevice.type.length) }}
+      </div>
+      <div class="col">{{ currentDevice.type.join(', ') }}</div>
     </div>
     <div class="row" v-if="currentDevice.icon">
       <div class="col-3">Icon</div>
@@ -314,16 +323,19 @@ const aliases = computed<string[] | undefined>(() => {
       <div class="col">
         <span
           v-if="
-            currentDevice.manufacturer.shortName || currentDevice.manufacturer.fullName
+            currentDevice.manufacturer.shortName ||
+            currentDevice.manufacturer.fullName
           "
           >{{
-            currentDevice.manufacturer.shortName || currentDevice.manufacturer.fullName
+            currentDevice.manufacturer.shortName ||
+            currentDevice.manufacturer.fullName
           }}</span
         >
         <span v-if="currentDevice.manufacturer.webSiteURL">
           <span
             v-if="
-              currentDevice.manufacturer.shortName || currentDevice.manufacturer.fullName
+              currentDevice.manufacturer.shortName ||
+              currentDevice.manufacturer.fullName
             "
             >;
           </span>
@@ -336,7 +348,9 @@ const aliases = computed<string[] | undefined>(() => {
     </div>
     <div class="row" v-if="currentDevice.operatingSystem">
       <div class="col-3">OS</div>
-      <div class="col">{{ currentDevice.operatingSystem.fullVersionedName }}</div>
+      <div class="col">
+        {{ currentDevice.operatingSystem.fullVersionedName }}
+      </div>
     </div>
     <div class="row" v-if="currentDevice.seen">
       <div class="col-3">Seen</div>
@@ -357,16 +371,25 @@ const aliases = computed<string[] | undefined>(() => {
               class="nowrap"
             />
           </div>
-          <div v-if="props.showSeenDetails" class="col no-wrap truncateWithElipsis">
+          <div
+            v-if="props.showSeenDetails"
+            class="col no-wrap truncateWithElipsis"
+          >
             <span v-if="seenType != 'Ever'">via</span> {{ seenType }}
           </div>
         </div>
       </div>
     </div>
-    <div class="row" v-if="currentDevice.attachedNetworks && currentDeviceDetails">
+    <div
+      class="row"
+      v-if="currentDevice.attachedNetworks && currentDeviceDetails"
+    >
       <div class="col-3">
         {{
-          PluralizeNoun("Network", currentDeviceDetails.attachedFullNetworkObjects.length)
+          PluralizeNoun(
+            'Network',
+            currentDeviceDetails.attachedFullNetworkObjects.length
+          )
         }}
       </div>
       <div class="col">
@@ -380,15 +403,18 @@ const aliases = computed<string[] | undefined>(() => {
             v-if="
               props.showOldNetworks ||
               (attachedNet.seen?.upperBound &&
-                DateTime.fromJSDate(attachedNet.seen?.upperBound).diffNow('minutes')
-                  .minutes > -10)
+                DateTime.fromJSDate(attachedNet.seen?.upperBound).diffNow(
+                  'minutes'
+                ).minutes > -10)
             "
           >
             <div class="row">
               <div class="col no-wrap truncateWithElipsis">
                 <ReadOnlyTextWithHover
                   :message="GetNetworkName(attachedNet)"
-                  :popupTitle="GetNetworkName(attachedNet) + ' (' + attachedNet.id + ')'"
+                  :popupTitle="
+                    GetNetworkName(attachedNet) + ' (' + attachedNet.id + ')'
+                  "
                   :link="GetNetworkLink(attachedNet.id)"
                   title="Network Name"
                 />
@@ -396,34 +422,52 @@ const aliases = computed<string[] | undefined>(() => {
             </div>
             <div
               class="row"
-              v-if="currentDevice.attachedNetworks[attachedNet.id].hardwareAddresses"
+              v-if="
+                currentDevice.attachedNetworks[attachedNet.id].hardwareAddresses
+              "
             >
               <div class="col-1" />
-              <div class="col no-wrap truncateWithElipsis">{{PluralizeNoun("Hardware Address", currentDevice.attachedNetworks[attachedNet.id].hardwareAddresses.length)}}</div>
+              <div class="col no-wrap truncateWithElipsis">
+                {{
+                  PluralizeNoun(
+                    'Hardware Address',
+                    currentDevice.attachedNetworks[attachedNet.id]
+                      .hardwareAddresses.length
+                  )
+                }}
+              </div>
               <div class="col no-wrap truncateWithElipsis">
                 <ReadOnlyTextWithHover
                   :message="
-                    currentDevice.attachedNetworks[attachedNet.id].hardwareAddresses.join(
-                      ', '
-                    )
+                    currentDevice.attachedNetworks[
+                      attachedNet.id
+                    ].hardwareAddresses.join(', ')
                   "
                 />
               </div>
             </div>
             <div
               class="row"
-              v-if="currentDevice.attachedNetworks[attachedNet.id].localAddresses"
+              v-if="
+                currentDevice.attachedNetworks[attachedNet.id].localAddresses
+              "
             >
               <div class="col-1" />
               <div class="col no-wrap truncateWithElipsis">
-               {{ PluralizeNoun("Network Address Binding", currentDevice.attachedNetworks[attachedNet.id].localAddresses.length)}}
+                {{
+                  PluralizeNoun(
+                    'Network Address Binding',
+                    currentDevice.attachedNetworks[attachedNet.id]
+                      .localAddresses.length
+                  )
+                }}
               </div>
               <div class="col no-wrap truncateWithElipsis">
                 <ReadOnlyTextWithHover
                   :message="
-                    currentDevice.attachedNetworks[attachedNet.id].localAddresses.join(
-                      ', '
-                    )
+                    currentDevice.attachedNetworks[
+                      attachedNet.id
+                    ].localAddresses.join(', ')
                   "
                 />
               </div>
@@ -443,10 +487,14 @@ const aliases = computed<string[] | undefined>(() => {
     </div>
     <div class="row">
       <div class="col-3">
-        {{ PluralizeNoun("Service", GetServices(currentDevice).length) }}
+        {{ PluralizeNoun('Service', GetServices(currentDevice).length) }}
       </div>
       <div class="col">
-        <div class="row" v-for="svc in GetServices(currentDevice)" v-bind:key="svc.name">
+        <div
+          class="row"
+          v-for="svc in GetServices(currentDevice)"
+          v-bind:key="svc.name"
+        >
           <div class="col-1">
             <img
               v-if="ComputeServiceTypeIconURL(svc.name).url"
@@ -483,10 +531,10 @@ const aliases = computed<string[] | undefined>(() => {
           v-if="!currentDevice.aggregatedBy"
           :disabled="isRescanning"
         >
-          {{ isRescanning ? "**SCANNING**" : "Rescan" }}
+          {{ isRescanning ? '**SCANNING**' : 'Rescan' }}
         </q-btn>
         <span v-if="currentDevice.openPorts">{{
-          currentDevice.openPorts.join(", ")
+          currentDevice.openPorts.join(', ')
         }}</span>
       </div>
     </div>
@@ -553,7 +601,7 @@ const aliases = computed<string[] | undefined>(() => {
       <div class="col-3">
         {{
           PluralizeNoun(
-            "Attached Network Interface",
+            'Attached Network Interface',
             currentDevice.attachedNetworkInterfaces.length
           )
         }}
@@ -565,7 +613,10 @@ const aliases = computed<string[] | undefined>(() => {
         />
       </div>
     </div>
-    <div class="row" v-if="currentDevice.userOverrides && props.showExtraDetails">
+    <div
+      class="row"
+      v-if="currentDevice.userOverrides && props.showExtraDetails"
+    >
       <div class="col-3">USEROVERRIDES</div>
       <div class="col">
         <json-viewer
