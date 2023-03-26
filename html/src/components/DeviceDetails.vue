@@ -16,7 +16,7 @@ import {
   FormatIDateTimeRange,
   FormatSeenMap,
 } from '../models/network/Utils';
-import { rescanDevice } from '../proxy/API';
+import * as proxyAPI from '../proxy/API';
 
 // Components
 import ReadOnlyTextWithHover from '../components/ReadOnlyTextWithHover.vue';
@@ -107,6 +107,9 @@ onMounted(() => {
   }, 15 * 1000);
 });
 
+const editNamePopup = ref(null);
+const editNotesPopup = ref(null);
+
 onUnmounted(() => {
   clearInterval(polling);
 });
@@ -143,17 +146,29 @@ function validateDeviceName_(v: any) {
   }
 }
 
-async function rescanSelectedDevice(): Promise<void> {
+async function rescanDevice(): Promise<void> {
   isRescanning.value = true;
   try {
     if (currentDevice?.value) {
-      await rescanDevice(currentDevice.value.id);
+      await proxyAPI.rescanDevice(currentDevice.value.id);
       store.fetchDevice(currentDevice.value.id);
     }
   } finally {
     isRescanning.value = false;
   }
 }
+async function editName(): Promise<void> {
+  editNamePopup.value.startEdit();
+}
+async function editNotes(): Promise<void> {
+  editNotesPopup.value.startEdit();
+}
+
+defineExpose({
+  rescanDevice,
+  editName,
+  editNotes,
+});
 
 const currentDevice = computed<IDevice | undefined>(
   () => props.device ?? store.getDevice(props.deviceId as string)
@@ -247,6 +262,7 @@ const aliases = computed<string[] | undefined>(() => {
         <q-icon dense dark size="xs" name="edit" v-if="props.allowEdit" />
         <PopupEditTextField
           v-if="props.allowEdit"
+          ref="editNamePopup"
           :defaultValue="defaultDisplayedNameForPopup_"
           :initialValue="currentDevice?.userOverrides?.name"
           @update:userSetValue="notifyOfDeviceNameEdit_"
@@ -286,6 +302,7 @@ const aliases = computed<string[] | undefined>(() => {
         <span>{{ currentDevice?.userOverrides?.notes }}</span>
         <q-icon dense dark size="xs" name="edit" v-if="props.allowEdit" />
         <PopupEditTextField
+          ref="editNotesPopup"
           v-if="props.allowEdit"
           defaultValue=""
           :initialValue="currentDevice?.userOverrides?.notes"
@@ -515,7 +532,7 @@ const aliases = computed<string[] | undefined>(() => {
           elevation="2"
           dense
           size="sm"
-          @click="rescanSelectedDevice"
+          @click="rescanDevice"
           v-if="!currentDevice.aggregatedBy"
           :disabled="isRescanning"
         >

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { start } from 'repl';
 import { ref, reactive, watchEffect, toRef, watch } from 'vue';
 
 const props = defineProps({
@@ -33,6 +34,16 @@ let reactiveData: {
   newUserSetValueUI: undefined,
 });
 
+// Pointer to DOM field, to use internally in select-all UI flourish
+let thePoupEdit = ref(null);
+let thisInputFieldName = ref(null);
+
+function startEdit() {
+  thePoupEdit.value.show();
+}
+
+defineExpose({ startEdit });
+
 // Forward props changes to reactiveData we use in component
 watch(
   toRef(props, 'defaultValue'),
@@ -42,9 +53,6 @@ watch(
   toRef(props, 'initialValue'),
   () => (reactiveData.initialValue = props.initialValue || '')
 );
-
-// Pointer to DOM field, to use internally in select-all UI flourish
-let thisInputFieldName = ref(null);
 
 function doValidate_(v: any) {
   // console.log('enter doValidate_ v=', v, v && v.length >= 1)
@@ -75,6 +83,7 @@ function updateValue_(event: any, scope: any, newValue: string | null) {
 
 <template>
   <q-popup-edit
+    ref="thePoupEdit"
     v-model="reactiveData.newUserSetValueUI"
     v-slot="scope"
     @hide="doValidate_"
@@ -82,8 +91,8 @@ function updateValue_(event: any, scope: any, newValue: string | null) {
     @update:modelValue="updateEditValue"
   >
     <q-input
-      ref="thisInputFieldName"
       autofocus
+      ref="thisInputFieldName"
       dense
       v-model="scope.value"
       :hint="`Use ${props.thingBeingEdited} (${

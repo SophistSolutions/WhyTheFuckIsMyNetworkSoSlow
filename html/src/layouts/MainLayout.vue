@@ -43,22 +43,36 @@ function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value;
 }
 
+const defaultContextMenu = [
+  { name: 'No special operations on this page', enabled: false },
+];
 var breadcrumbs = ref([]);
+var contextMenu = ref(defaultContextMenu);
 
 function updateBreadcrumbs(newBreadCrumbs: any) {
   // explicit EVENTs can be used to update the breadcrumbs (like when they contain dynamic per page information)
   breadcrumbs.value = newBreadCrumbs;
 }
 
+function updateContextMenu(newContextMenu: any) {
+  contextMenu.value = newContextMenu;
+}
+
 router.afterEach((to, from) => {
   // each time we nagivate, update the breadcrumbs
   breadcrumbs.value = to.meta.breadcrumbs;
+  contextMenu.value = to.meta.contextMenu ?? defaultContextMenu;
 });
 
 onMounted(() => {
   // needed to capture the initial breadcrumbs value
   breadcrumbs.value = route.meta.breadcrumbs;
+  contextMenu.value = route.meta.contextMenu ?? defaultContextMenu;
 });
+
+function phred() {
+  console.log('called phred');
+}
 </script>
 
 <template>
@@ -86,19 +100,17 @@ onMounted(() => {
         >
           <q-menu>
             <q-list style="min-width: 100px">
-              <template
-                v-for="(item, index) in router.options.routes"
-                :key="index"
-              >
+              <template v-for="(item, index) in contextMenu" :key="index">
                 <q-item
-                  v-if="item.name && item?.meta?.showInDotDotDotMenu"
+                  v-if="item.name"
                   clickable
                   v-close-popup
-                  :to="item.path"
+                  :active="item.enabled"
+                  :onClick="item.onClick"
                 >
                   <q-item-section> {{ item.name }}</q-item-section>
                 </q-item>
-                <q-separator v-if="item?.meta?.divderAfter" />
+                <q-separator v-if="item?.divderAfter" />
               </template>
             </q-list>
           </q-menu>
@@ -119,7 +131,10 @@ onMounted(() => {
     </q-drawer>
 
     <q-page-container>
-      <router-view @update:breadcrumbs="updateBreadcrumbs" />
+      <router-view
+        @update:breadcrumbs="updateBreadcrumbs"
+        @update:contextMenu="updateContextMenu"
+      />
     </q-page-container>
   </q-layout>
 </template>

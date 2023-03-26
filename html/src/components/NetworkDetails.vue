@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, computed, ComputedRef } from 'vue';
+import { onMounted, onUnmounted, computed, ComputedRef, ref } from 'vue';
 import { Notify } from 'quasar';
 
 import JsonViewer from 'vue-json-viewer';
@@ -82,6 +82,21 @@ function doFetches() {
     }
   }
 }
+
+const editNamePopup = ref(null);
+const editNotesPopup = ref(null);
+
+async function editName(): Promise<void> {
+  editNamePopup.value.startEdit();
+}
+async function editNotes(): Promise<void> {
+  editNotesPopup.value.startEdit();
+}
+
+defineExpose({
+  editName,
+  editNotes,
+});
 
 onMounted(() => {
   // first time check immediately, then more gradually for updates
@@ -169,6 +184,7 @@ const aliases = computed<string[] | undefined>(() => {
         }}</span>
         <q-icon dense dark size="xs" name="edit" v-if="props.allowEdit" />
         <PopupEditTextField
+          ref="editNamePopup"
           v-if="props.allowEdit"
           :defaultValue="defaultDisplayedNameForPopup_"
           :initialValue="currentNetwork?.userOverrides?.name"
@@ -208,6 +224,7 @@ const aliases = computed<string[] | undefined>(() => {
         <span>{{ currentNetwork?.userOverrides?.notes }}</span>
         <q-icon dense dark size="xs" name="edit" v-if="props.allowEdit" />
         <PopupEditTextField
+          ref="editNotesPopup"
           v-if="props.allowEdit"
           defaultValue=""
           :initialValue="currentNetwork?.userOverrides?.notes"

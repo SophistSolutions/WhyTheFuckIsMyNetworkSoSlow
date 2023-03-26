@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, computed, ComputedRef } from 'vue';
+import { onMounted, onUnmounted, computed, ComputedRef, ref, Ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { useQuasar } from 'quasar';
 import { watch } from 'vue';
@@ -16,7 +16,7 @@ const store = useNetStateStore();
 let polling: undefined | NodeJS.Timeout;
 const route = useRoute();
 
-const emit = defineEmits(['update:breadcrumbs']);
+const emit = defineEmits(['update:breadcrumbs', 'update:contextMenu']);
 
 onMounted(() => {
   // first time check quickly, then more gradually
@@ -29,6 +29,8 @@ onMounted(() => {
   }, 15 * 1000);
 });
 
+const networkDetails: Ref<any> = ref(null);
+
 onUnmounted(() => {
   clearInterval(polling);
 });
@@ -36,6 +38,13 @@ onUnmounted(() => {
 let network: ComputedRef<INetwork> = computed(() => {
   return store.getNetwork(route.params.id as string);
 });
+
+function doEditName() {
+  networkDetails.value?.editName();
+}
+function doEditNotes() {
+  networkDetails.value?.editNotes();
+}
 
 watch(
   () => network.value,
@@ -63,6 +72,10 @@ watch(
           { text: 'Networks', href: '/#/networks' },
           { text: network.names[0].name, disabled: true },
         ]);
+        emit('update:contextMenu', [
+          { name: 'Edit Network Name', enabled: true, onClick: doEditName },
+          { name: 'Edit Network Notes', enabled: true, onClick: doEditNotes },
+        ]);
       }
     }
   },
@@ -82,6 +95,7 @@ watch(
       </q-card-section>
       <q-card-section style="margin-top: 0">
         <NetworkDetails
+          ref="networkDetails"
           :network="network"
           v-if="network"
           :showExtraDetails="true"

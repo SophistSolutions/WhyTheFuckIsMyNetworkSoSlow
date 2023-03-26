@@ -1,5 +1,13 @@
 <script setup lang="ts">
-import { watch, onMounted, onUnmounted, computed, ComputedRef, ref } from 'vue';
+import {
+  watch,
+  onMounted,
+  onUnmounted,
+  computed,
+  ComputedRef,
+  ref,
+  Ref,
+} from 'vue';
 import { useRoute } from 'vue-router';
 
 import { IDevice } from '../models/device/IDevice';
@@ -20,9 +28,11 @@ const props = defineProps({
 
 let polling: undefined | NodeJS.Timeout;
 
-const emit = defineEmits(['update:breadcrumbs']);
+const emit = defineEmits(['update:breadcrumbs', 'update:contextMenu']);
 
 const kRefreshFrequencyInSeconds_: number = 15;
+
+let deviceDetailsComponent: any = null;
 
 onMounted(() => {
   // first time check quickly, then more gradually
@@ -55,6 +65,16 @@ let deviceSeen: ComputedRef<object | undefined> = computed(() => {
   return undefined;
 });
 
+function doReScan() {
+  deviceDetails.value?.rescanDevice();
+}
+function doEditName() {
+  deviceDetails.value?.editName();
+}
+function doEditNotes() {
+  deviceDetails.value?.editNotes();
+}
+
 watch(
   () => device.value,
   async (device) => {
@@ -80,11 +100,22 @@ watch(
           { text: 'Devices', href: '/#/devices' },
           { text: device.names[0].name, disabled: true },
         ]);
+        emit('update:contextMenu', [
+          {
+            name: 'Re-Scan this device',
+            enabled: true,
+            onClick: doReScan,
+          },
+          { name: 'Edit Device Name', enabled: true, onClick: doEditName },
+          { name: 'Edit Device Notes', enabled: true, onClick: doEditNotes },
+        ]);
       }
     }
   },
   { immediate: true }
 );
+
+const deviceDetails: Ref<any> = ref(null);
 
 // See https://github.com/storybookjs/storybook/issues/17954 for why we need this hack
 var addHeaderSectionBugWorkaround = ref(false);
@@ -115,6 +146,7 @@ var showSeenDetails = ref(false);
       </q-card-section>
       <q-card-section>
         <DeviceDetails
+          ref="deviceDetails"
           v-if="device"
           :device="device"
           :showExtraDetails="true"
