@@ -50,11 +50,10 @@ let device: ComputedRef<IDevice | null> = computed(() => {
 });
 let deviceSeen: ComputedRef<object | undefined> = computed(() => {
   if (device.value?.seen) {
-    return device.value?.seen["Ever"];
+    return device.value?.seen['Ever'];
   }
   return undefined;
 });
-
 
 watch(
   () => device.value,
@@ -66,8 +65,14 @@ watch(
         emit('update:breadcrumbs', [
           { text: 'Home', href: '/#/' },
           { text: 'Devices', href: '/#/devices' },
-          { text: device.names[0].name, href: '/#/device/' + device.aggregatedBy },
-          { text: FormatIDateTimeRange(deviceSeen.value, true), disabled: true },
+          {
+            text: device.names[0].name,
+            href: '/#/device/' + device.aggregatedBy,
+          },
+          {
+            text: FormatIDateTimeRange(deviceSeen.value, true),
+            disabled: true,
+          },
         ]);
       } else {
         emit('update:breadcrumbs', [
@@ -77,7 +82,8 @@ watch(
         ]);
       }
     }
-  } ,{immediate:true}
+  },
+  { immediate: true }
 );
 
 // See https://github.com/storybookjs/storybook/issues/17954 for why we need this hack

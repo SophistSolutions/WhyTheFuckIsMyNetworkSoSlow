@@ -54,7 +54,6 @@ const props = withDefaults(defineProps<Props>(), {
   allowEdit: false,
 });
 
-
 let polling: undefined | NodeJS.Timeout;
 var isRescanning: Ref<boolean> = ref(false);
 

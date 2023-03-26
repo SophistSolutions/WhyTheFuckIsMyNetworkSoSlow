@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, computed, ComputedRef } from "vue";
-import { useRoute } from "vue-router";
-import { useQuasar } from "quasar";
-import { watch } from "vue";
-import { IDevice } from "../models/device/IDevice";
-import { INetworkInterface } from "../models/network/INetworkInterface";
+import { onMounted, onUnmounted, computed, ComputedRef } from 'vue';
+import { useRoute } from 'vue-router';
+import { useQuasar } from 'quasar';
+import { watch } from 'vue';
+import { IDevice } from '../models/device/IDevice';
+import { INetworkInterface } from '../models/network/INetworkInterface';
 
-import NetworkInterfaceDetails from "../components/NetworkInterfaceDetails.vue";
+import NetworkInterfaceDetails from '../components/NetworkInterfaceDetails.vue';
 
-import { FormatIDateTimeRange } from "../models/network/Utils";
-import { useNetStateStore } from "../stores/Net-State-store";
+import { FormatIDateTimeRange } from '../models/network/Utils';
+import { useNetStateStore } from '../stores/Net-State-store';
 
 const $q = useQuasar();
 const store = useNetStateStore();
@@ -17,7 +17,7 @@ const store = useNetStateStore();
 let polling: undefined | NodeJS.Timeout;
 const route = useRoute();
 
-const emit = defineEmits(["update:breadcrumbs"]);
+const emit = defineEmits(['update:breadcrumbs']);
 
 onMounted(() => {
   // first time check quickly, then more gradually
@@ -34,9 +34,11 @@ onUnmounted(() => {
   clearInterval(polling);
 });
 
-let networkInterface: ComputedRef<INetworkInterface | undefined> = computed(() => {
-  return store.getNetworkInterface(route.params.id as string);
-});
+let networkInterface: ComputedRef<INetworkInterface | undefined> = computed(
+  () => {
+    return store.getNetworkInterface(route.params.id as string);
+  }
+);
 let owningDeviceID: ComputedRef<string | undefined> = computed(() => {
   if (networkInterface.value && networkInterface.value.attachedToDevices) {
     return networkInterface.value.attachedToDevices[0]; // @todo consider how to handle if more than one - zero sb undefined
@@ -51,7 +53,7 @@ let owningDevice: ComputedRef<IDevice | undefined> = computed(() => {
 });
 let networkInterfaceSeen: ComputedRef<object | undefined> = computed(() => {
   if (owningDevice.value?.seen) {
-    return owningDevice.value?.seen["Ever"];
+    return owningDevice.value?.seen['Ever'];
   }
   return undefined;
 });
@@ -71,12 +73,12 @@ watch(
     }
     if (networkInterface) {
       if (networkInterface.aggregatedBy) {
-        emit("update:breadcrumbs", [
-          { text: "Home", href: "/#/" },
-          { text: "Network Interfaces" },
+        emit('update:breadcrumbs', [
+          { text: 'Home', href: '/#/' },
+          { text: 'Network Interfaces' },
           {
             text: networkInterface.friendlyName,
-            href: "/#/network-interface/" + networkInterface.aggregatedBy,
+            href: '/#/network-interface/' + networkInterface.aggregatedBy,
           },
           {
             text: FormatIDateTimeRange(networkInterfaceSeen.value, true),
@@ -84,9 +86,9 @@ watch(
           },
         ]);
       } else {
-        emit("update:breadcrumbs", [
-          { text: "Home", href: "/#/" },
-          { text: "Network Interfaces" },
+        emit('update:breadcrumbs', [
+          { text: 'Home', href: '/#/' },
+          { text: 'Network Interfaces' },
           { text: networkInterface.friendlyName, disabled: true },
         ]);
       }
@@ -103,10 +105,12 @@ watch(
         Network Interface
         {{
           networkInterface == null
-            ? "loading..."
+            ? 'loading...'
             : '"' + networkInterface.friendlyName + '"'
         }}
-        <span class="snapshot" v-if="networkInterface?.aggregatedBy">{snapshot}</span>
+        <span class="snapshot" v-if="networkInterface?.aggregatedBy"
+          >{snapshot}</span
+        >
       </q-card-section>
       <q-card-section style="margin-top: 0">
         <NetworkInterfaceDetails
