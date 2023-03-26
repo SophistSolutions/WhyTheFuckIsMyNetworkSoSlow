@@ -102,7 +102,12 @@ watch(
         ]);
         emit('update:contextMenu', [
           { name: 'Edit Device Name', enabled: true, onClick: doEditName },
-          { name: 'Edit Device Notes', enabled: true, onClick: doEditNotes, dividerAfter:true },
+          {
+            name: 'Edit Device Notes',
+            enabled: true,
+            onClick: doEditNotes,
+            dividerAfter: true,
+          },
           { name: 'Re-Scan this device', enabled: true, onClick: doReScan },
         ]);
       }

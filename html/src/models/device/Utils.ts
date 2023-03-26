@@ -116,6 +116,12 @@ export function ComputeDeviceTypeIconURLs(t: string[] | null): Array<{
             label: ti,
           });
           break;
+        case 'WTFIMNSS-Collector':
+          result.push({
+            url: 'images/WTFCollector.png',
+            label: ti,
+          });
+          break;
         default:
           result.push({
             label: ti,
