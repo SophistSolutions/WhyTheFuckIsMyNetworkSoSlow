@@ -1,4 +1,10 @@
-maybe do the switch of menu to left and just context menu on right side (refresh and maybe edit name? and edit tags? and edit notes and recheck device)
+maybe do the switch of menu to left and just context menu on right side
+ (refresh and maybe edit name? and edit tags? and edit notes and recheck device)
+
+ https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/87
+
+
+ 
 ----
 https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/86
 	On Linux (so far only seen on release builds) we sometimes get Device or resource busy storm and then app (get devices at least) hangs
