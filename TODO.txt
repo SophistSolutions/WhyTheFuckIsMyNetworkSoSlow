@@ -1,7 +1,4 @@
-maybe do the switch of menu to left and just context menu on right side
- (refresh and maybe edit name? and edit tags? and edit notes and recheck device)
-
- https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/87
+Verify I didn't break edit device names/network names/notes etc with recent chagnes
 
 
  
