@@ -105,6 +105,7 @@ var showSeenDetails = ref(false);
       <q-card-section class="text-subtitle2" style="padding-bottom: 0">
         Device Details for
         {{ device == null ? 'loading...' : '"' + device.name + '"' }}
+        <span class="snapshot" v-if="device?.aggregatedBy">{snapshot}</span>
       </q-card-section>
       <q-card-section>
         <DeviceDetails

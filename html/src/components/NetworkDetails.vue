@@ -191,9 +191,6 @@ const aliases = computed<string[] | undefined>(() => {
       <div class="col-3">ID</div>
       <div class="col">
         {{ currentNetwork.id }}
-        <span class="snapshot" v-if="currentNetwork.aggregatedBy"
-          >{snapshot}</span
-        >
       </div>
     </div>
     <div class="row" v-if="currentNetwork.seen">

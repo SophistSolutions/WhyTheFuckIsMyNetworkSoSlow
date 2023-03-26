@@ -54,14 +54,6 @@ const props = withDefaults(defineProps<Props>(), {
   allowEdit: false,
 });
 
-// const props = defineProps({
-//   deviceId: { type: String, required: true },
-//   includeLinkToDetailsPage: { type: Boolean, required: false, default: false },
-//   showExtraDetails: { type: Boolean, required: false, default: false },
-//   showOldNetworks: { type: Boolean, required: false, default: false },
-//   showInactiveInterfaces: { type: Boolean, required: false, default: false },
-//   showSeenDetails: { type: Boolean, required: false, default: false },
-// })
 
 let polling: undefined | NodeJS.Timeout;
 var isRescanning: Ref<boolean> = ref(false);
@@ -280,9 +272,6 @@ const aliases = computed<string[] | undefined>(() => {
               : undefined
           "
         />
-        <span class="snapshot" v-if="currentDevice.aggregatedBy"
-          >{snapshot}</span
-        >
         <Link2DetailsPage
           :link="'/#/device/' + currentDevice.id"
           v-if="props.includeLinkToDetailsPage"
