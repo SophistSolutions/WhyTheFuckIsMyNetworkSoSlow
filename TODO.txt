@@ -26,9 +26,7 @@ https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/86
 		  hash, we need an examplar of something that hashes to it (maybe a function to lookup details by fingerprint).
 		  Probbaly OK no API to create fingerprint, but need API to get the exmemplars so user can pick intelliegently.
 
----
-Icon for WTFCollecotr - https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/88
--
+--
 MAYBE in devices page
  popup
    GROUP by
