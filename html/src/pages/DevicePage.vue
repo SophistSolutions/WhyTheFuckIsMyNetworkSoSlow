@@ -101,13 +101,9 @@ watch(
           { text: device.names[0].name, disabled: true },
         ]);
         emit('update:contextMenu', [
-          {
-            name: 'Re-Scan this device',
-            enabled: true,
-            onClick: doReScan,
-          },
           { name: 'Edit Device Name', enabled: true, onClick: doEditName },
-          { name: 'Edit Device Notes', enabled: true, onClick: doEditNotes },
+          { name: 'Edit Device Notes', enabled: true, onClick: doEditNotes, dividerAfter:true },
+          { name: 'Re-Scan this device', enabled: true, onClick: doReScan },
         ]);
       }
     }

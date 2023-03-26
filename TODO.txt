@@ -1,8 +1,3 @@
-Verify I didn't break edit device names/network names/notes etc with recent chagnes
-
-
- 
-----
 https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/86
 	On Linux (so far only seen on release builds) we sometimes get Device or resource busy storm and then app (get devices at least) hangs
 	(TESTING MORE IF STILL HAPPENS WIHT LOCK FLAG SET)

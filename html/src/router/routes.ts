@@ -8,7 +8,7 @@ const routes: RouteRecordRaw[] = [
     children: [{ path: '/', component: () => import('pages/HomePage.vue') }],
     meta: {
       breadcrumbs: [{ text: 'Home', exact: true, disabled: true }],
-      divderAfter: true,
+      dividerAfter: true,
       showInDotDotDotMenu: true,
     },
   },
