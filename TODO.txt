@@ -24,6 +24,11 @@ http://hercules/api/v1/devices
 	DELTE objects if NEVER SEEN, and have no user overrides (except the single aggregateDeviceHardwareAddresses -)
 	maybe need a flag saying user-expressed-interest-in - if UI did something to add())
 
+
+---
+use localstorage to preserve last set values for filters and isOpen flag on drawer. THEN
+when UNSET ((on launch of a new page) - use those values by default).
+must experiement to make sure I dont mess up case of two browser isntances open at same time.
 ---
 
 https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/86
