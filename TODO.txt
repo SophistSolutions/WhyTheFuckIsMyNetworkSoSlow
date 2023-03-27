@@ -1,3 +1,31 @@
+http://hercules/api/v1/devices
+	lists 8f69c818-403a-1f36-6591-71a309666d1c
+
+	and 
+
+	http://hercules/api/v1/devices/8f69c818-403a-1f36-6591-71a309666d1c
+		{
+		"attachedNetworks": {
+		},
+		"id": "8f69c818-403a-1f36-6591-71a309666d1c",
+		"names": [
+		],
+		"seen": {
+			
+		},
+		"userOverrides": {
+			"aggregateDeviceHardwareAddresses": [
+			"8c:c6:81:66:ca:92"
+			]
+		}
+		}
+0dfd1217-ddf1-c9df-8cf8-8331b90881df
+	also seems to refer to teh same - probabl;y bogus - device (maybe a real device but should have been merged with another record)
+	DELTE objects if NEVER SEEN, and have no user overrides (except the single aggregateDeviceHardwareAddresses -)
+	maybe need a flag saying user-expressed-interest-in - if UI did something to add())
+
+---
+
 https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/86
 	On Linux (so far only seen on release builds) we sometimes get Device or resource busy storm and then app (get devices at least) hangs
 	(TESTING MORE IF STILL HAPPENS WIHT LOCK FLAG SET)
