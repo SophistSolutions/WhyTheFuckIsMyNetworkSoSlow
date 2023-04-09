@@ -1,23 +1,22 @@
 <script setup lang="ts">
-import { start } from 'repl';
-import { ref, reactive, watchEffect, toRef, watch } from 'vue';
+import { ref, reactive, watchEffect, toRef, watch } from "vue";
 
 const props = defineProps({
   // This is the value - if initialValue/newSetValue===null, that will be used; this is just used for display so no need to set to null sometimes
   defaultValue: { type: String, required: true },
   // This is the value of the field being edited. If null, means using default value, and if not-null, must be valid string
   initialValue: { type: String, required: false },
-  // Valled before allowing 'userSetValue' event
+  // Called before allowing 'userSetValue' event
   validator: { type: Function, required: false },
   validateFailedMsg: { type: String, required: false },
   thingBeingEdited: { type: String, required: true },
 });
 
-const emit = defineEmits(['update:userSetValue']);
+const emit = defineEmits(["update:userSetValue"]);
 
 // Call this not notify parent component of an edit/change
 const updateEditValue = (newValue: string | null) => {
-  emit('update:userSetValue', newValue);
+  emit("update:userSetValue", newValue);
 };
 
 let reactiveData: {
@@ -46,12 +45,12 @@ defineExpose({ startEdit });
 
 // Forward props changes to reactiveData we use in component
 watch(
-  toRef(props, 'defaultValue'),
-  () => (reactiveData.defaultValue = props.defaultValue || '')
+  toRef(props, "defaultValue"),
+  () => (reactiveData.defaultValue = props.defaultValue || "")
 );
 watch(
-  toRef(props, 'initialValue'),
-  () => (reactiveData.initialValue = props.initialValue || '')
+  toRef(props, "initialValue"),
+  () => (reactiveData.initialValue = props.initialValue || "")
 );
 
 function doValidate_(v: any) {
@@ -95,13 +94,10 @@ function updateValue_(event: any, scope: any, newValue: string | null) {
       ref="thisInputFieldName"
       dense
       v-model="scope.value"
-      :hint="`Use ${props.thingBeingEdited} (${
-        reactiveData.newUserSetValueUI == null ? 'using ' : ''
-      }default: ${reactiveData.defaultValue})`"
+      :hint="`Use ${props.thingBeingEdited} ('${reactiveData.defaultValue}\' is the default)`"
       :placeholder="reactiveData.defaultValue"
       :rules="[
-        (val) =>
-          scope.validate(val) || props.validateFailedMsg || 'Failed validation',
+        (val) => scope.validate(val) || props.validateFailedMsg || 'Failed validation',
       ]"
       @focus="this.$refs?.thisInputFieldName.select()"
     >
@@ -120,9 +116,7 @@ function updateValue_(event: any, scope: any, newValue: string | null) {
           color="positive"
           icon="check_circle"
           @click.stop.prevent="updateValue_($event, scope, scope.value)"
-          :disable="
-            scope.validate(scope.value) === false || scope.value == null
-          "
+          :disable="scope.validate(scope.value) === false || scope.value == null"
           :title="`Use this as (override) ${props.thingBeingEdited}`"
         />
         <q-btn
