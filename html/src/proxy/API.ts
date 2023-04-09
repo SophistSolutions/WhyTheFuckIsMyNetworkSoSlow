@@ -237,6 +237,22 @@ export async function patchDeviceUserProps_notes(
   );
 }
 
+export async function patchDeviceUserProps_tags(
+  id: string,
+  newNotes: string[] | null
+): Promise<void> {
+  const ops = [];
+  if (newNotes) {
+    ops.push({ op: 'add', path: '/userOverrides/tags', value: newNotes });
+  } else {
+    ops.push({ op: 'remove', path: '/userOverrides/tags' });
+  }
+  return await patchCallHelper_(
+    `${gRuntimeConfiguration.API_ROOT}/api/v1/devices/${id}`,
+    ops
+  );
+}
+
 export async function patchNetworkUserProps_name(
   id: string,
   newName: string | null
