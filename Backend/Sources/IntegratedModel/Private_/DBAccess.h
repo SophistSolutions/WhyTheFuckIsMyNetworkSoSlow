@@ -153,7 +153,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_::DB
 
     private:
         static constexpr Configuration::Version                                              kCurrentVersion_ = Configuration::Version{1, 0, Configuration::VersionStage::Alpha, 0};
-        BackendApp::Common::DB                                                               fDB_;
+        BackendApp::Common::DB                                                               fDB_;                              // Not accessed directly except during construction/destruction
         Synchronized<SQL::Connection::Ptr>                                                   fDBConnectionPtr_{fDB_.NewConnection ()};
         Execution::Thread::Ptr                                                               fDatabaseSyncThread_{};
         Synchronized<Mapping<GUID, Device::UserOverridesType>>                               fCachedDeviceUserSettings_;
