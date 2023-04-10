@@ -320,7 +320,9 @@ const aliases = computed<string[] | undefined>(() => {
     <div class="row" v-if="props.allowEdit || currentDevice?.userOverrides?.tags">
       <div class="col-3">Tags</div>
       <div class="col">
-        <span>{{ currentDevice?.userOverrides?.tags?.join(", ") }}</span>
+        <span  v-for="d in currentDevice?.userOverrides?.tags"  v-bind:key="d">
+          <q-chip color="primary" text-color="white"> {{ d }} </q-chip> 
+        </span>
         <q-icon dense dark size="xs" name="edit" v-if="props.allowEdit" />
         <PopupEditTagsListField
           ref="editTagsPopup"

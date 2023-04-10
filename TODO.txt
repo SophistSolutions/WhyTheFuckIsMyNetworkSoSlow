@@ -1,3 +1,11 @@
+Fix .prettierrc - so formatting reasonable/uniform.
+
+----
+then finsih with tags stuff - networks tags, space msisinsg and using chips in editor. remove 
+proprty on chip to remove, and special one called (new that triggers editor) text for updating.
+
+---
+
 http://hercules/api/v1/devices
 	lists 8f69c818-403a-1f36-6591-71a309666d1c
 

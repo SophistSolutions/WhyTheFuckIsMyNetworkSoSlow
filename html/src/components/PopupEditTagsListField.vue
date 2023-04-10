@@ -15,8 +15,8 @@ const props = defineProps({
 const emit = defineEmits(["update:userSetValue"]);
 
 // Call this not notify parent component of an edit/change
-const updateEditValue = (newValue: string | null) => {
-  emit("update:userSetValue", newValue?.split (" ,"));
+const updateEditValue = (newValue: string[] | null) => {
+  emit("update:userSetValue", newValue);
 };
 
 let reactiveData: {
