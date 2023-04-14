@@ -337,7 +337,7 @@ const aliases = computed<string[] | undefined>(() => {
       <div class="col-3">Tags</div>
       <div class="col">
         <span v-for="d in currentDevice?.userOverrides?.tags" v-bind:key="d">
-          <q-chip color="primary" text-color="white"> {{ d }} </q-chip>
+          <q-chip color="info" text-color="white"> {{ d }} </q-chip>
         </span>
         <q-icon dense dark size="xs" name="edit" v-if="props.allowEdit" />
         <PopupEditTagsListField
