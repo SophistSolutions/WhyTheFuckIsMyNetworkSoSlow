@@ -74,8 +74,8 @@ watchEffect(() => {
 
 function updateValue_(event: any, scope: any, newValue: string | null) {
   // console.log('CHANGE: updateValue newSetUserValue BEING SET TO=', newValue)
-  reactiveData.newSetUserValue = newValue?.split(' ,');
-  scope.value = newValue;
+  reactiveData.newSetUserValue = newValue?.split(/[\s\,]+/);
+  scope.value = reactiveData.newSetUserValue;
   scope.set();
 }
 </script>
