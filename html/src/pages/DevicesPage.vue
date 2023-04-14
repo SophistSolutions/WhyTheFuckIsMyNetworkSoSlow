@@ -400,19 +400,55 @@ const pagination = ref({
 <template>
   <Teleport to="#CHILD_HEADER_SECTION" v-if="addHeaderSectionBugWorkaround">
     <q-toolbar class="justify-between secondary-toolbar">
-      <q-select dense hide-details="true" :options="selectableNetworks" v-model="selectedNetworkCurrent" emit-value
-        map-options label="On network" style="min-width: 150px" dark :options-dark="false" />
-      <q-select dense hide-details="true" :options="selectableTimeframes" v-model="selectedTimeframe" label="Seen"
-        emit-value map-options style="min-width: 150px" dark :options-dark="false" />
-      <q-select dense small multiple hide-details="true" hint="Any=>no filter; multiple=>OR" hide-hint
-        :options="selectableServices" emit-value map-options v-model="selectedServices" label="With services"
-        style="min-width: 150px" dark :options-dark="false">
+      <q-select
+        dense
+        hide-details="true"
+        :options="selectableNetworks"
+        v-model="selectedNetworkCurrent"
+        emit-value
+        map-options
+        label="On network"
+        style="min-width: 150px"
+        dark
+        :options-dark="false"
+      />
+      <q-select
+        dense
+        hide-details="true"
+        :options="selectableTimeframes"
+        v-model="selectedTimeframe"
+        label="Seen"
+        emit-value
+        map-options
+        style="min-width: 150px"
+        dark
+        :options-dark="false"
+      />
+      <q-select
+        dense
+        small
+        multiple
+        hide-details="true"
+        hint="Any=>no filter; multiple=>OR"
+        hide-hint
+        :options="selectableServices"
+        emit-value
+        map-options
+        v-model="selectedServices"
+        label="With services"
+        style="min-width: 150px"
+        dark
+        :options-dark="false"
+      >
         <template v-slot:before-options>
           <q-item>
             <q-item-section @click="selectServicesFilter_ToggleSelectAll">
               <div class="row no-wrap items-baseline">
-                <q-icon :color="selectedServices.length > 0 ? 'indigo darken-4' : ''" :name="selectServicesFilter_icon"
-                  left />
+                <q-icon
+                  :color="selectedServices.length > 0 ? 'indigo darken-4' : ''"
+                  :name="selectServicesFilter_icon"
+                  left
+                />
                 {{
                   filterIsSetToAllowAllServices ? 'Select None' : 'Select All'
                 }}
@@ -431,66 +467,135 @@ const pagination = ref({
                 ?.label
             }}
           </q-chip>
-          <q-chip dark dense v-if="1 < selectedServices.length && !filterIsSetToAllowAllServices">
+          <q-chip
+            dark
+            dense
+            v-if="1 < selectedServices.length && !filterIsSetToAllowAllServices"
+          >
             {{
               selectableServices.find((a) => a.value == selectedServices[0])
                 ?.label
             }}
           </q-chip>
-          <q-chip dark dense v-if="1 < selectedServices.length && !filterIsSetToAllowAllServices">
+          <q-chip
+            dark
+            dense
+            v-if="1 < selectedServices.length && !filterIsSetToAllowAllServices"
+          >
             + {{ selectedServices.length - 1 }} other(s)
           </q-chip>
           <div v-if="filterIsSetToAllowEmptyServices">None</div>
         </template>
       </q-select>
       <Search v-model:searchFor="search" />
-      <FilterSummaryMessage dense :filtered="filtered" :nItemsSelected="filteredExtendedDevices.length"
-        :nTotalItems="allDevices?.length" itemsName="devices" />
+      <FilterSummaryMessage
+        dense
+        :filtered="filtered"
+        :nItemsSelected="filteredExtendedDevices.length"
+        :nTotalItems="allDevices?.length"
+        itemsName="devices"
+      />
       <ClearButton v-if="filtered" @click="clearFilter" />
     </q-toolbar>
     <q-toolbar class="justify-between secondary-toolbar">
-      <q-select v-model="pageUserOptions.VisibleColumns" multiple dense options-dense
-        :display-value="$q.lang.table.columns" emit-value map-options :options="tableHeaders" option-value="name"
-        style="min-width: 150px" label="Shown" dark :options-dark="false" />
+      <q-select
+        v-model="pageUserOptions.VisibleColumns"
+        multiple
+        dense
+        options-dense
+        :display-value="$q.lang.table.columns"
+        emit-value
+        map-options
+        :options="tableHeaders"
+        option-value="name"
+        style="min-width: 150px"
+        label="Shown"
+        dark
+        :options-dark="false"
+      />
     </q-toolbar>
   </Teleport>
   <q-page padding class="justify-center row">
     <q-card class="pageCard listCard col-11">
       <q-card-section style="border: none">
         <div class="row text-h5">Devices</div>
-        <q-table dense table-class="itemList " :rows="filteredExtendedDevices" :columns="tableHeaders" separator="none"
-          row-key="id" :visible-columns="pageUserOptions.VisibleColumns" :pagination.sync="pagination" hide-bottom flat
-          :loading="loading">
+        <q-table
+          dense
+          table-class="itemList "
+          :rows="filteredExtendedDevices"
+          :columns="tableHeaders"
+          separator="none"
+          row-key="id"
+          :visible-columns="pageUserOptions.VisibleColumns"
+          :pagination.sync="pagination"
+          hide-bottom
+          flat
+          :loading="loading"
+        >
           <template v-slot:body="props">
-            <q-tr :props="props" >
+            <q-tr :props="props">
               <q-td :props="props" key="name">
-                <ReadOnlyTextWithHover :message="props.row.name" :link="'/#/device/' + props.row.id" />
+                <ReadOnlyTextWithHover
+                  :message="props.row.name"
+                  :link="'/#/device/' + props.row.id"
+                />
               </q-td>
               <q-td :props="props" key="type">
-                <span v-for="(t, i) in ComputeDeviceTypeIconURLs(props.row.type)" :key="i">
-                  <img v-if="t.url" :src="t.url" :title="t.label" height="20" width="20" />
+                <span
+                  v-for="(t, i) in ComputeDeviceTypeIconURLs(props.row.type)"
+                  :key="i"
+                >
+                  <img
+                    v-if="t.url"
+                    :src="t.url"
+                    :title="t.label"
+                    height="20"
+                    width="20"
+                  />
                   <ReadOnlyTextWithHover v-if="!t.url" :message="t.label" />
                 </span>
               </q-td>
               <q-td :props="props" key="lastSeenAt">
-                <ReadOnlyTextWithHover v-if="props.row.seen?.Ever?.upperBound"
-                  :message="moment(props.row.seen.Ever.upperBound).fromNow()" />
+                <ReadOnlyTextWithHover
+                  v-if="props.row.seen?.Ever?.upperBound"
+                  :message="moment(props.row.seen.Ever.upperBound).fromNow()"
+                />
               </q-td>
               <q-td :props="props" key="manufacturerSummary">
-                <ReadOnlyTextWithHover :message="props.row.manufacturerSummary" />
+                <ReadOnlyTextWithHover
+                  :message="props.row.manufacturerSummary"
+                />
               </q-td>
               <q-td :props="props" key="operatingSystem">
-                <span v-for="(t, i) in ComputeOSIconURLList(
-                  props.row.operatingSystem
-                )" :key="i">
-                  <img v-if="t.url" :src="t.url" :title="t.label" height="20" width="20" />
+                <span
+                  v-for="(t, i) in ComputeOSIconURLList(
+                    props.row.operatingSystem
+                  )"
+                  :key="i"
+                >
+                  <img
+                    v-if="t.url"
+                    :src="t.url"
+                    :title="t.label"
+                    height="20"
+                    width="20"
+                  />
                   <ReadOnlyTextWithHover v-if="!t.url" :message="t.label" />
                 </span>
               </q-td>
               <q-td :props="props" key="services">
                 <span v-for="(s, i) in props.row.services" :key="i">
-                  <span v-for="(t, i) in ComputeServiceTypeIconURLs([s.name])" :key="i">
-                    <img v-if="t.url" :src="t.url" :title="t.label" height="20" width="20" />
+                  <span
+                    v-for="(t, i) in ComputeServiceTypeIconURLs([s.name])"
+                    :key="i"
+                  >
+                    <img
+                      v-if="t.url"
+                      :src="t.url"
+                      :title="t.label"
+                      height="20"
+                      width="20"
+                    />
                     <ReadOnlyTextWithHover v-if="!t.url" :message="t.label" />
                   </span>
                 </span>
@@ -499,24 +604,40 @@ const pagination = ref({
                 <ReadOnlyTextWithHover :message="props.row.localAddresses" />
               </q-td>
               <q-td :props="props" key="networksSummary">
-                <span v-for="anw in GetAttachedNetworksAsNetworks(
-                  props.row.attachedNetworks,
-                  allAvailableNetworks
-                )" :key="anw.id">
-                  <ReadOnlyTextWithHover :message="GetNetworkName(anw)" :link="GetNetworkLink(anw)" />&nbsp;
+                <span
+                  v-for="anw in GetAttachedNetworksAsNetworks(
+                    props.row.attachedNetworks,
+                    allAvailableNetworks
+                  )"
+                  :key="anw.id"
+                >
+                  <ReadOnlyTextWithHover
+                    :message="GetNetworkName(anw)"
+                    :link="GetNetworkLink(anw)"
+                  />&nbsp;
                 </span>
               </q-td>
               <q-td :props="props" key="expand">
                 <div class="row no-wrap items-baseline">
-                  <q-btn @click="rowClicked(props)" :icon="props.expand ? 'mdi-chevron-up' : 'mdi-chevron-down'" flat
-                    round dense title="Toggle details expanded"></q-btn>
+                  <q-btn
+                    @click="rowClicked(props)"
+                    :icon="props.expand ? 'mdi-chevron-up' : 'mdi-chevron-down'"
+                    flat
+                    round
+                    dense
+                    title="Toggle details expanded"
+                  ></q-btn>
                   <Link2DetailsPage :link="'/#/device/' + props.row.id" />
                 </div>
               </q-td>
             </q-tr>
             <q-tr v-if="props.expand" :props="props">
               <q-td :colspan="pageUserOptions.VisibleColumns.length">
-                <DeviceDetails class="detailsSection z-top" :deviceId="props.row.id" :includeLinkToDetailsPage="true" />
+                <DeviceDetails
+                  class="detailsSection z-top"
+                  :deviceId="props.row.id"
+                  :includeLinkToDetailsPage="true"
+                />
               </q-td>
             </q-tr>
           </template>

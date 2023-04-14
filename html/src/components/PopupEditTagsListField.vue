@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive, watchEffect, toRef, watch,PropType } from "vue";
+import { ref, reactive, watchEffect, toRef, watch, PropType } from 'vue';
 
 const props = defineProps({
   // This is the value - if initialValue/newSetValue===null, that will be used; this is just used for display so no need to set to null sometimes
@@ -12,11 +12,11 @@ const props = defineProps({
   thingBeingEdited: { type: String, required: true },
 });
 
-const emit = defineEmits(["update:userSetValue"]);
+const emit = defineEmits(['update:userSetValue']);
 
 // Call this not notify parent component of an edit/change
 const updateEditValue = (newValue: string[] | null) => {
-  emit("update:userSetValue", newValue);
+  emit('update:userSetValue', newValue);
 };
 
 let reactiveData: {
@@ -45,11 +45,11 @@ defineExpose({ startEdit });
 
 // Forward props changes to reactiveData we use in component
 watch(
-  toRef(props, "defaultValue"),
+  toRef(props, 'defaultValue'),
   () => (reactiveData.defaultValue = props.defaultValue || [])
 );
 watch(
-  toRef(props, "initialValue"),
+  toRef(props, 'initialValue'),
   () => (reactiveData.initialValue = props.initialValue || [])
 );
 
@@ -74,7 +74,7 @@ watchEffect(() => {
 
 function updateValue_(event: any, scope: any, newValue: string | null) {
   // console.log('CHANGE: updateValue newSetUserValue BEING SET TO=', newValue)
-  reactiveData.newSetUserValue = newValue?.split(" ,");
+  reactiveData.newSetUserValue = newValue?.split(' ,');
   scope.value = newValue;
   scope.set();
 }
@@ -97,7 +97,8 @@ function updateValue_(event: any, scope: any, newValue: string | null) {
       :hint="`Use ${props.thingBeingEdited} ('${reactiveData.defaultValue}\' is the default)`"
       :placeholder="reactiveData.defaultValue"
       :rules="[
-        (val) => scope.validate(val) || props.validateFailedMsg || 'Failed validation',
+        (val) =>
+          scope.validate(val) || props.validateFailedMsg || 'Failed validation',
       ]"
       @focus="this.$refs?.thisInputFieldName.select()"
     >
@@ -116,7 +117,9 @@ function updateValue_(event: any, scope: any, newValue: string | null) {
           color="positive"
           icon="check_circle"
           @click.stop.prevent="updateValue_($event, scope, scope.value)"
-          :disable="scope.validate(scope.value) === false || scope.value == null"
+          :disable="
+            scope.validate(scope.value) === false || scope.value == null
+          "
           :title="`Use this as (override) ${props.thingBeingEdited}`"
         />
         <q-btn
