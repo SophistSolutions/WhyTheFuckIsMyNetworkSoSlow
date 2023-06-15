@@ -59,7 +59,8 @@ using IntegratedModel::Private_::RolledUpDevices;
  ********************************************************************************
  */
 
-RolledUpDevices::RolledUpDevices (DBAccess::Mgr* dbAccessMgr, const Iterable<Device>& devices2MergeIn, const Mapping<GUID, Device::UserOverridesType>& userOverrides,
+RolledUpDevices::RolledUpDevices (DBAccess::Mgr* dbAccessMgr, const Iterable<Device>& devices2MergeIn,
+                                  const Mapping<GUID, Device::UserOverridesType>& userOverrides,
                                   const RolledUpNetworks& useRolledUpNetworks, const RolledUpNetworkInterfaces& useNetworkInterfaceRollups)
     : fUseRolledUpNetworks{useRolledUpNetworks}
     , fUseNetworkInterfaceRollups{useNetworkInterfaceRollups}
@@ -83,8 +84,8 @@ auto RolledUpDevices::MapAggregatedID2ItsRollupID (const GUID& aggregatedDeviceI
         return *r;
     }
     // shouldn't get past here - debug if/why this hapepns - see comments below
-    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (
-        L"MapAggregatedID2ItsRollupID failed to find netID=%s", Characters::ToString (aggregatedDeviceID).c_str ())};
+    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"MapAggregatedID2ItsRollupID failed to find netID=%s",
+                                                                                 Characters::ToString (aggregatedDeviceID).c_str ())};
     if constexpr (qDebug) {
         for ([[maybe_unused]] const auto& i : fRolledUpDevices) {
             DbgTrace (L"rolledupDevice=%s", Characters::ToString (i).c_str ());
@@ -141,12 +142,11 @@ RolledUpDevices RolledUpDevices::GetCached (DBAccess::Mgr* dbAccessMgr, Time::Du
     //      See https://stroika.atlassian.net/browse/STK-907 - about needing some new mechanism in Stroika for deadlock detection/avoidance.
     // sCache_.fHoldWriteLockDuringCacheFill = true; // so only one call to filler lambda at a time
     return sCache_.LookupValue (sCache_.Ago (allowedStaleness), [dbAccessMgr, allowedStaleness] () -> RolledUpDevices {
-        Debug::TraceContextBumper ctx{
-            Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...RolledUpDevices::GetCached...cachefiller")};
-        Debug::TimingTrace ttrc{L"RolledUpDevices::GetCached...cachefiller", 1};
+        Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...RolledUpDevices::GetCached...cachefiller")};
+        Debug::TimingTrace        ttrc{L"RolledUpDevices::GetCached...cachefiller", 1};
 
-        auto rolledUpNetworks = RolledUpNetworks::GetCached (dbAccessMgr, allowedStaleness * 3.0);                    // longer allowedStaleness cuz we dont care much about this and the parts
-                                                                                                                      // we look at really dont change
+        auto rolledUpNetworks = RolledUpNetworks::GetCached (dbAccessMgr, allowedStaleness * 3.0); // longer allowedStaleness cuz we dont care much about this and the parts
+                                                                                                   // we look at really dont change
         auto rolledUpNetworkInterfacess = RolledUpNetworkInterfaces::GetCached (dbAccessMgr, allowedStaleness * 3.0); // longer allowedStaleness cuz we dont care much about this and the parts
             // we look at really dont change
 
@@ -240,8 +240,7 @@ void RolledUpDevices::MergeInNew_ (DBAccess::Mgr* dbAccessMgr, const Device& d2M
     if (GetDevices ().Contains (newRolledUpDevice.fID)) {
         // Should probably never happen, but since depends on data in database, program defensively
         Logger::sThe.Log (Logger::eWarning, L"Got rollup device ID from cache that is already in use: %s (for hardware addresses %s)",
-                          Characters::ToString (newRolledUpDevice.fID).c_str (),
-                          Characters::ToString (d2MergeIn.GetHardwareAddresses ()).c_str ());
+                          Characters::ToString (newRolledUpDevice.fID).c_str (), Characters::ToString (d2MergeIn.GetHardwareAddresses ()).c_str ());
         newRolledUpDevice.fID = GUID::GenerateNew ();
     }
     newRolledUpDevice.fAttachedNetworks = MapAggregatedAttachments2Rollups_ (newRolledUpDevice.fAttachedNetworks);
@@ -281,10 +280,8 @@ auto RolledUpDevices::MapAggregatedAttachments2Rollups_ (const Mapping<GUID, Net
 
 bool RolledUpDevices::ShouldRollup_ (const Device& exisingRolledUpDevice, const Device& d2PotentiallyMergeIn)
 {
-    if ((exisingRolledUpDevice.fAggregatesIrreversibly and
-         exisingRolledUpDevice.fAggregatesIrreversibly->Contains (d2PotentiallyMergeIn.fID)) or
-        (exisingRolledUpDevice.fAggregatesIrreversibly and
-         exisingRolledUpDevice.fAggregatesIrreversibly->Contains (d2PotentiallyMergeIn.fID))) {
+    if ((exisingRolledUpDevice.fAggregatesIrreversibly and exisingRolledUpDevice.fAggregatesIrreversibly->Contains (d2PotentiallyMergeIn.fID)) or
+        (exisingRolledUpDevice.fAggregatesIrreversibly and exisingRolledUpDevice.fAggregatesIrreversibly->Contains (d2PotentiallyMergeIn.fID))) {
         // we retry the same 'discovered' networks repeatedly and re-roll them up.
         // mostly this is handled by having the same hardware addresses, but sometimes (like for main discovered device)
         // MAY not yet / always have network interface). And besides, this check cheaper/faster probably.
@@ -307,8 +304,7 @@ bool RolledUpDevices::ShouldRollup_ (const Device& exisingRolledUpDevice, const 
     if (existingRollupHWAddresses.empty () or d2PotentiallyMergeInHardwareAddresses.empty ()) {
         // then fold together if they have the same IP Addresses
         // return d1.GetInternetAddresses () == d2.GetInternetAddresses ();
-        return Set<InternetAddress>::Intersects (exisingRolledUpDevice.GetInternetAddresses (),
-                                                 d2PotentiallyMergeIn.GetInternetAddresses ());
+        return Set<InternetAddress>::Intersects (exisingRolledUpDevice.GetInternetAddresses (), d2PotentiallyMergeIn.GetInternetAddresses ());
     }
     // unclear if above test should be if EITHER set is empty, maybe then do if timeframes very close?
     return false;

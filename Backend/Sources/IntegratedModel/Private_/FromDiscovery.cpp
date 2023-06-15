@@ -118,10 +118,10 @@ namespace {
             newDev.fAttachedNetworks.Add (i.fKey, NetworkAttachmentInfo{i.fValue.hardwareAddresses, addrs2Report});
         }
         newDev.fAttachedNetworkInterfaces = d.fAttachedInterfaces; // @todo must merge += (but only when merging across differnt discoverers/networks)
-        newDev.fPresentationURL           = d.fPresentationURL;
-        newDev.fManufacturer              = d.fManufacturer;
-        newDev.fIcon                      = TransformURL2LocalStorage_ (d.fIcon);
-        newDev.fOperatingSystem           = d.fOperatingSystem;
+        newDev.fPresentationURL = d.fPresentationURL;
+        newDev.fManufacturer    = d.fManufacturer;
+        newDev.fIcon            = TransformURL2LocalStorage_ (d.fIcon);
+        newDev.fOperatingSystem = d.fOperatingSystem;
 #if qDebug
         if (not d.fDebugProps.empty ()) {
             newDev.fDebugProps = d.fDebugProps;
@@ -195,10 +195,7 @@ namespace {
 
 }
 
-optional<GUID> IntegratedModel::Private_::FromDiscovery::GetMyDeviceID ()
-{
-    return Discovery::DevicesMgr::sThe.GetThisDeviceID ();
-}
+optional<GUID> IntegratedModel::Private_::FromDiscovery::GetMyDeviceID () { return Discovery::DevicesMgr::sThe.GetThisDeviceID (); }
 
 Sequence<NetworkInterface> IntegratedModel::Private_::FromDiscovery::GetNetworkInterfaces ()
 {

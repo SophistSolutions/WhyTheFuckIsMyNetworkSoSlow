@@ -58,8 +58,8 @@ using IntegratedModel::Private_::RolledUpNetworks;
  ******************** IntegratedModel::Private_::RolledUpNetworks ***************
  ********************************************************************************
  */
-RolledUpNetworks::RolledUpNetworks (DBAccess::Mgr* dbAccessMgr, const Iterable<Network>& nets2MergeIn, const Mapping<GUID, Network::UserOverridesType>& userOverrides,
-                                    const RolledUpNetworkInterfaces& useNetworkInterfaceRollups)
+RolledUpNetworks::RolledUpNetworks (DBAccess::Mgr* dbAccessMgr, const Iterable<Network>& nets2MergeIn,
+                                    const Mapping<GUID, Network::UserOverridesType>& userOverrides, const RolledUpNetworkInterfaces& useNetworkInterfaceRollups)
     : fUseNetworkInterfaceRollups{useNetworkInterfaceRollups}
 {
     fStarterRollups_   = userOverrides.Map<Network> ([] (const auto& guid2UOTPair) -> Network {
@@ -96,14 +96,14 @@ auto RolledUpNetworks::MapAggregatedID2ItsRollupID (const GUID& netID) const -> 
         return *r;
     }
     // shouldn't get past here - debug if/why this hapepns - see comments below
-    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (
-        L"MapAggregatedID2ItsRollupID failed to find netID=%s", Characters::ToString (netID).c_str ())};
+    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"MapAggregatedID2ItsRollupID failed to find netID=%s",
+                                                                                 Characters::ToString (netID).c_str ())};
     if constexpr (qDebug) {
         for ([[maybe_unused]] const auto& i : fRolledUpNetworks_) {
             DbgTrace (L"rolledupNet=%s", Characters::ToString (i).c_str ());
         }
     }
-    Assert (false);     // @todo fix - because we guarantee each item rolled up exactly once - but happens sometimes on change of network - I think due to outdated device records referring to newer network not yet in this cache...
+    Assert (false); // @todo fix - because we guarantee each item rolled up exactly once - but happens sometimes on change of network - I think due to outdated device records referring to newer network not yet in this cache...
     WeakAssert (false); // @todo fix - because we guarantee each item rolled up exactly once - but happens sometimes on change of network - I think due to outdated device records referring to newer network not yet in this cache...
     return netID;
 }
@@ -142,9 +142,8 @@ RolledUpNetworks RolledUpNetworks::GetCached (DBAccess::Mgr* dbAccessMgr, Time::
          *      Since this can be called while rolling up DEVICES, its important that this code not call anything involving device rollup since
          *      that could trigger a deadlock.
          */
-        Debug::TraceContextBumper ctx{
-            Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...RolledUpNetworks::GetCached...cachefiller")};
-        Debug::TimingTrace ttrc{L"RolledUpNetworks::GetCached...cachefiller", 1};
+        Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...RolledUpNetworks::GetCached...cachefiller")};
+        Debug::TimingTrace        ttrc{L"RolledUpNetworks::GetCached...cachefiller", 1};
 
         // Start with the existing rolled up objects
         // and merge in any more recent discovery changes
@@ -196,7 +195,8 @@ auto RolledUpNetworks::MergeIn_ (DBAccess::Mgr* dbAccessMgr, const Network& net2
     return PassFailType_::eFail;
 }
 
-auto RolledUpNetworks::ShouldRollupInto_ (const Network& net2MergeIn, const Network::FingerprintType& net2MergeInFingerprint) -> tuple<optional<Network>, PassFailType_>
+auto RolledUpNetworks::ShouldRollupInto_ (const Network& net2MergeIn, const Network::FingerprintType& net2MergeInFingerprint)
+    -> tuple<optional<Network>, PassFailType_>
 {
     auto formerRollupID = fMapFingerprint2RollupID.Lookup (net2MergeInFingerprint);
     if (formerRollupID) {
@@ -224,8 +224,7 @@ bool RolledUpNetworks::ShouldRollupInto_CheckIsCompatibleWithTarget_ (const Netw
         if (riu->fAggregateFingerprints and riu->fAggregateFingerprints->Contains (net2MergeInFingerprint)) {
             return true;
         }
-        if (riu->fAggregateGatewayHardwareAddresses and
-            riu->fAggregateGatewayHardwareAddresses->Intersects (net2MergeIn.fGatewayHardwareAddresses)) {
+        if (riu->fAggregateGatewayHardwareAddresses and riu->fAggregateGatewayHardwareAddresses->Intersects (net2MergeIn.fGatewayHardwareAddresses)) {
             return true;
         }
         if (riu->fAggregateNetworks and riu->fAggregateNetworks->Contains (net2MergeIn.fID)) {
@@ -250,8 +249,7 @@ void RolledUpNetworks::AddUpdateIn_ (const Network& addNet2MergeFromThisRollup, 
 {
     Assert (net2MergeIn.GenerateFingerprintFromProperties () == net2MergeInFingerprint); // provided to avoid cost of recompute
     Network newRolledUpNetwork = Network::Rollup (addNet2MergeFromThisRollup, net2MergeIn);
-    newRolledUpNetwork.fAttachedInterfaces +=
-        fUseNetworkInterfaceRollups.MapAggregatedNetInterfaceID2ItsRollupID (net2MergeIn.fAttachedInterfaces);
+    newRolledUpNetwork.fAttachedInterfaces += fUseNetworkInterfaceRollups.MapAggregatedNetInterfaceID2ItsRollupID (net2MergeIn.fAttachedInterfaces);
     Assert (addNet2MergeFromThisRollup.fAggregatesFingerprints == newRolledUpNetwork.fAggregatesFingerprints); // spot check - should be same...
     fRolledUpNetworks_.Add (newRolledUpNetwork);
     fMapAggregatedNetID2RollupID_.Add (net2MergeIn.fID, newRolledUpNetwork.fID);
@@ -263,8 +261,7 @@ void RolledUpNetworks::AddNewIn_ (DBAccess::Mgr* dbAccessMgr, const Network& net
     RequireNotNull (dbAccessMgr);
     Assert (net2MergeIn.GenerateFingerprintFromProperties () == net2MergeInFingerprint); // provided to avoid cost of recompute
     Network newRolledUpNetwork = net2MergeIn;
-    newRolledUpNetwork.fAttachedInterfaces =
-        fUseNetworkInterfaceRollups.MapAggregatedNetInterfaceID2ItsRollupID (net2MergeIn.fAttachedInterfaces);
+    newRolledUpNetwork.fAttachedInterfaces = fUseNetworkInterfaceRollups.MapAggregatedNetInterfaceID2ItsRollupID (net2MergeIn.fAttachedInterfaces);
     newRolledUpNetwork.fAggregatesReversibly   = Set<GUID>{net2MergeIn.fID};
     newRolledUpNetwork.fAggregatesFingerprints = Set<Network::FingerprintType>{net2MergeInFingerprint};
     // @todo fix this code so each time through we UPDATE sDBAccessMgr_ with latest 'fingerprint' of each dynamic network

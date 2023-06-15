@@ -17,11 +17,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_ {
      ************** IntegratedModel::Private_::RolledUpNetworkInterfaces ************
      ********************************************************************************
      */
-    inline NetworkInterfaceCollection RolledUpNetworkInterfaces::GetNetworkInterfacess () const
-    {
-        return fRolledUpNetworkInterfaces_;
-    }
-    inline NetworkInterface RolledUpNetworkInterfaces::GetRollupNetworkInterface (const GUID& id) const
+    inline NetworkInterfaceCollection RolledUpNetworkInterfaces::GetNetworkInterfacess () const { return fRolledUpNetworkInterfaces_; }
+    inline NetworkInterface           RolledUpNetworkInterfaces::GetRollupNetworkInterface (const GUID& id) const
     {
         return Memory::ValueOf (fRolledUpNetworkInterfaces_.Lookup (id));
     }
@@ -30,10 +27,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_ {
         Require (Set<GUID>{fRolledUpNetworkInterfaces_.Keys ()}.ContainsAll (rollupIDs));
         return fRolledUpNetworkInterfaces_.Where ([&rollupIDs] (const auto& i) { return rollupIDs.Contains (i.fID); });
     }
-    inline NetworkInterfaceCollection RolledUpNetworkInterfaces::GetRawNetworkInterfaces () const
-    {
-        return fRawNetworkInterfaces_;
-    }
+    inline NetworkInterfaceCollection RolledUpNetworkInterfaces::GetRawNetworkInterfaces () const { return fRawNetworkInterfaces_; }
     inline NetworkInterfaceCollection RolledUpNetworkInterfaces::GetRawNetworkInterfaces (const Set<GUID>& rawIDs) const
     {
         Require (Set<GUID>{fRawNetworkInterfaces_.Keys ()}.ContainsAll (rawIDs));

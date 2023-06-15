@@ -105,14 +105,13 @@ nonvirtual auto RolledUpNetworkInterfaces::MapAggregatedID2ItsRollupID (const GU
     }
     // shouldn't get past here - debug if/why this hapepns - see comments below
     Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (
-        L"MapAggregatedID2ItsRollupID failed to find aggregatedNetInterfaceID=%s",
-        Characters::ToString (aggregatedNetInterfaceID).c_str ())};
+        L"MapAggregatedID2ItsRollupID failed to find aggregatedNetInterfaceID=%s", Characters::ToString (aggregatedNetInterfaceID).c_str ())};
     if constexpr (qDebug) {
         for ([[maybe_unused]] const auto& i : fRolledUpNetworkInterfaces_) {
             DbgTrace (L"rolledupNetInterface=%s", Characters::ToString (i).c_str ());
         }
     }
-    Assert (false);     // @todo fix - because we guarantee each item rolled up exactly once - but happens sometimes on change of network - I think due to outdated device records referring to newer network not yet in this cache...
+    Assert (false); // @todo fix - because we guarantee each item rolled up exactly once - but happens sometimes on change of network - I think due to outdated device records referring to newer network not yet in this cache...
     WeakAssert (false); // @todo fix - because we guarantee each item rolled up exactly once - but happens sometimes on change of network - I think due to outdated device records referring to newer network not yet in this cache...
     return aggregatedNetInterfaceID;
 }
@@ -164,12 +163,11 @@ RolledUpNetworkInterfaces RolledUpNetworkInterfaces::GetCached (DBAccess::Mgr* d
                 // @todo add more stuff here - empty preset rules from DB
                 // merge two tables - ID to fingerprint and user settings tables and store those in this rollup early
                 // maybe make CTOR for rolledupnetworks take in ital DB netwworks and rules, and have copyis CTOR taking orig networks and new rules?
-                RolledUpNetworkInterfaces rollup =
-                    RolledUpNetworkInterfaces{dbAccessMgr->GetRawDevices (), dbAccessMgr->GetRawNetworkInterfaces ()};
+                RolledUpNetworkInterfaces rollup = RolledUpNetworkInterfaces{dbAccessMgr->GetRawDevices (), dbAccessMgr->GetRawNetworkInterfaces ()};
                 // handle orphaned network interfaces
                 {
-                    auto orphanedRawInterfaces = rollup.GetRawNetworkInterfaces ().Where (
-                        [&] (auto ni) { return rollup.GetAttachedToDeviceIDs (ni.fID) == nullopt; });
+                    auto orphanedRawInterfaces =
+                        rollup.GetRawNetworkInterfaces ().Where ([&] (auto ni) { return rollup.GetAttachedToDeviceIDs (ni.fID) == nullopt; });
                     if (not orphanedRawInterfaces.empty ()) {
                         DbgTrace (L"Found: orphanedRawInterfaces=%s", Characters::ToString (orphanedRawInterfaces).c_str ());
                         // https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/80
@@ -200,8 +198,7 @@ void RolledUpNetworkInterfaces::MergeIn_ (const optional<GUID>& forDeviceID, con
     // friendly name - for example - of network interface can change while running, so must be able to invalidate and recompute this list
 
     Network::FingerprintType netInterface2MergeInFingerprint = net2MergeIn.GenerateFingerprintFromProperties ();
-    auto                     rolledUpNetworkInterace =
-        NetworkInterface::Rollup (fRolledUpNetworkInterfaces_.Lookup (netInterface2MergeInFingerprint), net2MergeIn);
+    auto rolledUpNetworkInterace = NetworkInterface::Rollup (fRolledUpNetworkInterfaces_.Lookup (netInterface2MergeInFingerprint), net2MergeIn);
     fRolledUpNetworkInterfaces_.Add (rolledUpNetworkInterace);
     fMapAggregatedNetInterfaceID2RollupID_.Add (net2MergeIn.fID, rolledUpNetworkInterace.fID);
     if (forDeviceID) {

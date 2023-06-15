@@ -18,10 +18,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_ {
      ********************************************************************************
      */
 
-    inline NetworkCollection RolledUpNetworks::GetNetworks () const
-    {
-        return fRolledUpNetworks_;
-    }
+    inline NetworkCollection RolledUpNetworks::GetNetworks () const { return fRolledUpNetworks_; }
 
 }
 

@@ -87,18 +87,17 @@ const ConstantProperty<ObjectVariantMapper> Mgr::kDBObjectMapper_{[] () {
     return mapper;
 }};
 
-const Schema_Table Mgr::kDeviceUserSettingsSchema_{
-    L"DeviceUserSettings"sv,
-    /*
+const Schema_Table Mgr::kDeviceUserSettingsSchema_{L"DeviceUserSettings"sv,
+                                                   /*
      */
-    Collection<Schema_Field>{
+                                                   Collection<Schema_Field>{
 #if __cpp_designated_initializers
-        {.fName = L"DeviceID"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true},
+                                                       {.fName = L"DeviceID"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true},
 #else
-        {L"DeviceID", nullopt, true, kRepresentIDAs_, nullopt, true},
+                                                        {L"DeviceID", nullopt, true, kRepresentIDAs_, nullopt, true},
 #endif
-    },
-    Schema_CatchAllField{}};
+                                                   },
+                                                   Schema_CatchAllField{}};
 const Schema_Table Mgr::kNetworkUserSettingsSchema_{
     L"NetworkUserSettings"sv,
     /*
@@ -123,16 +122,10 @@ const Schema_Table Mgr::kDeviceTableSchema_{
         /**
          *  For ID, generate random GUID (BLOB) automatically in database
          */
-        {.fName              = L"ID"sv,
-         .fVariantValueName  = L"id"sv,
-         .fRequired          = true,
-         .fVariantValueType  = kRepresentIDAs_,
-         .fIsKeyField        = true,
-         .fDefaultExpression = GenRandomIDString_ (kRepresentIDAs_)},
+        {.fName = L"ID"sv, .fVariantValueName = L"id"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = GenRandomIDString_ (kRepresentIDAs_)},
         {.fName = L"name"sv, .fVariantValueType = VariantValue::eString},
 #else
-        {L"ID", L"id"sv, true, kRepresentIDAs_, nullopt, true, nullopt,
-         GenRandomIDString_ (kRepresentIDAs_)},
+        {L"ID", L"id"sv, true, kRepresentIDAs_, nullopt, true, nullopt, GenRandomIDString_ (kRepresentIDAs_)},
         {L"name", nullopt, false, VariantValue::eString},
 #endif
     },
@@ -170,28 +163,18 @@ const Schema_Table Mgr::kNetworkTableSchema_{
         /**
          *  For ID, generate random GUID (BLOB) automatically in database
          */
-        {.fName              = L"ID"sv,
-         .fVariantValueName  = L"id"sv,
-         .fRequired          = true,
-         .fVariantValueType  = kRepresentIDAs_,
-         .fIsKeyField        = true,
-         .fDefaultExpression = GenRandomIDString_ (kRepresentIDAs_)},
+        {.fName = L"ID"sv, .fVariantValueName = L"id"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = GenRandomIDString_ (kRepresentIDAs_)},
         {.fName = L"friendlyName"sv, .fVariantValueType = VariantValue::eString},
 #else
-        {L"ID", L"id"sv, true, kRepresentIDAs_, nullopt, true, nullopt,
-         GenRandomIDString_ (kRepresentIDAs_)},
+        {L"ID", L"id"sv, true, kRepresentIDAs_, nullopt, true, nullopt, GenRandomIDString_ (kRepresentIDAs_)},
         {L"friendlyName", nullopt, false, VariantValue::eString},
 #endif
     },
     Schema_CatchAllField{}};
 
 Mgr::Mgr ()
-    : fDB_{kCurrentVersion_,
-           Traversal::Iterable<Schema_Table>{kDeviceTableSchema_,
-                                             kDeviceUserSettingsSchema_,
-                                             kNetworkTableSchema_,
-                                             kNetworkInterfaceTableSchema_,
-                                             kNetworkUserSettingsSchema_}}
+    : fDB_{kCurrentVersion_, Traversal::Iterable<Schema_Table>{kDeviceTableSchema_, kDeviceUserSettingsSchema_, kNetworkTableSchema_,
+                                                               kNetworkInterfaceTableSchema_, kNetworkUserSettingsSchema_}}
 {
     Debug::TraceContextBumper ctx{L"IntegratedModel::{}::Mgr_::CTOR"};
     fDeviceUserSettingsTableConnection_ = make_unique<SQL::ORM::TableConnection<ExternalDeviceUserSettingsElt_>> (
@@ -213,10 +196,9 @@ Mgr::Mgr ()
         Debug::TimingTrace ttrc{L"...load of fCachedDeviceUserSettings_ from database ", 1};
         lock_guard         lock{this->fDBConnectionPtr_};
         fCachedDeviceUserSettings_.store (Mapping<GUID, Model::Device::UserOverridesType>{
-            fDeviceUserSettingsTableConnection_.rwget ().cref ()->GetAll ().Map<KeyValuePair<GUID, Model::Device::UserOverridesType>> (
-                [] (const auto& i) {
-                    return KeyValuePair<GUID, Model::Device::UserOverridesType>{i.fDeviceID, i.fUserSettings};
-                })});
+            fDeviceUserSettingsTableConnection_.rwget ().cref ()->GetAll ().Map<KeyValuePair<GUID, Model::Device::UserOverridesType>> ([] (const auto& i) {
+                return KeyValuePair<GUID, Model::Device::UserOverridesType>{i.fDeviceID, i.fUserSettings};
+            })});
     }
     catch (...) {
         Logger::sThe.Log (Logger::eCriticalError, L"Failed to load fCachedDeviceUserSettings_ from db: %s",
@@ -227,10 +209,9 @@ Mgr::Mgr ()
         Debug::TimingTrace ttrc{L"...load of fCachedNetworkUserSettings_ from database ", 1};
         lock_guard         lock{this->fDBConnectionPtr_};
         fCachedNetworkUserSettings_.store (Mapping<GUID, Model::Network::UserOverridesType>{
-            fNetworkUserSettingsTableConnection_.rwget ().cref ()->GetAll ().Map<KeyValuePair<GUID, Model::Network::UserOverridesType>> (
-                [] (const auto& i) {
-                    return KeyValuePair<GUID, Model::Network::UserOverridesType>{i.fNetworkID, i.fUserSettings};
-                })});
+            fNetworkUserSettingsTableConnection_.rwget ().cref ()->GetAll ().Map<KeyValuePair<GUID, Model::Network::UserOverridesType>> ([] (const auto& i) {
+                return KeyValuePair<GUID, Model::Network::UserOverridesType>{i.fNetworkID, i.fUserSettings};
+            })});
     }
     catch (...) {
         Logger::sThe.Log (Logger::eCriticalError, L"Failed to load fCachedNetworkUserSettings_ from db: %s",
@@ -241,7 +222,7 @@ Mgr::Mgr ()
 
 Mgr::~Mgr ()
 {
-    Debug::TraceContextBumper                        ctx{L"IntegratedModel::{}::Mgr::DTOR"};
+    Debug::TraceContextBumper ctx{L"IntegratedModel::{}::Mgr::DTOR"};
     Execution::Thread::SuppressInterruptionInContext suppressInterruption; // must complete this abort and wait for done - this cannot abort/throw
     fDatabaseSyncThread_.AbortAndWaitForDone ();
 }
@@ -422,11 +403,10 @@ void Mgr::_OneTimeStartupLoadDB ()
     auto                      fetchInterfacesNetworks = [this] () -> unsigned int {
         try {
             Debug::TimingTrace ttrc{L"...initial load of fDBNetworkInterfaces_ from database ", 1};
-            auto               errorHandler = [] ([[maybe_unused]] const SQL::Statement::Row& r,
-                                    const exception_ptr&                        e) -> optional<NetworkInterface> {
+            auto errorHandler = [] ([[maybe_unused]] const SQL::Statement::Row& r, const exception_ptr& e) -> optional<NetworkInterface> {
                 // Just drop the record on the floor after logging
                 Logger::sThe.Log (Logger::eError, L"Error reading database of persisted network interfaces snapshot ('%s'): %s",
-                                                                     Characters::ToString (r).c_str (), Characters::ToString (e).c_str ());
+                                                       Characters::ToString (r).c_str (), Characters::ToString (e).c_str ());
                 return nullopt;
             };
             auto all = fNetworkInterfaceTableConnection_->GetAll (errorHandler);
@@ -442,11 +422,10 @@ void Mgr::_OneTimeStartupLoadDB ()
     auto fetchNets = [this] () -> unsigned int {
         try {
             Debug::TimingTrace ttrc{L"...initial load of fDBNetworks_ from database ", 1};
-            auto               errorHandler = [] ([[maybe_unused]] const SQL::Statement::Row& r,
-                                    const exception_ptr&                        e) -> optional<Network> {
+            auto errorHandler = [] ([[maybe_unused]] const SQL::Statement::Row& r, const exception_ptr& e) -> optional<Network> {
                 // Just drop the record on the floor after logging
                 Logger::sThe.Log (Logger::eError, L"Error reading database of persisted network snapshot ('%s'): %s",
-                                                Characters::ToString (r).c_str (), Characters::ToString (e).c_str ());
+                                  Characters::ToString (r).c_str (), Characters::ToString (e).c_str ());
                 return nullopt;
             };
             auto all = fNetworkTableConnection_->GetAll (errorHandler);
@@ -462,11 +441,10 @@ void Mgr::_OneTimeStartupLoadDB ()
     auto fetchDevices = [this] () -> unsigned int {
         try {
             Debug::TimingTrace ttrc{L"...initial load of fDBDevices_ from database ", 1};
-            auto               errorHandler = [] ([[maybe_unused]] const SQL::Statement::Row& r,
-                                    const exception_ptr&                        e) -> optional<Device> {
+            auto errorHandler = [] ([[maybe_unused]] const SQL::Statement::Row& r, const exception_ptr& e) -> optional<Device> {
                 // Just drop the record on the floor after logging
                 Logger::sThe.Log (Logger::eError, L"Error reading database of persisted device snapshot ('%s'): %s",
-                                                Characters::ToString (r).c_str (), Characters::ToString (e).c_str ());
+                                  Characters::ToString (r).c_str (), Characters::ToString (e).c_str ());
                 return nullopt;
             };
             auto all = fDeviceTableConnection_->GetAll (errorHandler);

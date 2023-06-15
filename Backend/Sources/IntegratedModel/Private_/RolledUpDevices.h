@@ -93,8 +93,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_ {
         void          MergeInUpdate_ (const Device& rollupDevice, const Device& newDevice2MergeIn);
         void          MergeInNew_ (DBAccess::Mgr* dbAccessMgr, const Device& d2MergeIn);
         void          RecomputeAll_ (DBAccess::Mgr* dbAccessMgr);
-        auto          MapAggregatedAttachments2Rollups_ (const Mapping<GUID, NetworkAttachmentInfo>& nats) -> Mapping<GUID, NetworkAttachmentInfo>;
-        static bool   ShouldRollup_ (const Device& exisingRolledUpDevice, const Device& d2PotentiallyMergeIn);
+        auto MapAggregatedAttachments2Rollups_ (const Mapping<GUID, NetworkAttachmentInfo>& nats) -> Mapping<GUID, NetworkAttachmentInfo>;
+        static bool ShouldRollup_ (const Device& exisingRolledUpDevice, const Device& d2PotentiallyMergeIn);
 
     private:
         DeviceCollection          fStarterRollups_;

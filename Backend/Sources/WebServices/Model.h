@@ -783,8 +783,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
     /**
      *  \brief DeviceCollection = KeyedCollection<Device by ID>
      */
-    using DeviceCollection =
-        KeyedCollection<Device, GUID, Containers::KeyedCollection_DefaultTraits<Device, GUID, Private_::Device_Key_Extractor_>>;
+    using DeviceCollection = KeyedCollection<Device, GUID, Containers::KeyedCollection_DefaultTraits<Device, GUID, Private_::Device_Key_Extractor_>>;
 
     /**
      */

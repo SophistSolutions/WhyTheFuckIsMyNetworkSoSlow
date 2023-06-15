@@ -129,9 +129,9 @@ namespace {
         DBConn_ ()
         {
             constexpr Configuration::Version kCurrentVersion_ = Configuration::Version{1, 0, Configuration::VersionStage::Alpha, 0};
-            BackendApp::Common::DB           db{kCurrentVersion_, Traversal::Iterable<Database::SQL::ORM::Schema::Table>{kBLOBTableSchema_, kBLOBURLTableSchema_}};
-            SQL::Connection::Ptr             conn = db.NewConnection ();
-            fBLOBs                                = make_shared<SQL::ORM::TableConnection<DBRecs_::BLOB_>> (
+            BackendApp::Common::DB db{kCurrentVersion_, Traversal::Iterable<Database::SQL::ORM::Schema::Table>{kBLOBTableSchema_, kBLOBURLTableSchema_}};
+            SQL::Connection::Ptr conn = db.NewConnection ();
+            fBLOBs                    = make_shared<SQL::ORM::TableConnection<DBRecs_::BLOB_>> (
                 conn, kBLOBTableSchema_, kDBObjectMapper_, mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<DBRecs_::BLOB_>> ());
             fBLOBURLs = make_shared<BLOBURLTableConnection_> (conn, kBLOBURLTableSchema_, kDBObjectMapper_,
                                                               mkOperationalStatisticsMgrProcessDBCmd<BLOBURLTableConnection_> ());

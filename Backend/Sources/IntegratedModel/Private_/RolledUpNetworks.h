@@ -44,8 +44,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_ {
      */
     struct RolledUpNetworks {
     public:
-        RolledUpNetworks (DBAccess::Mgr* dbAccessMgr, const Iterable<Network>& nets2MergeIn, const Mapping<GUID, Network::UserOverridesType>& userOverrides,
-                          const RolledUpNetworkInterfaces& useNetworkInterfaceRollups);
+        RolledUpNetworks (DBAccess::Mgr* dbAccessMgr, const Iterable<Network>& nets2MergeIn,
+                          const Mapping<GUID, Network::UserOverridesType>& userOverrides, const RolledUpNetworkInterfaces& useNetworkInterfaceRollups);
         RolledUpNetworks (const RolledUpNetworks&)            = default;
         RolledUpNetworks (RolledUpNetworks&&)                 = default;
         RolledUpNetworks& operator= (RolledUpNetworks&&)      = default;
@@ -108,11 +108,11 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_ {
         // And consider it a DATA ERROR (need code to assure cannot happen) - for the same hardare ID to appear in two rollup networks match rules
         // or the same (any type of rollup rule) to appear in differnt high level user settings)
         tuple<optional<Network>, PassFailType_> ShouldRollupInto_ (const Network& net2MergeIn, const Network::FingerprintType& net2MergeInFingerprint);
-        bool                                    ShouldRollupInto_CheckIsCompatibleWithTarget_ (const Network& net2MergeIn, const Network::FingerprintType& net2MergeInFingerprint,
-                                                                                               const Network& targetRollup);
-        void                                    AddUpdateIn_ (const Network& addNet2MergeFromThisRollup, const Network& net2MergeIn, const Network::FingerprintType& net2MergeInFingerprint);
-        void                                    AddNewIn_ (DBAccess::Mgr* dbAccessMgr, const Network& net2MergeIn, const Network::FingerprintType& net2MergeInFingerprint);
-        void                                    RecomputeAll_ (DBAccess::Mgr* dbAccessMgr);
+        bool ShouldRollupInto_CheckIsCompatibleWithTarget_ (const Network& net2MergeIn, const Network::FingerprintType& net2MergeInFingerprint,
+                                                            const Network& targetRollup);
+        void AddUpdateIn_ (const Network& addNet2MergeFromThisRollup, const Network& net2MergeIn, const Network::FingerprintType& net2MergeInFingerprint);
+        void AddNewIn_ (DBAccess::Mgr* dbAccessMgr, const Network& net2MergeIn, const Network::FingerprintType& net2MergeInFingerprint);
+        void RecomputeAll_ (DBAccess::Mgr* dbAccessMgr);
 
     private:
         RolledUpNetworkInterfaces               fUseNetworkInterfaceRollups;
