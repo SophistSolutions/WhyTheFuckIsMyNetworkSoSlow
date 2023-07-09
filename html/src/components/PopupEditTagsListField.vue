@@ -89,6 +89,12 @@ function updateValue_(event: any, scope: any, newValue: string | null) {
     :validate="doValidate_"
     @update:modelValue="updateEditValue"
   >
+
+    <!--STARTING TO DEBUG TAG STUFF-->
+  <!-- <span v-for="d in scope.value" v-bind:key="d">
+          <q-chip :removable="true" color="info" text-color="white"> {{ d }}  </q-chip>
+        </span> -->
+
     <q-input
       autofocus
       ref="thisInputFieldName"
