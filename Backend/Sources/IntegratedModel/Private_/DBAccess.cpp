@@ -94,7 +94,7 @@ const Schema_Table Mgr::kDeviceUserSettingsSchema_{L"DeviceUserSettings"sv,
 #if __cpp_designated_initializers
                                                        {.fName = L"DeviceID"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true},
 #else
-                                                        {L"DeviceID", nullopt, true, kRepresentIDAs_, nullopt, true},
+                                                       {L"DeviceID", nullopt, true, kRepresentIDAs_, nullopt, true},
 #endif
                                                    },
                                                    Schema_CatchAllField{}};
@@ -222,7 +222,7 @@ Mgr::Mgr ()
 
 Mgr::~Mgr ()
 {
-    Debug::TraceContextBumper ctx{L"IntegratedModel::{}::Mgr::DTOR"};
+    Debug::TraceContextBumper                        ctx{L"IntegratedModel::{}::Mgr::DTOR"};
     Execution::Thread::SuppressInterruptionInContext suppressInterruption; // must complete this abort and wait for done - this cannot abort/throw
     fDatabaseSyncThread_.AbortAndWaitForDone ();
 }
@@ -403,10 +403,10 @@ void Mgr::_OneTimeStartupLoadDB ()
     auto                      fetchInterfacesNetworks = [this] () -> unsigned int {
         try {
             Debug::TimingTrace ttrc{L"...initial load of fDBNetworkInterfaces_ from database ", 1};
-            auto errorHandler = [] ([[maybe_unused]] const SQL::Statement::Row& r, const exception_ptr& e) -> optional<NetworkInterface> {
+            auto               errorHandler = [] ([[maybe_unused]] const SQL::Statement::Row& r, const exception_ptr& e) -> optional<NetworkInterface> {
                 // Just drop the record on the floor after logging
                 Logger::sThe.Log (Logger::eError, L"Error reading database of persisted network interfaces snapshot ('%s'): %s",
-                                                       Characters::ToString (r).c_str (), Characters::ToString (e).c_str ());
+                                                                     Characters::ToString (r).c_str (), Characters::ToString (e).c_str ());
                 return nullopt;
             };
             auto all = fNetworkInterfaceTableConnection_->GetAll (errorHandler);
@@ -422,10 +422,10 @@ void Mgr::_OneTimeStartupLoadDB ()
     auto fetchNets = [this] () -> unsigned int {
         try {
             Debug::TimingTrace ttrc{L"...initial load of fDBNetworks_ from database ", 1};
-            auto errorHandler = [] ([[maybe_unused]] const SQL::Statement::Row& r, const exception_ptr& e) -> optional<Network> {
+            auto               errorHandler = [] ([[maybe_unused]] const SQL::Statement::Row& r, const exception_ptr& e) -> optional<Network> {
                 // Just drop the record on the floor after logging
                 Logger::sThe.Log (Logger::eError, L"Error reading database of persisted network snapshot ('%s'): %s",
-                                  Characters::ToString (r).c_str (), Characters::ToString (e).c_str ());
+                                                Characters::ToString (r).c_str (), Characters::ToString (e).c_str ());
                 return nullopt;
             };
             auto all = fNetworkTableConnection_->GetAll (errorHandler);
@@ -441,10 +441,10 @@ void Mgr::_OneTimeStartupLoadDB ()
     auto fetchDevices = [this] () -> unsigned int {
         try {
             Debug::TimingTrace ttrc{L"...initial load of fDBDevices_ from database ", 1};
-            auto errorHandler = [] ([[maybe_unused]] const SQL::Statement::Row& r, const exception_ptr& e) -> optional<Device> {
+            auto               errorHandler = [] ([[maybe_unused]] const SQL::Statement::Row& r, const exception_ptr& e) -> optional<Device> {
                 // Just drop the record on the floor after logging
                 Logger::sThe.Log (Logger::eError, L"Error reading database of persisted device snapshot ('%s'): %s",
-                                  Characters::ToString (r).c_str (), Characters::ToString (e).c_str ());
+                                                Characters::ToString (r).c_str (), Characters::ToString (e).c_str ());
                 return nullopt;
             };
             auto all = fDeviceTableConnection_->GetAll (errorHandler);

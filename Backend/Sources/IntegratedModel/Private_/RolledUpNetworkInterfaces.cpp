@@ -111,7 +111,7 @@ nonvirtual auto RolledUpNetworkInterfaces::MapAggregatedID2ItsRollupID (const GU
             DbgTrace (L"rolledupNetInterface=%s", Characters::ToString (i).c_str ());
         }
     }
-    Assert (false); // @todo fix - because we guarantee each item rolled up exactly once - but happens sometimes on change of network - I think due to outdated device records referring to newer network not yet in this cache...
+    Assert (false);     // @todo fix - because we guarantee each item rolled up exactly once - but happens sometimes on change of network - I think due to outdated device records referring to newer network not yet in this cache...
     WeakAssert (false); // @todo fix - because we guarantee each item rolled up exactly once - but happens sometimes on change of network - I think due to outdated device records referring to newer network not yet in this cache...
     return aggregatedNetInterfaceID;
 }
@@ -198,7 +198,7 @@ void RolledUpNetworkInterfaces::MergeIn_ (const optional<GUID>& forDeviceID, con
     // friendly name - for example - of network interface can change while running, so must be able to invalidate and recompute this list
 
     Network::FingerprintType netInterface2MergeInFingerprint = net2MergeIn.GenerateFingerprintFromProperties ();
-    auto rolledUpNetworkInterace = NetworkInterface::Rollup (fRolledUpNetworkInterfaces_.Lookup (netInterface2MergeInFingerprint), net2MergeIn);
+    auto                     rolledUpNetworkInterace         = NetworkInterface::Rollup (fRolledUpNetworkInterfaces_.Lookup (netInterface2MergeInFingerprint), net2MergeIn);
     fRolledUpNetworkInterfaces_.Add (rolledUpNetworkInterace);
     fMapAggregatedNetInterfaceID2RollupID_.Add (net2MergeIn.fID, rolledUpNetworkInterace.fID);
     if (forDeviceID) {

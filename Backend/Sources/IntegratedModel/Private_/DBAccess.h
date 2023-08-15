@@ -152,20 +152,20 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_::DB
         static const Schema_Table kNetworkTableSchema_;
 
     private:
-        static constexpr Configuration::Version kCurrentVersion_ = Configuration::Version{1, 0, Configuration::VersionStage::Alpha, 0};
-        BackendApp::Common::DB                  fDB_; // Not accessed directly except during construction/destruction
-        Synchronized<SQL::Connection::Ptr>      fDBConnectionPtr_{fDB_.NewConnection ()};
-        Execution::Thread::Ptr                  fDatabaseSyncThread_{};
+        static constexpr Configuration::Version                                              kCurrentVersion_ = Configuration::Version{1, 0, Configuration::VersionStage::Alpha, 0};
+        BackendApp::Common::DB                                                               fDB_; // Not accessed directly except during construction/destruction
+        Synchronized<SQL::Connection::Ptr>                                                   fDBConnectionPtr_{fDB_.NewConnection ()};
+        Execution::Thread::Ptr                                                               fDatabaseSyncThread_{};
         Synchronized<Mapping<GUID, Device::UserOverridesType>>                               fCachedDeviceUserSettings_;
         Synchronized<unique_ptr<SQL::ORM::TableConnection<ExternalDeviceUserSettingsElt_>>>  fDeviceUserSettingsTableConnection_;
         Synchronized<Mapping<GUID, Network::UserOverridesType>>                              fCachedNetworkUserSettings_;
         Synchronized<unique_ptr<SQL::ORM::TableConnection<ExternalNetworkUserSettingsElt_>>> fNetworkUserSettingsTableConnection_;
-        unique_ptr<SQL::ORM::TableConnection<Device>>           fDeviceTableConnection_;  // only accessed from a background database thread
-        unique_ptr<SQL::ORM::TableConnection<Network>>          fNetworkTableConnection_; // ''
-        unique_ptr<SQL::ORM::TableConnection<NetworkInterface>> fNetworkInterfaceTableConnection_; // ''
-        Synchronized<DeviceCollection>                          fDBDevices_;                       // mirror database contents in RAM
-        Synchronized<NetworkCollection>                         fDBNetworks_;                      // ''
-        Synchronized<NetworkInterfaceCollection>                fDBNetworkInterfaces_;             // ''
+        unique_ptr<SQL::ORM::TableConnection<Device>>                                        fDeviceTableConnection_;           // only accessed from a background database thread
+        unique_ptr<SQL::ORM::TableConnection<Network>>                                       fNetworkTableConnection_;          // ''
+        unique_ptr<SQL::ORM::TableConnection<NetworkInterface>>                              fNetworkInterfaceTableConnection_; // ''
+        Synchronized<DeviceCollection>                                                       fDBDevices_;                       // mirror database contents in RAM
+        Synchronized<NetworkCollection>                                                      fDBNetworks_;                      // ''
+        Synchronized<NetworkInterfaceCollection>                                             fDBNetworkInterfaces_;             // ''
 
         // the latest copy of what is in the DB (manually kept up to date)
         // NOTE: These are all non-rolled up objects

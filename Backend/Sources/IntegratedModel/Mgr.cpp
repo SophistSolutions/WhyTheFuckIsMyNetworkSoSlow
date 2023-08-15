@@ -100,8 +100,8 @@ namespace {
             try {
                 Mapping<GUID, Network::UserOverridesType> netUserSettings = GetNetworkUserSettings ();
                 RolledUpNetworkInterfaces                 tmpNetInterfacerollups{this->GetRawDevices (), this->GetRawNetworkInterfaces ()};
-                RolledUpNetworks tmpNetworkRollup{this, this->GetRawNetworks (), netUserSettings, tmpNetInterfacerollups};
-                auto             isBad = [&] (const KeyValuePair<GUID, Network::UserOverridesType> kvp) {
+                RolledUpNetworks                          tmpNetworkRollup{this, this->GetRawNetworks (), netUserSettings, tmpNetInterfacerollups};
+                auto                                      isBad = [&] (const KeyValuePair<GUID, Network::UserOverridesType> kvp) {
                     // @todo check for bad and remove
                     // See if it has BOTH zero concrete networks inside, and is not referenced by any devices
                     try {
@@ -202,7 +202,7 @@ IntegratedModel::Mgr::Activator::Activator ()
 
 IntegratedModel::Mgr::Activator::~Activator ()
 {
-    Debug::TraceContextBumper ctx{L"IntegratedModel::Mgr::Activator::~Activator"};
+    Debug::TraceContextBumper                        ctx{L"IntegratedModel::Mgr::Activator::~Activator"};
     Execution::Thread::SuppressInterruptionInContext suppressInterruption; // must complete this abort and wait for done - this cannot abort/throw
     sDBAccessMgr_.reset ();
 }
@@ -229,7 +229,7 @@ optional<IntegratedModel::Device> IntegratedModel::Mgr::GetDevice (const GUID& i
     if (result) {
         if (ttl != nullptr) {
             bool justStarted = Time::GetTickCount () < 60; // if just started, this trick of looking at EverSeen() doesn't work (cuz maybe just not discovered yet)
-            auto everSeen = result->fSeen.EverSeen ();
+            auto everSeen    = result->fSeen.EverSeen ();
             // This isn't a super-reliable way to check - find a better more reliable way to set the ttl
             if (not justStarted and everSeen and everSeen->GetUpperBound () + 15min < DateTime::Now ()) {
                 *ttl = 2min;

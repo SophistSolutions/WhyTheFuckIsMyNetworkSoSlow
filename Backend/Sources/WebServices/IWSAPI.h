@@ -54,10 +54,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
          * 
          *      GetDevice(id) API second value in tuple is TTL
          */
-        virtual Sequence<String> GetDevices (const optional<Set<GUID>>& ids = nullopt, const optional<DeviceSortParamters>& sort = {}) const = 0;
-        virtual Sequence<Device> GetDevices_Recurse (const optional<Set<GUID>>& ids = nullopt, const optional<DeviceSortParamters>& sort = {}) const = 0;
-        virtual tuple<Device, Duration> GetDevice (const String& id) const                                                  = 0;
-        virtual void                    PatchDevice (const String& id, const JSONPATCH::OperationItemsType& patchDoc) const = 0;
+        virtual Sequence<String>        GetDevices (const optional<Set<GUID>>& ids = nullopt, const optional<DeviceSortParamters>& sort = {}) const         = 0;
+        virtual Sequence<Device>        GetDevices_Recurse (const optional<Set<GUID>>& ids = nullopt, const optional<DeviceSortParamters>& sort = {}) const = 0;
+        virtual tuple<Device, Duration> GetDevice (const String& id) const                                                                                  = 0;
+        virtual void                    PatchDevice (const String& id, const JSONPATCH::OperationItemsType& patchDoc) const                                 = 0;
 
     public:
         /**

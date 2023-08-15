@@ -145,8 +145,8 @@ RolledUpDevices RolledUpDevices::GetCached (DBAccess::Mgr* dbAccessMgr, Time::Du
         Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...RolledUpDevices::GetCached...cachefiller")};
         Debug::TimingTrace        ttrc{L"RolledUpDevices::GetCached...cachefiller", 1};
 
-        auto rolledUpNetworks = RolledUpNetworks::GetCached (dbAccessMgr, allowedStaleness * 3.0); // longer allowedStaleness cuz we dont care much about this and the parts
-                                                                                                   // we look at really dont change
+        auto rolledUpNetworks = RolledUpNetworks::GetCached (dbAccessMgr, allowedStaleness * 3.0);                    // longer allowedStaleness cuz we dont care much about this and the parts
+                                                                                                                      // we look at really dont change
         auto rolledUpNetworkInterfacess = RolledUpNetworkInterfaces::GetCached (dbAccessMgr, allowedStaleness * 3.0); // longer allowedStaleness cuz we dont care much about this and the parts
             // we look at really dont change
 
