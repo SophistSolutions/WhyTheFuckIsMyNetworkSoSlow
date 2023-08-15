@@ -70,7 +70,10 @@ namespace {
     struct MyDBAccessRep_ : IntegratedModel::Private_::DBAccess::Mgr {
         using inherited = IntegratedModel::Private_::DBAccess::Mgr;
         atomic<bool> fFinishedInitialDBLoad_{false};
-        MyDBAccessRep_ () { _StartBackgroundThread (); }
+        MyDBAccessRep_ ()
+        {
+            _StartBackgroundThread ();
+        }
         virtual void CheckDatabaseLoadCompleted () override
         {
             if (not fFinishedInitialDBLoad_) {
@@ -142,7 +145,10 @@ namespace {
                 AssertNotReached (); // would be bad...
             }
         }
-        bool GetFinishedInitialDBLoad () const { return fFinishedInitialDBLoad_; }
+        bool GetFinishedInitialDBLoad () const
+        {
+            return fFinishedInitialDBLoad_;
+        }
     };
     unique_ptr<MyDBAccessRep_> sDBAccessMgr_; // constructed on module activation
 }

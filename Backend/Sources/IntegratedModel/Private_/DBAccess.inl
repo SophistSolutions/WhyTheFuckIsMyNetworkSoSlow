@@ -38,9 +38,18 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_::DB
         Debug::TimingTrace ttrc{L"IntegratedModel...LookupNetworkUserSettings ()", 0.001};
         return fCachedNetworkUserSettings_.cget ().cref ().Lookup (guid);
     }
-    inline NetworkInterfaceCollection Mgr::GetRawNetworkInterfaces () const { return fDBNetworkInterfaces_; }
-    inline NetworkCollection          Mgr::GetRawNetworks () const { return fDBNetworks_; }
-    inline DeviceCollection           Mgr::GetRawDevices () const { return fDBDevices_; }
+    inline NetworkInterfaceCollection Mgr::GetRawNetworkInterfaces () const
+    {
+        return fDBNetworkInterfaces_;
+    }
+    inline NetworkCollection Mgr::GetRawNetworks () const
+    {
+        return fDBNetworks_;
+    }
+    inline DeviceCollection Mgr::GetRawDevices () const
+    {
+        return fDBDevices_;
+    }
 
 }
 

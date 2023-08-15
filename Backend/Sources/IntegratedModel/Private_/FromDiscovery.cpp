@@ -195,7 +195,10 @@ namespace {
 
 }
 
-optional<GUID> IntegratedModel::Private_::FromDiscovery::GetMyDeviceID () { return Discovery::DevicesMgr::sThe.GetThisDeviceID (); }
+optional<GUID> IntegratedModel::Private_::FromDiscovery::GetMyDeviceID ()
+{
+    return Discovery::DevicesMgr::sThe.GetThisDeviceID ();
+}
 
 Sequence<NetworkInterface> IntegratedModel::Private_::FromDiscovery::GetNetworkInterfaces ()
 {

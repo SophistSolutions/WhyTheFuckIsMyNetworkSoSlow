@@ -11,6 +11,7 @@
  */
 
 #include "Stroika/Foundation/Characters/ToString.h"
+#include "Stroika/Foundation/Configuration/StroikaVersion.h"
 #include "Stroika/Foundation/Database/SQL/Transaction.h"
 #include "Stroika/Foundation/Debug/Assertions.h"
 #include "Stroika/Foundation/Debug/Trace.h"
@@ -30,7 +31,11 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         Debug::TraceContextBumper ctx{
             Stroika_Foundation_Debug_OptionalizeTraceArgs (L"DB::AddOrMergeUpdate", L"...,d=%s", Characters::ToString (d).c_str ())};
         RequireNotNull (dbConnTable);
+#if kStroika_Version_Major >= 3
+        SQL::Transaction t{dbConnTable->connection ()->mkTransaction ()};
+#else
         SQL::Transaction t{dbConnTable->pConnection ()->mkTransaction ()};
+#endif
         std::optional<T> result;
         Assert (kRepresentIDAs_ == VariantValue::Type::eString or kRepresentIDAs_ == VariantValue::Type::eBLOB);
         VariantValue id = (kRepresentIDAs_ == VariantValue::Type::eString) ? VariantValue{d.fID.template As<String> ()}

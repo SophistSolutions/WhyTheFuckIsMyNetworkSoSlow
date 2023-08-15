@@ -177,24 +177,24 @@ Mgr::Mgr ()
                                                                kNetworkInterfaceTableSchema_, kNetworkUserSettingsSchema_}}
 {
     Debug::TraceContextBumper ctx{L"IntegratedModel::{}::Mgr_::CTOR"};
+    // Each TableConnection gets its own DB::Connection::Ptr
     fDeviceUserSettingsTableConnection_ = make_unique<SQL::ORM::TableConnection<ExternalDeviceUserSettingsElt_>> (
-        fDBConnectionPtr_, kDeviceUserSettingsSchema_, kDBObjectMapper_,
+        fDB_.NewConnection (), kDeviceUserSettingsSchema_, kDBObjectMapper_,
         BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<ExternalDeviceUserSettingsElt_>> ());
     fNetworkUserSettingsTableConnection_ = make_unique<SQL::ORM::TableConnection<ExternalNetworkUserSettingsElt_>> (
-        fDBConnectionPtr_, kNetworkUserSettingsSchema_, kDBObjectMapper_,
+        fDB_.NewConnection (), kNetworkUserSettingsSchema_, kDBObjectMapper_,
         BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<ExternalNetworkUserSettingsElt_>> ());
     fDeviceTableConnection_ = make_unique<SQL::ORM::TableConnection<Device>> (
-        fDBConnectionPtr_, kDeviceTableSchema_, kDBObjectMapper_,
+        fDB_.NewConnection (), kDeviceTableSchema_, kDBObjectMapper_,
         BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<Device>> ());
     fNetworkTableConnection_ = make_unique<SQL::ORM::TableConnection<Network>> (
-        fDBConnectionPtr_, kNetworkTableSchema_, kDBObjectMapper_,
+        fDB_.NewConnection (), kNetworkTableSchema_, kDBObjectMapper_,
         BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<Network>> ());
     fNetworkInterfaceTableConnection_ = make_unique<SQL::ORM::TableConnection<NetworkInterface>> (
-        fDBConnectionPtr_, kNetworkInterfaceTableSchema_, kDBObjectMapper_,
+        fDB_.NewConnection (), kNetworkInterfaceTableSchema_, kDBObjectMapper_,
         BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<NetworkInterface>> ());
     try {
         Debug::TimingTrace ttrc{L"...load of fCachedDeviceUserSettings_ from database ", 1};
-        lock_guard         lock{this->fDBConnectionPtr_};
         fCachedDeviceUserSettings_.store (Mapping<GUID, Model::Device::UserOverridesType>{
             fDeviceUserSettingsTableConnection_.rwget ().cref ()->GetAll ().Map<KeyValuePair<GUID, Model::Device::UserOverridesType>> ([] (const auto& i) {
                 return KeyValuePair<GUID, Model::Device::UserOverridesType>{i.fDeviceID, i.fUserSettings};
@@ -207,7 +207,6 @@ Mgr::Mgr ()
     }
     try {
         Debug::TimingTrace ttrc{L"...load of fCachedNetworkUserSettings_ from database ", 1};
-        lock_guard         lock{this->fDBConnectionPtr_};
         fCachedNetworkUserSettings_.store (Mapping<GUID, Model::Network::UserOverridesType>{
             fNetworkUserSettingsTableConnection_.rwget ().cref ()->GetAll ().Map<KeyValuePair<GUID, Model::Network::UserOverridesType>> ([] (const auto& i) {
                 return KeyValuePair<GUID, Model::Network::UserOverridesType>{i.fNetworkID, i.fUserSettings};
@@ -269,8 +268,7 @@ bool Mgr::SetDeviceUserSettings (const GUID& id, const std::optional<Device::Use
     Debug::TimingTrace ttrc{L"IntegratedModel ... SetDeviceUserSettings", 0.1};
     // first check if legit id, and then store
     // @todo check if good id and throw if not...
-    auto       lk = fCachedDeviceUserSettings_.rwget ();
-    lock_guard lock{this->fDBConnectionPtr_}; //tmphack fix underlying SQL orm wrapper stuff so not needed --LGP 2022-11-23
+    auto lk = fCachedDeviceUserSettings_.rwget ();
     if (settings) {
         if (fCachedDeviceUserSettings_.cget ().cref ().Lookup (id) != settings) {
             fDeviceUserSettingsTableConnection_.rwget ().cref ()->AddOrUpdate (ExternalDeviceUserSettingsElt_{id, *settings});
@@ -348,7 +346,6 @@ void Mgr::BackgroundDatabaseThread_ ()
 
             // UPDATE fDBNetworkInterfaces_ INCREMENTALLY to reflect reflect these merges
             FromDiscovery::GetNetworkInterfaces ().Apply ([this] (const Model::NetworkInterface& ni) {
-                lock_guard lock{this->fDBConnectionPtr_};     //tmphack fix underlying SQL orm wrapper stuff so not needed --LGP 2022-11-23
                 Assert (ni.fAggregatesReversibly == nullopt); // dont write these summary values
                 fNetworkInterfaceTableConnection_->AddOrUpdate (ni);
                 fDBNetworkInterfaces_.rwget ()->Add (ni);
@@ -357,7 +354,6 @@ void Mgr::BackgroundDatabaseThread_ ()
             // UPDATE fDBNetworks_ INCREMENTALLY to reflect reflect these merges
             FromDiscovery::GetNetworks ().Apply ([this] (const Model::Network& n) {
                 Assert (n.fSeen);                            // don't track/write items which have never been seen
-                lock_guard lock{this->fDBConnectionPtr_};    //tmphack fix underlying SQL orm wrapper stuff so not needed --LGP 2022-11-23
                 Assert (n.fAggregatesReversibly == nullopt); // dont write these summary values
                 fNetworkTableConnection_->AddOrUpdate (n);
                 fDBNetworks_.rwget ()->Add (n);
@@ -368,7 +364,6 @@ void Mgr::BackgroundDatabaseThread_ ()
                 Assert (d.fSeen.EverSeen ());
                 Assert (d.fSeen.EverSeen ());                // don't track/write items which have never been seen
                 Assert (d.fUserOverrides == nullopt);        // tracked on rollup devices, not snapshot devices
-                lock_guard lock{this->fDBConnectionPtr_};    //tmphack fix underlying SQL orm wrapper stuff so not needed --LGP 2022-11-23
                 Assert (d.fAggregatesReversibly == nullopt); // dont write these summary values
                 auto rec2Update = fDB_.AddOrMergeUpdate (fDeviceTableConnection_.get (), d);
                 fDBDevices_.rwget ()->Add (rec2Update);

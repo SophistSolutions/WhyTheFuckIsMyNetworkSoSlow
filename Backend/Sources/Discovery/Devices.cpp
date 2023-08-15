@@ -341,7 +341,10 @@ namespace {
 #endif
                 return true;
             }
-            bool operator!= (const SSDPInfo& rhs) const { return not(*this == rhs); }
+            bool operator!= (const SSDPInfo& rhs) const
+            {
+                return not(*this == rhs);
+            }
 #else
             auto operator<=> (const SSDPInfo&) const = default;
 #endif
@@ -618,7 +621,10 @@ namespace {
             }
             return true;
         }
-        bool operator!= (const DiscoveryInfo_& rhs) const { return not(*this == rhs); }
+        bool operator!= (const DiscoveryInfo_& rhs) const
+        {
+            return not(*this == rhs);
+        }
 #else
         auto operator<=> (const DiscoveryInfo_&) const = default;
 #endif
@@ -633,7 +639,10 @@ namespace {
     };
 
     struct Device_Key_Extractor_ {
-        GUID operator() (const DiscoveryInfo_& t) const { return t.fGUID; };
+        GUID operator() (const DiscoveryInfo_& t) const
+        {
+            return t.fGUID;
+        };
     };
     using DiscoveryDeviceCollection_ =
         KeyedCollection<DiscoveryInfo_, GUID, KeyedCollection_DefaultTraits<DiscoveryInfo_, GUID, Device_Key_Extractor_>>;
@@ -700,7 +709,10 @@ namespace {
         {
         }
 
-        optional<GUID> GetThisDeviceID () const { return sCachedValue_.load (); }
+        optional<GUID> GetThisDeviceID () const
+        {
+            return sCachedValue_.load ();
+        }
 
     private:
         static void DiscoveryChecker_ ()

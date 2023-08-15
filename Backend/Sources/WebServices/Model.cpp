@@ -951,7 +951,10 @@ Set<InternetAddress> Device::GetInternetAddresses () const
     return result;
 }
 
-String Device::ToString () const { return DataExchange::Variant::JSON::Writer{}.WriteAsString (Device::kMapper.FromObject (*this)); }
+String Device::ToString () const
+{
+    return DataExchange::Variant::JSON::Writer{}.WriteAsString (Device::kMapper.FromObject (*this));
+}
 
 Device Device::Merge (const Device& baseDevice, const Device& priorityDevice)
 {

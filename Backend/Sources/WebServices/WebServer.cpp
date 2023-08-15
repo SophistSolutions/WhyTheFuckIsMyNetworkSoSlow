@@ -131,9 +131,9 @@ namespace {
 }
 
 namespace {
-    const unsigned int kMaxWSConnectionsPerUser_{4};   // empirically derived from looking at chrome --LGP 2021-01-14
-    const unsigned int kMaxGUIConnectionssPerUser_{6}; // ''
-    const unsigned int kMaxUsersSupported_{5};         // how many simultaneous users to support?
+    constexpr unsigned int kMaxWSConnectionsPerUser_{4};   // empirically derived from looking at chrome --LGP 2021-01-14
+    constexpr unsigned int kMaxGUIConnectionssPerUser_{6}; // ''
+    constexpr unsigned int kMaxUsersSupported_{5};         // how many simultaneous users to support?
 }
 
 namespace {
@@ -159,12 +159,12 @@ namespace {
         Sequence<pair<RegularExpression, CacheControl>> kFSCacheControlSettings_
         {
 #if __cpp_designated_initializers
-            pair<RegularExpression, CacheControl>{RegularExpression{L".*[0-9a-fA-F]+\\.(js|css|js\\.map)", CompareOptions::eCaseInsensitive},
+            pair<RegularExpression, CacheControl>{RegularExpression{L".*[0-9a-fA-F]+\\.(js|css|js\\.map)"sv, CompareOptions::eCaseInsensitive},
                                                   CacheControl::kImmutable},
                 pair<RegularExpression, CacheControl>{
                     RegularExpression::kAny, CacheControl{.fCacheability = CacheControl::ePublic, .fMaxAge = Duration{24h}.As<int32_t> ()}},
 #else
-            pair<RegularExpression, CacheControl>{RegularExpression{L".*[0-9a-fA-F]+\\.(js|css|js\\.map)", CompareOptions::eCaseInsensitive},
+            pair<RegularExpression, CacheControl>{RegularExpression{L".*[0-9a-fA-F]+\\.(js|css|js\\.map)"sv, CompareOptions::eCaseInsensitive},
                                                   CacheControl::kImmutable},
                 pair<RegularExpression, CacheControl>{RegularExpression::kAny, CacheControl{CacheControl::ePublic, Duration{24h}.As<int32_t> ()}},
 #endif
@@ -201,7 +201,10 @@ private:
         {
             ++r.fActiveCallCnt_;
         }
-        ~ActiveCallCounter_ () { --fRep_.fActiveCallCnt_; }
+        ~ActiveCallCounter_ ()
+        {
+            --fRep_.fActiveCallCnt_;
+        }
         Rep_& fRep_;
     };
     IntervalTimer::Adder fIntervalTimerAdder_;
@@ -363,7 +366,8 @@ public:
                           WriteResponse (&m->rwResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_TraceRoute (address->As<String> (), reverseDNSResult)));
                       }
                       else {
-                          Execution::Throw (ClientErrorException{L"missing target argument"sv});
+                          static const auto kException_ = ClientErrorException{L"missing target argument"sv};
+                          Execution::Throw (kException_);
                       }
                   }},
               Route{
@@ -389,7 +393,8 @@ public:
                           name = rdr->As<String> ();
                       }
                       else {
-                          Execution::Throw (ClientErrorException{L"missing name argument"sv});
+                          static const auto kException_ = ClientErrorException{L"missing name argument"sv};
+                          Execution::Throw (kException_);
                       }
                       WriteResponse (&m->rwResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_DNS_Lookup (name)));
                   }},
@@ -410,7 +415,8 @@ public:
                           WriteResponse (&m->rwResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_Scan_FullRescan (rdr->As<String> ())));
                       }
                       else {
-                          Execution::Throw (ClientErrorException{L"missing deviceID argument"sv});
+                          static const auto kException_ = ClientErrorException{L"missing deviceID argument"sv};
+                          Execution::Throw (kException_);
                       }
                   }},
               Route{
@@ -423,7 +429,8 @@ public:
                           WriteResponse (&m->rwResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_Scan_Scan (rdr->As<String> ())));
                       }
                       else {
-                          Execution::Throw (ClientErrorException{L"missing deviceID argument"sv});
+                          static const auto kException_ = ClientErrorException{L"missing addr argument"sv};
+                          Execution::Throw (kException_);
                       }
                   }},
           }
@@ -437,7 +444,7 @@ public:
         , fConnectionMgr_{SocketAddresses (InternetAddresses_Any (), gAppConfiguration.Get ().WebServerPort.value_or (AppConfigurationType::kWebServerPort_Default)), fWSRoutes_ + fStaticRoutes_, ConnectionManager::Options{kMaxWebServerConcurrentConnections_, kMaxThreads_, Socket::BindFlags{true}, kDefaultResponseHeadersStaticSite_}}
 #endif
         , fIntervalTimerAdder_{[this] () {
-                                   Debug::TraceContextBumper ctx{"webserver statsu gather TIMER HANDLER"}; // to debug https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/78
+                                   Debug::TraceContextBumper ctx{"webserver status gather TIMER HANDLER"}; // to debug https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/78
                                    OperationalStatisticsMgr::sThe.RecordActiveRunningTasksCount (fActiveCallCnt_);
                                    OperationalStatisticsMgr::sThe.RecordOpenConnectionCount (fConnectionMgr_.pConnections ().length ());
                                    OperationalStatisticsMgr::sThe.RecordActiveRunningTasksCount (fConnectionMgr_.pActiveConnections ().length ());

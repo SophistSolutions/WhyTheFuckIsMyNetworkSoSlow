@@ -52,7 +52,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
             }
             return true;
         }
-        bool operator!= (const GEOLocationInformation& rhs) const { return not(*this == rhs); }
+        bool operator!= (const GEOLocationInformation& rhs) const
+        {
+            return not(*this == rhs);
+        }
 #else
         auto operator<=> (const GEOLocationInformation&) const = default;
 #endif

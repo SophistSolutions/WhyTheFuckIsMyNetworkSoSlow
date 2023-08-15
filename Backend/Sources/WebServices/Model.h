@@ -77,7 +77,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
             }
             return true;
         }
-        bool operator!= (const OperatingSystem& rhs) const { return not(*this == rhs); }
+        bool operator!= (const OperatingSystem& rhs) const
+        {
+            return not(*this == rhs);
+        }
 #else
         auto operator<=> (const OperatingSystem&) const = default;
 #endif
@@ -120,7 +123,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
             }
             return true;
         }
-        bool operator!= (const Manufacturer& rhs) const { return not(*this == rhs); }
+        bool operator!= (const Manufacturer& rhs) const
+        {
+            return not(*this == rhs);
+        }
 #else
         auto operator<=> (const Manufacturer&) const    = default;
 #endif
@@ -308,7 +314,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
     namespace Private_ {
         struct NetworkInterface_Key_Extractor_ {
-            GUID operator() (const NetworkInterface& t) const { return t.fID; };
+            GUID operator() (const NetworkInterface& t) const
+            {
+                return t.fID;
+            };
         };
     }
     /**
@@ -466,7 +475,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
                     }
                     return true;
                 }
-                bool operator!= (const NetworkInterfaceAggregateRule& rhs) const { return not(*this == rhs); }
+                bool operator!= (const NetworkInterfaceAggregateRule& rhs) const
+                {
+                    return not(*this == rhs);
+                }
 #else
                 auto operator<=> (const NetworkInterfaceAggregateRule&) const = default;
 #endif
@@ -499,7 +511,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
                 }
                 return true;
             }
-            bool operator!= (const UserOverridesType& rhs) const { return not(*this == rhs); }
+            bool operator!= (const UserOverridesType& rhs) const
+            {
+                return not(*this == rhs);
+            }
 #else
             auto operator<=> (const UserOverridesType&) const = default;
 #endif
@@ -539,7 +554,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
     namespace Private_ {
         struct Network_Key_Extractor_ {
-            GUID operator() (const Network& t) const { return t.fID; };
+            GUID operator() (const Network& t) const
+            {
+                return t.fID;
+            };
         };
     }
     /**
@@ -727,7 +745,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
                 }
                 return true;
             }
-            bool operator!= (const UserOverridesType& rhs) const { return not(*this == rhs); }
+            bool operator!= (const UserOverridesType& rhs) const
+            {
+                return not(*this == rhs);
+            }
 #else
             auto operator<=> (const UserOverridesType&) const = default;
 #endif
@@ -777,7 +798,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
     namespace Private_ {
         struct Device_Key_Extractor_ {
-            GUID operator() (const Device& t) const { return t.fID; };
+            GUID operator() (const Device& t) const
+            {
+                return t.fID;
+            };
         };
     }
     /**

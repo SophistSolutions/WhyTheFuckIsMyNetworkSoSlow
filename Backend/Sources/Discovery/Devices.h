@@ -83,7 +83,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
             }
             return true;
         }
-        bool operator!= (const NetworkAttachmentInfo& rhs) const { return not(*this == rhs); }
+        bool operator!= (const NetworkAttachmentInfo& rhs) const
+        {
+            return not(*this == rhs);
+        }
 #else
         auto operator<=> (const NetworkAttachmentInfo&) const = default;
 #endif
@@ -128,7 +131,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
                 }
                 return true;
             }
-            bool operator!= (const SeenType& rhs) const { return not(*this == rhs); }
+            bool operator!= (const SeenType& rhs) const
+            {
+                return not(*this == rhs);
+            }
 #else
             auto operator<=> (const SeenType&) const = default;
 #endif
@@ -207,7 +213,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
 #endif
             return true;
         }
-        bool operator!= (const Device& rhs) const { return not(*this == rhs); }
+        bool operator!= (const Device& rhs) const
+        {
+            return not(*this == rhs);
+        }
 #else
         auto operator<=> (const Device&) const = default;
 #endif

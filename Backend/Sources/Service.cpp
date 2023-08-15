@@ -68,4 +68,7 @@ void WTFAppServiceRep::MainLoop (const std::function<void ()>& startedCB)
     Execution::WaitableEvent{Execution::WaitableEvent::eAutoReset}.Wait (); // wait til service shutdown ThreadAbortException
 }
 
-Main::ServiceDescription WTFAppServiceRep::GetServiceDescription () const { return kServiceDescription_; }
+Main::ServiceDescription WTFAppServiceRep::GetServiceDescription () const
+{
+    return kServiceDescription_;
+}

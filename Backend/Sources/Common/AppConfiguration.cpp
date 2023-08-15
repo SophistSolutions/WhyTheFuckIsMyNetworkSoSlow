@@ -56,7 +56,10 @@ AppConfiguration_Storage_IMPL_::AppConfiguration_Storage_IMPL_ ()
     Set (fActualCurrentConfigData_); // assure derived data (and changed fields etc) up to date
 }
 
-AppConfigurationType AppConfiguration_Storage_IMPL_::Get () const { return fActualCurrentConfigData_; }
+AppConfigurationType AppConfiguration_Storage_IMPL_::Get () const
+{
+    return fActualCurrentConfigData_;
+}
 
 void AppConfiguration_Storage_IMPL_::Set (const AppConfigurationType& v)
 {

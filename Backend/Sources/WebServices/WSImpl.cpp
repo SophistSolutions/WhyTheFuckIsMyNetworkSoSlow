@@ -98,13 +98,19 @@ namespace {
 #if __cpp_designated_initializers >= 201707L
             Instruments::Process::Options
             {
-                .fRestrictToPIDs = Set<pid_t> { Execution::GetCurrentProcessID () }
+                .fRestrictToPIDs = Set<pid_t>
+                {
+                    Execution::GetCurrentProcessID ()
+                }
             }
 #else
             mkProcessInstrumentOptions_ ()
 #endif
         };
-        MyCapturer_ () { AddCaptureSet (CaptureSet{kCaptureFrequency_, {fCPUInstrument, fProcessInstrument}}); }
+        MyCapturer_ ()
+        {
+            AddCaptureSet (CaptureSet{kCaptureFrequency_, {fCPUInstrument, fProcessInstrument}});
+        }
     };
 }
 
