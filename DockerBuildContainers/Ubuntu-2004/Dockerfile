@@ -13,14 +13,19 @@ RUN apt-get install -y g++-10
 # Cross-compile for ARM
 RUN apt-get install -y g++-10-arm-linux-gnueabihf
 
+# NPM: For html code
+#
 # Because Ubuntu2004 node version not working with vite (requires 14.x or later, but that has version of npm that didn't seem to work with builds)
-RUN apt-get install -y curl
-RUN curl -sL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+# Instructions from https://github.com/nodesource/distributions#readme
+RUN \
+    apt-get install -y ca-certificates curl gnupg; \
+    mkdir -p /etc/apt/keyrings; \
+    curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
 
-# For html code
-RUN apt-get install -y nodejs
-# Somehow installing npm from apt-get (using newer nodejs) not working --LGP 2022-06-20
-RUN npm install -g npm@latest
+ARG NODE_MAJOR=20
+RUN echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_${NODE_MAJOR}.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list
+
+RUN apt-get install -y nodejs npm
 
 ENV INCLUDE_OPENSSL $INCLUDE_OPENSSL
 RUN if [ "${INCLUDE_OPENSSL}" = true ]; then apt-get install -y openssh-server; fi
