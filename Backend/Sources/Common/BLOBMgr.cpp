@@ -197,19 +197,19 @@ GUID BLOBMgr::AddBLOB (const BLOB& b, const optional<InternetMediaType>& ct)
 
 GUID BLOBMgr::AddBLOBFromURL (const URI& url, bool recheckIfExpired)
 {
-    using IO::Network::Transfer::Cache;
-    using IO::Network::Transfer::Connection;
+    using namespace IO::Network;
     auto fetchData = [] (const URI& url) {
         // fetch the data from the given URI, maintaining a cache, so we don't needlessly ping remote servers for icons etc.
-        static Cache::Ptr sHttpCache_ = [] () {
-            Cache::DefaultOptions options;
+        static Transfer::Cache::Ptr sHttpCache_ = [] () {
+            Transfer::Cache::DefaultOptions options;
             options.fCacheSize          = 25;
             options.fDefaultResourceTTL = 60min;
-            return Cache::CreateDefault (options);
+            return Transfer::Cache::CreateDefault (options);
         }();
-        Connection::Options options{};
+        using IO::Network::Transfer::Connection::Options;
+        Options options{};
         options.fCache           = sHttpCache_;
-        Connection::Ptr conn     = Connection::New (options);
+        Transfer::Connection::Ptr conn     = Transfer::Connection::New (options);
         auto&&          response = conn.GET (url);
         return make_pair (response.GetData (), response.GetContentType ());
     };

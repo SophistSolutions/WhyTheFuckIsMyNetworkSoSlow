@@ -80,6 +80,7 @@ WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB::DB (Version targetDBVersion
 
 SQL::Connection::Ptr WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB::NewConnection ()
 {
+    using SQLite::Connection::Options;
     // Logically I THINK (from docs) - should use eMultiThread but experiemnt with eSerialized to see if fixes sporadic failures (mostly on unix)- but maybe just now saw on windows - flying...--LGP 2023-03-92
     // Serialized didn't hlep - still get tons of 'Device or resource busy on database extion lastsql select * from BLOBURL'...., (at least wtih stk 2.1) - so go back to multithread - makes more sense -- LGP 2023-09-13
     constexpr auto kThreadModel_ = Options::ThreadingMode::eMultiThread;
