@@ -1,11 +1,25 @@
 Fix .prettierrc - so formatting reasonable/uniform.
 
+
+
+---
+
+new PROFILE configuration on WINDOWS doesn't appear in solution file. Stuff I did with ApplyConfiguraiton works for adding to Projects, but not to the solution configuration.
+
 ---
 aptget remove caused very long hand - so shutdown of sserivce must be buggy again...
 
 ----
 then finsih with tags stuff - networks tags, space msisinsg and using chips in editor. remove 
 proprty on chip to remove, and special one called (new that triggers editor) text for updating.
+
+
+
+----
+
+REDO how we build DEVCONTAINERS to not use ARGUMENT, but a FROM older version, so can do staged 
+build of dev container and not overrite latest of various containers (how we build stroika windows containers now).
+PROBABLY redo the windows containers the same way - as I already did for stroika v3.
 
 ---
 
