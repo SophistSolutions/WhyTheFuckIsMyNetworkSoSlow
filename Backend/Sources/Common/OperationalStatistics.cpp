@@ -46,14 +46,14 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common;
  */
 OperationalStatisticsMgr::ProcessAPICmd::~ProcessAPICmd ()
 {
-    Time::DurationSecondsType now{Time::GetTickCount ()};
+    Time::TimePointSeconds now{Time::GetTickCount ()};
     sThe.Add_ (Rec_{Rec_::Kind::eAPI, now, now - fStart_});
 }
 
 void OperationalStatisticsMgr::ProcessAPICmd::NoteError ()
 {
-    Time::DurationSecondsType now{Time::GetTickCount ()};
-    sThe.Add_ (Rec_{Rec_::Kind::eAPIError, now, now});
+    Time::TimePointSeconds now{Time::GetTickCount ()};
+    sThe.Add_ (Rec_{.fKind = Rec_::Kind::eAPIError, .fAt = now, .fDuration = 0s});
 }
 
 /*
@@ -63,32 +63,32 @@ void OperationalStatisticsMgr::ProcessAPICmd::NoteError ()
  */
 OperationalStatisticsMgr::ProcessDBCmd::~ProcessDBCmd ()
 {
-    Time::DurationSecondsType now{Time::GetTickCount ()};
-    sThe.Add_ (Rec_{fKind_, now, now - fStart_});
+    Time::TimePointSeconds now{Time::GetTickCount ()};
+    sThe.Add_ (Rec_{.fKind = fKind_, .fAt = now, .fDuration = now - fStart_});
 }
 
 void OperationalStatisticsMgr::ProcessDBCmd::NoteError ()
 {
-    Time::DurationSecondsType now{Time::GetTickCount ()};
-    sThe.Add_ (Rec_{Rec_::Kind::eDBError, now, now});
+    Time::TimePointSeconds now{Time::GetTickCount ()};
+    sThe.Add_ (Rec_{.fKind = Rec_::Kind::eDBError, .fAt = now, .fDuration = 0s});
 }
 
 void OperationalStatisticsMgr::RecordActiveRunningTasksCount (size_t length)
 {
-    Time::DurationSecondsType now{Time::GetTickCount ()};
-    sThe.Add_ (Rec_{Rec_::Kind::eAPIActiveRunningTasks, now, 0, length});
+    Time::TimePointSeconds now{Time::GetTickCount ()};
+    sThe.Add_ (Rec_{.fKind = Rec_::Kind::eAPIActiveRunningTasks, .fAt = now, .fDuration = 0s, .fLength = length});
 }
 
 void OperationalStatisticsMgr::RecordOpenConnectionCount (size_t length)
 {
-    Time::DurationSecondsType now{Time::GetTickCount ()};
-    sThe.Add_ (Rec_{Rec_::Kind::eAPIOpenConnectionCount, now, 0, length});
+    Time::TimePointSeconds now{Time::GetTickCount ()};
+    sThe.Add_ (Rec_{.fKind = Rec_::Kind::eAPIOpenConnectionCount, .fAt = now, .fDuration = 0s, .fLength = length});
 }
 
 void OperationalStatisticsMgr::RecordProcessingConnectionCount (size_t length)
 {
-    Time::DurationSecondsType now{Time::GetTickCount ()};
-    sThe.Add_ (Rec_{Rec_::Kind::eAPIProcessingConnectionCount, now, 0, length});
+    Time::TimePointSeconds now{Time::GetTickCount ()};
+    sThe.Add_ (Rec_{.fKind = Rec_::Kind::eAPIProcessingConnectionCount, .fAt = now, .fDuration = 0s, .fLength = length});
 }
 
 auto OperationalStatisticsMgr::GetStatistics () const -> Statistics
@@ -96,9 +96,10 @@ auto OperationalStatisticsMgr::GetStatistics () const -> Statistics
     Statistics result;
 
     using Time::Duration;
-    using Time::DurationSecondsType;
+    using Time::DurationSeconds;
+    using Time::TimePointSeconds;
     // hit every entry and just skip those with null events
-    DurationSecondsType skipBefore = Time::GetTickCount () - kLookbackInterval.As<DurationSecondsType> ();
+    TimePointSeconds skipBefore = Time::GetTickCount () - kLookbackInterval;
 
     // could optimize slightly and skip a bunch in a row, but not worht the trouble probably
     Iterable<Rec_> allApplicable = [&] () {
@@ -108,7 +109,7 @@ auto OperationalStatisticsMgr::GetStatistics () const -> Statistics
     }();
 
     {
-        Iterable<DurationSecondsType> apiTimes = allApplicable.Map<DurationSecondsType> ([] (const Rec_& r) -> optional<DurationSecondsType> {
+        Iterable<DurationSeconds> apiTimes = allApplicable.Map<DurationSeconds> ([] (const Rec_& r) -> optional<DurationSeconds> {
             if (r.fKind == Rec_::Kind::eAPI)
                 return r.fDuration;
             return nullopt;
@@ -163,7 +164,7 @@ auto OperationalStatisticsMgr::GetStatistics () const -> Statistics
         }
     }
     {
-        Iterable<DurationSecondsType> dbReadTimes = allApplicable.Map<DurationSecondsType> ([] (const Rec_& r) -> optional<DurationSecondsType> {
+        Iterable<DurationSeconds> dbReadTimes = allApplicable.Map<DurationSeconds> ([] (const Rec_& r) -> optional<DurationSeconds> {
             if (r.fKind == Rec_::Kind::eDBRead)
                 return r.fDuration;
             return nullopt;
@@ -176,7 +177,7 @@ auto OperationalStatisticsMgr::GetStatistics () const -> Statistics
         result.fRecentDB.fReads = static_cast<unsigned int> (dbReadTimes.length ());
     }
     {
-        Iterable<DurationSecondsType> dbWriteTimes = allApplicable.Map<DurationSecondsType> ([] (const Rec_& r) -> optional<DurationSecondsType> {
+        Iterable<DurationSeconds> dbWriteTimes = allApplicable.Map<DurationSeconds> ([] (const Rec_& r) -> optional<DurationSeconds> {
             if (r.fKind == Rec_::Kind::eDBWrite)
                 return r.fDuration;
             return nullopt;

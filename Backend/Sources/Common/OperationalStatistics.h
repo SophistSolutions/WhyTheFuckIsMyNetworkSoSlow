@@ -79,10 +79,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
                 eAPIOpenConnectionCount,
                 eAPIProcessingConnectionCount,
             };
-            Kind                      fKind;
-            Time::DurationSecondsType fAt;
-            Time::DurationSecondsType fDuration;
-            size_t                    fLength;
+            Kind                   fKind;
+            Time::TimePointSeconds fAt;
+            Time::DurationSeconds  fDuration;
+            size_t                 fLength;
         };
         Rec_   fRollingHistory_[1024]; // @todo see https://stroika.atlassian.net/browse/STK-174 - redo as circular q when available
         size_t fNextHistory_{0};       // circular - can be < first. - first==last implies zero length q
@@ -101,7 +101,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         static void NoteError ();
 
     private:
-        Time::DurationSecondsType fStart_;
+        Time::TimePointSeconds fStart_;
     };
 
     /**
@@ -115,8 +115,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         static void NoteError ();
 
     private:
-        Rec_::Kind                fKind_;
-        Time::DurationSecondsType fStart_;
+        Rec_::Kind             fKind_;
+        Time::TimePointSeconds fStart_;
     };
 
     /**

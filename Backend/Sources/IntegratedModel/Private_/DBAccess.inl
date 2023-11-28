@@ -20,22 +20,22 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_::DB
      */
     inline Mapping<GUID, Device::UserOverridesType> Mgr::GetDeviceUserSettings () const
     {
-        Debug::TimingTrace ttrc{L"IntegratedModel...GetDeviceUserSettings ()", 0.001};
+        Debug::TimingTrace ttrc{L"IntegratedModel...GetDeviceUserSettings ()", 1ms};
         return fCachedDeviceUserSettings_.cget ().cref ();
     }
     inline optional<Device::UserOverridesType> Mgr::LookupDevicesUserSettings (const GUID& guid) const
     {
-        Debug::TimingTrace ttrc{L"IntegratedModel...LookupDevicesUserSettings ()", 0.001};
+        Debug::TimingTrace ttrc{L"IntegratedModel...LookupDevicesUserSettings ()", 1ms};
         return fCachedDeviceUserSettings_.cget ().cref ().Lookup (guid);
     }
     inline Mapping<GUID, Network::UserOverridesType> Mgr::GetNetworkUserSettings () const
     {
-        Debug::TimingTrace ttrc{L"IntegratedModel...GetNetworkUserSettings ()", 0.001};
+        Debug::TimingTrace ttrc{L"IntegratedModel...GetNetworkUserSettings ()", 1ms};
         return fCachedNetworkUserSettings_.cget ().cref ();
     }
     inline optional<Network::UserOverridesType> Mgr::LookupNetworkUserSettings (const GUID& guid) const
     {
-        Debug::TimingTrace ttrc{L"IntegratedModel...LookupNetworkUserSettings ()", 0.001};
+        Debug::TimingTrace ttrc{L"IntegratedModel...LookupNetworkUserSettings ()", 1ms};
         return fCachedNetworkUserSettings_.cget ().cref ().Lookup (guid);
     }
     inline NetworkInterfaceCollection Mgr::GetRawNetworkInterfaces () const

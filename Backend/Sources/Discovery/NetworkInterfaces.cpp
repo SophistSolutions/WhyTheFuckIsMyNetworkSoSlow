@@ -59,8 +59,8 @@ String NetworkInterface::ToString () const
  ********************************************************************************
  */
 namespace {
-    constexpr Time::DurationSecondsType kDefaultItemCacheLifetime_{15};
-    bool                                sActive_{false};
+    constexpr Time::DurationSeconds kDefaultItemCacheLifetime_{15s};
+    bool                            sActive_{false};
 }
 Discovery::NetworkInterfacesMgr::Activator::Activator ()
 {
@@ -149,10 +149,10 @@ namespace {
  */
 NetworkInterfacesMgr NetworkInterfacesMgr::sThe;
 
-Collection<NetworkInterface> Discovery::NetworkInterfacesMgr::CollectAllNetworkInterfaces (optional<Time::DurationSecondsType> allowedStaleness) const
+Collection<NetworkInterface> Discovery::NetworkInterfacesMgr::CollectAllNetworkInterfaces (optional<Time::DurationSeconds> allowedStaleness) const
 {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
-    Debug::TraceContextBumper ctx{L"Discovery::CollectAllNetworkInterfaces"};
+    Debug::TraceContextBumper ctx{"Discovery::CollectAllNetworkInterfaces"};
 #endif
     Require (sActive_);
     Collection<NetworkInterface> results;
@@ -166,10 +166,10 @@ Collection<NetworkInterface> Discovery::NetworkInterfacesMgr::CollectAllNetworkI
     return results;
 }
 
-Collection<NetworkInterface> Discovery::NetworkInterfacesMgr::CollectActiveNetworkInterfaces (optional<Time::DurationSecondsType> allowedStaleness) const
+Collection<NetworkInterface> Discovery::NetworkInterfacesMgr::CollectActiveNetworkInterfaces (optional<Time::DurationSeconds> allowedStaleness) const
 {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
-    Debug::TraceContextBumper ctx{L"Discovery::CollectActiveNetworkInterfaces"};
+    Debug::TraceContextBumper ctx{"Discovery::CollectActiveNetworkInterfaces"};
 #endif
     Require (sActive_);
     Collection<NetworkInterface> results = CollectAllNetworkInterfaces (allowedStaleness).Where ([] (const NetworkInterface& i) {

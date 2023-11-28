@@ -115,13 +115,13 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
     public:
         /**
          */
-        nonvirtual Sequence<Network> CollectActiveNetworks (optional<Time::DurationSecondsType> allowedStaleness = {}) const;
+        nonvirtual Sequence<Network> CollectActiveNetworks (optional<Time::DurationSeconds> allowedStaleness = {}) const;
 
     public:
         /**
          *  Throw if no such network
          */
-        nonvirtual Network GetNetworkByID (const GUID& id, optional<Time::DurationSecondsType> allowedStaleness = {}) const;
+        nonvirtual Network GetNetworkByID (const GUID& id, optional<Time::DurationSeconds> allowedStaleness = {}) const;
 
     public:
         static NetworksMgr sThe;

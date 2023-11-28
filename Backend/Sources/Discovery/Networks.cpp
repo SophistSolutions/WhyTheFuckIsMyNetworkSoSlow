@@ -46,11 +46,11 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery;
 //#define USE_NOISY_TRACE_IN_THIS_MODULE_ 1
 
 namespace {
-    optional<InternetAddress> LookupExternalInternetAddress_ (optional<Time::DurationSecondsType> allowedStaleness = {})
+    optional<InternetAddress> LookupExternalInternetAddress_ (optional<Time::DurationSeconds> allowedStaleness = {})
     {
         using Cache::SynchronizedCallerStalenessCache;
         static SynchronizedCallerStalenessCache<void, optional<InternetAddress>> sCache_;
-        return sCache_.LookupValue (sCache_.Ago (allowedStaleness.value_or (30)), [] () -> optional<InternetAddress> {
+        return sCache_.LookupValue (sCache_.Ago (allowedStaleness.value_or (30s)), [] () -> optional<InternetAddress> {
             /*
              * Alternative sources for this information:
              *
@@ -95,19 +95,19 @@ bool Discovery::Network::Contains (const InternetAddress& i) const
 String Discovery::Network::ToString () const
 {
     StringBuilder sb;
-    sb += L"{";
-    sb += L"GUID: " + Characters::ToString (fGUID) + L", ";
-    sb += L"IP-Address: " + Characters::ToString (fNetworkAddresses) + L", ";
-    sb += L"Names: " + Characters::ToString (fNames) + L", ";
-    sb += L"Seen: " + Characters::ToString (fSeen) + L", ";
-    sb += L"Gateways: " + Characters::ToString (fGateways) + L", ";
-    sb += L"GatewayHardwareAddresses: " + Characters::ToString (fGatewayHardwareAddresses) + L", ";
-    sb += L"DNS-Servers: " + Characters::ToString (fDNSServers) + L", ";
-    sb += L"Attached-Network-Interfaces: " + Characters::ToString (fAttachedNetworkInterfaces) + L", ";
+    sb << "{"sv;
+    sb << "GUID: "sv << Characters::ToString (fGUID) << ", "sv;
+    sb << "IP-Address: "sv << Characters::ToString (fNetworkAddresses) << ", "sv;
+    sb << "Names: "sv << Characters::ToString (fNames) << ", "sv;
+    sb << "Seen: "sv << Characters::ToString (fSeen) << ", "sv;
+    sb << "Gateways: "sv << Characters::ToString (fGateways) << ", "sv;
+    sb << "GatewayHardwareAddresses: "sv << Characters::ToString (fGatewayHardwareAddresses) << ", "sv;
+    sb << "DNS-Servers: "sv << Characters::ToString (fDNSServers) << ", "sv;
+    sb << "Attached-Network-Interfaces: "sv << Characters::ToString (fAttachedNetworkInterfaces) << ", "sv;
 #if qDebug
-    sb += L"DebugProps: " + Characters::ToString (fDebugProps) + L", ";
+    sb << "DebugProps: "sv << Characters::ToString (fDebugProps) << ", "sv;
 #endif
-    sb += L"}";
+    sb << "}"sv;
     return sb.str ();
 }
 
@@ -141,9 +141,9 @@ namespace {
  ********************************************************************************
  */
 namespace {
-    constexpr Time::DurationSecondsType kDefaultItemCacheLifetime_{20};
-    bool                                sActive_{false};
-    unique_ptr<IntervalTimer::Adder>    sIntervalTimerAdder_;
+    constexpr Time::DurationSeconds  kDefaultItemCacheLifetime_{20s};
+    bool                             sActive_{false};
+    unique_ptr<IntervalTimer::Adder> sIntervalTimerAdder_;
 }
 
 Discovery::NetworksMgr::Activator::Activator ()
@@ -352,10 +352,10 @@ namespace {
 }
 NetworksMgr NetworksMgr::sThe;
 
-Sequence<Network> Discovery::NetworksMgr::CollectActiveNetworks (optional<Time::DurationSecondsType> allowedStaleness) const
+Sequence<Network> Discovery::NetworksMgr::CollectActiveNetworks (optional<Time::DurationSeconds> allowedStaleness) const
 {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
-    Debug::TraceContextBumper ctx{L"Discovery::CollectAllNetworkInterfaces"};
+    Debug::TraceContextBumper ctx{"Discovery::CollectAllNetworkInterfaces"};
 #endif
     Require (sActive_);
     Sequence<Network>                                                       results;
@@ -368,12 +368,12 @@ Sequence<Network> Discovery::NetworksMgr::CollectActiveNetworks (optional<Time::
     return results;
 }
 
-Network Discovery::NetworksMgr::GetNetworkByID (const GUID& id, optional<Time::DurationSecondsType> allowedStaleness) const
+Network Discovery::NetworksMgr::GetNetworkByID (const GUID& id, optional<Time::DurationSeconds> allowedStaleness) const
 {
     for (const Network& i : CollectActiveNetworks (allowedStaleness)) {
         if (i.fGUID == id) {
             return i;
         }
     }
-    Execution::Throw (Execution::Exception<> (L"No such network id"sv));
+    Execution::Throw (Execution::Exception<>{"No such network id"sv});
 }

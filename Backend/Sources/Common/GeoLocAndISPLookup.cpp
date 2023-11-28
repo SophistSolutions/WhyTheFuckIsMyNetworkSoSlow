@@ -66,7 +66,7 @@ optional<tuple<GEOLocationInformation, InternetServiceProvider>> BackendApp::Com
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
     Debug::TraceContextBumper ctx{L"GEOLocAndISPLookup"};
 #endif
-    constexpr Time::DurationSecondsType kInfoTimeoutInSeconds_{10 * 60.0};
+    constexpr Time::DurationSeconds kInfoTimeoutInSeconds_{10 * 60.0s};
 #if qCompilerAndStdLib_template_template_argument_as_different_template_paramters_Buggy
     static Memoizer<optional<tuple<GEOLocationInformation, InternetServiceProvider>>, CACHE_BWA_, InternetAddress> sMemoizeCache_ = {
 #else

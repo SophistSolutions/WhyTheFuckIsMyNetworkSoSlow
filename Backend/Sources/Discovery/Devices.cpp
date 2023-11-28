@@ -97,7 +97,7 @@ namespace {
         Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"{}::ReverseDNSLookup_", L"inetAddr=%s",
                                                                                      Characters::ToString (inetAddr).c_str ())};
 #endif
-        static const Time::Duration                                             kCacheTTL_{5min}; // @todo fix when Stroika Duration bug supports constexpr this should
+        static const Time::Duration kCacheTTL_{5min}; // @todo fix when Stroika Duration bug supports constexpr this should
         static Cache::SynchronizedTimedCache<InternetAddress, optional<String>> sCache_{kCacheTTL_};
         //sCache_.fHoldWriteLockDuringCacheFill = true; // see random false positive - see if this affects -LGP 2022-11-21 - assertexternally...https://stroika.atlassian.net/browse/STK-956
         try {
@@ -114,7 +114,7 @@ namespace {
         Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"{}::DNSLookup_", L"hostOrIPAddress=%s",
                                                                                      Characters::ToString (hostOrIPAddress).c_str ())};
 #endif
-        static const Time::Duration                                        kCacheTTL_{5min}; // @todo fix when Stroika Duration bug supports constexpr this should
+        static const Time::Duration kCacheTTL_{5min}; // @todo fix when Stroika Duration bug supports constexpr this should
         static Cache::SynchronizedTimedCache<String, Set<InternetAddress>> sCache_{kCacheTTL_};
         return sCache_.LookupValue (hostOrIPAddress, [] (const String& hostOrIPAddress) -> Set<InternetAddress> {
             return Set<InternetAddress>{DNS::kThe.GetHostAddresses (hostOrIPAddress)};
@@ -291,15 +291,15 @@ namespace {
     struct DiscoveryInfo_ : Discovery::Device {
 
         struct SSDPInfo {
-            optional<bool>          fAlive; // else Bye notification, or empty if neither -- probably replace with TIMINGS of last ALIVE, or Bye
-            Set<String>             fUSNs;
-            Set<URI>                fLocations;
-            optional<String>        fServer;
-            optional<String>        fManufacturer;
-            optional<URI>           fManufacturerURI;
+            optional<bool>   fAlive; // else Bye notification, or empty if neither -- probably replace with TIMINGS of last ALIVE, or Bye
+            Set<String>      fUSNs;
+            Set<URI>         fLocations;
+            optional<String> fServer;
+            optional<String> fManufacturer;
+            optional<URI>    fManufacturerURI;
             Mapping<String, String> fDeviceType2FriendlyNameMap; //  http://upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v1.1.pdf - <deviceType> - Page 44
-            optional<URI>           fPresentationURL;
-            Time::DateTime          fLastSSDPMessageRecievedAt{Time::DateTime::Now ()};
+            optional<URI>  fPresentationURL;
+            Time::DateTime fLastSSDPMessageRecievedAt{Time::DateTime::Now ()};
 #if qDebug
             optional<SSDP::Advertisement> fLastAdvertisement;
 #endif
@@ -790,7 +790,7 @@ namespace {
                         }
                     }
                 }
-                catch (const Thread::InterruptException&) {
+                catch (const Thread::AbortException&) {
                     Execution::ReThrow ();
                 }
                 catch (...) {
@@ -1027,7 +1027,7 @@ namespace {
                 Memory::CopyToIf (&di.fSSDPInfo->fManufacturer, manufactureName);
 
                 di.fSSDPInfo->fLastSSDPMessageRecievedAt = Time::DateTime::Now (); // update each message, even if already created
-                di.fSeen.fUDP                            = Memory::NullCoalesce (di.fSeen.fUDP).Extend (di.fSSDPInfo->fLastSSDPMessageRecievedAt);
+                di.fSeen.fUDP = Memory::NullCoalesce (di.fSeen.fUDP).Extend (di.fSSDPInfo->fLastSSDPMessageRecievedAt);
 
 #if qDebug
                 di.fSSDPInfo->fLastAdvertisement = d;
@@ -1171,7 +1171,7 @@ namespace {
                         }
                     }
                 }
-                catch (const Thread::InterruptException&) {
+                catch (const Thread::AbortException&) {
                     Execution::ReThrow ();
                 }
                 catch (...) {
@@ -1208,7 +1208,7 @@ namespace {
             static constexpr auto kOnErrorTimeBetweenScans_{30s};
 
             //constexpr auto               kAllowedNetworkStaleness_ = 1min;
-            constexpr Time::DurationSecondsType kAllowedNetworkStaleness_ = 60;
+            constexpr Time::DurationSeconds kAllowedNetworkStaleness_ = 60s;
 
             /*
              *  Use a BloomFilter instead of a Set<> since we dont want to waste alot of memory storing
@@ -1218,7 +1218,7 @@ namespace {
             optional<DiscreteRange<InternetAddress>> scanAddressRange;
             unique_ptr<Cache::BloomFilter<int>>      addressesProbablyUsed;
 
-            double sizeFactor{1};                       // (DOESNT APPEAR NEEDED) - use more bloom filter bits than needed for full set, cuz otherwise get too many collisions as adding
+            double sizeFactor{1}; // (DOESNT APPEAR NEEDED) - use more bloom filter bits than needed for full set, cuz otherwise get too many collisions as adding
             double maxFalsePositivesAllowed      = .5;  // bloom filter stops working well if much past this probability limit
             double maxFractionOfAddrSpaceScanned = .75; // our algorithm wastes alot of time computing random numbers past this limit
 
@@ -1227,7 +1227,7 @@ namespace {
                 try {
                     DeclareActivity da{&kDiscovering_THIS_};
 
-                    Execution::SleepUntil (Time::time_point2DurationSeconds (rateLimiterWaitUntil));
+                    Execution::SleepUntil (rateLimiterWaitUntil);
                     rateLimiterWaitUntil = chrono::steady_clock::now () + kMinTimeBetweenScans_;
 
                     // Keep scanning the given range til we're (mostly) done
@@ -1358,7 +1358,7 @@ namespace {
                          */
                         bool need2CheckAddr{true};
                         {
-                            auto           l = sDiscoveredDevices_.cget (); // grab write lock because almost assured of making changes (at least last seen)
+                            auto l = sDiscoveredDevices_.cget (); // grab write lock because almost assured of making changes (at least last seen)
                             DiscoveryInfo_ tmp{};
                             tmp.AddNetworkAddresses_ (ia);
                             if (optional<DiscoveryInfo_> oo = FindMatchingDevice_ (l, tmp)) {
@@ -1370,7 +1370,7 @@ namespace {
                         }
                     }
                 }
-                catch (const Thread::InterruptException&) {
+                catch (const Thread::AbortException&) {
                     Execution::ReThrow ();
                 }
                 catch (...) {
@@ -1480,7 +1480,7 @@ namespace {
                     }
                     ++(*devices2CheckIterator);
                 }
-                catch (const Thread::InterruptException&) {
+                catch (const Thread::AbortException&) {
                     Execution::ReThrow ();
                 }
                 catch (...) {
@@ -1500,7 +1500,7 @@ namespace {
  ********************************************************************************
  */
 namespace {
-    constexpr Time::DurationSecondsType kDefaultItemCacheLifetime_{1}; // this costs very little since just reading already cached data so default to quick check
+    constexpr Time::DurationSeconds kDefaultItemCacheLifetime_{1s}; // this costs very little since just reading already cached data so default to quick check
 
     // Really always want all true, just add ability to turn some off to ease debugging
     constexpr bool kInclude_SSDP_Discoverer_{true};
@@ -1591,12 +1591,12 @@ optional<GUID> Discovery::DevicesMgr::GetThisDeviceID () const
     return nullopt;
 }
 
-Collection<Discovery::Device> Discovery::DevicesMgr::GetActiveDevices (optional<Time::DurationSecondsType> allowedStaleness) const
+Collection<Discovery::Device> Discovery::DevicesMgr::GetActiveDevices (optional<Time::DurationSeconds> allowedStaleness) const
 {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
     Debug::TraceContextBumper ctx{L"Discovery::GetActiveDevices"};
 #endif
-    Debug::TimingTrace ttrc{L"Discovery::DevicesMgr::GetActiveDevices", 1.0};
+    Debug::TimingTrace ttrc{L"Discovery::DevicesMgr::GetActiveDevices", 1.0s};
 
     Require (IsActive_ ());
     Collection<Discovery::Device> results;

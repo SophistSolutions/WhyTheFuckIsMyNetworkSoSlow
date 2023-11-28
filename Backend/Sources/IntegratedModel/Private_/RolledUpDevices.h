@@ -55,7 +55,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_ {
         /**
          *  \note   \em Thread-Safety   <a href="Thread-Safety.md#Internally-Synchronized-Thread-Safety">Internally-Synchronized-Thread-Safety</a>
          */
-        static RolledUpDevices GetCached (DBAccess::Mgr* dbAccessMgr, Time::DurationSecondsType allowedStaleness = 10.0);
+        static RolledUpDevices GetCached (DBAccess::Mgr* dbAccessMgr, Time::DurationSeconds allowedStaleness = 10.0s);
 
     public:
         /**
@@ -93,8 +93,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_ {
         void          MergeInUpdate_ (const Device& rollupDevice, const Device& newDevice2MergeIn);
         void          MergeInNew_ (DBAccess::Mgr* dbAccessMgr, const Device& d2MergeIn);
         void          RecomputeAll_ (DBAccess::Mgr* dbAccessMgr);
-        auto          MapAggregatedAttachments2Rollups_ (const Mapping<GUID, NetworkAttachmentInfo>& nats) -> Mapping<GUID, NetworkAttachmentInfo>;
-        static bool   ShouldRollup_ (const Device& exisingRolledUpDevice, const Device& d2PotentiallyMergeIn);
+        auto MapAggregatedAttachments2Rollups_ (const Mapping<GUID, NetworkAttachmentInfo>& nats) -> Mapping<GUID, NetworkAttachmentInfo>;
+        static bool ShouldRollup_ (const Device& exisingRolledUpDevice, const Device& d2PotentiallyMergeIn);
 
     private:
         DeviceCollection          fStarterRollups_;

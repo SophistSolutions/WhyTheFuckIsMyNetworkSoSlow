@@ -79,34 +79,13 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices;
 
 namespace {
 
-#if __cpp_designated_initializers < 201707L
-    Instruments::Process::Options mkProcessInstrumentOptions_ ()
-    {
-        auto o            = Instruments::Process::Options{};
-        o.fRestrictToPIDs = Set<pid_t>{Execution::GetCurrentProcessID ()};
-        return o;
-    }
-#endif
-
     static const Duration kCaptureFrequency_ = 30s;
 
     struct MyCapturer_ final : Capturer {
     public:
         Instruments::CPU::Instrument     fCPUInstrument{};
-        Instruments::Process::Instrument fProcessInstrument
-        {
-#if __cpp_designated_initializers >= 201707L
-            Instruments::Process::Options
-            {
-                .fRestrictToPIDs = Set<pid_t>
-                {
-                    Execution::GetCurrentProcessID ()
-                }
-            }
-#else
-            mkProcessInstrumentOptions_ ()
-#endif
-        };
+        Instruments::Process::Instrument fProcessInstrument{
+            Instruments::Process::Options{.fRestrictToPIDs = Set<pid_t>{Execution::GetCurrentProcessID ()}}};
         MyCapturer_ ()
         {
             AddCaptureSet (CaptureSet{kCaptureFrequency_, {fCPUInstrument, fProcessInstrument}});
@@ -168,7 +147,7 @@ About WSImpl::GetAbout () const
 #endif
 #endif
     }};
-    auto now          = DateTime::Now ();
+    auto now = DateTime::Now ();
     auto measurements = fRep_->fMyCapturer.pMostRecentMeasurements (); // capture results on a regular cadence with MyCapturer, and just report the latest stats
 
     CurrentMachine machineInfo = [this, now, &measurements] () {
@@ -194,7 +173,7 @@ About WSImpl::GetAbout () const
             if (auto o = thisProcess.fProcessStartedAt) {
                 result.fProcessUptime = now - *o;
             }
-            result.fAverageCPUTimeUsed       = thisProcess.fAverageCPUTimeUsed;
+            result.fAverageCPUTimeUsed = thisProcess.fAverageCPUTimeUsed ? thisProcess.fAverageCPUTimeUsed->count () : optional<double>{};
             result.fWorkingOrResidentSetSize = Memory::NullCoalesce (thisProcess.fWorkingSetSize, thisProcess.fResidentMemorySize);
             result.fCombinedIOReadRate       = thisProcess.fCombinedIOReadRate;
             result.fCombinedIOWriteRate      = thisProcess.fCombinedIOWriteRate;
@@ -249,7 +228,7 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
     using BackendApp::WebServices::Device;
     Debug::TraceContextBumper ctx{
         Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::GetDevices_Recurse", L"sort=%s", Characters::ToString (sort).c_str ())};
-    Debug::TimingTrace                              ttrc{L"WSImpl::GetDevices_Recurse", .1};
+    Debug::TimingTrace                              ttrc{L"WSImpl::GetDevices_Recurse", 100ms};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
 
     // Compute effective sort Search Terms - filling in optional values
@@ -421,10 +400,10 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
 
 tuple<Device, Duration> WSImpl::GetDevice (const String& id) const
 {
-    Debug::TimingTrace                              ttrc{L"WSImpl::GetDevice", 0.1};
+    Debug::TimingTrace                              ttrc{L"WSImpl::GetDevice", 100ms};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
-    GUID                                            compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
-    optional<Duration>                              ttl;
+    GUID               compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
+    optional<Duration> ttl;
     if (auto d = IntegratedModel::Mgr::sThe.GetDevice (compareWithID, &ttl)) {
         return make_tuple (*d, Memory::ValueOf (ttl));
     }
@@ -493,7 +472,7 @@ void WSImpl::PatchDevice (const String& id, const JSONPATCH::OperationItemsType&
 
 Sequence<String> WSImpl::GetNetworks (const optional<Set<GUID>>& ids) const
 {
-    Debug::TimingTrace                              ttrc{L"WSImpl::GetNetworks", 0.1};
+    Debug::TimingTrace                              ttrc{L"WSImpl::GetNetworks", 100ms};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
     if (ids) {
         Sequence<String> result;
@@ -514,7 +493,7 @@ Sequence<String> WSImpl::GetNetworks (const optional<Set<GUID>>& ids) const
 
 Sequence<BackendApp::WebServices::Network> WSImpl::GetNetworks_Recurse (const optional<Set<GUID>>& ids) const
 {
-    Debug::TimingTrace                              ttrc{L"WSImpl::GetNetworks_Recurse", 0.1};
+    Debug::TimingTrace                              ttrc{L"WSImpl::GetNetworks_Recurse", 100ms};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
     if (ids) {
         Sequence<BackendApp::WebServices::Network> result;
@@ -535,14 +514,14 @@ Sequence<BackendApp::WebServices::Network> WSImpl::GetNetworks_Recurse (const op
 
 tuple<Network, Duration> WSImpl::GetNetwork (const String& id) const
 {
-    Debug::TimingTrace                              ttrc{L"WSImpl::GetNetwork", 0.1};
+    Debug::TimingTrace                              ttrc{L"WSImpl::GetNetwork", 100ms};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
-    GUID                                            compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
-    optional<Duration>                              ttl;
+    GUID               compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
+    optional<Duration> ttl;
     if (auto d = IntegratedModel::Mgr::sThe.GetNetwork (compareWithID, &ttl)) {
         return make_tuple (*d, Memory::ValueOf (ttl));
     }
-    Execution::Throw (ClientErrorException{L"no such id"sv});
+    Execution::Throw (ClientErrorException{"no such id"sv});
 }
 
 void WSImpl::PatchNetwork (const String& id, const JSONPATCH::OperationItemsType& patchDoc) const
@@ -555,15 +534,15 @@ void WSImpl::PatchNetwork (const String& id, const JSONPATCH::OperationItemsType
                 Network::UserOverridesType updateVal =
                     IntegratedModel::Mgr::sThe.GetNetworkUserSettings (objID).value_or (Network::UserOverridesType{});
                 if (not op.value) {
-                    Execution::Throw (ClientErrorException{L"JSON-Patch add requires a value"_k});
+                    Execution::Throw (ClientErrorException{"JSON-Patch add requires a value"_k});
                 }
-                if (op.path == L"/userOverrides/name") {
+                if (op.path == "/userOverrides/name"sv) {
                     updateVal.fName = op.value->As<String> ();
                 }
-                else if (op.path == L"/userOverrides/notes") {
+                else if (op.path == "/userOverrides/notes"sv) {
                     updateVal.fNotes = op.value->As<String> ();
                 }
-                else if (op.path == L"/userOverrides/tags") {
+                else if (op.path == "/userOverrides/tags"sv) {
                     // for now only support replacing the whole array at a time
                     updateVal.fTags = Set<String>{
                         op.value->As<Sequence<VariantValue>> ().Map<String> ([] (const VariantValue& vv) { return vv.As<String> (); })};
@@ -632,7 +611,7 @@ void WSImpl::PatchNetwork (const String& id, const JSONPATCH::OperationItemsType
 
 Collection<String> WSImpl::GetNetworkInterfaces () const
 {
-    Debug::TimingTrace                              ttrc{L"WSImpl::GetNetworkInterfaces_Recurse", 0.1};
+    Debug::TimingTrace                              ttrc{L"WSImpl::GetNetworkInterfaces_Recurse", 100ms};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
     return IntegratedModel::Mgr::sThe.GetNetworkInterfaces ().Map<String, Collection<String>> (
         [=] (const auto& ni) -> optional<String> { return ni.fID.ToString (); });
@@ -640,17 +619,17 @@ Collection<String> WSImpl::GetNetworkInterfaces () const
 
 Collection<BackendApp::WebServices::NetworkInterface> WSImpl::GetNetworkInterfaces_Recurse () const
 {
-    Debug::TimingTrace                              ttrc{L"WSImpl::GetNetworkInterfaces_Recurse", 0.1};
+    Debug::TimingTrace                              ttrc{L"WSImpl::GetNetworkInterfaces_Recurse", 100ms};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
     return IntegratedModel::Mgr::sThe.GetNetworkInterfaces ();
 }
 
 tuple<NetworkInterface, Duration> WSImpl::GetNetworkInterface (const String& id) const
 {
-    Debug::TimingTrace                              ttrc{L"WSImpl::GetNetworkInterface", 0.1};
+    Debug::TimingTrace                              ttrc{L"WSImpl::GetNetworkInterface", 100ms};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
-    GUID                                            compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
-    optional<Duration>                              ttl;
+    GUID               compareWithID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
+    optional<Duration> ttl;
     if (auto ni = IntegratedModel::Mgr::sThe.GetNetworkInterface (compareWithID, &ttl)) {
         return make_tuple (*ni, Memory::ValueOf (ttl));
     }
@@ -669,7 +648,7 @@ double WSImpl::Operation_Ping (const String& address) const
     using namespace Stroika::Frameworks;
     using namespace Stroika::Frameworks::NetworkMonitor;
 
-    size_t                packetSize  = Ping::Options::kDefaultPayloadSize + sizeof (ICMP::V4::PacketHeader); // historically, the app ping has measured this including ICMP packet header, but not ip packet header size
+    size_t packetSize = Ping::Options::kDefaultPayloadSize + sizeof (ICMP::V4::PacketHeader); // historically, the app ping has measured this including ICMP packet header, but not ip packet header size
     unsigned int          maxHops     = Ping::Options::kDefaultMaxHops;
     unsigned int          sampleCount = 3;
     static const Duration kInterSampleTime_{"PT.1S"};
@@ -695,9 +674,9 @@ double WSImpl::Operation_Ping (const String& address) const
 
 Operations::TraceRouteResults WSImpl::Operation_TraceRoute (const String& address, optional<bool> reverseDNSResults) const
 {
-    Debug::TraceContextBumper                       ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_TraceRoute", L"address=%s, reverseDNSResults=%s",
-                                                                                                       Characters::ToString (address).c_str (),
-                                                                                                       Characters::ToString (reverseDNSResults).c_str ())};
+    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_TraceRoute", L"address=%s, reverseDNSResults=%s",
+                                                                                 Characters::ToString (address).c_str (),
+                                                                                 Characters::ToString (reverseDNSResults).c_str ())};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
 
     using namespace Stroika::Foundation::IO::Network;
@@ -708,7 +687,7 @@ Operations::TraceRouteResults WSImpl::Operation_TraceRoute (const String& addres
 
     bool revDNS = reverseDNSResults.value_or (true);
 
-    size_t                packetSize  = Ping::Options::kDefaultPayloadSize + sizeof (ICMP::V4::PacketHeader); // historically, the app ping has measured this including ICMP packet header, but not ip packet header size
+    size_t packetSize = Ping::Options::kDefaultPayloadSize + sizeof (ICMP::V4::PacketHeader); // historically, the app ping has measured this including ICMP packet header, but not ip packet header size
     unsigned int          maxHops     = Ping::Options::kDefaultMaxHops;
     unsigned int          sampleCount = 3;
     static const Duration kInterSampleTime_{"PT.1S"};
@@ -745,7 +724,7 @@ Operations::TraceRouteResults WSImpl::Operation_TraceRoute (const String& addres
 
 Time::Duration WSImpl::Operation_DNS_CalculateNegativeLookupTime (optional<unsigned int> samples) const
 {
-    Debug::TraceContextBumper                       ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_DNS_CalculateNegativeLookupTime")};
+    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_DNS_CalculateNegativeLookupTime")};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
     constexpr unsigned int                          kDefault_Samples = 7;
     unsigned int                                    useSamples       = samples.value_or (kDefault_Samples);
@@ -754,10 +733,10 @@ Time::Duration WSImpl::Operation_DNS_CalculateNegativeLookupTime (optional<unsig
     }
     uniform_int_distribution<mt19937::result_type> allUInt16Distribution{0, numeric_limits<uint32_t>::max ()};
     static mt19937                                 sRng_{std::random_device{}()};
-    Sequence<Time::DurationSecondsType>            measurements;
+    Sequence<Time::DurationSeconds>                measurements;
     for (unsigned int i = 0; i < useSamples; ++i) {
-        String                    randomAddress = Characters::Format (L"www.xxxabc%d.com", allUInt16Distribution (sRng_));
-        Time::DurationSecondsType startAt       = Time::GetTickCount ();
+        String                 randomAddress = Characters::Format (L"www.xxxabc%d.com", allUInt16Distribution (sRng_));
+        Time::TimePointSeconds startAt       = Time::GetTickCount ();
         IgnoreExceptionsForCall (IO::Network::DNS::kThe.GetHostAddress (randomAddress));
         measurements += Time::GetTickCount () - startAt;
     }
@@ -771,7 +750,7 @@ Operations::DNSLookupResults WSImpl::Operation_DNS_Lookup (const String& name) c
         Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_DNS_Lookup", L"name=%s", name.As<wstring> ().c_str ())};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
     Operations::DNSLookupResults                    result;
-    Time::DurationSecondsType                       startAt = Time::GetTickCount ();
+    Time::TimePointSeconds                          startAt = Time::GetTickCount ();
     IgnoreExceptionsForCall (result.fResult = Characters::ToString (IO::Network::DNS::kThe.GetHostAddress (name)));
     result.fLookupTime = Time::Duration{Time::GetTickCount () - startAt};
     return result;
@@ -807,7 +786,7 @@ DataExchange::VariantValue WSImpl::Operation_Scan_FullRescan (const String& devi
     Debug::TraceContextBumper                       ctx{L"WSImpl::Operation_Scan_FullRescan"};
     DataExchange::VariantValue                      x;
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
-    GUID                                            useDeviceID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{deviceID}; });
+    GUID useDeviceID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{deviceID}; });
     // @todo if the device has no dynamic device (cuz it hasn't been discovered - yet) - we don't force an attempt to rediscover
     // because Discovery::DevicesMgr doesn't have API for this. Maybe add one --LGP 2022-06-22
     if (auto useDevID = IntegratedModel::Mgr::sThe.GetCorrespondingDynamicDeviceID (useDeviceID)) {

@@ -248,7 +248,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
         nonvirtual optional<GUID> GetThisDeviceID () const;
 
     public:
-        nonvirtual Collection<Device> GetActiveDevices (optional<Time::DurationSecondsType> allowedStaleness = {}) const;
+        nonvirtual Collection<Device> GetActiveDevices (optional<Time::DurationSeconds> allowedStaleness = {}) const;
 
     public:
         /**

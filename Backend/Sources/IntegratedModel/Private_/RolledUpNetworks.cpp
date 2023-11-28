@@ -103,7 +103,7 @@ auto RolledUpNetworks::MapAggregatedID2ItsRollupID (const GUID& netID) const -> 
             DbgTrace (L"rolledupNet=%s", Characters::ToString (i).c_str ());
         }
     }
-    Assert (false);     // @todo fix - because we guarantee each item rolled up exactly once - but happens sometimes on change of network - I think due to outdated device records referring to newer network not yet in this cache...
+    Assert (false); // @todo fix - because we guarantee each item rolled up exactly once - but happens sometimes on change of network - I think due to outdated device records referring to newer network not yet in this cache...
     WeakAssert (false); // @todo fix - because we guarantee each item rolled up exactly once - but happens sometimes on change of network - I think due to outdated device records referring to newer network not yet in this cache...
     return netID;
 }
@@ -123,11 +123,11 @@ void RolledUpNetworks::MergeIn (DBAccess::Mgr* dbAccessMgr, const Iterable<Netwo
     }
 }
 
-RolledUpNetworks RolledUpNetworks::GetCached (DBAccess::Mgr* dbAccessMgr, Time::DurationSecondsType allowedStaleness)
+RolledUpNetworks RolledUpNetworks::GetCached (DBAccess::Mgr* dbAccessMgr, Time::DurationSeconds allowedStaleness)
 {
     RequireNotNull (dbAccessMgr);
-    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...RolledUpNetworks::GetCached")};
-    Debug::TimingTrace        ttrc{L"RolledUpNetworks::GetCached", 1};
+    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs ("...RolledUpNetworks::GetCached")};
+    Debug::TimingTrace        ttrc{L"RolledUpNetworks::GetCached", 1s};
     // SynchronizedCallerStalenessCache object just assures one rollup RUNS internally at a time, and
     // that two calls in rapid succession, the second call re-uses the previous value
     static Cache::SynchronizedCallerStalenessCache<void, RolledUpNetworks> sCache_;
@@ -142,8 +142,8 @@ RolledUpNetworks RolledUpNetworks::GetCached (DBAccess::Mgr* dbAccessMgr, Time::
          *      Since this can be called while rolling up DEVICES, its important that this code not call anything involving device rollup since
          *      that could trigger a deadlock.
          */
-        Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...RolledUpNetworks::GetCached...cachefiller")};
-        Debug::TimingTrace        ttrc{L"RolledUpNetworks::GetCached...cachefiller", 1};
+        Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs ("...RolledUpNetworks::GetCached...cachefiller")};
+        Debug::TimingTrace        ttrc{L"RolledUpNetworks::GetCached...cachefiller", 1s};
 
         // Start with the existing rolled up objects
         // and merge in any more recent discovery changes
@@ -260,8 +260,8 @@ void RolledUpNetworks::AddNewIn_ (DBAccess::Mgr* dbAccessMgr, const Network& net
 {
     RequireNotNull (dbAccessMgr);
     Assert (net2MergeIn.GenerateFingerprintFromProperties () == net2MergeInFingerprint); // provided to avoid cost of recompute
-    Network newRolledUpNetwork                 = net2MergeIn;
-    newRolledUpNetwork.fAttachedInterfaces     = fUseNetworkInterfaceRollups.MapAggregatedNetInterfaceID2ItsRollupID (net2MergeIn.fAttachedInterfaces);
+    Network newRolledUpNetwork = net2MergeIn;
+    newRolledUpNetwork.fAttachedInterfaces = fUseNetworkInterfaceRollups.MapAggregatedNetInterfaceID2ItsRollupID (net2MergeIn.fAttachedInterfaces);
     newRolledUpNetwork.fAggregatesReversibly   = Set<GUID>{net2MergeIn.fID};
     newRolledUpNetwork.fAggregatesFingerprints = Set<Network::FingerprintType>{net2MergeInFingerprint};
     // @todo fix this code so each time through we UPDATE sDBAccessMgr_ with latest 'fingerprint' of each dynamic network

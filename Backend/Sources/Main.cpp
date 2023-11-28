@@ -145,18 +145,14 @@ int main (int argc, const char* argv[])
     /*
      *  Setup Logging to the OS logging facility.
      */
-#if __cpp_designated_initializers
     Logger::Activator loggerActivation{Logger::Options{
         .fLogBufferingEnabled         = true,
         .fSuppressDuplicatesThreshold = 5min,
     }};
-#else
-    Logger::Activator loggerActivation{Logger::Options{true, 5min}};
-#endif
 #if qHas_Syslog
-    Logger::sThe.SetAppender (make_shared<Logger::SysLogAppender> (L"WhyTheFuckIsMyNetworkSoSlow"));
+    Logger::sThe.SetAppender (make_shared<Logger::SysLogAppender> ("WhyTheFuckIsMyNetworkSoSlow"sv));
 #elif qPlatform_Windows
-    Logger::sThe.SetAppender (make_shared<Logger::WindowsEventLogAppender> (L"WhyTheFuckIsMyNetworkSoSlow"));
+    Logger::sThe.SetAppender (make_shared<Logger::WindowsEventLogAppender> ("WhyTheFuckIsMyNetworkSoSlow"sv));
 #endif
 
     /*

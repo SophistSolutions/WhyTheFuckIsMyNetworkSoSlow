@@ -57,7 +57,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_ {
         /**
          *  \note   \em Thread-Safety   <a href="Thread-Safety.md#Internally-Synchronized-Thread-Safety">Internally-Synchronized-Thread-Safety</a>
          */
-        static RolledUpNetworkInterfaces GetCached (DBAccess::Mgr* dbAccessMgr, Time::DurationSecondsType allowedStaleness = 5.0);
+        static RolledUpNetworkInterfaces GetCached (DBAccess::Mgr* dbAccessMgr, Time::DurationSeconds allowedStaleness = 5.0s);
 
     public:
         /**
@@ -130,8 +130,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_ {
     private:
         NetworkInterfaceCollection fRawNetworkInterfaces_; // used for RecomputeAll_
         NetworkInterfaceCollection fRolledUpNetworkInterfaces_;
-        Mapping<GUID, GUID>        fMapAggregatedNetInterfaceID2RollupID_; // each aggregate net interface id is mapped to at most one rollup id)
-        Association<GUID, GUID>    fAssociateAggregatedNetInterface2OwningDeviceID_;
+        Mapping<GUID, GUID> fMapAggregatedNetInterfaceID2RollupID_; // each aggregate net interface id is mapped to at most one rollup id)
+        Association<GUID, GUID> fAssociateAggregatedNetInterface2OwningDeviceID_;
 
     private:
         static Synchronized<optional<RolledUpNetworkInterfaces>> sRolledUpNetworksInterfaces_;

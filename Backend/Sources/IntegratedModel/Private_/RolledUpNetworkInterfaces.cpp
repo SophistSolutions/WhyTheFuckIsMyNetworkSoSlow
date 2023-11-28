@@ -111,7 +111,7 @@ nonvirtual auto RolledUpNetworkInterfaces::MapAggregatedID2ItsRollupID (const GU
             DbgTrace (L"rolledupNetInterface=%s", Characters::ToString (i).c_str ());
         }
     }
-    Assert (false);     // @todo fix - because we guarantee each item rolled up exactly once - but happens sometimes on change of network - I think due to outdated device records referring to newer network not yet in this cache...
+    Assert (false); // @todo fix - because we guarantee each item rolled up exactly once - but happens sometimes on change of network - I think due to outdated device records referring to newer network not yet in this cache...
     WeakAssert (false); // @todo fix - because we guarantee each item rolled up exactly once - but happens sometimes on change of network - I think due to outdated device records referring to newer network not yet in this cache...
     return aggregatedNetInterfaceID;
 }
@@ -131,11 +131,11 @@ NetworkInterfaceCollection RolledUpNetworkInterfaces::GetConcreteNeworkInterface
     return fRawNetworkInterfaces_.Where ([&concreteIDs] (const auto& i) { return concreteIDs.Contains (i.fID); });
 }
 
-RolledUpNetworkInterfaces RolledUpNetworkInterfaces::GetCached (DBAccess::Mgr* dbAccessMgr, Time::DurationSecondsType allowedStaleness)
+RolledUpNetworkInterfaces RolledUpNetworkInterfaces::GetCached (DBAccess::Mgr* dbAccessMgr, Time::DurationSeconds allowedStaleness)
 {
     RequireNotNull (dbAccessMgr);
     Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...RolledUpNetworkInterfaces::GetCached")};
-    Debug::TimingTrace        ttrc{L"RolledUpNetworkInterfaces::GetCached", 1};
+    Debug::TimingTrace        ttrc{L"RolledUpNetworkInterfaces::GetCached", 1s};
     // SynchronizedCallerStalenessCache object just assures one rollup RUNS internally at a time, and
     // that two calls in rapid succession, the second call re-uses the previous value
     static Cache::SynchronizedCallerStalenessCache<void, RolledUpNetworkInterfaces> sCache_;
@@ -152,7 +152,7 @@ RolledUpNetworkInterfaces RolledUpNetworkInterfaces::GetCached (DBAccess::Mgr* d
          */
         Debug::TraceContextBumper ctx{
             Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...RolledUpNetworkInterfaces::GetCached...cachefiller")};
-        Debug::TimingTrace ttrc{L"RolledUpNetworkInterfaces::GetCached...cachefiller", 1};
+        Debug::TimingTrace ttrc{L"RolledUpNetworkInterfaces::GetCached...cachefiller", 1s};
 
         // Start with the existing rolled up objects
         // and merge in any more recent discovery changes
@@ -198,7 +198,7 @@ void RolledUpNetworkInterfaces::MergeIn_ (const optional<GUID>& forDeviceID, con
     // friendly name - for example - of network interface can change while running, so must be able to invalidate and recompute this list
 
     Network::FingerprintType netInterface2MergeInFingerprint = net2MergeIn.GenerateFingerprintFromProperties ();
-    auto                     rolledUpNetworkInterace         = NetworkInterface::Rollup (fRolledUpNetworkInterfaces_.Lookup (netInterface2MergeInFingerprint), net2MergeIn);
+    auto rolledUpNetworkInterace = NetworkInterface::Rollup (fRolledUpNetworkInterfaces_.Lookup (netInterface2MergeInFingerprint), net2MergeIn);
     fRolledUpNetworkInterfaces_.Add (rolledUpNetworkInterace);
     fMapAggregatedNetInterfaceID2RollupID_.Add (net2MergeIn.fID, rolledUpNetworkInterace.fID);
     if (forDeviceID) {

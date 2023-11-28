@@ -48,7 +48,7 @@ using WebServices::Model::NetworkInterface;
 namespace {
     URI TransformURL2LocalStorage_ (const URI& url)
     {
-        Debug::TimingTrace ttrc{L"TransformURL2LocalStorage_", 0.1}; // sb very quick cuz we schedule url fetches for background
+        Debug::TimingTrace ttrc{L"TransformURL2LocalStorage_", 100ms}; // sb very quick cuz we schedule url fetches for background
 
         // if we are unable to cache the url (say because the url is bad or the device is currently down)
         // just return the original
@@ -118,10 +118,10 @@ namespace {
             newDev.fAttachedNetworks.Add (i.fKey, NetworkAttachmentInfo{i.fValue.hardwareAddresses, addrs2Report});
         }
         newDev.fAttachedNetworkInterfaces = d.fAttachedInterfaces; // @todo must merge += (but only when merging across differnt discoverers/networks)
-        newDev.fPresentationURL           = d.fPresentationURL;
-        newDev.fManufacturer              = d.fManufacturer;
-        newDev.fIcon                      = TransformURL2LocalStorage_ (d.fIcon);
-        newDev.fOperatingSystem           = d.fOperatingSystem;
+        newDev.fPresentationURL = d.fPresentationURL;
+        newDev.fManufacturer    = d.fManufacturer;
+        newDev.fIcon            = TransformURL2LocalStorage_ (d.fIcon);
+        newDev.fOperatingSystem = d.fOperatingSystem;
 #if qDebug
         if (not d.fDebugProps.empty ()) {
             newDev.fDebugProps = d.fDebugProps;
@@ -202,7 +202,7 @@ optional<GUID> IntegratedModel::Private_::FromDiscovery::GetMyDeviceID ()
 
 Sequence<NetworkInterface> IntegratedModel::Private_::FromDiscovery::GetNetworkInterfaces ()
 {
-    Debug::TimingTrace         ttrc{L"FromDiscovery::GetNetworkInterfaces_", 0.1};
+    Debug::TimingTrace         ttrc{L"FromDiscovery::GetNetworkInterfaces_", 100ms};
     Sequence<NetworkInterface> result =
         Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ().Map<NetworkInterface, Sequence<NetworkInterface>> (
             [] (const Discovery::NetworkInterface& n) { return Discovery2Model_ (n); });
@@ -214,7 +214,7 @@ Sequence<NetworkInterface> IntegratedModel::Private_::FromDiscovery::GetNetworkI
 
 Sequence<Network> IntegratedModel::Private_::FromDiscovery::GetNetworks ()
 {
-    Debug::TimingTrace ttrc{L"FromDiscovery::GetNetworks_", 0.1};
+    Debug::TimingTrace ttrc{L"FromDiscovery::GetNetworks_", 100ms};
     Sequence<Network>  result = Discovery::NetworksMgr::sThe.CollectActiveNetworks ().Map<Network, Sequence<Network>> (
         [] (const Discovery::Network& n) { return Discovery2Model_ (n); });
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
@@ -225,7 +225,7 @@ Sequence<Network> IntegratedModel::Private_::FromDiscovery::GetNetworks ()
 
 Sequence<Device> IntegratedModel::Private_::FromDiscovery::GetDevices ()
 {
-    Debug::TimingTrace ttrc{L"FromDiscovery::GetDevices_", .1};
+    Debug::TimingTrace ttrc{L"FromDiscovery::GetDevices_", 100ms};
     // Fetch (UNSORTED) list of devices
     return Discovery::DevicesMgr::sThe.GetActiveDevices ().Map<Device, Sequence<Device>> (
         [] (const Discovery::Device& d) { return Discovery2Model_ (d); });

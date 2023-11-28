@@ -85,13 +85,9 @@ SQL::Connection::Ptr WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB::NewCon
     // Serialized didn't hlep - still get tons of 'Device or resource busy on database extion lastsql select * from BLOBURL'...., (at least wtih stk 2.1) - so go back to multithread - makes more sense -- LGP 2023-09-13
     constexpr auto kThreadModel_ = Options::ThreadingMode::eMultiThread;
     //constexpr auto kThreadModel_ = Options::ThreadingMode::eSerialized;
-    auto           dbPath        = pFileName ();
+    auto dbPath = pFileName ();
     filesystem::create_directories (dbPath.parent_path ());
-#if __cpp_designated_initializers
     auto options = Options{.fDBPath = dbPath, .fThreadingMode = kThreadModel_};
-#else
-    auto options = Options{dbPath, true, nullopt, nullopt, kThreadModel_};
-#endif
 
     /*
      *  Software doing database accesses must handle busy timeout exceptions, but

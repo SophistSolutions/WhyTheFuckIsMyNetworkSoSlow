@@ -128,11 +128,11 @@ void RolledUpDevices::MergeIn (DBAccess::Mgr* dbAccessMgr, const Iterable<Device
     }
 }
 
-RolledUpDevices RolledUpDevices::GetCached (DBAccess::Mgr* dbAccessMgr, Time::DurationSecondsType allowedStaleness)
+RolledUpDevices RolledUpDevices::GetCached (DBAccess::Mgr* dbAccessMgr, Time::DurationSeconds allowedStaleness)
 {
     RequireNotNull (dbAccessMgr);
     Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...RolledUpDevices::GetCached")};
-    Debug::TimingTrace        ttrc{L"...RolledUpDevices::GetCached", 1};
+    Debug::TimingTrace        ttrc{L"...RolledUpDevices::GetCached", 1s};
     // SynchronizedCallerStalenessCache object just assures one rollup RUNS internally at a time, and
     // that two calls in rapid succession, the second call re-uses the previous value
     static Cache::SynchronizedCallerStalenessCache<void, RolledUpDevices> sCache_;
@@ -143,10 +143,10 @@ RolledUpDevices RolledUpDevices::GetCached (DBAccess::Mgr* dbAccessMgr, Time::Du
     // sCache_.fHoldWriteLockDuringCacheFill = true; // so only one call to filler lambda at a time
     return sCache_.LookupValue (sCache_.Ago (allowedStaleness), [dbAccessMgr, allowedStaleness] () -> RolledUpDevices {
         Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...RolledUpDevices::GetCached...cachefiller")};
-        Debug::TimingTrace        ttrc{L"RolledUpDevices::GetCached...cachefiller", 1};
+        Debug::TimingTrace        ttrc{L"RolledUpDevices::GetCached...cachefiller", 1s};
 
-        auto rolledUpNetworks = RolledUpNetworks::GetCached (dbAccessMgr, allowedStaleness * 3.0);                    // longer allowedStaleness cuz we dont care much about this and the parts
-                                                                                                                      // we look at really dont change
+        auto rolledUpNetworks = RolledUpNetworks::GetCached (dbAccessMgr, allowedStaleness * 3.0); // longer allowedStaleness cuz we dont care much about this and the parts
+                                                                                                   // we look at really dont change
         auto rolledUpNetworkInterfacess = RolledUpNetworkInterfaces::GetCached (dbAccessMgr, allowedStaleness * 3.0); // longer allowedStaleness cuz we dont care much about this and the parts
             // we look at really dont change
 

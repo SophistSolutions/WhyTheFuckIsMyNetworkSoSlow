@@ -156,18 +156,11 @@ namespace {
 
 namespace {
     const ConstantProperty<FileSystemRequestHandler::Options> kStaticSiteHandlerOptions_{[] () {
-        Sequence<pair<RegularExpression, CacheControl>> kFSCacheControlSettings_
-        {
-#if __cpp_designated_initializers
+        Sequence<pair<RegularExpression, CacheControl>> kFSCacheControlSettings_{
             pair<RegularExpression, CacheControl>{RegularExpression{L".*[0-9a-fA-F]+\\.(js|css|js\\.map)"sv, CompareOptions::eCaseInsensitive},
                                                   CacheControl::kImmutable},
-                pair<RegularExpression, CacheControl>{
-                    RegularExpression::kAny, CacheControl{.fCacheability = CacheControl::ePublic, .fMaxAge = Duration{24h}.As<int32_t> ()}},
-#else
-            pair<RegularExpression, CacheControl>{RegularExpression{L".*[0-9a-fA-F]+\\.(js|css|js\\.map)"sv, CompareOptions::eCaseInsensitive},
-                                                  CacheControl::kImmutable},
-                pair<RegularExpression, CacheControl>{RegularExpression::kAny, CacheControl{CacheControl::ePublic, Duration{24h}.As<int32_t> ()}},
-#endif
+            pair<RegularExpression, CacheControl>{RegularExpression::kAny,
+                                                  CacheControl{.fCacheability = CacheControl::ePublic, .fMaxAge = Duration{24h}.As<int32_t> ()}},
         };
         return FileSystemRequestHandler::Options{nullopt, Sequence<String>{L"index.html"_k}, nullopt, kFSCacheControlSettings_};
     }};
@@ -438,11 +431,7 @@ public:
               Route{L"config.json"_RegEx, mkRequestHandler (kGUIConfig_, Config_::kMapper, function<Config_ (void)>{[=] () { return GetConfig_ (); }})},
               Route{RegularExpression::kAny, FileSystemRequestHandler{Execution::GetEXEDir () / "html", kStaticSiteHandlerOptions_}},
           }
-#if __cpp_designated_initializers
         , fConnectionMgr_{SocketAddresses (InternetAddresses_Any (), gAppConfiguration.Get ().WebServerPort.value_or (AppConfigurationType::kWebServerPort_Default)), fWSRoutes_ + fStaticRoutes_, ConnectionManager::Options{.fMaxConnections = kMaxWebServerConcurrentConnections_, .fMaxConcurrentlyHandledConnections = kMaxThreads_, .fBindFlags = Socket::BindFlags{.fSO_REUSEADDR = true}, .fDefaultResponseHeaders = kDefaultResponseHeadersStaticSite_}}
-#else
-        , fConnectionMgr_{SocketAddresses (InternetAddresses_Any (), gAppConfiguration.Get ().WebServerPort.value_or (AppConfigurationType::kWebServerPort_Default)), fWSRoutes_ + fStaticRoutes_, ConnectionManager::Options{kMaxWebServerConcurrentConnections_, kMaxThreads_, Socket::BindFlags{true}, kDefaultResponseHeadersStaticSite_}}
-#endif
         , fIntervalTimerAdder_{[this] () {
                                    Debug::TraceContextBumper ctx{"webserver status gather TIMER HANDLER"}; // to debug https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/78
                                    OperationalStatisticsMgr::sThe.RecordActiveRunningTasksCount (fActiveCallCnt_);
