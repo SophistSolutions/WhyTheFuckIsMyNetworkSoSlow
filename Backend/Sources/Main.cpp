@@ -110,7 +110,7 @@ int main (int argc, const char* argv[])
         L"main", L"argv=%s", Characters::ToString (vector<const char*> (argv, argv + argc)).c_str ())};
     DbgTrace (L"Running as user %s", Characters::ToString (GetCurrentUserName ()).c_str ());
 
-#if qStroika_Foundation_Exection_Thread_SupportThreadStatistics
+#if qStroika_Foundation_Execution_Thread_SupportThreadStatistics
     [[maybe_unused]] auto&& cleanupReport = Execution::Finally ([] () {
         DbgTrace (L"Exiting main with thread %s running", Characters::ToString (Execution::Thread::GetStatistics ().fRunningThreads).c_str ());
     });
@@ -170,13 +170,13 @@ int main (int argc, const char* argv[])
      */
 #if qPlatform_Windows
     try {
-        static constexpr Activity kSettingUpFirewall_{L"setting up firewall"sv};
+        static constexpr Activity kSettingUpFirewall_{"setting up firewall"sv};
         DeclareActivity           da{&kSettingUpFirewall_};
         IO::Network::SystemFirewall::Manager{}.Register (IO::Network::SystemFirewall::Rule{
-            L"WhyTheFuckIsMyNetworkSoSlow Recieve SSDP Notify UDP Access Allowed"sv,
-            L"Allow UDP/multicast (NOTIFY) traffic for WhyTheFuckIsMyNetworkSoSlow so SSDP listen works (search works without this)"sv,
-            L"WhyTheFuckIsMyNetworkSoSlow"sv, Execution::GetEXEPath (), NET_FW_PROFILE2_ALL, NET_FW_RULE_DIR_IN, NET_FW_IP_PROTOCOL_UDP,
-            L"1900"sv, L"*"sv, NET_FW_ACTION_ALLOW, true});
+            "WhyTheFuckIsMyNetworkSoSlow Recieve SSDP Notify UDP Access Allowed"sv,
+            "Allow UDP/multicast (NOTIFY) traffic for WhyTheFuckIsMyNetworkSoSlow so SSDP listen works (search works without this)"sv,
+            "WhyTheFuckIsMyNetworkSoSlow"sv, Execution::GetEXEPath (), NET_FW_PROFILE2_ALL, NET_FW_RULE_DIR_IN, NET_FW_IP_PROTOCOL_UDP,
+            "1900"sv, "*"sv, NET_FW_ACTION_ALLOW, true});
     }
     catch (...) {
         String exceptMsg   = Characters::ToString (current_exception ());
@@ -184,8 +184,8 @@ int main (int argc, const char* argv[])
         if (auto errCode = GetAssociatedErrorCode (current_exception ())) {
             if (errCode == errc::permission_denied) {
                 warningOnly = true;
-                exceptMsg += L" Some device discovery features (SSDP Listen) may not function properly. Run as administrator once, or "
-                             L"re-run the installer to fix this.";
+                exceptMsg += " Some device discovery features (SSDP Listen) may not function properly. Run as administrator once, or "
+                             "re-run the installer to fix this."sv;
             }
         }
         if (warningOnly) {
@@ -215,16 +215,16 @@ int main (int argc, const char* argv[])
      *  Run request.
      */
     try {
-        if (Execution::MatchesCommandLineArgument (args, L"status")) {
+        if (Execution::MatchesCommandLineArgument (args, "status"sv)) {
             cout << m.GetServiceStatusMessage ().AsUTF8<string> ();
             return EXIT_SUCCESS;
         }
-        else if (Execution::MatchesCommandLineArgument (args, L"help")) {
+        else if (Execution::MatchesCommandLineArgument (args, "help"sv)) {
             ShowUsage_ (m);
             return EXIT_SUCCESS;
         }
-        else if (Execution::MatchesCommandLineArgument (args, L"version")) {
-            cout << m.GetServiceDescription ().fPrettyName.AsNarrowSDKString () << ": "
+        else if (Execution::MatchesCommandLineArgument (args, "version"sv)) {
+            cout << m.GetServiceDescription ().fPrettyName.AsNarrowSDKString () << ": "sv
                  << Characters::ToString (AppVersion::kVersion).AsNarrowSDKString () << endl;
             return EXIT_SUCCESS;
         }
