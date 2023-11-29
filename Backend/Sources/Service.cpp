@@ -20,7 +20,6 @@
 
 #include "IntegratedModel/Mgr.h"
 
-#include "WebServices/WSImpl.h"
 #include "WebServices/WebServer.h"
 
 #include "AppVersion.h"
@@ -54,7 +53,7 @@ void WTFAppServiceRep::MainLoop (const std::function<void ()>& startedCB)
     Discovery::NetworksMgr::Activator          networkMgrActivator;
     Discovery::DevicesMgr::Activator           devicesMgrActivator;
     IntegratedModel::Mgr::Activator            integratedModelMgrActivator;
-    WebServer                                  webServer{make_shared<WSImpl> ()};
+    WebServer                                  webServer{};
     startedCB (); // Notify service control mgr that the service has started
     Logger::sThe.Log (Logger::eInfo, L"%s (version %s) service started successfully", kServiceDescription_.fPrettyName.As<wstring> ().c_str (),
                       Characters::ToString (AppVersion::kVersion).As<wstring> ().c_str ());

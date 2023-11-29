@@ -93,18 +93,18 @@ namespace {
 String OperatingSystem::ToString () const
 {
     Characters::StringBuilder sb;
-    sb += L"{";
-    sb += L"majorOSCategory: " + Characters::ToString (fMajorOSCategory) + L", ";
-    sb += L"fullVersionedOSName: " + Characters::ToString (fFullVersionedOSName) + L", ";
-    sb += L"}";
+    sb += "{";
+    sb += "majorOSCategory: " + Characters::ToString (fMajorOSCategory) + ", "sv;
+    sb += "fullVersionedOSName: " + Characters::ToString (fFullVersionedOSName) + ", "sv;
+    sb += "}";
     return sb.str ();
 }
 
 const ObjectVariantMapper OperatingSystem::kMapper = [] () {
     ObjectVariantMapper mapper;
     mapper.AddClass<OperatingSystem> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-        {L"majorOSCategory", StructFieldMetaInfo{&OperatingSystem::fMajorOSCategory}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"fullVersionedName", StructFieldMetaInfo{&OperatingSystem::fFullVersionedOSName}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {"majorOSCategory"sv, StructFieldMetaInfo{&OperatingSystem::fMajorOSCategory}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {"fullVersionedName"sv, StructFieldMetaInfo{&OperatingSystem::fFullVersionedOSName}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
     return mapper;
 }();
@@ -1171,6 +1171,19 @@ String About::APIServerInfo::APIEndpoint::ToString () const
     return sb.str ();
 }
 
+String About::APIServerInfo::WebServer::ToString () const
+{
+    Characters::StringBuilder sb;
+    sb << "{"sv;
+    sb << "fThreadPool: {"sv;
+    sb << "fThreads: " << Characters::ToString (fThreadPool.fThreads) << ", "sv;
+    sb << "fTasksStillQueued: " << Characters::ToString (fThreadPool.fTasksStillQueued) << ", "sv;
+    sb << "fAverageTaskRunTime: " << Characters::ToString (fThreadPool.fAverageTaskRunTime) << ", "sv;
+    sb << "}"sv;
+    sb << "}"sv;
+    return sb.str ();
+}
+
 String About::APIServerInfo::Database::ToString () const
 {
     Characters::StringBuilder sb;
@@ -1197,6 +1210,7 @@ String About::APIServerInfo::ToString () const
     sb += L"Current-Machine: " + Characters::ToString (fCurrentMachine) + L", ";
     sb += L"Current-Process: " + Characters::ToString (fCurrentProcess) + L", ";
     sb += L"API-Endpoint: " + Characters::ToString (fAPIEndpoint) + L", ";
+    sb += L"WebServer: " + Characters::ToString (fWebServer) + L", ";
     sb += L"Database: " + Characters::ToString (fDatabase) + L", ";
     sb += L"}";
     return sb.str ();
@@ -1267,8 +1281,18 @@ const ObjectVariantMapper About::kMapper = [] () {
         {L"medianRunningAPITasks", StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fMedianRunningAPITasks},
          ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
-
     mapper.AddCommonType<optional<About::APIServerInfo::APIEndpoint>> ();
+
+    mapper.AddClass<About::APIServerInfo::WebServer::ThreadPool> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+        {"threads", StructFieldMetaInfo{&About::APIServerInfo::WebServer::ThreadPool::fThreads}},
+        {"tasksStillQueued", StructFieldMetaInfo{&About::APIServerInfo::WebServer::ThreadPool::fTasksStillQueued}},
+        {"averageTaskRunTime", StructFieldMetaInfo{&About::APIServerInfo::WebServer ::ThreadPool ::fAverageTaskRunTime}},
+    });
+
+    mapper.AddClass<About::APIServerInfo::WebServer> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+        {"threadPool"sv, StructFieldMetaInfo{&About::APIServerInfo::WebServer::fThreadPool}},
+    });
+    mapper.AddCommonType<optional<About::APIServerInfo::WebServer>> ();
 
     mapper.AddClass<About::APIServerInfo::Database> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
         {L"reads", StructFieldMetaInfo{&About::APIServerInfo::Database::fReads}},
@@ -1284,12 +1308,13 @@ const ObjectVariantMapper About::kMapper = [] () {
     mapper.AddCommonType<optional<About::APIServerInfo::Database>> ();
 
     mapper.AddClass<About::APIServerInfo> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-        {L"version", StructFieldMetaInfo{&About::APIServerInfo::fVersion}},
-        {L"componentVersions", StructFieldMetaInfo{&About::APIServerInfo::fComponentVersions}},
-        {L"currentMachine", StructFieldMetaInfo{&About::APIServerInfo::fCurrentMachine}},
-        {L"currentProcess", StructFieldMetaInfo{&About::APIServerInfo::fCurrentProcess}},
-        {L"apiEndpoint", StructFieldMetaInfo{&About::APIServerInfo::fAPIEndpoint}},
-        {L"database", StructFieldMetaInfo{&About::APIServerInfo::fDatabase}},
+        {"version"sv, StructFieldMetaInfo{&About::APIServerInfo::fVersion}},
+        {"componentVersions"sv, StructFieldMetaInfo{&About::APIServerInfo::fComponentVersions}},
+        {"currentMachine"sv, StructFieldMetaInfo{&About::APIServerInfo::fCurrentMachine}},
+        {"currentProcess"sv, StructFieldMetaInfo{&About::APIServerInfo::fCurrentProcess}},
+        {"apiEndpoint"sv, StructFieldMetaInfo{&About::APIServerInfo::fAPIEndpoint}},
+        {"webServer"sv, StructFieldMetaInfo{&About::APIServerInfo::fWebServer}},
+        {"database"sv, StructFieldMetaInfo{&About::APIServerInfo::fDatabase}},
     });
 
     mapper.AddClass<About> (initializer_list<ObjectVariantMapper::StructFieldInfo>{

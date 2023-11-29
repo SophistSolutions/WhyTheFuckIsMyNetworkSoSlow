@@ -99,11 +99,13 @@ namespace {
  ********************************************************************************
  */
 struct WSImpl::Rep_ {
-    MyCapturer_ fMyCapturer;
+    MyCapturer_                                  fMyCapturer;
+    function<About::APIServerInfo::WebServer ()> fWebServerStatsFetcher;
 };
-WSImpl::WSImpl ()
+WSImpl::WSImpl (function<About::APIServerInfo::WebServer ()> webServerStatsFetcher)
     : fRep_{make_shared<Rep_> ()}
 {
+    fRep_->fWebServerStatsFetcher = webServerStatsFetcher;
 }
 
 About WSImpl::GetAbout () const
@@ -120,19 +122,11 @@ About WSImpl::GetAbout () const
         ComponentInfo{L"Stroika"sv, Configuration::Version{kStroika_Version_FullVersion}.AsPrettyVersionString (), URI{"https://github.com/SophistSolutions/Stroika"}}
 #if qHasFeature_OpenSSL
         ,
-#if kStroika_Version_FullVersion >= Stroika_Make_FULL_VERSION(3, 0, kStroika_Version_Stage_Dev, 1, 0)
-        ComponentInfo{L"OpenSSL"sv, OPENSSL_VERSION_TEXT, URI{"https://www.openssl.org/"}}
-#else
-        ComponentInfo{L"OpenSSL"sv, String::FromASCII (OPENSSL_VERSION_TEXT), URI{"https://www.openssl.org/"}}
-#endif
+        ComponentInfo{"OpenSSL"sv, OPENSSL_VERSION_TEXT, URI{"https://www.openssl.org/"}}
 #endif
 #if qHasFeature_LibCurl
         ,
-#if kStroika_Version_FullVersion >= Stroika_Make_FULL_VERSION(3, 0, kStroika_Version_Stage_Dev, 1, 0)
-        ComponentInfo{L"libcurl"sv, LIBCURL_VERSION, URI{"https://curl.se/"}}
-#else
-        ComponentInfo{L"libcurl"sv, String::FromASCII (LIBCURL_VERSION), URI{"https://curl.se/"}}
-#endif
+        ComponentInfo{"libcurl"sv, LIBCURL_VERSION, URI{"https://curl.se/"}}
 #endif
 #if qHasFeature_boost && 0 /*NOT USING BOOST AS FAR AS I KNOW*/
         ,
@@ -140,11 +134,7 @@ About WSImpl::GetAbout () const
 #endif
 #if qHasFeature_sqlite
         ,
-#if kStroika_Version_FullVersion >= Stroika_Make_FULL_VERSION(3, 0, kStroika_Version_Stage_Dev, 1, 0)
-        ComponentInfo{L"sqlite"sv, SQLITE_VERSION, URI{"https://www.sqlite.org"}}
-#else
-        ComponentInfo{L"sqlite"sv, String::FromASCII (SQLITE_VERSION), URI{"https://www.sqlite.org"}}
-#endif
+        ComponentInfo{"sqlite"sv, SQLITE_VERSION, URI{"https://www.sqlite.org"}}
 #endif
     }};
     auto now = DateTime::Now ();
@@ -194,7 +184,8 @@ About WSImpl::GetAbout () const
         r.fMedianRunningAPITasks                = stats.fRecentAPI.fMedianRunningAPITasks;
         return r;
     }();
-    Database dbStats = [&] () {
+    APIServerInfo::WebServer webServerStats = [&] () { return fRep_->fWebServerStatsFetcher (); }();
+    Database                 dbStats        = [&] () {
         Database r;
         r.fReads               = stats.fRecentDB.fReads;
         r.fWrites              = stats.fRecentDB.fWrites;
@@ -208,7 +199,8 @@ About WSImpl::GetAbout () const
         return r;
     }();
 
-    return About{AppVersion::kVersion, APIServerInfo{AppVersion::kVersion, kAPIServerComponents_, machineInfo, processInfo, apiStats, dbStats}};
+    return About{AppVersion::kVersion,
+                 APIServerInfo{AppVersion::kVersion, kAPIServerComponents_, machineInfo, processInfo, apiStats, webServerStats, dbStats}};
 }
 
 tuple<Memory::BLOB, optional<DataExchange::InternetMediaType>> WSImpl::GetBLOB (const GUID& guid) const

@@ -25,7 +25,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
      */
     class WebServer {
     public:
-        WebServer (const shared_ptr<IWSAPI>& wsImpl);
+        WebServer ();
 
     private:
         class Rep_;

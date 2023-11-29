@@ -25,7 +25,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
      */
     class WSImpl final : public IWSAPI {
     public:
-        WSImpl ();
+        WSImpl (function<About::APIServerInfo::WebServer ()> webServerStatsFetcher);
         virtual ~WSImpl () override = default;
 
     public:

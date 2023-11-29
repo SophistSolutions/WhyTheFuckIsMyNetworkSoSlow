@@ -915,6 +915,22 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
             optional<APIEndpoint> fAPIEndpoint;
 
             /**
+              * Statistics from the WebServer (@todo TBD timing interval for interpreation)
+              *     also should add much more in the way of stats! Like backlog, endpoints, etc... Number of alive connections; Number of new connections in last N seconds;
+              */
+            struct WebServer {
+                struct ThreadPool {
+                    unsigned int       fThreads{};
+                    unsigned int       fTasksStillQueued{};
+                    optional<Duration> fAverageTaskRunTime;
+                };
+                ThreadPool fThreadPool;
+
+                nonvirtual String ToString () const;
+            };
+            optional<WebServer> fWebServer;
+
+            /**
              * Database related stats - for now - averaged over the last 5 minutes.
              */
             struct Database {
