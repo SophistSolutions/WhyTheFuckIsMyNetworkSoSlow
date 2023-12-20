@@ -45,7 +45,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_ {
     }
     inline auto RolledUpNetworkInterfaces::MapAggregatedNetInterfaceID2ItsRollupID (const Set<GUID>& netIDs) const -> Set<GUID>
     {
-        return netIDs.Map<GUID, Set<GUID>> ([this] (const auto& i) { return MapAggregatedNetInterfaceID2ItsRollupID (i); });
+        return netIDs.Map<Set<GUID>> ([this] (const auto& i) { return MapAggregatedNetInterfaceID2ItsRollupID (i); });
     }
 
 }

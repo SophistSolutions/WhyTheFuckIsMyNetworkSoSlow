@@ -171,7 +171,7 @@ Mgr::Mgr ()
     try {
         Debug::TimingTrace ttrc{L"...load of fCachedDeviceUserSettings_ from database ", 1s};
         fCachedDeviceUserSettings_.store (Mapping<GUID, Model::Device::UserOverridesType>{
-            fDeviceUserSettingsTableConnection_.rwget ().cref ()->GetAll ().Map<KeyValuePair<GUID, Model::Device::UserOverridesType>> ([] (const auto& i) {
+            fDeviceUserSettingsTableConnection_.rwget ().cref ()->GetAll ().Map<Iterable<KeyValuePair<GUID, Model::Device::UserOverridesType>>> ([] (const auto& i) {
                 return KeyValuePair<GUID, Model::Device::UserOverridesType>{i.fDeviceID, i.fUserSettings};
             })});
     }
@@ -182,10 +182,10 @@ Mgr::Mgr ()
     }
     try {
         Debug::TimingTrace ttrc{L"...load of fCachedNetworkUserSettings_ from database ", 1s};
-        fCachedNetworkUserSettings_.store (Mapping<GUID, Model::Network::UserOverridesType>{
-            fNetworkUserSettingsTableConnection_.rwget ().cref ()->GetAll ().Map<KeyValuePair<GUID, Model::Network::UserOverridesType>> ([] (const auto& i) {
+        fCachedNetworkUserSettings_.store (
+            fNetworkUserSettingsTableConnection_.rwget ().cref ()->GetAll ().Map<Mapping<GUID, Model::Network::UserOverridesType>> ([] (const auto& i) {
                 return KeyValuePair<GUID, Model::Network::UserOverridesType>{i.fNetworkID, i.fUserSettings};
-            })});
+            }));
     }
     catch (...) {
         Logger::sThe.Log (Logger::eCriticalError, L"Failed to load fCachedNetworkUserSettings_ from db: %s",

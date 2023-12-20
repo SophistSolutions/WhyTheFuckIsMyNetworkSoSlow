@@ -212,7 +212,7 @@ tuple<Memory::BLOB, optional<DataExchange::InternetMediaType>> WSImpl::GetBLOB (
 Sequence<String> WSImpl::GetDevices (const optional<Set<GUID>>& ids, const optional<DeviceSortParamters>& sort) const
 {
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
-    return GetDevices_Recurse (ids, sort).Map<String, Sequence<String>> ([] (const WebServices::Device& n) { return n.fID.As<String> (); });
+    return GetDevices_Recurse (ids, sort).Map<Sequence<String>> ([] (const WebServices::Device& n) { return n.fID.As<String> (); });
 }
 
 Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const optional<Set<GUID>>& ids, const optional<DeviceSortParamters>& sort) const
@@ -382,7 +382,7 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
                     });
                 } break;
                 default: {
-                    Execution::Throw (ClientErrorException{L"missing or invalid By in search specification"_k});
+                    Execution::Throw (ClientErrorException{"missing or invalid By in search specification"_k});
                 } break;
             }
         }
@@ -399,7 +399,7 @@ tuple<Device, Duration> WSImpl::GetDevice (const String& id) const
     if (auto d = IntegratedModel::Mgr::sThe.GetDevice (compareWithID, &ttl)) {
         return make_tuple (*d, Memory::ValueOf (ttl));
     }
-    Execution::Throw (ClientErrorException{L"no such id"sv});
+    Execution::Throw (ClientErrorException{"no such id"sv});
 }
 
 void WSImpl::PatchDevice (const String& id, const JSONPATCH::OperationItemsType& patchDoc) const
@@ -412,21 +412,21 @@ void WSImpl::PatchDevice (const String& id, const JSONPATCH::OperationItemsType&
                 Device::UserOverridesType updateVal =
                     IntegratedModel::Mgr::sThe.GetDeviceUserSettings (objID).value_or (Device::UserOverridesType{});
                 if (not op.value) {
-                    Execution::Throw (ClientErrorException{L"JSON-Patch add requires a value"_k});
+                    Execution::Throw (ClientErrorException{"JSON-Patch add requires a value"_k});
                 }
-                if (op.path == L"/userOverrides/name") {
+                if (op.path == "/userOverrides/name") {
                     updateVal.fName = op.value->As<String> ();
                 }
-                else if (op.path == L"/userOverrides/notes") {
+                else if (op.path == "/userOverrides/notes") {
                     updateVal.fNotes = op.value->As<String> ();
                 }
-                else if (op.path == L"/userOverrides/tags") {
+                else if (op.path == "/userOverrides/tags") {
                     // for now only support replacing the whole array at a time
-                    updateVal.fTags = op.value->As<Sequence<VariantValue>> ().Map<String, Set<String>> (
+                    updateVal.fTags = op.value->As<Sequence<VariantValue>> ().Map<Set<String>> (
                         [] (const VariantValue& vv) { return vv.As<String> (); });
                 }
                 else {
-                    Execution::Throw (ClientErrorException{L"JSON-Patch add of unsupported op.path"_k});
+                    Execution::Throw (ClientErrorException{"JSON-Patch add of unsupported op.path"_k});
                 }
                 if (updateVal.IsNonTrivial ()) {
                     IntegratedModel::Mgr::sThe.SetDeviceUserSettings (objID, updateVal);
@@ -438,10 +438,10 @@ void WSImpl::PatchDevice (const String& id, const JSONPATCH::OperationItemsType&
             case JSONPATCH::OperationType::eRemove: {
                 Device::UserOverridesType updateVal =
                     IntegratedModel::Mgr::sThe.GetDeviceUserSettings (objID).value_or (Device::UserOverridesType{});
-                if (op.path == L"/userOverrides/name") {
+                if (op.path == "/userOverrides/name") {
                     updateVal.fName = optional<String>{};
                 }
-                else if (op.path == L"/userOverrides/notes") {
+                else if (op.path == "/userOverrides/notes") {
                     updateVal.fNotes = optional<String>{};
                 }
                 else if (op.path == L"/userOverrides/tags") {
@@ -449,7 +449,7 @@ void WSImpl::PatchDevice (const String& id, const JSONPATCH::OperationItemsType&
                     updateVal.fTags = optional<Set<String>>{};
                 }
                 else {
-                    Execution::Throw (ClientErrorException{L"JSON-Patch remove of unsupported op.path"_k});
+                    Execution::Throw (ClientErrorException{"JSON-Patch remove of unsupported op.path"_k});
                 }
                 if (updateVal.IsNonTrivial ()) {
                     IntegratedModel::Mgr::sThe.SetDeviceUserSettings (objID, updateVal);
@@ -479,7 +479,7 @@ Sequence<String> WSImpl::GetNetworks (const optional<Set<GUID>>& ids) const
         return result;
     }
     else {
-        return IntegratedModel::Mgr::sThe.GetNetworks ().Map<String, Sequence<String>> ([] (const auto& n) { return n.fID.ToString (); });
+        return IntegratedModel::Mgr::sThe.GetNetworks ().Map< Sequence<String>> ([] (const auto& n) { return n.fID.ToString (); });
     }
 }
 
@@ -536,18 +536,17 @@ void WSImpl::PatchNetwork (const String& id, const JSONPATCH::OperationItemsType
                 }
                 else if (op.path == "/userOverrides/tags"sv) {
                     // for now only support replacing the whole array at a time
-                    updateVal.fTags = Set<String>{
-                        op.value->As<Sequence<VariantValue>> ().Map<String> ([] (const VariantValue& vv) { return vv.As<String> (); })};
+                    updateVal.fTags =  op.value->As<Sequence<VariantValue>> ().Map<Set<String>> ([] (const VariantValue& vv) { return vv.As<String> (); });
                 }
                 else if (op.path == L"/userOverrides/aggregateFingerprints") {
                     // for now only support replacing the whole array at a time
-                    updateVal.fAggregateFingerprints =
-                        Set<GUID>{op.value->As<Sequence<VariantValue>> ().Map<GUID> ([] (const VariantValue& vv) { return vv.As<String> (); })};
+                    updateVal.fAggregateFingerprints = 
+                        op.value->As<Sequence<VariantValue>> ().Map<Set<GUID>> ([] (const VariantValue& vv) { return vv.As<String> (); });
                 }
                 else if (op.path == L"/userOverrides/aggregateGatewayHardwareAddresses") {
                     // for now only support replacing the whole array at a time
-                    updateVal.fAggregateGatewayHardwareAddresses = Set<String>{
-                        op.value->As<Sequence<VariantValue>> ().Map<String> ([] (const VariantValue& vv) { return vv.As<String> (); })};
+                    updateVal.fAggregateGatewayHardwareAddresses = 
+                        op.value->As<Sequence<VariantValue>> ().Map<Set<String>> ([] (const VariantValue& vv) { return vv.As<String> (); });
                 }
                 else if (op.path == L"/userOverrides/aggregateNetworkInterfacesMatching") {
                     // for now only support replacing the whole array at a time
@@ -556,7 +555,7 @@ void WSImpl::PatchNetwork (const String& id, const JSONPATCH::OperationItemsType
                             *op.value);
                 }
                 else {
-                    Execution::Throw (ClientErrorException{L"JSON-Patch add of unsupported op.path"_k});
+                    Execution::Throw (ClientErrorException{"JSON-Patch add of unsupported op.path"_k});
                 }
                 if (updateVal.IsNonTrivial ()) {
                     IntegratedModel::Mgr::sThe.SetNetworkUserSettings (objID, updateVal);
@@ -588,7 +587,7 @@ void WSImpl::PatchNetwork (const String& id, const JSONPATCH::OperationItemsType
                     updateVal.fAggregateNetworkInterfacesMatching = nullopt;
                 }
                 else {
-                    Execution::Throw (ClientErrorException{L"JSON-Patch remove of unsupported op.path"_k});
+                    Execution::Throw (ClientErrorException{"JSON-Patch remove of unsupported op.path"_k});
                 }
                 if (updateVal.IsNonTrivial ()) {
                     IntegratedModel::Mgr::sThe.SetNetworkUserSettings (objID, updateVal);
@@ -605,7 +604,7 @@ Collection<String> WSImpl::GetNetworkInterfaces () const
 {
     Debug::TimingTrace                              ttrc{L"WSImpl::GetNetworkInterfaces_Recurse", 100ms};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
-    return IntegratedModel::Mgr::sThe.GetNetworkInterfaces ().Map<String, Collection<String>> (
+    return IntegratedModel::Mgr::sThe.GetNetworkInterfaces ().Map<Collection<String>> (
         [=] (const auto& ni) -> optional<String> { return ni.fID.ToString (); });
 }
 
@@ -625,7 +624,7 @@ tuple<NetworkInterface, Duration> WSImpl::GetNetworkInterface (const String& id)
     if (auto ni = IntegratedModel::Mgr::sThe.GetNetworkInterface (compareWithID, &ttl)) {
         return make_tuple (*ni, Memory::ValueOf (ttl));
     }
-    Execution::Throw (ClientErrorException{L"no such id"sv});
+    Execution::Throw (ClientErrorException{"no such id"sv});
 }
 
 double WSImpl::Operation_Ping (const String& address) const
@@ -721,7 +720,7 @@ Time::Duration WSImpl::Operation_DNS_CalculateNegativeLookupTime (optional<unsig
     constexpr unsigned int                          kDefault_Samples = 7;
     unsigned int                                    useSamples       = samples.value_or (kDefault_Samples);
     if (useSamples == 0) {
-        Execution::Throw (ClientErrorException{L"samples must be > 0"sv});
+        Execution::Throw (ClientErrorException{"samples must be > 0"sv});
     }
     uniform_int_distribution<mt19937::result_type> allUInt16Distribution{0, numeric_limits<uint32_t>::max ()};
     static mt19937                                 sRng_{std::random_device{}()};

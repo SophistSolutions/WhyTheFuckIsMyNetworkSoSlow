@@ -187,7 +187,7 @@ private:
     const Sequence<Route>                                fStaticRoutes_;
     optional<DeclareActivity<Activity<wstring_view>>>    fEstablishActivity1_{&kContructing_WebServer_};
     ConnectionManager                                    fConnectionMgr_;
-    [[NO_UNIQUE_ADDRESS_ATTR]] EmptyObjectForSideEffects fIgnore1_{[this] () { fEstablishActivity1_.reset (); }};
+    [[no_unique_address]] EmptyObjectForSideEffects      fIgnore1_{[this] () { fEstablishActivity1_.reset (); }};
 
     atomic<unsigned int> fActiveCallCnt_{0};
     struct ActiveCallCounter_ {

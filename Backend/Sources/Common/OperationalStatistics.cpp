@@ -109,7 +109,7 @@ auto OperationalStatisticsMgr::GetStatistics () const -> Statistics
     }();
 
     {
-        Iterable<DurationSeconds> apiTimes = allApplicable.Map<DurationSeconds> ([] (const Rec_& r) -> optional<DurationSeconds> {
+        Iterable<DurationSeconds> apiTimes = allApplicable.Map<Iterable<DurationSeconds>> ([] (const Rec_& r) -> optional<DurationSeconds> {
             if (r.fKind == Rec_::Kind::eAPI)
                 return r.fDuration;
             return nullopt;
@@ -124,7 +124,7 @@ auto OperationalStatisticsMgr::GetStatistics () const -> Statistics
             static_cast<unsigned int> (allApplicable.Count ([] (const Rec_& r) { return r.fKind == Rec_::Kind::eAPIError; }));
     }
     {
-        Iterable<float> openWSConnections = allApplicable.Map<float> ([] (const Rec_& r) -> optional<float> {
+        Iterable<float> openWSConnections = allApplicable.Map<Iterable<float>> ([] (const Rec_& r) -> optional<float> {
             if (r.fKind == Rec_::Kind::eAPIOpenConnectionCount)
                 return static_cast<float> (r.fLength);
             return nullopt;
@@ -134,7 +134,7 @@ auto OperationalStatisticsMgr::GetStatistics () const -> Statistics
         }
     }
     {
-        Iterable<float> processingWSConnections = allApplicable.Map<float> ([] (const Rec_& r) -> optional<float> {
+        Iterable<float> processingWSConnections = allApplicable.Map<Iterable<float>> ([] (const Rec_& r) -> optional<float> {
             if (r.fKind == Rec_::Kind::eAPIOpenConnectionCount)
                 return static_cast<float> (r.fLength);
             return nullopt;
@@ -144,7 +144,7 @@ auto OperationalStatisticsMgr::GetStatistics () const -> Statistics
         }
     }
     {
-        Iterable<float> activeRunningWSAPITasks = allApplicable.Map<float> ([] (const Rec_& r) -> optional<float> {
+        Iterable<float> activeRunningWSAPITasks = allApplicable.Map<Iterable<float>> ([] (const Rec_& r) -> optional<float> {
             if (r.fKind == Rec_::Kind::eAPIActiveRunningTasks)
                 return static_cast<float> (r.fLength);
             return nullopt;
@@ -154,7 +154,7 @@ auto OperationalStatisticsMgr::GetStatistics () const -> Statistics
         }
     }
     {
-        Iterable<float> activeWSConnections = allApplicable.Map<float> ([] (const Rec_& r) -> optional<float> {
+        Iterable<float> activeWSConnections = allApplicable.Map<Iterable<float>> ([] (const Rec_& r) -> optional<float> {
             if (r.fKind == Rec_::Kind::eAPIOpenConnectionCount)
                 return static_cast<float> (r.fLength);
             return nullopt;
@@ -164,7 +164,7 @@ auto OperationalStatisticsMgr::GetStatistics () const -> Statistics
         }
     }
     {
-        Iterable<DurationSeconds> dbReadTimes = allApplicable.Map<DurationSeconds> ([] (const Rec_& r) -> optional<DurationSeconds> {
+        Iterable<DurationSeconds> dbReadTimes = allApplicable.Map<Iterable<DurationSeconds>> ([] (const Rec_& r) -> optional<DurationSeconds> {
             if (r.fKind == Rec_::Kind::eDBRead)
                 return r.fDuration;
             return nullopt;
@@ -177,7 +177,7 @@ auto OperationalStatisticsMgr::GetStatistics () const -> Statistics
         result.fRecentDB.fReads = static_cast<unsigned int> (dbReadTimes.length ());
     }
     {
-        Iterable<DurationSeconds> dbWriteTimes = allApplicable.Map<DurationSeconds> ([] (const Rec_& r) -> optional<DurationSeconds> {
+        Iterable<DurationSeconds> dbWriteTimes = allApplicable.Map<Iterable<DurationSeconds>> ([] (const Rec_& r) -> optional<DurationSeconds> {
             if (r.fKind == Rec_::Kind::eDBWrite)
                 return r.fDuration;
             return nullopt;

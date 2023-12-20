@@ -280,7 +280,7 @@ void IntegratedModel::Mgr::SetDeviceUserSettings (const Common::GUID& id, const 
 
 std::optional<GUID> IntegratedModel::Mgr::GetCorrespondingDynamicDeviceID (const GUID& id) const
 {
-    Set<GUID> dynamicDevices{Discovery::DevicesMgr::sThe.GetActiveDevices ().Map<GUID, Set<GUID>> ([] (const auto& d) { return d.fGUID; })};
+    Set<GUID> dynamicDevices{Discovery::DevicesMgr::sThe.GetActiveDevices ().Map<Set<GUID>> ([] (const auto& d) { return d.fGUID; })};
     if (dynamicDevices.Contains (id)) {
         return id;
     }
@@ -292,7 +292,7 @@ std::optional<GUID> IntegratedModel::Mgr::GetCorrespondingDynamicDeviceID (const
             return *ff;
         }
         DbgTrace (L"Info: GetCorrespondingDynamicDeviceID found rollup device with no corresponding dynamic device (can happen if its a "
-                  L"hisorical device not on network right now)");
+                  L"historical device not on network right now)");
     }
     return nullopt;
 }

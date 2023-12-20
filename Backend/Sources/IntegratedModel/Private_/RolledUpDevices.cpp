@@ -65,7 +65,7 @@ RolledUpDevices::RolledUpDevices (DBAccess::Mgr* dbAccessMgr, const Iterable<Dev
     : fUseRolledUpNetworks{useRolledUpNetworks}
     , fUseNetworkInterfaceRollups{useNetworkInterfaceRollups}
 {
-    fStarterRollups_ = userOverrides.Map<Device> ([] (const auto& guid2UOTPair) -> Device {
+    fStarterRollups_ = userOverrides.Map < Iterable<Device>> ([] (const auto& guid2UOTPair) -> Device {
         Device d;
         d.fID            = guid2UOTPair.fKey;
         d.fUserOverrides = guid2UOTPair.fValue;
@@ -100,7 +100,7 @@ void RolledUpDevices::ResetUserOverrides (DBAccess::Mgr* dbAccessMgr, const Mapp
 {
     RequireNotNull (dbAccessMgr);
     RolledUpNetworkInterfaces networkInterfacesRollup = RolledUpNetworkInterfaces::GetCached (dbAccessMgr);
-    fStarterRollups_                                  = userOverrides.Map<Device> ([] (const auto& guid2UOTPair) -> Device {
+    fStarterRollups_                                  = userOverrides.Map<DeviceCollection> ([] (const auto& guid2UOTPair) -> Device {
         Device d;
         d.fID            = guid2UOTPair.fKey;
         d.fUserOverrides = guid2UOTPair.fValue;

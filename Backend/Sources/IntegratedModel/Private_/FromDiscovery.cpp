@@ -204,7 +204,7 @@ Sequence<NetworkInterface> IntegratedModel::Private_::FromDiscovery::GetNetworkI
 {
     Debug::TimingTrace         ttrc{L"FromDiscovery::GetNetworkInterfaces_", 100ms};
     Sequence<NetworkInterface> result =
-        Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ().Map<NetworkInterface, Sequence<NetworkInterface>> (
+        Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ().Map< Sequence<NetworkInterface>> (
             [] (const Discovery::NetworkInterface& n) { return Discovery2Model_ (n); });
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
     DbgTrace (L"returns: %s", Characters::ToString (result).c_str ());
@@ -215,7 +215,7 @@ Sequence<NetworkInterface> IntegratedModel::Private_::FromDiscovery::GetNetworkI
 Sequence<Network> IntegratedModel::Private_::FromDiscovery::GetNetworks ()
 {
     Debug::TimingTrace ttrc{L"FromDiscovery::GetNetworks_", 100ms};
-    Sequence<Network>  result = Discovery::NetworksMgr::sThe.CollectActiveNetworks ().Map<Network, Sequence<Network>> (
+    Sequence<Network>  result = Discovery::NetworksMgr::sThe.CollectActiveNetworks ().Map<Sequence<Network>> (
         [] (const Discovery::Network& n) { return Discovery2Model_ (n); });
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
     DbgTrace (L"returns: %s", Characters::ToString (result).c_str ());
@@ -227,6 +227,6 @@ Sequence<Device> IntegratedModel::Private_::FromDiscovery::GetDevices ()
 {
     Debug::TimingTrace ttrc{L"FromDiscovery::GetDevices_", 100ms};
     // Fetch (UNSORTED) list of devices
-    return Discovery::DevicesMgr::sThe.GetActiveDevices ().Map<Device, Sequence<Device>> (
+    return Discovery::DevicesMgr::sThe.GetActiveDevices ().Map< Sequence<Device>> (
         [] (const Discovery::Device& d) { return Discovery2Model_ (d); });
 }

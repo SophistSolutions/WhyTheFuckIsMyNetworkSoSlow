@@ -820,8 +820,7 @@ namespace {
                     i.fBindings.fAddresses.Apply ([&] (const InternetAddress& ia) { newDev.AddNetworkAddresses_ (ia, i.fHardwareAddress); });
                 }
             }
-            newDev.fAttachedInterfaces = Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ().Map<GUID, Set<GUID>> (
-                [] (const auto& iFace) { return iFace.fGUID; });
+            newDev.fAttachedInterfaces = Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ().Map<Set<GUID>> (  [] (const auto& iFace) { return iFace.fGUID; });
 
             if (newDev.GetHardwareAddresses ().empty ()) {
                 DbgTrace ("no hardware address, so returning no 'MyDevice'");
@@ -1668,6 +1667,7 @@ VariantValue DevicesMgr::ScanAndReturnReport (const InternetAddress& addr)
 {
     PortScanResults               results = ScanPorts (addr, ScanOptions{ScanOptions::eFull});
     Mapping<String, VariantValue> result;
-    result.Add (L"openPorts", VariantValue{results.fDiscoveredOpenPorts.Map<VariantValue> ([] (String i) { return VariantValue{i}; })});
+    result.Add (L"openPorts",
+                VariantValue{results.fDiscoveredOpenPorts.Map < Sequence<VariantValue>> ([] (String i) { return VariantValue{i}; })});
     return VariantValue{result};
 }

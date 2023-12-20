@@ -62,7 +62,7 @@ RolledUpNetworks::RolledUpNetworks (DBAccess::Mgr* dbAccessMgr, const Iterable<N
                                     const Mapping<GUID, Network::UserOverridesType>& userOverrides, const RolledUpNetworkInterfaces& useNetworkInterfaceRollups)
     : fUseNetworkInterfaceRollups{useNetworkInterfaceRollups}
 {
-    fStarterRollups_   = userOverrides.Map<Network> ([] (const auto& guid2UOTPair) -> Network {
+    fStarterRollups_   = userOverrides.Map<NetworkCollection> ([] (const auto& guid2UOTPair) -> Network {
         Network nw;
         nw.fID            = guid2UOTPair.fKey;
         nw.fUserOverrides = guid2UOTPair.fValue;
@@ -78,7 +78,7 @@ RolledUpNetworks::RolledUpNetworks (DBAccess::Mgr* dbAccessMgr, const Iterable<N
 void RolledUpNetworks::ResetUserOverrides (DBAccess::Mgr* dbAccessMgr, const Mapping<GUID, Network::UserOverridesType>& userOverrides)
 {
     RequireNotNull (dbAccessMgr);
-    fStarterRollups_ = userOverrides.Map<Network> ([] (const auto& guid2UOTPair) -> Network {
+    fStarterRollups_ = userOverrides.Map<NetworkCollection> ([] (const auto& guid2UOTPair) -> Network {
         Network nw;
         nw.fID            = guid2UOTPair.fKey;
         nw.fUserOverrides = guid2UOTPair.fValue;
