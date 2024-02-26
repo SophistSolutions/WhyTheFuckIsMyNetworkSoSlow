@@ -4,8 +4,8 @@
 ###				for preqequisites, or more importantly already built html
 
 
-export TOP_ROOT=$(abspath ../)/
-StroikaRoot=$(TOP_ROOT)ThirdPartyComponents/Stroika/StroikaRoot/
+export TOP_ROOT:=$(abspath ../)/
+StroikaRoot:=$(TOP_ROOT)ThirdPartyComponents/Stroika/StroikaRoot/
 
 include $(StroikaRoot)ScriptsLib/Makefile-Common.mk
 include $(StroikaRoot)ScriptsLib/SharedMakeVariables-Default.mk
@@ -57,7 +57,7 @@ build-dist_: $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_)
 	@rm -rf ${PER_CONFIGURATION_BUILDS_DIR} && mkdir -p ${PER_CONFIGURATION_BUILDS_DIR} && cp -r $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_)/dist/spa/* ${PER_CONFIGURATION_BUILDS_DIR}
 
 
-SRC_FILES2Link_=
+SRC_FILES2Link_:=
 SRC_FILES2Link_ += $(wildcard .env*)
 SRC_FILES2Link_ += public
 SRC_FILES2Link_ += src

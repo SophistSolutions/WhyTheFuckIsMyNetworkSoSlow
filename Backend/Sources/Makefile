@@ -1,12 +1,12 @@
-export TOP_ROOT=$(abspath ../../)/
-StroikaRoot=$(TOP_ROOT)ThirdPartyComponents/Stroika/StroikaRoot/
+export TOP_ROOT:=$(abspath ../../)/
+StroikaRoot:=$(TOP_ROOT)ThirdPartyComponents/Stroika/StroikaRoot/
 
 ifneq ($(CONFIGURATION),)
 	-include $(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/Configuration.mk
 endif
 
-SrcDir				=	$(TOP_ROOT)Backend/Sources/
-ObjDir				=	$(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow-Backend/
+SrcDir	:=	$(TOP_ROOT)Backend/Sources/
+ObjDir	:=	$(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow-Backend/
 
 include $(StroikaRoot)ScriptsLib/Makefile-Common.mk
 include $(StroikaRoot)ScriptsLib/SharedBuildRules-Default.mk
@@ -15,8 +15,8 @@ include $(StroikaRoot)ScriptsLib/SharedMakeVariables-Default.mk
 CXXFLAGS += -I"$(call FUNCTION_CONVERT_FILEPATH_TO_COMPILER_NATIVE,$(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow/)"
 
 
-TARGETEXEDir			=	$(StroikaRoot)Builds/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow/
-TARGETEXE				=	$(TARGETEXEDir)WhyTheFuckIsMyNetworkSoSlow-Backend${EXE_SUFFIX}
+TARGETEXEDir	:=	$(StroikaRoot)Builds/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow/
+TARGETEXE		:=	$(TARGETEXEDir)WhyTheFuckIsMyNetworkSoSlow-Backend${EXE_SUFFIX}
 
 
 SubDirs=\
@@ -30,7 +30,7 @@ SubDirs=\
 SUBDIR_OBJS := $(foreach dir, $(SubDirs), $(shell $(MAKE) CONFIGURATION=$(CONFIGURATION) --directory $(dir) -s list-objs))
 
 
-Objs	=	\
+Objs	:=	\
 	$(ObjDir)Main${OBJ_SUFFIX}\
 	$(ObjDir)Service${OBJ_SUFFIX}\
 
