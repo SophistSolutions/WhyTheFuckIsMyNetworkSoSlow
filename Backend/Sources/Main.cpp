@@ -158,7 +158,7 @@ int main (int argc, const char* argv[])
     /*
      *  Parse command line arguments, and start looking at options.
      */
-    Sequence<String>                         args                  = Execution::ParseCommandLine (argc, argv);
+    Execution::CommandLine                   args{argc, argv};
     shared_ptr<Main::IServiceIntegrationRep> serviceIntegrationRep = Main::mkDefaultServiceIntegrationRep ();
     serviceIntegrationRep                                          = make_shared<Main::LoggerServiceWrapper> (serviceIntegrationRep);
 
@@ -215,15 +215,16 @@ int main (int argc, const char* argv[])
      *  Run request.
      */
     try {
-        if (Execution::MatchesCommandLineArgument (args, "status"sv)) {
+        const CommandLine::Option kStatusOpt_ = CommandLine::Option{.fLongName = "status"sv};
+        if (args.Has (kStatusOpt_)) {
             cout << m.GetServiceStatusMessage ().AsUTF8<string> ();
             return EXIT_SUCCESS;
         }
-        else if (Execution::MatchesCommandLineArgument (args, "help"sv)) {
+        else if (args.Has (StandardCommandLineOptions::kHelp)) {
             ShowUsage_ (m);
             return EXIT_SUCCESS;
         }
-        else if (Execution::MatchesCommandLineArgument (args, "version"sv)) {
+        else if (args.Has (StandardCommandLineOptions::kVersion)) {
             cout << m.GetServiceDescription ().fPrettyName.AsNarrowSDKString () << ": "sv
                  << Characters::ToString (AppVersion::kVersion).AsNarrowSDKString () << endl;
             return EXIT_SUCCESS;
