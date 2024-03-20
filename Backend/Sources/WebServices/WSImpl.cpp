@@ -209,13 +209,13 @@ tuple<Memory::BLOB, optional<DataExchange::InternetMediaType>> WSImpl::GetBLOB (
     return Common::BLOBMgr::sThe.GetBLOB (guid);
 }
 
-Sequence<String> WSImpl::GetDevices (const optional<Set<GUID>>& ids, const optional<DeviceSortParamters>& sort) const
+Sequence<String> WSImpl::GetDevices (const optional<Set<GUID>>& ids, const optional<DeviceSortParameters>& sort) const
 {
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
     return GetDevices_Recurse (ids, sort).Map<Sequence<String>> ([] (const WebServices::Device& n) { return n.fID.As<String> (); });
 }
 
-Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const optional<Set<GUID>>& ids, const optional<DeviceSortParamters>& sort) const
+Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const optional<Set<GUID>>& ids, const optional<DeviceSortParameters>& sort) const
 {
     using BackendApp::WebServices::Device;
     Debug::TraceContextBumper ctx{
@@ -224,19 +224,19 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
 
     // Compute effective sort Search Terms - filling in optional values
-    Sequence<DeviceSortParamters::SearchTerm> searchTerms;
+    Sequence<DeviceSortParameters::SearchTerm> searchTerms;
     {
         if (sort) {
             searchTerms = sort->fSearchTerms;
         }
         if (searchTerms.empty ()) {
-            searchTerms += DeviceSortParamters::SearchTerm{DeviceSortParamters::SearchTerm::By::ePriority, false};
+            searchTerms += DeviceSortParameters::SearchTerm{DeviceSortParameters::SearchTerm::By::ePriority, false};
         }
         for (auto i = searchTerms.begin (); i != searchTerms.end (); ++i) {
             if (not i->fAscending.has_value ()) {
                 auto p = *i;
                 switch (p.fBy) {
-                    case DeviceSortParamters::SearchTerm::By::ePriority:
+                    case DeviceSortParameters::SearchTerm::By::ePriority:
                         p.fAscending = false;
                         break;
                     default:
@@ -275,9 +275,9 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
     }
 
     // Sort them
-    for (const DeviceSortParamters::SearchTerm& st : searchTerms) {
+    for (const DeviceSortParameters::SearchTerm& st : searchTerms) {
         switch (st.fBy) {
-            case DeviceSortParamters::SearchTerm::By::ePriority: {
+            case DeviceSortParameters::SearchTerm::By::ePriority: {
                 devices = devices.OrderBy ([st] (const BackendApp::WebServices::Device& lhs, const BackendApp::WebServices::Device& rhs) -> bool {
                     // super primitive sort strategy...
                     auto priFun = [] (const BackendApp::WebServices::Device& d) {
@@ -306,7 +306,7 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
                     return ascending ? (lPri < rPri) : (lPri > rPri);
                 });
                 break;
-                case DeviceSortParamters::SearchTerm::By::eAddress: {
+                case DeviceSortParameters::SearchTerm::By::eAddress: {
                     devices = devices.OrderBy ([st, sortCompareNetwork] (const BackendApp::WebServices::Device& lhs,
                                                                          const BackendApp::WebServices::Device& rhs) -> bool {
                         Assert (st.fAscending);
@@ -331,7 +331,7 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
                         return ascending ? (l < r) : (l > r);
                     });
                 } break;
-                case DeviceSortParamters::SearchTerm::By::eName: {
+                case DeviceSortParameters::SearchTerm::By::eName: {
                     devices = devices.OrderBy ([st, sortCompareNetwork] (const BackendApp::WebServices::Device& lhs,
                                                                          const BackendApp::WebServices::Device& rhs) -> bool {
                         Assert (st.fAscending);
@@ -339,7 +339,7 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
                         return ascending ? (lhs.fNames.GetName () < rhs.fNames.GetName ()) : (lhs.fNames.GetName () > rhs.fNames.GetName ());
                     });
                 } break;
-                case DeviceSortParamters::SearchTerm::By::eType: {
+                case DeviceSortParameters::SearchTerm::By::eType: {
                     devices = devices.OrderBy ([st, sortCompareNetwork] (const BackendApp::WebServices::Device& lhs,
                                                                          const BackendApp::WebServices::Device& rhs) -> bool {
                         Assert (st.fAscending);
@@ -422,8 +422,8 @@ void WSImpl::PatchDevice (const String& id, const JSONPATCH::OperationItemsType&
                 }
                 else if (op.path == "/userOverrides/tags") {
                     // for now only support replacing the whole array at a time
-                    updateVal.fTags = op.value->As<Sequence<VariantValue>> ().Map<Set<String>> (
-                        [] (const VariantValue& vv) { return vv.As<String> (); });
+                    updateVal.fTags =
+                        op.value->As<Sequence<VariantValue>> ().Map<Set<String>> ([] (const VariantValue& vv) { return vv.As<String> (); });
                 }
                 else {
                     Execution::Throw (ClientErrorException{"JSON-Patch add of unsupported op.path"_k});
@@ -479,7 +479,7 @@ Sequence<String> WSImpl::GetNetworks (const optional<Set<GUID>>& ids) const
         return result;
     }
     else {
-        return IntegratedModel::Mgr::sThe.GetNetworks ().Map< Sequence<String>> ([] (const auto& n) { return n.fID.ToString (); });
+        return IntegratedModel::Mgr::sThe.GetNetworks ().Map<Sequence<String>> ([] (const auto& n) { return n.fID.ToString (); });
     }
 }
 
@@ -536,16 +536,17 @@ void WSImpl::PatchNetwork (const String& id, const JSONPATCH::OperationItemsType
                 }
                 else if (op.path == "/userOverrides/tags"sv) {
                     // for now only support replacing the whole array at a time
-                    updateVal.fTags =  op.value->As<Sequence<VariantValue>> ().Map<Set<String>> ([] (const VariantValue& vv) { return vv.As<String> (); });
+                    updateVal.fTags =
+                        op.value->As<Sequence<VariantValue>> ().Map<Set<String>> ([] (const VariantValue& vv) { return vv.As<String> (); });
                 }
                 else if (op.path == L"/userOverrides/aggregateFingerprints") {
                     // for now only support replacing the whole array at a time
-                    updateVal.fAggregateFingerprints = 
+                    updateVal.fAggregateFingerprints =
                         op.value->As<Sequence<VariantValue>> ().Map<Set<GUID>> ([] (const VariantValue& vv) { return vv.As<String> (); });
                 }
                 else if (op.path == L"/userOverrides/aggregateGatewayHardwareAddresses") {
                     // for now only support replacing the whole array at a time
-                    updateVal.fAggregateGatewayHardwareAddresses = 
+                    updateVal.fAggregateGatewayHardwareAddresses =
                         op.value->As<Sequence<VariantValue>> ().Map<Set<String>> ([] (const VariantValue& vv) { return vv.As<String> (); });
                 }
                 else if (op.path == L"/userOverrides/aggregateNetworkInterfacesMatching") {

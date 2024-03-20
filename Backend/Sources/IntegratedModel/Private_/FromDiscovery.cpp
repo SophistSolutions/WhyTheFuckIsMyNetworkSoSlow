@@ -202,10 +202,9 @@ optional<GUID> IntegratedModel::Private_::FromDiscovery::GetMyDeviceID ()
 
 Sequence<NetworkInterface> IntegratedModel::Private_::FromDiscovery::GetNetworkInterfaces ()
 {
-    Debug::TimingTrace         ttrc{L"FromDiscovery::GetNetworkInterfaces_", 100ms};
-    Sequence<NetworkInterface> result =
-        Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ().Map< Sequence<NetworkInterface>> (
-            [] (const Discovery::NetworkInterface& n) { return Discovery2Model_ (n); });
+    Debug::TimingTrace ttrc{L"FromDiscovery::GetNetworkInterfaces_", 100ms};
+    Sequence<NetworkInterface> result = Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ().Map<Sequence<NetworkInterface>> (
+        [] (const Discovery::NetworkInterface& n) { return Discovery2Model_ (n); });
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
     DbgTrace (L"returns: %s", Characters::ToString (result).c_str ());
 #endif
@@ -227,6 +226,6 @@ Sequence<Device> IntegratedModel::Private_::FromDiscovery::GetDevices ()
 {
     Debug::TimingTrace ttrc{L"FromDiscovery::GetDevices_", 100ms};
     // Fetch (UNSORTED) list of devices
-    return Discovery::DevicesMgr::sThe.GetActiveDevices ().Map< Sequence<Device>> (
+    return Discovery::DevicesMgr::sThe.GetActiveDevices ().Map<Sequence<Device>> (
         [] (const Discovery::Device& d) { return Discovery2Model_ (d); });
 }

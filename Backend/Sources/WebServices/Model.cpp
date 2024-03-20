@@ -93,11 +93,11 @@ namespace {
 String OperatingSystem::ToString () const
 {
     Characters::StringBuilder sb;
-    sb += "{";
-    sb += "majorOSCategory: " + Characters::ToString (fMajorOSCategory) + ", "sv;
-    sb += "fullVersionedOSName: " + Characters::ToString (fFullVersionedOSName) + ", "sv;
-    sb += "}";
-    return sb.str ();
+    sb << "{"sv;
+    sb << "majorOSCategory: "sv << Characters::ToString (fMajorOSCategory) << ", "sv;
+    sb << "fullVersionedOSName: "sv << Characters::ToString (fFullVersionedOSName) << ", "sv;
+    sb << "}"sv;
+    return sb;
 }
 
 const ObjectVariantMapper OperatingSystem::kMapper = [] () {
@@ -121,8 +121,8 @@ String Model::Manufacturer::ToString () const
     sb += L"shortName: " + Characters::ToString (fShortName) + L", ";
     sb += L"fullName: " + Characters::ToString (fFullName) + L", ";
     sb += L"webSiteURL: " + Characters::ToString (fWebSiteURL) + L", ";
-    sb += L"}";
-    return sb.str ();
+    sb << "}"sv;
+    return sb;
 }
 
 const ObjectVariantMapper Model::Manufacturer::kMapper = [] () {
@@ -190,8 +190,8 @@ String NetworkInterface::ToString () const
     if (fIDPersistent) {
         sb += L"IDPersistent: " + Characters::ToString (fIDPersistent) + L", ";
     }
-    sb += L"}";
-    return sb.str ();
+    sb << "}"sv;
+    return sb;
 }
 
 auto NetworkInterface::GenerateFingerprintFromProperties () const -> FingerprintType
@@ -378,8 +378,8 @@ String Model::Network::UserOverridesType::NetworkInterfaceAggregateRule::ToStrin
     sb += L"{";
     sb += L"interfaceType: " + Characters::ToString (fInterfaceType) + L", ";
     sb += L"fingerprint: " + Characters::ToString (fFingerprint) + L", ";
-    sb += L"}";
-    return sb.str ();
+    sb << "}"sv;
+    return sb;
 }
 
 /*
@@ -418,8 +418,8 @@ String Model::Network::UserOverridesType::ToString () const
     if (fAggregateNetworkInterfacesMatching) {
         sb += L"AggregateNetworkInterfacesMatching: " + Characters::ToString (fAggregateNetworkInterfacesMatching);
     }
-    sb += L"}";
-    return sb.str ();
+    sb << "}"sv;
+    return sb;
 }
 
 const DataExchange::ObjectVariantMapper Model::Network::UserOverridesType::kMapper = [] () {
@@ -619,8 +619,8 @@ String Network::ToString () const
     sb += L"Aggregates-Irreverisbly: " + Characters::ToString (fAggregatesIrreversibly) + L", ";
     sb += L"Aggregates-Fingerprints: " + Characters::ToString (fAggregatesFingerprints) + L", ";
     sb += L"IDPersistent: " + Characters::ToString (fIDPersistent) + L", ";
-    sb += L"}";
-    return sb.str ();
+    sb << "}"sv;
+    return sb;
 }
 
 const ObjectVariantMapper Network::kMapper = [] () {
@@ -736,8 +736,8 @@ String NetworkAttachmentInfo::ToString () const
     sb += L"{";
     sb += L"hardwareAddresses: " + Characters::ToString (hardwareAddresses) + L", ";
     sb += L"localAddresses: " + Characters::ToString (localAddresses) + L", ";
-    sb += L"}";
-    return sb.str ();
+    sb << "}"sv;
+    return sb;
 }
 
 /*
@@ -793,8 +793,8 @@ String Model::Device::SeenType::ToString () const
     sb += L"ICMP: " + Characters::ToString (fICMP) + L", ";
     sb += L"TCP: " + Characters::ToString (fTCP) + L", ";
     sb += L"UDP: " + Characters::ToString (fUDP) + L", ";
-    sb += L"}";
-    return sb.str ();
+    sb << "}"sv;
+    return sb;
 }
 
 const DataExchange::ObjectVariantMapper Model::Device::SeenType::kMapper = [] () {
@@ -839,8 +839,8 @@ String Model::Device::UserOverridesType::ToString () const
     if (fAggregateDeviceHardwareAddresses) {
         sb += L"AggregateDeviceHardwareAddresses: " + Characters::ToString (fAggregateDeviceHardwareAddresses);
     }
-    sb += L"}";
-    return sb.str ();
+    sb << "}"sv;
+    return sb;
 }
 
 const DataExchange::ObjectVariantMapper Model::Device::UserOverridesType::kMapper = [] () {
@@ -1011,10 +1011,10 @@ Device Device::Rollup (const Device& rollupDevice, const Device& instanceDevice2
 
 /*
  ********************************************************************************
- ******************* DeviceSortParamters::SearchTerm ****************************
+ ******************* DeviceSortParameters::SearchTerm ***************************
  ********************************************************************************
  */
-String DeviceSortParamters::SearchTerm::ToString () const
+String DeviceSortParameters::SearchTerm::ToString () const
 {
     StringBuilder sb;
     sb += L"{";
@@ -1022,41 +1022,41 @@ String DeviceSortParamters::SearchTerm::ToString () const
     if (fAscending) {
         sb += L"ascending: " + Characters::ToString (fAscending) + L", ";
     }
-    sb += L"}";
-    return sb.str ();
+    sb << "}"sv;
+    return sb;
 }
 
 /*
  ********************************************************************************
- *************************** DeviceSortParamters ********************************
+ *************************** DeviceSortParameters *******************************
  ********************************************************************************
  */
-String DeviceSortParamters::ToString () const
+String DeviceSortParameters::ToString () const
 {
     StringBuilder sb;
-    sb += L"{";
-    sb += L"searchTerms: " + Characters::ToString (fSearchTerms) + L", ";
+    sb << "{"sv;
+    sb << "searchTerms: "sv << Characters::ToString (fSearchTerms) << ", "sv;
     if (fCompareNetwork) {
-        sb += L"compareNetwork: " + Characters::ToString (fCompareNetwork) + L", ";
+        sb << "compareNetwork: "sv << Characters::ToString (fCompareNetwork) << ", "sv;
     }
-    sb += L"}";
-    return sb.str ();
+    sb << "}"sv;
+    return sb;
 }
 
-const ObjectVariantMapper DeviceSortParamters::kMapper = [] () {
+const ObjectVariantMapper DeviceSortParameters::kMapper = [] () {
     ObjectVariantMapper mapper;
 
-    mapper.AddCommonType<DeviceSortParamters::SearchTerm::By> ();
+    mapper.AddCommonType<DeviceSortParameters::SearchTerm::By> ();
     mapper.AddCommonType<optional<bool>> ();
     mapper.AddCommonType<optional<String>> ();
-    mapper.AddClass<DeviceSortParamters::SearchTerm> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-        {L"by", StructFieldMetaInfo{&DeviceSortParamters::SearchTerm::fBy}},
-        {L"ascending", StructFieldMetaInfo{&DeviceSortParamters::SearchTerm::fAscending}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+    mapper.AddClass<DeviceSortParameters::SearchTerm> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+        {"by"sv, StructFieldMetaInfo{&DeviceSortParameters::SearchTerm::fBy}},
+        {"ascending"sv, StructFieldMetaInfo{&DeviceSortParameters::SearchTerm::fAscending}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
-    mapper.AddCommonType<Sequence<DeviceSortParamters::SearchTerm>> ();
-    mapper.AddClass<DeviceSortParamters> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-        {L"searchTerms", StructFieldMetaInfo{&DeviceSortParamters::fSearchTerms}},
-        {L"compareNetwork", StructFieldMetaInfo{&DeviceSortParamters::fCompareNetwork}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+    mapper.AddCommonType<Sequence<DeviceSortParameters::SearchTerm>> ();
+    mapper.AddClass<DeviceSortParameters> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+        {"searchTerms"sv, StructFieldMetaInfo{&DeviceSortParameters::fSearchTerms}},
+        {"compareNetwork"sv, StructFieldMetaInfo{&DeviceSortParameters::fCompareNetwork}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
     return mapper;
 }();
@@ -1066,32 +1066,6 @@ const ObjectVariantMapper DeviceSortParamters::kMapper = [] () {
  ****************************** Model::Operations *******************************
  ********************************************************************************
  */
-#if qCompilerAndStdLib_static_initializer_lambda_funct_init_Buggy
-namespace {
-    ObjectVariantMapper mkMapper_ ()
-    {
-        ObjectVariantMapper mapper;
-
-        mapper.AddCommonType<optional<String>> ();
-        mapper.AddCommonType<Sequence<double>> ();
-        mapper.AddCommonType<Time::Duration> ();
-        mapper.AddClass<Operations::TraceRouteResults::Hop> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-            {L"timeToHop", StructFieldMetaInfo{&Operations::TraceRouteResults::Hop::fTime}},
-            {L"address", StructFieldMetaInfo{&Operations::TraceRouteResults::Hop::fAddress}},
-        });
-        mapper.AddCommonType<Sequence<Operations::TraceRouteResults::Hop>> ();
-        mapper.AddClass<Operations::TraceRouteResults> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-            {L"hops", StructFieldMetaInfo{&Operations::TraceRouteResults::fHops}},
-        });
-        mapper.AddClass<Operations::DNSLookupResults> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-            {L"result", StructFieldMetaInfo{&Operations::DNSLookupResults::fResult}},
-            {L"lookup-time", StructFieldMetaInfo{&Operations::DNSLookupResults::fLookupTime}},
-        });
-        return mapper;
-    }
-}
-const ObjectVariantMapper Operations::kMapper = mkMapper_ ();
-#else
 const ObjectVariantMapper Operations::kMapper = [] () {
     ObjectVariantMapper mapper;
 
@@ -1099,20 +1073,19 @@ const ObjectVariantMapper Operations::kMapper = [] () {
     mapper.AddCommonType<Sequence<double>> ();
     mapper.AddCommonType<Time::Duration> ();
     mapper.AddClass<Operations::TraceRouteResults::Hop> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-        {L"timeToHop", StructFieldMetaInfo{&Operations::TraceRouteResults::Hop::fTime}},
-        {L"address", StructFieldMetaInfo{&Operations::TraceRouteResults::Hop::fAddress}},
+        {"timeToHop"sv, StructFieldMetaInfo{&Operations::TraceRouteResults::Hop::fTime}},
+        {"address"sv, StructFieldMetaInfo{&Operations::TraceRouteResults::Hop::fAddress}},
     });
     mapper.AddCommonType<Sequence<Operations::TraceRouteResults::Hop>> ();
     mapper.AddClass<Operations::TraceRouteResults> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-        {L"hops", StructFieldMetaInfo{&Operations::TraceRouteResults::fHops}},
+        {"hops"sv, StructFieldMetaInfo{&Operations::TraceRouteResults::fHops}},
     });
     mapper.AddClass<Operations::DNSLookupResults> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-        {L"result", StructFieldMetaInfo{&Operations::DNSLookupResults::fResult}},
-        {L"lookup-time", StructFieldMetaInfo{&Operations::DNSLookupResults::fLookupTime}},
+        {"result"sv, StructFieldMetaInfo{&Operations::DNSLookupResults::fResult}},
+        {"lookup-time"sv, StructFieldMetaInfo{&Operations::DNSLookupResults::fLookupTime}},
     });
     return mapper;
 }();
-#endif
 
 /*
  ********************************************************************************
@@ -1122,52 +1095,52 @@ const ObjectVariantMapper Operations::kMapper = [] () {
 String About::APIServerInfo::ComponentInfo::ToString () const
 {
     Characters::StringBuilder sb;
-    sb += L"{";
-    sb += L"Name: " + Characters::ToString (fName) + L", ";
-    sb += L"Version: " + Characters::ToString (fVersion) + L", ";
-    sb += L"URL: " + Characters::ToString (fURL) + L", ";
-    sb += L"}";
-    return sb.str ();
+    sb << "{"sv;
+    sb << "Name: "sv << Characters::ToString (fName) << ", "sv;
+    sb << "Version: "sv << Characters::ToString (fVersion) << ", "sv;
+    sb << "URL: "sv << Characters::ToString (fURL) << ", "sv;
+    sb << "}"sv;
+    return sb;
 }
 
 String About::APIServerInfo::CurrentMachine::ToString () const
 {
     Characters::StringBuilder sb;
-    sb += L"{";
-    sb += L"Operating-System: " + Characters::ToString (fOperatingSystem) + L", ";
-    sb += L"Machine-Uptime: " + Characters::ToString (fMachineUptime) + L", ";
-    sb += L"Total-CPU-Usage: " + Characters::ToString (fTotalCPUUsage) + L", ";
-    sb += L"Run-Q-Length: " + Characters::ToString (fRunQLength) + L", ";
-    sb += L"}";
-    return sb.str ();
+    sb << "{";
+    sb << "Operating-System: " << Characters::ToString (fOperatingSystem) << ", "sv;
+    sb << "Machine-Uptime: " << Characters::ToString (fMachineUptime) << ", "sv;
+    sb << "Total-CPU-Usage: " << Characters::ToString (fTotalCPUUsage) << ", "sv;
+    sb << "Run-Q-Length: " << Characters::ToString (fRunQLength) << ", "sv;
+    sb << "}"sv;
+    return sb;
 }
 
 String About::APIServerInfo::CurrentProcess::ToString () const
 {
     Characters::StringBuilder sb;
-    sb += L"{";
-    sb += L"ProcessUptime: " + Characters::ToString (fProcessUptime) + L", ";
-    sb += L"AverageCPUTimeUsed: " + Characters::ToString (fAverageCPUTimeUsed) + L", ";
-    sb += L"WorkingOrResidentSetSize: " + Characters::ToString (fWorkingOrResidentSetSize) + L", ";
-    sb += L"CombinedIOReadRate: " + Characters::ToString (fCombinedIOReadRate) + L", ";
-    sb += L"CombinedIOWriteRate: " + Characters::ToString (fCombinedIOWriteRate) + L", ";
-    sb += L"}";
-    return sb.str ();
+    sb << "{"sv;
+    sb << "ProcessUptime: "sv << Characters::ToString (fProcessUptime) << ", "sv;
+    sb << "AverageCPUTimeUsed: "sv << Characters::ToString (fAverageCPUTimeUsed) << ", "sv;
+    sb << "WorkingOrResidentSetSize: "sv << Characters::ToString (fWorkingOrResidentSetSize) << ", "sv;
+    sb << "CombinedIOReadRate: "sv << Characters::ToString (fCombinedIOReadRate) << ", "sv;
+    sb << "CombinedIOWriteRate: "sv << Characters::ToString (fCombinedIOWriteRate) << ", "sv;
+    sb << "}"sv;
+    return sb;
 }
 
 String About::APIServerInfo::APIEndpoint::ToString () const
 {
     Characters::StringBuilder sb;
-    sb += L"{";
-    sb += L"CallsCompleted: " + Characters::ToString (fCallsCompleted) + L", ";
-    sb += L"Errors: " + Characters::ToString (fErrors) + L", ";
-    sb += L"MedianDuration: " + Characters::ToString (fMedianDuration) + L", ";
-    sb += L"MeanDuration: " + Characters::ToString (fMeanDuration) + L", ";
-    sb += L"MaxDuration: " + Characters::ToString (fMaxDuration) + L", ";
-    sb += L"MedianWebServerConnections: " + Characters::ToString (fMedianWebServerConnections) + L", ";
-    sb += L"MedianProcessingWebServerConnections: " + Characters::ToString (fMedianProcessingWebServerConnections) + L", ";
-    sb += L"MedianRunningAPITasks: " + Characters::ToString (fMedianRunningAPITasks) + L", ";
-    sb += L"}";
+    sb << "{"sv;
+    sb << "CallsCompleted: "sv << Characters::ToString (fCallsCompleted) << ", "sv;
+    sb << "Errors: "sv << Characters::ToString (fErrors) << ", "sv;
+    sb << "MedianDuration: "sv << Characters::ToString (fMedianDuration) << ", "sv;
+    sb << "MeanDuration: "sv << Characters::ToString (fMeanDuration) << ", "sv;
+    sb << "MaxDuration: "sv << Characters::ToString (fMaxDuration) << ", "sv;
+    sb << "MedianWebServerConnections: "sv << Characters::ToString (fMedianWebServerConnections) << ", "sv;
+    sb << "MedianProcessingWebServerConnections: "sv << Characters::ToString (fMedianProcessingWebServerConnections) << ", "sv;
+    sb << "MedianRunningAPITasks: "sv << Characters::ToString (fMedianRunningAPITasks) << ", "sv;
+    sb << "}"sv;
     return sb.str ();
 }
 
@@ -1175,10 +1148,10 @@ String About::APIServerInfo::WebServer::ToString () const
 {
     Characters::StringBuilder sb;
     sb << "{"sv;
-    sb << "fThreadPool: {"sv;
-    sb << "fThreads: " << Characters::ToString (fThreadPool.fThreads) << ", "sv;
-    sb << "fTasksStillQueued: " << Characters::ToString (fThreadPool.fTasksStillQueued) << ", "sv;
-    sb << "fAverageTaskRunTime: " << Characters::ToString (fThreadPool.fAverageTaskRunTime) << ", "sv;
+    sb << "ThreadPool: {"sv;
+    sb << "Threads: " << Characters::ToString (fThreadPool.fThreads) << ", "sv;
+    sb << "TasksStillQueued: " << Characters::ToString (fThreadPool.fTasksStillQueued) << ", "sv;
+    sb << "AverageTaskRunTime: " << Characters::ToString (fThreadPool.fAverageTaskRunTime) << ", "sv;
     sb << "}"sv;
     sb << "}"sv;
     return sb.str ();
@@ -1187,43 +1160,43 @@ String About::APIServerInfo::WebServer::ToString () const
 String About::APIServerInfo::Database::ToString () const
 {
     Characters::StringBuilder sb;
-    sb += L"{";
-    sb += L"Reads: " + Characters::ToString (fReads) + L", ";
-    sb += L"Writes: " + Characters::ToString (fWrites) + L", ";
-    sb += L"Errors: " + Characters::ToString (fErrors) + L", ";
-    sb += L"MeanReadDuration: " + Characters::ToString (fMeanReadDuration) + L", ";
-    sb += L"MeanReadDuration: " + Characters::ToString (fMedianReadDuration) + L", ";
-    sb += L"MeanWriteDuration: " + Characters::ToString (fMeanWriteDuration) + L", ";
-    sb += L"MeanWriteDuration: " + Characters::ToString (fMedianWriteDuration) + L", ";
-    sb += L"MaxDuration: " + Characters::ToString (fMaxDuration) + L", ";
-    sb += L"FileSize: " + Characters::ToString (fFileSize) + L", ";
-    sb += L"}";
-    return sb.str ();
+    sb << "{"sv;
+    sb << "Reads: "sv << Characters::ToString (fReads) << ", "sv;
+    sb << "Writes: "sv << Characters::ToString (fWrites) << ", "sv;
+    sb << "Errors: "sv << Characters::ToString (fErrors) << ", "sv;
+    sb << "MeanReadDuration: "sv << Characters::ToString (fMeanReadDuration) << ", "sv;
+    sb << "MeanReadDuration: "sv << Characters::ToString (fMedianReadDuration) << ", "sv;
+    sb << "MeanWriteDuration: "sv << Characters::ToString (fMeanWriteDuration) << ", "sv;
+    sb << "MeanWriteDuration: "sv << Characters::ToString (fMedianWriteDuration) << ", "sv;
+    sb << "MaxDuration: "sv << Characters::ToString (fMaxDuration) << ", "sv;
+    sb << "FileSize: "sv << Characters::ToString (fFileSize) << ", "sv;
+    sb << "}"sv;
+    return sb;
 }
 
 String About::APIServerInfo::ToString () const
 {
     Characters::StringBuilder sb;
-    sb += L"{";
-    sb += L"Version: " + Characters::ToString (fVersion) + L", ";
-    sb += L"Component-Versions: " + Characters::ToString (fComponentVersions) + L", ";
-    sb += L"Current-Machine: " + Characters::ToString (fCurrentMachine) + L", ";
-    sb += L"Current-Process: " + Characters::ToString (fCurrentProcess) + L", ";
-    sb += L"API-Endpoint: " + Characters::ToString (fAPIEndpoint) + L", ";
-    sb += L"WebServer: " + Characters::ToString (fWebServer) + L", ";
-    sb += L"Database: " + Characters::ToString (fDatabase) + L", ";
-    sb += L"}";
-    return sb.str ();
+    sb << "{"sv;
+    sb << "Version: "sv << Characters::ToString (fVersion) + L", ";
+    sb << "Component-Versions: "sv << Characters::ToString (fComponentVersions) + L", ";
+    sb << "Current-Machine: "sv << Characters::ToString (fCurrentMachine) + L", ";
+    sb << "Current-Process: "sv << Characters::ToString (fCurrentProcess) + L", ";
+    sb << "API-Endpoint: "sv << Characters::ToString (fAPIEndpoint) + L", ";
+    sb << "WebServer: "sv << Characters::ToString (fWebServer) + L", ";
+    sb << "Database: "sv << Characters::ToString (fDatabase) + L", ";
+    sb << "}"sv;
+    return sb;
 }
 
 String About::ToString () const
 {
     Characters::StringBuilder sb;
-    sb += L"{";
-    sb += L"Overall-Application-Version: " + Characters::ToString (fOverallApplicationVersion) + L", ";
-    sb += L"API-Server-Info: " + Characters::ToString (fAPIServerInfo) + L", ";
-    sb += L"}";
-    return sb.str ();
+    sb << "{"sv;
+    sb << "Overall-Application-Version: "sv << Characters::ToString (fOverallApplicationVersion) + L", ";
+    sb << "API-Server-Info: "sv << Characters::ToString (fAPIServerInfo) + L", ";
+    sb << "}"sv;
+    return sb;
 }
 
 const ObjectVariantMapper About::kMapper = [] () {
@@ -1242,51 +1215,51 @@ const ObjectVariantMapper About::kMapper = [] () {
         });
 
     mapper.AddClass<About::APIServerInfo::ComponentInfo> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-        {L"name", StructFieldMetaInfo{&About::APIServerInfo::ComponentInfo::fName}},
-        {L"version", StructFieldMetaInfo{&About::APIServerInfo::ComponentInfo::fVersion}},
-        {L"URL", StructFieldMetaInfo{&About::APIServerInfo::ComponentInfo::fURL}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {"name"sv, StructFieldMetaInfo{&About::APIServerInfo::ComponentInfo::fName}},
+        {"version"sv, StructFieldMetaInfo{&About::APIServerInfo::ComponentInfo::fVersion}},
+        {"URL"sv, StructFieldMetaInfo{&About::APIServerInfo::ComponentInfo::fURL}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
     mapper.AddCommonType<Sequence<About::APIServerInfo::ComponentInfo>> ();
 
     mapper.AddClass<About::APIServerInfo::CurrentMachine> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-        {L"operatingSystem", StructFieldMetaInfo{&About::APIServerInfo::CurrentMachine::fOperatingSystem}},
-        {L"machineUptime", StructFieldMetaInfo{&About::APIServerInfo::CurrentMachine::fMachineUptime}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"totalCPUUsage", StructFieldMetaInfo{&About::APIServerInfo::CurrentMachine::fTotalCPUUsage}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"runQLength", StructFieldMetaInfo{&About::APIServerInfo::CurrentMachine::fRunQLength}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {"operatingSystem"sv, StructFieldMetaInfo{&About::APIServerInfo::CurrentMachine::fOperatingSystem}},
+        {"machineUptime"sv, StructFieldMetaInfo{&About::APIServerInfo::CurrentMachine::fMachineUptime}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {"totalCPUUsage"sv, StructFieldMetaInfo{&About::APIServerInfo::CurrentMachine::fTotalCPUUsage}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {"runQLength"sv, StructFieldMetaInfo{&About::APIServerInfo::CurrentMachine::fRunQLength}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
 
     mapper.AddClass<About::APIServerInfo::CurrentProcess> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-        {L"processUptime", StructFieldMetaInfo{&About::APIServerInfo::CurrentProcess::fProcessUptime}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"averageCPUTimeUsed", StructFieldMetaInfo{&About::APIServerInfo::CurrentProcess::fAverageCPUTimeUsed},
+        {"processUptime"sv, StructFieldMetaInfo{&About::APIServerInfo::CurrentProcess::fProcessUptime}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {"averageCPUTimeUsed"sv, StructFieldMetaInfo{&About::APIServerInfo::CurrentProcess::fAverageCPUTimeUsed},
          ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"workingOrResidentSetSize", StructFieldMetaInfo{&About::APIServerInfo::CurrentProcess::fWorkingOrResidentSetSize},
+        {"workingOrResidentSetSize"sv, StructFieldMetaInfo{&About::APIServerInfo::CurrentProcess::fWorkingOrResidentSetSize},
          ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"combinedIOReadRate", StructFieldMetaInfo{&About::APIServerInfo::CurrentProcess::fCombinedIOReadRate},
+        {"combinedIOReadRate"sv, StructFieldMetaInfo{&About::APIServerInfo::CurrentProcess::fCombinedIOReadRate},
          ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"combinedIOWriteRate", StructFieldMetaInfo{&About::APIServerInfo::CurrentProcess::fCombinedIOWriteRate},
+        {"combinedIOWriteRate"sv, StructFieldMetaInfo{&About::APIServerInfo::CurrentProcess::fCombinedIOWriteRate},
          ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
 
     mapper.AddCommonType<optional<float>> ();
     mapper.AddClass<About::APIServerInfo::APIEndpoint> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-        {L"callsCompleted", StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fCallsCompleted}},
-        {L"errors", StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fErrors}},
-        {L"medianDuration", StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fMedianDuration}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"meanDuration", StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fMeanDuration}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"maxDuration", StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fMaxDuration}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"medianWebServerConnections", StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fMedianWebServerConnections},
+        {"callsCompleted"sv, StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fCallsCompleted}},
+        {"errors"sv, StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fErrors}},
+        {"medianDuration"sv, StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fMedianDuration}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {"meanDuration"sv, StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fMeanDuration}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {"maxDuration"sv, StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fMaxDuration}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {"medianWebServerConnections"sv, StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fMedianWebServerConnections},
          ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"medianProcessingWebServerConnections", StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fMedianProcessingWebServerConnections},
+        {"medianProcessingWebServerConnections"sv, StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fMedianProcessingWebServerConnections},
          ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"medianRunningAPITasks", StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fMedianRunningAPITasks},
+        {"medianRunningAPITasks"sv, StructFieldMetaInfo{&About::APIServerInfo::APIEndpoint::fMedianRunningAPITasks},
          ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
     mapper.AddCommonType<optional<About::APIServerInfo::APIEndpoint>> ();
 
     mapper.AddClass<About::APIServerInfo::WebServer::ThreadPool> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-        {"threads", StructFieldMetaInfo{&About::APIServerInfo::WebServer::ThreadPool::fThreads}},
-        {"tasksStillQueued", StructFieldMetaInfo{&About::APIServerInfo::WebServer::ThreadPool::fTasksStillQueued}},
-        {"averageTaskRunTime", StructFieldMetaInfo{&About::APIServerInfo::WebServer ::ThreadPool ::fAverageTaskRunTime}},
+        {"threads"sv, StructFieldMetaInfo{&About::APIServerInfo::WebServer::ThreadPool::fThreads}},
+        {"tasksStillQueued"sv, StructFieldMetaInfo{&About::APIServerInfo::WebServer::ThreadPool::fTasksStillQueued}},
+        {"averageTaskRunTime"sv, StructFieldMetaInfo{&About::APIServerInfo::WebServer ::ThreadPool ::fAverageTaskRunTime}},
     });
 
     mapper.AddClass<About::APIServerInfo::WebServer> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
@@ -1295,15 +1268,15 @@ const ObjectVariantMapper About::kMapper = [] () {
     mapper.AddCommonType<optional<About::APIServerInfo::WebServer>> ();
 
     mapper.AddClass<About::APIServerInfo::Database> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-        {L"reads", StructFieldMetaInfo{&About::APIServerInfo::Database::fReads}},
-        {L"writes", StructFieldMetaInfo{&About::APIServerInfo::Database::fWrites}},
-        {L"errors", StructFieldMetaInfo{&About::APIServerInfo::Database::fErrors}},
-        {L"meanReadDuration", StructFieldMetaInfo{&About::APIServerInfo::Database::fMeanReadDuration}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"medianReadDuration", StructFieldMetaInfo{&About::APIServerInfo::Database::fMedianReadDuration}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"meanWriteDuration", StructFieldMetaInfo{&About::APIServerInfo::Database::fMeanWriteDuration}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"medianWriteDuration", StructFieldMetaInfo{&About::APIServerInfo::Database::fMedianWriteDuration}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"maxDuration", StructFieldMetaInfo{&About::APIServerInfo::Database::fMaxDuration}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {L"fileSize", StructFieldMetaInfo{&About::APIServerInfo::Database::fFileSize}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {"reads"sv, StructFieldMetaInfo{&About::APIServerInfo::Database::fReads}},
+        {"writes"sv, StructFieldMetaInfo{&About::APIServerInfo::Database::fWrites}},
+        {"errors"sv, StructFieldMetaInfo{&About::APIServerInfo::Database::fErrors}},
+        {"meanReadDuration"sv, StructFieldMetaInfo{&About::APIServerInfo::Database::fMeanReadDuration}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {"medianReadDuration"sv, StructFieldMetaInfo{&About::APIServerInfo::Database::fMedianReadDuration}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {"meanWriteDuration"sv, StructFieldMetaInfo{&About::APIServerInfo::Database::fMeanWriteDuration}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {"medianWriteDuration"sv, StructFieldMetaInfo{&About::APIServerInfo::Database::fMedianWriteDuration}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {"maxDuration"sv, StructFieldMetaInfo{&About::APIServerInfo::Database::fMaxDuration}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {"fileSize"sv, StructFieldMetaInfo{&About::APIServerInfo::Database::fFileSize}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
     });
     mapper.AddCommonType<optional<About::APIServerInfo::Database>> ();
 
@@ -1318,8 +1291,8 @@ const ObjectVariantMapper About::kMapper = [] () {
     });
 
     mapper.AddClass<About> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-        {L"applicationVersion", StructFieldMetaInfo{&About::fOverallApplicationVersion}},
-        {L"serverInfo", StructFieldMetaInfo{&About::fAPIServerInfo}},
+        {"applicationVersion"sv, StructFieldMetaInfo{&About::fOverallApplicationVersion}},
+        {"serverInfo"sv, StructFieldMetaInfo{&About::fAPIServerInfo}},
     });
 
     return mapper;

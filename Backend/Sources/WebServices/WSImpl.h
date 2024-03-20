@@ -31,8 +31,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
     public:
         virtual About                                                          GetAbout () const override;
         virtual tuple<Memory::BLOB, optional<DataExchange::InternetMediaType>> GetBLOB (const GUID& guid) const override;
-        virtual Sequence<String> GetDevices (const optional<Set<GUID>>& ids, const optional<DeviceSortParamters>& sort) const override;
-        virtual Sequence<Device> GetDevices_Recurse (const optional<Set<GUID>>& ids, const optional<DeviceSortParamters>& sort) const override;
+        virtual Sequence<String> GetDevices (const optional<Set<GUID>>& ids, const optional<DeviceSortParameters>& sort) const override;
+        virtual Sequence<Device> GetDevices_Recurse (const optional<Set<GUID>>& ids, const optional<DeviceSortParameters>& sort) const override;
         virtual tuple<Device, Duration>      GetDevice (const String& id) const override;
         virtual void                         PatchDevice (const String& id, const JSONPATCH::OperationItemsType& patchDoc) const override;
         virtual Sequence<String>             GetNetworks (const optional<Set<GUID>>& ids) const override;

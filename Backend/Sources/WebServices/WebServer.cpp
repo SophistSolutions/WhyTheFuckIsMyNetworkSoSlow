@@ -182,12 +182,12 @@ private:
     static constexpr unsigned int kMaxThreads_{kMaxWSConnectionsPerUser_ + kMaxGUIConnectionssPerUser_ + 1}; // handle the BURST quickly of requests at start, but then no need (just reduces startup latency), plus one just in case...
 
 private:
-    shared_ptr<IWSAPI>                                   fWSAPI_;
-    const Sequence<Route>                                fWSRoutes_;
-    const Sequence<Route>                                fStaticRoutes_;
-    optional<DeclareActivity<Activity<wstring_view>>>    fEstablishActivity1_{&kContructing_WebServer_};
-    ConnectionManager                                    fConnectionMgr_;
-    [[no_unique_address]] EmptyObjectForSideEffects      fIgnore1_{[this] () { fEstablishActivity1_.reset (); }};
+    shared_ptr<IWSAPI>                                fWSAPI_;
+    const Sequence<Route>                             fWSRoutes_;
+    const Sequence<Route>                             fStaticRoutes_;
+    optional<DeclareActivity<Activity<wstring_view>>> fEstablishActivity1_{&kContructing_WebServer_};
+    ConnectionManager                                 fConnectionMgr_;
+    [[no_unique_address]] EmptyObjectForSideEffects   fIgnore1_{[this] () { fEstablishActivity1_.reset (); }};
 
     atomic<unsigned int> fActiveCallCnt_{0};
     struct ActiveCallCounter_ {
@@ -245,17 +245,19 @@ public:
                   [this] (Message* m) {
                       ActiveCallCounter_                          acc{*this};
                       Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (&m->rwRequest ());
-                      optional<DeviceSortParamters>               sort;
+                      optional<DeviceSortParameters>              sort;
                       if (auto o = args.Lookup ("sort"sv)) {
                           ClientErrorException::TreatExceptionsAsClientError ([&] () {
-                              sort = DeviceSortParamters::kMapper.ToObject<DeviceSortParamters> (DataExchange::Variant::JSON::Reader{}.Read (o->As<String> ()));
+                              sort = DeviceSortParameters::kMapper.ToObject<DeviceSortParameters> (
+                                  DataExchange::Variant::JSON::Reader{}.Read (o->As<String> ()));
                           });
                       }
                       if (auto o = args.Lookup ("sortBy"sv)) {
                           ClientErrorException::TreatExceptionsAsClientError ([&] () {
-                              sort = sort.value_or (DeviceSortParamters{});
-                              sort->fSearchTerms += DeviceSortParamters::SearchTerm{
-                                  Configuration::DefaultNames<DeviceSortParamters::SearchTerm::By>{}.GetValue (o->As<String> ().c_str (), ClientErrorException{
+                              sort = sort.value_or (DeviceSortParameters{});
+                              sort->fSearchTerms +=
+                                  DeviceSortParameters::SearchTerm{Configuration::DefaultNames<DeviceSortParameters::SearchTerm::By>{}.GetValue (
+                                      o->As<String> ().c_str (), ClientErrorException{
                                                                                                                                               "Invalid argument to query string sortBy"sv})};
                           });
                       }

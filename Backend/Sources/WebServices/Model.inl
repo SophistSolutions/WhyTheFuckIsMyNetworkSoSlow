@@ -46,13 +46,13 @@ namespace Stroika::Foundation::Configuration {
             }}};
 
     template <>
-    constexpr EnumNames<WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::DeviceSortParamters::SearchTerm::By>
-        DefaultNames<WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::DeviceSortParamters::SearchTerm::By>::k{
-            EnumNames<WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::DeviceSortParamters::SearchTerm::By>::BasicArrayInitializer{{
-                {WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::DeviceSortParamters::SearchTerm::By::eAddress, L"Address"},
-                {WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::DeviceSortParamters::SearchTerm::By::ePriority, L"Priority"},
-                {WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::DeviceSortParamters::SearchTerm::By::eName, L"Name"},
-                {WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::DeviceSortParamters::SearchTerm::By::eType, L"Type"},
+    constexpr EnumNames<WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::DeviceSortParameters::SearchTerm::By>
+        DefaultNames<WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::DeviceSortParameters::SearchTerm::By>::k{
+            EnumNames<WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::DeviceSortParameters::SearchTerm::By>::BasicArrayInitializer{{
+                {WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::DeviceSortParameters::SearchTerm::By::eAddress, L"Address"},
+                {WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::DeviceSortParameters::SearchTerm::By::ePriority, L"Priority"},
+                {WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::DeviceSortParameters::SearchTerm::By::eName, L"Name"},
+                {WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model::DeviceSortParameters::SearchTerm::By::eType, L"Type"},
             }}};
 }
 

@@ -60,7 +60,7 @@ using IntegratedModel::Private_::RolledUpNetworkInterfaces;
  */
 RolledUpNetworkInterfaces::RolledUpNetworkInterfaces (const Iterable<Device>& devices, const Iterable<NetworkInterface>& nets2MergeIn)
 {
-    Set<GUID>                  netIDs2Add = nets2MergeIn.Map< Set<GUID>> ([] (const auto& i) { return i.fID; });
+    Set<GUID>                  netIDs2Add = nets2MergeIn.Map<Set<GUID>> ([] (const auto& i) { return i.fID; });
     Set<GUID>                  netsAdded;
     NetworkInterfaceCollection nets2MergeInCollected{nets2MergeIn};
     for (const Device& d : devices) {

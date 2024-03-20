@@ -128,7 +128,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
             return not(*this == rhs);
         }
 #else
-        auto operator<=> (const Manufacturer&) const    = default;
+        auto operator<=> (const Manufacturer&) const = default;
 #endif
 
         /**
@@ -811,7 +811,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
     /**
      */
-    struct DeviceSortParamters {
+    struct DeviceSortParameters {
 
         /**
          */
@@ -915,7 +915,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
             optional<APIEndpoint> fAPIEndpoint;
 
             /**
-              * Statistics from the WebServer (@todo TBD timing interval for interpreation)
+              * Statistics from the WebServer (@todo TBD timing interval for interpretation)
               *     also should add much more in the way of stats! Like backlog, endpoints, etc... Number of alive connections; Number of new connections in last N seconds;
               */
             struct WebServer {
