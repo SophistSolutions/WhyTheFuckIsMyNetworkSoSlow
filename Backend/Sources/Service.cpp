@@ -55,12 +55,11 @@ void WTFAppServiceRep::MainLoop (const std::function<void ()>& startedCB)
     IntegratedModel::Mgr::Activator            integratedModelMgrActivator;
     WebServer                                  webServer{};
     startedCB (); // Notify service control mgr that the service has started
-    Logger::sThe.Log (Logger::eInfo, L"%s (version %s) service started successfully", kServiceDescription_.fPrettyName.As<wstring> ().c_str (),
-                      Characters::ToString (AppVersion::kVersion).As<wstring> ().c_str ());
+    Logger::sThe.Log (Logger::eInfo, "{} (version {}) service started successfully"_f, kServiceDescription_.fPrettyName, AppVersion::kVersion);
 
     [[maybe_unused]] auto&& cleanup = Execution::Finally ([&] () {
         Execution::Thread::SuppressInterruptionInContext suppressSoWeActuallyShutDownOtherTaskWhenWereBeingShutDown;
-        Logger::sThe.Log (Logger::eInfo, L"Beginning service shutdown");
+        Logger::sThe.Log (Logger::eInfo, "Beginning service shutdown"_f);
     });
 
     // Wait here until a 'service stop' command sends a thread-abort, and that will cause this wait to be abandoned and this stackframe to unwind

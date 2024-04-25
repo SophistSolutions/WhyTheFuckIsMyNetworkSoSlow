@@ -88,18 +88,18 @@ namespace {
         }
         virtual void _OneTimeStartupLoadDB () override
         {
-            Debug::TraceContextBumper ctx{L"MyDBAccessRep_::_OneTimeStartupLoadDB"};
+            Debug::TraceContextBumper ctx{"MyDBAccessRep_::_OneTimeStartupLoadDB"};
             inherited::_OneTimeStartupLoadDB ();
-            Logger::sThe.Log (Logger::eInfo, L"Loaded %d network interface snapshots, %d network snapshots and %d device snapshots from databas",
+            Logger::sThe.Log (Logger::eInfo, "Loaded {} network interface snapshots, {} network snapshots and {} device snapshots from database"_f,
                               GetRawNetworkInterfaces ().size (), GetRawNetworks ().size (), GetRawDevices ().size ());
             // @todo post-procesing, maybe deleting some user settings
             PruneBadNetworks_ ();
-            Logger::sThe.Log (Logger::eInfo, L"Successully post-processed database");
+            Logger::sThe.Log (Logger::eInfo, "Successfully post-processed database"_f);
             fFinishedInitialDBLoad_ = true;
         }
         void PruneBadNetworks_ ()
         {
-            Debug::TraceContextBumper ctx{L"MyDBAccessRep_::PruneBadNetworks_"};
+            Debug::TraceContextBumper ctx{"MyDBAccessRep_::PruneBadNetworks_"};
             using namespace IntegratedModel::Private_;
             try {
                 Mapping<GUID, Network::UserOverridesType> netUserSettings = GetNetworkUserSettings ();
@@ -119,7 +119,7 @@ namespace {
                         }
                         if (aggCnt == 0) {
                             // Not sure if this is ever legit
-                            DbgTrace (L"Found net to remove: %s", Characters::ToString (kvp.fKey).c_str ());
+                            DbgTrace ("Found net to remove: {}"_f, kvp.fKey);
                             return true;
                         }
                         return false;
@@ -136,7 +136,7 @@ namespace {
                     }
                 }
                 if (not toRemove.empty ()) {
-                    Logger::sThe.Log (Logger::eWarning, L"Networks marked for purge: %s", Characters::ToString (toRemove).c_str ());
+                    Logger::sThe.Log (Logger::eWarning,"Networks marked for purge: {}"_f, toRemove);
                     for (auto i : toRemove) {
                         this->SetNetworkUserSettings (i, nullopt);
                     }
@@ -291,8 +291,8 @@ std::optional<GUID> IntegratedModel::Mgr::GetCorrespondingDynamicDeviceID (const
             Assert (dynamicDevices.Contains (*ff));
             return *ff;
         }
-        DbgTrace (L"Info: GetCorrespondingDynamicDeviceID found rollup device with no corresponding dynamic device (can happen if its a "
-                  L"historical device not on network right now)");
+        DbgTrace ("Info: GetCorrespondingDynamicDeviceID found rollup device with no corresponding dynamic device (can happen if its a "
+                  "historical device not on network right now)"_f);
     }
     return nullopt;
 }

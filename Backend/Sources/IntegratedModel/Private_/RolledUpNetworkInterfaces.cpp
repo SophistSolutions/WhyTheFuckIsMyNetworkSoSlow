@@ -72,8 +72,8 @@ RolledUpNetworkInterfaces::RolledUpNetworkInterfaces (const Iterable<Device>& de
         }
     }
     // https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/80 - could avoid this maybe??? and the bookkeeping above to compute this list...
-    DbgTrace (L"orphaned interface cnt %d", (netIDs2Add - netsAdded).size ()); // We (temporarily) store network interfaces not associated with any device - if they are not interesting.
-                                                                               // OR, could come from just bad data in database
+    DbgTrace ("orphaned interface cnt {}"_f, (netIDs2Add - netsAdded).size ()); // We (temporarily) store network interfaces not associated with any device - if they are not interesting.
+                                                                                // OR, could come from just bad data in database
     // Either way, just track them, and don't worry for now --LGP 2022-12-03
     for (const auto& netInterfaceWithoutDevice : (netIDs2Add - netsAdded)) {
         MergeIn_ (nullopt, Memory::ValueOf (nets2MergeInCollected.Lookup (netInterfaceWithoutDevice)));
@@ -104,11 +104,10 @@ nonvirtual auto RolledUpNetworkInterfaces::MapAggregatedID2ItsRollupID (const GU
         return *r;
     }
     // shouldn't get past here - debug if/why this hapepns - see comments below
-    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (
-        L"MapAggregatedID2ItsRollupID failed to find aggregatedNetInterfaceID=%s", Characters::ToString (aggregatedNetInterfaceID).c_str ())};
+    DbgTrace ("MapAggregatedID2ItsRollupID failed to find aggregatedNetInterfaceID={}"_f, aggregatedNetInterfaceID);
     if constexpr (qDebug) {
         for ([[maybe_unused]] const auto& i : fRolledUpNetworkInterfaces_) {
-            DbgTrace (L"rolledupNetInterface=%s", Characters::ToString (i).c_str ());
+            DbgTrace ("rolledupNetInterface={}"_f, i);
         }
     }
     Assert (false); // @todo fix - because we guarantee each item rolled up exactly once - but happens sometimes on change of network - I think due to outdated device records referring to newer network not yet in this cache...
@@ -169,7 +168,7 @@ RolledUpNetworkInterfaces RolledUpNetworkInterfaces::GetCached (DBAccess::Mgr* d
                     auto orphanedRawInterfaces =
                         rollup.GetRawNetworkInterfaces ().Where ([&] (auto ni) { return rollup.GetAttachedToDeviceIDs (ni.fID) == nullopt; });
                     if (not orphanedRawInterfaces.empty ()) {
-                        DbgTrace (L"Found: orphanedRawInterfaces=%s", Characters::ToString (orphanedRawInterfaces).c_str ());
+                        DbgTrace ("Found: orphanedRawInterfaces={}"_f, orphanedRawInterfaces);
                         // https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/80
                         // remove from DB, and re-run...
                         // AND/OR see if found in NETWORK objects...

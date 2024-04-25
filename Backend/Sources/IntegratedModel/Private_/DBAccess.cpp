@@ -177,8 +177,7 @@ Mgr::Mgr ()
                 })});
     }
     catch (...) {
-        Logger::sThe.Log (Logger::eCriticalError, L"Failed to load fCachedDeviceUserSettings_ from db: %s",
-                          Characters::ToString (current_exception ()).c_str ());
+        Logger::sThe.Log (Logger::eCriticalError, "Failed to load fCachedDeviceUserSettings_ from db: {}"_f, current_exception ());
         Execution::ReThrow ();
     }
     try {
@@ -189,8 +188,7 @@ Mgr::Mgr ()
             }));
     }
     catch (...) {
-        Logger::sThe.Log (Logger::eCriticalError, L"Failed to load fCachedNetworkUserSettings_ from db: %s",
-                          Characters::ToString (current_exception ()).c_str ());
+        Logger::sThe.Log (Logger::eCriticalError, "Failed to load fCachedNetworkUserSettings_ from db: {}"_f, current_exception ());
         Execution::ReThrow ();
     }
 }
@@ -352,9 +350,8 @@ void Mgr::BackgroundDatabaseThread_ ()
             Execution::ReThrow ();
         }
         catch (...) {
-            //DbgTrace (L"Ignoring (will retry in 30 seconds) exception in BackgroundDatabaseThread_ loop: %s", Characters::ToString (current_exception ()).c_str ());
-            Logger::sThe.Log (Logger::eWarning, L"Database update: ignoring exception in BackgroundDatabaseThread_ loop (will retry in 30 seconds): %s",
-                              Characters::ToString (current_exception ()).c_str ());
+            Logger::sThe.Log (Logger::eWarning, "Database update: ignoring exception in BackgroundDatabaseThread_ loop (will retry in 30 seconds): {}"_f,
+                              current_exception ());
             Execution::Sleep (30s);
         }
     }
@@ -376,8 +373,7 @@ void Mgr::_OneTimeStartupLoadDB ()
             Debug::TimingTrace ttrc{L"...initial load of fDBNetworkInterfaces_ from database ", 1s};
             auto errorHandler = [] ([[maybe_unused]] const SQL::Statement::Row& r, const exception_ptr& e) -> optional<NetworkInterface> {
                 // Just drop the record on the floor after logging
-                Logger::sThe.Log (Logger::eError, L"Error reading database of persisted network interfaces snapshot ('%s'): %s",
-                                                       Characters::ToString (r).c_str (), Characters::ToString (e).c_str ());
+                Logger::sThe.Log (Logger::eError, "Error reading database of persisted network interfaces snapshot ('{}'): {}"_f, r, e);
                 return nullopt;
             };
             auto all = fNetworkInterfaceTableConnection_->GetAll (errorHandler);
@@ -385,8 +381,7 @@ void Mgr::_OneTimeStartupLoadDB ()
             return static_cast<unsigned int> (all.size ());
         }
         catch (...) {
-            Logger::sThe.Log (Logger::eError, L"Probably important error reading database of old network interfaces data: %s",
-                                                   Characters::ToString (current_exception ()).c_str ());
+            Logger::sThe.Log (Logger::eError, "Probably important error reading database of old network interfaces data: {}"_f, current_exception ());
             Execution::ReThrow ();
         }
     };
@@ -395,8 +390,7 @@ void Mgr::_OneTimeStartupLoadDB ()
             Debug::TimingTrace ttrc{L"...initial load of fDBNetworks_ from database ", 1s};
             auto errorHandler = [] ([[maybe_unused]] const SQL::Statement::Row& r, const exception_ptr& e) -> optional<Network> {
                 // Just drop the record on the floor after logging
-                Logger::sThe.Log (Logger::eError, L"Error reading database of persisted network snapshot ('%s'): %s",
-                                  Characters::ToString (r).c_str (), Characters::ToString (e).c_str ());
+                Logger::sThe.Log (Logger::eError, "Error reading database of persisted network snapshot ('{}'): {}"_f, r, e);
                 return nullopt;
             };
             auto all = fNetworkTableConnection_->GetAll (errorHandler);
@@ -404,8 +398,7 @@ void Mgr::_OneTimeStartupLoadDB ()
             return static_cast<unsigned int> (all.size ());
         }
         catch (...) {
-            Logger::sThe.Log (Logger::eError, L"Probably important error reading database of old networks data: %s",
-                              Characters::ToString (current_exception ()).c_str ());
+            Logger::sThe.Log (Logger::eError, "Probably important error reading database of old networks data: {}"_f, current_exception ());
             Execution::ReThrow ();
         }
     };
@@ -414,8 +407,7 @@ void Mgr::_OneTimeStartupLoadDB ()
             Debug::TimingTrace ttrc{L"...initial load of fDBDevices_ from database ", 1s};
             auto errorHandler = [] ([[maybe_unused]] const SQL::Statement::Row& r, const exception_ptr& e) -> optional<Device> {
                 // Just drop the record on the floor after logging
-                Logger::sThe.Log (Logger::eError, L"Error reading database of persisted device snapshot ('%s'): %s",
-                                  Characters::ToString (r).c_str (), Characters::ToString (e).c_str ());
+                Logger::sThe.Log (Logger::eError, "Error reading database of persisted device snapshot ('{}'): {}"_f, r, e);
                 return nullopt;
             };
             auto all = fDeviceTableConnection_->GetAll (errorHandler);
@@ -426,8 +418,7 @@ void Mgr::_OneTimeStartupLoadDB ()
             return static_cast<unsigned int> (all.size ());
         }
         catch (...) {
-            Logger::sThe.Log (Logger::eError, L"Probably important error reading database of old device data: %s",
-                              Characters::ToString (current_exception ()).c_str ());
+            Logger::sThe.Log (Logger::eError, "Probably important error reading database of old device data: {}"_f, current_exception ());
             Execution::ReThrow ();
         }
     };
@@ -453,9 +444,7 @@ void Mgr::_OneTimeStartupLoadDB ()
             Execution::ReThrow ();
         }
         catch (...) {
-            //DbgTrace (L"Ignoring (will retry in 30 seconds) exception in BackgroundDatabaseThread_ loop: %s", Characters::ToString (current_exception ()).c_str ());
-            Logger::sThe.Log (Logger::eWarning, L"Database error: ignoring exception in OneTimeStartup_ loop (will retry in 10 seconds): %s",
-                              Characters::ToString (current_exception ()).c_str ());
+            Logger::sThe.Log (Logger::eWarning, "Database error: ignoring exception in OneTimeStartup_ loop (will retry in 10 seconds): {}"_f,  current_exception ());
             Execution::Sleep (10s);
         }
     }

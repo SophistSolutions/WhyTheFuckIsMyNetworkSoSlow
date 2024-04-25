@@ -206,7 +206,7 @@ GUID BLOBMgr::AddBLOBFromURL (const URI& url, bool recheckIfExpired)
     GUID       guid = AddBLOB (data.first, data.second);
     lock_guard lock{sConn_};
     sConn_.rwget ().rwref ()->fBLOBURLs->AddOrUpdate (DBRecs_::BLOBURL_{url, guid});
-    DbgTrace (L"Added blob mapping: %s maps to blobid %s", Characters::ToString (url).c_str (), Characters::ToString (guid).c_str ());
+    DbgTrace ("Added blob mapping: {} maps to blobid {}"_f, url, guid);
     return guid;
 }
 

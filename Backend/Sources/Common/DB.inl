@@ -28,14 +28,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
     T DB::AddOrMergeUpdate (ORM::TableConnection<T>* dbConnTable, const T& d)
     {
         using namespace Stroika::Foundation;
-        Debug::TraceContextBumper ctx{
-            Stroika_Foundation_Debug_OptionalizeTraceArgs (L"DB::AddOrMergeUpdate", L"...,d=%s", Characters::ToString (d).c_str ())};
+        using namespace Stroika::Foundation::Characters;
+        Debug::TraceContextBumper ctx{"DB::AddOrMergeUpdate", "...,d={}"_f, d};
         RequireNotNull (dbConnTable);
-#if kStroika_Version_Major >= 3
         SQL::Transaction t{dbConnTable->connection ()->mkTransaction ()};
-#else
-        SQL::Transaction t{dbConnTable->pConnection ()->mkTransaction ()};
-#endif
         std::optional<T> result;
         Assert (kRepresentIDAs_ == VariantValue::Type::eString or kRepresentIDAs_ == VariantValue::Type::eBLOB);
         VariantValue id = (kRepresentIDAs_ == VariantValue::Type::eString) ? VariantValue{d.fID.template As<String> ()}
@@ -81,6 +77,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
     template <typename TABLE_CONNECTION>
     auto mkOperationalStatisticsMgrProcessDBCmd (bool traceSQL) -> typename TABLE_CONNECTION::OpertionCallbackPtr
     {
+        using namespace Characters;
         shared_ptr<OperationalStatisticsMgr::ProcessDBCmd>      tmp; // use shared_ptr in lambda so copies of lambda share same object
         constexpr bool                                          kIncludeLastSQK_ = true;
         conditional_t<kIncludeLastSQK_, optional<String>, void> lastSQL;
@@ -91,7 +88,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
                 case TABLE_CONNECTION::Operation::eStartingRead:
                     RequireNotNull (s);
                     if (traceSQL) {
-                        DbgTrace (L"<DBRead: %s>", s->GetSQL (Statement::WhichSQLFlag::eExpanded).c_str ());
+                        DbgTrace ("<DBRead: {}>"_f, s->GetSQL (Statement::WhichSQLFlag::eExpanded));
                     }
                     if (kIncludeLastSQK_) {
                         lastSQL = s->GetSQL (Statement::WhichSQLFlag::eExpanded);
@@ -100,14 +97,14 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
                     break;
                 case TABLE_CONNECTION::Operation::eCompletedRead:
                     if (traceSQL) {
-                        DbgTrace (L"</DBRead>");
+                        DbgTrace ("</DBRead>"_f);
                     }
                     tmp.reset ();
                     break;
                 case TABLE_CONNECTION::Operation::eStartingWrite:
                     RequireNotNull (s);
                     if (traceSQL) {
-                        DbgTrace (L"<DBWrite: %s>", s->GetSQL (Statement::WhichSQLFlag::eExpanded).c_str ());
+                        DbgTrace ("<DBWrite: {}>"_f, s->GetSQL (Statement::WhichSQLFlag::eExpanded));
                     }
                     if (kIncludeLastSQK_) {
                         lastSQL = s->GetSQL (Statement::WhichSQLFlag::eExpanded);
@@ -116,18 +113,16 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
                     break;
                 case TABLE_CONNECTION::Operation::eCompletedWrite:
                     if (traceSQL) {
-                        DbgTrace (L"</DBWrite>");
+                        DbgTrace ("</DBWrite>"_f);
                     }
                     tmp.reset ();
                     break;
                 case TABLE_CONNECTION::Operation::eNotifyError:
                     if (kIncludeLastSQK_) {
-                        Execution::Logger::sThe.Log (Execution::Logger::eWarning, L"Database operation exception: %s (lastsql %s)",
-                                                     Characters::ToString (e).c_str (), Characters::ToString (lastSQL).c_str ());
+                        Execution::Logger::sThe.Log (Execution::Logger::eWarning, "Database operation exception: {} (last sql {})"_f, e, lastSQL);
                     }
                     else {
-                        Execution::Logger::sThe.Log (Execution::Logger::eWarning, L"Database operation exception: %s",
-                                                     Characters::ToString (e).c_str ());
+                        Execution::Logger::sThe.Log (Execution::Logger::eWarning, "Database operation exception: {}"_f, e);
                     }
                     tmp->NoteError ();
                     break;

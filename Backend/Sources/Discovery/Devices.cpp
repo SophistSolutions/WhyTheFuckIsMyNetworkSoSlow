@@ -405,16 +405,16 @@ namespace {
                 }
             }
             if (totalAdds == 0 and totalAddrsSuppressedQuietly < totalAddrs) {
-                DbgTrace (L"AddNetworkAddresses_(%s) called, but no matching interfaces found", Characters::ToString (addrs).c_str ());
+                DbgTrace ("AddNetworkAddresses_({}) called, but no matching interfaces found"_f, addrs);
                 constexpr bool kExtraDebugging_ = true;
                 if (kExtraDebugging_) {
                     // Debug why we get "Unknown" device on hercules/linux with Found-By-MyNeighborDiscoverer_-I looking good, but no networks (and docker appears as an active network)
-                    DbgTrace (L"AddNetworkAddresses_: totalAddrs=%d, totalAddrsSuppressedQuietly=%d, totalAdds=%d", totalAddrs,
+                    DbgTrace ("AddNetworkAddresses_: totalAddrs={}, totalAddrsSuppressedQuietly={}, totalAdds={}"_f, totalAddrs,
                               totalAddrsSuppressedQuietly, totalAdds);
-                    DbgTrace (L"AddNetworkAddresses_: NetAndNetInterfaceMapper_::sThe.LookupNetworksGUIDs (ia)=%s",
-                              Characters::ToString (NetAndNetInterfaceMapper_::sThe.LookupNetworksGUIDs (addrs)).c_str ());
-                    DbgTrace (L"AddNetworkAddresses_: Discovery::NetworksMgr::sThe.CollectActiveNetworks ()=%s",
-                              Characters::ToString (Discovery::NetworksMgr::sThe.CollectActiveNetworks ()).c_str ());
+                    DbgTrace ("AddNetworkAddresses_: NetAndNetInterfaceMapper_::sThe.LookupNetworksGUIDs (ia)={}"_f,
+                              NetAndNetInterfaceMapper_::sThe.LookupNetworksGUIDs (addrs));
+                    DbgTrace ("AddNetworkAddresses_: Discovery::NetworksMgr::sThe.CollectActiveNetworks ()={}"_f,
+                              Discovery::NetworksMgr::sThe.CollectActiveNetworks ());
                 }
             }
         }
@@ -560,7 +560,7 @@ namespace {
 
             // Add various type(s) if hardware address matches and other open ports fields
             {
-                static const String kSMBPort_ = Characters::Format (L"tcp:%d", IO::Network::WellKnownPorts::TCP::kSMB);
+                static const String kSMBPort_ = Characters::Format ("tcp:{}"_f, IO::Network::WellKnownPorts::TCP::kSMB);
                 for (const auto& hwa : GetHardwareAddresses ()) {
                     if (auto o = BackendApp::Common::LookupEthernetMACAddressOUIFromPrefix (hwa)) {
                         if (o == L"Oracle VirtualBox virtual NIC"sv) {
@@ -574,8 +574,8 @@ namespace {
                 }
             }
 
-            static const String kIPPPort_ = Characters::Format (L"tcp:%d", IO::Network::WellKnownPorts::TCP::kIPP);
-            static const String kLPDPort_ = Characters::Format (L"tcp:%d", IO::Network::WellKnownPorts::TCP::kLPD);
+            static const String kIPPPort_ = Characters::Format ("tcp:{}"_f, IO::Network::WellKnownPorts::TCP::kIPP);
+            static const String kLPDPort_ = Characters::Format ("tcp:{}"_f, IO::Network::WellKnownPorts::TCP::kLPD);
             if (fOpenPorts and (fOpenPorts->Contains (kIPPPort_) or fOpenPorts->Contains (kLPDPort_)) and
                 (fManufacturer and (fManufacturer->Contains (L"Hewlett Packard"_k) or fManufacturer->Contains (L"Epson"_k) or
                                     fManufacturer->Contains (L"Canon"_k) or fManufacturer->Contains (L"Brother"_k)))) {
@@ -596,7 +596,7 @@ namespace {
                                      pair<String, VariantValue>{L"manufacturer"sv, fSSDPInfo->fManufacturer},
                                      pair<String, VariantValue>{L"manufacturer-URL"sv, kMyMapper_.FromObject (fSSDPInfo->fManufacturerURI)},
                                      pair<String, VariantValue>{L"lastAdvertisement"sv, kMyMapper_.FromObject (fSSDPInfo->fLastAdvertisement)},
-                                     pair<String, VariantValue>{L"lastSSDPMessageRecievedAt"sv, fSSDPInfo->fLastSSDPMessageRecievedAt},
+                                     pair<String, VariantValue>{L"lastSSDPMessageReceivedAt"sv, fSSDPInfo->fLastSSDPMessageRecievedAt},
                                      pair<String, VariantValue> {
                                          L"locations"sv,
                                          kMyMapper_.FromObject (fSSDPInfo->fLocations)
@@ -606,7 +606,7 @@ namespace {
 #endif
 
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
-            DbgTrace (L"At end of PatchDerivedFields: %s", ToString ().c_str ());
+            DbgTrace ("At end of PatchDerivedFields: {}", ToString ());
 #endif
         }
 
@@ -764,12 +764,12 @@ namespace {
                         // actual change
                         if (l->Lookup (di.fGUID) == di) {
 #if qLOCK_DEBUGGING_
-                            DbgTrace (L"!!! no change in ***MyDeviceDiscoverer_***  so skipping ");
+                            DbgTrace ("!!! no change in ***MyDeviceDiscoverer_***  so skipping "_f);
 #endif
                             goto nextTry;
                         }
 #if qLOCK_DEBUGGING_
-                        DbgTrace (L"!!! have change in ***MyDeviceDiscoverer_ so waiting to update");
+                        DbgTrace ("!!! have change in ***MyDeviceDiscoverer_ so waiting to update"_f);
 #endif
 
                         Assert (di.fGUID != GUID{});
@@ -778,14 +778,14 @@ namespace {
                                 [&] (auto&& writeLock) {
                                     writeLock.rwref ().Add (di);
 #if qLOCK_DEBUGGING_
-                                    DbgTrace (L"!!! succeeded  updating writelock ***MyDeviceDiscoverer_");
+                                    DbgTrace ("!!! succeeded  updating writelock ***MyDeviceDiscoverer_"_f);
 #endif
                                 },
                                 5s)) {
                             // Failed merge, so try the entire acquire/update; this should be fairly rare (except when alot of contention like when we first start),
                             // and will cause a recomputation of the merge
                             retriedLockCount++;
-                            DbgTrace (L"MyDeviceDiscoverer_: failed to update sDiscoveredDevices_ so retrying (cnt=%d)", retriedLockCount);
+                            DbgTrace ("MyDeviceDiscoverer_: failed to update sDiscoveredDevices_ so retrying (cnt={})"_f, retriedLockCount);
                             goto again;
                         }
                     }
@@ -794,7 +794,7 @@ namespace {
                     Execution::ReThrow ();
                 }
                 catch (...) {
-                    Logger::sThe.Log (Logger::eError, L"%s", Characters::ToString (current_exception ()).c_str ());
+                    Logger::sThe.Log (Logger::eError, "{}"_f, current_exception ());
                 }
 
             nextTry:
@@ -806,869 +806,864 @@ namespace {
         static optional<DiscoveryInfo_> GetMyDevice_ ()
         {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
-            Debug::TraceContextBumper ctx{L"{}::GetMyDevice_"};
-            DbgTrace (L"interfaces=%s", Characters::ToString (IO::Network::SystemInterfacesMgr{}.GetAll ()).c_str ());
+            Debug::TraceContextBumper ctx
+            {"{}::GetMyDevice_" , "interfaces={}"_f, IO::Network::SystemInterfacesMgr{}.GetAll ());
 #endif
-            DiscoveryInfo_ newDev;
-            newDev.fNames.Add (Configuration::GetSystemConfiguration_ComputerNames ().fHostname, 200);
-            newDev.fTypes += DeviceType::ePC; // not sure what this means, or if its the best place
-            newDev.fTypes += DeviceType::eWTFCollector;
-            newDev.fThisDevice = true;
-            SystemInterfacesMgr interfacesMgr;
-            for (const Interface& i : interfacesMgr.GetAll ()) {
-                if (i.fType != Interface::Type::eLoopback and i.fStatus and i.fStatus->Contains (Interface::Status::eRunning)) {
-                    i.fBindings.fAddresses.Apply ([&] (const InternetAddress& ia) { newDev.AddNetworkAddresses_ (ia, i.fHardwareAddress); });
+                DiscoveryInfo_ newDev;
+                newDev.fNames.Add (Configuration::GetSystemConfiguration_ComputerNames ().fHostname, 200);
+                newDev.fTypes += DeviceType::ePC; // not sure what this means, or if its the best place
+                newDev.fTypes += DeviceType::eWTFCollector;
+                newDev.fThisDevice = true;
+                SystemInterfacesMgr interfacesMgr;
+                for (const Interface& i : interfacesMgr.GetAll ()) {
+                    if (i.fType != Interface::Type::eLoopback and i.fStatus and i.fStatus->Contains (Interface::Status::eRunning)) {
+                        i.fBindings.fAddresses.Apply (
+                            [&] (const InternetAddress& ia) { newDev.AddNetworkAddresses_ (ia, i.fHardwareAddress); });
+                    }
                 }
-            }
-            newDev.fAttachedInterfaces = Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ().Map<Set<GUID>> (
-                [] (const auto& iFace) { return iFace.fGUID; });
+                newDev.fAttachedInterfaces = Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ().Map<Set<GUID>> (
+                    [] (const auto& iFace) { return iFace.fGUID; });
 
-            if (newDev.GetHardwareAddresses ().empty ()) {
-                DbgTrace ("no hardware address, so returning no 'MyDevice'");
-                return nullopt;
-            }
+                if (newDev.GetHardwareAddresses ().empty ()) {
+                    DbgTrace ("no hardware address, so returning no 'MyDevice'"_f);
+                    return nullopt;
+                }
 
-            // No need to set GUID - set in caller
+                // No need to set GUID - set in caller
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
-            DbgTrace (L"returning: %s", Characters::ToString (newDev).c_str ());
+                DbgTrace ("returning: {}"_f, newDev);
 #endif
-            return newDev;
-        }
+                return newDev;
+            }
 
-        static inline Synchronized<optional<GUID>> sCachedValue_;
-    };
+            static inline Synchronized<optional<GUID>> sCachedValue_;
+        };
 
-    unique_ptr<MyDeviceDiscoverer_> sMyDeviceDiscoverer_;
-}
+        unique_ptr<MyDeviceDiscoverer_> sMyDeviceDiscoverer_;
+    }
 
-namespace {
-    /*
+    namespace
+    {
+        /*
      ********************************************************************************
      *************************** SSDPDeviceDiscoverer_ ******************************
      ********************************************************************************
      */
-    /*
+        /*
      *  When constructed, push data as discovered into sDiscoveredDevices_
      * 
      *  Network connections can come and go, so this class must watch for changes and
      *  periodically restart the listener/searchers.
      */
-    class SSDPDeviceDiscoverer_ {
-    public:
-        SSDPDeviceDiscoverer_ ()
-            : fIntervalTimerAdder_{[this] () {
-                                       Debug::TraceContextBumper ctx{"SSDPDeviceDiscoverer_ TIMER HANDLER"}; // to debug https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/78
-                                       // @todo must be able to detect nework change, or reason to make this change
-                                       // for now - just do if missing
-                                       if (fListener_ == nullptr or fSearcher_ == nullptr) {
-                                           IgnoreExceptionsExceptThreadAbortForCall (ConstructSearcherAndListener_ (true));
-                                       }
-                                   },
-                                   1min}
-        {
-            IgnoreExceptionsExceptThreadAbortForCall (ConstructSearcherAndListener_ (false));
-        }
+        class SSDPDeviceDiscoverer_ {
+        public:
+            SSDPDeviceDiscoverer_ ()
+                : fIntervalTimerAdder_{[this] () {
+                                           Debug::TraceContextBumper ctx{"SSDPDeviceDiscoverer_ TIMER HANDLER"}; // to debug https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/78
+                                           // @todo must be able to detect nework change, or reason to make this change
+                                           // for now - just do if missing
+                                           if (fListener_ == nullptr or fSearcher_ == nullptr) {
+                                               IgnoreExceptionsExceptThreadAbortForCall (ConstructSearcherAndListener_ (true));
+                                           }
+                                       },
+                                       1min}
+            {
+                IgnoreExceptionsExceptThreadAbortForCall (ConstructSearcherAndListener_ (false));
+            }
 
-    private:
-        nonvirtual void ConstructSearcherAndListener_ (bool notifyOfSuccess)
-        {
-            // SSDP can fail due to lack of permissions to bind to the appropriate sockets, or for example under WSL where we get protocol unsupported.
-            // WARN to syslog, but no need to stop app
-            if (fListener_ == nullptr) {
-                try {
-                    fListener_ = make_unique<SSDP::Client::Listener> (
-                        [this] (const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); }, SSDP::Client::Listener::eAutoStart);
-                    if (notifyOfSuccess) {
-                        Logger::sThe.Log (Logger::eInfo, L"(Re-)Started SSDP Listener");
+        private:
+            nonvirtual void ConstructSearcherAndListener_ (bool notifyOfSuccess)
+            {
+                // SSDP can fail due to lack of permissions to bind to the appropriate sockets, or for example under WSL where we get protocol unsupported.
+                // WARN to syslog, but no need to stop app
+                if (fListener_ == nullptr) {
+                    try {
+                        fListener_ = make_unique<SSDP::Client::Listener> (
+                            [this] (const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); }, SSDP::Client::Listener::eAutoStart);
+                        if (notifyOfSuccess) {
+                            Logger::sThe.Log (Logger::eInfo, "(Re-)Started SSDP Listener"_f);
+                        }
+                    }
+                    catch (...) {
+                        Logger::sThe.Log (Logger::eError, "Problem starting SSDP Listener - so that source of discovery will be (temporarily - will retry) unavailable: {}"_f,
+                                          current_exception ());
                     }
                 }
-                catch (...) {
-                    Logger::sThe.Log (Logger::eError, L"Problem starting SSDP Listener - so that source of discovery will be (temporarily - will retry) unavailable: %s",
-                                      Characters::ToString (current_exception ()).c_str ());
-                }
-            }
-            if (fSearcher_ == nullptr) {
-                try {
-                    static const Time::Duration kReSearchInterval_{10min}; // not sure what interval makes sense
-                    fSearcher_ =
-                        make_unique<SSDP::Client::Search> ([this] (const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); },
-                                                           SSDP::Client::Search::kRootDevice, kReSearchInterval_);
-                    if (notifyOfSuccess) {
-                        Logger::sThe.Log (Logger::eInfo, L"(Re-)Started SSDP Searcher");
+                if (fSearcher_ == nullptr) {
+                    try {
+                        static const Time::Duration kReSearchInterval_{10min}; // not sure what interval makes sense
+                        fSearcher_ =
+                            make_unique<SSDP::Client::Search> ([this] (const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); },
+                                                               SSDP::Client::Search::kRootDevice, kReSearchInterval_);
+                        if (notifyOfSuccess) {
+                            Logger::sThe.Log (Logger::eInfo, "(Re-)Started SSDP Searcher"_f);
+                        }
+                    }
+                    catch (...) {
+                        // only warning because searcher much less important - just helpful at very start of discovery
+                        Logger::sThe.Log (Logger::eWarning, "Problem starting SSDP Searcher - so that source of discovery will be (temporarily - will retry) unavailable: {}"_f,
+                                          current_exception ());
                     }
                 }
-                catch (...) {
-                    // only warning because searcher much less important - just helpful at very start of discovery
-                    Logger::sThe.Log (Logger::eWarning, L"Problem starting SSDP Searcher - so that source of discovery will be (temporarily - will retry) unavailable: %s",
-                                      Characters::ToString (current_exception ()).c_str ());
-                }
-            }
-        }
-
-    private:
-        IntervalTimer::Adder               fIntervalTimerAdder_;
-        unique_ptr<SSDP::Client::Listener> fListener_;
-        unique_ptr<SSDP::Client::Search>   fSearcher_;
-
-    private:
-        void RecieveSSDPAdvertisement_ (const SSDP::Advertisement& d)
-        {
-            constexpr Activity        kInterprettingSSDPMessageRecieved_{L"interpretting SSDP advertisement"sv};
-            Debug::TraceContextBumper ctx{
-                Stroika_Foundation_Debug_OptionalizeTraceArgs (L"RecieveSSDPAdvertisement_", L"d=%s", Characters::ToString (d).c_str ())};
-
-            DeclareActivity activity{&kInterprettingSSDPMessageRecieved_};
-
-            Set<InternetAddress> locAddrs;
-            if (d.fLocation.GetAuthority () and d.fLocation.GetAuthority ()->GetHost ()) {
-                URI::Host h = *d.fLocation.GetAuthority ()->GetHost ();
-                if (h.AsInternetAddress ()) {
-                    locAddrs = Set<InternetAddress>{*h.AsInternetAddress ()};
-                }
-                else {
-                    locAddrs = DNSLookup_ (*h.AsRegisteredName ());
-                }
             }
 
-            // @todo - Maintain cache with age apx 60 minutes - mapping URL to UPnP::DeviceDescription objects
+        private:
+            IntervalTimer::Adder               fIntervalTimerAdder_;
+            unique_ptr<SSDP::Client::Listener> fListener_;
+            unique_ptr<SSDP::Client::Search>   fSearcher_;
 
-            /// @todo - Add Search support (once at startup, and then every 10 minutes? - config) - because it maybe some devices dont properly
-            /// broadcast, and only respond to search, plus gives better immediate feedback when we first start up (at least helpful for debugging)
-            optional<String> deviceFriendlyName;
-            optional<String> deviceType;
-            optional<String> manufactureName;
-            optional<URI>    manufacturerURL;
-            optional<URI>    presentationURL;
-            optional<URI>    deviceIconURL;
+        private:
+            void RecieveSSDPAdvertisement_ (const SSDP::Advertisement& d)
+            {
+                constexpr Activity        kInterprettingSSDPMessageRecieved_{"interpretting SSDP advertisement"sv};
+                Debug::TraceContextBumper ctx{"RecieveSSDPAdvertisement_", "d={}"_f, d};
 
-            unsigned int retriedLockCount = 0;
-            if (d.fLocation) {
-                try {
-                    using namespace IO::Network::Transfer;
-                    Connection::Ptr                     c          = Connection::New ();
-                    Response                            r          = c.GET (d.fLocation);
-                    Frameworks::UPnP::DeviceDescription deviceInfo = DeSerialize (r.GetData ());
-                    deviceFriendlyName                             = deviceInfo.fFriendlyName;
-                    deviceType                                     = deviceInfo.fDeviceType;
-                    manufactureName                                = deviceInfo.fManufactureName;
-                    manufacturerURL                                = deviceInfo.fManufacturingURL;
-                    presentationURL                                = deviceInfo.fPresentationURL;
-                    if (deviceInfo.fIcons.has_value () and not deviceInfo.fIcons->empty ()) {
-                        deviceIconURL = d.fLocation.Combine (deviceInfo.fIcons->Nth (0).fURL);
-                    }
-                    if (manufacturerURL.has_value ()) {
-                        manufacturerURL = d.fLocation.Combine (*manufacturerURL);
-                    }
-                    DbgTrace (L"Found device description = %s", Characters::ToString (deviceInfo).c_str ());
-                }
-                catch (...) {
-                    DbgTrace (L"Failed to fetch description: %s", Characters::ToString (current_exception ()).c_str ());
-                }
-            }
-            else {
-                DbgTrace (L"no location, so no fetched device description");
-            }
+                DeclareActivity activity{&kInterprettingSSDPMessageRecieved_};
 
-            WeakAssert (not locAddrs.empty ()); // CAN happen if dns name, and we cannot do dns lookup, but unsure we should include the device.
-            if (not locAddrs.empty ()) {
-            // merge in data
-            again:
-                Execution::Sleep (retriedLockCount * 1s); // sleep without the lock, but not first time processing message - just on retries
-                auto           l  = sDiscoveredDevices_.cget ();
-                DiscoveryInfo_ di = [&] () {
-                    DiscoveryInfo_ tmp{};
-                    tmp.AddNetworkAddresses_ (locAddrs);
-                    // Note - we don't generally get hardware address from IPAddress
-                    if (optional<DiscoveryInfo_> o = FindMatchingDevice_ (l, tmp)) {
-                        tmp = *o; // then merge in possible additions
-                        tmp.AddNetworkAddresses_ (locAddrs);
-#if qDebug
-                        tmp.fDebugProps.Add (L"Updated-By-SSDPDeviceDiscoverer_-At", DateTime::Now ());
-#endif
-                        return tmp;
+                Set<InternetAddress> locAddrs;
+                if (d.fLocation.GetAuthority () and d.fLocation.GetAuthority ()->GetHost ()) {
+                    URI::Host h = *d.fLocation.GetAuthority ()->GetHost ();
+                    if (h.AsInternetAddress ()) {
+                        locAddrs = Set<InternetAddress>{*h.AsInternetAddress ()};
                     }
                     else {
+                        locAddrs = DNSLookup_ (*h.AsRegisteredName ());
+                    }
+                }
+
+                // @todo - Maintain cache with age apx 60 minutes - mapping URL to UPnP::DeviceDescription objects
+
+                /// @todo - Add Search support (once at startup, and then every 10 minutes? - config) - because it maybe some devices dont properly
+                /// broadcast, and only respond to search, plus gives better immediate feedback when we first start up (at least helpful for debugging)
+                optional<String> deviceFriendlyName;
+                optional<String> deviceType;
+                optional<String> manufactureName;
+                optional<URI>    manufacturerURL;
+                optional<URI>    presentationURL;
+                optional<URI>    deviceIconURL;
+
+                unsigned int retriedLockCount = 0;
+                if (d.fLocation) {
+                    try {
+                        using namespace IO::Network::Transfer;
+                        Connection::Ptr                     c          = Connection::New ();
+                        Response                            r          = c.GET (d.fLocation);
+                        Frameworks::UPnP::DeviceDescription deviceInfo = DeSerialize (r.GetData ());
+                        deviceFriendlyName                             = deviceInfo.fFriendlyName;
+                        deviceType                                     = deviceInfo.fDeviceType;
+                        manufactureName                                = deviceInfo.fManufactureName;
+                        manufacturerURL                                = deviceInfo.fManufacturingURL;
+                        presentationURL                                = deviceInfo.fPresentationURL;
+                        if (deviceInfo.fIcons.has_value () and not deviceInfo.fIcons->empty ()) {
+                            deviceIconURL = d.fLocation.Combine (deviceInfo.fIcons->Nth (0).fURL);
+                        }
+                        if (manufacturerURL.has_value ()) {
+                            manufacturerURL = d.fLocation.Combine (*manufacturerURL);
+                        }
+                        DbgTrace ("Found device description = {}"_f, deviceInfo);
+                    }
+                    catch (...) {
+                        DbgTrace ("Failed to fetch description: {}"_f, current_exception ());
+                    }
+                }
+                else {
+                    DbgTrace ("no location, so no fetched device description"_f);
+                }
+
+                WeakAssert (not locAddrs.empty ()); // CAN happen if dns name, and we cannot do dns lookup, but unsure we should include the device.
+                if (not locAddrs.empty ()) {
+                // merge in data
+                again:
+                    Execution::Sleep (retriedLockCount * 1s); // sleep without the lock, but not first time processing message - just on retries
+                    auto           l  = sDiscoveredDevices_.cget ();
+                    DiscoveryInfo_ di = [&] () {
+                        DiscoveryInfo_ tmp{};
+                        tmp.AddNetworkAddresses_ (locAddrs);
+                        // Note - we don't generally get hardware address from IPAddress
+                        if (optional<DiscoveryInfo_> o = FindMatchingDevice_ (l, tmp)) {
+                            tmp = *o; // then merge in possible additions
+                            tmp.AddNetworkAddresses_ (locAddrs);
 #if qDebug
-                        tmp.fDebugProps.Add (L"Found-By-SSDPDeviceDiscoverer_-At", DateTime::Now ());
+                            tmp.fDebugProps.Add (L"Updated-By-SSDPDeviceDiscoverer_-At", DateTime::Now ());
 #endif
-                        tmp.fGUID = GUID::GenerateNew ();
-                        return tmp;
+                            return tmp;
+                        }
+                        else {
+#if qDebug
+                            tmp.fDebugProps.Add (L"Found-By-SSDPDeviceDiscoverer_-At", DateTime::Now ());
+#endif
+                            tmp.fGUID = GUID::GenerateNew ();
+                            return tmp;
+                        }
+                    }();
+                    if (di.fAttachedNetworks.empty ()) {
+                        DbgTrace ("Ignoring SSDP message for device on no network (possibly because of kIncludeLinkLocalAddressesInDiscovery etc suppression): {}"_f,
+                                  di);
+                        return;
                     }
-                }();
-                if (di.fAttachedNetworks.empty ()) {
-                    DbgTrace (L"Ignorning SSDP message for device on no network (possibly because of kIncludeLinkLocalAddressesInDiscovery "
-                              L"etc suppression): %s",
-                              Characters::ToString (di).c_str ());
-                    return;
-                }
-                Assert (not di.GetInternetAddresses ().empty ()); // can happen if we find address in tmp.AddIPAddress_() thats not bound to any adapter (but that shouldnt happen so investigate but is for now so ignore breifly)
+                    Assert (not di.GetInternetAddresses ().empty ()); // can happen if we find address in tmp.AddIPAddress_() that's not bound to any adapter (but that shouldn't happen so investigate but is for now so ignore briefly)
 
-                if (not di.fSSDPInfo) {
-                    di.fSSDPInfo = DiscoveryInfo_::SSDPInfo{};
-                }
-                di.fSSDPInfo->fAlive = d.fAlive;
+                    if (not di.fSSDPInfo) {
+                        di.fSSDPInfo = DiscoveryInfo_::SSDPInfo{};
+                    }
+                    di.fSSDPInfo->fAlive = d.fAlive;
 
-                Memory::CopyToIf (&di.fIcon, deviceIconURL);
-                Memory::CopyToIf (&di.fSSDPInfo->fManufacturerURI, manufacturerURL);
+                    Memory::CopyToIf (&di.fIcon, deviceIconURL);
+                    Memory::CopyToIf (&di.fSSDPInfo->fManufacturerURI, manufacturerURL);
 
-                di.fSSDPInfo->fLocations.Add (d.fLocation);
-                di.fSSDPInfo->fUSNs.Add (d.fUSN);
+                    di.fSSDPInfo->fLocations.Add (d.fLocation);
+                    di.fSSDPInfo->fUSNs.Add (d.fUSN);
 
-                Memory::CopyToIf (&di.fSSDPInfo->fPresentationURL, presentationURL); // consider if value already there - warn if changes - should we collect multiple
+                    Memory::CopyToIf (&di.fSSDPInfo->fPresentationURL, presentationURL); // consider if value already there - warn if changes - should we collect multiple
 
-                if (di.fSSDPInfo->fServer.has_value () and di.fSSDPInfo->fServer != d.fServer) {
-                    DbgTrace (L"Warning: different server IDs for same object");
-                }
-                di.fSSDPInfo->fServer = d.fServer;
+                    if (di.fSSDPInfo->fServer.has_value () and di.fSSDPInfo->fServer != d.fServer) {
+                        DbgTrace ("Warning: different server IDs for same object"_f);
+                    }
+                    di.fSSDPInfo->fServer = d.fServer;
 
-                if (deviceType and deviceFriendlyName) {
-                    di.fSSDPInfo->fDeviceType2FriendlyNameMap.Add (*deviceType, *deviceFriendlyName);
-                }
-                Memory::CopyToIf (&di.fSSDPInfo->fManufacturer, manufactureName);
+                    if (deviceType and deviceFriendlyName) {
+                        di.fSSDPInfo->fDeviceType2FriendlyNameMap.Add (*deviceType, *deviceFriendlyName);
+                    }
+                    Memory::CopyToIf (&di.fSSDPInfo->fManufacturer, manufactureName);
 
-                di.fSSDPInfo->fLastSSDPMessageRecievedAt = Time::DateTime::Now (); // update each message, even if already created
-                di.fSeen.fUDP = Memory::NullCoalesce (di.fSeen.fUDP).Extend (di.fSSDPInfo->fLastSSDPMessageRecievedAt);
+                    di.fSSDPInfo->fLastSSDPMessageRecievedAt = Time::DateTime::Now (); // update each message, even if already created
+                    di.fSeen.fUDP = Memory::NullCoalesce (di.fSeen.fUDP).Extend (di.fSSDPInfo->fLastSSDPMessageRecievedAt);
 
 #if qDebug
-                di.fSSDPInfo->fLastAdvertisement = d;
+                    di.fSSDPInfo->fLastAdvertisement = d;
 #endif
 
-                if (not di.fOperatingSystem.has_value ()) {
-                    if (di.fSSDPInfo->fServer and di.fSSDPInfo->fServer->Contains (L"Linux"_k)) {
-                        di.fOperatingSystem = Discovery::OperatingSystem{L"Linux"_k};
+                    if (not di.fOperatingSystem.has_value ()) {
+                        if (di.fSSDPInfo->fServer and di.fSSDPInfo->fServer->Contains (L"Linux"_k)) {
+                            di.fOperatingSystem = Discovery::OperatingSystem{L"Linux"_k};
+                        }
+                        else if (di.fSSDPInfo->fServer and di.fSSDPInfo->fServer->Contains (L"POSIX"_k)) {
+                            di.fOperatingSystem = Discovery::OperatingSystem{L"Unix"_k};
+                        }
                     }
-                    else if (di.fSSDPInfo->fServer and di.fSSDPInfo->fServer->Contains (L"POSIX"_k)) {
-                        di.fOperatingSystem = Discovery::OperatingSystem{L"Unix"_k};
-                    }
-                }
-                di.PatchDerivedFields ();
-                Assert (di.fGUID != GUID{});
-                if (not sDiscoveredDevices_.UpgradeLockNonAtomicallyQuietly (
-                        &l,
-                        [&] (auto&& writeLock) {
-                            writeLock.rwref ().Add (di);
+                    di.PatchDerivedFields ();
+                    Assert (di.fGUID != GUID{});
+                    if (not sDiscoveredDevices_.UpgradeLockNonAtomicallyQuietly (
+                            &l,
+                            [&] (auto&& writeLock) {
+                                writeLock.rwref ().Add (di);
 #if qLOCK_DEBUGGING_
-                            DbgTrace (L"!!! succeeded  updating writelock ***RecieveSSDPAdvertisement_");
+                                DbgTrace (L"!!! succeeded  updating writelock ***RecieveSSDPAdvertisement_");
 #endif
-                        },
-                        5s)) {
-                    // Failed merge, so try the entire acquire/update; this should be fairly rare (except when alot of contention like when we first start),
-                    // and will cause a recomputation of the merge
-                    retriedLockCount++;
-                    DbgTrace (L"RecieveSSDPAdvertisement_: failed to update RecieveSSDPAdvertisement_ so retrying (cnt=%d)", retriedLockCount);
-                    goto again; // release the lock and try again
+                            },
+                            5s)) {
+                        // Failed merge, so try the entire acquire/update; this should be fairly rare (except when alot of contention like when we first start),
+                        // and will cause a recomputation of the merge
+                        retriedLockCount++;
+                        DbgTrace ("RecieveSSDPAdvertisement_: failed to update RecieveSSDPAdvertisement_ so retrying (cnt={})"_f, retriedLockCount);
+                        goto again; // release the lock and try again
+                    }
                 }
             }
-        }
-    };
+        };
 
-    unique_ptr<SSDPDeviceDiscoverer_> sSSDPDeviceDiscoverer_;
-}
+        unique_ptr<SSDPDeviceDiscoverer_> sSSDPDeviceDiscoverer_;
+    }
 
-namespace {
-    /*
+    namespace {
+        /*
      ********************************************************************************
      *************************** MyNeighborDiscoverer_ ******************************
      ********************************************************************************
      */
-    struct MyNeighborDiscoverer_ {
-        MyNeighborDiscoverer_ ()
-            : fMyThread_{Thread::CleanupPtr::eAbortBeforeWaiting, Thread::New (DiscoveryChecker_, Thread::eAutoStart, L"MyNeighborDiscoverer"sv)}
-        {
-        }
+        struct MyNeighborDiscoverer_ {
+            MyNeighborDiscoverer_ ()
+                : fMyThread_{Thread::CleanupPtr::eAbortBeforeWaiting, Thread::New (DiscoveryChecker_, Thread::eAutoStart, L"MyNeighborDiscoverer"sv)}
+            {
+            }
 
-    private:
-        static void DiscoveryChecker_ ()
-        {
-            Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"{}::MyNeighborDiscoverer_::DiscoveryChecker_")};
-            static constexpr Activity kDiscovering_NetNeighbors_{L"discovering this network neighbors"sv};
-            using Neighbor = NeighborsMonitor::Neighbor;
-            NeighborsMonitor monitor{};
-            while (true) {
-                try {
-                    DeclareActivity           da{&kDiscovering_NetNeighbors_};
-                    Debug::TraceContextBumper ctx1{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"monitor.GetNeighbors ()")};
-                    for (const Neighbor& i : monitor.GetNeighbors ()) {
+        private:
+            static void DiscoveryChecker_ ()
+            {
+                Debug::TraceContextBumper ctx{
+                    Stroika_Foundation_Debug_OptionalizeTraceArgs (L"{}::MyNeighborDiscoverer_::DiscoveryChecker_")};
+                static constexpr Activity kDiscovering_NetNeighbors_{L"discovering this network neighbors"sv};
+                using Neighbor = NeighborsMonitor::Neighbor;
+                NeighborsMonitor monitor{};
+                while (true) {
+                    try {
+                        DeclareActivity           da{&kDiscovering_NetNeighbors_};
+                        Debug::TraceContextBumper ctx1{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"monitor.GetNeighbors ()")};
+                        for (const Neighbor& i : monitor.GetNeighbors ()) {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
-                        DbgTrace (L"i=%s", Characters::ToString (i).c_str ());
+                            DbgTrace (L"i=%s", Characters::ToString (i).c_str ());
 #endif
-                        // soon store/pay attention to macaddr as better indicator of unique device id than ip addr
+                            // soon store/pay attention to macaddr as better indicator of unique device id than ip addr
 
-                        // ignore multicast addresses as they are not real devices(???always???)
-                        if (i.fInternetAddress.IsMulticastAddress ()) {
-                            //DbgTrace (L"ignoring arped multicast address %s", Characters::ToString (i.ia).c_str ());
-                            continue;
-                        }
-
-                        unsigned int retriedLockCount = 0;
-                    again:
-                        Execution::Sleep (retriedLockCount * 1s); // sleep without the lock, but not first time processing message - just on retries
-#if qLOCK_DEBUGGING_
-                        Debug::TraceContextBumper ctxLock1{L"sDiscoveredDevices_ - discovering this network neighbors "};
-#endif
-
-                        // merge in data
-                        auto           l  = sDiscoveredDevices_.cget ();
-                        DiscoveryInfo_ di = [&] () {
-                            DiscoveryInfo_ tmp{};
-                            tmp.AddNetworkAddresses_ (i.fInternetAddress, i.fHardwareAddress);
-                            if (optional<DiscoveryInfo_> o = FindMatchingDevice_ (l, tmp)) {
-                                tmp = *o;
-                                tmp.AddNetworkAddresses_ (i.fInternetAddress, i.fHardwareAddress); // merge in additions
-#if qDebug
-                                tmp.fDebugProps.Add (L"Updated-By-MyNeighborDiscoverer_-At", DateTime::Now ());
-#endif
-                                return tmp;
+                            // ignore multicast addresses as they are not real devices(???always???)
+                            if (i.fInternetAddress.IsMulticastAddress ()) {
+                                //DbgTrace (L"ignoring arped multicast address %s", Characters::ToString (i.ia).c_str ());
+                                continue;
                             }
-                            else {
-                                tmp.fGUID = GUID::GenerateNew ();
+
+                            unsigned int retriedLockCount = 0;
+                        again:
+                            Execution::Sleep (retriedLockCount * 1s); // sleep without the lock, but not first time processing message - just on retries
+#if qLOCK_DEBUGGING_
+                            Debug::TraceContextBumper ctxLock1{L"sDiscoveredDevices_ - discovering this network neighbors "};
+#endif
+
+                            // merge in data
+                            auto           l  = sDiscoveredDevices_.cget ();
+                            DiscoveryInfo_ di = [&] () {
+                                DiscoveryInfo_ tmp{};
+                                tmp.AddNetworkAddresses_ (i.fInternetAddress, i.fHardwareAddress);
+                                if (optional<DiscoveryInfo_> o = FindMatchingDevice_ (l, tmp)) {
+                                    tmp = *o;
+                                    tmp.AddNetworkAddresses_ (i.fInternetAddress, i.fHardwareAddress); // merge in additions
 #if qDebug
-                                tmp.fDebugProps.Add (L"Found-By-MyNeighborDiscoverer_-At", DateTime::Now ());
-                                tmp.fDebugProps.Add (L"Found-By-MyNeighborDiscoverer_-I", Characters::ToString (i)); // to debug why sometimes we add but has no network info
+                                    tmp.fDebugProps.Add (L"Updated-By-MyNeighborDiscoverer_-At", DateTime::Now ());
 #endif
-                                return tmp;
+                                    return tmp;
+                                }
+                                else {
+                                    tmp.fGUID = GUID::GenerateNew ();
+#if qDebug
+                                    tmp.fDebugProps.Add (L"Found-By-MyNeighborDiscoverer_-At"sv, DateTime::Now ());
+                                    tmp.fDebugProps.Add (L"Found-By-MyNeighborDiscoverer_-I"sv, Characters::ToString (i)); // to debug why sometimes we add but has no network info
+#endif
+                                    return tmp;
+                                }
+                            }();
+
+                            if (di.fAttachedNetworks.empty ()) {
+                                DbgTrace ("Ignoring MyNeighborDiscoverer_ device {} because it was not on a known network (neighbor: {})"_f, di, i);
+                                return;
                             }
-                        }();
+                            Assert (not di.GetInternetAddresses ().empty ()); // can happen if we find address in tmp.AddIPAddress_() that's not bound to any adapter (but that shouldn't happen so investigate but is for now so ignore breifly)
 
-                        if (di.fAttachedNetworks.empty ()) {
-                            DbgTrace (L"Ignorning MyNeighborDiscoverer_ device %s because it was not on a known network (neighbor: %s)",
-                                      Characters::ToString (di).c_str (), Characters::ToString (i).c_str ());
-                            return;
-                        }
-                        Assert (not di.GetInternetAddresses ().empty ()); // can happen if we find address in tmp.AddIPAddress_() thats not bound to any adapter (but that shouldnt happen so investigate but is for now so ignore breifly)
+                            di.fSeen.fARP = Memory::NullCoalesce (di.fSeen.fARP).Extend (DateTime::Now ());
 
-                        di.fSeen.fARP = Memory::NullCoalesce (di.fSeen.fARP).Extend (DateTime::Now ());
+                            di.PatchDerivedFields ();
 
-                        di.PatchDerivedFields ();
-
-                        // Skip upgrade look to reduce the number of write locks we do, for the common case when there is no
-                        // actual change
-                        if (l->Lookup (di.fGUID) == di) {
+                            // Skip upgrade look to reduce the number of write locks we do, for the common case when there is no
+                            // actual change
+                            if (l->Lookup (di.fGUID) == di) {
 #if qLOCK_DEBUGGING_
-                            DbgTrace (L"!!! no change in ***MyNeighborDiscoverer_***  so skipping ");
+                                DbgTrace ("!!! no change in ***MyNeighborDiscoverer_***  so skipping "_f);
 #endif
-                            continue;
-                        }
+                                continue;
+                            }
 #if qLOCK_DEBUGGING_
-                        DbgTrace (L"have change in ***MyNeighborDiscoverer_*** so about to call UpgradeLockNonAtomicallyQuietly/1");
+                            DbgTrace ("have change in ***MyNeighborDiscoverer_*** so about to call UpgradeLockNonAtomicallyQuietly/1"_f);
 #endif
 
-                        Assert (di.fGUID != GUID{});
-                        if (not sDiscoveredDevices_.UpgradeLockNonAtomicallyQuietly (
-                                &l,
-                                [&] (auto&& writeLock) {
-                                    writeLock.rwref ().Add (di);
+                            Assert (di.fGUID != GUID{});
+                            if (not sDiscoveredDevices_.UpgradeLockNonAtomicallyQuietly (
+                                    &l,
+                                    [&] (auto&& writeLock) {
+                                        writeLock.rwref ().Add (di);
 #if qLOCK_DEBUGGING_
-                                    DbgTrace (L"!!! succeeded  updating with writelock ***MyNeighborDiscoverer_");
+                                        DbgTrace ("!!! succeeded  updating with writelock ***MyNeighborDiscoverer_"_f);
 #endif
-                                },
-                                5s)) {
-                            // Failed merge, so try the entire acquire/update; this should be fairly rare (except when alot of contention like when we first start),
-                            // and will cause a recomputation of the merge
-                            retriedLockCount++;
-                            DbgTrace (L"MyNeighborDiscoverer_: failed to update sDiscoveredDevices_ so retrying (cnt=%d)", retriedLockCount);
-                            goto again;
+                                    },
+                                    5s)) {
+                                // Failed merge, so try the entire acquire/update; this should be fairly rare (except when alot of contention like when we first start),
+                                // and will cause a recomputation of the merge
+                                retriedLockCount++;
+                                DbgTrace ("MyNeighborDiscoverer_: failed to update sDiscoveredDevices_ so retrying (cnt={})"_f, retriedLockCount);
+                                goto again;
+                            }
                         }
                     }
+                    catch (const Thread::AbortException&) {
+                        Execution::ReThrow ();
+                    }
+                    catch (...) {
+                        Logger::sThe.Log (Logger::eError, "{}"_f, current_exception ());
+                    }
+                    Execution::Sleep (1min); // unsure of right interval - maybe able to epoll or something so no actual polling needed - note no lock held here
                 }
-                catch (const Thread::AbortException&) {
-                    Execution::ReThrow ();
-                }
-                catch (...) {
-                    Logger::sThe.Log (Logger::eError, L"%s", Characters::ToString (current_exception ()).c_str ());
-                }
-                Execution::Sleep (1min); // unsure of right interval - maybe able to epoll or something so no actual polling needed - note no lock held here
             }
-        }
-        Thread::CleanupPtr fMyThread_;
-    };
+            Thread::CleanupPtr fMyThread_;
+        };
 
-    unique_ptr<MyNeighborDiscoverer_> sNeighborDiscoverer_;
-}
+        unique_ptr<MyNeighborDiscoverer_> sNeighborDiscoverer_;
+    }
 
-namespace {
-    /*
+    namespace {
+        /*
      ********************************************************************************
      ************************ RandomWalkThroughSubnetDiscoverer_ ********************
      ********************************************************************************
      */
-    struct RandomWalkThroughSubnetDiscoverer_ {
-        RandomWalkThroughSubnetDiscoverer_ ()
-            : fMyThread_{Thread::CleanupPtr::eAbortBeforeWaiting, Thread::New (Checker_, Thread::eAutoStart, L"RandomWalkThroughSubnetDiscoverer")}
-        {
-        }
+        struct RandomWalkThroughSubnetDiscoverer_ {
+            RandomWalkThroughSubnetDiscoverer_ ()
+                : fMyThread_{Thread::CleanupPtr::eAbortBeforeWaiting, Thread::New (Checker_, Thread::eAutoStart, L"RandomWalkThroughSubnetDiscoverer")}
+            {
+            }
 
-    private:
-        static void Checker_ ()
-        {
-            Debug::TraceContextBumper ctx{L"RandomWalkThroughSubnetDiscoverer_::Checker_"};
-            static constexpr Activity kDiscovering_THIS_{L"discovering by random scans"sv};
+        private:
+            static void Checker_ ()
+            {
+                Debug::TraceContextBumper ctx{L"RandomWalkThroughSubnetDiscoverer_::Checker_"};
+                static constexpr Activity kDiscovering_THIS_{L"discovering by random scans"sv};
 
-            static constexpr auto kMinTimeBetweenScans_{5s};
-            static constexpr auto kOnErrorTimeBetweenScans_{30s};
+                static constexpr auto kMinTimeBetweenScans_{5s};
+                static constexpr auto kOnErrorTimeBetweenScans_{30s};
 
-            //constexpr auto               kAllowedNetworkStaleness_ = 1min;
-            constexpr Time::DurationSeconds kAllowedNetworkStaleness_ = 60s;
+                //constexpr auto               kAllowedNetworkStaleness_ = 1min;
+                constexpr Time::DurationSeconds kAllowedNetworkStaleness_ = 60s;
 
-            /*
+                /*
              *  Use a BloomFilter instead of a Set<> since we dont want to waste alot of memory storing
              *  EVERY item we visited and discarded, and we dont need to be perfect, its a slow random walk and devices
              *  could appear and disappear during a scan anyhow...
              */
-            optional<DiscreteRange<InternetAddress>> scanAddressRange;
-            unique_ptr<Cache::BloomFilter<int>>      addressesProbablyUsed;
+                optional<DiscreteRange<InternetAddress>> scanAddressRange;
+                unique_ptr<Cache::BloomFilter<int>>      addressesProbablyUsed;
 
-            double sizeFactor{1}; // (DOESNT APPEAR NEEDED) - use more bloom filter bits than needed for full set, cuz otherwise get too many collisions as adding
-            double maxFalsePositivesAllowed      = .5;  // bloom filter stops working well if much past this probability limit
-            double maxFractionOfAddrSpaceScanned = .75; // our algorithm wastes alot of time computing random numbers past this limit
+                double sizeFactor{1}; // (DOESNT APPEAR NEEDED) - use more bloom filter bits than needed for full set, cuz otherwise get too many collisions as adding
+                double maxFalsePositivesAllowed      = .5;  // bloom filter stops working well if much past this probability limit
+                double maxFractionOfAddrSpaceScanned = .75; // our algorithm wastes alot of time computing random numbers past this limit
 
-            chrono::time_point rateLimiterWaitUntil = chrono::steady_clock::now ();
-            while (true) {
-                try {
-                    DeclareActivity da{&kDiscovering_THIS_};
+                chrono::time_point rateLimiterWaitUntil = chrono::steady_clock::now ();
+                while (true) {
+                    try {
+                        DeclareActivity da{&kDiscovering_THIS_};
 
-                    Execution::SleepUntil (rateLimiterWaitUntil);
-                    rateLimiterWaitUntil = chrono::steady_clock::now () + kMinTimeBetweenScans_;
+                        Execution::SleepUntil (rateLimiterWaitUntil);
+                        rateLimiterWaitUntil = chrono::steady_clock::now () + kMinTimeBetweenScans_;
 
-                    // Keep scanning the given range til we're (mostly) done
-                    if (not scanAddressRange) {
-                        Sequence<Discovery::Network> activeNetworks = Discovery::NetworksMgr::sThe.CollectActiveNetworks (kAllowedNetworkStaleness_);
-                        if (activeNetworks.empty ()) {
-                            DbgTrace (L"No active network, so postponing random device address scan");
-                            rateLimiterWaitUntil = chrono::steady_clock::now () + kOnErrorTimeBetweenScans_;
-                            continue;
-                        }
-                        // Scanning really only works for IPv4 since too large a range otherwise
-                        for (const Discovery::Network& nw : activeNetworks) {
-                            for (const CIDR& cidr : nw.fNetworkAddresses) {
-                                if (cidr.GetBaseInternetAddress ().GetAddressFamily () == InternetAddress::AddressFamily::V4) {
-                                    scanAddressRange = cidr.GetRange ();
-                                    DbgTrace (L"Selecting scanAddressRange=%s", Characters::ToString (scanAddressRange).c_str ());
+                        // Keep scanning the given range til we're (mostly) done
+                        if (not scanAddressRange) {
+                            Sequence<Discovery::Network> activeNetworks = Discovery::NetworksMgr::sThe.CollectActiveNetworks (kAllowedNetworkStaleness_);
+                            if (activeNetworks.empty ()) {
+                                DbgTrace ("No active network, so postponing random device address scan"_f);
+                                rateLimiterWaitUntil = chrono::steady_clock::now () + kOnErrorTimeBetweenScans_;
+                                continue;
+                            }
+                            // Scanning really only works for IPv4 since too large a range otherwise
+                            for (const Discovery::Network& nw : activeNetworks) {
+                                for (const CIDR& cidr : nw.fNetworkAddresses) {
+                                    if (cidr.GetBaseInternetAddress ().GetAddressFamily () == InternetAddress::AddressFamily::V4) {
+                                        scanAddressRange = cidr.GetRange ();
+                                        DbgTrace ("Selecting scanAddressRange={}"_f, scanAddressRange);
+                                        break;
+                                    }
+                                }
+                                if (scanAddressRange) {
                                     break;
                                 }
                             }
                             if (scanAddressRange) {
-                                break;
+                                addressesProbablyUsed = make_unique<Cache::BloomFilter<int>> (
+                                    static_cast<size_t> (sizeFactor * scanAddressRange->GetNumberOfContainedPoints ()));
                             }
                         }
-                        if (scanAddressRange) {
-                            addressesProbablyUsed = make_unique<Cache::BloomFilter<int>> (
-                                static_cast<size_t> (sizeFactor * scanAddressRange->GetNumberOfContainedPoints ()));
+                        if (not scanAddressRange) {
+                            // try again later
+                            DbgTrace ("No active IPV4 network, so postponing random device address scan"_f);
+                            rateLimiterWaitUntil = chrono::steady_clock::now () + kOnErrorTimeBetweenScans_;
+                            continue;
                         }
-                    }
-                    if (not scanAddressRange) {
-                        // try again later
-                        DbgTrace (L"No active IPV4 network, so postponing random device address scan");
-                        rateLimiterWaitUntil = chrono::steady_clock::now () + kOnErrorTimeBetweenScans_;
-                        continue;
-                    }
-                    AssertNotNull (addressesProbablyUsed);
+                        AssertNotNull (addressesProbablyUsed);
 
-                    //
-                    // pick first few addresses randomly, and when nearly full, clear, and try again
-                    // This doesn't gaurantee scanning every address, but the number of addresses could be large (e.g. class B network)
-                    // and it takes so long to scan, we'll miss a bunch anyhow. Retrying later statistically guarnatees we find everything
-                    // thats responding and around long enuf
-                    //
-                    optional<unsigned int> selected;
+                        //
+                        // pick first few addresses randomly, and when nearly full, clear, and try again
+                        // This doesn't guarantee scanning every address, but the number of addresses could be large (e.g. class B network)
+                        // and it takes so long to scan, we'll miss a bunch anyhow. Retrying later statistically guarantees we find everything
+                        // that's responding and around long enuf
+                        //
+                        optional<unsigned int> selected;
 
-                    auto bloomFilterStats = addressesProbablyUsed->GetStatistics ();
-                    //DbgTrace (L"***addressesProbablyUsed->GetStatistics ()=%s", Characters::ToString (bloomFilterStats).c_str ());
-                    if (bloomFilterStats.ProbabilityOfFalsePositive () < maxFalsePositivesAllowed and
-                        double (bloomFilterStats.fApparentlyDistinctAddCalls) / scanAddressRange->GetNumberOfContainedPoints () < maxFractionOfAddrSpaceScanned) {
-                        static mt19937 sRng_{std::random_device{}()};
-                        selected = uniform_int_distribution<unsigned int>{1, scanAddressRange->GetNumberOfContainedPoints () - 2}(sRng_);
-                    }
-                    else {
-                        DbgTrace (L"Completed full (%d/%d => %f fraction) scan of (scanAddressRange=%s), with randomCollisions=%d, "
-                                  L"resetting list, to start rescanning...",
-                                  bloomFilterStats.fApparentlyDistinctAddCalls, scanAddressRange->GetNumberOfContainedPoints (),
-                                  double (bloomFilterStats.fApparentlyDistinctAddCalls) / scanAddressRange->GetNumberOfContainedPoints (),
-                                  Characters::ToString (scanAddressRange).c_str (),
-                                  bloomFilterStats.fActualAddCalls - bloomFilterStats.fApparentlyDistinctAddCalls);
-                        DbgTrace (L"addressesProbablyUsed.GetStatistics ()=%s", Characters::ToString (bloomFilterStats).c_str ());
-                        addressesProbablyUsed.reset ();
-                        scanAddressRange.reset ();
-                        rateLimiterWaitUntil = chrono::steady_clock::now () + 15s;
-                        continue;
-                    }
-                    Assert (selected);
-
-                    auto runPingCheck = [] (const InternetAddress& ia) {
-                        PortScanResults scanResults = ScanPorts (ia, ScanOptions{ScanOptions::eQuick});
-                        //DbgTrace (L"Port scanning %s returned these ports: %s", Characters::ToString (ia).c_str (), Characters::ToString (scanResults.fKnownOpenPorts).c_str ());
-
-                        if (not scanResults.fDiscoveredOpenPorts.empty ()) {
-                            // also add check for ICMP PING
-                        }
-
-                        // then flag found device and when via random pings/portscan, and record portscan result.
-                        if (scanResults.fDiscoveredOpenPorts.empty ()) {
-                            DbgTrace (L"No obvious device at ip %s for because no scan results (ScanOptions::eQuick)",
-                                      Characters::ToString (ia).c_str ());
+                        auto bloomFilterStats = addressesProbablyUsed->GetStatistics ();
+                        //DbgTrace (L"***addressesProbablyUsed->GetStatistics ()=%s", Characters::ToString (bloomFilterStats).c_str ());
+                        if (bloomFilterStats.ProbabilityOfFalsePositive () < maxFalsePositivesAllowed and
+                            double (bloomFilterStats.fApparentlyDistinctAddCalls) / scanAddressRange->GetNumberOfContainedPoints () <
+                                maxFractionOfAddrSpaceScanned) {
+                            static mt19937 sRng_{std::random_device{}()};
+                            selected = uniform_int_distribution<unsigned int>{1, scanAddressRange->GetNumberOfContainedPoints () - 2}(sRng_);
                         }
                         else {
-                            DiscoveryInfo_ tmp{};
-                            tmp.AddNetworkAddresses_ (ia);
+                            DbgTrace ("Completed full ({}/{} => {} fraction) scan of (scanAddressRange={}), with randomCollisions={}, resetting list, to start rescanning..."_f,
+                                      bloomFilterStats.fApparentlyDistinctAddCalls, scanAddressRange->GetNumberOfContainedPoints (),
+                                      double (bloomFilterStats.fApparentlyDistinctAddCalls) / scanAddressRange->GetNumberOfContainedPoints (),
+                                      scanAddressRange, bloomFilterStats.fActualAddCalls - bloomFilterStats.fApparentlyDistinctAddCalls);
+                            DbgTrace ("addressesProbablyUsed.GetStatistics ()={}"_f, bloomFilterStats);
+                            addressesProbablyUsed.reset ();
+                            scanAddressRange.reset ();
+                            rateLimiterWaitUntil = chrono::steady_clock::now () + 15s;
+                            continue;
+                        }
+                        Assert (selected);
 
-                            auto l = sDiscoveredDevices_.rwget (); // grab write lock because almost assured of making changes (at least last seen)
-                            // @todo RECONSIDER - MAYBE DO READ AND UPGRADE CUZ OF CASE WHERE NO SCAN RESULTS - WANT TO NOT BOTHER LOCKING
+                        auto runPingCheck = [] (const InternetAddress& ia) {
+                            PortScanResults scanResults = ScanPorts (ia, ScanOptions{ScanOptions::eQuick});
+                            //DbgTrace (L"Port scanning %s returned these ports: %s", Characters::ToString (ia).c_str (), Characters::ToString (scanResults.fKnownOpenPorts).c_str ());
 
-                            if (optional<DiscoveryInfo_> oo = FindMatchingDevice_ (l, tmp)) {
-                                WeakAsserteNotReached (); // This case should basically never happen (maybe lose support) - because we check before running ping if its already in the list
-                                // if found, update to say what ports we found
-                                tmp = *oo;
-                                Memory::AccumulateIf (&tmp.fOpenPorts, scanResults.fDiscoveredOpenPorts);
-                                PatchSeen_ (&tmp, scanResults);
-                                tmp.PatchDerivedFields ();
-                                Assert (tmp.fGUID != GUID{});
-#if qDebug
-                                tmp.fDebugProps.Add (L"Updated-By-RandomWalkThroughSubnetDiscoverer_-At", DateTime::Now ());
-#endif
-                                l.rwref ().Add (tmp);
-                                DbgTrace (L"Updated device %s for fKnownOpenPorts: %s", Characters::ToString (tmp.fGUID).c_str (),
-                                          Characters::ToString (scanResults.fDiscoveredOpenPorts).c_str ());
+                            if (not scanResults.fDiscoveredOpenPorts.empty ()) {
+                                // also add check for ICMP PING
+                            }
+
+                            // then flag found device and when via random pings/portscan, and record portscan result.
+                            if (scanResults.fDiscoveredOpenPorts.empty ()) {
+                                DbgTrace ("No obvious device at ip {} for because no scan results (ScanOptions::eQuick)"_f, ia);
                             }
                             else {
-                                tmp.fGUID = GUID::GenerateNew ();
-                                // only CREATE an entry for addresses where we found a port
-                                tmp.fOpenPorts = scanResults.fDiscoveredOpenPorts;
-                                PatchSeen_ (&tmp, scanResults);
-                                tmp.PatchDerivedFields ();
-                                // NOTE - at this point - we have no hardware address - could get from IO::Network::Neighbors API, but too costly, not worth while here
+                                DiscoveryInfo_ tmp{};
+                                tmp.AddNetworkAddresses_ (ia);
+
+                                auto l = sDiscoveredDevices_.rwget (); // grab write lock because almost assured of making changes (at least last seen)
+                                // @todo RECONSIDER - MAYBE DO READ AND UPGRADE CUZ OF CASE WHERE NO SCAN RESULTS - WANT TO NOT BOTHER LOCKING
+
+                                if (optional<DiscoveryInfo_> oo = FindMatchingDevice_ (l, tmp)) {
+                                    WeakAssertNotReached (); // This case should basically never happen (maybe lose support) - because we check before running ping if its already in the list
+                                    // if found, update to say what ports we found
+                                    tmp = *oo;
+                                    Memory::AccumulateIf (&tmp.fOpenPorts, scanResults.fDiscoveredOpenPorts);
+                                    PatchSeen_ (&tmp, scanResults);
+                                    tmp.PatchDerivedFields ();
+                                    Assert (tmp.fGUID != GUID{});
 #if qDebug
-                                tmp.fDebugProps.Add (L"Found-By-RandomWalkThroughSubnetDiscoverer_-At", DateTime::Now ());
+                                    tmp.fDebugProps.Add ("Updated-By-RandomWalkThroughSubnetDiscoverer_-At"sv, DateTime::Now ());
 #endif
-                                Assert (tmp.fGUID != GUID{});
-                                l.rwref ().Add (tmp);
-                                DbgTrace (L"Added device %s for fKnownOpenPorts: %s", Characters::ToString (tmp.fGUID).c_str (),
-                                          Characters::ToString (scanResults.fDiscoveredOpenPorts).c_str ());
+                                    l.rwref ().Add (tmp);
+                                    DbgTrace ("Updated device {} for fKnownOpenPorts: {}"_f, tmp.fGUID, scanResults.fDiscoveredOpenPorts);
+                                }
+                                else {
+                                    tmp.fGUID = GUID::GenerateNew ();
+                                    // only CREATE an entry for addresses where we found a port
+                                    tmp.fOpenPorts = scanResults.fDiscoveredOpenPorts;
+                                    PatchSeen_ (&tmp, scanResults);
+                                    tmp.PatchDerivedFields ();
+                                    // NOTE - at this point - we have no hardware address - could get from IO::Network::Neighbors API, but too costly, not worth while here
+#if qDebug
+                                    tmp.fDebugProps.Add (L"Found-By-RandomWalkThroughSubnetDiscoverer_-At", DateTime::Now ());
+#endif
+                                    Assert (tmp.fGUID != GUID{});
+                                    l.rwref ().Add (tmp);
+                                    DbgTrace ("Added device {} for fKnownOpenPorts: {}"_f, tmp.fGUID, scanResults.fDiscoveredOpenPorts);
+                                }
+                                Assert (not tmp.GetInternetAddresses ().empty ()); // shouldn't happen
                             }
-                            Assert (not tmp.GetInternetAddresses ().empty ()); // shouldn't happen
-                        }
-                    };
+                        };
 
-                    // We MAY skip scanning some addresses because of bloomfilter inaccuracy, but this allows us to skip lots
-                    // of pointless random rescans, so its worth it to check the result of Add()
-                    if (addressesProbablyUsed->Add (*selected)) {
-                        InternetAddress ia = scanAddressRange->GetLowerBound ().Offset (*selected);
+                        // We MAY skip scanning some addresses because of bloomfilter inaccuracy, but this allows us to skip lots
+                        // of pointless random rescans, so its worth it to check the result of Add()
+                        if (addressesProbablyUsed->Add (*selected)) {
+                            InternetAddress ia = scanAddressRange->GetLowerBound ().Offset (*selected);
 
-                        /*
+                            /*
                          *  dont bother probing if we already have the device in our list
                          */
-                        bool need2CheckAddr{true};
-                        {
-                            auto l = sDiscoveredDevices_.cget (); // grab write lock because almost assured of making changes (at least last seen)
-                            DiscoveryInfo_ tmp{};
-                            tmp.AddNetworkAddresses_ (ia);
-                            if (optional<DiscoveryInfo_> oo = FindMatchingDevice_ (l, tmp)) {
-                                need2CheckAddr = false;
+                            bool need2CheckAddr{true};
+                            {
+                                auto l = sDiscoveredDevices_.cget (); // grab write lock because almost assured of making changes (at least last seen)
+                                DiscoveryInfo_ tmp{};
+                                tmp.AddNetworkAddresses_ (ia);
+                                if (optional<DiscoveryInfo_> oo = FindMatchingDevice_ (l, tmp)) {
+                                    need2CheckAddr = false;
+                                }
+                            }
+                            if (need2CheckAddr) {
+                                runPingCheck (ia);
                             }
                         }
-                        if (need2CheckAddr) {
-                            runPingCheck (ia);
-                        }
+                    }
+                    catch (const Thread::AbortException&) {
+                        Execution::ReThrow ();
+                    }
+                    catch (...) {
+                        Logger::sThe.Log (Logger::eError, "{}"_f, current_exception ());
+                        rateLimiterWaitUntil = chrono::steady_clock::now () + 30s;
                     }
                 }
-                catch (const Thread::AbortException&) {
-                    Execution::ReThrow ();
-                }
-                catch (...) {
-                    Logger::sThe.Log (Logger::eError, L"%s", Characters::ToString (current_exception ()).c_str ());
-                    rateLimiterWaitUntil = chrono::steady_clock::now () + 30s;
-                }
             }
-        }
-        Thread::CleanupPtr fMyThread_;
-    };
+            Thread::CleanupPtr fMyThread_;
+        };
 
-    unique_ptr<RandomWalkThroughSubnetDiscoverer_> sRandomWalkThroughSubnetDiscoverer_;
-}
+        unique_ptr<RandomWalkThroughSubnetDiscoverer_> sRandomWalkThroughSubnetDiscoverer_;
+    }
 
-namespace {
-    /*
+    namespace {
+        /*
      ********************************************************************************
      ***************************** KnownDevicePortScanner_ **************************
      ********************************************************************************
      */
-    struct KnownDevicePortScanner_ {
-        KnownDevicePortScanner_ ()
-            : fMyThread_{Thread::CleanupPtr::eAbortBeforeWaiting, Thread::New (Checker_, Thread::eAutoStart, L"KnownDevicePortScanner"sv)}
-        {
-        }
+        struct KnownDevicePortScanner_ {
+            KnownDevicePortScanner_ ()
+                : fMyThread_{Thread::CleanupPtr::eAbortBeforeWaiting, Thread::New (Checker_, Thread::eAutoStart, L"KnownDevicePortScanner"sv)}
+            {
+            }
 
-    private:
-        static void Checker_ ()
-        {
-            static constexpr Activity kDiscovering_THIS_{L"checking status of active devices"sv};
+        private:
+            static void Checker_ ()
+            {
+                static constexpr Activity kDiscovering_THIS_{L"checking status of active devices"sv};
 
-            static constexpr auto kMinTimeBetweenScans_{5s};
+                static constexpr auto kMinTimeBetweenScans_{5s};
 
-            //constexpr auto               kAllowedNetworkStaleness_ = 1min;
-            //constexpr Time::DurationSecondsType kAllowedNetworkStaleness_ = 60;
+                //constexpr auto               kAllowedNetworkStaleness_ = 1min;
+                //constexpr Time::DurationSecondsType kAllowedNetworkStaleness_ = 60;
 
-            Sequence<GUID>           devices2Check;
-            optional<Iterator<GUID>> devices2CheckIterator;
+                Sequence<GUID>           devices2Check;
+                optional<Iterator<GUID>> devices2CheckIterator;
 
-            while (true) {
-                Execution::Sleep (kMinTimeBetweenScans_);
+                while (true) {
+                    Execution::Sleep (kMinTimeBetweenScans_);
 
-                try {
-                    DeclareActivity da{&kDiscovering_THIS_};
+                    try {
+                        DeclareActivity da{&kDiscovering_THIS_};
 
-                    if (devices2Check.empty ()) {
-                        devices2Check         = Sequence<GUID>{sDiscoveredDevices_.cget ().cref ().Keys ()};
-                        devices2CheckIterator = devices2Check.begin ();
-                    }
-                    if (devices2CheckIterator == devices2Check.end ()) {
-                        devices2CheckIterator = nullopt;
-                        devices2Check         = Sequence<GUID>{};
-                    }
-                    if (devices2Check.empty ()) {
-                        Execution::Sleep (30s);
-                        continue;
-                    }
+                        if (devices2Check.empty ()) {
+                            devices2Check         = Sequence<GUID>{sDiscoveredDevices_.cget ().cref ().Keys ()};
+                            devices2CheckIterator = devices2Check.begin ();
+                        }
+                        if (devices2CheckIterator == devices2Check.end ()) {
+                            devices2CheckIterator = nullopt;
+                            devices2Check         = Sequence<GUID>{};
+                        }
+                        if (devices2Check.empty ()) {
+                            Execution::Sleep (30s);
+                            continue;
+                        }
 
-                    auto runPingCheck = [] (const GUID& deviceID, const InternetAddress& ia) {
-                        PortScanResults scanResults = ScanPorts (ia, ScanOptions{ScanOptions::eRandomBasicOne});
+                        auto runPingCheck = [] (const GUID& deviceID, const InternetAddress& ia) {
+                            PortScanResults scanResults = ScanPorts (ia, ScanOptions{ScanOptions::eRandomBasicOne});
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
-                        DbgTrace (L"Port scanning on existing device %s (addr %s) returned these ports: %s", Characters::ToString (deviceID).c_str (),
-                                  Characters::ToString (ia).c_str (), Characters::ToString (scanResults.fDiscoveredOpenPorts).c_str ());
+                            DbgTrace (L"Port scanning on existing device %s (addr %s) returned these ports: %s",
+                                      Characters::ToString (deviceID).c_str (), Characters::ToString (ia).c_str (),
+                                      Characters::ToString (scanResults.fDiscoveredOpenPorts).c_str ());
 #endif
 
-                        {
-                            // also add check for ICMP PING
-                            Frameworks::NetworkMonitor::Ping::Pinger p{ia};
-                            try {
-                                auto r = p.RunOnce (); //incomplete
-                                // @todo document TTL arg to Pinger...
-                                scanResults.fDiscoveredOpenPorts.Add (L"icmp:ping"sv);
+                            {
+                                // also add check for ICMP PING
+                                Frameworks::NetworkMonitor::Ping::Pinger p{ia};
+                                try {
+                                    auto r = p.RunOnce (); //incomplete
+                                    // @todo document TTL arg to Pinger...
+                                    scanResults.fDiscoveredOpenPorts.Add (L"icmp:ping"sv);
+                                }
+                                catch (...) {
+                                }
                             }
-                            catch (...) {
-                            }
-                        }
 
-                        // then flag found device and when via random pings/portscan, and record portscan result.
-                        if (not scanResults.fDiscoveredOpenPorts.empty ()) {
-                            auto           l = sDiscoveredDevices_.rwget ();
-                            DiscoveryInfo_ tmp{};
-                            tmp.AddNetworkAddresses_ (ia);
-                            if (optional<DiscoveryInfo_> oo = l.cref ().Lookup (deviceID)) {
-                                // if found, update to say what ports we found
-                                tmp = *oo;
-                                Memory::AccumulateIf (&tmp.fOpenPorts, scanResults.fDiscoveredOpenPorts);
-                                PatchSeen_ (&tmp, scanResults);
-                                tmp.PatchDerivedFields ();
-                                Assert (tmp.fGUID != GUID{});
+                            // then flag found device and when via random pings/portscan, and record portscan result.
+                            if (not scanResults.fDiscoveredOpenPorts.empty ()) {
+                                auto           l = sDiscoveredDevices_.rwget ();
+                                DiscoveryInfo_ tmp{};
+                                tmp.AddNetworkAddresses_ (ia);
+                                if (optional<DiscoveryInfo_> oo = l.cref ().Lookup (deviceID)) {
+                                    // if found, update to say what ports we found
+                                    tmp = *oo;
+                                    Memory::AccumulateIf (&tmp.fOpenPorts, scanResults.fDiscoveredOpenPorts);
+                                    PatchSeen_ (&tmp, scanResults);
+                                    tmp.PatchDerivedFields ();
+                                    Assert (tmp.fGUID != GUID{});
 #if qDebug
-                                tmp.fDebugProps.Add (L"Updated-By-KnownDevicePortScanner_-At", DateTime::Now ());
+                                    tmp.fDebugProps.Add (L"Updated-By-KnownDevicePortScanner_-At", DateTime::Now ());
 #endif
-                                l.rwref ().Add (tmp);
-                                DbgTrace (L"Updated device %s for fKnownOpenPorts: %s", Characters::ToString (tmp.fGUID).c_str (),
-                                          Characters::ToString (scanResults.fDiscoveredOpenPorts).c_str ());
+                                    l.rwref ().Add (tmp);
+                                    DbgTrace ("Updated device {} for fKnownOpenPorts: {}"_f, tmp.fGUID, scanResults.fDiscoveredOpenPorts);
+                                }
+                                else {
+                                    WeakAssertNotReached (); // objects CAN disappear from list of devices (eventually we will support expiring/deleting)
+                                }
                             }
-                            else {
-                                WeakAsserteNotReached (); // objects CAN disappear from list of devices (eventually we will support expiring/deleting)
-                            }
-                        }
-                    };
+                        };
 
-                    if (auto o = sDiscoveredDevices_.cget ().cref ().Lookup (**devices2CheckIterator)) {
-                        for (const auto& ia : o->GetInternetAddresses ()) {
-                            runPingCheck (o->fGUID, ia);
+                        if (auto o = sDiscoveredDevices_.cget ().cref ().Lookup (**devices2CheckIterator)) {
+                            for (const auto& ia : o->GetInternetAddresses ()) {
+                                runPingCheck (o->fGUID, ia);
+                            }
                         }
+                        ++(*devices2CheckIterator);
                     }
-                    ++(*devices2CheckIterator);
-                }
-                catch (const Thread::AbortException&) {
-                    Execution::ReThrow ();
-                }
-                catch (...) {
-                    Logger::sThe.Log (Logger::eError, L"%s", Characters::ToString (current_exception ()).c_str ());
+                    catch (const Thread::AbortException&) {
+                        Execution::ReThrow ();
+                    }
+                    catch (...) {
+                        Logger::sThe.Log (Logger::eError, "{}"_f, current_exception ());
+                    }
                 }
             }
-        }
-        Thread::CleanupPtr fMyThread_;
-    };
+            Thread::CleanupPtr fMyThread_;
+        };
 
-    unique_ptr<KnownDevicePortScanner_> sKnownDevicePortScanner_;
-}
+        unique_ptr<KnownDevicePortScanner_> sKnownDevicePortScanner_;
+    }
 
-/*
+    /*
  ********************************************************************************
  ********************* Discovery::DevicesMgr::Activator *************************
  ********************************************************************************
  */
-namespace {
-    constexpr Time::DurationSeconds kDefaultItemCacheLifetime_{1s}; // this costs very little since just reading already cached data so default to quick check
+    namespace {
+        constexpr Time::DurationSeconds kDefaultItemCacheLifetime_{1s}; // this costs very little since just reading already cached data so default to quick check
 
-    // Really always want all true, just add ability to turn some off to ease debugging
-    constexpr bool kInclude_SSDP_Discoverer_{true};
-    constexpr bool kInclude_MyDevice_Discoverer_{true};
-    constexpr bool kInclude_Neighbor_Discoverer_{true};
-    constexpr bool kInclude_PortScan_Discoverer_{true};
+        // Really always want all true, just add ability to turn some off to ease debugging
+        constexpr bool kInclude_SSDP_Discoverer_{true};
+        constexpr bool kInclude_MyDevice_Discoverer_{true};
+        constexpr bool kInclude_Neighbor_Discoverer_{true};
+        constexpr bool kInclude_PortScan_Discoverer_{true};
 
-    bool IsActive_ ()
+        bool IsActive_ ()
+        {
+            if constexpr (kInclude_MyDevice_Discoverer_ and kInclude_SSDP_Discoverer_) {
+                Require (static_cast<bool> (sMyDeviceDiscoverer_) == static_cast<bool> (sSSDPDeviceDiscoverer_));
+            }
+            if constexpr (kInclude_MyDevice_Discoverer_ and kInclude_Neighbor_Discoverer_) {
+                Require (static_cast<bool> (sMyDeviceDiscoverer_) == static_cast<bool> (sNeighborDiscoverer_));
+            }
+            if constexpr (kInclude_SSDP_Discoverer_ and kInclude_Neighbor_Discoverer_) {
+                Require (static_cast<bool> (sSSDPDeviceDiscoverer_) == static_cast<bool> (sNeighborDiscoverer_));
+            }
+            if constexpr (kInclude_PortScan_Discoverer_ and kInclude_Neighbor_Discoverer_) {
+                Require (static_cast<bool> (sRandomWalkThroughSubnetDiscoverer_) == static_cast<bool> (sNeighborDiscoverer_));
+            }
+            if constexpr (kInclude_SSDP_Discoverer_) {
+                return sSSDPDeviceDiscoverer_ != nullptr;
+            }
+            if constexpr (kInclude_MyDevice_Discoverer_) {
+                return sMyDeviceDiscoverer_ != nullptr;
+            }
+            if constexpr (kInclude_Neighbor_Discoverer_) {
+                return sNeighborDiscoverer_ != nullptr;
+            }
+            if constexpr (kInclude_PortScan_Discoverer_) {
+                return sRandomWalkThroughSubnetDiscoverer_ != nullptr;
+            }
+            return sKnownDevicePortScanner_ != nullptr;
+        }
+    }
+
+    Discovery::DevicesMgr::Activator::Activator ()
     {
-        if constexpr (kInclude_MyDevice_Discoverer_ and kInclude_SSDP_Discoverer_) {
-            Require (static_cast<bool> (sMyDeviceDiscoverer_) == static_cast<bool> (sSSDPDeviceDiscoverer_));
-        }
-        if constexpr (kInclude_MyDevice_Discoverer_ and kInclude_Neighbor_Discoverer_) {
-            Require (static_cast<bool> (sMyDeviceDiscoverer_) == static_cast<bool> (sNeighborDiscoverer_));
-        }
-        if constexpr (kInclude_SSDP_Discoverer_ and kInclude_Neighbor_Discoverer_) {
-            Require (static_cast<bool> (sSSDPDeviceDiscoverer_) == static_cast<bool> (sNeighborDiscoverer_));
-        }
-        if constexpr (kInclude_PortScan_Discoverer_ and kInclude_Neighbor_Discoverer_) {
-            Require (static_cast<bool> (sRandomWalkThroughSubnetDiscoverer_) == static_cast<bool> (sNeighborDiscoverer_));
-        }
+        Debug::TraceContextBumper ctx{L"Discovery::DevicesMgr::Activator::Activator"};
+        Require (not IsActive_ ());
         if constexpr (kInclude_SSDP_Discoverer_) {
-            return sSSDPDeviceDiscoverer_ != nullptr;
+            sSSDPDeviceDiscoverer_ = make_unique<SSDPDeviceDiscoverer_> ();
         }
         if constexpr (kInclude_MyDevice_Discoverer_) {
-            return sMyDeviceDiscoverer_ != nullptr;
+            sMyDeviceDiscoverer_ = make_unique<MyDeviceDiscoverer_> ();
         }
         if constexpr (kInclude_Neighbor_Discoverer_) {
-            return sNeighborDiscoverer_ != nullptr;
+            sNeighborDiscoverer_ = make_unique<MyNeighborDiscoverer_> ();
         }
         if constexpr (kInclude_PortScan_Discoverer_) {
-            return sRandomWalkThroughSubnetDiscoverer_ != nullptr;
+            sRandomWalkThroughSubnetDiscoverer_ = make_unique<RandomWalkThroughSubnetDiscoverer_> ();
         }
-        return sKnownDevicePortScanner_ != nullptr;
+        sKnownDevicePortScanner_ = make_unique<KnownDevicePortScanner_> ();
     }
-}
 
-Discovery::DevicesMgr::Activator::Activator ()
-{
-    Debug::TraceContextBumper ctx{L"Discovery::DevicesMgr::Activator::Activator"};
-    Require (not IsActive_ ());
-    if constexpr (kInclude_SSDP_Discoverer_) {
-        sSSDPDeviceDiscoverer_ = make_unique<SSDPDeviceDiscoverer_> ();
+    Discovery::DevicesMgr::Activator::~Activator ()
+    {
+        Debug::TraceContextBumper ctx{L"Discovery::DevicesMgr::Activator::~Activator"};
+        Require (IsActive_ ());
+        if constexpr (kInclude_SSDP_Discoverer_) {
+            sSSDPDeviceDiscoverer_.reset ();
+        }
+        if constexpr (kInclude_MyDevice_Discoverer_) {
+            sMyDeviceDiscoverer_.reset ();
+        }
+        if constexpr (kInclude_Neighbor_Discoverer_) {
+            sNeighborDiscoverer_.reset ();
+        }
+        if constexpr (kInclude_PortScan_Discoverer_) {
+            sRandomWalkThroughSubnetDiscoverer_.reset ();
+        }
+        sKnownDevicePortScanner_.reset ();
     }
-    if constexpr (kInclude_MyDevice_Discoverer_) {
-        sMyDeviceDiscoverer_ = make_unique<MyDeviceDiscoverer_> ();
-    }
-    if constexpr (kInclude_Neighbor_Discoverer_) {
-        sNeighborDiscoverer_ = make_unique<MyNeighborDiscoverer_> ();
-    }
-    if constexpr (kInclude_PortScan_Discoverer_) {
-        sRandomWalkThroughSubnetDiscoverer_ = make_unique<RandomWalkThroughSubnetDiscoverer_> ();
-    }
-    sKnownDevicePortScanner_ = make_unique<KnownDevicePortScanner_> ();
-}
 
-Discovery::DevicesMgr::Activator::~Activator ()
-{
-    Debug::TraceContextBumper ctx{L"Discovery::DevicesMgr::Activator::~Activator"};
-    Require (IsActive_ ());
-    if constexpr (kInclude_SSDP_Discoverer_) {
-        sSSDPDeviceDiscoverer_.reset ();
-    }
-    if constexpr (kInclude_MyDevice_Discoverer_) {
-        sMyDeviceDiscoverer_.reset ();
-    }
-    if constexpr (kInclude_Neighbor_Discoverer_) {
-        sNeighborDiscoverer_.reset ();
-    }
-    if constexpr (kInclude_PortScan_Discoverer_) {
-        sRandomWalkThroughSubnetDiscoverer_.reset ();
-    }
-    sKnownDevicePortScanner_.reset ();
-}
-
-/*
+    /*
  ********************************************************************************
  **************************** Discovery::DevicesMgr *****************************
  ********************************************************************************
  */
-DevicesMgr DevicesMgr::sThe;
+    DevicesMgr DevicesMgr::sThe;
 
-optional<GUID> Discovery::DevicesMgr::GetThisDeviceID () const
-{
-    if (sMyDeviceDiscoverer_ != nullptr) {
-        return sMyDeviceDiscoverer_->GetThisDeviceID ();
-    }
-    return nullopt;
-}
-
-Collection<Discovery::Device> Discovery::DevicesMgr::GetActiveDevices (optional<Time::DurationSeconds> allowedStaleness) const
-{
-#if USE_NOISY_TRACE_IN_THIS_MODULE_
-    Debug::TraceContextBumper ctx{L"Discovery::GetActiveDevices"};
-#endif
-    Debug::TimingTrace ttrc{L"Discovery::DevicesMgr::GetActiveDevices", 1.0s};
-
-    Require (IsActive_ ());
-    Collection<Discovery::Device> results;
-    using Cache::SynchronizedCallerStalenessCache;
-    static SynchronizedCallerStalenessCache<void, Collection<Discovery::Device>> sCache_;
-    results = sCache_.LookupValue (sCache_.Ago (allowedStaleness.value_or (kDefaultItemCacheLifetime_)), [] () {
-#if USE_NOISY_TRACE_IN_THIS_MODULE_
-        DbgTrace (L"sDiscoveredDevices_: %s", Characters::ToString (sDiscoveredDevices_.load ()).c_str ());
-#endif
-        // NOTE - intentionally omit devices with no hardware addresses
-        return sDiscoveredDevices_.load ().Where ([] (const Discovery::Device& d) { return not d.GetHardwareAddresses ().empty (); }); // intentionally object-spice
-    });
-#if USE_NOISY_TRACE_IN_THIS_MODULE_
-    DbgTrace (L"returns: %s", Characters::ToString (results).c_str ());
-#endif
-    return results;
-}
-
-void Discovery::DevicesMgr::ReScan (const GUID& deviceID)
-{
-#if USE_NOISY_TRACE_IN_THIS_MODULE_
-    Debug::TraceContextBumper ctx{L"Discovery::ReScan"};
-#endif
-    Debug::TimingTrace        ttrc{L"Discovery::DevicesMgr::ReScan"};
-    static constexpr Activity kRescanning_Device_{L"rescanning device"sv};
-    DeclareActivity           da{&kRescanning_Device_};
-
-    auto findDeviceInfoAndClearFoundPorts = [] (const GUID& deviceID) {
-        auto l = sDiscoveredDevices_.rwget ();
-        if (optional<DiscoveryInfo_> oo = l.rwref ().Lookup (deviceID)) {
-            DiscoveryInfo_ tmp{*oo};
-            tmp.PatchDerivedFields ();
-            Assert (tmp.fGUID != GUID{});
-            tmp.fOpenPorts = nullopt;
-            l.rwref ().Add (tmp);
-            return tmp;
+    optional<GUID> Discovery::DevicesMgr::GetThisDeviceID () const
+    {
+        if (sMyDeviceDiscoverer_ != nullptr) {
+            return sMyDeviceDiscoverer_->GetThisDeviceID ();
         }
-        Execution::Throw (IO::Network::HTTP::ClientErrorException{L"deviceID not recognized"});
-    };
-    auto addOpenPorts = [] (const GUID& deviceID, const PortScanResults& portScanResults) {
-        auto l = sDiscoveredDevices_.rwget ();
-        if (optional<DiscoveryInfo_> oo = l.rwref ().Lookup (deviceID)) {
-            DiscoveryInfo_ tmp{*oo};
-            for (const String& p : portScanResults.fDiscoveredOpenPorts) {
-                Memory::AccumulateIf (&tmp.fOpenPorts, p);
+        return nullopt;
+    }
+
+    Collection<Discovery::Device> Discovery::DevicesMgr::GetActiveDevices (optional<Time::DurationSeconds> allowedStaleness) const
+    {
+#if USE_NOISY_TRACE_IN_THIS_MODULE_
+        Debug::TraceContextBumper ctx{L"Discovery::GetActiveDevices"};
+#endif
+        Debug::TimingTrace ttrc{L"Discovery::DevicesMgr::GetActiveDevices", 1.0s};
+
+        Require (IsActive_ ());
+        Collection<Discovery::Device> results;
+        using Cache::SynchronizedCallerStalenessCache;
+        static SynchronizedCallerStalenessCache<void, Collection<Discovery::Device>> sCache_;
+        results = sCache_.LookupValue (sCache_.Ago (allowedStaleness.value_or (kDefaultItemCacheLifetime_)), [] () {
+#if USE_NOISY_TRACE_IN_THIS_MODULE_
+            DbgTrace (L"sDiscoveredDevices_: %s", Characters::ToString (sDiscoveredDevices_.load ()).c_str ());
+#endif
+            // NOTE - intentionally omit devices with no hardware addresses
+            return sDiscoveredDevices_.load ().Where ([] (const Discovery::Device& d) { return not d.GetHardwareAddresses ().empty (); }); // intentionally object-spice
+        });
+#if USE_NOISY_TRACE_IN_THIS_MODULE_
+        DbgTrace (L"returns: %s", Characters::ToString (results).c_str ());
+#endif
+        return results;
+    }
+
+    void Discovery::DevicesMgr::ReScan (const GUID& deviceID)
+    {
+#if USE_NOISY_TRACE_IN_THIS_MODULE_
+        Debug::TraceContextBumper ctx{L"Discovery::ReScan"};
+#endif
+        Debug::TimingTrace        ttrc{L"Discovery::DevicesMgr::ReScan"};
+        static constexpr Activity kRescanning_Device_{L"rescanning device"sv};
+        DeclareActivity           da{&kRescanning_Device_};
+
+        auto findDeviceInfoAndClearFoundPorts = [] (const GUID& deviceID) {
+            auto l = sDiscoveredDevices_.rwget ();
+            if (optional<DiscoveryInfo_> oo = l.rwref ().Lookup (deviceID)) {
+                DiscoveryInfo_ tmp{*oo};
+                tmp.PatchDerivedFields ();
+                Assert (tmp.fGUID != GUID{});
+                tmp.fOpenPorts = nullopt;
+                l.rwref ().Add (tmp);
+                return tmp;
             }
-            PatchSeen_ (&tmp, portScanResults);
-            tmp.PatchDerivedFields ();
-            Assert (tmp.fGUID != GUID{});
-            l.rwref ().Add (tmp);
-            DbgTrace (L"Updated device %s for fKnownOpenPorts: %s", Characters::ToString (tmp.fGUID).c_str (),
-                      Characters::ToString (portScanResults.fDiscoveredOpenPorts).c_str ());
-        }
-        else {
-            AssertNotReached ();
-        }
-    };
+            Execution::Throw (IO::Network::HTTP::ClientErrorException{L"deviceID not recognized"sv});
+        };
+        auto addOpenPorts = [] (const GUID& deviceID, const PortScanResults& portScanResults) {
+            auto l = sDiscoveredDevices_.rwget ();
+            if (optional<DiscoveryInfo_> oo = l.rwref ().Lookup (deviceID)) {
+                DiscoveryInfo_ tmp{*oo};
+                for (const String& p : portScanResults.fDiscoveredOpenPorts) {
+                    Memory::AccumulateIf (&tmp.fOpenPorts, p);
+                }
+                PatchSeen_ (&tmp, portScanResults);
+                tmp.PatchDerivedFields ();
+                Assert (tmp.fGUID != GUID{});
+                l.rwref ().Add (tmp);
+                DbgTrace ("Updated device %s for fKnownOpenPorts: {}"_f, tmp.fGUID, portScanResults.fDiscoveredOpenPorts);
+            }
+            else {
+                AssertNotReached ();
+            }
+        };
 
-    DiscoveryInfo_ initialDeviceInfo = findDeviceInfoAndClearFoundPorts (deviceID);
-    // now now just run scan using limited portscan API
-    // but redo scanning one at a time so I can SHOW results immediately, as they appear
-    for (const auto& ia : initialDeviceInfo.GetInternetAddresses ()) {
-        PortScanResults results = ScanPorts (ia, ScanOptions{ScanOptions::eFull});
-        addOpenPorts (deviceID, results);
+        DiscoveryInfo_ initialDeviceInfo = findDeviceInfoAndClearFoundPorts (deviceID);
+        // now now just run scan using limited portscan API
+        // but redo scanning one at a time so I can SHOW results immediately, as they appear
+        for (const auto& ia : initialDeviceInfo.GetInternetAddresses ()) {
+            PortScanResults results = ScanPorts (ia, ScanOptions{ScanOptions::eFull});
+            addOpenPorts (deviceID, results);
+        }
     }
-}
 
-VariantValue DevicesMgr::ScanAndReturnReport (const InternetAddress& addr)
-{
-    PortScanResults               results = ScanPorts (addr, ScanOptions{ScanOptions::eFull});
-    Mapping<String, VariantValue> result;
-    result.Add (L"openPorts",
-                VariantValue{results.fDiscoveredOpenPorts.Map<Sequence<VariantValue>> ([] (String i) { return VariantValue{i}; })});
-    return VariantValue{result};
-}
+    VariantValue DevicesMgr::ScanAndReturnReport (const InternetAddress& addr)
+    {
+        PortScanResults               results = ScanPorts (addr, ScanOptions{ScanOptions::eFull});
+        Mapping<String, VariantValue> result;
+        result.Add (L"openPorts",
+                    VariantValue{results.fDiscoveredOpenPorts.Map<Sequence<VariantValue>> ([] (String i) { return VariantValue{i}; })});
+        return VariantValue{result};
+    }

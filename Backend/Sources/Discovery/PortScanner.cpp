@@ -21,6 +21,7 @@
 using namespace std;
 
 using namespace Stroika::Foundation;
+using namespace Stroika::Foundation::Characters;
 using namespace Stroika::Foundation::Containers;
 using namespace Stroika::Foundation::Execution;
 using namespace Stroika::Foundation::IO;
@@ -50,7 +51,7 @@ namespace {
         try {
             ConnectionOrientedStreamSocket::Ptr s = ConnectionOrientedStreamSocket::New (SocketAddress::INET, Socket::STREAM);
             s.Connect (SocketAddress{ia, portNumber}, quickOpen ? 5s : 30s);
-            results->fDiscoveredOpenPorts += Characters::Format (L"tcp:%d", portNumber);
+            results->fDiscoveredOpenPorts += Characters::Format ("tcp:{}"_f, portNumber);
             results->fIncludesTCP = true;
         }
         catch (...) {
@@ -70,11 +71,10 @@ namespace {
             results->fIncludedICMP = true;
         }
         catch (const Network::InternetProtocol::ICMP::V4::DestinationUnreachableException&) {
-            DbgTrace (L"ICMPPingScan_(ia=%s): Dest Unreachable: Typically means router blocking", Characters::ToString (ia).c_str ());
+            DbgTrace ("ICMPPingScan_(ia={}): Dest Unreachable: Typically means router blocking"_f, ia);
         }
         catch (...) {
-            DbgTrace (L"ICMPPingScan_ (addr %s): Ignoring exception: %s", Characters::ToString (ia).c_str (),
-                      Characters::ToString (current_exception ()).c_str ());
+            DbgTrace ("ICMPPingScan_ (addr {}): Ignoring exception: {}"_f, ia, current_exception ());
         }
     }
 }
@@ -83,7 +83,7 @@ PortScanResults Discovery::ScanPorts (const InternetAddress& ia, const optional<
 {
     PortScanResults results{};
     auto            scanningThisAddress =
-        LazyEvalActivity ([&] () -> String { return Characters::Format (L"scanning ports on %s", Characters::ToString (ia).c_str ()); });
+        LazyEvalActivity ([&] () -> String { return Characters::Format ("scanning ports on {}"_f, ia); });
     DeclareActivity da{&scanningThisAddress};
 
     if (options and options->fStyle == ScanOptions::eQuick) {

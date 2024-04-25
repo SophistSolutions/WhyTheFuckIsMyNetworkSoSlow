@@ -96,11 +96,10 @@ auto RolledUpNetworks::MapAggregatedID2ItsRollupID (const GUID& netID) const -> 
         return *r;
     }
     // shouldn't get past here - debug if/why this hapepns - see comments below
-    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"MapAggregatedID2ItsRollupID failed to find netID=%s",
-                                                                                 Characters::ToString (netID).c_str ())};
+    DbgTrace ("MapAggregatedID2ItsRollupID failed to find netID={}"_f, netID);
     if constexpr (qDebug) {
         for ([[maybe_unused]] const auto& i : fRolledUpNetworks_) {
-            DbgTrace (L"rolledupNet=%s", Characters::ToString (i).c_str ());
+            DbgTrace ("rolledupNet={}"_f, i);
         }
     }
     Assert (false); // @todo fix - because we guarantee each item rolled up exactly once - but happens sometimes on change of network - I think due to outdated device records referring to newer network not yet in this cache...
@@ -272,12 +271,11 @@ void RolledUpNetworks::AddNewIn_ (DBAccess::Mgr* dbAccessMgr, const Network& net
         // at this point we have a net2MergeIn that said 'no' to ShouldRollup to all existing networks we've rolled up before
         // and yet somehow, result contains a network that used our ID?
         auto shouldntRollUpButTookOurIDNet = Memory::ValueOf (fRolledUpNetworks_.Lookup (newRolledUpNetwork.fID));
-        DbgTrace (L"shouldntRollUpButTookOurIDNet=%s", Characters::ToString (shouldntRollUpButTookOurIDNet).c_str ());
-        DbgTrace (L"net2MergeIn=%s", Characters::ToString (net2MergeIn).c_str ());
+        DbgTrace ("shouldntRollUpButTookOurIDNet={}"_f, shouldntRollUpButTookOurIDNet);
+        DbgTrace (L"net2MergeIn={}"_f, net2MergeIn);
         //Assert (not ShouldRollup_ (shouldntRollUpButTookOurIDNet, net2MergeIn));
-        Logger::sThe.Log (Logger::eWarning, L"Got rollup network ID from cache that is already in use: %s (for external address %s)",
-                          Characters::ToString (newRolledUpNetwork.fID).c_str (),
-                          Characters::ToString (newRolledUpNetwork.fExternalAddresses).c_str ());
+        Logger::sThe.Log (Logger::eWarning, "Got rollup network ID from cache that is already in use: {} (for external address {})"_f,
+                          newRolledUpNetwork.fID, newRolledUpNetwork.fExternalAddresses);
         newRolledUpNetwork.fID = GUID::GenerateNew ();
     }
     newRolledUpNetwork.fUserOverrides = dbAccessMgr->LookupNetworkUserSettings (newRolledUpNetwork.fID);

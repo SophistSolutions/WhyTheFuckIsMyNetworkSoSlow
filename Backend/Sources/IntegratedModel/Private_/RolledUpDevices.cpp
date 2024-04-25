@@ -83,12 +83,11 @@ auto RolledUpDevices::MapAggregatedID2ItsRollupID (const GUID& aggregatedDeviceI
     if (auto r = fRaw2RollupIDMap_.Lookup (aggregatedDeviceID)) {
         return *r;
     }
-    // shouldn't get past here - debug if/why this hapepns - see comments below
-    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"MapAggregatedID2ItsRollupID failed to find netID=%s",
-                                                                                 Characters::ToString (aggregatedDeviceID).c_str ())};
+    // shouldn't get past here - debug if/why this happens - see comments below
+    DbgTrace ("MapAggregatedID2ItsRollupID failed to find netID={}"_f, aggregatedDeviceID);
     if constexpr (qDebug) {
         for ([[maybe_unused]] const auto& i : fRolledUpDevices) {
-            DbgTrace (L"rolledupDevice=%s", Characters::ToString (i).c_str ());
+            DbgTrace ("rolledupDevice={}"_f, i);
         }
     }
     Assert (false);     // not seen yet, but verify - maybe data can leak through to this from webservice request...
@@ -239,8 +238,8 @@ void RolledUpDevices::MergeInNew_ (DBAccess::Mgr* dbAccessMgr, const Device& d2M
     newRolledUpDevice.fID                   = dbAccessMgr->GenNewDeviceID (d2MergeIn.GetHardwareAddresses ());
     if (GetDevices ().Contains (newRolledUpDevice.fID)) {
         // Should probably never happen, but since depends on data in database, program defensively
-        Logger::sThe.Log (Logger::eWarning, L"Got rollup device ID from cache that is already in use: %s (for hardware addresses %s)",
-                          Characters::ToString (newRolledUpDevice.fID).c_str (), Characters::ToString (d2MergeIn.GetHardwareAddresses ()).c_str ());
+        Logger::sThe.Log (Logger::eWarning, "Got rollup device ID from cache that is already in use: {} (for hardware addresses {})"_f,
+                          newRolledUpDevice.fID, d2MergeIn.GetHardwareAddresses ());
         newRolledUpDevice.fID = GUID::GenerateNew ();
     }
     newRolledUpDevice.fAttachedNetworks = MapAggregatedAttachments2Rollups_ (newRolledUpDevice.fAttachedNetworks);

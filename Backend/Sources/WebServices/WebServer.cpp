@@ -464,7 +464,7 @@ public:
         DefaultFaultInterceptor defaultHandler;
         fConnectionMgr_.defaultErrorHandler = DefaultFaultInterceptor{[defaultHandler] (Message* m, const exception_ptr& e) {
             // Unsure if we should bother recording 404s
-            DbgTrace (L"faulting on request %s", Characters::ToString (m->request ()).c_str ());
+            DbgTrace ("faulting on request {}"_f, Characters::ToString (m->request ()));
             if (m->request ().url ().GetPath ().StartsWith ("/api"sv, CompareOptions::eCaseInsensitive)) {
                 OperationalStatisticsMgr::ProcessAPICmd::NoteError ();
             }

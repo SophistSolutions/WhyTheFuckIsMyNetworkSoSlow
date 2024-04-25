@@ -28,9 +28,9 @@
 using namespace std;
 
 using namespace Stroika::Foundation;
+using namespace Stroika::Foundation::Characters;
 using namespace Stroika::Foundation::Execution;
 
-using Characters::String;
 using Execution::Logger;
 
 using namespace WhyTheFuckIsMyNetworkSoSlow;
@@ -40,11 +40,11 @@ namespace {
     void FatalErorrHandler_ (const Characters::SDKChar* msg) noexcept
     {
         Thread::SuppressInterruptionInContext suppressCtx;
-        DbgTrace (SDKSTR ("Fatal Error %s encountered"), msg);
-        Logger::sThe.Log (Logger::eCriticalError, L"Fatal Error: %s; Aborting...", String::FromSDKString (msg).As<wstring> ().c_str ());
-        Logger::sThe.Log (Logger::eCriticalError, L"Backtrace: %s", Debug::BackTrace::Capture ().c_str ());
+        DbgTrace ("Fatal Error {} encountered"_f, String::FromSDKString (msg));
+        Logger::sThe.Log (Logger::eCriticalError, "Fatal Error: {}; Aborting..."_f, String::FromSDKString (msg));
+        Logger::sThe.Log (Logger::eCriticalError, "Backtrace: {}"_f, Debug::BackTrace::Capture ());
         if (std::exception_ptr exc = std::current_exception ()) {
-            Logger::sThe.Log (Logger::eCriticalError, L"Uncaught exception: %s", Characters::ToString (exc).c_str ());
+            Logger::sThe.Log (Logger::eCriticalError, "Uncaught exception: {}"_f, exc);
         }
         Logger::sThe.Flush ();
         std::_Exit (EXIT_FAILURE); // skip
@@ -52,16 +52,16 @@ namespace {
     void FatalSignalHandler_ (Execution::SignalID signal) noexcept
     {
         Thread::SuppressInterruptionInContext suppressCtx;
-        DbgTrace (L"Fatal Signal encountered: %s", Execution::SignalToName (signal).c_str ());
-        Logger::sThe.Log (Logger::eCriticalError, L"Fatal Signal: %s; Aborting...", Execution::SignalToName (signal).c_str ());
-        Logger::sThe.Log (Logger::eCriticalError, L"Backtrace: %s", Debug::BackTrace::Capture ().c_str ());
+        DbgTrace ("Fatal Signal encountered: {}"_f, Execution::SignalToName (signal));
+        Logger::sThe.Log (Logger::eCriticalError, "Fatal Signal: {}; Aborting..."_f, Execution::SignalToName (signal));
+        Logger::sThe.Log (Logger::eCriticalError, "Backtrace: {}"_f, Debug::BackTrace::Capture ());
         Logger::sThe.Flush ();
         std::_Exit (EXIT_FAILURE); // skip
     }
 }
 
 namespace {
-    void ShowUsage_ (const Main& m, const Execution::InvalidCommandLineArgument& e = Execution::InvalidCommandLineArgument ())
+    void ShowUsage_ (const Main& m, const Execution::InvalidCommandLineArgument& e = {})
     {
         if (not e.fMessage.empty ()) {
             cerr << "Error: " << e.fMessage.AsNarrowSDKString () << endl;
@@ -76,7 +76,7 @@ namespace {
         }
         cerr << "\t--" << String{Main::CommandNames::kRunAsService}.AsNarrowSDKString ()
              << "        /* Run this process as a service (doesn't exit until the serivce is done ...) */" << endl;
-        cerr << "\t--" << String{Main::CommandNames::kRunDirectly}.AsNarrowSDKString () << "          /* Run this process as a directly (doesn't exit until the serivce is done or ARGUMENT TIMEOUT seconds elapsed ...) but not using service infrastructure */"
+        cerr << "\t--" << String{Main::CommandNames::kRunDirectly}.AsNarrowSDKString () << "          /* Run this process as a directly (doesn't exit until the service is done or ARGUMENT TIMEOUT seconds elapsed ...) but not using service infrastructure */"
              << endl;
         cerr << "\t--" << String{Main::CommandNames::kStart}.AsNarrowSDKString ()
              << "                 /* Service/Control Function: Start the service */" << endl;
@@ -106,13 +106,13 @@ namespace {
 
 int main (int argc, const char* argv[])
 {
-    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (
-        L"main", L"argv=%s", Characters::ToString (vector<const char*> (argv, argv + argc)).c_str ())};
-    DbgTrace (L"Running as user %s", Characters::ToString (GetCurrentUserName ()).c_str ());
+    Execution::CommandLine    args{argc, argv};
+    Debug::TraceContextBumper ctx{"main", "argv={}"_f, args};
+    DbgTrace ("Running as user {}"_f, GetCurrentUserName ());
 
 #if qStroika_Foundation_Execution_Thread_SupportThreadStatistics
     [[maybe_unused]] auto&& cleanupReport = Execution::Finally ([] () {
-        DbgTrace (L"Exiting main with thread %s running", Characters::ToString (Execution::Thread::GetStatistics ().fRunningThreads).c_str ());
+        DbgTrace ("Exiting main with thread {} running"_f, Execution::Thread::GetStatistics ().fRunningThreads);
     });
 #endif
 
@@ -150,15 +150,14 @@ int main (int argc, const char* argv[])
         .fSuppressDuplicatesThreshold = 5min,
     }};
 #if qHas_Syslog
-    Logger::sThe.SetAppender (make_shared<Logger::SysLogAppender> ("WhyTheFuckIsMyNetworkSoSlow"sv));
+    Logger::sThe.SetAppenders (make_shared<Logger::SysLogAppender> ("WhyTheFuckIsMyNetworkSoSlow"sv));
 #elif qPlatform_Windows
-    Logger::sThe.SetAppender (make_shared<Logger::WindowsEventLogAppender> ("WhyTheFuckIsMyNetworkSoSlow"sv));
+    Logger::sThe.SetAppenders (make_shared<Logger::WindowsEventLogAppender> ("WhyTheFuckIsMyNetworkSoSlow"sv));
 #endif
 
     /*
      *  Parse command line arguments, and start looking at options.
      */
-    Execution::CommandLine                   args{argc, argv};
     shared_ptr<Main::IServiceIntegrationRep> serviceIntegrationRep = Main::mkDefaultServiceIntegrationRep ();
     serviceIntegrationRep                                          = make_shared<Main::LoggerServiceWrapper> (serviceIntegrationRep);
 
@@ -173,7 +172,7 @@ int main (int argc, const char* argv[])
         static constexpr Activity kSettingUpFirewall_{"setting up firewall"sv};
         DeclareActivity           da{&kSettingUpFirewall_};
         IO::Network::SystemFirewall::Manager{}.Register (IO::Network::SystemFirewall::Rule{
-            "WhyTheFuckIsMyNetworkSoSlow Recieve SSDP Notify UDP Access Allowed"sv,
+            "WhyTheFuckIsMyNetworkSoSlow Receive SSDP Notify UDP Access Allowed"sv,
             "Allow UDP/multicast (NOTIFY) traffic for WhyTheFuckIsMyNetworkSoSlow so SSDP listen works (search works without this)"sv,
             "WhyTheFuckIsMyNetworkSoSlow"sv, Execution::GetEXEPath (), NET_FW_PROFILE2_ALL, NET_FW_RULE_DIR_IN, NET_FW_IP_PROTOCOL_UDP,
             "1900"sv, "*"sv, NET_FW_ACTION_ALLOW, true});
@@ -189,11 +188,11 @@ int main (int argc, const char* argv[])
             }
         }
         if (warningOnly) {
-            Logger::sThe.Log (Logger::eWarning, L"%s", exceptMsg.c_str ());
+            Logger::sThe.Log (Logger::eWarning, "{}"_f, exceptMsg);
             cerr << "WARNING: " << exceptMsg.AsNarrowSDKString () << endl;
         }
         else {
-            Logger::sThe.Log (Logger::eError, L"%s", exceptMsg.c_str ());
+            Logger::sThe.Log (Logger::eError, "{}"_f, exceptMsg);
             cerr << "FAILED: " << exceptMsg.AsNarrowSDKString () << endl;
             return EXIT_FAILURE;
         }
@@ -241,7 +240,7 @@ int main (int argc, const char* argv[])
     }
     catch (...) {
         String exceptMsg = Characters::ToString (current_exception ());
-        Logger::sThe.Log (Logger::eError, L"%s", exceptMsg.c_str ());
+        Logger::sThe.Log (Logger::eError, "{}"_f, exceptMsg);
         cerr << "FAILED: " << exceptMsg.AsNarrowSDKString () << endl;
         return EXIT_FAILURE;
     }

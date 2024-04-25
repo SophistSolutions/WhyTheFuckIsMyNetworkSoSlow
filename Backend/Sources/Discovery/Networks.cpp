@@ -69,7 +69,7 @@ namespace {
                     return IO::Network::InternetAddress{connection.GET (url).GetDataTextInputStream ().ReadAll ().Trim ()};
                 }
                 catch (...) {
-                    DbgTrace (L"ignore exception fetching public(external) IP address: %s", Characters::ToString (current_exception ()).c_str ());
+                    DbgTrace ("ignore exception fetching public(external) IP address: {}"_f, current_exception ());
                 }
             }
             return nullopt;
@@ -148,7 +148,7 @@ namespace {
 
 Discovery::NetworksMgr::Activator::Activator ()
 {
-    DbgTrace (L"Discovery::NetworksMgr::Activator::Activator: activating network discovery");
+    DbgTrace ("Discovery::NetworksMgr::Activator::Activator: activating network discovery"_f);
     Require (not sActive_);
     sActive_ = true;
     sIntervalTimerAdder_ =
@@ -157,7 +157,7 @@ Discovery::NetworksMgr::Activator::Activator ()
 
 Discovery::NetworksMgr::Activator::~Activator ()
 {
-    DbgTrace (L"Discovery::NetworksMgr::Activator::~Activator: deactivating network discovery");
+    DbgTrace ("Discovery::NetworksMgr::Activator::~Activator: deactivating network discovery"_f);
     Require (sActive_);
     sActive_ = false;
     sIntervalTimerAdder_.release ();
@@ -225,8 +225,7 @@ namespace {
                 for (const CIDR& maybeSubsumerCIDR : cidrs) {
                     if (maybeSubsumerCIDR.GetNumberOfSignificantBits () > ci->GetNumberOfSignificantBits ()) {
                         if (maybeSubsumerCIDR.GetRange ().Contains (ci->GetRange ())) {
-                            DbgTrace ("Removing subsumed CIDR %s inside %s", Characters::ToString (*ci).c_str (),
-                                      Characters::ToString (maybeSubsumerCIDR).c_str ());
+                            DbgTrace ("Removing subsumed CIDR {} inside {}"_f, *ci, maybeSubsumerCIDR);
                             cidrs.Remove (ci);
                         }
                     }
@@ -301,7 +300,7 @@ namespace {
                     accumResults += nw;
                 }
                 else {
-                    DbgTrace (L"Skipping interface %s - cuz bindings bad address", Characters::ToString (i).c_str ());
+                    DbgTrace ("Skipping interface {} - cuz bindings bad address"_f, i);
                 }
             }
         }

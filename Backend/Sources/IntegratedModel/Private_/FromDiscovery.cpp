@@ -63,8 +63,7 @@ namespace {
             }
         }
         catch (const std::system_error& e) {
-            Logger::sThe.Log (Logger::eWarning, L"Database update: ignoring exception in TransformURL2LocalStorage_: %s",
-                              Characters::ToString (e).c_str ());
+            Logger::sThe.Log (Logger::eWarning, "Database update: ignoring exception in TransformURL2LocalStorage_: {}"_f, e);
             Assert (e.code () == errc::device_or_resource_busy); // this can happen talking to database (SQLITE_BUSY or SQLITE_LOCKED)
                                                                  // might be better to up timeout so more rare
         }
@@ -72,11 +71,10 @@ namespace {
             Execution::ReThrow ();
         }
         catch (...) {
-            Logger::sThe.Log (Logger::eWarning, L"Database update: ignoring exception in TransformURL2LocalStorage_: %s",
-                              Characters::ToString (current_exception ()).c_str ());
+            Logger::sThe.Log (Logger::eWarning, "Database update: ignoring exception in TransformURL2LocalStorage_: {}"_f, current_exception ());
             AssertNotReached ();
         }
-        DbgTrace (L"Failed to cache url (%s) - so returning original", Characters::ToString (url).c_str ());
+        DbgTrace ("Failed to cache url ({}) - so returning original"_f, url);
         return url;
     }
     optional<URI> TransformURL2LocalStorage_ (const optional<URI>& url)
@@ -140,7 +138,7 @@ namespace {
                 if (not newDev.fDebugProps.has_value ()) {
                     newDev.fDebugProps = Mapping<String, VariantValue>{};
                 }
-                newDev.fDebugProps->Add (L"MACAddr2OUINames", VariantValue{t});
+                newDev.fDebugProps->Add ("MACAddr2OUINames"sv, VariantValue{t});
             }
         }
 #endif
@@ -202,7 +200,7 @@ optional<GUID> IntegratedModel::Private_::FromDiscovery::GetMyDeviceID ()
 
 Sequence<NetworkInterface> IntegratedModel::Private_::FromDiscovery::GetNetworkInterfaces ()
 {
-    Debug::TimingTrace ttrc{L"FromDiscovery::GetNetworkInterfaces_", 100ms};
+    Debug::TimingTrace ttrc{"FromDiscovery::GetNetworkInterfaces_", 100ms};
     Sequence<NetworkInterface> result = Discovery::NetworkInterfacesMgr::sThe.CollectAllNetworkInterfaces ().Map<Sequence<NetworkInterface>> (
         [] (const Discovery::NetworkInterface& n) { return Discovery2Model_ (n); });
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
@@ -213,11 +211,11 @@ Sequence<NetworkInterface> IntegratedModel::Private_::FromDiscovery::GetNetworkI
 
 Sequence<Network> IntegratedModel::Private_::FromDiscovery::GetNetworks ()
 {
-    Debug::TimingTrace ttrc{L"FromDiscovery::GetNetworks_", 100ms};
+    Debug::TimingTrace ttrc{"FromDiscovery::GetNetworks_", 100ms};
     Sequence<Network>  result = Discovery::NetworksMgr::sThe.CollectActiveNetworks ().Map<Sequence<Network>> (
         [] (const Discovery::Network& n) { return Discovery2Model_ (n); });
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
-    DbgTrace (L"returns: %s", Characters::ToString (result).c_str ());
+    DbgTrace ("returns: {}"_f, result);
 #endif
     return result;
 }

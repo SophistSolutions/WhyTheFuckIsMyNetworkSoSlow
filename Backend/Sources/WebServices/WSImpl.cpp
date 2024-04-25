@@ -110,7 +110,7 @@ WSImpl::WSImpl (function<About::APIServerInfo::WebServer ()> webServerStatsFetch
 
 About WSImpl::GetAbout () const
 {
-    DbgTrace (L"intervalutimertasks=%s", Characters::ToString (Execution::IntervalTimer::Manager::sThe.GetAllRegisteredTasks ()).c_str ()); // to debug https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/78
+    DbgTrace ("intervalutimertasks={}"_f, Execution::IntervalTimer::Manager::sThe.GetAllRegisteredTasks ()); // to debug https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/78
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
     using APIServerInfo  = About::APIServerInfo;
     using ComponentInfo  = APIServerInfo::ComponentInfo;
@@ -119,7 +119,7 @@ About WSImpl::GetAbout () const
     using APIEndpoint    = APIServerInfo::APIEndpoint;
     using Database       = APIServerInfo::Database;
     static const Sequence<ComponentInfo> kAPIServerComponents_{initializer_list<ComponentInfo>{
-        ComponentInfo{L"Stroika"sv, Configuration::Version{kStroika_Version_FullVersion}.AsPrettyVersionString (), URI{"https://github.com/SophistSolutions/Stroika"}}
+        ComponentInfo{"Stroika"sv, Configuration::Version{kStroika_Version_FullVersion}.AsPrettyVersionString (), URI{"https://github.com/SophistSolutions/Stroika"}}
 #if qHasFeature_OpenSSL
         ,
         ComponentInfo{"OpenSSL"sv, OPENSSL_VERSION_TEXT, URI{"https://www.openssl.org/"}}
@@ -128,9 +128,9 @@ About WSImpl::GetAbout () const
         ,
         ComponentInfo{"libcurl"sv, LIBCURL_VERSION, URI{"https://curl.se/"}}
 #endif
-#if qHasFeature_boost && 0 /*NOT USING BOOST AS FAR AS I KNOW*/
+#if qHasFeature_boost
         ,
-        ComponentInfo{L"boost"sv, String::FromASCII (BOOST_LIB_VERSION)}
+        ComponentInfo{"boost"sv, String{BOOST_LIB_VERSION}}
 #endif
 #if qHasFeature_sqlite
         ,
@@ -218,8 +218,7 @@ Sequence<String> WSImpl::GetDevices (const optional<Set<GUID>>& ids, const optio
 Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const optional<Set<GUID>>& ids, const optional<DeviceSortParameters>& sort) const
 {
     using BackendApp::WebServices::Device;
-    Debug::TraceContextBumper ctx{
-        Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::GetDevices_Recurse", L"sort=%s", Characters::ToString (sort).c_str ())};
+    Debug::TraceContextBumper                       ctx{"WSImpl::GetDevices_Recurse", "sort={}"_f, sort};
     Debug::TimingTrace                              ttrc{L"WSImpl::GetDevices_Recurse", 100ms};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
 
@@ -404,7 +403,7 @@ tuple<Device, Duration> WSImpl::GetDevice (const String& id) const
 
 void WSImpl::PatchDevice (const String& id, const JSONPATCH::OperationItemsType& patchDoc) const
 {
-    DbgTrace (L"WSImpl::PatchDevice (%s, %s)", Characters::ToString (id).c_str (), Characters::ToString (patchDoc).c_str ());
+    DbgTrace ("WSImpl::PatchDevice ({}, {})"_f, id, patchDoc);
     GUID objID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
     for (auto op : patchDoc) {
         switch (op.op) {
@@ -414,13 +413,13 @@ void WSImpl::PatchDevice (const String& id, const JSONPATCH::OperationItemsType&
                 if (not op.value) {
                     Execution::Throw (ClientErrorException{"JSON-Patch add requires a value"_k});
                 }
-                if (op.path == "/userOverrides/name") {
+                if (op.path == "/userOverrides/name"sv) {
                     updateVal.fName = op.value->As<String> ();
                 }
-                else if (op.path == "/userOverrides/notes") {
+                else if (op.path == "/userOverrides/notes"sv) {
                     updateVal.fNotes = op.value->As<String> ();
                 }
-                else if (op.path == "/userOverrides/tags") {
+                else if (op.path == "/userOverrides/tags"sv) {
                     // for now only support replacing the whole array at a time
                     updateVal.fTags =
                         op.value->As<Sequence<VariantValue>> ().Map<Set<String>> ([] (const VariantValue& vv) { return vv.As<String> (); });
@@ -518,7 +517,7 @@ tuple<Network, Duration> WSImpl::GetNetwork (const String& id) const
 
 void WSImpl::PatchNetwork (const String& id, const JSONPATCH::OperationItemsType& patchDoc) const
 {
-    DbgTrace (L"WSImpl::PatchNetwork (%s, %s)", id.As<wstring> ().c_str (), Characters::ToString (patchDoc).As<wstring> ().c_str ());
+    DbgTrace ("WSImpl::PatchNetwork ({}, {})"_f, id, patchDoc);
     GUID objID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
     for (auto op : patchDoc) {
         switch (op.op) {
@@ -630,8 +629,7 @@ tuple<NetworkInterface, Duration> WSImpl::GetNetworkInterface (const String& id)
 
 double WSImpl::Operation_Ping (const String& address) const
 {
-    Debug::TraceContextBumper ctx{
-        Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_Ping", L"address=%s", Characters::ToString (address).c_str ())};
+    Debug::TraceContextBumper                       ctx{"WSImpl::Operation_Ping", "address={}"_f, address};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
 
     using namespace Stroika::Foundation::IO::Network;
@@ -666,9 +664,7 @@ double WSImpl::Operation_Ping (const String& address) const
 
 Operations::TraceRouteResults WSImpl::Operation_TraceRoute (const String& address, optional<bool> reverseDNSResults) const
 {
-    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_TraceRoute", L"address=%s, reverseDNSResults=%s",
-                                                                                 Characters::ToString (address).c_str (),
-                                                                                 Characters::ToString (reverseDNSResults).c_str ())};
+    Debug::TraceContextBumper ctx{"WSImpl::Operation_TraceRoute", "address={}, reverseDNSResults={}"_f, address, reverseDNSResults};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
 
     using namespace Stroika::Foundation::IO::Network;
@@ -727,7 +723,7 @@ Time::Duration WSImpl::Operation_DNS_CalculateNegativeLookupTime (optional<unsig
     static mt19937                                 sRng_{std::random_device{}()};
     Sequence<Time::DurationSeconds>                measurements;
     for (unsigned int i = 0; i < useSamples; ++i) {
-        String                 randomAddress = Characters::Format (L"www.xxxabc%d.com", allUInt16Distribution (sRng_));
+        String                 randomAddress = Characters::Format ("www.xxxabc{}.com"_f, allUInt16Distribution (sRng_));
         Time::TimePointSeconds startAt       = Time::GetTickCount ();
         IgnoreExceptionsForCall (IO::Network::DNS::kThe.GetHostAddress (randomAddress));
         measurements += Time::GetTickCount () - startAt;
@@ -738,8 +734,7 @@ Time::Duration WSImpl::Operation_DNS_CalculateNegativeLookupTime (optional<unsig
 
 Operations::DNSLookupResults WSImpl::Operation_DNS_Lookup (const String& name) const
 {
-    Debug::TraceContextBumper ctx{
-        Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_DNS_Lookup", L"name=%s", name.As<wstring> ().c_str ())};
+    Debug::TraceContextBumper                       ctx{"WSImpl::Operation_DNS_Lookup", "name={}"_f, name};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
     Operations::DNSLookupResults                    result;
     Time::TimePointSeconds                          startAt = Time::GetTickCount ();

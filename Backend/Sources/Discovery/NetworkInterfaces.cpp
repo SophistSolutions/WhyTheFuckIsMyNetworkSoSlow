@@ -64,13 +64,13 @@ namespace {
 }
 Discovery::NetworkInterfacesMgr::Activator::Activator ()
 {
-    DbgTrace (L"Discovery::NetworkInterfacesMgr::Activator::Activator: activating network discovery");
+    DbgTrace ("Discovery::NetworkInterfacesMgr::Activator::Activator: activating network discovery"_f);
     Require (not sActive_);
     sActive_ = true;
 }
 Discovery::NetworkInterfacesMgr::Activator::~Activator ()
 {
-    DbgTrace (L"Discovery::NetworkInterfacesMgr::Activator::~Activator: deactivating network discovery");
+    DbgTrace ("Discovery::NetworkInterfacesMgr::Activator::~Activator: deactivating network discovery"_f);
     Require (sActive_);
     sActive_ = false;
     // @todo must shutdown any background threads
