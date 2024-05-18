@@ -111,9 +111,8 @@ int main (int argc, const char* argv[])
     DbgTrace ("Running as user {}"_f, GetCurrentUserName ());
 
 #if qStroika_Foundation_Execution_Thread_SupportThreadStatistics
-    [[maybe_unused]] auto&& cleanupReport = Execution::Finally ([] () {
-        DbgTrace ("Exiting main with thread {} running"_f, Execution::Thread::GetStatistics ().fRunningThreads);
-    });
+    [[maybe_unused]] auto&& cleanupReport = Execution::Finally (
+        [] () { DbgTrace ("Exiting main with thread {} running"_f, Execution::Thread::GetStatistics ().fRunningThreads); });
 #endif
 
     /*

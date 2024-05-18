@@ -94,9 +94,6 @@
     <None Include="..\..\Sources\Common\PrioritizedName.inl">
       <Filter>Sources\Common</Filter>
     </None>
-    <None Include="..\..\Sources\WebServices\JSONPATCH.inl">
-      <Filter>Sources\WebServices</Filter>
-    </None>
     <None Include="..\..\Sources\IntegratedModel\Private_\FromDiscovery.inl">
       <Filter>Sources\IntegratedModel\Private_</Filter>
     </None>
@@ -174,9 +171,6 @@
     <ClCompile Include="..\..\Sources\Common\OperationalStatistics.cpp">
       <Filter>Sources\Common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Sources\WebServices\JSONPATCH.cpp">
-      <Filter>Sources\WebServices</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Sources\IntegratedModel\Private_\FromDiscovery.cpp">
       <Filter>Sources\IntegratedModel\Private_</Filter>
     </ClCompile>
@@ -250,9 +244,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Sources\Common\PrioritizedName.h">
       <Filter>Sources\Common</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Sources\WebServices\JSONPATCH.h">
-      <Filter>Sources\WebServices</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Sources\IntegratedModel\Private_\FromDiscovery.h">
       <Filter>Sources\IntegratedModel\Private_</Filter>

@@ -82,8 +82,7 @@ namespace {
 PortScanResults Discovery::ScanPorts (const InternetAddress& ia, const optional<ScanOptions>& options)
 {
     PortScanResults results{};
-    auto            scanningThisAddress =
-        LazyEvalActivity ([&] () -> String { return Characters::Format ("scanning ports on {}"_f, ia); });
+    auto            scanningThisAddress = LazyEvalActivity ([&] () -> String { return Characters::Format ("scanning ports on {}"_f, ia); });
     DeclareActivity da{&scanningThisAddress};
 
     if (options and options->fStyle == ScanOptions::eQuick) {

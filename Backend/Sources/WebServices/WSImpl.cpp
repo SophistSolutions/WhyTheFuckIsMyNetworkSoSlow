@@ -401,13 +401,13 @@ tuple<Device, Duration> WSImpl::GetDevice (const String& id) const
     Execution::Throw (ClientErrorException{"no such id"sv});
 }
 
-void WSImpl::PatchDevice (const String& id, const JSONPATCH::OperationItemsType& patchDoc) const
+void WSImpl::PatchDevice (const String& id, const DataExchange::JSON::Patch::OperationItemsType& patchDoc) const
 {
     DbgTrace ("WSImpl::PatchDevice ({}, {})"_f, id, patchDoc);
     GUID objID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
     for (auto op : patchDoc) {
         switch (op.op) {
-            case JSONPATCH::OperationType::eAdd: {
+            case DataExchange::JSON::Patch::OperationType::eAdd: {
                 Device::UserOverridesType updateVal =
                     IntegratedModel::Mgr::sThe.GetDeviceUserSettings (objID).value_or (Device::UserOverridesType{});
                 if (not op.value) {
@@ -434,7 +434,7 @@ void WSImpl::PatchDevice (const String& id, const JSONPATCH::OperationItemsType&
                     IntegratedModel::Mgr::sThe.SetDeviceUserSettings (objID, nullopt);
                 }
             } break;
-            case JSONPATCH::OperationType::eRemove: {
+            case DataExchange::JSON::Patch::OperationType::eRemove: {
                 Device::UserOverridesType updateVal =
                     IntegratedModel::Mgr::sThe.GetDeviceUserSettings (objID).value_or (Device::UserOverridesType{});
                 if (op.path == "/userOverrides/name") {
@@ -515,13 +515,13 @@ tuple<Network, Duration> WSImpl::GetNetwork (const String& id) const
     Execution::Throw (ClientErrorException{"no such id"sv});
 }
 
-void WSImpl::PatchNetwork (const String& id, const JSONPATCH::OperationItemsType& patchDoc) const
+void WSImpl::PatchNetwork (const String& id, const DataExchange::JSON::Patch::OperationItemsType& patchDoc) const
 {
     DbgTrace ("WSImpl::PatchNetwork ({}, {})"_f, id, patchDoc);
     GUID objID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
     for (auto op : patchDoc) {
         switch (op.op) {
-            case JSONPATCH::OperationType::eAdd: {
+            case DataExchange::JSON::Patch::OperationType::eAdd: {
                 Network::UserOverridesType updateVal =
                     IntegratedModel::Mgr::sThe.GetNetworkUserSettings (objID).value_or (Network::UserOverridesType{});
                 if (not op.value) {
@@ -538,17 +538,17 @@ void WSImpl::PatchNetwork (const String& id, const JSONPATCH::OperationItemsType
                     updateVal.fTags =
                         op.value->As<Sequence<VariantValue>> ().Map<Set<String>> ([] (const VariantValue& vv) { return vv.As<String> (); });
                 }
-                else if (op.path == L"/userOverrides/aggregateFingerprints") {
+                else if (op.path == "/userOverrides/aggregateFingerprints"sv) {
                     // for now only support replacing the whole array at a time
                     updateVal.fAggregateFingerprints =
                         op.value->As<Sequence<VariantValue>> ().Map<Set<GUID>> ([] (const VariantValue& vv) { return vv.As<String> (); });
                 }
-                else if (op.path == L"/userOverrides/aggregateGatewayHardwareAddresses") {
+                else if (op.path == "/userOverrides/aggregateGatewayHardwareAddresses"sv) {
                     // for now only support replacing the whole array at a time
                     updateVal.fAggregateGatewayHardwareAddresses =
                         op.value->As<Sequence<VariantValue>> ().Map<Set<String>> ([] (const VariantValue& vv) { return vv.As<String> (); });
                 }
-                else if (op.path == L"/userOverrides/aggregateNetworkInterfacesMatching") {
+                else if (op.path == "/userOverrides/aggregateNetworkInterfacesMatching"sv) {
                     // for now only support replacing the whole array at a time
                     updateVal.fAggregateNetworkInterfacesMatching =
                         Model::Network::UserOverridesType::kMapper.ToObject<Sequence<Model::Network::UserOverridesType::NetworkInterfaceAggregateRule>> (
@@ -564,26 +564,26 @@ void WSImpl::PatchNetwork (const String& id, const JSONPATCH::OperationItemsType
                     IntegratedModel::Mgr::sThe.SetNetworkUserSettings (objID, nullopt);
                 }
             } break;
-            case JSONPATCH::OperationType::eRemove: {
+            case DataExchange::JSON::Patch::OperationType::eRemove: {
                 Network::UserOverridesType updateVal =
                     IntegratedModel::Mgr::sThe.GetNetworkUserSettings (objID).value_or (Network::UserOverridesType{});
-                if (op.path == L"/userOverrides/name") {
+                if (op.path == "/userOverrides/name"sv) {
                     updateVal.fName = optional<String>{};
                 }
-                else if (op.path == L"/userOverrides/notes") {
+                else if (op.path == "/userOverrides/notes"sv) {
                     updateVal.fNotes = optional<String>{};
                 }
-                else if (op.path == L"/userOverrides/tags") {
+                else if (op.path == "/userOverrides/tags"sv) {
                     // for now only support replacing the whole array at a time
                     updateVal.fTags = optional<Set<String>>{};
                 }
-                else if (op.path == L"/userOverrides/aggregateFingerprints") {
+                else if (op.path == "/userOverrides/aggregateFingerprints"sv) {
                     updateVal.fAggregateFingerprints = nullopt;
                 }
-                else if (op.path == L"/userOverrides/aggregateGatewayHardwareAddresses") {
+                else if (op.path == "/userOverrides/aggregateGatewayHardwareAddresses"sv) {
                     updateVal.fAggregateGatewayHardwareAddresses = nullopt;
                 }
-                else if (op.path == L"/userOverrides/aggregateNetworkInterfacesMatching") {
+                else if (op.path == "/userOverrides/aggregateNetworkInterfacesMatching"sv) {
                     updateVal.fAggregateNetworkInterfacesMatching = nullopt;
                 }
                 else {
@@ -687,7 +687,7 @@ Operations::TraceRouteResults WSImpl::Operation_TraceRoute (const String& addres
     options.fTimeout = Duration{5.0};
     //   options.fSampleInfo                   = Ping::Options::SampleInfo{kInterSampleTime_, sampleCount};
 
-    // write GetHostAddress () funciton in DNS that throws if not at least one
+    // write GetHostAddress () function in DNS that throws if not at least one
 
     Model::Operations::TraceRouteResults results;
 
@@ -770,7 +770,7 @@ double WSImpl::Operation_DNS_CalculateScore () const
 
 DataExchange::VariantValue WSImpl::Operation_Scan_FullRescan (const String& deviceID) const
 {
-    Debug::TraceContextBumper                       ctx{L"WSImpl::Operation_Scan_FullRescan"};
+    Debug::TraceContextBumper                       ctx{"WSImpl::Operation_Scan_FullRescan"};
     DataExchange::VariantValue                      x;
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
     GUID useDeviceID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{deviceID}; });
@@ -784,7 +784,7 @@ DataExchange::VariantValue WSImpl::Operation_Scan_FullRescan (const String& devi
 
 DataExchange::VariantValue WSImpl::Operation_Scan_Scan (const String& addr) const
 {
-    Debug::TraceContextBumper                       ctx{L"WSImpl::Operation_Scan_Scan"};
+    Debug::TraceContextBumper                       ctx{"WSImpl::Operation_Scan_Scan"};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
     InternetAddress                                 useAddr =
         ClientErrorException::TreatExceptionsAsClientError ([&] () { return IO::Network::DNS::kThe.GetHostAddress (addr); });

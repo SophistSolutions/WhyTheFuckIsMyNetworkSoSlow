@@ -136,7 +136,7 @@ namespace {
                     }
                 }
                 if (not toRemove.empty ()) {
-                    Logger::sThe.Log (Logger::eWarning,"Networks marked for purge: {}"_f, toRemove);
+                    Logger::sThe.Log (Logger::eWarning, "Networks marked for purge: {}"_f, toRemove);
                     for (auto i : toRemove) {
                         this->SetNetworkUserSettings (i, nullopt);
                     }

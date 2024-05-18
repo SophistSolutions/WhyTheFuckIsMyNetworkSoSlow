@@ -285,7 +285,7 @@ public:
                 "api/v1/devices/(.+)"_RegEx,
                   [this] (Message* m, const String& id) {
                       ActiveCallCounter_ acc{*this};
-                      fWSAPI_->PatchDevice (id, JSONPATCH::OperationItemsType::kMapper.ToObject<JSONPATCH::OperationItemsType> (DataExchange::Variant::JSON::Reader{}.Read (m->rwRequest ().GetBody ())));
+                      fWSAPI_->PatchDevice (id, DataExchange::JSON::Patch::OperationItemsType::kMapper.ToObject<DataExchange::JSON::Patch::OperationItemsType> (DataExchange::Variant::JSON::Reader{}.Read (m->rwRequest ().GetBody ())));
                       m->rwResponse ().status = IO::Network::HTTP::StatusCodes::kNoContent;
                   }},
 
@@ -339,7 +339,7 @@ public:
                  "api/v1/networks/(.+)"_RegEx,
                   [this] (Message* m, const String& id) {
                       ActiveCallCounter_ acc{*this};
-                      fWSAPI_->PatchNetwork (id, JSONPATCH::OperationItemsType::kMapper.ToObject<JSONPATCH::OperationItemsType> (DataExchange::Variant::JSON::Reader{}.Read (m->rwRequest ().GetBody ())));
+                      fWSAPI_->PatchNetwork (id, DataExchange::JSON::Patch::OperationItemsType::kMapper.ToObject<DataExchange::JSON::Patch::OperationItemsType> (DataExchange::Variant::JSON::Reader{}.Read (m->rwRequest ().GetBody ())));
                       m->rwResponse ().status = IO::Network::HTTP::StatusCodes::kNoContent;
                   }},
 

@@ -444,7 +444,8 @@ void Mgr::_OneTimeStartupLoadDB ()
             Execution::ReThrow ();
         }
         catch (...) {
-            Logger::sThe.Log (Logger::eWarning, "Database error: ignoring exception in OneTimeStartup_ loop (will retry in 10 seconds): {}"_f,  current_exception ());
+            Logger::sThe.Log (Logger::eWarning, "Database error: ignoring exception in OneTimeStartup_ loop (will retry in 10 seconds): {}"_f,
+                              current_exception ());
             Execution::Sleep (10s);
         }
     }

@@ -10,8 +10,8 @@
 #include "Stroika/Foundation/Containers/Collection.h"
 #include "Stroika/Foundation/Containers/Sequence.h"
 #include "Stroika/Foundation/DataExchange/InternetMediaType.h"
+#include "Stroika/Foundation/DataExchange/JSON/Patch.h"
 
-#include "JSONPATCH.h"
 #include "Model.h"
 
 /**
@@ -56,8 +56,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
          */
         virtual Sequence<String> GetDevices (const optional<Set<GUID>>& ids = nullopt, const optional<DeviceSortParameters>& sort = {}) const = 0;
         virtual Sequence<Device> GetDevices_Recurse (const optional<Set<GUID>>& ids = nullopt, const optional<DeviceSortParameters>& sort = {}) const = 0;
-        virtual tuple<Device, Duration> GetDevice (const String& id) const                                                  = 0;
-        virtual void                    PatchDevice (const String& id, const JSONPATCH::OperationItemsType& patchDoc) const = 0;
+        virtual tuple<Device, Duration> GetDevice (const String& id) const                                               = 0;
+        virtual void PatchDevice (const String& id, const DataExchange::JSON::Patch::OperationItemsType& patchDoc) const = 0;
 
     public:
         /**
@@ -65,10 +65,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
          * 
          *      GetNetwork(id) API second value in tuple is TTL
          */
-        virtual Sequence<String>         GetNetworks (const optional<Set<GUID>>& ids = nullopt) const                         = 0;
-        virtual Sequence<Network>        GetNetworks_Recurse (const optional<Set<GUID>>& ids = nullopt) const                 = 0;
-        virtual tuple<Network, Duration> GetNetwork (const String& id) const                                                  = 0;
-        virtual void                     PatchNetwork (const String& id, const JSONPATCH::OperationItemsType& patchDoc) const = 0;
+        virtual Sequence<String>         GetNetworks (const optional<Set<GUID>>& ids = nullopt) const                     = 0;
+        virtual Sequence<Network>        GetNetworks_Recurse (const optional<Set<GUID>>& ids = nullopt) const             = 0;
+        virtual tuple<Network, Duration> GetNetwork (const String& id) const                                              = 0;
+        virtual void PatchNetwork (const String& id, const DataExchange::JSON::Patch::OperationItemsType& patchDoc) const = 0;
 
     public:
         /**
