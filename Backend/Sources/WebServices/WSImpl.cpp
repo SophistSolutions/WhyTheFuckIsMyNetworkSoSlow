@@ -403,8 +403,8 @@ tuple<Device, Duration> WSImpl::GetDevice (const String& id) const
 
 void WSImpl::PatchDevice (const String& id, const DataExchange::JSON::Patch::OperationItemsType& patchDoc) const
 {
-    DbgTrace ("WSImpl::PatchDevice ({}, {})"_f, id, patchDoc);
-    GUID objID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
+    Debug::TraceContextBumper ctx{"WSImpl::PatchDevice", "id={}, patchDoc={}"_f, id, patchDoc};
+    GUID                      objID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
     for (auto op : patchDoc) {
         switch (op.op) {
             case DataExchange::JSON::Patch::OperationType::eAdd: {
@@ -517,8 +517,8 @@ tuple<Network, Duration> WSImpl::GetNetwork (const String& id) const
 
 void WSImpl::PatchNetwork (const String& id, const DataExchange::JSON::Patch::OperationItemsType& patchDoc) const
 {
-    DbgTrace ("WSImpl::PatchNetwork ({}, {})"_f, id, patchDoc);
-    GUID objID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
+    Debug::TraceContextBumper ctx{"WSImpl::PatchNetwork", "id={}, patchDoc={}"_f, id, patchDoc};
+    GUID                      objID = ClientErrorException::TreatExceptionsAsClientError ([&] () { return GUID{id}; });
     for (auto op : patchDoc) {
         switch (op.op) {
             case DataExchange::JSON::Patch::OperationType::eAdd: {
