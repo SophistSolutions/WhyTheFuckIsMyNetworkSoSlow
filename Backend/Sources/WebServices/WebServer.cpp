@@ -455,8 +455,8 @@ public:
         , fIntervalTimerAdder_{[this] () {
                                    Debug::TraceContextBumper ctx{"webserver status gather TIMER HANDLER"}; // to debug https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/78
                                    OperationalStatisticsMgr::sThe.RecordActiveRunningTasksCount (fActiveCallCnt_);
-                                   OperationalStatisticsMgr::sThe.RecordOpenConnectionCount (fConnectionMgr_.pConnections ().length ());
-                                   OperationalStatisticsMgr::sThe.RecordActiveRunningTasksCount (fConnectionMgr_.pActiveConnections ().length ());
+                                   OperationalStatisticsMgr::sThe.RecordOpenConnectionCount (fConnectionMgr_.connections ().length ());
+                                   OperationalStatisticsMgr::sThe.RecordActiveRunningTasksCount (fConnectionMgr_.activeConnections ().length ());
                                },
                                15s, IntervalTimer::Adder::eRunImmediately}
     {
