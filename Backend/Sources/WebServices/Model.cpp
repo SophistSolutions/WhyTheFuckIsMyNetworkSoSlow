@@ -268,65 +268,61 @@ const ObjectVariantMapper NetworkInterface::kMapper = [] () {
     mapper.AddCommonType<Set<GUID>> ();
     mapper.AddCommonType<optional<Set<GUID>>> ();
 
-    mapper.AddClass<NetworkInterface> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+    mapper.AddClass<NetworkInterface> (initializer_list<ObjectVariantMapper::StructFieldInfo> {
         {"platformInterfaceID"sv, StructFieldMetaInfo{&NetworkInterface::fInternalInterfaceID}},
-        {"id"sv, StructFieldMetaInfo{&NetworkInterface::fID}},
-        {"aggregatedBy"sv, StructFieldMetaInfo{&NetworkInterface::fAggregatedBy}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"attachedToDevices"sv, StructFieldMetaInfo{&NetworkInterface::fAttachedToDevices}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"friendlyName"sv, StructFieldMetaInfo{&NetworkInterface::fFriendlyName}},
-        {"description"sv, StructFieldMetaInfo{&NetworkInterface::fDescription}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"type"sv, StructFieldMetaInfo{&NetworkInterface::fType}},
-        {"hardwareAddress"sv, StructFieldMetaInfo{&NetworkInterface::fHardwareAddress}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"transmitSpeedBaud"sv, StructFieldMetaInfo{&NetworkInterface::fTransmitSpeedBaud}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"receiveLinkSpeedBaud"sv, StructFieldMetaInfo{&NetworkInterface::fReceiveLinkSpeedBaud}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"wirelessInformation"sv, StructFieldMetaInfo{&NetworkInterface::fWirelessInfo}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        //SEE OVERRIDE BELOW {L"boundAddressRanges", StructFieldMetaInfo{&NetworkInterface::fBindings.fAddressRanges}},
-        //SEE OVERRIDE BELOW {L"boundAddresses", StructFieldMetaInfo{&NetworkInterface::fBindings.fAddresses}},
-        // StructFieldMetaInfo{} doesn't work with nested members - https://stackoverflow.com/questions/1929887/is-pointer-to-inner-struct-member-forbidden
-        // @todo when we decompose this so we have our own (not just inherited from stroika) class can make bindings OPTIONAL and only show here if present.
-        // SIMULATE SORT OF - FOR NOW -- LGP 2022-11-04
-        {"boundAddressRanges"sv,
-         TypeMappingDetails{ObjectVariantMapper::FromObjectMapperType<NetworkInterface> (
-                                [] (const ObjectVariantMapper& mapper, const NetworkInterface* objOfType) -> VariantValue {
-                                    if (not objOfType->fBindings.fAddressRanges.empty ()) {
-                                        return mapper.FromObject (objOfType->fBindings.fAddressRanges);
-                                    }
-                                    return VariantValue{};
-                                }),
-                            ObjectVariantMapper::ToObjectMapperType<NetworkInterface> (
-                                [=] (const ObjectVariantMapper& mapper, const VariantValue& d, NetworkInterface* intoObj) -> void {
-                                    if (d != VariantValue{}) {
-                                        intoObj->fBindings.fAddressRanges = mapper.ToObject<Containers::Collection<CIDR>> (d);
-                                    }
-                                })},
-         ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"boundAddresses"sv,
-         TypeMappingDetails{ObjectVariantMapper::FromObjectMapperType<NetworkInterface> (
-                                [] (const ObjectVariantMapper& mapper, const NetworkInterface* objOfType) -> VariantValue {
-                                    if (not objOfType->fBindings.fAddresses.empty ()) {
-                                        return mapper.FromObject (objOfType->fBindings.fAddresses);
-                                    }
-                                    return VariantValue{};
-                                }),
-                            ObjectVariantMapper::ToObjectMapperType<NetworkInterface> (
-                                [=] (const ObjectVariantMapper& mapper, const VariantValue& d, NetworkInterface* intoObj) -> void {
-                                    if (d != VariantValue{}) {
-                                        intoObj->fBindings.fAddresses = mapper.ToObject<Containers::Collection<InternetAddress>> (d);
-                                    }
-                                })},
-         ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"gateways"sv, StructFieldMetaInfo{&NetworkInterface::fGateways}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"DNSServers"sv, StructFieldMetaInfo{&NetworkInterface::fDNSServers}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"status"sv, StructFieldMetaInfo{&NetworkInterface::fStatus}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"aggregatesReversibly"sv, StructFieldMetaInfo{&NetworkInterface::fAggregatesReversibly}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"aggregatesIrreversibly"sv, StructFieldMetaInfo{&NetworkInterface::fAggregatesIrreversibly}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"idIsPersistent"sv, StructFieldMetaInfo{&NetworkInterface::fIDPersistent}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-    });
+            {"id"sv, StructFieldMetaInfo{&NetworkInterface::fID}},
+            {"aggregatedBy"sv, StructFieldMetaInfo{&NetworkInterface::fAggregatedBy}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+            {"attachedToDevices"sv, StructFieldMetaInfo{&NetworkInterface::fAttachedToDevices}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+            {"friendlyName"sv, StructFieldMetaInfo{&NetworkInterface::fFriendlyName}},
+            {"description"sv, StructFieldMetaInfo{&NetworkInterface::fDescription}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+            {"type"sv, StructFieldMetaInfo{&NetworkInterface::fType}},
+            {"hardwareAddress"sv, StructFieldMetaInfo{&NetworkInterface::fHardwareAddress}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+            {"transmitSpeedBaud"sv, StructFieldMetaInfo{&NetworkInterface::fTransmitSpeedBaud}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+            {"receiveLinkSpeedBaud"sv, StructFieldMetaInfo{&NetworkInterface::fReceiveLinkSpeedBaud}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+            {"wirelessInformation"sv, StructFieldMetaInfo{&NetworkInterface::fWirelessInfo}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+            //SEE OVERRIDE BELOW {L"boundAddressRanges", StructFieldMetaInfo{&NetworkInterface::fBindings.fAddressRanges}},
+            //SEE OVERRIDE BELOW {L"boundAddresses", StructFieldMetaInfo{&NetworkInterface::fBindings.fAddresses}},
+            // StructFieldMetaInfo{} doesn't work with nested members - https://stackoverflow.com/questions/1929887/is-pointer-to-inner-struct-member-forbidden
+            // So override type mappers manually to select right sub-element of Bindings
+            {"boundAddressRanges"sv, StructFieldMetaInfo{&NetworkInterface::fBindings},
+             TypeMappingDetails{ObjectVariantMapper::FromObjectMapperType<NetworkInterface::Bindings> (
+                                    [] (const ObjectVariantMapper& mapper, const NetworkInterface::Bindings* objOfType) -> VariantValue {
+                                        if (not objOfType->fAddressRanges.empty ()) {
+                                            return mapper.FromObject (objOfType->fAddressRanges);
+                                        }
+                                        return VariantValue{};
+                                    }),
+                                ObjectVariantMapper::ToObjectMapperType<NetworkInterface::Bindings> (
+                                    [=] (const ObjectVariantMapper& mapper, const VariantValue& d, NetworkInterface::Bindings* intoObj) -> void {
+                                        if (d != VariantValue{}) {
+                                            intoObj->fAddressRanges = mapper.ToObject<Containers::Collection<CIDR>> (d);
+                                        }
+                                    })}},
+            {"boundAddresses"sv, StructFieldMetaInfo{&NetworkInterface::fBindings},
+             TypeMappingDetails{ObjectVariantMapper::FromObjectMapperType<NetworkInterface::Bindings> (
+                                    [] (const ObjectVariantMapper& mapper, const NetworkInterface::Bindings* objOfType) -> VariantValue {
+                                        if (not objOfType->fAddresses.empty ()) {
+                                            return mapper.FromObject (objOfType->fAddresses);
+                                        }
+                                        return VariantValue{};
+                                    }),
+                                ObjectVariantMapper::ToObjectMapperType<NetworkInterface::Bindings> (
+                                    [=] (const ObjectVariantMapper& mapper, const VariantValue& d, NetworkInterface::Bindings* intoObj) -> void {
+                                        if (d != VariantValue{}) {
+                                            intoObj->fAddresses = mapper.ToObject<Containers::Collection<InternetAddress>> (d);
+                                        }
+                                    })}},
+            {"gateways"sv, StructFieldMetaInfo{&NetworkInterface::fGateways}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+            {"DNSServers"sv, StructFieldMetaInfo{&NetworkInterface::fDNSServers}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+            {"status"sv, StructFieldMetaInfo{&NetworkInterface::fStatus}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+            {"aggregatesReversibly"sv, StructFieldMetaInfo{&NetworkInterface::fAggregatesReversibly}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+            {"aggregatesIrreversibly"sv, StructFieldMetaInfo{&NetworkInterface::fAggregatesIrreversibly},
+             ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+            {"idIsPersistent"sv, StructFieldMetaInfo{&NetworkInterface::fIDPersistent}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
 #if qDebug
-    mapper.AddSubClass<NetworkInterface, NetworkInterface> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
-        {"debugProps"sv, StructFieldMetaInfo{&NetworkInterface::fDebugProps}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-    });
+            {"debugProps"sv, StructFieldMetaInfo{&NetworkInterface::fDebugProps}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
 #endif
+    });
     if constexpr (kIncludeFingerprintsInOutputTMP2Test_) {
         mapper.AddSubClass<NetworkInterface, NetworkInterface> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
             {"fingerprint"sv, TypeMappingDetails{ObjectVariantMapper::FromObjectMapperType<NetworkInterface> (

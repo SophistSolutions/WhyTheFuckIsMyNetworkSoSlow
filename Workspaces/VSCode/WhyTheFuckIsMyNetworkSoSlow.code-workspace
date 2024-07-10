@@ -16,7 +16,26 @@
 			"string": "cpp",
 			"chrono": "cpp",
 			"initializer_list": "cpp",
-			"xstring": "cpp"
+			"xstring": "cpp",
+			"array": "cpp",
+			"deque": "cpp",
+			"filesystem": "cpp",
+			"queue": "cpp",
+			"ranges": "cpp",
+			"regex": "cpp",
+			"span": "cpp",
+			"stack": "cpp",
+			"vector": "cpp",
+			"xhash": "cpp",
+			"xlocinfo": "cpp",
+			"xtree": "cpp",
+			"xutility": "cpp",
+			"mdspan": "cpp",
+			"stacktrace": "cpp",
+			"any": "cpp",
+			"string_view": "cpp",
+			"rope": "cpp",
+			"slist": "cpp"
 		}
 	}
 }
