@@ -37,7 +37,7 @@ using WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::Private_::AppConfiguratio
 const ObjectVariantMapper AppConfigurationType::kMapper = [] () {
     ObjectVariantMapper mapper;
     mapper.AddCommonType<optional<IO::Network::PortType>> ();
-    mapper.AddClass<AppConfigurationType> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+    mapper.AddClass<AppConfigurationType> ({
         {L"WebServerPort", StructFieldMetaInfo{&AppConfigurationType::WebServerPort}},
     });
     return mapper;

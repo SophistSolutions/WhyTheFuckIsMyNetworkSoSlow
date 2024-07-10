@@ -61,7 +61,7 @@ namespace {
             mapper.AddCommonType<BLOB> ();
             mapper.AddCommonType<InternetMediaType> ();
             mapper.AddCommonType<optional<InternetMediaType>> ();
-            mapper.AddClass<BLOB_> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+            mapper.AddClass<BLOB_> ({
                 {"id"sv, StructFieldMetaInfo{&BLOB_::fID}},
                 {"blob"sv, StructFieldMetaInfo{&BLOB_::fBLOB}},
                 {"contentType"sv, StructFieldMetaInfo{&BLOB_::fContentType}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
@@ -75,7 +75,7 @@ namespace {
             mapper.AddCommonType<GUID> ();
             mapper.AddCommonType<String> ();
             mapper.AddCommonType<optional<String>> ();
-            mapper.AddClass<BLOBURL_> (initializer_list<ObjectVariantMapper::StructFieldInfo>{
+            mapper.AddClass<BLOBURL_> ({
                 {"uri"sv, StructFieldMetaInfo{&BLOBURL_::fURI}},
                 {"blobid"sv, StructFieldMetaInfo{&BLOBURL_::fBLOBID}},
                 {"etag"sv, StructFieldMetaInfo{&BLOBURL_::fETag}},
