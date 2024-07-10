@@ -100,16 +100,17 @@ namespace {
 
     const Table kBLOBTableSchema_{
         "BLOB"sv, Collection<Field>{
-                      {.fName = L"id"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = L"randomblob(16)"sv},
-                      {.fName = L"blob"sv, .fRequired = true, .fVariantValueType = VariantValue::eBLOB},
-                      {.fName = L"contentType"sv, .fRequired = false, .fVariantValueType = VariantValue::eString},
+                      {.fName = "id"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = "randomblob(16)"sv},
+                      {.fName = "blob"sv, .fRequired = true, .fVariantValueType = VariantValue::eBLOB},
+                      {.fName = "contentType"sv, .fRequired = false, .fVariantValueType = VariantValue::eString},
                   }};
 
-    const Table kBLOBURLTableSchema_{L"BLOBURL", Collection<Field>{
-                                                     {.fName = L"uri"sv, .fRequired = true, .fVariantValueType = VariantValue::eString, .fIsKeyField = true},
-                                                     {.fName = L"blobid"sv, .fRequired = true, .fVariantValueType = VariantValue::eBLOB},
-                                                     {.fName = L"etag"sv, .fVariantValueType = VariantValue::eString},
-                                                 }};
+    const Table kBLOBURLTableSchema_{"BLOBURL"sv,
+                                     Collection<Field>{
+                                         {.fName = "uri"sv, .fRequired = true, .fVariantValueType = VariantValue::eString, .fIsKeyField = true},
+                                         {.fName = "blobid"sv, .fRequired = true, .fVariantValueType = VariantValue::eBLOB},
+                                         {.fName = "etag"sv, .fVariantValueType = VariantValue::eString},
+                                     }};
 
     struct DBConn_ {
         using BLOBURLTableConnection_ =
@@ -124,7 +125,7 @@ namespace {
             fBLOBURLs = make_shared<BLOBURLTableConnection_> (conn, kBLOBURLTableSchema_, kDBObjectMapper_,
                                                               mkOperationalStatisticsMgrProcessDBCmd<BLOBURLTableConnection_> ());
             fLookupBLOBByValueAndContentType =
-                make_shared<SQL::Statement> (conn.mkStatement (L"SELECT * from BLOB where blob=:b and contentType=:ct;"sv));
+                make_shared<SQL::Statement> (conn.mkStatement ("SELECT * from BLOB where blob=:b and contentType=:ct;"sv));
         }
         shared_ptr<SQL::ORM::TableConnection<DBRecs_::BLOB_>> fBLOBs;
         shared_ptr<BLOBURLTableConnection_>                   fBLOBURLs;
@@ -133,11 +134,11 @@ namespace {
         optional<GUID> Lookup (const BLOB& b, const optional<InternetMediaType>& ct) const
         {
             fLookupBLOBByValueAndContentType->Reset ();
-            fLookupBLOBByValueAndContentType->Bind (L"b"sv, b);
-            fLookupBLOBByValueAndContentType->Bind (L"ct"sv, ct ? ct->As<String> () : VariantValue{});
+            fLookupBLOBByValueAndContentType->Bind ("b"sv, b);
+            fLookupBLOBByValueAndContentType->Bind ("ct"sv, ct ? ct->As<String> () : VariantValue{});
             DB::ReadStatsContext readStats; // explicit stats cuz not read through TableORM code
             if (auto row = fLookupBLOBByValueAndContentType->GetNextRow ()) {
-                return row->Lookup (L"id"sv)->As<BLOB> ();
+                return row->Lookup ("id"sv)->As<BLOB> ();
             }
             return nullopt;
         }
@@ -158,7 +159,7 @@ BLOBMgr::Activator::Activator ()
 {
     Debug::TraceContextBumper ctx{"BLOBMgr::Activator::Activator"};
     using Execution::ThreadPool;
-    BLOBMgr::sThe.fThreadPool_.store (make_unique<ThreadPool> (ThreadPool::Options{1, L"URLBLOBFetcher"_k}));
+    BLOBMgr::sThe.fThreadPool_.store (make_unique<ThreadPool> (ThreadPool::Options{1, "URLBLOBFetcher"_k}));
     sConn_.store (make_shared<DBConn_> ());
 }
 
@@ -244,5 +245,5 @@ tuple<BLOB, optional<InternetMediaType>> BLOBMgr::GetBLOB (const GUID& id) const
     if (ob) {
         return make_tuple (ob->fBLOB, ob->fContentType);
     }
-    Execution::Throw (Execution::Exception<>{L"No such blob"sv});
+    Execution::Throw (Execution::Exception<>{"No such blob"sv});
 }

@@ -37,7 +37,7 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model;
 namespace {
     // lower-camel-case names happier in javascript?
     const ObjectVariantMapper::TypeMappingDetails kDateRangeMapper_ =
-        ObjectVariantMapper::MakeCommonSerializer<Range<DateTime>> (ObjectVariantMapper::RangeSerializerOptions{L"lowerBound"sv, L"upperBound"sv});
+        ObjectVariantMapper::MakeCommonSerializer<Range<DateTime>> (ObjectVariantMapper::RangeSerializerOptions{"lowerBound"sv, "upperBound"sv});
 
     const ObjectVariantMapper::TypeMappingDetails kOptionalDateRangeMapper_ =
         ObjectVariantMapper::MakeCommonSerializer<optional<Range<DateTime>>> (ObjectVariantMapper::OptionalSerializerOptions{kDateRangeMapper_});
@@ -280,8 +280,8 @@ const ObjectVariantMapper NetworkInterface::kMapper = [] () {
             {"transmitSpeedBaud"sv, StructFieldMetaInfo{&NetworkInterface::fTransmitSpeedBaud}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {"receiveLinkSpeedBaud"sv, StructFieldMetaInfo{&NetworkInterface::fReceiveLinkSpeedBaud}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             {"wirelessInformation"sv, StructFieldMetaInfo{&NetworkInterface::fWirelessInfo}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-            //SEE OVERRIDE BELOW {L"boundAddressRanges", StructFieldMetaInfo{&NetworkInterface::fBindings.fAddressRanges}},
-            //SEE OVERRIDE BELOW {L"boundAddresses", StructFieldMetaInfo{&NetworkInterface::fBindings.fAddresses}},
+            //SEE OVERRIDE BELOW {"boundAddressRanges", StructFieldMetaInfo{&NetworkInterface::fBindings.fAddressRanges}},
+            //SEE OVERRIDE BELOW {"boundAddresses", StructFieldMetaInfo{&NetworkInterface::fBindings.fAddresses}},
             // StructFieldMetaInfo{} doesn't work with nested members - https://stackoverflow.com/questions/1929887/is-pointer-to-inner-struct-member-forbidden
             // So override type mappers manually to select right sub-element of Bindings
             {"boundAddressRanges"sv, StructFieldMetaInfo{&NetworkInterface::fBindings},
