@@ -72,8 +72,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         using namespace DataExchange;
         ObjectVariantMapper mapper;
         mapper.AddClass<PrioritizedName> ({
-            {L"name"sv, StructFieldMetaInfo{&Common::PrioritizedName::fName}},
-            {L"priority"sv, StructFieldMetaInfo{&Common::PrioritizedName::fPriority}},
+            {L"name"sv, &Common::PrioritizedName::fName},
+            {L"priority"sv, &Common::PrioritizedName::fPriority},
         });
         mapper.AddCommonType<PrioritizedNames> ();
         return mapper;

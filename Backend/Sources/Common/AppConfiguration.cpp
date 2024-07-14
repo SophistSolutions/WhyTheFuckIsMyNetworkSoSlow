@@ -38,7 +38,7 @@ const ObjectVariantMapper AppConfigurationType::kMapper = [] () {
     ObjectVariantMapper mapper;
     mapper.AddCommonType<optional<IO::Network::PortType>> ();
     mapper.AddClass<AppConfigurationType> ({
-        {L"WebServerPort", StructFieldMetaInfo{&AppConfigurationType::WebServerPort}},
+        {L"WebServerPort", &AppConfigurationType::WebServerPort},
     });
     return mapper;
 }();

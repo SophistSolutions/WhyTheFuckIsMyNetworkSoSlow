@@ -93,8 +93,8 @@ namespace {
         mapper.AddCommonType<optional<String>> ();
         mapper.AddCommonType<optional<unsigned int>> ();
         mapper.AddClass<Config_> ({
-            ObjectVariantMapper::StructFieldInfo{"API_ROOT"sv, DataExchange::StructFieldMetaInfo{&Config_::API_ROOT}},
-            ObjectVariantMapper::StructFieldInfo{"DEFAULT_API_PORT"sv, DataExchange::StructFieldMetaInfo{&Config_::DEFAULT_API_PORT}},
+            {"API_ROOT"sv, &Config_::API_ROOT},
+            {"DEFAULT_API_PORT"sv, &Config_::DEFAULT_API_PORT},
         });
         return mapper;
     }();

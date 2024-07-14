@@ -62,9 +62,9 @@ namespace {
             mapper.AddCommonType<InternetMediaType> ();
             mapper.AddCommonType<optional<InternetMediaType>> ();
             mapper.AddClass<BLOB_> ({
-                {"id"sv, StructFieldMetaInfo{&BLOB_::fID}},
-                {"blob"sv, StructFieldMetaInfo{&BLOB_::fBLOB}},
-                {"contentType"sv, StructFieldMetaInfo{&BLOB_::fContentType}, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+                {"id"sv, &BLOB_::fID},
+                {"blob"sv, &BLOB_::fBLOB},
+                {"contentType"sv, &BLOB_::fContentType, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
             });
             return mapper;
         }();
@@ -76,9 +76,9 @@ namespace {
             mapper.AddCommonType<String> ();
             mapper.AddCommonType<optional<String>> ();
             mapper.AddClass<BLOBURL_> ({
-                {"uri"sv, StructFieldMetaInfo{&BLOBURL_::fURI}},
-                {"blobid"sv, StructFieldMetaInfo{&BLOBURL_::fBLOBID}},
-                {"etag"sv, StructFieldMetaInfo{&BLOBURL_::fETag}},
+                {"uri"sv, &BLOBURL_::fURI},
+                {"blobid"sv, &BLOBURL_::fBLOBID},
+                {"etag"sv, &BLOBURL_::fETag},
             });
             return mapper;
         }();

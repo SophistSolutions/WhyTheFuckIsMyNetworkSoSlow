@@ -73,12 +73,12 @@ const ConstantProperty<ObjectVariantMapper> Mgr::kDBObjectMapper_{[] () {
     mapper.AddCommonType<Range<DateTime>> (ObjectVariantMapper::RangeSerializerOptions{"lowerBound"sv, "upperBound"sv}); // lower-camel-case names happier in javascript?
 
     mapper.AddClass<ExternalDeviceUserSettingsElt_> ({
-        {"UserSettings"sv, StructFieldMetaInfo{&ExternalDeviceUserSettingsElt_::fUserSettings}},
-        {"DeviceID"sv, StructFieldMetaInfo{&ExternalDeviceUserSettingsElt_::fDeviceID}},
+        {"UserSettings"sv, &ExternalDeviceUserSettingsElt_::fUserSettings},
+        {"DeviceID"sv, &ExternalDeviceUserSettingsElt_::fDeviceID},
     });
     mapper.AddClass<ExternalNetworkUserSettingsElt_> ({
-        {"UserSettings"sv, StructFieldMetaInfo{&ExternalNetworkUserSettingsElt_::fUserSettings}},
-        {"NetworkID"sv, StructFieldMetaInfo{&ExternalNetworkUserSettingsElt_::fNetworkID}},
+        {"UserSettings"sv, &ExternalNetworkUserSettingsElt_::fUserSettings},
+        {"NetworkID"sv, &ExternalNetworkUserSettingsElt_::fNetworkID},
     });
 
     // ONLY DO THIS FOR WHEN WRITING TO DB -- store GUIDs as BLOBs - at least for database interactions (cuz probably more efficient)

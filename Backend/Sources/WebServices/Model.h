@@ -66,24 +66,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
          */
         optional<String> fFullVersionedOSName;
 
-#if __cpp_impl_three_way_comparison < 201711
-        bool operator== (const OperatingSystem& rhs) const
-        {
-            if (fMajorOSCategory != rhs.fMajorOSCategory) {
-                return false;
-            }
-            if (fFullVersionedOSName != rhs.fFullVersionedOSName) {
-                return false;
-            }
-            return true;
-        }
-        bool operator!= (const OperatingSystem& rhs) const
-        {
-            return not(*this == rhs);
-        }
-#else
         auto operator<=> (const OperatingSystem&) const = default;
-#endif
 
         /**
          *  @see Characters::ToString ();
@@ -109,27 +92,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
             return false;
         }
 
-#if __cpp_impl_three_way_comparison < 201711
-        bool operator== (const Manufacturer& rhs) const
-        {
-            if (fShortName != rhs.fShortName) {
-                return false;
-            }
-            if (fFullName != rhs.fFullName) {
-                return false;
-            }
-            if (fWebSiteURL != rhs.fWebSiteURL) {
-                return false;
-            }
-            return true;
-        }
-        bool operator!= (const Manufacturer& rhs) const
-        {
-            return not(*this == rhs);
-        }
-#else
         auto operator<=> (const Manufacturer&) const = default;
-#endif
 
         /**
          *  @see Characters::ToString ();
@@ -464,60 +427,11 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
                  */
                 nonvirtual String ToString () const;
 
-#if __cpp_impl_three_way_comparison < 201711
-                bool operator== (const NetworkInterfaceAggregateRule& rhs) const
-                {
-                    if (fInterfaceType != rhs.fInterfaceType) {
-                        return false;
-                    }
-                    if (fFingerprint != rhs.fFingerprint) {
-                        return false;
-                    }
-                    return true;
-                }
-                bool operator!= (const NetworkInterfaceAggregateRule& rhs) const
-                {
-                    return not(*this == rhs);
-                }
-#else
                 auto operator<=> (const NetworkInterfaceAggregateRule&) const = default;
-#endif
             };
             optional<Sequence<NetworkInterfaceAggregateRule>> fAggregateNetworkInterfacesMatching;
 
-#if __cpp_impl_three_way_comparison < 201711
-            bool operator== (const UserOverridesType& rhs) const
-            {
-                if (fName != rhs.fName) {
-                    return false;
-                }
-                if (fTags != rhs.fTags) {
-                    return false;
-                }
-                if (fNotes != rhs.fNotes) {
-                    return false;
-                }
-                if (fAggregateNetworks != rhs.fAggregateNetworks) {
-                    return false;
-                }
-                if (fAggregateFingerprints != rhs.fAggregateFingerprints) {
-                    return false;
-                }
-                if (fAggregateGatewayHardwareAddresses != rhs.fAggregateGatewayHardwareAddresses) {
-                    return false;
-                }
-                if (fAggregateNetworkInterfacesMatching != rhs.fAggregateNetworkInterfacesMatching) {
-                    return false;
-                }
-                return true;
-            }
-            bool operator!= (const UserOverridesType& rhs) const
-            {
-                return not(*this == rhs);
-            }
-#else
             auto operator<=> (const UserOverridesType&) const = default;
-#endif
 
             nonvirtual bool IsNonTrivial () const;
 
@@ -725,33 +639,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
             // Automatically merge into this device anything with the given device hardware address
             optional<Set<String>> fAggregateDeviceHardwareAddresses;
-#if __cpp_impl_three_way_comparison < 201711
-            bool operator== (const UserOverridesType& rhs) const
-            {
-                if (fName != rhs.fName) {
-                    return false;
-                }
-                if (fTags != rhs.fTags) {
-                    return false;
-                }
-                if (fNotes != rhs.fNotes) {
-                    return false;
-                }
-                if (fAggregateDevices != rhs.fAggregateDevices) {
-                    return false;
-                }
-                if (fAggregateDeviceHardwareAddresses != rhs.fAggregateDeviceHardwareAddresses) {
-                    return false;
-                }
-                return true;
-            }
-            bool operator!= (const UserOverridesType& rhs) const
-            {
-                return not(*this == rhs);
-            }
-#else
-            auto operator<=> (const UserOverridesType&) const = default;
-#endif
+            auto                  operator<=> (const UserOverridesType&) const = default;
 
             nonvirtual bool IsNonTrivial () const;
 
