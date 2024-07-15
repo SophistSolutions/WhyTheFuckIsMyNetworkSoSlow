@@ -95,7 +95,7 @@ String OperatingSystem::ToString () const
     StringBuilder sb;
     sb << "{"sv;
     sb << "majorOSCategory: "sv << fMajorOSCategory << ", "sv;
-    sb << "fullVersionedOSName: "sv << fFullVersionedOSName << ", "sv;
+    sb << "fullVersionedOSName: "sv << fFullVersionedOSName;
     sb << "}"sv;
     return sb;
 }
@@ -103,8 +103,8 @@ String OperatingSystem::ToString () const
 const ObjectVariantMapper OperatingSystem::kMapper = [] () {
     ObjectVariantMapper mapper;
     mapper.AddClass<OperatingSystem> ({
-        {"majorOSCategory"sv, &OperatingSystem::fMajorOSCategory, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"fullVersionedName"sv, &OperatingSystem::fFullVersionedOSName, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {"majorOSCategory"sv, &OperatingSystem::fMajorOSCategory},
+        {"fullVersionedName"sv, &OperatingSystem::fFullVersionedOSName},
     });
     return mapper;
 }();
@@ -120,7 +120,7 @@ String Model::Manufacturer::ToString () const
     sb << "{"sv;
     sb << "shortName: "sv << fShortName << ", "sv;
     sb << "fullName: "sv << fFullName << ", "sv;
-    sb << "webSiteURL: "sv << fWebSiteURL << ", "sv;
+    sb << "webSiteURL: "sv << fWebSiteURL;
     sb << "}"sv;
     return sb;
 }
@@ -131,9 +131,9 @@ const ObjectVariantMapper Model::Manufacturer::kMapper = [] () {
     mapper.AddCommonType<URI> ();
     mapper.AddCommonType<optional<URI>> ();
     mapper.AddClass<Manufacturer> ({
-        {"shortName"sv, &Manufacturer::fShortName, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"fullName"sv, &Manufacturer::fFullName, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"webSiteURL"sv, &Manufacturer::fWebSiteURL, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {"shortName"sv, &Manufacturer::fShortName},
+        {"fullName"sv, &Manufacturer::fFullName},
+        {"webSiteURL"sv, &Manufacturer::fWebSiteURL},
     });
     return mapper;
 }();
@@ -188,7 +188,7 @@ String NetworkInterface::ToString () const
         sb << "AggregatesIrreversibly: "sv << fAggregatesIrreversibly << ", "sv;
     }
     if (fIDPersistent) {
-        sb << "IDPersistent: "sv << fIDPersistent << ", "sv;
+        sb << "IDPersistent: "sv << fIDPersistent;
     }
     sb << "}"sv;
     return sb;
@@ -246,17 +246,17 @@ const ObjectVariantMapper NetworkInterface::kMapper = [] () {
 
     mapper.AddClass<NetworkInterface::WirelessInfo> ({
         {"SSID"sv, &NetworkInterface::WirelessInfo::fSSID},
-        {"state"sv, &NetworkInterface::WirelessInfo::fState, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"connectionMode"sv, &NetworkInterface::WirelessInfo::fConnectionMode, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"profileName"sv, &NetworkInterface::WirelessInfo::fProfileName, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"BSSType"sv, &NetworkInterface::WirelessInfo::fBSSType, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"MACAddress"sv, &NetworkInterface::WirelessInfo::fMACAddress, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"physicalConnectionType"sv, &NetworkInterface::WirelessInfo::fPhysicalConnectionType, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"signalQuality"sv, &NetworkInterface::WirelessInfo::fSignalQuality, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"securityEnabled"sv, &NetworkInterface::WirelessInfo::fSecurityEnabled, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"802.1XEnabled"sv, &NetworkInterface::WirelessInfo::f8021XEnabled, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"authAlgorithm"sv, &NetworkInterface::WirelessInfo::fAuthAlgorithm, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"cipher"sv, &NetworkInterface::WirelessInfo::fCipher, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {"state"sv, &NetworkInterface::WirelessInfo::fState},
+        {"connectionMode"sv, &NetworkInterface::WirelessInfo::fConnectionMode},
+        {"profileName"sv, &NetworkInterface::WirelessInfo::fProfileName},
+        {"BSSType"sv, &NetworkInterface::WirelessInfo::fBSSType},
+        {"MACAddress"sv, &NetworkInterface::WirelessInfo::fMACAddress},
+        {"physicalConnectionType"sv, &NetworkInterface::WirelessInfo::fPhysicalConnectionType},
+        {"signalQuality"sv, &NetworkInterface::WirelessInfo::fSignalQuality},
+        {"securityEnabled"sv, &NetworkInterface::WirelessInfo::fSecurityEnabled},
+        {"802.1XEnabled"sv, &NetworkInterface::WirelessInfo::f8021XEnabled},
+        {"authAlgorithm"sv, &NetworkInterface::WirelessInfo::fAuthAlgorithm},
+        {"cipher"sv, &NetworkInterface::WirelessInfo::fCipher},
     });
     mapper.AddCommonType<optional<NetworkInterface::WirelessInfo>> ();
     mapper.AddCommonType<NetworkInterface::Status> ();
@@ -269,15 +269,11 @@ const ObjectVariantMapper NetworkInterface::kMapper = [] () {
 
     mapper.AddClass<NetworkInterface> ({
         {"platformInterfaceID"sv, &NetworkInterface::fInternalInterfaceID}, {"id"sv, &NetworkInterface::fID},
-            {"aggregatedBy"sv, &NetworkInterface::fAggregatedBy, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-            {"attachedToDevices"sv, &NetworkInterface::fAttachedToDevices, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-            {"friendlyName"sv, &NetworkInterface::fFriendlyName},
-            {"description"sv, &NetworkInterface::fDescription, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-            {"type"sv, &NetworkInterface::fType},
-            {"hardwareAddress"sv, &NetworkInterface::fHardwareAddress, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-            {"transmitSpeedBaud"sv, &NetworkInterface::fTransmitSpeedBaud, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-            {"receiveLinkSpeedBaud"sv, &NetworkInterface::fReceiveLinkSpeedBaud, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-            {"wirelessInformation"sv, &NetworkInterface::fWirelessInfo, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+            {"aggregatedBy"sv, &NetworkInterface::fAggregatedBy}, {"attachedToDevices"sv, &NetworkInterface::fAttachedToDevices},
+            {"friendlyName"sv, &NetworkInterface::fFriendlyName}, {"description"sv, &NetworkInterface::fDescription},
+            {"type"sv, &NetworkInterface::fType}, {"hardwareAddress"sv, &NetworkInterface::fHardwareAddress},
+            {"transmitSpeedBaud"sv, &NetworkInterface::fTransmitSpeedBaud},
+            {"receiveLinkSpeedBaud"sv, &NetworkInterface::fReceiveLinkSpeedBaud}, {"wirelessInformation"sv, &NetworkInterface::fWirelessInfo},
             //SEE OVERRIDE BELOW {"boundAddressRanges", &NetworkInterface::fBindings.fAddressRanges},
             //SEE OVERRIDE BELOW {"boundAddresses", &NetworkInterface::fBindings.fAddresses},
             // StructFieldMetaInfo{} doesn't work with nested members - https://stackoverflow.com/questions/1929887/is-pointer-to-inner-struct-member-forbidden
@@ -310,14 +306,11 @@ const ObjectVariantMapper NetworkInterface::kMapper = [] () {
                                             intoObj->fAddresses = mapper.ToObject<Containers::Collection<InternetAddress>> (d);
                                         }
                                     })}},
-            {"gateways"sv, &NetworkInterface::fGateways, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-            {"DNSServers"sv, &NetworkInterface::fDNSServers, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-            {"status"sv, &NetworkInterface::fStatus, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-            {"aggregatesReversibly"sv, &NetworkInterface::fAggregatesReversibly, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-            {"aggregatesIrreversibly"sv, &NetworkInterface::fAggregatesIrreversibly, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-            {"idIsPersistent"sv, &NetworkInterface::fIDPersistent, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+            {"gateways"sv, &NetworkInterface::fGateways}, {"DNSServers"sv, &NetworkInterface::fDNSServers},
+            {"status"sv, &NetworkInterface::fStatus}, {"aggregatesReversibly"sv, &NetworkInterface::fAggregatesReversibly},
+            {"aggregatesIrreversibly"sv, &NetworkInterface::fAggregatesIrreversibly}, {"idIsPersistent"sv, &NetworkInterface::fIDPersistent},
 #if qDebug
-            {"debugProps"sv, &NetworkInterface::fDebugProps, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+            {"debugProps"sv, &NetworkInterface::fDebugProps},
 #endif
     });
     if constexpr (kIncludeFingerprintsInOutputTMP2Test_) {
@@ -430,13 +423,13 @@ const DataExchange::ObjectVariantMapper Model::Network::UserOverridesType::kMapp
     mapper.AddCommonType<Sequence<UserOverridesType::NetworkInterfaceAggregateRule>> ();
     mapper.AddCommonType<optional<Sequence<UserOverridesType::NetworkInterfaceAggregateRule>>> ();
     mapper.AddClass<UserOverridesType> ({
-        {"name"sv, &UserOverridesType::fName, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"tags"sv, &UserOverridesType::fTags, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"notes"sv, &UserOverridesType::fNotes, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"aggregateNetworks"sv, &UserOverridesType::fAggregateNetworks, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"aggregateFingerprints"sv, &UserOverridesType::fAggregateFingerprints, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"aggregateGatewayHardwareAddresses"sv, &UserOverridesType::fAggregateGatewayHardwareAddresses, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"aggregateNetworkInterfacesMatching"sv, &UserOverridesType::fAggregateNetworkInterfacesMatching, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {"name"sv, &UserOverridesType::fName},
+        {"tags"sv, &UserOverridesType::fTags},
+        {"notes"sv, &UserOverridesType::fNotes},
+        {"aggregateNetworks"sv, &UserOverridesType::fAggregateNetworks},
+        {"aggregateFingerprints"sv, &UserOverridesType::fAggregateFingerprints},
+        {"aggregateGatewayHardwareAddresses"sv, &UserOverridesType::fAggregateGatewayHardwareAddresses},
+        {"aggregateNetworkInterfacesMatching"sv, &UserOverridesType::fAggregateNetworkInterfacesMatching},
     });
     return mapper;
 }();
@@ -661,16 +654,16 @@ const ObjectVariantMapper Network::kMapper = [] () {
     mapper.AddCommonType<optional<tuple<float, float>>> ();
 
     mapper.AddClass<InternetServiceProvider> ({
-        {"name", &InternetServiceProvider::name, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {"name", &InternetServiceProvider::name},
     });
     mapper.AddCommonType<optional<InternetServiceProvider>> ();
 
     mapper.AddClass<GEOLocationInformation> ({
-        {"countryCode"sv, &GEOLocationInformation::fCountryCode, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"city"sv, &GEOLocationInformation::fCity, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"regionCode"sv, &GEOLocationInformation::fRegionCode, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"postalCode"sv, &GEOLocationInformation::fPostalCode, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"coordinates"sv, &GEOLocationInformation::fLatitudeAndLongitude, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {"countryCode"sv, &GEOLocationInformation::fCountryCode},
+        {"city"sv, &GEOLocationInformation::fCity},
+        {"regionCode"sv, &GEOLocationInformation::fRegionCode},
+        {"postalCode"sv, &GEOLocationInformation::fPostalCode},
+        {"coordinates"sv, &GEOLocationInformation::fLatitudeAndLongitude},
     });
     mapper.AddCommonType<optional<GEOLocationInformation>> ();
 
@@ -685,20 +678,20 @@ const ObjectVariantMapper Network::kMapper = [] () {
         {"gateways"sv, &Network::fGateways},
         {"gatewayHardwareAddresses"sv, &Network::fGatewayHardwareAddresses},
         {"DNSServers"sv, &Network::fDNSServers},
-        {"externalAddresses"sv, &Network::fExternalAddresses, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"geographicLocation"sv, &Network::fGEOLocInformation, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"internetServiceProvider"sv, &Network::fInternetServiceProvider, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"aggregatedBy"sv, &Network::fAggregatedBy, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {"externalAddresses"sv, &Network::fExternalAddresses},
+        {"geographicLocation"sv, &Network::fGEOLocInformation},
+        {"internetServiceProvider"sv, &Network::fInternetServiceProvider},
+        {"aggregatedBy"sv, &Network::fAggregatedBy},
         {"seen"sv, &Network::fSeen, kDateRangeMapper_},
-        {"aggregatesReversibly"sv, &Network::fAggregatesReversibly, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"aggregatesIrreversibly"sv, &Network::fAggregatesIrreversibly, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"aggregatesFingerprints"sv, &Network::fAggregatesFingerprints, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"idIsPersistent"sv, &Network::fIDPersistent, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"userOverrides"sv, &Network::fUserOverrides, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {"aggregatesReversibly"sv, &Network::fAggregatesReversibly},
+        {"aggregatesIrreversibly"sv, &Network::fAggregatesIrreversibly},
+        {"aggregatesFingerprints"sv, &Network::fAggregatesFingerprints},
+        {"idIsPersistent"sv, &Network::fIDPersistent},
+        {"userOverrides"sv, &Network::fUserOverrides},
     });
 #if qDebug
     mapper.AddSubClass<Network, Network> ({
-        {"debugProps"sv, &Network::fDebugProps, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {"debugProps"sv, &Network::fDebugProps},
     });
 #endif
     if constexpr (kIncludeFingerprintsInOutputTMP2Test_) {
@@ -791,11 +784,11 @@ const DataExchange::ObjectVariantMapper Model::Device::SeenType::kMapper = [] ()
     ObjectVariantMapper mapper;
     mapper.AddCommonType<Traversal::Range<DateTime>> ();
     mapper.AddClass<SeenType> ({
-        {"ARP"sv, &SeenType::fARP, kOptionalDateRangeMapper_, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"Collector"sv, &SeenType::fCollector, kOptionalDateRangeMapper_, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"ICMP"sv, &SeenType::fICMP, kOptionalDateRangeMapper_, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"UDP"sv, &SeenType::fUDP, kOptionalDateRangeMapper_, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"TCP"sv, &SeenType::fTCP, kOptionalDateRangeMapper_, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {"ARP"sv, &SeenType::fARP, kOptionalDateRangeMapper_},
+        {"Collector"sv, &SeenType::fCollector, kOptionalDateRangeMapper_},
+        {"ICMP"sv, &SeenType::fICMP, kOptionalDateRangeMapper_},
+        {"UDP"sv, &SeenType::fUDP, kOptionalDateRangeMapper_},
+        {"TCP"sv, &SeenType::fTCP, kOptionalDateRangeMapper_},
     });
     return mapper;
 }();
@@ -841,11 +834,11 @@ const DataExchange::ObjectVariantMapper Model::Device::UserOverridesType::kMappe
     mapper.AddCommonType<Set<GUID>> ();
     mapper.AddCommonType<optional<Set<GUID>>> ();
     mapper.AddClass<UserOverridesType> ({
-        {"name"sv, &UserOverridesType::fName, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"tags"sv, &UserOverridesType::fTags, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"notes"sv, &UserOverridesType::fNotes, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"aggregateDevices"sv, &UserOverridesType::fAggregateDevices, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"aggregateDeviceHardwareAddresses"sv, &UserOverridesType::fAggregateDeviceHardwareAddresses, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {"name"sv, &UserOverridesType::fName},
+        {"tags"sv, &UserOverridesType::fTags},
+        {"notes"sv, &UserOverridesType::fNotes},
+        {"aggregateDevices"sv, &UserOverridesType::fAggregateDevices},
+        {"aggregateDeviceHardwareAddresses"sv, &UserOverridesType::fAggregateDeviceHardwareAddresses},
     });
     return mapper;
 }();
@@ -890,34 +883,23 @@ const ObjectVariantMapper Device::kMapper = [] () {
     mapper += Common::PrioritizedNames::kMapper;
 
     mapper.AddClass<NetworkAttachmentInfo> ({
-        {"hardwareAddresses"sv, &NetworkAttachmentInfo::hardwareAddresses, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {"hardwareAddresses"sv, &NetworkAttachmentInfo::hardwareAddresses},
         {"localAddresses"sv, &NetworkAttachmentInfo::localAddresses},
     });
     mapper.AddCommonType<Mapping<GUID, NetworkAttachmentInfo>> ();
 
     mapper.AddClass<Device> ({
-        {"id"sv, &Device::fID},
-        {"aggregatedBy"sv, &Device::fAggregatedBy, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"names"sv, &Device::fNames},
-        {"type"sv, &Device::fTypes, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"seen"sv, &Device::fSeen},
-        {"openPorts"sv, &Device::fOpenPorts, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"icon"sv, &Device::fIcon, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"manufacturer"sv, &Device::fManufacturer, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"attachedNetworks"sv, &Device::fAttachedNetworks},
-        {"attachedNetworkInterfaces"sv, &Device::fAttachedNetworkInterfaces, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"presentationURL"sv, &Device::fPresentationURL, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"operatingSystem"sv, &Device::fOperatingSystem, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"aggregatesReversibly"sv, &Device::fAggregatesReversibly, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"aggregatesIrreversibly"sv, &Device::fAggregatesIrreversibly, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"idIsPersistent"sv, &Device::fIDPersistent, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"userOverrides"sv, &Device::fUserOverrides, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-    });
+        {"id"sv, &Device::fID}, {"aggregatedBy"sv, &Device::fAggregatedBy}, {"names"sv, &Device::fNames}, {"type"sv, &Device::fTypes},
+            {"seen"sv, &Device::fSeen}, {"openPorts"sv, &Device::fOpenPorts}, {"icon"sv, &Device::fIcon},
+            {"manufacturer"sv, &Device::fManufacturer}, {"attachedNetworks"sv, &Device::fAttachedNetworks},
+            {"attachedNetworkInterfaces"sv, &Device::fAttachedNetworkInterfaces}, {"presentationURL"sv, &Device::fPresentationURL},
+            {"operatingSystem"sv, &Device::fOperatingSystem}, {"aggregatesReversibly"sv, &Device::fAggregatesReversibly},
+            {"aggregatesIrreversibly"sv, &Device::fAggregatesIrreversibly}, {"idIsPersistent"sv, &Device::fIDPersistent},
+            {"userOverrides"sv, &Device::fUserOverrides},
 #if qDebug
-    mapper.AddSubClass<Device, Device> ({
-        {"debugProps"sv, &Device::fDebugProps, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-    });
+            {"debugProps"sv, &Device::fDebugProps},
 #endif
+    });
     mapper.AddCommonType<Sequence<Device>> ();
     return mapper;
 }();
@@ -1040,12 +1022,12 @@ const ObjectVariantMapper DeviceSortParameters::kMapper = [] () {
     mapper.AddCommonType<optional<String>> ();
     mapper.AddClass<DeviceSortParameters::SearchTerm> ({
         {"by"sv, &DeviceSortParameters::SearchTerm::fBy},
-        {"ascending"sv, &DeviceSortParameters::SearchTerm::fAscending, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {"ascending"sv, &DeviceSortParameters::SearchTerm::fAscending},
     });
     mapper.AddCommonType<Sequence<DeviceSortParameters::SearchTerm>> ();
     mapper.AddClass<DeviceSortParameters> ({
         {"searchTerms"sv, &DeviceSortParameters::fSearchTerms},
-        {"compareNetwork"sv, &DeviceSortParameters::fCompareNetwork, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {"compareNetwork"sv, &DeviceSortParameters::fCompareNetwork},
     });
     return mapper;
 }();
@@ -1205,36 +1187,35 @@ const ObjectVariantMapper About::kMapper = [] () {
     mapper.AddClass<About::APIServerInfo::ComponentInfo> ({
         {"name"sv, &About::APIServerInfo::ComponentInfo::fName},
         {"version"sv, &About::APIServerInfo::ComponentInfo::fVersion},
-        {"URL"sv, &About::APIServerInfo::ComponentInfo::fURL, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {"URL"sv, &About::APIServerInfo::ComponentInfo::fURL},
     });
     mapper.AddCommonType<Sequence<About::APIServerInfo::ComponentInfo>> ();
 
     mapper.AddClass<About::APIServerInfo::CurrentMachine> ({
         {"operatingSystem"sv, &About::APIServerInfo::CurrentMachine::fOperatingSystem},
-        {"machineUptime"sv, &About::APIServerInfo::CurrentMachine::fMachineUptime, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"totalCPUUsage"sv, &About::APIServerInfo::CurrentMachine::fTotalCPUUsage, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"runQLength"sv, &About::APIServerInfo::CurrentMachine::fRunQLength, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {"machineUptime"sv, &About::APIServerInfo::CurrentMachine::fMachineUptime},
+        {"totalCPUUsage"sv, &About::APIServerInfo::CurrentMachine::fTotalCPUUsage},
+        {"runQLength"sv, &About::APIServerInfo::CurrentMachine::fRunQLength},
     });
 
     mapper.AddClass<About::APIServerInfo::CurrentProcess> ({
-        {"processUptime"sv, &About::APIServerInfo::CurrentProcess::fProcessUptime, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"averageCPUTimeUsed"sv, &About::APIServerInfo::CurrentProcess::fAverageCPUTimeUsed, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"workingOrResidentSetSize"sv, &About::APIServerInfo::CurrentProcess::fWorkingOrResidentSetSize, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"combinedIOReadRate"sv, &About::APIServerInfo::CurrentProcess::fCombinedIOReadRate, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"combinedIOWriteRate"sv, &About::APIServerInfo::CurrentProcess::fCombinedIOWriteRate, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {"processUptime"sv, &About::APIServerInfo::CurrentProcess::fProcessUptime},
+        {"averageCPUTimeUsed"sv, &About::APIServerInfo::CurrentProcess::fAverageCPUTimeUsed},
+        {"workingOrResidentSetSize"sv, &About::APIServerInfo::CurrentProcess::fWorkingOrResidentSetSize},
+        {"combinedIOReadRate"sv, &About::APIServerInfo::CurrentProcess::fCombinedIOReadRate},
+        {"combinedIOWriteRate"sv, &About::APIServerInfo::CurrentProcess::fCombinedIOWriteRate},
     });
 
     mapper.AddCommonType<optional<float>> ();
     mapper.AddClass<About::APIServerInfo::APIEndpoint> ({
         {"callsCompleted"sv, &About::APIServerInfo::APIEndpoint::fCallsCompleted},
         {"errors"sv, &About::APIServerInfo::APIEndpoint::fErrors},
-        {"medianDuration"sv, &About::APIServerInfo::APIEndpoint::fMedianDuration, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"meanDuration"sv, &About::APIServerInfo::APIEndpoint::fMeanDuration, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"maxDuration"sv, &About::APIServerInfo::APIEndpoint::fMaxDuration, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"medianWebServerConnections"sv, &About::APIServerInfo::APIEndpoint::fMedianWebServerConnections, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"medianProcessingWebServerConnections"sv, &About::APIServerInfo::APIEndpoint::fMedianProcessingWebServerConnections,
-         ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"medianRunningAPITasks"sv, &About::APIServerInfo::APIEndpoint::fMedianRunningAPITasks, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {"medianDuration"sv, &About::APIServerInfo::APIEndpoint::fMedianDuration},
+        {"meanDuration"sv, &About::APIServerInfo::APIEndpoint::fMeanDuration},
+        {"maxDuration"sv, &About::APIServerInfo::APIEndpoint::fMaxDuration},
+        {"medianWebServerConnections"sv, &About::APIServerInfo::APIEndpoint::fMedianWebServerConnections},
+        {"medianProcessingWebServerConnections"sv, &About::APIServerInfo::APIEndpoint::fMedianProcessingWebServerConnections},
+        {"medianRunningAPITasks"sv, &About::APIServerInfo::APIEndpoint::fMedianRunningAPITasks},
     });
     mapper.AddCommonType<optional<About::APIServerInfo::APIEndpoint>> ();
 
@@ -1253,12 +1234,12 @@ const ObjectVariantMapper About::kMapper = [] () {
         {"reads"sv, &About::APIServerInfo::Database::fReads},
         {"writes"sv, &About::APIServerInfo::Database::fWrites},
         {"errors"sv, &About::APIServerInfo::Database::fErrors},
-        {"meanReadDuration"sv, &About::APIServerInfo::Database::fMeanReadDuration, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"medianReadDuration"sv, &About::APIServerInfo::Database::fMedianReadDuration, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"meanWriteDuration"sv, &About::APIServerInfo::Database::fMeanWriteDuration, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"medianWriteDuration"sv, &About::APIServerInfo::Database::fMedianWriteDuration, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"maxDuration"sv, &About::APIServerInfo::Database::fMaxDuration, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
-        {"fileSize"sv, &About::APIServerInfo::Database::fFileSize, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+        {"meanReadDuration"sv, &About::APIServerInfo::Database::fMeanReadDuration},
+        {"medianReadDuration"sv, &About::APIServerInfo::Database::fMedianReadDuration},
+        {"meanWriteDuration"sv, &About::APIServerInfo::Database::fMeanWriteDuration},
+        {"medianWriteDuration"sv, &About::APIServerInfo::Database::fMedianWriteDuration},
+        {"maxDuration"sv, &About::APIServerInfo::Database::fMaxDuration},
+        {"fileSize"sv, &About::APIServerInfo::Database::fFileSize},
     });
     mapper.AddCommonType<optional<About::APIServerInfo::Database>> ();
 

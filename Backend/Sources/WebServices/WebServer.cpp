@@ -208,7 +208,7 @@ public:
     Rep_ ()
         : fWSAPI_{make_shared<WSImpl> ([this] () -> About::APIServerInfo::WebServer {
                 About::APIServerInfo::WebServer r;
-                auto rr = this->fConnectionMgr_.pStatistics();
+                auto rr = this->fConnectionMgr_.statistics();
                 r.fThreadPool.fThreads             = kMaxThreads_; // todo begingings of data to report
                 r.fThreadPool.fTasksStillQueued = rr.fThreadPoolStatistics.fNumberOfTasksAdded - rr.fThreadPoolStatistics.fNumberOfTasksCompleted;
                 r.fThreadPool.fAverageTaskRunTime = rr.fThreadPoolStatistics.GetMeanTimeConsumed ();
