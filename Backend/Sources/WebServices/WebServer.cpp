@@ -15,6 +15,7 @@
 #include "Stroika/Foundation/DataExchange/Variant/JSON/Writer.h"
 #include "Stroika/Foundation/Execution/Activity.h"
 #include "Stroika/Foundation/Execution/IntervalTimer.h"
+#include "Stroika/Foundation/Execution/Logger.h"
 #include "Stroika/Foundation/Execution/Module.h"
 #include "Stroika/Foundation/Execution/Synchronized.h"
 #include "Stroika/Foundation/IO/Network/HTTP/ClientErrorException.h"
@@ -470,6 +471,7 @@ public:
             }
             defaultHandler.HandleFault (m, e);
         }};
+        Logger::sThe.Log (Logger::eInfo, "Started WebServices on {}"_f, fConnectionMgr_.bindings ());
     }
     static void DefaultPage_ ([[maybe_unused]] Request* request, Response* response)
     {

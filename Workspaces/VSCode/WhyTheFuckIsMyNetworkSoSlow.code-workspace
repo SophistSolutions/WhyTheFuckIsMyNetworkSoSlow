@@ -36,7 +36,8 @@
 			"string_view": "cpp",
 			"rope": "cpp",
 			"slist": "cpp",
-			"*.inc": "cpp"
+			"*.inc": "cpp",
+			"memory": "cpp"
 		}
 	}
 }

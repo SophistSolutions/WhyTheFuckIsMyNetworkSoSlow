@@ -64,7 +64,7 @@ namespace {
             mapper.AddClass<BLOB_> ({
                 {"id"sv, &BLOB_::fID},
                 {"blob"sv, &BLOB_::fBLOB},
-                {"contentType"sv, &BLOB_::fContentType, ObjectVariantMapper::StructFieldInfo::eOmitNullFields},
+                {"contentType"sv, &BLOB_::fContentType},
             });
             return mapper;
         }();

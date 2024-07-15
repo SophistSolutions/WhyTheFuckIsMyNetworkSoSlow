@@ -10,6 +10,7 @@
 #include "Stroika/Foundation/DataExchange/ObjectVariantMapper.h"
 #include "Stroika/Foundation/DataExchange/OptionsFile.h"
 #include "Stroika/Foundation/Execution/ModuleGetterSetter.h"
+#include "Stroika/Foundation/IO/Network/Port.h"
 
 /**
  *
@@ -26,6 +27,20 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
     struct AppConfigurationType {
         optional<IO::Network::PortType>        WebServerPort;
         static constexpr IO::Network::PortType kWebServerPort_Default = 80;
+
+        struct Logging {
+            optional<bool>        ToStdOut;
+            static constexpr bool kToStdOut_Default = false;
+#if qPlatform_POSIX
+            optional<bool>        ToSysLog;
+            static constexpr bool kToSysLog_Default = true;
+#endif
+#if qPlatform_Windows
+            optional<bool>        ToWindowsEventLog;
+            static constexpr bool kToWindowsEventLog_Default = true;
+#endif
+        };
+        optional<Logging> fLogging;
 
         static const DataExchange::ObjectVariantMapper kMapper;
     };

@@ -37,7 +37,19 @@ using WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::Private_::AppConfiguratio
 const ObjectVariantMapper AppConfigurationType::kMapper = [] () {
     ObjectVariantMapper mapper;
     mapper.AddCommonType<optional<IO::Network::PortType>> ();
+    mapper.AddClass<AppConfigurationType::Logging> ({
+        {"ToStdOut"sv, &AppConfigurationType::Logging::ToStdOut},
+#if qPlatform_POSIX
+            {"ToSysLog"sv, &AppConfigurationType::Logging::ToSysLog},
+#endif
+#if qPlatform_Windows
+            {"ToWindowsEventLog"sv, &AppConfigurationType::Logging::ToWindowsEventLog},
+#endif
+    });
+    mapper.AddCommonType<optional<AppConfigurationType::Logging>> ();
+
     mapper.AddClass<AppConfigurationType> ({
+        {"Logging"sv, &AppConfigurationType::fLogging},
         {L"WebServerPort", &AppConfigurationType::WebServerPort},
     });
     return mapper;

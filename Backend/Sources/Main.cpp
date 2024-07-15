@@ -19,7 +19,10 @@
 #include "Stroika/Foundation/Execution/Platform/Windows/Exception.h"
 #include "Stroika/Foundation/Execution/Platform/Windows/StructuredException.h"
 #endif
+#include "Stroika/Foundation/IO/FileSystem/FileOutputStream.h"
 #include "Stroika/Foundation/IO/Network/SystemFirewall.h"
+
+#include "Common/AppConfiguration.h"
 
 #include "AppVersion.h"
 
@@ -144,15 +147,31 @@ int main (int argc, const char* argv[])
     /*
      *  Setup Logging to the OS logging facility.
      */
-    Logger::Activator loggerActivation{Logger::Options{
-        .fLogBufferingEnabled         = true,
-        .fSuppressDuplicatesThreshold = 5min,
+    static const String kAppName_ = "WhyTheFuckIsMyNetworkSoSlow"sv;
+    Logger::Activator   loggerActivation{Logger::Options{
+          .fLogBufferingEnabled         = true,
+          .fSuppressDuplicatesThreshold = 5min,
     }};
+    {
+        using Logging                                    = BackendApp::Common::AppConfigurationType::Logging;
+        Logging                            loggingConfig = BackendApp::Common::gAppConfiguration->fLogging.value_or (Logging{});
+        Sequence<shared_ptr<Logger::IAppenderRep>> appenders;
+        Logger::sThe.SetAppenders (nullptr);
+        if (loggingConfig.ToStdOut.value_or (Logging::kToStdOut_Default)) {
+            appenders += make_shared<Logger::StreamAppender> (
+                IO::FileSystem::FileOutputStream::New (1, IO::FileSystem::FileStream::AdoptFDPolicy::eDisconnectOnDestruction));
+        }
 #if qHas_Syslog
-    Logger::sThe.SetAppenders (make_shared<Logger::SysLogAppender> ("WhyTheFuckIsMyNetworkSoSlow"sv));
+        if (loggingConfig.ToSysLog.value_or (Logging::kToSysLog_Default)) {
+            appenders += make_shared<Logger::SysLogAppender> (kAppName_);
+        }
 #elif qPlatform_Windows
-    Logger::sThe.SetAppenders (make_shared<Logger::WindowsEventLogAppender> ("WhyTheFuckIsMyNetworkSoSlow"sv));
+        if (loggingConfig.ToWindowsEventLog.value_or (Logging::kToWindowsEventLog_Default)) {
+            appenders += make_shared<Logger::WindowsEventLogAppender> (kAppName_);
+        }
 #endif
+        Logger::sThe.SetAppenders (appenders);
+    }
 
     /*
      *  Parse command line arguments, and start looking at options.
@@ -207,7 +226,7 @@ int main (int argc, const char* argv[])
     /*
      *  Create service handler instance.
      */
-    Main m{make_shared<WhyTheFuckIsMyNetworkSoSlow::BackendApp::WTFAppServiceRep> (), serviceIntegrationRep};
+    Main m{make_shared<WTFAppServiceRep> (), serviceIntegrationRep};
 
     /*
      *  Run request.
