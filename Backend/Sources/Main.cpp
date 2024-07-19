@@ -170,6 +170,7 @@ int main (int argc, const char* argv[])
             appenders += make_shared<Logger::WindowsEventLogAppender> (kAppName_);
         }
 #endif
+        return appenders;
     }());
 
     /*
