@@ -1,5 +1,5 @@
 # Start with basic set of tools from Stroika build environment
-FROM ${BASE_IMAGE:-sophistsolutionsinc/stroika-buildvm-ubuntu2204-small:v2.1}
+FROM ${BASE_IMAGE:-sophistsolutionsinc/stroika-buildvm-ubuntu2204-small:v3}
 
 ARG INCLUDE_OPENSSL=false
 ARG INCLUDE_HANDY_DEV_TOOLS=false
@@ -34,9 +34,8 @@ RUN if [ "${INCLUDE_HANDY_DEV_TOOLS}" = true ]; then apt-get install -y clang-fo
 
 RUN rm -f /Getting-Started-With-Stroika.md
 ADD Shared-Files/Getting-Started.md /
-
-CMD /bin/bash
+RUN sed -i -e 's/Getting-Started-With-Stroika/Getting-Started/g' $HOME/.bash_profile
 
 ### NOTE TO RUN
-###     docker run -v /Sandbox:/Sandbox -it sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
-###     docker run -it sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
+###     docker run -v /Sandbox:/Sandbox -it sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204
+###     docker run -it sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204

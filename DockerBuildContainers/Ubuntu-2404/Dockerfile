@@ -1,5 +1,5 @@
 # Start with basic set of tools from Stroika build environment
-FROM ${BASE_IMAGE:-sophistsolutionsinc/stroika-buildvm-ubuntu2004-small:v2.1}
+FROM ${BASE_IMAGE:-sophistsolutionsinc/stroika-buildvm-ubuntu2404-small:v3}
 
 ARG INCLUDE_OPENSSL=false
 ARG INCLUDE_HANDY_DEV_TOOLS=false
@@ -8,10 +8,10 @@ ARG INCLUDE_HANDY_DEV_TOOLS=false
 # (not sure why apt-get upgrade needed, but since around 2020-09-07 needed to make following installer work)
 RUN apt-get update && apt-get upgrade -y
 
-RUN apt-get install -y g++-10
+RUN apt-get install -y g++-14
 
 # Cross-compile for ARM
-RUN apt-get install -y g++-10-arm-linux-gnueabihf
+RUN apt-get install -y g++-14-arm-linux-gnueabihf
 
 # NPM: For html code
 #
@@ -25,7 +25,7 @@ RUN \
 ARG NODE_MAJOR=20
 RUN echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_${NODE_MAJOR}.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list
 RUN apt-get update && apt-get upgrade -y
-RUN apt-get install -y nodejs
+RUN apt-get install -y nodejs 
 
 ENV INCLUDE_OPENSSL $INCLUDE_OPENSSL
 RUN if [ "${INCLUDE_OPENSSL}" = true ]; then apt-get install -y openssh-server; fi
@@ -34,9 +34,8 @@ RUN if [ "${INCLUDE_HANDY_DEV_TOOLS}" = true ]; then apt-get install -y clang-fo
 
 RUN rm -f /Getting-Started-With-Stroika.md
 ADD Shared-Files/Getting-Started.md /
-
-CMD /bin/bash
+RUN sed -i -e 's/Getting-Started-With-Stroika/Getting-Started/g' $HOME/.bash_profile
 
 ### NOTE TO RUN
-###     docker run -v /Sandbox:/Sandbox -it sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
-###     docker run -it sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
+###     docker run -v /Sandbox:/Sandbox -it sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2404
+###     docker run -it sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2404

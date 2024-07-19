@@ -24,41 +24,54 @@ DOCKER_BUILD_EXTRAS_FOR_DEV_=\
 
 DOCKER_BUILD_EXTRAS_?=\
 
-build-images:
+
+
+## NOTE: Since these can be slow/big, the IMAGES arg can be given on the commandline to override this
 ifeq (${DETECTED_HOST_OS},Linux)
-	docker build ${DOCKER_BUILD_EXTRAS_} -f Ubuntu-2204/Dockerfile -t sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204 .
+IMAGES+= sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204
+IMAGES+= sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2404
 endif
-ifeq (Windows,$(findstring Windows,$(OS)))
-	docker build -f Windows-VS2k22/Dockerfile -t sophistsolutionsinc/whythefuckismynetworksoslow-windows-vs2k22 -m 2G .
+ifeq (Windows,$(findstring Windows,$(DETECTED_HOST_OS)))
+IMAGES+= sophistsolutionsinc/whythefuckismynetworksoslow-windows-vs2k22
 endif
+
+
+build-images:
+	${MAKE} --no-print-directory ${IMAGES}
+
+
+sophistsolutionsinc/whythefuckismynetworksoslow-windows-vs2k22:
+	docker build -f Windows-VS2k22/Dockerfile -t $@ -m 2G .
+
+sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204:
+	docker build -f Ubuntu-2204/Dockerfile -t $@ .
+
+sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2404:
+	docker build -f Ubuntu-2404/Dockerfile -t $@ .
 
 
 tag-images:
-ifeq (${DETECTED_HOST_OS},Linux)
-	docker tag sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004 sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004:$(VERSION)
-	docker tag sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004 sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204:$(VERSION)
-endif
-ifeq (Windows,$(findstring Windows,$(OS)))
-	docker tag sophistsolutionsinc/whythefuckismynetworksoslow-windows-vs2k22:$(VERSION)
-endif
+	for image in ${IMAGES}; do \
+		docker tag $${image} $${image}:v1; \
+	done
+# ifeq ($(STROIKA_VERSION_Final),true)
+# 	for image in ${IMAGES}; do  \
+# 		docker tag $${image} $${image}:${STROIKA_VERSION}; \
+# 	done
+# endif
 
 
 push-images:
-	#if you get errors doing this (permission denied) make sure you ran docker login
-ifeq (${DETECTED_HOST_OS},Linux)
-	docker push sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204
-endif
-ifeq (Windows,$(findstring Windows,$(OS)))
-	docker push sophistsolutionsinc/whythefuckismynetworksoslow-windows-vs2k22
-endif
-ifeq ($(VERSION_Final),true)
-ifeq (${DETECTED_HOST_OS},Linux)
-	docker push sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204:$(VERSION)
-endif
-ifeq (Windows,$(findstring Windows,$(OS)))
-	docker push sophistsolutionsinc/whythefuckismynetworksoslow-windows-vs2k22:$(VERSION)
-endif
-endif
+	#if you get errors doing this (permission denied) make sure you ran docker login (as sophists - else no permission to push these)
+	for image in ${IMAGES}; do \
+		docker push $${image}:latest; \
+		docker push $${image}:v1; \
+	done
+# ifeq ($(STROIKA_VERSION_Final),true)
+# 	for image in ${IMAGES}; do  \
+# 		docker push $${image}:${STROIKA_VERSION}; \
+# 	done
+# endif
 
 
 dev-containers:
