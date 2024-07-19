@@ -26,12 +26,10 @@ DOCKER_BUILD_EXTRAS_?=\
 
 build-images:
 ifeq (${DETECTED_HOST_OS},Linux)
-	docker build ${DOCKER_BUILD_EXTRAS_} -f Ubuntu-2004/Dockerfile -t sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004 .
 	docker build ${DOCKER_BUILD_EXTRAS_} -f Ubuntu-2204/Dockerfile -t sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204 .
 endif
 ifeq (Windows,$(findstring Windows,$(OS)))
-	docker build -f Windows-Cygwin-VS2k19/Dockerfile -t sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19 -m 2G .
-	docker build -f Windows-Cygwin-VS2k19/Dockerfile -t sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k22 -m 2G .
+	docker build -f Windows-VS2k22/Dockerfile -t sophistsolutionsinc/whythefuckismynetworksoslow-windows-vs2k22 -m 2G .
 endif
 
 
@@ -41,29 +39,24 @@ ifeq (${DETECTED_HOST_OS},Linux)
 	docker tag sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004 sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204:$(VERSION)
 endif
 ifeq (Windows,$(findstring Windows,$(OS)))
-	docker tag sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19:latest sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19:$(VERSION)
-	docker tag sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19:latest sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k22:$(VERSION)
+	docker tag sophistsolutionsinc/whythefuckismynetworksoslow-windows-vs2k22:$(VERSION)
 endif
 
 
 push-images:
 	#if you get errors doing this (permission denied) make sure you ran docker login
 ifeq (${DETECTED_HOST_OS},Linux)
-	docker push sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004
 	docker push sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204
 endif
 ifeq (Windows,$(findstring Windows,$(OS)))
-	docker push sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19
-	docker push sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k22
+	docker push sophistsolutionsinc/whythefuckismynetworksoslow-windows-vs2k22
 endif
 ifeq ($(VERSION_Final),true)
 ifeq (${DETECTED_HOST_OS},Linux)
-	docker push sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004:$(VERSION)
 	docker push sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204:$(VERSION)
 endif
 ifeq (Windows,$(findstring Windows,$(OS)))
-	docker push sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k19:$(VERSION)
-	docker push sophistsolutionsinc/whythefuckismynetworksoslow-windows-cygwin-vs2k22:$(VERSION)
+	docker push sophistsolutionsinc/whythefuckismynetworksoslow-windows-vs2k22:$(VERSION)
 endif
 endif
 
