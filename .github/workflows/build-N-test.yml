@@ -7,7 +7,7 @@
 name: build-N-test
 
 on:
-  push:
+#   push:
   workflow_dispatch:
     inputs:
       run_all:
