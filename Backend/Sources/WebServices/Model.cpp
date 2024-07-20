@@ -703,6 +703,12 @@ const ObjectVariantMapper Network::kMapper = [] () {
                  }),
                  ObjectVariantMapper::ToObjectMapperType<Network> (nullptr)}},
         });
+        #if 0
+        // vaguely like this, but need to add to base value.... Need good example of this in STK - cuz seems afterFrom needs handle to already produced so-far value!!!
+         {.fAfterFrom = [] (const ObjectVariantMapper&, const Network* objOfType) -> VariantValue {
+                     return VariantValue{objOfType->GenerateFingerprintFromProperties ().As<String> ()};
+                 }}
+                 #endif
     }
     mapper.AddCommonType<Sequence<Network>> ();
 
