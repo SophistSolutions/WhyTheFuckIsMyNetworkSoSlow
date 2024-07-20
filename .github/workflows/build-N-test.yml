@@ -81,6 +81,7 @@ jobs:
           df -h
       - name: Configure ${{ matrix.config_name }}
         run: |
+          cd ThirdPartyComponents/Stroika/StroikaRoot;
           ./configure ${{ matrix.config_name }} --compiler-driver ${{ matrix.compiler }} ${{ matrix.extra_config_args }} --cppstd-version ${{ matrix.cpp_version }}
           cat ConfigurationFiles/${{ matrix.config_name }}.xml
       - name: Make all
@@ -218,8 +219,8 @@ jobs:
       - name: Configure
         shell: "bash"
         run: |
-          docker exec --workdir c:/Stroika buildContainer sh -c "./configure ${{ matrix.config_name }} ${{ matrix.extra_config_args }}"
-          docker exec --workdir c:/Stroika buildContainer cat ConfigurationFiles/${{ matrix.config_name }}.xml
+          docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow/ThirdPartyComponents/Stroika/StroikaRoot buildContainer sh -c "./configure ${{ matrix.config_name }} ${{ matrix.extra_config_args }}"
+          docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow/ThirdPartyComponents/Stroika/StroikaRoot buildContainer cat ConfigurationFiles/${{ matrix.config_name }}.xml
       - name: Build All
         shell: "bash"
         run: |
