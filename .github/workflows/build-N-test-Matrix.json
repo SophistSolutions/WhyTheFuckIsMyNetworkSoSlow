@@ -11,7 +11,7 @@
         "cpp_version": "c++23",
         "config_name": "Debug",
         "extra_config_args": "--apply-default-release-flags",
-        "run_on_branch": "v1-Release"
+        "run_on_branch": "always"
     },
     {},
     {
@@ -30,3 +30,4 @@
         "extra_config_args": "--arch x86_64 --apply-default-release-flags",
         "run_on_branch": "always"
     }
+]
