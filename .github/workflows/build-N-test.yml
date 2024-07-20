@@ -30,20 +30,20 @@ jobs:
             . | select((.run_on_branch==$branchName) or (.run_on_branch=="always") or ("${{github.event.inputs.run_all}}"=="true") and (.run_on_branch!="never")) | select(.build_job=="Linux")
         )' .github/workflows/build-N-test-Matrix.json)                
         echo "matrix={\"include\":$(echo $matrix)}" >> $GITHUB_OUTPUT
-  MacOSMatrixPrep:
-    runs-on: ubuntu-latest
-    outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
-    steps:
-    - name: Check out code into the Go module directory
-      uses: actions/checkout@v4
-    - id: set-matrix
-      run: |
-        branchName=$(echo '${{ github.ref }}' | sed 's,refs/heads/,,g')  
-        matrix=$(jq --arg branchName "$branchName" 'map( 
-            . | select((.run_on_branch==$branchName) or (.run_on_branch=="always") or ("${{github.event.inputs.run_all}}"=="true")) | select(.build_job=="MacOS")
-        )' .github/workflows/build-N-test-Matrix.json)                
-        echo "matrix={\"include\":$(echo $matrix)}" >> $GITHUB_OUTPUT
+#   MacOSMatrixPrep:
+#     runs-on: ubuntu-latest
+#     outputs:
+#       matrix: ${{ steps.set-matrix.outputs.matrix }}
+#     steps:
+#     - name: Check out code into the Go module directory
+#       uses: actions/checkout@v4
+#     - id: set-matrix
+#       run: |
+#         branchName=$(echo '${{ github.ref }}' | sed 's,refs/heads/,,g')  
+#         matrix=$(jq --arg branchName "$branchName" 'map( 
+#             . | select((.run_on_branch==$branchName) or (.run_on_branch=="always") or ("${{github.event.inputs.run_all}}"=="true")) | select(.build_job=="MacOS")
+#         )' .github/workflows/build-N-test-Matrix.json)                
+#         echo "matrix={\"include\":$(echo $matrix)}" >> $GITHUB_OUTPUT
   WindowsMatrixPrep:
     runs-on: ubuntu-latest
     outputs:
@@ -79,6 +79,7 @@ jobs:
           grep processor /proc/cpuinfo | wc -l
           grep MemTotal /proc/meminfo
           df -h
+          ls -l
       - name: Configure ${{ matrix.config_name }}
         run: |
           cd ThirdPartyComponents/Stroika/StroikaRoot;
@@ -94,85 +95,85 @@ jobs:
           path: |
             WhyTheFuckIsMyNetworkSoSlow/Builds/${{ matrix.config_name }}/WhyTheFuckIsMyNetworkSoSlow/*.deb
   
-  build-n-test-MacOS:
-    needs: MacOSMatrixPrep
-    runs-on: ${{ matrix.runs_on }}
-    strategy:
-      matrix: ${{fromJson(needs.MacOSMatrixPrep.outputs.matrix)}}
+#   build-n-test-MacOS:
+#     needs: MacOSMatrixPrep
+#     runs-on: ${{ matrix.runs_on }}
+#     strategy:
+#       matrix: ${{fromJson(needs.MacOSMatrixPrep.outputs.matrix)}}
 
-    env:
-      # vm has 2 virtual CPUs, but 8GB ram, so jobs=3 (empirical), and QUICK_BUILD avoids some internal testing
-      MAKEFLAGS: "--jobs=3 QUICK_BUILD=1"
-      # EXPERIMENTAL FIX TO LIBIDB2 not found https://github.com/actions/runner-images/issues/9638
-      LIBRARY_PATH: "/opt/homebrew/lib"
-    steps:
-      - uses: maxim-lobanov/setup-xcode@v1
-        with:
-          xcode-version: ${{ matrix.xcode }}
-      - uses: actions/checkout@v4
-      - name: Build System Info
-        run: |
-          echo "CWD: `pwd`"
-          df -h
-          system_profiler SPSoftwareDataType
-          system_profiler SPDeveloperToolsDataType
-          sw_vers
-          echo "    X-CODE: `xcodebuild -version | tr '\n' ';'`"
-          echo "LIBRARY_PATH = $LIBRARY_PATH"
-      # If we had docker ability, most of these would be built into a docker file
-      - name: Install Basic Build requirements
-        run: |
-          brew install gnu-sed
-          brew install p7zip
-          brew install autoconf
-          brew install libtool
-          brew install automake
-          brew install pkg-config
-          make install-realpath
-      - name: Configure
-        run: |
-          ./configure ${{ matrix.config_name }} ${{ matrix.extra_config_args }}
-          cat ConfigurationFiles/${{ matrix.config_name }}.xml
-      - name: Build third-party-components
-        run: |
-          make third-party-components
-          make clean
-      - name: Build All
-        run: |
-          make all
-      - name: Workaround GitHub-Actions-MacOS Issue with env.TMPDIR
-        if: always()
-        run: |
-          mkdir /tmp/LOGS-ARCHIVE
-          cp $TMPDIR/Trace*.txt /tmp/LOGS-ARCHIVE || :
-      - name: DEBUG Workaround GitHub-Actions-MacOS Issue with env.TMPDIR
-        if: always()
-        run: |
-          echo "TMPDIR=$TMPDIR"
-          echo "TMPDIR using ENV.TMPDIR=${{ env.TMPDIR }}"
-          # Just the echo line above shows empty, and then the ls line causes exit 1/failure
-          #ls -l ${{ env.TMPDIR }}/Trace*.txt
-          #if this gets fixed, then lose Workaround GitHub-Actions-MacOS, and directly reference ${{ env.TMPDIR }}/Trace*.txt in Archive Log Results
-      - name: Build System Info
-        run: |
-          df -h
-      - name: Archive Log Results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: Log Results (${{ matrix.displayTargetName }})
-          if-no-files-found: warn
-          path: |
-            Builds/${{ matrix.config_name }}/PerformanceDump.txt
-            /tmp/LOGS-ARCHIVE
-            #${{ env.TMPDIR }}/Trace*.txt
-      - name: Archive Sample Results
-        uses: actions/upload-artifact@v4
-        with:
-          name: Samples (${{ matrix.displayTargetName }})
-          if-no-files-found: warn
-          path: |
-            Builds/${{ matrix.config_name }}/Samples-*
+#     env:
+#       # vm has 2 virtual CPUs, but 8GB ram, so jobs=3 (empirical), and QUICK_BUILD avoids some internal testing
+#       MAKEFLAGS: "--jobs=3 QUICK_BUILD=1"
+#       # EXPERIMENTAL FIX TO LIBIDB2 not found https://github.com/actions/runner-images/issues/9638
+#       LIBRARY_PATH: "/opt/homebrew/lib"
+#     steps:
+#       - uses: maxim-lobanov/setup-xcode@v1
+#         with:
+#           xcode-version: ${{ matrix.xcode }}
+#       - uses: actions/checkout@v4
+#       - name: Build System Info
+#         run: |
+#           echo "CWD: `pwd`"
+#           df -h
+#           system_profiler SPSoftwareDataType
+#           system_profiler SPDeveloperToolsDataType
+#           sw_vers
+#           echo "    X-CODE: `xcodebuild -version | tr '\n' ';'`"
+#           echo "LIBRARY_PATH = $LIBRARY_PATH"
+#       # If we had docker ability, most of these would be built into a docker file
+#       - name: Install Basic Build requirements
+#         run: |
+#           brew install gnu-sed
+#           brew install p7zip
+#           brew install autoconf
+#           brew install libtool
+#           brew install automake
+#           brew install pkg-config
+#           make install-realpath
+#       - name: Configure
+#         run: |
+#           ./configure ${{ matrix.config_name }} ${{ matrix.extra_config_args }}
+#           cat ConfigurationFiles/${{ matrix.config_name }}.xml
+#       - name: Build third-party-components
+#         run: |
+#           make third-party-components
+#           make clean
+#       - name: Build All
+#         run: |
+#           make all
+#       - name: Workaround GitHub-Actions-MacOS Issue with env.TMPDIR
+#         if: always()
+#         run: |
+#           mkdir /tmp/LOGS-ARCHIVE
+#           cp $TMPDIR/Trace*.txt /tmp/LOGS-ARCHIVE || :
+#       - name: DEBUG Workaround GitHub-Actions-MacOS Issue with env.TMPDIR
+#         if: always()
+#         run: |
+#           echo "TMPDIR=$TMPDIR"
+#           echo "TMPDIR using ENV.TMPDIR=${{ env.TMPDIR }}"
+#           # Just the echo line above shows empty, and then the ls line causes exit 1/failure
+#           #ls -l ${{ env.TMPDIR }}/Trace*.txt
+#           #if this gets fixed, then lose Workaround GitHub-Actions-MacOS, and directly reference ${{ env.TMPDIR }}/Trace*.txt in Archive Log Results
+#       - name: Build System Info
+#         run: |
+#           df -h
+#       - name: Archive Log Results
+#         if: always()
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: Log Results (${{ matrix.displayTargetName }})
+#           if-no-files-found: warn
+#           path: |
+#             Builds/${{ matrix.config_name }}/PerformanceDump.txt
+#             /tmp/LOGS-ARCHIVE
+#             #${{ env.TMPDIR }}/Trace*.txt
+#       - name: Archive Sample Results
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: Samples (${{ matrix.displayTargetName }})
+#           if-no-files-found: warn
+#           path: |
+#             Builds/${{ matrix.config_name }}/Samples-*
 
   build-n-test-Windows:
     needs: WindowsMatrixPrep
@@ -204,12 +205,8 @@ jobs:
         run: docker pull ${{ matrix.container_image }}
       - name: Start docker build environment
         shell: "bash"
-        ### ash rebaseall nonsense to try and workaround sporadic failure on MSYS
-        ### without this rebaseall, about 30% of the time we get a failure in wget wget 3470 child_info_fork::abort: \??\C:\msys64\usr\bin\msys-crypto-1.1.dll: Loaded to different address: parent(0x478B980000) != child(0x400000
-        ### and with this hack, it hasn't happened in years --LGP 2024-03-03
-        # docker run --interactive --memory 7G --cpus 2 --storage-opt 'size=50GB' -v "${GITHUB_WORKSPACE}:c:\Stroika" --detach --name buildContainer ${{ matrix.container_image }} ash -c "c:/msys64/usr/bin/rebaseall -v; exec bash"
         run: |
-          docker run --interactive --memory 7G --cpus 2 --storage-opt 'size=50GB' -v "${GITHUB_WORKSPACE}:c:\Stroika" --detach --name buildContainer ${{ matrix.container_image }} bash
+          docker run --interactive --memory 7G --cpus 2 --storage-opt 'size=50GB' -v "${GITHUB_WORKSPACE}:c:\WhyTheFuckIsMyNetworkSoSlow" --detach --name buildContainer ${{ matrix.container_image }} bash
       - name: Print Info about docker system
         shell: "bash"
         run: |
@@ -224,7 +221,7 @@ jobs:
       - name: Build All
         shell: "bash"
         run: |
-          docker exec --workdir c:/Stroika --env MAKEFLAGS="$MAKEFLAGS" buildContainer make all
+          docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow --env MAKEFLAGS="$MAKEFLAGS" buildContainer make all
       - name: Build System Info
         shell: "bash"
         run: |
