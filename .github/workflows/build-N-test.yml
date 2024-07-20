@@ -70,6 +70,8 @@ jobs:
     container: ${{ matrix.container_image }}
     steps:
       - uses: actions/checkout@v4
+        with: 
+            submodules: recursive
       - name: Build System Info
         run: |
           lsb_release -d 2>/dev/null || true
@@ -80,6 +82,7 @@ jobs:
           grep MemTotal /proc/meminfo
           df -h
           ls -l
+          ls -l ThirdPartyComponents/Stroika/StroikaRoot
       - name: Configure ${{ matrix.config_name }}
         run: |
           cd ThirdPartyComponents/Stroika/StroikaRoot;
@@ -187,6 +190,8 @@ jobs:
       ARTIFACTS_DIR: "c:/Artifacts/"
     steps:
       - uses: actions/checkout@v4
+        with: 
+            submodules: recursive
       # https://stackoverflow.com/questions/58033366/how-to-get-current-branch-within-github-actions
       - name: Extract branch name
         shell: bash
