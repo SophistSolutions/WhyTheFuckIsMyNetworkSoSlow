@@ -83,6 +83,10 @@ jobs:
           df -h
           ls -l
           ls -l ThirdPartyComponents/Stroika/StroikaRoot
+      - name: Create build root structure
+        shell: "bash"
+        run: |
+          make build-root
       - name: Configure ${{ matrix.config_name }}
         run: |
           cd ThirdPartyComponents/Stroika/StroikaRoot;
