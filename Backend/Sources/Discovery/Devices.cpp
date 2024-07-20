@@ -75,19 +75,33 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery;
 // Turn on to debug issues with lock contention and upgradelocks
 //#define qLOCK_DEBUGGING_ 1
 
+
+#if kStroika_Version_FullVersion <= Stroika_Make_FULL_VERSION (3, 0, kStroika_Version_Stage_Dev, 8, 1)
+#if qHasFeature_fmtlib && (FMT_VERSION >= 110000)
+template <>
+struct qStroika_Foundation_Characters_FMT_PREFIX_::formatter<Stroika::Foundation::Common::GUID, wchar_t>
+    : Stroika::Foundation::Characters::ToStringFormatter<Stroika::Foundation::Common::GUID> {};
+template <>
+struct qStroika_Foundation_Characters_FMT_PREFIX_::formatter<Stroika::Foundation::Common::GUID, char>
+    : Stroika::Foundation::Characters::ToStringFormatterASCII<Stroika::Foundation::Common::GUID> {};
+static_assert (Stroika::Foundation::Configuration::StdCompat::formattable<Stroika::Foundation::Common::GUID, wchar_t>);
+#endif
+#endif
+
+
 namespace {
     // derived based on experimentation on my network - need standards/referecnes! -- LGP 2019-02-20
-    const String kDeviceType_SpeakerGroup_{L"urn:smartspeaker-audio:device:SpeakerGroup:1"sv};
-    const String kDeviceType_ZonePlayer_{L"urn:schemas-upnp-org:device:ZonePlayer:1"sv};
-    const String kDeviceType_WFADevice_{L"urn:schemas-wifialliance-org:device:WFADevice:1"sv};
-    const String kDeviceType_WANConnectionDevice_{L"urn:schemas-upnp-org:device:WANConnectionDevice:1"sv};
-    const String kDeviceType_WLANAccessPointDevice_{L"urn:schemas-upnp-org:device:WLANAccessPointDevice:1"sv};
-    const String kDeviceType_WANDevice_{L"urn:schemas-upnp-org:device:WANDevice:1"sv};
-    const String kDeviceType_MediaRenderer_{L"urn:schemas-upnp-org:device:MediaRenderer:1"sv};
-    const String kDeviceType_DIALServer_{L"urn:dial-multiscreen-org:device:dial:1"sv}; // typically TV, Blu-ray player, set-top-box, or similar device
-    const String kDeviceType_DIALReceiver_{L"urn:dial-multiscreen-org:device:dialreceiver:1"sv};
+    const String kDeviceType_SpeakerGroup_{"urn:smartspeaker-audio:device:SpeakerGroup:1"sv};
+    const String kDeviceType_ZonePlayer_{"urn:schemas-upnp-org:device:ZonePlayer:1"sv};
+    const String kDeviceType_WFADevice_{"urn:schemas-wifialliance-org:device:WFADevice:1"sv};
+    const String kDeviceType_WANConnectionDevice_{"urn:schemas-upnp-org:device:WANConnectionDevice:1"sv};
+    const String kDeviceType_WLANAccessPointDevice_{"urn:schemas-upnp-org:device:WLANAccessPointDevice:1"sv};
+    const String kDeviceType_WANDevice_{"urn:schemas-upnp-org:device:WANDevice:1"sv};
+    const String kDeviceType_MediaRenderer_{"urn:schemas-upnp-org:device:MediaRenderer:1"sv};
+    const String kDeviceType_DIALServer_{"urn:dial-multiscreen-org:device:dial:1"sv}; // typically TV, Blu-ray player, set-top-box, or similar device
+    const String kDeviceType_DIALReceiver_{"urn:dial-multiscreen-org:device:dialreceiver:1"sv};
     // probably shouldn't be this specifc
-    const String kDeviceType_Roku_{L"urn:roku-com:device:player:1-0"sv};
+    const String kDeviceType_Roku_{"urn:roku-com:device:player:1-0"sv};
 }
 
 namespace {

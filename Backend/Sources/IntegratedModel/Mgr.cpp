@@ -67,6 +67,19 @@ using WebServices::Model::NetworkCollection;
 using WebServices::Model::NetworkInterface;
 using WebServices::Model::NetworkInterfaceCollection;
 
+
+#if kStroika_Version_FullVersion <= Stroika_Make_FULL_VERSION (3, 0, kStroika_Version_Stage_Dev, 8, 1)
+#if qHasFeature_fmtlib && (FMT_VERSION >= 110000)
+template <>
+struct qStroika_Foundation_Characters_FMT_PREFIX_::formatter<Stroika::Foundation::Common::GUID, wchar_t>
+    : Stroika::Foundation::Characters::ToStringFormatter<Stroika::Foundation::Common::GUID> {};
+template <>
+struct qStroika_Foundation_Characters_FMT_PREFIX_::formatter<Stroika::Foundation::Common::GUID, char>
+    : Stroika::Foundation::Characters::ToStringFormatterASCII<Stroika::Foundation::Common::GUID> {};
+static_assert (Stroika::Foundation::Configuration::StdCompat::formattable<Stroika::Foundation::Common::GUID, wchar_t>);
+#endif
+#endif
+
 namespace {
     struct MyDBAccessRep_ : IntegratedModel::Private_::DBAccess::Mgr {
         using inherited = IntegratedModel::Private_::DBAccess::Mgr;

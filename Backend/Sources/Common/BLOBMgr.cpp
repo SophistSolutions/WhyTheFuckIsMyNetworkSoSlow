@@ -5,6 +5,7 @@
 
 #include "Stroika/Foundation/Characters/ToString.h"
 #include "Stroika/Foundation/Common/Property.h"
+#include "Stroika/Foundation/Configuration/StroikaVersion.h"
 #include "Stroika/Foundation/DataExchange/ObjectVariantMapper.h"
 #include "Stroika/Foundation/Execution/Synchronized.h"
 #include "Stroika/Foundation/IO/Network/Transfer/Connection.h"
@@ -36,6 +37,27 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common;
 //#define USE_NOISY_TRACE_IN_THIS_MODULE_ 1
 
 // @todo Lose DIGEST code and use new UUID::CreateNew () method when available.
+
+#if kStroika_Version_FullVersion <= Stroika_Make_FULL_VERSION (3, 0, kStroika_Version_Stage_Dev, 8, 1)
+#if qHasFeature_fmtlib && (FMT_VERSION >= 110000)
+template <>
+struct qStroika_Foundation_Characters_FMT_PREFIX_::formatter<Stroika::Foundation::Common::GUID, wchar_t>
+    : Stroika::Foundation::Characters::ToStringFormatter<Stroika::Foundation::Common::GUID> {};
+template <>
+struct qStroika_Foundation_Characters_FMT_PREFIX_::formatter<Stroika::Foundation::Common::GUID, char>
+    : Stroika::Foundation::Characters::ToStringFormatterASCII<Stroika::Foundation::Common::GUID> {};
+static_assert (Stroika::Foundation::Configuration::StdCompat::formattable<Stroika::Foundation::Common::GUID, wchar_t>);
+#endif
+#if qHasFeature_fmtlib && (FMT_VERSION >= 110000)
+template <>
+struct qStroika_Foundation_Characters_FMT_PREFIX_::formatter<Stroika::Foundation::IO::Network::URI, wchar_t>
+    : Stroika::Foundation::Characters::ToStringFormatter<Stroika::Foundation::IO::Network::URI> {};
+template <>
+struct qStroika_Foundation_Characters_FMT_PREFIX_::formatter<Stroika::Foundation::IO::Network::URI, char>
+    : Stroika::Foundation::Characters::ToStringFormatterASCII<Stroika::Foundation::IO::Network::URI> {};
+static_assert (Stroika::Foundation::Configuration::StdCompat::formattable<Stroika::Foundation::IO::Network::URI, wchar_t>);
+#endif
+#endif
 
 namespace {
 
