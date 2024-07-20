@@ -1,10 +1,26 @@
 [
     {
+        "comment": "Linux",
+        "comment2": "ubuntu 24.04"
+    },
+    {
+        "build_job": "Linux",
+        "runs_on": "ubuntu-latest",
+        "displayTargetName": "whythefuckismynetworksoslow-buildvm-ubuntu-2204",
+        "container_images": "sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204"
+    },
+    {
+        "build_job": "Linux",
+        "runs_on": "ubuntu-latest",
+        "displayTargetName": "whythefuckismynetworksoslow-buildvm-ubuntu-2404",
+        "container_images": "sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2404"
+    },
+    {
         "comment": "Windows"
     },
     {
         "build_job": "Windows",
-        "displayTargetName": "sophistsolutionsinc/whythefuckismynetworksoslow-windows-vs2k22",
+        "displayTargetName": "whythefuckismynetworksoslow-buildvm-windows-vs2k22",
         "runs_on": "windows-latest",
         "container_images": "sophistsolutionsinc/whythefuckismynetworksoslow-windows-vs2k22"
     }
