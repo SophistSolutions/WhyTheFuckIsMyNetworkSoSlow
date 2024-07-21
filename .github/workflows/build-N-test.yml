@@ -100,7 +100,7 @@ jobs:
         with:
           name: ${{ matrix.displayTargetName }} Installers
           path: |
-            WhyTheFuckIsMyNetworkSoSlow/Builds/${{ matrix.config_name }}/WhyTheFuckIsMyNetworkSoSlow/*.deb
+            Builds/${{ matrix.config_name }}/WhyTheFuckIsMyNetworkSoSlow/*.deb
   
 #   build-n-test-MacOS:
 #     needs: MacOSMatrixPrep
@@ -191,7 +191,6 @@ jobs:
     env:
       # vm has 2 virtual CPUs, but 8GB ram, so jobs=2 (empirical sometimes run out of RAM jobs=3), and QUICK_BUILD avoids some internal testing
       MAKEFLAGS: "--jobs=2 QUICK_BUILD=1"
-      ARTIFACTS_DIR: "c:/Artifacts/"
     steps:
       - uses: actions/checkout@v4
         with: 
@@ -236,18 +235,22 @@ jobs:
         run: |
           df -h
           docker exec buildContainer df -h
-      - name: Copy Build Artifacts
+          - name: Stop Build Container
+          shell: "bash"
+          if: always()
+          run: |
+            docker stop buildContainer
+      - name: DEBUG
         shell: "bash"
         if: always()
-        # due to flaws in docker (windows must stop) - and cp no wildcards
         run: |
-          # Because of bind mount, no longer copy out of container, already built in outside filesystem
-          # Just copy out from container the stuff in /tmp
-          (docker exec --workdir c:/ buildContainer bash -c 'mkdir -p /TRACE_LOGS; cp $TEMP/Trace*.txt /TRACE_LOGS/') || :
-          (cp -r "${GITHUB_WORKSPACE}/Builds/${{ matrix.config_name }}/" $ARTIFACTS_DIR) || :
-          docker stop buildContainer
-          (docker cp "buildContainer:TRACE_LOGS/" $ARTIFACTS_DIR) || :
-          rm -rf $ARTIFACTS_DIR/{ThirdPartyComponents,Tests,*.lib}
+          echo "CWD:" ; ls -l
+          echo "c:/WhyTheFuckIsMyNetworkSoSlow:" ; ls -l c:/WhyTheFuckIsMyNetworkSoSlow
+    #   - name: Copy Build Artifacts
+    #     shell: "bash"
+    #     # due to flaws in docker (windows must stop) - and cp no wildcards
+    #     run: |
+    #       docker cp buildContainer:WhyTheFuckIsMyNetworkSoSlow/Builds/${{ matrix.config_name }}/ $ARTIFACTS_DIR 2> /dev/null
       - name: Archive Log Results
         if: always()
         uses: actions/upload-artifact@v4
@@ -255,12 +258,10 @@ jobs:
           name: Log Results (${{ matrix.displayTargetName }})
           if-no-files-found: warn
           path: |
-            ${{ env.ARTIFACTS_DIR }}PerformanceDump.txt
-            ${{ env.ARTIFACTS_DIR }}TRACE_LOGS
-      - name: Archive Sample Results
-        uses: actions/upload-artifact@v4
+            IntermediateFiles/${{ matrix.config_name }}/WhyTheFuckIsMyNetworkSoSlow/html/Build.txt
+      - name: Archive Installer Results
+        uses: actions/upload-artifact@v3
         with:
-          name: Samples (${{ matrix.displayTargetName }})
-          if-no-files-found: warn
+          name: ${{ matrix.displayTargetName }} Installers
           path: |
-            ${{ env.ARTIFACTS_DIR }}Samples-*
+            ${{ env.ARTIFACTS_DIR }}/WhyTheFuckIsMyNetworkSoSlow/*.msi
