@@ -62,15 +62,6 @@ template <>
 struct qStroika_Foundation_Characters_FMT_PREFIX_::formatter<Stroika::Foundation::IO::Network::URI, char>
     : Stroika::Foundation::Characters::ToStringFormatterASCII<Stroika::Foundation::IO::Network::URI> {};
 static_assert (Stroika::Foundation::Configuration::StdCompat::formattable<Stroika::Foundation::IO::Network::URI, wchar_t>);
-#if qHasFeature_fmtlib && (FMT_VERSION >= 110000)
-template <>
-struct qStroika_Foundation_Characters_FMT_PREFIX_::formatter<Stroika::Foundation::IO::Network::URI, wchar_t>
-    : Stroika::Foundation::Characters::ToStringFormatter<Stroika::Foundation::IO::Network::URI> {};
-template <>
-struct qStroika_Foundation_Characters_FMT_PREFIX_::formatter<Stroika::Foundation::IO::Network::URI, char>
-    : Stroika::Foundation::Characters::ToStringFormatterASCII<Stroika::Foundation::IO::Network::URI> {};
-static_assert (Stroika::Foundation::Configuration::StdCompat::formattable<Stroika::Foundation::IO::Network::URI, wchar_t>);
-#endif
  #endif
  #endif
  
