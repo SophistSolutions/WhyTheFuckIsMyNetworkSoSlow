@@ -75,17 +75,6 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery;
 // Turn on to debug issues with lock contention and upgradelocks
 //#define qLOCK_DEBUGGING_ 1
 
-#if kStroika_Version_FullVersion <= Stroika_Make_FULL_VERSION(3, 0, kStroika_Version_Stage_Dev, 8, 1)
-#if qHasFeature_fmtlib && (FMT_VERSION >= 110000)
-template <>
-struct qStroika_Foundation_Characters_FMT_PREFIX_::formatter<Stroika::Foundation::Common::GUID, wchar_t>
-    : Stroika::Foundation::Characters::ToStringFormatter<Stroika::Foundation::Common::GUID> {};
-template <>
-struct qStroika_Foundation_Characters_FMT_PREFIX_::formatter<Stroika::Foundation::Common::GUID, char>
-    : Stroika::Foundation::Characters::ToStringFormatterASCII<Stroika::Foundation::Common::GUID> {};
-static_assert (Stroika::Foundation::Configuration::StdCompat::formattable<Stroika::Foundation::Common::GUID, wchar_t>);
-#endif
-#endif
 
 namespace {
     // derived based on experimentation on my network - need standards/referecnes! -- LGP 2019-02-20
