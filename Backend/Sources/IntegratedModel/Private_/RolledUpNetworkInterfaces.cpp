@@ -53,7 +53,6 @@ using WebServices::Model::NetworkInterfaceCollection;
 
 using IntegratedModel::Private_::RolledUpNetworkInterfaces;
 
-
 /*
  ********************************************************************************
  ************** IntegratedModel::Private_::RolledUpNetworkInterfaces ************

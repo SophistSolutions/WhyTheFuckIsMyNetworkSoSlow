@@ -67,7 +67,6 @@ using WebServices::Model::NetworkCollection;
 using WebServices::Model::NetworkInterface;
 using WebServices::Model::NetworkInterfaceCollection;
 
-
 namespace {
     struct MyDBAccessRep_ : IntegratedModel::Private_::DBAccess::Mgr {
         using inherited = IntegratedModel::Private_::DBAccess::Mgr;

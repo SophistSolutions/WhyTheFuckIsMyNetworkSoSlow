@@ -75,7 +75,6 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery;
 // Turn on to debug issues with lock contention and upgradelocks
 //#define qLOCK_DEBUGGING_ 1
 
-
 namespace {
     // derived based on experimentation on my network - need standards/referecnes! -- LGP 2019-02-20
     const String kDeviceType_SpeakerGroup_{"urn:smartspeaker-audio:device:SpeakerGroup:1"sv};
