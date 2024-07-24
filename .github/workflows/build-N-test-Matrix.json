@@ -8,7 +8,7 @@
         "compiler": "g++-14",
         "runs_on": "ubuntu-latest",
         "container_image": "sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2404:v1",
-        "cpp_version": "c++23",
+        "cpp_version": "c++20",
         "config_name": "Release",
         "extra_config_args": "--apply-default-release-flags",
         "run_on_branch": "always"
