@@ -366,20 +366,20 @@ namespace {
             String ToString () const
             {
                 StringBuilder sb;
-                sb += L"{";
-                sb += L"USNs: " + Characters::ToString (fUSNs) + L", ";
-                sb += L"Alive: " + Characters::ToString (fAlive) + L", ";
-                sb += L"Locations: " + Characters::ToString (fLocations) + L", ";
-                sb += L"Manufacturer: " + Characters::ToString (fManufacturer) + L", ";
-                sb += L"Manufacturer-URI: " + Characters::ToString (fManufacturerURI) + L", ";
-                sb += L"Server: " + Characters::ToString (fServer) + L", ";
-                sb += L"Device-Type-2-Friendly-Name-Map: " + Characters::ToString (fDeviceType2FriendlyNameMap) + L", ";
-                sb += L"Presentation-URL: " + Characters::ToString (fPresentationURL) + L", ";
-                sb += L"Last-SSDP-Message-Recieved-At: " + Characters::ToString (fLastSSDPMessageRecievedAt) + L", ";
+                sb << "{"sv;
+                sb << "USNs: "sv << fUSNs << ", "sv;
+                sb << "Alive: "sv<< fAlive << ", "sv;
+                sb << "Locations: "sv << fLocations << ", "sv;
+                sb << "Manufacturer: "sv << fManufacturer << ", "sv;
+                sb << "Manufacturer-URI: "sv << fManufacturerURI << ", "sv;
+                sb << "Server: "sv << fServer << ", "sv;
+                sb << "Device-Type-2-Friendly-Name-Map: "sv << fDeviceType2FriendlyNameMap << ", "sv;
+                sb << "Presentation-URL: "sv << fPresentationURL << ", ";
+                sb << "Last-SSDP-Message-Recieved-At: "sv << fLastSSDPMessageRecievedAt << ", "sv;
 #if qDebug
-                sb += L"Last-Advertisement: " + Characters::ToString (fLastAdvertisement);
+                sb << "Last-Advertisement: " << fLastAdvertisement;
 #endif
-                sb += L"}";
+                sb << "}"sv;
                 return sb.str ();
             }
         };
@@ -1031,7 +1031,7 @@ namespace {
                     Memory::CopyToIf (&di.fSSDPInfo->fPresentationURL, presentationURL); // consider if value already there - warn if changes - should we collect multiple
 
                     if (di.fSSDPInfo->fServer.has_value () and di.fSSDPInfo->fServer != d.fServer) {
-                        DbgTrace ("Warning: different server IDs for same object"_f);
+                        DbgTrace ("Warning: different server IDs for same object: di.fSSDPInfo={}, d.fServer='{}"_f, di.fSSDPInfo, d.fServer);
                     }
                     di.fSSDPInfo->fServer = d.fServer;
 
