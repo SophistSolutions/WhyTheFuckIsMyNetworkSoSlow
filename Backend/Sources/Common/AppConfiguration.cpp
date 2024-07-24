@@ -38,23 +38,21 @@ const ObjectVariantMapper AppConfigurationType::kMapper = [] () {
     // note - set fOmitNullEntriesInFromObject=false so easier review config file and see where values are defaulted/defaulting
     ObjectVariantMapper mapper;
     mapper.AddCommonType<optional<IO::Network::PortType>> ();
-    mapper.AddClass<AppConfigurationType::Logging> ({
-        {"ToStdOut"sv, &AppConfigurationType::Logging::ToStdOut},
+    mapper.AddClass<AppConfigurationType::Logging> (
+        {
+            {"ToStdOut"sv, &AppConfigurationType::Logging::ToStdOut},
 #if qPlatform_POSIX
-            {"ToSysLog"sv, &AppConfigurationType::Logging::ToSysLog},
+                {"ToSysLog"sv, &AppConfigurationType::Logging::ToSysLog},
 #endif
 #if qPlatform_Windows
-            {"ToWindowsEventLog"sv, &AppConfigurationType::Logging::ToWindowsEventLog},
+                {"ToWindowsEventLog"sv, &AppConfigurationType::Logging::ToWindowsEventLog},
 #endif
-    },
-    {.fOmitNullEntriesInFromObject=false});
+        },
+        {.fOmitNullEntriesInFromObject = false});
     mapper.AddCommonType<optional<AppConfigurationType::Logging>> ();
 
-    mapper.AddClass<AppConfigurationType> ({
-        {"Logging"sv, &AppConfigurationType::fLogging},
-        {L"WebServerPort", &AppConfigurationType::WebServerPort},
-    },
-    {.fOmitNullEntriesInFromObject=false});
+    mapper.AddClass<AppConfigurationType> ({{"Logging"sv, &AppConfigurationType::fLogging}, {"WebServerPort"sv, &AppConfigurationType::WebServerPort}},
+                                           {.fOmitNullEntriesInFromObject = false});
     return mapper;
 }();
 
@@ -64,8 +62,8 @@ const ObjectVariantMapper AppConfigurationType::kMapper = [] () {
  ********************************************************************************
  */
 AppConfiguration_Storage_IMPL_::AppConfiguration_Storage_IMPL_ ()
-    : fOptionsFile_{L"AppSettings"sv, AppConfigurationType::kMapper, OptionsFile::kDefaultUpgrader,
-                    OptionsFile::mkFilenameMapper (L"WhyTheFuckIsMyNetworkSoSlow"sv)}
+    : fOptionsFile_{"AppSettings"sv, AppConfigurationType::kMapper, OptionsFile::kDefaultUpgrader,
+                    OptionsFile::mkFilenameMapper ("WhyTheFuckIsMyNetworkSoSlow"sv)}
     , fActualCurrentConfigData_{fOptionsFile_.Read<AppConfigurationType> (AppConfigurationType{})}
 {
     Set (fActualCurrentConfigData_); // assure derived data (and changed fields etc) up to date

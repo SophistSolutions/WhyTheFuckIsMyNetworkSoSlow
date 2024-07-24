@@ -75,8 +75,7 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery;
 // Turn on to debug issues with lock contention and upgradelocks
 //#define qLOCK_DEBUGGING_ 1
 
-
-#if kStroika_Version_FullVersion <= Stroika_Make_FULL_VERSION (3, 0, kStroika_Version_Stage_Dev, 8, 1)
+#if kStroika_Version_FullVersion <= Stroika_Make_FULL_VERSION(3, 0, kStroika_Version_Stage_Dev, 8, 1)
 #if qHasFeature_fmtlib && (FMT_VERSION >= 110000)
 template <>
 struct qStroika_Foundation_Characters_FMT_PREFIX_::formatter<Stroika::Foundation::Common::GUID, wchar_t>
@@ -87,7 +86,6 @@ struct qStroika_Foundation_Characters_FMT_PREFIX_::formatter<Stroika::Foundation
 static_assert (Stroika::Foundation::Configuration::StdCompat::formattable<Stroika::Foundation::Common::GUID, wchar_t>);
 #endif
 #endif
-
 
 namespace {
     // derived based on experimentation on my network - need standards/referecnes! -- LGP 2019-02-20
@@ -144,11 +142,11 @@ namespace {
 String NetworkAttachmentInfo::ToString () const
 {
     StringBuilder sb;
-    sb += L"{";
-    sb += L"hardwareAddress: " + Characters::ToString (hardwareAddresses) + L", ";
-    sb += L"localAddresses: " + Characters::ToString (localAddresses);
-    sb += L"}";
-    return sb.str ();
+    sb << "{"sv;
+    sb << "hardwareAddress: "sv << hardwareAddresses << ", "sv;
+    sb << "localAddresses: "sv << localAddresses;
+    sb << "}"sv;
+    return sb;
 }
 
 /*
@@ -206,24 +204,24 @@ Sequence<InternetAddress> Discovery::Device::GetPreferredDisplayInternetAddresse
 String Discovery::Device::ToString () const
 {
     StringBuilder sb;
-    sb += L"{";
-    sb += L"GUID: " + Characters::ToString (fGUID) + L", ";
-    sb += L"names: " + Characters::ToString (fNames) + L", ";
-    sb += L"icon: " + Characters::ToString (fIcon) + L", ";
-    sb += L"manufacturer: " + Characters::ToString (fManufacturer) + L", ";
-    sb += L"types: " + Characters::ToString (fTypes) + L", ";
+    sb << "{"sv;
+    sb << "GUID: "sv << fGUID << ", "sv;
+    sb << "names: "sv << fNames << ", "sv;
+    sb << "icon: "sv << fIcon << ", "sv;
+    sb << "manufacturer: "sv << fManufacturer << ", "sv;
+    sb << "types: "sv << fTypes << ", "sv;
     if (fThisDevice) {
-        sb += L"This-Device: " + Characters::ToString (fThisDevice) + L", ";
+        sb << "This-Device: "sv << fThisDevice << ", "sv;
     }
-    sb += L"attachedNetworks: " + Characters::ToString (fAttachedNetworks) + L", ";
-    sb += L"attachedInterfaces: " + Characters::ToString (fAttachedInterfaces) + L", ";
-    sb += L"presentationURL: " + Characters::ToString (fPresentationURL) + L", ";
-    sb += L"operatingSystem: " + Characters::ToString (fOperatingSystem) + L", ";
+    sb << "attachedNetworks: "sv << fAttachedNetworks << ", "sv;
+    sb << "attachedInterfaces: "sv << fAttachedInterfaces << ", "sv;
+    sb << "presentationURL: "sv << fPresentationURL << ", "sv;
+    sb << "operatingSystem: "sv << fOperatingSystem << ", "sv;
 #if qDebug
-    sb += L"debugProps: " + Characters::ToString (fDebugProps);
+    sb << "debugProps: "sv << fDebugProps;
 #endif
-    sb += L"}";
-    return sb.str ();
+    sb << "}"sv;
+    return sb;
 }
 
 namespace {
@@ -368,7 +366,7 @@ namespace {
                 StringBuilder sb;
                 sb << "{"sv;
                 sb << "USNs: "sv << fUSNs << ", "sv;
-                sb << "Alive: "sv<< fAlive << ", "sv;
+                sb << "Alive: "sv << fAlive << ", "sv;
                 sb << "Locations: "sv << fLocations << ", "sv;
                 sb << "Manufacturer: "sv << fManufacturer << ", "sv;
                 sb << "Manufacturer-URI: "sv << fManufacturerURI << ", "sv;
@@ -380,7 +378,7 @@ namespace {
                 sb << "Last-Advertisement: " << fLastAdvertisement;
 #endif
                 sb << "}"sv;
-                return sb.str ();
+                return sb;
             }
         };
         optional<SSDPInfo> fSSDPInfo;
@@ -646,9 +644,9 @@ namespace {
         String ToString () const
         {
             StringBuilder sb = Discovery::Device::ToString ().SubString (0, -1);
-            sb += L"SSDP-Info: " + Characters::ToString (fSSDPInfo) + L", ";
-            sb += L"}";
-            return sb.str ();
+            sb << "SSDP-Info: "sv << fSSDPInfo << ", "sv;
+            sb << "}"sv;
+            return sb;
         }
     };
 

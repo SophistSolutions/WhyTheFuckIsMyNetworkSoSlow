@@ -9,8 +9,6 @@
 #include "Stroika/Foundation/Cache/SynchronizedCallerStalenessCache.h"
 #include "Stroika/Foundation/Characters/StringBuilder.h"
 #include "Stroika/Foundation/Characters/ToString.h"
-//#include "Stroika/Foundation/Cryptography/Digest/Algorithm/MD5.h"
-//#include "Stroika/Foundation/Cryptography/Digest/Hash.h"
 #include "Stroika/Foundation/Cryptography/Format.h"
 #include "Stroika/Foundation/Execution/Synchronized.h"
 #include "Stroika/Foundation/IO/Network/Interface.h"
@@ -45,12 +43,10 @@ NetworkInterface::NetworkInterface (const IO::Network::Interface& src)
 
 String NetworkInterface::ToString () const
 {
-    String        baseRep = Interface::ToString ();
-    StringBuilder sb;
-    sb += L"{";
-    sb += L"GUID: " + Characters::ToString (fGUID) + L", ";
-    sb += baseRep.SubString (1);
-    return sb.str ();
+    StringBuilder sb = Interface::ToString ().SubString (0, -1);
+    sb << "GUID: "sv << Characters::ToString (fGUID) << ", "sv;
+    sb << "}"sv;
+    return sb;
 }
 
 /*

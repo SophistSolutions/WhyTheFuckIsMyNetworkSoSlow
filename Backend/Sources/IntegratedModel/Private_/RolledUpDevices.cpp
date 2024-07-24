@@ -53,7 +53,7 @@ using WebServices::Model::NetworkInterfaceCollection;
 
 using IntegratedModel::Private_::RolledUpDevices;
 
-#if kStroika_Version_FullVersion <= Stroika_Make_FULL_VERSION (3, 0, kStroika_Version_Stage_Dev, 8, 1)
+#if kStroika_Version_FullVersion <= Stroika_Make_FULL_VERSION(3, 0, kStroika_Version_Stage_Dev, 8, 1)
 #if qHasFeature_fmtlib && (FMT_VERSION >= 110000)
 template <>
 struct qStroika_Foundation_Characters_FMT_PREFIX_::formatter<Stroika::Foundation::IO::Network::URI, wchar_t>
@@ -62,9 +62,9 @@ template <>
 struct qStroika_Foundation_Characters_FMT_PREFIX_::formatter<Stroika::Foundation::IO::Network::URI, char>
     : Stroika::Foundation::Characters::ToStringFormatterASCII<Stroika::Foundation::IO::Network::URI> {};
 static_assert (Stroika::Foundation::Configuration::StdCompat::formattable<Stroika::Foundation::IO::Network::URI, wchar_t>);
- #endif
- #endif
- 
+#endif
+#endif
+
 /*
  ********************************************************************************
  ******************** IntegratedModel::Private_::RolledUpDevices ****************

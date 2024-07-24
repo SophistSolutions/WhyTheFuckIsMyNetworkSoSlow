@@ -147,12 +147,12 @@ int main (int argc, const char* argv[])
     /*
      *  Setup Logging to the OS logging facility.
      */
-    Logger::Activator   loggerActivation{Logger::Options{
-          .fLogBufferingEnabled         = true,
-          .fSuppressDuplicatesThreshold = 5min,
+    Logger::Activator loggerActivation{Logger::Options{
+        .fLogBufferingEnabled         = true,
+        .fSuppressDuplicatesThreshold = 5min,
     }};
     Logger::sThe.SetAppenders ([] () {
-        static const String kAppName_ = "WhyTheFuckIsMyNetworkSoSlow"sv;
+        static const String kAppName_                            = "WhyTheFuckIsMyNetworkSoSlow"sv;
         using Logging                                            = BackendApp::Common::AppConfigurationType::Logging;
         Logging                                    loggingConfig = BackendApp::Common::gAppConfiguration->fLogging.value_or (Logging{});
         Sequence<shared_ptr<Logger::IAppenderRep>> appenders;

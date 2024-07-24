@@ -3,7 +3,6 @@
  */
 #include "Stroika/Frameworks/StroikaPreComp.h"
 
-#include "Stroika/Foundation/Characters/StringBuilder.h"
 #include "Stroika/Foundation/Characters/ToString.h"
 #include "Stroika/Foundation/Common/ObjectForSideEffects.h"
 #include "Stroika/Foundation/Common/Property.h"
@@ -165,7 +164,8 @@ namespace {
             pair<RegularExpression, CacheControl>{RegularExpression::kAny,
                                                   CacheControl{.fCacheability = CacheControl::ePublic, .fMaxAge = Duration{24h}.As<int32_t> ()}},
         };
-        return FileSystemRequestHandler::Options{.fDefaultIndexFileNames = Sequence<String>{"index.html"_k}, .fCacheControlSettings= kFSCacheControlSettings_};
+        return FileSystemRequestHandler::Options{.fDefaultIndexFileNames = Sequence<String>{"index.html"_k},
+                                                 .fCacheControlSettings  = kFSCacheControlSettings_};
     }};
 }
 

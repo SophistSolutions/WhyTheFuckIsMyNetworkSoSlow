@@ -96,19 +96,19 @@ String Discovery::Network::ToString () const
 {
     StringBuilder sb;
     sb << "{"sv;
-    sb << "GUID: "sv << Characters::ToString (fGUID) << ", "sv;
-    sb << "IP-Address: "sv << Characters::ToString (fNetworkAddresses) << ", "sv;
-    sb << "Names: "sv << Characters::ToString (fNames) << ", "sv;
-    sb << "Seen: "sv << Characters::ToString (fSeen) << ", "sv;
-    sb << "Gateways: "sv << Characters::ToString (fGateways) << ", "sv;
-    sb << "GatewayHardwareAddresses: "sv << Characters::ToString (fGatewayHardwareAddresses) << ", "sv;
-    sb << "DNS-Servers: "sv << Characters::ToString (fDNSServers) << ", "sv;
-    sb << "Attached-Network-Interfaces: "sv << Characters::ToString (fAttachedNetworkInterfaces) << ", "sv;
+    sb << "GUID: "sv << fGUID << ", "sv;
+    sb << "IP-Address: "sv << fNetworkAddresses << ", "sv;
+    sb << "Names: "sv << fNames << ", "sv;
+    sb << "Seen: "sv << fSeen << ", "sv;
+    sb << "Gateways: "sv << fGateways << ", "sv;
+    sb << "GatewayHardwareAddresses: "sv << fGatewayHardwareAddresses << ", "sv;
+    sb << "DNS-Servers: "sv << fDNSServers << ", "sv;
+    sb << "Attached-Network-Interfaces: "sv << fAttachedNetworkInterfaces << ", "sv;
 #if qDebug
-    sb << "DebugProps: "sv << Characters::ToString (fDebugProps) << ", "sv;
+    sb << "DebugProps: "sv << fDebugProps << ", "sv;
 #endif
     sb << "}"sv;
-    return sb.str ();
+    return sb;
 }
 
 namespace {

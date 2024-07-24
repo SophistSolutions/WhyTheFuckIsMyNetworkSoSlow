@@ -17,7 +17,6 @@
 #include <openssl/opensslv.h>
 #endif
 
-#include "Stroika/Foundation/Characters/StringBuilder.h"
 #include "Stroika/Foundation/Characters/ToString.h"
 #include "Stroika/Foundation/Configuration/SystemConfiguration.h"
 #include "Stroika/Foundation/Containers/Sequence.h"

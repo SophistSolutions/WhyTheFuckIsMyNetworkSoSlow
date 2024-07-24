@@ -37,7 +37,9 @@
 			"rope": "cpp",
 			"slist": "cpp",
 			"*.inc": "cpp",
-			"memory": "cpp"
+			"memory": "cpp",
+			"sstream": "cpp",
+			"strstream": "cpp"
 		}
 	}
 }
