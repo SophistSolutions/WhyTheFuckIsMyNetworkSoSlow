@@ -58,8 +58,8 @@ namespace {
              *  o   http://myexternalip.com/raw
              */
             static const URI kSources_[]{
-                URI{L"http://api.ipify.org/"sv},
-                URI{L"http://myexternalip.com/raw"sv},
+                URI{"http://api.ipify.org/"sv},
+                URI{"http://myexternalip.com/raw"sv},
             };
             // @todo - when one fails, we should try the other first next time
             for (const auto& url : kSources_) {
@@ -172,7 +172,7 @@ namespace {
     Sequence<Network> CollectActiveNetworks_ ()
     {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
-        Debug::TraceContextBumper ctx{L"Discovery::CollectActiveNetworks"};
+        Debug::TraceContextBumper ctx{"Discovery::CollectActiveNetworks"};
 #endif
         Require (sActive_);
 
@@ -199,8 +199,8 @@ namespace {
                 if (not kIncludeMulticastAddressesInDiscovery) {
                     if (nib.GetBaseInternetAddress ().IsMulticastAddress ()) {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
-                        DbgTrace (L"CollectActiveNetworks_: interface=%s; ia=%s binding ignored because IsMulticastAddress",
-                                  Characters::ToString (i.fGUID).c_str (), Characters::ToString (nib.fInternetAddress).c_str ());
+                        DbgTrace ("CollectActiveNetworks_: interface={}; ia={} binding ignored because IsMulticastAddress"_f,
+                                  i.fGUID, nib.fInternetAddress);
 #endif
                         continue; // skip multicast addresses, because they don't really refer to a device
                     }
@@ -208,8 +208,8 @@ namespace {
                 if (not kIncludeLinkLocalAddressesInDiscovery) {
                     if (nib.GetBaseInternetAddress ().IsLinkLocalAddress ()) {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
-                        DbgTrace (L"CollectActiveNetworks_: interface=%s; ia=%s binding ignored because IsLinkLocalAddress",
-                                  Characters::ToString (i.fGUID).c_str (), Characters::ToString (nib.fInternetAddress).c_str ());
+                        DbgTrace ("CollectActiveNetworks_: interface={}; ia={} binding ignored because IsLinkLocalAddress"_f,
+                                  i.fGUID, nib.fInternetAddress);
 #endif
                         continue; // skip link-local addresses, they are only used for special purposes like discovery, and aren't part of the network
                     }
@@ -294,7 +294,7 @@ namespace {
 #if qDebug
                     // nothing useful to add yet
                     nw.fDebugProps.Add (
-                        L"test"sv, VariantValue{Mapping<String, VariantValue>{pair<String, VariantValue>{L"updatedAt"sv, Time::DateTime::Now ()}}});
+                        "test"sv, VariantValue{Mapping<String, VariantValue>{pair<String, VariantValue>{"updatedAt"sv, Time::DateTime::Now ()}}});
 #endif
 
                     accumResults += nw;
@@ -344,7 +344,7 @@ namespace {
         Assert (results.size () == accumResults.size ());
         Assert (results.size () == netScores.size ());
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
-        DbgTrace (L"returns: %s", Characters::ToString (results).c_str ());
+        DbgTrace ("returns: {}"_f, results);
 #endif
         return results;
     }
@@ -362,7 +362,7 @@ Sequence<Network> Discovery::NetworksMgr::CollectActiveNetworks (optional<Time::
     results = sCache_.LookupValue (sCache_.Ago (allowedStaleness.value_or (kDefaultItemCacheLifetime_)),
                                    [] () { return CollectActiveNetworks_ (); });
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
-    DbgTrace (L"returns: %s", Characters::ToString (results).c_str ());
+        DbgTrace ("returns: {}"_f, results);
 #endif
     return results;
 }

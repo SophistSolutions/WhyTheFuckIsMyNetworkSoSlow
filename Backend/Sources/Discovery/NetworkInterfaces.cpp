@@ -126,7 +126,7 @@ namespace {
 #if qDebug
                 // nothing useful to add yet
                 ni.fDebugProps.Add (
-                    L"test"sv, VariantValue{Mapping<String, VariantValue>{pair<String, VariantValue>{L"updatedAt"sv, Time::DateTime::Now ()}}});
+                    L"test"sv, VariantValue{Mapping<String, VariantValue>{pair<String, VariantValue>{"updatedAt"sv, Time::DateTime::Now ()}}});
 #endif
             }
             results.push_back (ni);
@@ -157,7 +157,7 @@ Collection<NetworkInterface> Discovery::NetworkInterfacesMgr::CollectAllNetworkI
     results = sCache_.LookupValue (sCache_.Ago (allowedStaleness.value_or (kDefaultItemCacheLifetime_)),
                                    [] () -> Collection<NetworkInterface> { return CollectAllNetworkInterfaces_ (); });
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
-    DbgTrace (L"returns: %s", Characters::ToString (results).c_str ());
+    DbgTrace ("returns: {}"_f, results);
 #endif
     return results;
 }
@@ -172,7 +172,7 @@ Collection<NetworkInterface> Discovery::NetworkInterfacesMgr::CollectActiveNetwo
         return i.fType != Interface::Type::eLoopback and i.fStatus and i.fStatus->Contains (Interface::Status::eRunning);
     });
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
-    DbgTrace (L"returns: %s", Characters::ToString (results).c_str ());
+    DbgTrace ("returns: {}"_f, results);
 #endif
     return results;
 }

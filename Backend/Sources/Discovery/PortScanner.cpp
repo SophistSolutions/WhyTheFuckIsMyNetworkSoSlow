@@ -51,7 +51,7 @@ namespace {
         try {
             ConnectionOrientedStreamSocket::Ptr s = ConnectionOrientedStreamSocket::New (SocketAddress::INET, Socket::STREAM);
             s.Connect (SocketAddress{ia, portNumber}, quickOpen ? 5s : 30s);
-            results->fDiscoveredOpenPorts += Characters::Format ("tcp:{}"_f, portNumber);
+            results->fDiscoveredOpenPorts += "tcp:{}"_f (portNumber);
             results->fIncludesTCP = true;
         }
         catch (...) {
@@ -67,7 +67,7 @@ namespace {
         Frameworks::NetworkMonitor::Ping::Pinger p{ia};
         try {
             auto r = p.RunOnce (); //incomplete
-            results->fDiscoveredOpenPorts.Add (L"icmp:ping"sv);
+            results->fDiscoveredOpenPorts.Add ("icmp:ping"sv);
             results->fIncludedICMP = true;
         }
         catch (const Network::InternetProtocol::ICMP::V4::DestinationUnreachableException&) {
@@ -82,7 +82,7 @@ namespace {
 PortScanResults Discovery::ScanPorts (const InternetAddress& ia, const optional<ScanOptions>& options)
 {
     PortScanResults results{};
-    auto            scanningThisAddress = LazyEvalActivity ([&] () -> String { return Characters::Format ("scanning ports on {}"_f, ia); });
+    auto            scanningThisAddress = LazyEvalActivity ([&] () -> String { return "scanning ports on {}"_f (ia); });
     DeclareActivity da{&scanningThisAddress};
 
     if (options and options->fStyle == ScanOptions::eQuick) {
