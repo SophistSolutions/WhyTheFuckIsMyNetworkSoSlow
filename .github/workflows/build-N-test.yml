@@ -245,7 +245,6 @@ jobs:
         if: always()
         run: |
           echo "CWD:" ; ls -l
-          echo "c:/WhyTheFuckIsMyNetworkSoSlow:" ; ls -l c:/WhyTheFuckIsMyNetworkSoSlow
     #   - name: Copy Build Artifacts
     #     shell: "bash"
     #     # due to flaws in docker (windows must stop) - and cp no wildcards
