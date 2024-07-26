@@ -96,7 +96,7 @@ jobs:
         run: |
           make all
       - name: Archive Build Results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.displayTargetName }} Installers
           path: |
@@ -259,7 +259,7 @@ jobs:
           path: |
             IntermediateFiles/${{ matrix.config_name }}/WhyTheFuckIsMyNetworkSoSlow/html/Build.txt
       - name: Archive Installer Results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.displayTargetName }} Installers
           path: |
