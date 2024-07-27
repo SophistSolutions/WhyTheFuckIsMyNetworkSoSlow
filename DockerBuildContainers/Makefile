@@ -24,17 +24,18 @@ DOCKER_BUILD_EXTRAS_FOR_DEV_=\
 
 DOCKER_BUILD_EXTRAS_?=\
 
-
+DEFAULT_IMAGES_?=
 
 ## NOTE: Since these can be slow/big, the IMAGES arg can be given on the commandline to override this
 ifeq (${DETECTED_HOST_OS},Linux)
-IMAGES+= sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204
-IMAGES+= sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2404
+DEFAULT_IMAGES_+= sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204
+DEFAULT_IMAGES_+= sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2404
 endif
-ifeq (Windows,$(findstring Windows,$(DETECTED_HOST_OS)))
-IMAGES+= sophistsolutionsinc/whythefuckismynetworksoslow-windows-vs2k22
+ifneq ($(findstring $(DETECTED_HOST_OS),MSYS-Cygwin),)
+DEFAULT_IMAGES_+= sophistsolutionsinc/whythefuckismynetworksoslow-windows-vs2k22
 endif
 
+IMAGES?=${DEFAULT_IMAGES_}
 
 build-images:
 	${MAKE} --no-print-directory ${IMAGES}

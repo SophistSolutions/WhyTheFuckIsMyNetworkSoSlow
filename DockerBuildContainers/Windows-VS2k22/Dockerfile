@@ -4,7 +4,7 @@ SHELL ["cmd", "/S", "/C"]
 
 # RUN choco install -y --force nodejs-lts       # IF using cygwin instead of msys
 RUN pacman --noconfirm -S mingw-w64-x86_64-nodejs
-RUN npm i -g npm quasar
+RUN npm i -g npm @quasar/cli
 
 ## hardwired location from sophistsolutionsinc/stroika-buildvm-windows-msys-vs2k22 dockerfile - find better way to compute!
 RUN rm -f c:/msys64/home/Getting-Started-With-Stroika.md
