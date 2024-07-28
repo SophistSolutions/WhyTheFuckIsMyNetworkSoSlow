@@ -51,7 +51,7 @@ namespace {
         try {
             ConnectionOrientedStreamSocket::Ptr s = ConnectionOrientedStreamSocket::New (SocketAddress::INET, Socket::STREAM);
             s.Connect (SocketAddress{ia, portNumber}, quickOpen ? 5s : 30s);
-            results->fDiscoveredOpenPorts += "tcp:{}"_f (portNumber);
+            results->fDiscoveredOpenPorts += "tcp:{}"_f(portNumber);
             results->fIncludesTCP = true;
         }
         catch (...) {
@@ -82,7 +82,7 @@ namespace {
 PortScanResults Discovery::ScanPorts (const InternetAddress& ia, const optional<ScanOptions>& options)
 {
     PortScanResults results{};
-    auto            scanningThisAddress = LazyEvalActivity ([&] () -> String { return "scanning ports on {}"_f (ia); });
+    auto            scanningThisAddress = LazyEvalActivity ([&] () -> String { return "scanning ports on {}"_f(ia); });
     DeclareActivity da{&scanningThisAddress};
 
     if (options and options->fStyle == ScanOptions::eQuick) {

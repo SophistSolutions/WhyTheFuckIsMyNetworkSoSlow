@@ -44,17 +44,7 @@ namespace {
 }
 
 namespace {
-    constexpr bool kIncludeFingerprintsInOutputTMP2Test_ = true; // to debug fingerprint code - dont really emit this
-}
-
-namespace Stroika::Foundation::DataExchange {
-    template <>
-    CIDR ObjectVariantMapper::ToObject (const ToObjectMapperType<CIDR>& toObjectMapper, const VariantValue& v) const
-    {
-        CIDR tmp{InternetAddress{}, 0};
-        ToObject (toObjectMapper, v, &tmp);
-        return tmp;
-    }
+    constexpr bool kIncludeFingerprintsInOutputTMP2Test_ = false; // to debug fingerprint code - dont really emit this
 }
 
 namespace {
@@ -314,19 +304,12 @@ const ObjectVariantMapper NetworkInterface::kMapper = [] () {
 #endif
     });
     if constexpr (kIncludeFingerprintsInOutputTMP2Test_) {
-        mapper.AddSubClass<NetworkInterface, NetworkInterface> ({},
-        {.fAfterFrom = [] (const ObjectVariantMapper&, const NetworkInterface* objOfType) -> VariantValue {
-                     return VariantValue{objOfType->GenerateFingerprintFromProperties ().As<String> ()};
-                 }});
-#if 0
-        mapper.AddSubClass<NetworkInterface, NetworkInterface> ({
-            {"fingerprint"sv, TypeMappingDetails{ObjectVariantMapper::FromObjectMapperType<NetworkInterface> (
-                                                     [] (const ObjectVariantMapper&, const NetworkInterface* objOfType) -> VariantValue {
-                                                         return VariantValue{objOfType->GenerateFingerprintFromProperties ().As<String> ()};
-                                                     }),
-                                                 ObjectVariantMapper::ToObjectMapperType<NetworkInterface> (nullptr)}},
-        });
-        #endif
+        mapper.AddSubClass<NetworkInterface, NetworkInterface> (
+            {}, {.fAfterFrom = [] (const ObjectVariantMapper&, const NetworkInterface* objOfType, VariantValue* updateResult) -> void {
+                Mapping<String, VariantValue> m = updateResult->As<Mapping<String, VariantValue>> ();
+                m.Add ("fingerprint"sv, VariantValue{objOfType->GenerateFingerprintFromProperties ().As<String> ()});
+                *updateResult = VariantValue{m};
+            }});
     }
 
     mapper.AddCommonType<Collection<NetworkInterface>> ();
@@ -701,16 +684,12 @@ const ObjectVariantMapper Network::kMapper = [] () {
     });
 #endif
     if constexpr (kIncludeFingerprintsInOutputTMP2Test_) {
-        mapper.AddSubClass<Network, Network> ({},
-        {.fAfterFrom = [] (const ObjectVariantMapper&, const Network* objOfType, VariantValue* updateResult) -> void {
-            Mapping<String,VariantValue> m = updateResult->As<Mapping<String,VariantValue>> ();
-            m.Add ("fingerprint"sv, VariantValue{objOfType->GenerateFingerprintFromProperties ().As<String> ()});
-            *updateResult = VariantValue{m};
+        mapper.AddSubClass<Network, Network> (
+            {}, {.fAfterFrom = [] (const ObjectVariantMapper&, const Network* objOfType, VariantValue* updateResult) -> void {
+                Mapping<String, VariantValue> m = updateResult->As<Mapping<String, VariantValue>> ();
+                m.Add ("fingerprint"sv, VariantValue{objOfType->GenerateFingerprintFromProperties ().As<String> ()});
+                *updateResult = VariantValue{m};
             }});
-#if 0
-        // vaguely like this, but need to add to base value.... Need good example of this in STK - cuz seems afterFrom needs handle to already produced so-far value!!!
-         
-#endif
     }
     mapper.AddCommonType<Sequence<Network>> ();
 

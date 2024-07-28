@@ -199,8 +199,7 @@ namespace {
                 if (not kIncludeMulticastAddressesInDiscovery) {
                     if (nib.GetBaseInternetAddress ().IsMulticastAddress ()) {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
-                        DbgTrace ("CollectActiveNetworks_: interface={}; ia={} binding ignored because IsMulticastAddress"_f,
-                                  i.fGUID, nib.fInternetAddress);
+                        DbgTrace ("CollectActiveNetworks_: interface={}; ia={} binding ignored because IsMulticastAddress"_f, i.fGUID, nib.fInternetAddress);
 #endif
                         continue; // skip multicast addresses, because they don't really refer to a device
                     }
@@ -208,8 +207,7 @@ namespace {
                 if (not kIncludeLinkLocalAddressesInDiscovery) {
                     if (nib.GetBaseInternetAddress ().IsLinkLocalAddress ()) {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
-                        DbgTrace ("CollectActiveNetworks_: interface={}; ia={} binding ignored because IsLinkLocalAddress"_f,
-                                  i.fGUID, nib.fInternetAddress);
+                        DbgTrace ("CollectActiveNetworks_: interface={}; ia={} binding ignored because IsLinkLocalAddress"_f, i.fGUID, nib.fInternetAddress);
 #endif
                         continue; // skip link-local addresses, they are only used for special purposes like discovery, and aren't part of the network
                     }
@@ -362,7 +360,7 @@ Sequence<Network> Discovery::NetworksMgr::CollectActiveNetworks (optional<Time::
     results = sCache_.LookupValue (sCache_.Ago (allowedStaleness.value_or (kDefaultItemCacheLifetime_)),
                                    [] () { return CollectActiveNetworks_ (); });
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
-        DbgTrace ("returns: {}"_f, results);
+    DbgTrace ("returns: {}"_f, results);
 #endif
     return results;
 }
