@@ -229,7 +229,7 @@ jobs:
       - name: Build All
         shell: "bash"
         run: |
-          docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow --env MAKEFLAGS="$MAKEFLAGS" buildContainer make all
+          docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow --env MAKEFLAGS="$MAKEFLAGS" buildContainer make ECHO_BUILD_LINES=1 all
       - name: Build System Info
         shell: "bash"
         run: |
