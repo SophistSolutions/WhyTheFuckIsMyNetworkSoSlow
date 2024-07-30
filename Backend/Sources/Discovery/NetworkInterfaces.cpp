@@ -44,7 +44,7 @@ NetworkInterface::NetworkInterface (const IO::Network::Interface& src)
 String NetworkInterface::ToString () const
 {
     StringBuilder sb = Interface::ToString ().SubString (0, -1);
-    sb << "GUID: "sv << Characters::ToString (fGUID) << ", "sv;
+    sb << "GUID: "sv << fGUID;
     sb << "}"sv;
     return sb;
 }

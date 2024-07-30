@@ -105,7 +105,7 @@ String Discovery::Network::ToString () const
     sb << "DNS-Servers: "sv << fDNSServers << ", "sv;
     sb << "Attached-Network-Interfaces: "sv << fAttachedNetworkInterfaces << ", "sv;
 #if qDebug
-    sb << "DebugProps: "sv << fDebugProps << ", "sv;
+    sb << "DebugProps: "sv << fDebugProps;
 #endif
     sb << "}"sv;
     return sb;

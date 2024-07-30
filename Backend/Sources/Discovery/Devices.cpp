@@ -238,7 +238,7 @@ namespace {
                 }
             }
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
-            DbgTrace (L"returning %s", Characters::ToString (results).c_str ());
+            DbgTrace (L"returning {}"_f, results);
 #endif
             return results;
         }
