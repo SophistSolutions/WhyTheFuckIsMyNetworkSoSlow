@@ -44,7 +44,9 @@ $(VERSION_FILE_OUT):	$(VERSION_FILE_IN)
 	@mkdir -p $(StroikaRoot)IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow
 	@$(StroikaRoot)ScriptsLib/MakeVersionFile $(VERSION_FILE_IN) $(VERSION_FILE_OUT) AppCPlusPlusVersion AppVersion
 
-$(ObjDir)Main${OBJ_SUFFIX} $(ObjDir)Service${OBJ_SUFFIX}:		$(VERSION_FILE_OUT)
+
+# Some dependencies needed to assure VERSION_FILE_OUT built early enuf
+$(Objs}:		$(VERSION_FILE_OUT)
 
 
 all:
@@ -66,4 +68,4 @@ $(TARGETEXE):	$(Objs) $(StroikaLibs)
 
 
 clean::
-	@rm -f $(SUBDIR_OBJS)
+	@rm -f $(SUBDIR_OBJS) $(VERSION_FILE_OUT)
