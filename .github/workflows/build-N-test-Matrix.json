@@ -4,10 +4,32 @@
     },
     {
         "build_job": "Linux",
+        "displayTargetName": "ubuntu-24.04 (Debug)",
+        "compiler": "g++-14",
+        "runs_on": "ubuntu-latest",
+        "container_image": "sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2404:v1",
+        "cpp_version": "c++20",
+        "config_name": "Debug",
+        "extra_config_args": "--apply-default-debug-flags",
+        "run_on_branch": "v1-Release"
+    },
+    {
+        "build_job": "Linux",
         "displayTargetName": "ubuntu-24.04 (Release)",
         "compiler": "g++-14",
         "runs_on": "ubuntu-latest",
         "container_image": "sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2404:v1",
+        "cpp_version": "c++20",
+        "config_name": "Release",
+        "extra_config_args": "--apply-default-release-flags",
+        "run_on_branch": "always"
+    },
+    {
+        "build_job": "Linux",
+        "displayTargetName": "ubuntu-22.04 (Release)",
+        "compiler": "g++-12",
+        "runs_on": "ubuntu-latest",
+        "container_image": "sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204:v1",
         "cpp_version": "c++20",
         "config_name": "Release",
         "extra_config_args": "--apply-default-release-flags",
@@ -20,6 +42,15 @@
     {},
     {
         "comment": "Windows"
+    },
+    {
+        "build_job": "Windows",
+        "displayTargetName": "windows-vs2k22-x86_64-Debug",
+        "runs_on": "windows-2022",
+        "container_image": "sophistsolutionsinc/whythefuckismynetworksoslow-windows-vs2k22:v1",
+        "config_name": "Release",
+        "extra_config_args": "--arch x86_64 --apply-default-debug-flags",
+        "run_on_branch": "v1-Release"
     },
     {
         "build_job": "Windows",
