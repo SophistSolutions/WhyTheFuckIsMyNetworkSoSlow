@@ -168,7 +168,7 @@ endif
 ifneq ($(findstring $(DETECTED_HOST_OS),MSYS-Cygwin),)
 # SEE https://stroika.atlassian.net/browse/STK-940
 Builds/__AUTOMATIC_MAKE_PROJECT_FILES__:
-	@make project-files
+	@$(MAKE) project-files
 	@touch Builds/__AUTOMATIC_MAKE_PROJECT_FILES__
 endif
 
