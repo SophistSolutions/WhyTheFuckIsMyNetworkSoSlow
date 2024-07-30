@@ -40,6 +40,7 @@ Objs	:=	\
 VERSION_FILE_IN=$(TOP_ROOT)VERSION
 VERSION_FILE_OUT=$(StroikaRoot)IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow/AppVersion.h
 $(VERSION_FILE_OUT):	$(VERSION_FILE_IN)
+	@$(StroikaRoot)ScriptsLib/PrintProgressLine $(MAKE_INDENT_LEVEL) "Building $(VERSION_FILE_OUT)"
 	@mkdir -p $(StroikaRoot)IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow
 	@$(StroikaRoot)ScriptsLib/MakeVersionFile $(VERSION_FILE_IN) $(VERSION_FILE_OUT) AppCPlusPlusVersion AppVersion
 
