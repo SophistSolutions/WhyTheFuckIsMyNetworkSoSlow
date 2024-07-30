@@ -28,9 +28,8 @@ SubDirs=\
 	WebServices		\
 
 
-
-SUBDIR_OBJS := $(foreach dir, $(SubDirs), $(shell $(MAKE) CONFIGURATION=$(CONFIGURATION) --directory $(dir) -s list-objs))
-
+# @todo not clear why MAKEFLAGS= line here eliminates 'warning: jobserver unavailable: using -j1.  Add '+' to parent make rule.' warning
+SUBDIR_OBJS= $(foreach dir, $(SubDirs), $(shell MAKEFLAGS= $(MAKE) CONFIGURATION=$(CONFIGURATION) --directory $(dir) -s list-objs))
 
 Objs	:=	\
 	$(ObjDir)Main${OBJ_SUFFIX}\
@@ -40,13 +39,9 @@ Objs	:=	\
 VERSION_FILE_IN=$(TOP_ROOT)VERSION
 VERSION_FILE_OUT=$(StroikaRoot)IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow/AppVersion.h
 $(VERSION_FILE_OUT):	$(VERSION_FILE_IN)
-	@$(StroikaRoot)ScriptsLib/PrintProgressLine $(MAKE_INDENT_LEVEL) "Building $(VERSION_FILE_OUT)"
+	@$(StroikaRoot)ScriptsLib/PrintProgressLine $(MAKE_INDENT_LEVEL) "Building $(shell $(StroikaRoot)ScriptsLib/SubstituteBackVariables $(abspath $@))"
 	@mkdir -p $(StroikaRoot)IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow
 	@$(StroikaRoot)ScriptsLib/MakeVersionFile $(VERSION_FILE_IN) $(VERSION_FILE_OUT) AppCPlusPlusVersion AppVersion
-
-
-# Some dependencies needed to assure VERSION_FILE_OUT built early enuf
-$(Objs}:		$(VERSION_FILE_OUT)
 
 
 all:
