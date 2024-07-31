@@ -39,7 +39,7 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices;
 using Execution::Logger;
 
 namespace {
-    const Main::ServiceDescription kServiceDescription_{L"WhyTheFuckIsMyNetworkSoSlow-Service"sv, L"WhyTheFuckIsMyNetworkSoSlow Service"sv};
+    const Main::ServiceDescription kServiceDescription_{"WhyTheFuckIsMyNetworkSoSlow-Service"sv, "WhyTheFuckIsMyNetworkSoSlow Service"sv};
 }
 
 void WTFAppServiceRep::MainLoop (const std::function<void ()>& startedCB)
