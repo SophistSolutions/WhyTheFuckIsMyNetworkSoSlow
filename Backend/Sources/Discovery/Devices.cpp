@@ -12,7 +12,7 @@
 #include "Stroika/Foundation/Characters/RegularExpression.h"
 #include "Stroika/Foundation/Characters/StringBuilder.h"
 #include "Stroika/Foundation/Characters/ToString.h"
-#include "Stroika/Foundation/Configuration/SystemConfiguration.h"
+#include "Stroika/Foundation/Common/SystemConfiguration.h"
 #include "Stroika/Foundation/Containers/KeyedCollection.h"
 #include "Stroika/Foundation/Containers/Set.h"
 #include "Stroika/Foundation/Cryptography/Digest/Algorithm/MD5.h"
@@ -50,6 +50,7 @@ using namespace std;
 using namespace Stroika::Foundation;
 using namespace Stroika::Foundation::Characters;
 using namespace Stroika::Foundation::Containers;
+using namespace Stroika::Foundation::Common;
 using namespace Stroika::Foundation::DataExchange;
 using namespace Stroika::Foundation::Execution;
 using namespace Stroika::Foundation::IO;
@@ -754,7 +755,7 @@ namespace {
                         // copy most/all fields -- @todo cleanup - do more automatically - all but GUID??? Need merge??
                         di.fTypes           = thisDevice->fTypes;
                         di.fThisDevice      = thisDevice->fThisDevice;
-                        auto osInfo         = Configuration::GetSystemConfiguration_ActualOperatingSystem ();
+                        auto osInfo         = GetSystemConfiguration_ActualOperatingSystem ();
                         di.fOperatingSystem = OperatingSystem{osInfo.fTokenName, osInfo.fPrettyNameWithVersionDetails};
                         di.fSeen.fCollector = Memory::NullCoalesce (di.fSeen.fCollector).Extend (DateTime::Now ());
                         di.PatchDerivedFields ();
@@ -810,7 +811,7 @@ namespace {
             {"{}::GetMyDevice_" , "interfaces={}"_f, IO::Network::SystemInterfacesMgr{}.GetAll ());
 #endif
                 DiscoveryInfo_ newDev;
-                newDev.fNames.Add (Configuration::GetSystemConfiguration_ComputerNames ().fHostname, 200);
+                newDev.fNames.Add (GetSystemConfiguration_ComputerNames ().fHostname, 200);
                 newDev.fTypes += DeviceType::ePC; // not sure what this means, or if its the best place
                 newDev.fTypes += DeviceType::eWTFCollector;
                 newDev.fThisDevice = true;

@@ -5,7 +5,7 @@
 
 #include "Stroika/Foundation/Characters/ToString.h"
 #include "Stroika/Foundation/Common/Property.h"
-#include "Stroika/Foundation/Configuration/StroikaVersion.h"
+#include "Stroika/Foundation/Common/StroikaVersion.h"
 #include "Stroika/Foundation/DataExchange/ObjectVariantMapper.h"
 #include "Stroika/Foundation/Execution/Synchronized.h"
 #include "Stroika/Foundation/IO/Network/Transfer/Connection.h"
@@ -18,6 +18,7 @@ using namespace std;
 
 using namespace Stroika::Foundation;
 using namespace Stroika::Foundation::Characters;
+using namespace Stroika::Foundation::Common;
 using namespace Stroika::Foundation::Containers;
 using namespace Stroika::Foundation::Execution;
 
@@ -118,7 +119,7 @@ namespace {
             SQL::ORM::TableConnection<DBRecs_::BLOBURL_, SQL::ORM::TableConnectionTraits<DBRecs_::BLOBURL_, IO::Network::URI>>;
         DBConn_ ()
         {
-            constexpr Configuration::Version kCurrentVersion_ = Configuration::Version{1, 0, Configuration::VersionStage::Alpha, 0};
+            constexpr Version kCurrentVersion_ = Version{1, 0, VersionStage::Alpha, 0};
             BackendApp::Common::DB db{kCurrentVersion_, Traversal::Iterable<Database::SQL::ORM::Schema::Table>{kBLOBTableSchema_, kBLOBURLTableSchema_}};
             SQL::Connection::Ptr conn = db.NewConnection ();
             fBLOBs                    = make_shared<SQL::ORM::TableConnection<DBRecs_::BLOB_>> (

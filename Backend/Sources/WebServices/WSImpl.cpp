@@ -18,7 +18,7 @@
 #endif
 
 #include "Stroika/Foundation/Characters/ToString.h"
-#include "Stroika/Foundation/Configuration/SystemConfiguration.h"
+#include "Stroika/Foundation/Common/SystemConfiguration.h"
 #include "Stroika/Foundation/Containers/Sequence.h"
 #include "Stroika/Foundation/Containers/Set.h"
 #include "Stroika/Foundation/Database/SQL/SQLite.h"
@@ -118,7 +118,7 @@ About WSImpl::GetAbout () const
     using APIEndpoint    = APIServerInfo::APIEndpoint;
     using Database       = APIServerInfo::Database;
     static const Sequence<ComponentInfo> kAPIServerComponents_{initializer_list<ComponentInfo>{
-        ComponentInfo{"Stroika"sv, Configuration::Version{kStroika_Version_FullVersion}.AsPrettyVersionString (), URI{"https://github.com/SophistSolutions/Stroika"}}
+        ComponentInfo{"Stroika"sv, Common::Version{kStroika_Version_FullVersion}.AsPrettyVersionString (), URI{"https://github.com/SophistSolutions/Stroika"}}
 #if qHasFeature_OpenSSL
         ,
         ComponentInfo{"OpenSSL"sv, OPENSSL_VERSION_TEXT, URI{"https://www.openssl.org/"}}
@@ -141,10 +141,10 @@ About WSImpl::GetAbout () const
 
     CurrentMachine machineInfo = [this, now, &measurements] () {
         CurrentMachine    result;
-        static const auto kOS_  = OperatingSystem{Configuration::GetSystemConfiguration_ActualOperatingSystem ().fTokenName,
-                                                 Configuration::GetSystemConfiguration_ActualOperatingSystem ().fPrettyNameWithVersionDetails};
+        static const auto kOS_  = OperatingSystem{GetSystemConfiguration_ActualOperatingSystem ().fTokenName,
+                                                 GetSystemConfiguration_ActualOperatingSystem ().fPrettyNameWithVersionDetails};
         result.fOperatingSystem = kOS_;
-        if (auto o = Configuration::GetSystemConfiguration_BootInformation ().fBootedAt) {
+        if (auto o = GetSystemConfiguration_BootInformation ().fBootedAt) {
             result.fMachineUptime = now - *o;
         }
         if (auto om = fRep_->fMyCapturer.fCPUInstrument.MeasurementAs<Instruments::CPU::Info> (measurements)) {

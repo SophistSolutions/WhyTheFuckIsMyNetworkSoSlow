@@ -8,7 +8,7 @@
 
 #include <optional>
 
-#include "Stroika/Foundation/Configuration/Version.h"
+#include "Stroika/Foundation/Common/Version.h"
 #include "Stroika/Foundation/Containers/Collection.h"
 #include "Stroika/Foundation/Containers/Sequence.h"
 #include "Stroika/Foundation/DataExchange/ObjectVariantMapper.h"
@@ -34,11 +34,11 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_::DB
 
     using namespace Stroika::Foundation;
     using namespace Stroika::Foundation::Characters;
+    using namespace Stroika::Foundation::Common;
     using namespace Stroika::Foundation::Containers;
     using namespace Stroika::Foundation::Database;
     using namespace Stroika::Foundation::Debug;
 
-    using Stroika::Foundation::Common::ConstantProperty;
     using Stroika::Foundation::Common::GUID;
     using Stroika::Foundation::Containers::Collection;
     using Stroika::Foundation::Containers::Sequence;
@@ -152,7 +152,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_::DB
         static const Schema_Table kNetworkTableSchema_;
 
     private:
-        static constexpr Configuration::Version kCurrentVersion_ = Configuration::Version{1, 0, Configuration::VersionStage::Alpha, 0};
+        static constexpr Version kCurrentVersion_ = Version{1, 0, VersionStage::Alpha, 0};
         BackendApp::Common::DB fDB_; // Not accessed directly except during construction/destruction (each TableConnection gets its own DB::ConnectionPtr)
         Execution::Thread::Ptr                                                               fDatabaseSyncThread_{};
         Synchronized<Mapping<GUID, Device::UserOverridesType>>                               fCachedDeviceUserSettings_;

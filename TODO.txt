@@ -2,6 +2,9 @@ Fix .prettierrc - so formatting reasonable/uniform.
 
 
 
+--
+https://www.reddit.com/r/cpp/comments/1g3k7nq/pcapplusplus_v2409_released_c_library_for/?share_id=g2H5g9xxKUgn2Fo61D2nG&utm_content=1&utm_medium=android_app&utm_name=androidcss&utm_source=share&utm_term=10
+
 ---
 
 new PROFILE configuration on WINDOWS doesn't appear in solution file. Stuff I did with ApplyConfiguraiton works for adding to Projects, but not to the solution configuration.

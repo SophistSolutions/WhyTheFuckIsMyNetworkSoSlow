@@ -44,6 +44,7 @@ using namespace std;
 
 using namespace Stroika::Foundation;
 using namespace Stroika::Foundation::Characters;
+using namespace Stroika::Foundation::Common;
 using namespace Stroika::Foundation::Containers;
 using namespace Stroika::Foundation::Execution;
 using namespace Stroika::Foundation::Memory;
@@ -51,8 +52,6 @@ using namespace Stroika::Foundation::IO::Network;
 
 using DataExchange::ObjectVariantMapper;
 using IO::Network::HTTP::ClientErrorException;
-using Stroika::Foundation::Common::ConstantProperty;
-using Stroika::Foundation::Common::EmptyObjectForSideEffects;
 using Stroika::Foundation::Common::GUID;
 using Stroika::Foundation::Time::Duration;
 
@@ -257,7 +256,7 @@ public:
                           ClientErrorException::TreatExceptionsAsClientError ([&] () {
                               sort = sort.value_or (DeviceSortParameters{});
                               sort->fSearchTerms +=
-                                  DeviceSortParameters::SearchTerm{Configuration::DefaultNames<DeviceSortParameters::SearchTerm::By>{}.GetValue (
+                                  DeviceSortParameters::SearchTerm{DefaultNames<DeviceSortParameters::SearchTerm::By>{}.GetValue (
                                       o->As<String> ().c_str (), ClientErrorException{
                                                                                                                                               "Invalid argument to query string sortBy"sv})};
                           });

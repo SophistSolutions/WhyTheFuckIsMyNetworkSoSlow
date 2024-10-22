@@ -11,7 +11,7 @@
 #endif
 
 #include "Stroika/Foundation/Characters/String.h"
-#include "Stroika/Foundation/Configuration/Version.h"
+#include "Stroika/Foundation/Common/Version.h"
 #include "Stroika/Foundation/Containers/KeyedCollection.h"
 #include "Stroika/Foundation/Containers/Mapping.h"
 #include "Stroika/Foundation/Containers/Sequence.h"
@@ -46,6 +46,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
     using Time::DateTime;
     using Time::Duration;
     using Traversal::Range;
+    using Stroika::Foundation::Common::Version;
 
     /**
      */
@@ -750,11 +751,11 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
     }
 
     struct About {
-        Configuration::Version fOverallApplicationVersion;
+        Version fOverallApplicationVersion;
 
         struct APIServerInfo {
 
-            Configuration::Version fVersion;
+            Version fVersion;
             struct ComponentInfo {
                 String        fName;
                 String        fVersion;

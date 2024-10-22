@@ -7,7 +7,7 @@
 #include "Stroika/Frameworks/StroikaPreComp.h"
 
 #include "Stroika/Foundation/Common/Property.h"
-#include "Stroika/Foundation/Configuration/Version.h"
+#include "Stroika/Foundation/Common/Version.h"
 #include "Stroika/Foundation/Database/SQL/Connection.h"
 #include "Stroika/Foundation/Database/SQL/ORM/Schema.h"
 #include "Stroika/Foundation/Database/SQL/ORM/TableConnection.h"
@@ -23,7 +23,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
 
     using namespace Stroika::Foundation::Database::SQL;
     using Stroika::Foundation::Common::ReadOnlyProperty;
-    using Stroika::Foundation::Configuration::Version;
+    using Stroika::Foundation::Common::Version;
     using Stroika::Foundation::Traversal::Iterable;
     using namespace Stroika::Foundation::Database;
 

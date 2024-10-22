@@ -27,6 +27,7 @@ using namespace Stroika::Foundation::IO::Network;
 
 using Memory::NullCoalesce;
 using Stroika::Foundation::Common::GUID;
+using Stroika::Foundation::Common::DefaultNames;
 using Traversal::Range;
 
 using namespace WhyTheFuckIsMyNetworkSoSlow;
@@ -196,7 +197,7 @@ auto NetworkInterface::GenerateFingerprintFromProperties () const -> Fingerprint
     }
     sb << "/"sv;
     if (fType) {
-        sb << Configuration::DefaultNames<NetworkInterface::Type>::k.GetName (*fType);
+        sb << DefaultNames<NetworkInterface::Type>::k.GetName (*fType);
     }
     sb << "/"sv;
     if (fHardwareAddress) {
@@ -535,15 +536,8 @@ Network::FingerprintType Network::GenerateFingerprintFromProperties () const
     // into a single ID that probably mostly uniquely ids a network.
     StringBuilder sb;
 
-#if __cplusplus >= kStrokia_Foundation_Configuration_cplusplus_20
     auto accumList = [&sb]<typename T> (const Set<T>& elts)
-#else
-    auto accumList = [&sb] (const auto& elts)
-#endif
     {
-#if not(__cplusplus >= kStrokia_Foundation_Configuration_cplusplus_20)
-        using T = typename decay_t<decltype (elts)>::value_type;
-#endif
         switch (elts.size ()) {
             case 0:
                 sb << "/"sv;
@@ -1163,12 +1157,12 @@ const ObjectVariantMapper About::kMapper = [] () {
 
     mapper.AddCommonType<optional<double>> ();
 
-    mapper.Add<Configuration::Version> (
-        [] ([[maybe_unused]] const ObjectVariantMapper& mapper, const Configuration::Version* obj) -> VariantValue {
+    mapper.Add<Version> (
+        [] ([[maybe_unused]] const ObjectVariantMapper& mapper, const Version* obj) -> VariantValue {
             return obj->AsPrettyVersionString ();
         },
-        [] ([[maybe_unused]] const ObjectVariantMapper& mapper, const VariantValue& d, Configuration::Version* intoObj) -> void {
-            *intoObj = Configuration::Version::FromPrettyVersionString (d.As<String> ());
+        [] ([[maybe_unused]] const ObjectVariantMapper& mapper, const VariantValue& d, Version* intoObj) -> void {
+            *intoObj = Version::FromPrettyVersionString (d.As<String> ());
         });
 
     mapper.AddClass<About::APIServerInfo::ComponentInfo> ({
