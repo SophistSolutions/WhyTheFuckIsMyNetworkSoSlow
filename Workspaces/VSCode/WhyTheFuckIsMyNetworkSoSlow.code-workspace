@@ -39,7 +39,8 @@
 			"*.inc": "cpp",
 			"memory": "cpp",
 			"sstream": "cpp",
-			"strstream": "cpp"
+			"strstream": "cpp",
+			"tuple": "cpp"
 		}
 	}
 }
