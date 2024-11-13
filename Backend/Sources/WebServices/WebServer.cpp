@@ -29,6 +29,7 @@
 #include "Stroika/Frameworks/WebServer/FileSystemRequestHandler.h"
 #include "Stroika/Frameworks/WebServer/Router.h"
 #include "Stroika/Frameworks/WebService/Server/Basic.h"
+#include "Stroika/Frameworks/WebService/Server/ObjectRequestHandler.h"
 #include "Stroika/Frameworks/WebService/Server/VariantValue.h"
 
 #include "../Common/AppConfiguration.h"
@@ -77,7 +78,16 @@ namespace {
         optional<String>       API_ROOT;         // if specified takes precedence over DEFAULT_API_PORT
         optional<unsigned int> DEFAULT_API_PORT; // added to remote host used in web browser for accessing API
 
-        static const ObjectVariantMapper kMapper;
+        static inline const ObjectVariantMapper kMapper = [] () {
+            ObjectVariantMapper mapper;
+            mapper.AddCommonType<optional<String>> ();
+            mapper.AddCommonType<optional<unsigned int>> ();
+            mapper.AddClass<Config_> ({
+                {"API_ROOT"sv, &Config_::API_ROOT},
+                {"DEFAULT_API_PORT"sv, &Config_::DEFAULT_API_PORT},
+            });
+            return mapper;
+        }();
     };
     const WebServiceMethodDescription kGUIConfig_{
         "config"sv,
@@ -87,16 +97,6 @@ namespace {
         Sequence<String>{},
         Sequence<String>{"GUI config."sv},
     };
-    const ObjectVariantMapper Config_::kMapper = [] () {
-        ObjectVariantMapper mapper;
-        mapper.AddCommonType<optional<String>> ();
-        mapper.AddCommonType<optional<unsigned int>> ();
-        mapper.AddClass<Config_> ({
-            {"API_ROOT"sv, &Config_::API_ROOT},
-            {"DEFAULT_API_PORT"sv, &Config_::DEFAULT_API_PORT},
-        });
-        return mapper;
-    }();
     Config_ GetConfig_ ()
     {
         return Config_{nullopt, gAppConfiguration.Get ().WebServerPort.value_or (AppConfigurationType::kWebServerPort_Default)};
@@ -227,7 +227,7 @@ public:
 
               Route{
                   "api/v1/about"_RegEx,
-                  mkRequestHandler (kAbout_, About::kMapper, function<About (void)>{[this] () { ActiveCallCounter_ acc{*this}; return fWSAPI_->GetAbout (); }})},
+                  ObjectRequestHandler::Factory{{About::kMapper}, [this] () { ActiveCallCounter_ acc{*this}; return fWSAPI_->GetAbout (); }}},
 
               Route{
                   "api/v1/blob/(.+)"_RegEx,
@@ -353,7 +353,7 @@ public:
                           WriteResponse (&m->rwResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_Ping (address->As<String> ())));
                       }
                       else {
-                          Execution::Throw (ClientErrorException{"missing target argument"sv});
+                          Throw (ClientErrorException{"missing target argument"sv});
                       }
                   }},
               Route{
@@ -371,7 +371,7 @@ public:
                       }
                       else {
                           static const auto kException_ = ClientErrorException{"missing target argument"sv};
-                          Execution::Throw (kException_);
+                          Throw (kException_);
                       }
                   }},
               Route{
@@ -398,7 +398,7 @@ public:
                       }
                       else {
                           static const auto kException_ = ClientErrorException{"missing name argument"sv};
-                          Execution::Throw (kException_);
+                          Throw (kException_);
                       }
                       WriteResponse (&m->rwResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_DNS_Lookup (name)));
                   }},
@@ -420,7 +420,7 @@ public:
                       }
                       else {
                           static const auto kException_ = ClientErrorException{"missing deviceID argument"sv};
-                          Execution::Throw (kException_);
+                          Throw (kException_);
                       }
                   }},
               Route{
@@ -434,13 +434,13 @@ public:
                       }
                       else {
                           static const auto kException_ = ClientErrorException{"missing addr argument"sv};
-                          Execution::Throw (kException_);
+                          Throw (kException_);
                       }
                   }},
           }
         , fStaticRoutes_{
-              Route{"config.json"_RegEx, mkRequestHandler (kGUIConfig_, Config_::kMapper, function<Config_ (void)>{[=] () { return GetConfig_ (); }})},
-              Route{RegularExpression::kAny, FileSystemRequestHandler{Execution::GetEXEDir () / "html"sv, kStaticSiteHandlerOptions_}},
+              Route{"config.json"_RegEx, ObjectRequestHandler::Factory{{Config_::kMapper}, [=] () { return GetConfig_ (); }}},
+              Route{RegularExpression::kAny, FileSystemRequestHandler{GetEXEDir () / "html"sv, kStaticSiteHandlerOptions_}},
           }
         , fConnectionMgr_{
             SocketAddresses (InternetAddresses_Any (), gAppConfiguration.Get ().WebServerPort.value_or (AppConfigurationType::kWebServerPort_Default)), 

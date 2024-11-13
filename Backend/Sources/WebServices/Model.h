@@ -43,10 +43,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
     using IO::Network::InternetAddress;
     using IO::Network::URI;
     using Stroika::Foundation::Common::GUID;
+    using Stroika::Foundation::Common::Version;
     using Time::DateTime;
     using Time::Duration;
     using Traversal::Range;
-    using Stroika::Foundation::Common::Version;
 
     /**
      */

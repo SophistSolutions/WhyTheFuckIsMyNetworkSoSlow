@@ -84,7 +84,7 @@ namespace {
     public:
         Instruments::CPU::Instrument     fCPUInstrument{};
         Instruments::Process::Instrument fProcessInstrument{
-            Instruments::Process::Options{.fRestrictToPIDs = Set<pid_t>{Execution::GetCurrentProcessID ()}}};
+            Instruments::Process::Options{.fRestrictToPIDs = Set<pid_t>{GetCurrentProcessID ()}}};
         MyCapturer_ ()
         {
             AddCaptureSet (CaptureSet{kCaptureFrequency_, {fCPUInstrument, fProcessInstrument}});
@@ -109,7 +109,7 @@ WSImpl::WSImpl (function<About::APIServerInfo::WebServer ()> webServerStatsFetch
 
 About WSImpl::GetAbout () const
 {
-    DbgTrace ("intervalutimertasks={}"_f, Execution::IntervalTimer::Manager::sThe.GetAllRegisteredTasks ()); // to debug https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/78
+    DbgTrace ("intervalutimertasks={}"_f, IntervalTimer::Manager::sThe.GetAllRegisteredTasks ()); // to debug https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/78
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
     using APIServerInfo  = About::APIServerInfo;
     using ComponentInfo  = APIServerInfo::ComponentInfo;
@@ -158,7 +158,7 @@ About WSImpl::GetAbout () const
         CurrentProcess result;
         if (auto om = fRep_->fMyCapturer.fProcessInstrument.MeasurementAs<Instruments::Process::Info> (measurements)) {
             Assert (om->size () == 1);
-            Instruments::Process::ProcessType thisProcess = (*om)[Execution::GetCurrentProcessID ()];
+            Instruments::Process::ProcessType thisProcess = (*om)[GetCurrentProcessID ()];
             if (auto o = thisProcess.fProcessStartedAt) {
                 result.fProcessUptime = now - *o;
             }
@@ -380,7 +380,7 @@ Sequence<BackendApp::WebServices::Device> WSImpl::GetDevices_Recurse (const opti
                     });
                 } break;
                 default: {
-                    Execution::Throw (ClientErrorException{"missing or invalid By in search specification"_k});
+                    Throw (ClientErrorException{"missing or invalid By in search specification"_k});
                 } break;
             }
         }
@@ -397,7 +397,7 @@ tuple<Device, Duration> WSImpl::GetDevice (const String& id) const
     if (auto d = IntegratedModel::Mgr::sThe.GetDevice (compareWithID, &ttl)) {
         return make_tuple (*d, Memory::ValueOf (ttl));
     }
-    Execution::Throw (ClientErrorException{"no such id"sv});
+    Throw (ClientErrorException{"no such id"sv});
 }
 
 void WSImpl::PatchDevice (const String& id, const DataExchange::JSON::Patch::OperationItemsType& patchDoc) const
@@ -410,7 +410,7 @@ void WSImpl::PatchDevice (const String& id, const DataExchange::JSON::Patch::Ope
                 Device::UserOverridesType updateVal =
                     IntegratedModel::Mgr::sThe.GetDeviceUserSettings (objID).value_or (Device::UserOverridesType{});
                 if (not op.value) {
-                    Execution::Throw (ClientErrorException{"JSON-Patch add requires a value"_k});
+                    Throw (ClientErrorException{"JSON-Patch add requires a value"_k});
                 }
                 if (op.path == "/userOverrides/name"sv) {
                     updateVal.fName = op.value->As<String> ();
@@ -424,7 +424,7 @@ void WSImpl::PatchDevice (const String& id, const DataExchange::JSON::Patch::Ope
                         op.value->As<Sequence<VariantValue>> ().Map<Set<String>> ([] (const VariantValue& vv) { return vv.As<String> (); });
                 }
                 else {
-                    Execution::Throw (ClientErrorException{"JSON-Patch add of unsupported op.path"_k});
+                    Throw (ClientErrorException{"JSON-Patch add of unsupported op.path"_k});
                 }
                 if (updateVal.IsNonTrivial ()) {
                     IntegratedModel::Mgr::sThe.SetDeviceUserSettings (objID, updateVal);
@@ -447,7 +447,7 @@ void WSImpl::PatchDevice (const String& id, const DataExchange::JSON::Patch::Ope
                     updateVal.fTags = optional<Set<String>>{};
                 }
                 else {
-                    Execution::Throw (ClientErrorException{"JSON-Patch remove of unsupported op.path"_k});
+                    Throw (ClientErrorException{"JSON-Patch remove of unsupported op.path"_k});
                 }
                 if (updateVal.IsNonTrivial ()) {
                     IntegratedModel::Mgr::sThe.SetDeviceUserSettings (objID, updateVal);
@@ -511,7 +511,7 @@ tuple<Network, Duration> WSImpl::GetNetwork (const String& id) const
     if (auto d = IntegratedModel::Mgr::sThe.GetNetwork (compareWithID, &ttl)) {
         return make_tuple (*d, Memory::ValueOf (ttl));
     }
-    Execution::Throw (ClientErrorException{"no such id"sv});
+    Throw (ClientErrorException{"no such id"sv});
 }
 
 void WSImpl::PatchNetwork (const String& id, const DataExchange::JSON::Patch::OperationItemsType& patchDoc) const
@@ -524,7 +524,7 @@ void WSImpl::PatchNetwork (const String& id, const DataExchange::JSON::Patch::Op
                 Network::UserOverridesType updateVal =
                     IntegratedModel::Mgr::sThe.GetNetworkUserSettings (objID).value_or (Network::UserOverridesType{});
                 if (not op.value) {
-                    Execution::Throw (ClientErrorException{"JSON-Patch add requires a value"_k});
+                    Throw (ClientErrorException{"JSON-Patch add requires a value"_k});
                 }
                 if (op.path == "/userOverrides/name"sv) {
                     updateVal.fName = op.value->As<String> ();
@@ -554,7 +554,7 @@ void WSImpl::PatchNetwork (const String& id, const DataExchange::JSON::Patch::Op
                             *op.value);
                 }
                 else {
-                    Execution::Throw (ClientErrorException{"JSON-Patch add of unsupported op.path"_k});
+                    Throw (ClientErrorException{"JSON-Patch add of unsupported op.path"_k});
                 }
                 if (updateVal.IsNonTrivial ()) {
                     IntegratedModel::Mgr::sThe.SetNetworkUserSettings (objID, updateVal);
@@ -586,7 +586,7 @@ void WSImpl::PatchNetwork (const String& id, const DataExchange::JSON::Patch::Op
                     updateVal.fAggregateNetworkInterfacesMatching = nullopt;
                 }
                 else {
-                    Execution::Throw (ClientErrorException{"JSON-Patch remove of unsupported op.path"_k});
+                    Throw (ClientErrorException{"JSON-Patch remove of unsupported op.path"_k});
                 }
                 if (updateVal.IsNonTrivial ()) {
                     IntegratedModel::Mgr::sThe.SetNetworkUserSettings (objID, updateVal);
@@ -623,7 +623,7 @@ tuple<NetworkInterface, Duration> WSImpl::GetNetworkInterface (const String& id)
     if (auto ni = IntegratedModel::Mgr::sThe.GetNetworkInterface (compareWithID, &ttl)) {
         return make_tuple (*ni, Memory::ValueOf (ttl));
     }
-    Execution::Throw (ClientErrorException{"no such id"sv});
+    Throw (ClientErrorException{"no such id"sv});
 }
 
 double WSImpl::Operation_Ping (const String& address) const
@@ -650,7 +650,7 @@ double WSImpl::Operation_Ping (const String& address) const
     // write GetHostAddress () function in DNS that throws if not at least one
     auto addrs = DNS::kThe.GetHostAddresses (address, InternetAddress::AddressFamily::V4);
     if (addrs.size () < 1) {
-        Execution::Throw (Execution::Exception{L"no addr"sv});
+        Throw (Exception{L"no addr"sv});
     }
 
     NetworkMonitor::Ping::SampleResults t = NetworkMonitor::Ping::Sample (addrs[0], Ping::SampleOptions{kInterSampleTime_, sampleCount}, options);
@@ -684,7 +684,7 @@ Operations::TraceRouteResults WSImpl::Operation_TraceRoute (const String& addres
     options.fMaxHops           = maxHops;
 
     options.fTimeout = Duration{5.0};
-    //   options.fSampleInfo                   = Ping::Options::SampleInfo{kInterSampleTime_, sampleCount};
+    options.fSampleInfo                   = Traceroute::Options::SampleInfo{.fInterval = kInterSampleTime_, .fSampleCount=  sampleCount};
 
     // write GetHostAddress () function in DNS that throws if not at least one
 
@@ -711,12 +711,12 @@ Operations::TraceRouteResults WSImpl::Operation_TraceRoute (const String& addres
 
 Time::Duration WSImpl::Operation_DNS_CalculateNegativeLookupTime (optional<unsigned int> samples) const
 {
-    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"WSImpl::Operation_DNS_CalculateNegativeLookupTime")};
+    Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs ("WSImpl::Operation_DNS_CalculateNegativeLookupTime")};
     Common::OperationalStatisticsMgr::ProcessAPICmd statsGather;
     constexpr unsigned int                          kDefault_Samples = 7;
     unsigned int                                    useSamples       = samples.value_or (kDefault_Samples);
     if (useSamples == 0) {
-        Execution::Throw (ClientErrorException{"samples must be > 0"sv});
+        Throw (ClientErrorException{"samples must be > 0"sv});
     }
     uniform_int_distribution<mt19937::result_type> allUInt16Distribution{0, numeric_limits<uint32_t>::max ()};
     static mt19937                                 sRng_{std::random_device{}()};
@@ -750,9 +750,9 @@ double WSImpl::Operation_DNS_CalculateScore () const
     constexpr double kNegLookupWeight = 2.5;
     totalWeightedTime += kNegLookupWeight * Operation_DNS_CalculateNegativeLookupTime ({}).As<double> ();
     constexpr double kPosLookupWeight = 25; // much higher than kNegLookupWeight because this is the time for cached entries lookup which will naturally be much smaller
-    totalWeightedTime += kPosLookupWeight * (0 + Operation_DNS_Lookup (L"www.google.com"sv).fLookupTime.As<double> () +
-                                             Operation_DNS_Lookup (L"www.amazon.com"sv).fLookupTime.As<double> () +
-                                             Operation_DNS_Lookup (L"www.youtube.com"sv).fLookupTime.As<double> ());
+    totalWeightedTime += kPosLookupWeight * (0 + Operation_DNS_Lookup ("www.google.com"sv).fLookupTime.As<double> () +
+                                             Operation_DNS_Lookup ("www.amazon.com"sv).fLookupTime.As<double> () +
+                                             Operation_DNS_Lookup ("www.youtube.com"sv).fLookupTime.As<double> ());
     Assert (totalWeightedTime >= 0);
     constexpr double kScoreCutOff_               = 10.0;
     constexpr double kShiftAndScaleVerticallyBy_ = 10;
@@ -762,7 +762,7 @@ double WSImpl::Operation_DNS_CalculateScore () const
     //DbgTrace (L"log=%f", log (totalWeightedTime / (kScoreCutOff_ / 10)));
     //DbgTrace (L"score=%f", score);
 
-    score = Math::PinInRange<double> (score, 0, 1);
+    score = clamp<double> (score, 0, 1);
     Ensure (0 <= score and score <= 1.0);
     return score;
 }

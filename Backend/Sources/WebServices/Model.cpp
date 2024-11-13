@@ -26,8 +26,8 @@ using namespace Stroika::Foundation::DataExchange;
 using namespace Stroika::Foundation::IO::Network;
 
 using Memory::NullCoalesce;
-using Stroika::Foundation::Common::GUID;
 using Stroika::Foundation::Common::DefaultNames;
+using Stroika::Foundation::Common::GUID;
 using Traversal::Range;
 
 using namespace WhyTheFuckIsMyNetworkSoSlow;
@@ -536,8 +536,7 @@ Network::FingerprintType Network::GenerateFingerprintFromProperties () const
     // into a single ID that probably mostly uniquely ids a network.
     StringBuilder sb;
 
-    auto accumList = [&sb]<typename T> (const Set<T>& elts)
-    {
+    auto accumList = [&sb]<typename T> (const Set<T>& elts) {
         switch (elts.size ()) {
             case 0:
                 sb << "/"sv;
@@ -1157,13 +1156,11 @@ const ObjectVariantMapper About::kMapper = [] () {
 
     mapper.AddCommonType<optional<double>> ();
 
-    mapper.Add<Version> (
-        [] ([[maybe_unused]] const ObjectVariantMapper& mapper, const Version* obj) -> VariantValue {
-            return obj->AsPrettyVersionString ();
-        },
-        [] ([[maybe_unused]] const ObjectVariantMapper& mapper, const VariantValue& d, Version* intoObj) -> void {
-            *intoObj = Version::FromPrettyVersionString (d.As<String> ());
-        });
+    mapper.Add<Version> ([] ([[maybe_unused]] const ObjectVariantMapper& mapper,
+                             const Version*                              obj) -> VariantValue { return obj->AsPrettyVersionString (); },
+                         [] ([[maybe_unused]] const ObjectVariantMapper& mapper, const VariantValue& d, Version* intoObj) -> void {
+                             *intoObj = Version::FromPrettyVersionString (d.As<String> ());
+                         });
 
     mapper.AddClass<About::APIServerInfo::ComponentInfo> ({
         {"name"sv, &About::APIServerInfo::ComponentInfo::fName},
