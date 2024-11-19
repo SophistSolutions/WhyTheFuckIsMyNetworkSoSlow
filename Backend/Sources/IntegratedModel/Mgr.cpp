@@ -82,7 +82,7 @@ namespace {
                 // disappear later in the run, leading to possible client confusion. Best to just not say anything til DB loaded
                 // Could ALSO do 2 stage DB load - critical stuff for IDs, and the detailed DB records. All we need is first
                 // stage for here...
-                static const auto kException_ = HTTP::Exception{HTTP::StatusCodes::kServiceUnavailable, L"Database initialization not yet completed"_k};
+                static const auto kException_ = HTTP::Exception{HTTP::StatusCodes::kServiceUnavailable, "Database initialization not yet completed"_k};
                 Execution::Throw (kException_);
             }
         }
@@ -92,9 +92,9 @@ namespace {
             inherited::_OneTimeStartupLoadDB ();
             Logger::sThe.Log (Logger::eInfo, "Loaded {} network interface snapshots, {} network snapshots and {} device snapshots from database"_f,
                               GetRawNetworkInterfaces ().size (), GetRawNetworks ().size (), GetRawDevices ().size ());
-            // @todo post-procesing, maybe deleting some user settings
+            // @todo post-processing, maybe deleting some user settings
             PruneBadNetworks_ ();
-            Logger::sThe.Log (Logger::eInfo, "Successfully post-processed database"_f);
+            Logger::sThe.Log (Logger::eInfo, "Successfully opened, and post-processed database ({})"_f, BackendApp::Common::DB::pFileName ());
             fFinishedInitialDBLoad_ = true;
         }
         void PruneBadNetworks_ ()
@@ -103,8 +103,8 @@ namespace {
             using namespace IntegratedModel::Private_;
             try {
                 Mapping<GUID, Network::UserOverridesType> netUserSettings = GetNetworkUserSettings ();
-                RolledUpNetworkInterfaces                 tmpNetInterfacerollups{this->GetRawDevices (), this->GetRawNetworkInterfaces ()};
-                RolledUpNetworks tmpNetworkRollup{this, this->GetRawNetworks (), netUserSettings, tmpNetInterfacerollups};
+                RolledUpNetworkInterfaces                 tmpNetInterfaceRollups{this->GetRawDevices (), this->GetRawNetworkInterfaces ()};
+                RolledUpNetworks tmpNetworkRollup{this, this->GetRawNetworks (), netUserSettings, tmpNetInterfaceRollups};
                 auto             isBad = [&] (const KeyValuePair<GUID, Network::UserOverridesType> kvp) {
                     // @todo check for bad and remove
                     // See if it has BOTH zero concrete networks inside, and is not referenced by any devices

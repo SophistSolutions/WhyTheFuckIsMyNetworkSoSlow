@@ -42,10 +42,10 @@ const ObjectVariantMapper AppConfigurationType::kMapper = [] () {
         {
             {"ToStdOut"sv, &AppConfigurationType::Logging::ToStdOut},
 #if qPlatform_POSIX
-                {"ToSysLog"sv, &AppConfigurationType::Logging::ToSysLog},
+            {"ToSysLog"sv, &AppConfigurationType::Logging::ToSysLog},
 #endif
 #if qPlatform_Windows
-                {"ToWindowsEventLog"sv, &AppConfigurationType::Logging::ToWindowsEventLog},
+            {"ToWindowsEventLog"sv, &AppConfigurationType::Logging::ToWindowsEventLog},
 #endif
         },
         {.fOmitNullEntriesInFromObject = false});

@@ -44,7 +44,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
 
     public:
         /**
-         *  Note - each Connection::Ptr can be used from any thread, but is not internally syncrhonized and must be used from one thread at a time.
+         *  Note - each Connection::Ptr can be used from any thread, but is not internally synchronized and must be used from one thread at a time.
          */
         nonvirtual SQL::Connection::Ptr NewConnection ();
 
@@ -53,10 +53,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         nonvirtual T AddOrMergeUpdate (ORM::TableConnection<T>* dbConnTable, const T& d);
 
     public:
-        static ReadOnlyProperty<filesystem::path> pFileName;
+        static const ReadOnlyProperty<filesystem::path> pFileName;
 
     public:
-        static ReadOnlyProperty<uintmax_t> pFileSize;
+        static const ReadOnlyProperty<uintmax_t> pFileSize;
 
     public:
         struct ReadStatsContext;

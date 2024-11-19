@@ -141,7 +141,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_::DB
     private:
         /*
          *  Combined mapper for objects we write to the database. Contains all the objects mappers we need merged together,
-         *  and any touchups on represenation we need (like writing GUID as BLOB rather than string).
+         *  and any touchups on representation we need (like writing GUID as BLOB rather than string).
          */
         static const ConstantProperty<ObjectVariantMapper> kDBObjectMapper_;
         static const Schema_Table                          kDeviceUserSettingsSchema_;
@@ -179,7 +179,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_::DB
     protected:
         /*
          *  Called to load the database. Even if the database is not present (being created) - this will be called once
-         *  and must succeeed. Subclasses can override it to report back/know when database load is done.
+         *  and must succeed. Subclasses can override it to report back/know when database load is done.
          */
         virtual void _OneTimeStartupLoadDB ();
     };

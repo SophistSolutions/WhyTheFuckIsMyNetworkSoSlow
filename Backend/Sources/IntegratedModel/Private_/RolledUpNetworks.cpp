@@ -194,8 +194,8 @@ auto RolledUpNetworks::MergeIn_ (DBAccess::Mgr* dbAccessMgr, const Network& net2
     return PassFailType_::eFail;
 }
 
-auto RolledUpNetworks::ShouldRollupInto_ (const Network& net2MergeIn, const Network::FingerprintType& net2MergeInFingerprint)
-    -> tuple<optional<Network>, PassFailType_>
+auto RolledUpNetworks::ShouldRollupInto_ (const Network&                  net2MergeIn,
+                                          const Network::FingerprintType& net2MergeInFingerprint) -> tuple<optional<Network>, PassFailType_>
 {
     auto formerRollupID = fMapFingerprint2RollupID.Lookup (net2MergeInFingerprint);
     if (formerRollupID) {

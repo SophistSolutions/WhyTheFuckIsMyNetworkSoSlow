@@ -82,9 +82,8 @@ namespace {
 
     struct MyCapturer_ final : Capturer {
     public:
-        Instruments::CPU::Instrument     fCPUInstrument{};
-        Instruments::Process::Instrument fProcessInstrument{
-            Instruments::Process::Options{.fRestrictToPIDs = Set<pid_t>{GetCurrentProcessID ()}}};
+        Instruments::CPU::Instrument fCPUInstrument{};
+        Instruments::Process::Instrument fProcessInstrument{Instruments::Process::Options{.fRestrictToPIDs = Set<pid_t>{GetCurrentProcessID ()}}};
         MyCapturer_ ()
         {
             AddCaptureSet (CaptureSet{kCaptureFrequency_, {fCPUInstrument, fProcessInstrument}});
@@ -683,8 +682,8 @@ Operations::TraceRouteResults WSImpl::Operation_TraceRoute (const String& addres
     options.fPacketPayloadSize = Ping::Options::kAllowedICMPPayloadSizeRange.Pin (packetSize - sizeof (ICMP::V4::PacketHeader));
     options.fMaxHops           = maxHops;
 
-    options.fTimeout = Duration{5.0};
-    options.fSampleInfo                   = Traceroute::Options::SampleInfo{.fInterval = kInterSampleTime_, .fSampleCount=  sampleCount};
+    options.fTimeout    = Duration{5.0};
+    options.fSampleInfo = Traceroute::Options::SampleInfo{.fInterval = kInterSampleTime_, .fSampleCount = sampleCount};
 
     // write GetHostAddress () function in DNS that throws if not at least one
 
