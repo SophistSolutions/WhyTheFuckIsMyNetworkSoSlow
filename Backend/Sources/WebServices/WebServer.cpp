@@ -231,20 +231,20 @@ public:
 
               Route{
                   "api/v1/blob/(.+)"_RegEx,
-                  [this] (Message* m, const String& id) {
+                  [this] (Message& m, const String& id) {
                       ActiveCallCounter_                                             acc{*this};
                       tuple<Memory::BLOB, optional<DataExchange::InternetMediaType>> b = fWSAPI_->GetBLOB (id);
                       if (get<1> (b)) {
-                          m->rwResponse ().contentType = *get<1> (b);
+                          m.rwResponse ().contentType = *get<1> (b);
                       }
-                      m->rwResponse ().write (get<0> (b));
+                      m.rwResponse ().write (get<0> (b));
                   }},
 
               Route{
                  "api/v1/devices(/?)"_RegEx,
-                  [this] (Message* m) {
+                  [this] (Message& m) {
                       ActiveCallCounter_                          acc{*this};
-                      Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (&m->rwRequest ());
+                      Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m.rwRequest ());
                       optional<DeviceSortParameters>              sort;
                       if (auto o = args.Lookup ("sort"sv)) {
                           ClientErrorException::TreatExceptionsAsClientError ([&] () {
@@ -266,91 +266,93 @@ public:
                           ids = kSequenceOfGUIDMapper_.ToObject<Set<GUID>> (DataExchange::Variant::JSON::Reader{}.Read (o->As<String> ()));
                       }
                       if (args.LookupValue ("recurse"sv, false).As<bool> ()) {
-                          WriteResponse (&m->rwResponse (), kDevices_, Device::kMapper.FromObject (fWSAPI_->GetDevices_Recurse (ids, sort)));
+                          WriteResponse (m.rwResponse (), kDevices_, Device::kMapper.FromObject (fWSAPI_->GetDevices_Recurse (ids, sort)));
                       }
                       else {
-                          WriteResponse (&m->rwResponse (), kDevices_, kBasicsMapper_.FromObject (fWSAPI_->GetDevices (ids, sort)));
+                          WriteResponse (m.rwResponse (), kDevices_, kBasicsMapper_.FromObject (fWSAPI_->GetDevices (ids, sort)));
                       }
                   }},
               Route{
                   "api/v1/devices/(.+)"_RegEx,
-                  [this] (Message* m, const String& id) {
+                  [this] (Message& m, const String& id) {
                       ActiveCallCounter_ acc{*this};
                       auto [device, ttl]                         = fWSAPI_->GetDevice (id);
-                      m->rwResponse ().rwHeaders ().cacheControl = mkCacheControlForAPI_ (ttl);
-                      WriteResponse (&m->rwResponse (), kDevices_, Device::kMapper.FromObject (device));
+                      m.rwResponse ().rwHeaders ().cacheControl = mkCacheControlForAPI_ (ttl);
+                      WriteResponse (m.rwResponse (), kDevices_, Device::kMapper.FromObject (device));
                   }},
               Route{
                   IO::Network::HTTP::MethodsRegEx::kPatch,
                 "api/v1/devices/(.+)"_RegEx,
-                  [this] (Message* m, const String& id) {
+                  [this] (Message& m, const String& id) {
                       ActiveCallCounter_ acc{*this};
-                      fWSAPI_->PatchDevice (id, DataExchange::JSON::Patch::OperationItemsType::kMapper.ToObject<DataExchange::JSON::Patch::OperationItemsType> (DataExchange::Variant::JSON::Reader{}.Read (m->rwRequest ().GetBody ())));
-                      m->rwResponse ().status = IO::Network::HTTP::StatusCodes::kNoContent;
+                      using DataExchange::JSON::Patch::OperationItemsType;
+                      fWSAPI_->PatchDevice (id, OperationItemsType::kMapper.ToObject<OperationItemsType> (DataExchange::Variant::JSON::Reader{}.Read (m.rwRequest ().GetBody ())));
+                      m.rwResponse ().status = IO::Network::HTTP::StatusCodes::kNoContent;
                   }},
 
               Route{
                  "api/v1/network-interfaces(/?)"_RegEx,
-                  [this] (Message* m) {
+                  [this] (Message& m) {
                       ActiveCallCounter_                          acc{*this};
-                      Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (&m->rwRequest ());
+                      Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m.rwRequest ());
                       if (args.LookupValue ("recurse"sv, false).As<bool> ()) {
-                          WriteResponse (&m->rwResponse (), kNetworkInterfaces_, NetworkInterface::kMapper.FromObject (fWSAPI_->GetNetworkInterfaces_Recurse ()));
+                          WriteResponse (m.rwResponse (), kNetworkInterfaces_, NetworkInterface::kMapper.FromObject (fWSAPI_->GetNetworkInterfaces_Recurse ()));
                       }
                       else {
-                          WriteResponse (&m->rwResponse (), kNetworkInterfaces_, kBasicsMapper_.FromObject (fWSAPI_->GetNetworkInterfaces ()));
+                          WriteResponse (m.rwResponse (), kNetworkInterfaces_, kBasicsMapper_.FromObject (fWSAPI_->GetNetworkInterfaces ()));
                       }
                   }},
               Route{
                  "api/v1/network-interfaces/(.+)"_RegEx,
-                  [this] (Message* m, const String& id) {
+                  [this] (Message& m, const String& id) {
                       ActiveCallCounter_ acc{*this};
                       auto [networkInterface, ttl]               = fWSAPI_->GetNetworkInterface (id);
-                      m->rwResponse ().rwHeaders ().cacheControl = mkCacheControlForAPI_ (ttl);
-                      WriteResponse (&m->rwResponse (), kNetworkInterfaces_, NetworkInterface::kMapper.FromObject (networkInterface));
+                      m.rwResponse ().rwHeaders ().cacheControl = mkCacheControlForAPI_ (ttl);
+                      WriteResponse (m.rwResponse (), kNetworkInterfaces_, NetworkInterface::kMapper.FromObject (networkInterface));
                   }},
 
               Route{
                  "api/v1/networks(/?)"_RegEx,
-                  [this] (Message* m) {
+                  [this] (Message& m) {
                       ActiveCallCounter_                          acc{*this};
-                      Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (&m->rwRequest ());
+                      Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m.rwRequest ());
                       optional<Set<GUID>>                         ids  = nullopt;
                       if (auto o = args.Lookup ("ids"sv)) {
                           ids = kSequenceOfGUIDMapper_.ToObject<Set<GUID>> (DataExchange::Variant::JSON::Reader{}.Read (o->As<String> ()));
                       }
                       if (args.LookupValue ("recurse"sv, false).As<bool> ()) {
-                          WriteResponse (&m->rwResponse (), kNetworks_, Network::kMapper.FromObject (fWSAPI_->GetNetworks_Recurse (ids)));
+                          WriteResponse (m.rwResponse (), kNetworks_, Network::kMapper.FromObject (fWSAPI_->GetNetworks_Recurse (ids)));
                       }
                       else {
-                          WriteResponse (&m->rwResponse (), kNetworks_, kBasicsMapper_.FromObject (fWSAPI_->GetNetworks (ids)));
+                          WriteResponse (m.rwResponse (), kNetworks_, kBasicsMapper_.FromObject (fWSAPI_->GetNetworks (ids)));
                       }
                   }},
               Route{
                   "api/v1/networks/(.+)"_RegEx,
-                  [this] (Message* m, const String& id) {
+                  [this] (Message& m, const String& id) {
                       ActiveCallCounter_ acc{*this};
                       auto [network, ttl]                        = fWSAPI_->GetNetwork (id);
-                      m->rwResponse ().rwHeaders ().cacheControl = mkCacheControlForAPI_ (ttl);
-                      WriteResponse (&m->rwResponse (), kNetworks_, Network::kMapper.FromObject (network));
+                      m.rwResponse ().rwHeaders ().cacheControl = mkCacheControlForAPI_ (ttl);
+                      WriteResponse (m.rwResponse (), kNetworks_, Network::kMapper.FromObject (network));
                   }},
               Route{
                   IO::Network::HTTP::MethodsRegEx::kPatch,
                  "api/v1/networks/(.+)"_RegEx,
-                  [this] (Message* m, const String& id) {
+                  [this] (Message& m, const String& id) {
                       ActiveCallCounter_ acc{*this};
-                      fWSAPI_->PatchNetwork (id, DataExchange::JSON::Patch::OperationItemsType::kMapper.ToObject<DataExchange::JSON::Patch::OperationItemsType> (DataExchange::Variant::JSON::Reader{}.Read (m->rwRequest ().GetBody ())));
-                      m->rwResponse ().status = IO::Network::HTTP::StatusCodes::kNoContent;
+                      using DataExchange::JSON::Patch::OperationItemsType;
+                      fWSAPI_->PatchNetwork (id, OperationItemsType::kMapper.ToObject<OperationItemsType> (DataExchange::Variant::JSON::Reader{}.Read (m.rwRequest ().GetBody ())));
+                      m.rwResponse ().status = IO::Network::HTTP::StatusCodes::kNoContent;
                   }},
 
               Route{
                   "api/v1/operations/ping"_RegEx,
-                  [this] (Message* m) {
+                  [this] (Message& m) {
                       ActiveCallCounter_                          acc{*this};
-                      Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (&m->rwRequest ());
+                      Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m.rwRequest ());
                       if (auto address = args.Lookup ("target"sv)) {
-                          ExpectedMethod (m->request, kOperations_);
-                          WriteResponse (&m->rwResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_Ping (address->As<String> ())));
+                          ExpectedMethod (m.request, kOperations_);
+                          WriteResponse (m.rwResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_Ping (address->As<String> ())));
                       }
                       else {
                           Throw (ClientErrorException{"missing target argument"sv});
@@ -358,16 +360,16 @@ public:
                   }},
               Route{
                   "api/v1/operations/traceroute"_RegEx,
-                  [this] (Message* m) {
+                  [this] (Message& m) {
                       ActiveCallCounter_                          acc{*this};
-                      Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (&m->rwRequest ());
+                      Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m.rwRequest ());
                       optional<bool>                              reverseDNSResult;
                       if (auto rdr = args.Lookup ("reverse-dns-result"sv)) {
                           reverseDNSResult = rdr->As<bool> ();
                       }
                       if (auto address = args.Lookup ("target"sv)) {
-                          ExpectedMethod (m->request, kOperations_);
-                          WriteResponse (&m->rwResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_TraceRoute (address->As<String> (), reverseDNSResult)));
+                          ExpectedMethod (m.request, kOperations_);
+                          WriteResponse (m.rwResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_TraceRoute (address->As<String> (), reverseDNSResult)));
                       }
                       else {
                           static const auto kException_ = ClientErrorException{"missing target argument"sv};
@@ -376,23 +378,23 @@ public:
                   }},
               Route{
                   "api/v1/operations/dns/calculate-negative-lookup-time"_RegEx,
-                  [this] (Message* m) {
+                  [this] (Message& m) {
                       ActiveCallCounter_ acc{*this};
-                      ExpectedMethod (m->request, kOperations_);
+                      ExpectedMethod (m.request, kOperations_);
                       optional<unsigned int>                      samples;
-                      Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (&m->rwRequest ());
+                      Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m.rwRequest ());
                       if (auto rdr = args.Lookup ("samples"sv)) {
                           samples = rdr->As<unsigned int> ();
                       }
-                      WriteResponse (&m->rwResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_DNS_CalculateNegativeLookupTime (samples)));
+                      WriteResponse (m.rwResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_DNS_CalculateNegativeLookupTime (samples)));
                   }},
               Route{
                   "api/v1/operations/dns/lookup"_RegEx,
-                  [this] (Message* m) {
+                  [this] (Message& m) {
                       ActiveCallCounter_ acc{*this};
-                      ExpectedMethod (m->request, kOperations_);
+                      ExpectedMethod (m.request, kOperations_);
                       String                                      name;
-                      Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (&m->rwRequest ());
+                      Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m.rwRequest ());
                       if (auto rdr = args.Lookup ("name"sv)) {
                           name = rdr->As<String> ();
                       }
@@ -400,23 +402,23 @@ public:
                           static const auto kException_ = ClientErrorException{"missing name argument"sv};
                           Throw (kException_);
                       }
-                      WriteResponse (&m->rwResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_DNS_Lookup (name)));
+                      WriteResponse (m.rwResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_DNS_Lookup (name)));
                   }},
               Route{
                  "api/v1/operations/dns/calculate-score"_RegEx,
-                  [this] (Message* m) {
+                  [this] (Message& m) {
                       ActiveCallCounter_ acc{*this};
-                      ExpectedMethod (m->request, kOperations_);
-                      WriteResponse (&m->rwResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_DNS_CalculateScore ()));
+                      ExpectedMethod (m.request, kOperations_);
+                      WriteResponse (m.rwResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_DNS_CalculateScore ()));
                   }},
               Route{
                   "api/v1/operations/scan/FullRescan"_RegEx,
-                  [this] (Message* m) {
+                  [this] (Message& m) {
                       ActiveCallCounter_                          acc{*this};
-                      Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (&m->rwRequest ());
-                      ExpectedMethod (m->request, kOperations_);
+                      Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m.rwRequest ());
+                      ExpectedMethod (m.request, kOperations_);
                       if (auto rdr = args.Lookup ("deviceID"sv)) {
-                          WriteResponse (&m->rwResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_Scan_FullRescan (rdr->As<String> ())));
+                          WriteResponse (m.rwResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_Scan_FullRescan (rdr->As<String> ())));
                       }
                       else {
                           static const auto kException_ = ClientErrorException{"missing deviceID argument"sv};
@@ -425,12 +427,12 @@ public:
                   }},
               Route{
                   "api/v1/operations/scan/Scan"_RegEx,
-                  [this] (Message* m) {
+                  [this] (Message& m) {
                       ActiveCallCounter_                          acc{*this};
-                      Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (&m->rwRequest ());
-                      ExpectedMethod (m->request, kOperations_);
+                      Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m.rwRequest ());
+                      ExpectedMethod (m.request, kOperations_);
                       if (auto rdr = args.Lookup ("addr"sv)) {
-                          WriteResponse (&m->rwResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_Scan_Scan (rdr->As<String> ())));
+                          WriteResponse (m.rwResponse (), kOperations_, Operations::kMapper.FromObject (fWSAPI_->Operation_Scan_Scan (rdr->As<String> ())));
                       }
                       else {
                           static const auto kException_ = ClientErrorException{"missing addr argument"sv};
@@ -462,17 +464,17 @@ public:
     {
         using Stroika::Frameworks::WebServer::DefaultFaultInterceptor;
         DefaultFaultInterceptor defaultHandler;
-        fConnectionMgr_.defaultErrorHandler = DefaultFaultInterceptor{[defaultHandler] (Message* m, const exception_ptr& e) {
+        fConnectionMgr_.defaultErrorHandler = DefaultFaultInterceptor{[defaultHandler] (Message& m, const exception_ptr& e) {
             // Unsure if we should bother recording 404s
-            DbgTrace ("faulting on request {}"_f, Characters::ToString (m->request ()));
-            if (m->request ().url ().GetPath ().StartsWith ("/api"sv, CompareOptions::eCaseInsensitive)) {
+            DbgTrace ("faulting on request {}"_f, Characters::ToString (m.request ()));
+            if (m.request ().url ().GetPath ().StartsWith ("/api"sv, CompareOptions::eCaseInsensitive)) {
                 OperationalStatisticsMgr::ProcessAPICmd::NoteError ();
             }
             defaultHandler.HandleFault (m, e);
         }};
         Logger::sThe.Log (Logger::eInfo, "Started WebServices on {}"_f, fConnectionMgr_.bindings ());
     }
-    static void DefaultPage_ ([[maybe_unused]] Request* request, Response* response)
+    static void DefaultPage_ ([[maybe_unused]] Request& request, Response& response)
     {
         WriteDocsPage (response,
                        Sequence<WebServiceMethodDescription>{
