@@ -1,3 +1,6 @@
+RENAME to WTFNetSlow (shorter, and simone happier)
+
+
 Fix .prettierrc - so formatting reasonable/uniform.
 
 
