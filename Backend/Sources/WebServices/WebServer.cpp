@@ -47,11 +47,11 @@ using namespace Stroika::Foundation;
 using namespace Stroika::Foundation::Characters;
 using namespace Stroika::Foundation::Common;
 using namespace Stroika::Foundation::Containers;
+using namespace Stroika::Foundation::DataExchange;
 using namespace Stroika::Foundation::Execution;
 using namespace Stroika::Foundation::Memory;
 using namespace Stroika::Foundation::IO::Network;
 
-using DataExchange::ObjectVariantMapper;
 using IO::Network::HTTP::ClientErrorException;
 using Stroika::Foundation::Common::GUID;
 using Stroika::Foundation::Time::Duration;
@@ -171,6 +171,8 @@ namespace {
 class WebServer::Rep_ {
 public:
     static const WebServiceMethodDescription kAbout_;
+    static const WebServiceMethodDescription kConnections_;
+    static const WebServiceMethodDescription kHeathCheck_;
     static const WebServiceMethodDescription kBlob_;
     static const WebServiceMethodDescription kDevices_;
     static const WebServiceMethodDescription kNetworks_;
@@ -202,18 +204,11 @@ private:
         }
         Rep_& fRep_;
     };
-    IntervalTimer::Adder fIntervalTimerAdder_;
+    IntervalTimer::Adder fStatsIntervalTimerAdder_;
 
 public:
     Rep_ ()
-        : fWSAPI_{make_shared<WSImpl> ([this] () -> About::APIServerInfo::WebServer {
-                About::APIServerInfo::WebServer r;
-                auto rr = this->fConnectionMgr_.statistics();
-                r.fThreadPool.fThreads             = kMaxThreads_; // todo begingings of data to report
-                r.fThreadPool.fTasksStillQueued = rr.fThreadPoolStatistics.fNumberOfTasksAdded - rr.fThreadPoolStatistics.fNumberOfTasksCompleted;
-                r.fThreadPool.fAverageTaskRunTime = rr.fThreadPoolStatistics.GetMeanTimeConsumed ();
-                return r;
-            })}
+        : fWSAPI_{make_shared<WSImpl>(   [this](const WSImpl::WithWebServerCallbackType& f) { f (fConnectionMgr_);}  )}
         , fWSRoutes_{
               /*
                *  To test this example:
@@ -227,9 +222,32 @@ public:
 
               Route{
                   "api/v1/about"_RegEx,
-                  ObjectRequestHandler::Factory{{About::kMapper}, [this] () { ActiveCallCounter_ acc{*this}; return fWSAPI_->GetAbout (); }}},
+                  ObjectRequestHandler::Factory{{About::kMapper}, [this] () { ActiveCallCounter_ acc{*this}; return fWSAPI_->GetAbout (); }}}
 
-              Route{
+
+
+            /**
+             * /healthcheck - health check etc
+             */
+            , Route{"api/v1/healthcheck/?"_RegEx, ObjectRequestHandler::Factory{{HealthStatus::kMapper}, [this] () {
+                                                    ActiveCallCounter_ acc{*this};
+                                                    return fWSAPI_->healthcheck_GET ();
+                                            }}}
+
+            /**
+             * /connections - just for debugging - maybe useful - probably wouldn't leave i a real product
+             */
+            , Route{"api/v1/connections/?"_RegEx, [this] (Message& m) {
+                        ActiveCallCounter_ acc{*this};
+                        m.rwResponse ().contentType = InternetMediaTypes::kText_PLAIN;
+                        m.rwResponse ().writeln ("["sv);
+                        for (auto i : this->fConnectionMgr_.connections ()) {
+                            m.rwResponse ().writeln ("  {}"_f(i));
+                        }
+                        m.rwResponse ().writeln ("]"sv);
+                    }}
+
+              , Route{
                   "api/v1/blob/(.+)"_RegEx,
                   [this] (Message& m, const String& id) {
                       ActiveCallCounter_                                             acc{*this};
@@ -454,12 +472,11 @@ public:
                 , .fDefaultResponseHeaders = kDefaultResponseHeadersStaticSite_
              ,.fCollectStatistics = true
             }}
-        , fIntervalTimerAdder_{[this] () {
+        , fStatsIntervalTimerAdder_{[this] () {
                                    Debug::TraceContextBumper ctx{"webserver status gather TIMER HANDLER"}; // to debug https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/78
                                    OperationalStatisticsMgr::sThe.RecordActiveRunningTasksCount (fActiveCallCnt_);
-                                   OperationalStatisticsMgr::sThe.RecordOpenConnectionCount (fConnectionMgr_.connections ().length ());
-                                   OperationalStatisticsMgr::sThe.RecordActiveRunningTasksCount (fConnectionMgr_.activeConnections ().length ());
-                               },
+  OperationalStatisticsMgr::sThe.RecordOpenConnectionCount (fConnectionMgr_.statistics ().fConnections.fNumberOfOpenConnections);
+                                   OperationalStatisticsMgr::sThe.RecordActiveRunningTasksCount (fConnectionMgr_.statistics ().fConnections.fNumberOfActiveConnections);                               },
                                15s, IntervalTimer::Adder::eRunImmediately}
     {
         using Stroika::Frameworks::WebServer::DefaultFaultInterceptor;
@@ -479,6 +496,8 @@ public:
         WriteDocsPage (response,
                        Sequence<WebServiceMethodDescription>{
                            kAbout_,
+                           kConnections_,
+                           kHeathCheck_,
                            kBlob_,
                            kDevices_,
                            kNetworkInterfaces_,
@@ -498,6 +517,26 @@ const WebServiceMethodDescription WebServer::Rep_::kAbout_{
         "curl http://localhost/api/v1/about"sv,
     },
     Sequence<String>{"Fetch the component versions, etc."sv},
+};
+const WebServiceMethodDescription WebServer::Rep_::kConnections_{
+    "api/v1/connections"sv,
+    Set<String>{HTTP::Methods::kGet},
+    DataExchange::InternetMediaTypes::kText_PLAIN,
+    "debugging dump of connections internals"sv,
+    Sequence<String>{
+        "curl {{ShowAsExternalURI}}/api/v1/connections"sv,
+    },
+    Sequence<String>{"Fetch the webservers connections list."sv},
+};
+const WebServiceMethodDescription WebServer::Rep_::kHeathCheck_{
+    "api/v1/healthcheck"sv,
+    Set<String>{HTTP::Methods::kGet},
+    DataExchange::InternetMediaTypes::kJSON,
+    "Data about the Sample HTMLUI server health"sv,
+    Sequence<String>{
+        "curl {{ShowAsExternalURI}}/api/v1/healthcheck"sv,
+    },
+    Sequence<String>{"Fetch the app health status."sv},
 };
 const WebServiceMethodDescription WebServer::Rep_::kBlob_{
     "api/v1/blob"sv,

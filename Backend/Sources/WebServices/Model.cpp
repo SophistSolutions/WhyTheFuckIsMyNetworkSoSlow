@@ -78,6 +78,34 @@ namespace {
 
 /*
  ********************************************************************************
+ ******************************** Model::HealthStatus ***************************
+ ********************************************************************************
+ */
+String HealthStatus::ToString () const
+{
+    StringBuilder sb;
+    sb << "{"sv;
+    sb << "ok: "sv << fOK;
+    if (fWarnings) {
+        sb << ", warnings: "sv << fWarnings;
+    }
+    sb << "}"sv;
+    return sb;
+}
+
+const ObjectVariantMapper HealthStatus::kMapper = [] () {
+    ObjectVariantMapper mapper;
+    mapper.AddCommonType<Sequence<String>> ();
+    mapper.AddCommonType<optional<Sequence<String>>> ();
+    mapper.AddClass<HealthStatus> ({
+        {"ok"sv, &HealthStatus::fOK},
+        {"warnings"sv, &HealthStatus::fWarnings},
+    });
+    return mapper;
+}();
+
+/*
+ ********************************************************************************
  ************************** Model::OperatingSystem ******************************
  ********************************************************************************
  */
@@ -85,8 +113,8 @@ String OperatingSystem::ToString () const
 {
     StringBuilder sb;
     sb << "{"sv;
-    sb << "majorOSCategory: "sv << fMajorOSCategory << ", "sv;
-    sb << "fullVersionedOSName: "sv << fFullVersionedOSName;
+    sb << "majorOSCategory: "sv << fMajorOSCategory;
+    sb << ", fullVersionedOSName: "sv << fFullVersionedOSName;
     sb << "}"sv;
     return sb;
 }
@@ -1064,9 +1092,9 @@ String About::APIServerInfo::ComponentInfo::ToString () const
 {
     StringBuilder sb;
     sb << "{"sv;
-    sb << "Name: "sv << fName << ", "sv;
-    sb << "Version: "sv << fVersion << ", "sv;
-    sb << "URL: "sv << fURL << ", "sv;
+    sb << "name: "sv << fName;
+    sb << ", version: "sv << fVersion;
+    sb << ", URL: "sv << fURL;
     sb << "}"sv;
     return sb;
 }
@@ -1075,10 +1103,10 @@ String About::APIServerInfo::CurrentMachine::ToString () const
 {
     StringBuilder sb;
     sb << "{";
-    sb << "Operating-System: " << fOperatingSystem << ", "sv;
-    sb << "Machine-Uptime: " << fMachineUptime << ", "sv;
-    sb << "Total-CPU-Usage: " << fTotalCPUUsage << ", "sv;
-    sb << "Run-Q-Length: " << fRunQLength << ", "sv;
+    sb << "Operating-System: " << fOperatingSystem;
+    sb << ", machine-Uptime: " << fMachineUptime;
+    sb << ", total-CPU-Usage: " << fTotalCPUUsage;
+    sb << ", run-Q-Length: " << fRunQLength;
     sb << "}"sv;
     return sb;
 }
@@ -1087,11 +1115,11 @@ String About::APIServerInfo::CurrentProcess::ToString () const
 {
     StringBuilder sb;
     sb << "{"sv;
-    sb << "ProcessUptime: "sv << fProcessUptime << ", "sv;
-    sb << "AverageCPUTimeUsed: "sv << fAverageCPUTimeUsed << ", "sv;
-    sb << "WorkingOrResidentSetSize: "sv << fWorkingOrResidentSetSize << ", "sv;
-    sb << "CombinedIOReadRate: "sv << fCombinedIOReadRate << ", "sv;
-    sb << "CombinedIOWriteRate: "sv << fCombinedIOWriteRate;
+    sb << "processUptime: "sv << fProcessUptime;
+    sb << ", averageCPUTimeUsed: "sv << fAverageCPUTimeUsed;
+    sb << ", workingOrResidentSetSize: "sv << fWorkingOrResidentSetSize;
+    sb << ", combinedIOReadRate: "sv << fCombinedIOReadRate;
+    sb << ", combinedIOWriteRate: "sv << fCombinedIOWriteRate;
     sb << "}"sv;
     return sb;
 }
@@ -1100,14 +1128,12 @@ String About::APIServerInfo::APIEndpoint::ToString () const
 {
     StringBuilder sb;
     sb << "{"sv;
-    sb << "CallsCompleted: "sv << fCallsCompleted << ", "sv;
-    sb << "Errors: "sv << fErrors << ", "sv;
-    sb << "MedianDuration: "sv << fMedianDuration << ", "sv;
-    sb << "MeanDuration: "sv << fMeanDuration << ", "sv;
-    sb << "MaxDuration: "sv << fMaxDuration << ", "sv;
-    sb << "MedianWebServerConnections: "sv << fMedianWebServerConnections << ", "sv;
-    sb << "MedianProcessingWebServerConnections: "sv << fMedianProcessingWebServerConnections << ", "sv;
-    sb << "MedianRunningAPITasks: "sv << fMedianRunningAPITasks;
+    sb << "callsCompleted: "sv << fCallsCompleted;
+    sb << ", errors: "sv << fErrors;
+    sb << ", callTimes: "sv << fCallTimes;
+    sb << ", medianWebServerConnections: "sv << fMedianWebServerConnections;
+    sb << ", medianProcessingWebServerConnections: "sv << fMedianProcessingWebServerConnections;
+    sb << ", medianRunningAPITasks: "sv << fMedianRunningAPITasks;
     sb << "}"sv;
     return sb;
 }
@@ -1116,10 +1142,10 @@ String About::APIServerInfo::WebServer::ToString () const
 {
     StringBuilder sb;
     sb << "{"sv;
-    sb << "ThreadPool: {"sv;
-    sb << "Threads: "sv << fThreadPool.fThreads << ", "sv;
-    sb << "TasksStillQueued: "sv << fThreadPool.fTasksStillQueued << ", "sv;
-    sb << "AverageTaskRunTime: "sv << fThreadPool.fAverageTaskRunTime;
+    sb << "threadPool: {"sv;
+    sb << ", threads: " << fThreadPool.fThreads;
+    sb << ", tasksStillQueued: " << fThreadPool.fTasksStillQueued;
+    sb << ", averageTaskRunTime: " << fThreadPool.fAverageTaskRunTime;
     sb << "}"sv;
     return sb;
 }
@@ -1128,15 +1154,15 @@ String About::APIServerInfo::Database::ToString () const
 {
     StringBuilder sb;
     sb << "{"sv;
-    sb << "Reads: "sv << fReads << ", "sv;
-    sb << "Writes: "sv << fWrites << ", "sv;
-    sb << "Errors: "sv << fErrors << ", "sv;
-    sb << "MeanReadDuration: "sv << fMeanReadDuration << ", "sv;
-    sb << "MeanReadDuration: "sv << fMedianReadDuration << ", "sv;
-    sb << "MeanWriteDuration: "sv << fMeanWriteDuration << ", "sv;
-    sb << "MeanWriteDuration: "sv << fMedianWriteDuration << ", "sv;
-    sb << "MaxDuration: "sv << fMaxDuration << ", "sv;
-    sb << "FileSize: "sv << fFileSize;
+    sb << "reads: "sv << fReads;
+    sb << ", writes: "sv << fWrites;
+    sb << ", errors: "sv << fErrors;
+    sb << ", meanReadDuration: "sv << fMeanReadDuration;
+    sb << ", medianReadDuration: "sv << fMedianReadDuration;
+    sb << ", meanWriteDuration: "sv << fMeanWriteDuration;
+    sb << ", medianWriteDuration: "sv << fMedianWriteDuration;
+    sb << ", maxDuration: "sv << fMaxDuration;
+    sb << ", fileSize: "sv << fFileSize;
     sb << "}"sv;
     return sb;
 }
@@ -1145,13 +1171,13 @@ String About::APIServerInfo::ToString () const
 {
     StringBuilder sb;
     sb << "{"sv;
-    sb << "Version: "sv << fVersion << ", "sv;
-    sb << "Component-Versions: "sv << fComponentVersions << ", "sv;
-    sb << "Current-Machine: "sv << fCurrentMachine << ", "sv;
-    sb << "Current-Process: "sv << fCurrentProcess << ", "sv;
-    sb << "API-Endpoint: "sv << fAPIEndpoint << ", "sv;
-    sb << "WebServer: "sv << fWebServer << ", "sv;
-    sb << "Database: "sv << fDatabase;
+    sb << "version: "sv << fVersion;
+    sb << ", component-versions: "sv << fComponentVersions;
+    sb << ", current-machine: "sv << fCurrentMachine;
+    sb << ", current-process: "sv << fCurrentProcess;
+    sb << ", API-Endpoint: "sv << fAPIEndpoint;
+    sb << ", webServer: "sv << fWebServer;
+    sb << ", database: "sv << fDatabase;
     sb << "}"sv;
     return sb;
 }
@@ -1160,14 +1186,22 @@ String About::ToString () const
 {
     StringBuilder sb;
     sb << "{"sv;
-    sb << "Overall-Application-Version: "sv << fOverallApplicationVersion << ", "sv;
-    sb << "API-Server-Info: "sv << fAPIServerInfo;
+    sb << "Overall-Application-Version: "sv << fOverallApplicationVersion;
+    sb << ", API-Server-Info: "sv << fAPIServerInfo;
+    if (fHealthStatus) {
+        sb << ", healthStatus: "sv << fHealthStatus;
+    }
     sb << "}"sv;
     return sb;
 }
 
 const ObjectVariantMapper About::kMapper = [] () {
     ObjectVariantMapper mapper;
+
+    mapper += HealthStatus::kMapper;
+    mapper.AddCommonType<optional<HealthStatus>> ();
+
+    mapper.AddCommonType<Math::CommonStatistics<Duration>> ();
 
     mapper += OperatingSystem::kMapper;
 
@@ -1205,9 +1239,7 @@ const ObjectVariantMapper About::kMapper = [] () {
     mapper.AddClass<About::APIServerInfo::APIEndpoint> ({
         {"callsCompleted"sv, &About::APIServerInfo::APIEndpoint::fCallsCompleted},
         {"errors"sv, &About::APIServerInfo::APIEndpoint::fErrors},
-        {"medianDuration"sv, &About::APIServerInfo::APIEndpoint::fMedianDuration},
-        {"meanDuration"sv, &About::APIServerInfo::APIEndpoint::fMeanDuration},
-        {"maxDuration"sv, &About::APIServerInfo::APIEndpoint::fMaxDuration},
+        {"callTimes"sv, &About::APIServerInfo::APIEndpoint::fCallTimes},
         {"medianWebServerConnections"sv, &About::APIServerInfo::APIEndpoint::fMedianWebServerConnections},
         {"medianProcessingWebServerConnections"sv, &About::APIServerInfo::APIEndpoint::fMedianProcessingWebServerConnections},
         {"medianRunningAPITasks"sv, &About::APIServerInfo::APIEndpoint::fMedianRunningAPITasks},
@@ -1220,8 +1252,20 @@ const ObjectVariantMapper About::kMapper = [] () {
         {"averageTaskRunTime"sv, &About::APIServerInfo::WebServer::ThreadPool ::fAverageTaskRunTime},
     });
 
+    mapper.AddCommonType<Math::CommonStatistics<Duration>> ();
+
+    mapper.AddClass<About::APIServerInfo::WebServer::ConnectionStatistics> ({
+        {"open"sv, &About::APIServerInfo::WebServer::ConnectionStatistics::fNumberOfOpenConnections},
+        {"active"sv, &About::APIServerInfo::WebServer::ConnectionStatistics::fNumberOfActiveConnections},
+        {"openConnectionsLifetime"sv, &About::APIServerInfo::WebServer::ConnectionStatistics::fDurationOfOpenConnections},
+        {"openConnectionsRequests"sv, &About::APIServerInfo::WebServer::ConnectionStatistics::fDurationOfOpenConnectionsRequests},
+        {"activeConnectionsRequests"sv, &About::APIServerInfo::WebServer::ConnectionStatistics::fDurationOfActiveConnectionsRequests},
+        {"piningForTheFjords"sv, &About::APIServerInfo::WebServer::ConnectionStatistics::fConnectionsPiningForTheFjords},
+    });
+
     mapper.AddClass<About::APIServerInfo::WebServer> ({
         {"threadPool"sv, &About::APIServerInfo::WebServer::fThreadPool},
+        {"connections"sv, &About::APIServerInfo::WebServer::fConnections},
     });
     mapper.AddCommonType<optional<About::APIServerInfo::WebServer>> ();
 
@@ -1251,6 +1295,7 @@ const ObjectVariantMapper About::kMapper = [] () {
     mapper.AddClass<About> ({
         {"applicationVersion"sv, &About::fOverallApplicationVersion},
         {"serverInfo"sv, &About::fAPIServerInfo},
+        {"healthstatus"sv, &About::fHealthStatus},
     });
 
     return mapper;

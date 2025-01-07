@@ -23,6 +23,7 @@
 #include "Stroika/Foundation/Containers/Set.h"
 #include "Stroika/Foundation/Database/SQL/SQLite.h"
 #include "Stroika/Foundation/Debug/TimingTrace.h"
+#include "Stroika/Foundation/Execution/IntervalTimer.h"
 #include "Stroika/Foundation/Execution/Process.h"
 #include "Stroika/Foundation/Execution/Synchronized.h"
 #include "Stroika/Foundation/IO/Network/DNS.h"
@@ -39,9 +40,6 @@
 #include "Stroika/Frameworks/SystemPerformance/Instruments/Memory.h"
 #include "Stroika/Frameworks/SystemPerformance/Instruments/Process.h"
 #include "Stroika/Frameworks/SystemPerformance/Measurement.h"
-
-//tmphack
-#include "Stroika/Foundation/Execution/IntervalTimer.h"
 
 #include "Stroika-Current-Version.h"
 
@@ -97,13 +95,13 @@ namespace {
  ********************************************************************************
  */
 struct WSImpl::Rep_ {
-    MyCapturer_                                  fMyCapturer;
-    function<About::APIServerInfo::WebServer ()> fWebServerStatsFetcher;
+    MyCapturer_                                       fMyCapturer;
+    function<void (const WithWebServerCallbackType&)> fAccessWebServer;
 };
-WSImpl::WSImpl (function<About::APIServerInfo::WebServer ()> webServerStatsFetcher)
+WSImpl::WSImpl (function<void (const WithWebServerCallbackType&)> passWS2Callback)
     : fRep_{make_shared<Rep_> ()}
 {
-    fRep_->fWebServerStatsFetcher = webServerStatsFetcher;
+    fRep_->fAccessWebServer = passWS2Callback;
 }
 
 About WSImpl::GetAbout () const
@@ -172,18 +170,33 @@ About WSImpl::GetAbout () const
     Common::OperationalStatisticsMgr::Statistics stats    = Common::OperationalStatisticsMgr::sThe.GetStatistics ();
     APIEndpoint                                  apiStats = [&] () {
         APIEndpoint r;
-        r.fCallsCompleted                       = stats.fRecentAPI.fCallsCompleted;
-        r.fMeanDuration                         = stats.fRecentAPI.fMeanDuration;
-        r.fMedianDuration                       = stats.fRecentAPI.fMedianDuration;
-        r.fMaxDuration                          = stats.fRecentAPI.fMaxDuration;
+        r.fCallsCompleted = stats.fRecentAPI.fCallsCompleted;
+        r.fCallTimes      = CommonStatistics<Duration>{
+                                                  .fMax = stats.fRecentAPI.fMaxDuration, .fMean = stats.fRecentAPI.fMeanDuration, .fMedian = stats.fRecentAPI.fMedianDuration};
         r.fErrors                               = stats.fRecentAPI.fErrors;
         r.fMedianWebServerConnections           = stats.fRecentAPI.fMedianWebServerConnections;
         r.fMedianProcessingWebServerConnections = stats.fRecentAPI.fMedianProcessingWebServerConnections;
         r.fMedianRunningAPITasks                = stats.fRecentAPI.fMedianRunningAPITasks;
         return r;
     }();
-    APIServerInfo::WebServer webServerStats = [&] () { return fRep_->fWebServerStatsFetcher (); }();
-    Database                 dbStats        = [&] () {
+    APIServerInfo::WebServer webServerStats = [&] () {
+        About::APIServerInfo::WebServer r;
+        fRep_->fAccessWebServer ([&] (const Stroika::Frameworks::WebServer::ConnectionManager& cm) {
+            Stroika::Frameworks::WebServer::ConnectionManager::Statistics rr = cm.statistics ();
+            r.fThreadPool.fThreads = static_cast<unsigned int> (rr.fThreadPool.fThreadEntryCount); // todo beginning of data to report
+            r.fThreadPool.fTasksStillQueued                   = rr.fThreadPool.fNumberOfTasksAdded - rr.fThreadPool.fNumberOfTasksCompleted;
+            r.fThreadPool.fAverageTaskRunTime                 = rr.fThreadPool.GetMeanTimeConsumed ();
+            r.fConnections.fNumberOfOpenConnections           = rr.fConnections.fNumberOfOpenConnections;
+            r.fConnections.fNumberOfActiveConnections         = rr.fConnections.fNumberOfActiveConnections;
+            r.fConnections.fDurationOfOpenConnections         = rr.fConnections.fDurationOfOpenConnections;
+            r.fConnections.fDurationOfOpenConnectionsRequests = rr.fConnections.fDurationOfOpenConnectionsRequests;
+            r.fConnections.fDurationOfActiveConnectionsRequests = rr.fConnections.fDurationOfActiveConnectionsRequests;
+            r.fConnections.fConnectionsPiningForTheFjords       = rr.fConnections.fConnectionsPiningForTheFjords;
+            return r;
+        });
+        return r;
+    }();
+    Database dbStats = [&] () {
         Database r;
         r.fReads               = stats.fRecentDB.fReads;
         r.fWrites              = stats.fRecentDB.fWrites;
@@ -196,9 +209,36 @@ About WSImpl::GetAbout () const
         r.fFileSize            = WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB::pFileSize ();
         return r;
     }();
+    auto healthcheck = healthcheck_GET ();
 
     return About{AppVersion::kVersion,
-                 APIServerInfo{AppVersion::kVersion, kAPIServerComponents_, machineInfo, processInfo, apiStats, webServerStats, dbStats}};
+                 APIServerInfo{AppVersion::kVersion, kAPIServerComponents_, machineInfo, processInfo, apiStats, webServerStats, dbStats}, healthcheck};
+}
+
+HealthStatus WSImpl::healthcheck_GET () const
+{
+    HealthStatus result;
+    fRep_->fAccessWebServer ([&] (const Stroika::Frameworks::WebServer::ConnectionManager& cm) {
+        Stroika::Frameworks::WebServer::ConnectionManager::Statistics rr = cm.statistics ();
+        if (rr.fConnections.fConnectionsPiningForTheFjords != 0) {
+            // add warnings; grab connections and add warnings for bad ones...
+            Sequence<String> warnings;
+            warnings += "connectionsPiningForTheFjords: {}"_f(rr.fConnections.fConnectionsPiningForTheFjords);
+            auto connections = cm.connections ();
+            auto now         = Time::GetTickCount ();
+            for (auto c : connections) {
+                if (c.fActive == true and c.fMostRecentMessage) {
+                    Duration d = c.fMostRecentMessage->ReplaceEnd (min (c.fMostRecentMessage->GetUpperBound (), now)).GetDistanceSpanned ();
+                    if (d >= cm.options ().fConnectionPiningForTheFjordsDelay) {
+                        warnings += "connection: {}"_f(c);
+                    }
+                }
+            }
+            result.fWarnings = warnings;
+        }
+        result.fOK = true; // @todo add period interval check for webserver stats - and report to LOGGER when bad as well
+    });
+    return result;
 }
 
 tuple<Memory::BLOB, optional<DataExchange::InternetMediaType>> WSImpl::GetBLOB (const GUID& guid) const

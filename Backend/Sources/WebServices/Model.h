@@ -42,11 +42,26 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
     using IO::Network::CIDR;
     using IO::Network::InternetAddress;
     using IO::Network::URI;
+    using Math::CommonStatistics;
     using Stroika::Foundation::Common::GUID;
     using Stroika::Foundation::Common::Version;
     using Time::DateTime;
     using Time::Duration;
     using Traversal::Range;
+
+    /**
+     * @brief  
+     * 
+     */
+    struct HealthStatus {
+        bool fOK{false};
+
+        optional<Sequence<String>> fWarnings;
+
+        nonvirtual String ToString () const;
+
+        static const DataExchange::ObjectVariantMapper kMapper;
+    };
 
     /**
      */
@@ -788,16 +803,17 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
             /**
              * WSAPI related stats - for now - averaged over the last 5 minutes.
+             * 
+             *      Note - some of these stats are a bit redundant, given the WebServer
+             *      ConnectionStatistics; could lose them, but maybe useful anyhow.
              */
             struct APIEndpoint {
-                unsigned int       fCallsCompleted{};
-                optional<Duration> fMeanDuration;
-                optional<Duration> fMedianDuration;
-                optional<Duration> fMaxDuration;
-                unsigned int       fErrors{};
-                optional<float>    fMedianWebServerConnections;
-                optional<float>    fMedianProcessingWebServerConnections;
-                optional<float>    fMedianRunningAPITasks;
+                unsigned int               fCallsCompleted{};
+                CommonStatistics<Duration> fCallTimes;
+                unsigned int               fErrors{};
+                optional<float>            fMedianWebServerConnections;
+                optional<float>            fMedianProcessingWebServerConnections;
+                optional<float>            fMedianRunningAPITasks;
 
                 nonvirtual String ToString () const;
             };
@@ -815,12 +831,24 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
                 };
                 ThreadPool fThreadPool;
 
+                struct ConnectionStatistics {
+                    size_t                     fNumberOfOpenConnections{};
+                    size_t                     fNumberOfActiveConnections{};
+                    CommonStatistics<Duration> fDurationOfOpenConnections;
+                    CommonStatistics<Duration> fDurationOfOpenConnectionsRequests;
+                    CommonStatistics<Duration> fDurationOfActiveConnectionsRequests;
+                    size_t                     fConnectionsPiningForTheFjords{};
+                };
+                ConnectionStatistics fConnections;
+
                 nonvirtual String ToString () const;
             };
             optional<WebServer> fWebServer;
 
             /**
              * Database related stats - for now - averaged over the last 5 minutes.
+             * 
+             *  @todo consider using CommonStatistics<Duration> for stats
              */
             struct Database {
                 unsigned int        fReads{};
@@ -839,7 +867,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
             nonvirtual String ToString () const;
         };
-        APIServerInfo fAPIServerInfo;
+        APIServerInfo          fAPIServerInfo;
+        optional<HealthStatus> fHealthStatus;
 
         nonvirtual String ToString () const;
 

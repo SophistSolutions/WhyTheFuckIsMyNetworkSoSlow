@@ -8,6 +8,7 @@
 
 #include "Stroika/Foundation/Containers/Collection.h"
 #include "Stroika/Foundation/Containers/Sequence.h"
+#include "Stroika/Frameworks/WebServer/ConnectionManager.h"
 
 #include "IWSAPI.h"
 
@@ -24,12 +25,25 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
      *  Implementation of WebService calls.
      */
     class WSImpl final : public IWSAPI {
+        /**
+         * Function that can be called safely on a webserver connection-manager
+         */
+        using WithWebServerCallbackType = function<void (const Stroika::Frameworks::WebServer::ConnectionManager&)>;
+
     public:
-        WSImpl (function<About::APIServerInfo::WebServer ()> webServerStatsFetcher);
+        /**
+         *  WSImpl may need access to webserver connection manager (const API access) occasionally, so provide in
+         *  controlled way that can work with locking if needed; note effectively same as passing in ConnectionManager&,
+         *  except that the caller might want to control when the ConnectionManager& is referenced (e.g. locking).
+         */
+        WSImpl (function<void (const WithWebServerCallbackType&)> passWS2Callback);
+
+    public:
         virtual ~WSImpl () override = default;
 
     public:
         virtual About                                                          GetAbout () const override;
+        virtual HealthStatus                                                   healthcheck_GET () const override;
         virtual tuple<Memory::BLOB, optional<DataExchange::InternetMediaType>> GetBLOB (const GUID& guid) const override;
         virtual Sequence<String> GetDevices (const optional<Set<GUID>>& ids, const optional<DeviceSortParameters>& sort) const override;
         virtual Sequence<Device> GetDevices_Recurse (const optional<Set<GUID>>& ids, const optional<DeviceSortParameters>& sort) const override;

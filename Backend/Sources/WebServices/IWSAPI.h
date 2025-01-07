@@ -44,6 +44,11 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
 
     public:
         /**
+         */
+        virtual HealthStatus healthcheck_GET () const = 0;
+
+    public:
+        /**
          *  curl  http://localhost/api/v1/blob/{guid}
          */
         virtual tuple<Memory::BLOB, optional<DataExchange::InternetMediaType>> GetBLOB (const GUID& guid) const = 0;
