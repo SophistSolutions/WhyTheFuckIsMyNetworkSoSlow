@@ -61,6 +61,7 @@ using namespace Stroika::Frameworks::WebService;
 using namespace Stroika::Frameworks::WebService::Server;
 using namespace Stroika::Frameworks::WebService::Server::VariantValue;
 
+using Stroika::Foundation::DataExchange::VariantValue;
 using Stroika::Frameworks::WebServer::Request;
 using Stroika::Frameworks::WebServer::Response;
 
@@ -92,7 +93,7 @@ namespace {
     const WebServiceMethodDescription kGUIConfig_{
         "config"sv,
         Set<String>{IO::Network::HTTP::Methods::kGet},
-        DataExchange::InternetMediaTypes::kJSON,
+        InternetMediaTypes::kJSON,
         "GUI config"sv,
         Sequence<String>{},
         Sequence<String>{"GUI config."sv},
@@ -251,7 +252,7 @@ public:
                   "api/v1/blob/(.+)"_RegEx,
                   [this] (Message& m, const String& id) {
                       ActiveCallCounter_                                             acc{*this};
-                      tuple<Memory::BLOB, optional<DataExchange::InternetMediaType>> b = fWSAPI_->GetBLOB (id);
+                      tuple<Memory::BLOB, optional<InternetMediaType>> b = fWSAPI_->GetBLOB (id);
                       if (get<1> (b)) {
                           m.rwResponse ().contentType = *get<1> (b);
                       }
@@ -267,7 +268,7 @@ public:
                       if (auto o = args.Lookup ("sort"sv)) {
                           ClientErrorException::TreatExceptionsAsClientError ([&] () {
                               sort = DeviceSortParameters::kMapper.ToObject<DeviceSortParameters> (
-                                  DataExchange::Variant::JSON::Reader{}.Read (o->As<String> ()));
+                                  Variant::JSON::Reader{}.Read (o->As<String> ()));
                           });
                       }
                       if (auto o = args.Lookup ("sortBy"sv)) {
@@ -275,13 +276,13 @@ public:
                               sort = sort.value_or (DeviceSortParameters{});
                               sort->fSearchTerms +=
                                   DeviceSortParameters::SearchTerm{DefaultNames<DeviceSortParameters::SearchTerm::By>{}.GetValue (
-                                      o->As<String> ().c_str (), ClientErrorException{
+                                      o->As<String> ().As<wstring> ().c_str (), ClientErrorException{
                                                                                                                                               "Invalid argument to query string sortBy"sv})};
                           });
                       }
                       optional<Set<GUID>> ids = nullopt;
                       if (auto o = args.Lookup ("ids"sv)) {
-                          ids = kSequenceOfGUIDMapper_.ToObject<Set<GUID>> (DataExchange::Variant::JSON::Reader{}.Read (o->As<String> ()));
+                          ids = kSequenceOfGUIDMapper_.ToObject<Set<GUID>> (Variant::JSON::Reader{}.Read (o->As<String> ()));
                       }
                       if (args.LookupValue ("recurse"sv, false).As<bool> ()) {
                           WriteResponse (m.rwResponse (), kDevices_, Device::kMapper.FromObject (fWSAPI_->GetDevices_Recurse (ids, sort)));
@@ -303,8 +304,8 @@ public:
                 "api/v1/devices/(.+)"_RegEx,
                   [this] (Message& m, const String& id) {
                       ActiveCallCounter_ acc{*this};
-                      using DataExchange::JSON::Patch::OperationItemsType;
-                      fWSAPI_->PatchDevice (id, OperationItemsType::kMapper.ToObject<OperationItemsType> (DataExchange::Variant::JSON::Reader{}.Read (m.rwRequest ().GetBody ())));
+                      using JSON::Patch::OperationItemsType;
+                      fWSAPI_->PatchDevice (id, OperationItemsType::kMapper.ToObject<OperationItemsType> (Variant::JSON::Reader{}.Read (m.rwRequest ().GetBody ())));
                       m.rwResponse ().status = IO::Network::HTTP::StatusCodes::kNoContent;
                   }},
 
@@ -336,7 +337,7 @@ public:
                       Mapping<String, DataExchange::VariantValue> args = PickoutParamValues (m.rwRequest ());
                       optional<Set<GUID>>                         ids  = nullopt;
                       if (auto o = args.Lookup ("ids"sv)) {
-                          ids = kSequenceOfGUIDMapper_.ToObject<Set<GUID>> (DataExchange::Variant::JSON::Reader{}.Read (o->As<String> ()));
+                          ids = kSequenceOfGUIDMapper_.ToObject<Set<GUID>> (Variant::JSON::Reader{}.Read (o->As<String> ()));
                       }
                       if (args.LookupValue ("recurse"sv, false).As<bool> ()) {
                           WriteResponse (m.rwResponse (), kNetworks_, Network::kMapper.FromObject (fWSAPI_->GetNetworks_Recurse (ids)));
@@ -358,8 +359,8 @@ public:
                  "api/v1/networks/(.+)"_RegEx,
                   [this] (Message& m, const String& id) {
                       ActiveCallCounter_ acc{*this};
-                      using DataExchange::JSON::Patch::OperationItemsType;
-                      fWSAPI_->PatchNetwork (id, OperationItemsType::kMapper.ToObject<OperationItemsType> (DataExchange::Variant::JSON::Reader{}.Read (m.rwRequest ().GetBody ())));
+                      using JSON::Patch::OperationItemsType;
+                      fWSAPI_->PatchNetwork (id, OperationItemsType::kMapper.ToObject<OperationItemsType> (Variant::JSON::Reader{}.Read (m.rwRequest ().GetBody ())));
                       m.rwResponse ().status = IO::Network::HTTP::StatusCodes::kNoContent;
                   }},
 
@@ -511,7 +512,7 @@ public:
 const WebServiceMethodDescription WebServer::Rep_::kAbout_{
     "api/v1/about"sv,
     Set<String>{IO::Network::HTTP::Methods::kGet},
-    DataExchange::InternetMediaTypes::kJSON,
+    InternetMediaTypes::kJSON,
     "Data about the WTF application, version etc"sv,
     Sequence<String>{
         "curl http://localhost/api/v1/about"sv,
@@ -521,7 +522,7 @@ const WebServiceMethodDescription WebServer::Rep_::kAbout_{
 const WebServiceMethodDescription WebServer::Rep_::kConnections_{
     "api/v1/connections"sv,
     Set<String>{HTTP::Methods::kGet},
-    DataExchange::InternetMediaTypes::kText_PLAIN,
+    InternetMediaTypes::kText_PLAIN,
     "debugging dump of connections internals"sv,
     Sequence<String>{
         "curl {{ShowAsExternalURI}}/api/v1/connections"sv,
@@ -531,7 +532,7 @@ const WebServiceMethodDescription WebServer::Rep_::kConnections_{
 const WebServiceMethodDescription WebServer::Rep_::kHeathCheck_{
     "api/v1/healthcheck"sv,
     Set<String>{HTTP::Methods::kGet},
-    DataExchange::InternetMediaTypes::kJSON,
+    InternetMediaTypes::kJSON,
     "Data about the Sample HTMLUI server health"sv,
     Sequence<String>{
         "curl {{ShowAsExternalURI}}/api/v1/healthcheck"sv,
@@ -551,7 +552,7 @@ const WebServiceMethodDescription WebServer::Rep_::kBlob_{
 const WebServiceMethodDescription WebServer::Rep_::kDevices_{
     "api/v1/devices"sv,
     Set<String>{IO::Network::HTTP::Methods::kGet, IO::Network::HTTP::Methods::kPatch},
-    DataExchange::InternetMediaTypes::kJSON,
+    InternetMediaTypes::kJSON,
     {},
     Sequence<String>{
         "curl http://localhost/api/v1/devices"sv, "curl http://localhost/api/v1/devices?recurse=true"sv,
@@ -572,7 +573,7 @@ const WebServiceMethodDescription WebServer::Rep_::kDevices_{
 const WebServiceMethodDescription WebServer::Rep_::kNetworks_{
     "api/v1/networks"sv,
     Set<String>{IO::Network::HTTP::Methods::kGet},
-    DataExchange::InternetMediaTypes::kJSON,
+    InternetMediaTypes::kJSON,
     {},
     Sequence<String>{
         "curl http://localhost/api/v1/networks"sv, "curl http://localhost/api/v1/networks?recurse=true"sv,
@@ -597,7 +598,7 @@ const WebServiceMethodDescription WebServer::Rep_::kNetworks_{
 const WebServiceMethodDescription WebServer::Rep_::kNetworkInterfaces_{
     "api/v1/network-interfaces"sv,
     Set<String>{IO::Network::HTTP::Methods::kGet},
-    DataExchange::InternetMediaTypes::kJSON,
+    InternetMediaTypes::kJSON,
     {},
     Sequence<String>{"curl http://localhost/api/v1/network-interfaces", "curl http://localhost/api/v1/network-interfaces?recurse=true"sv},
     Sequence<String>{"Fetch the list of known Network Interfaces."sv, "[recurse=true|false]?"sv},
@@ -605,7 +606,7 @@ const WebServiceMethodDescription WebServer::Rep_::kNetworkInterfaces_{
 const WebServiceMethodDescription WebServer::Rep_::kOperations_{
     "api/v1/operations"sv,
     Set<String>{IO::Network::HTTP::Methods::kGet},
-    DataExchange::InternetMediaTypes::kJSON,
+    InternetMediaTypes::kJSON,
     {},
     Sequence<String>{
         "curl http://localhost/api/v1/operations/ping?target=www.google.com"sv,
