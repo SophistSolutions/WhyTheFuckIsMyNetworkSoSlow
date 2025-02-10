@@ -1,23 +1,15 @@
 <script setup lang="ts">
-import {
-  watch,
-  onMounted,
-  onUnmounted,
-  computed,
-  ComputedRef,
-  ref,
-  Ref,
-} from 'vue';
-import { useRoute } from 'vue-router';
+import { watch, onMounted, onUnmounted, computed, ComputedRef, ref, Ref } from "vue";
+import { useRoute } from "vue-router";
 
-import { IDevice } from '../models/device/IDevice';
-import { useQuasar } from 'quasar';
-import { FormatSeenMap, FormatIDateTimeRange } from '../models/network/Utils';
+import { IDevice } from "../models/device/IDevice";
+import { useQuasar } from "quasar";
+import { FormatSeenMap, FormatIDateTimeRange } from "../models/network/Utils";
 
 // Components
-import DeviceDetails from '../components/DeviceDetails.vue';
+import DeviceDetails from "../components/DeviceDetails.vue";
 
-import { useNetStateStore } from '../stores/Net-State-store';
+import { useNetStateStore } from "../stores/Net-State-store";
 
 const $q = useQuasar();
 const store = useNetStateStore();
@@ -28,7 +20,7 @@ const props = defineProps({
 
 let polling: undefined | NodeJS.Timeout;
 
-const emit = defineEmits(['update:breadcrumbs', 'update:contextMenu']);
+const emit = defineEmits(["update:breadcrumbs", "update:contextMenu"]);
 
 const kRefreshFrequencyInSeconds_: number = 15;
 
@@ -60,7 +52,7 @@ let device: ComputedRef<IDevice | null> = computed(() => {
 });
 let deviceSeen: ComputedRef<object | undefined> = computed(() => {
   if (device.value?.seen) {
-    return device.value?.seen['Ever'];
+    return device.value?.seen["Ever"];
   }
   return undefined;
 });
@@ -82,12 +74,12 @@ watch(
     // console.log(`entering wtch device=${device}, device.aggregatedBy=${device?.aggregatedBy}`)
     if (device) {
       if (device.aggregatedBy) {
-        emit('update:breadcrumbs', [
-          { text: 'Home', href: '/#/' },
-          { text: 'Devices', href: '/#/devices' },
+        emit("update:breadcrumbs", [
+          { text: "Home", href: "/#/" },
+          { text: "Devices", href: "/#/devices" },
           {
             text: device.names[0].name,
-            href: '/#/device/' + device.aggregatedBy,
+            href: "/#/device/" + device.aggregatedBy,
           },
           {
             text: FormatIDateTimeRange(deviceSeen.value, true),
@@ -95,20 +87,20 @@ watch(
           },
         ]);
       } else {
-        emit('update:breadcrumbs', [
-          { text: 'Home', href: '/#/' },
-          { text: 'Devices', href: '/#/devices' },
+        emit("update:breadcrumbs", [
+          { text: "Home", href: "/#/" },
+          { text: "Devices", href: "/#/devices" },
           { text: device.names[0].name, disabled: true },
         ]);
-        emit('update:contextMenu', [
-          { name: 'Edit Device Name', enabled: true, onClick: doEditName },
+        emit("update:contextMenu", [
+          { name: "Edit Device Name", enabled: true, onClick: doEditName },
           {
-            name: 'Edit Device Notes',
+            name: "Edit Device Notes",
             enabled: true,
             onClick: doEditNotes,
             dividerAfter: true,
           },
-          { name: 'Re-Scan this device', enabled: true, onClick: doReScan },
+          { name: "Re-Scan this device", enabled: true, onClick: doReScan },
         ]);
       }
     }
@@ -142,7 +134,7 @@ var showSeenDetails = ref(false);
     <q-card class="pageCard col-11">
       <q-card-section class="text-subtitle2" style="padding-bottom: 0">
         Device Details for
-        {{ device == null ? 'loading...' : '"' + device.name + '"' }}
+        {{ device == null ? "loading..." : '"' + device.name + '"' }}
         <span class="snapshot" v-if="device?.aggregatedBy">{snapshot}</span>
       </q-card-section>
       <q-card-section>

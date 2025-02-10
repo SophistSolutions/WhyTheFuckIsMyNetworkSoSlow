@@ -56,7 +56,7 @@
       "label": "make rebuild (CURRENT-SETTINGS)",
       "type": "shell",
       "options": {"env": {"CHERE_INVOKING" : "1",  }},
-      "command": "make CONFIGURATION=${command:cpptools.activeConfigName} clean && make CONFIGURATION=${command:cpptools.activeConfigName} all ${input:CURRENT-JOBSFLAG}",
+      "command": "make CONFIGURATION=${command:cpptools.activeConfigName} clean all ${input:CURRENT-JOBSFLAG}",
       "problemMatcher": ["$msCompile"],
       "group": {
         "kind": "build",

@@ -9,7 +9,7 @@
 #include "Stroika/Foundation/Execution/Logger.h"
 #include "Stroika/Foundation/Execution/Module.h"
 #include "Stroika/Foundation/IO/FileSystem/FileInputStream.h"
-#include "Stroika/Foundation/Streams/TextReader.h"
+#include "Stroika/Foundation/Streams/BinaryToText.h"
 
 #include "GeoLocAndISPLookup.h"
 
@@ -20,6 +20,7 @@ using namespace std;
 using namespace Stroika::Foundation;
 using namespace Stroika::Foundation::Characters;
 using namespace Stroika::Foundation::Containers;
+using namespace Stroika::Foundation::Execution;
 using namespace Stroika::Foundation::Streams;
 
 using namespace WhyTheFuckIsMyNetworkSoSlow;
@@ -43,7 +44,7 @@ optional<String> BackendApp::Common::LookupEthernetMACAddressOUIFromPrefix (cons
         Mapping<String, String> tmp;
         try {
             for (String line :
-                 TextReader::New (IO::FileSystem::FileInputStream::New (Execution::GetEXEDir () / "data/OSI-MAC-PREFIXES.txt"sv)).ReadLines ()) {
+                 BinaryToText::Reader::New (IO::FileSystem::FileInputStream::New (GetEXEDir () / "data/OSI-MAC-PREFIXES.txt"sv)).ReadLines ()) {
                 String macaddrprefix = line.SafeSubString (0, 6).ToLowerCase ();
                 if (macaddrprefix.length () == 6) {
                     tmp.Add (macaddrprefix, line.SafeSubString (7).RTrim ());
@@ -51,11 +52,10 @@ optional<String> BackendApp::Common::LookupEthernetMACAddressOUIFromPrefix (cons
             }
         }
         catch (...) {
-            using Execution::Logger;
             Logger::sThe.Log (Logger::eError, "Error encountered reading OSI-MAC-PREFIXES: {}"_f, current_exception ());
         }
         return tmp;
     }();
-    String token2Lookup = hardware.ReplaceAll (L"[\\-:]"_RegEx, L"").SafeSubString (0, 6).ToLowerCase ();
+    String token2Lookup = hardware.ReplaceAll (L"[\\-:]"_RegEx, "").SafeSubString (0, 6).ToLowerCase ();
     return sMap_.Lookup (token2Lookup);
 }

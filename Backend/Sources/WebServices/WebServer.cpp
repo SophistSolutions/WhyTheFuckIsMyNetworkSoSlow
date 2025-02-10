@@ -21,7 +21,7 @@
 #include "Stroika/Foundation/IO/Network/HTTP/Exception.h"
 #include "Stroika/Foundation/IO/Network/HTTP/Headers.h"
 #include "Stroika/Foundation/IO/Network/HTTP/Methods.h"
-#include "Stroika/Foundation/Streams/TextReader.h"
+#include "Stroika/Foundation/Streams/BinaryToText.h"
 #include "Stroika/Foundation/Time/Duration.h"
 
 #include "Stroika/Frameworks/WebServer/ConnectionManager.h"
@@ -159,12 +159,11 @@ namespace {
 namespace {
     const ConstantProperty<FileSystemRequestHandler::Options> kStaticSiteHandlerOptions_{[] () {
         Sequence<pair<RegularExpression, CacheControl>> kFSCacheControlSettings_{
-            pair<RegularExpression, CacheControl>{RegularExpression{".*[0-9a-fA-F]+\\.(js|css|js\\.map)"sv, CompareOptions::eCaseInsensitive},
-                                                  CacheControl::kImmutable},
+            pair<RegularExpression, CacheControl>{RegularExpression{".*[0-9a-fA-F]+\\.(js|css|js\\.map)"sv, eCaseInsensitive}, CacheControl::kImmutable},
             pair<RegularExpression, CacheControl>{RegularExpression::kAny,
                                                   CacheControl{.fCacheability = CacheControl::ePublic, .fMaxAge = Duration{24h}.As<int32_t> ()}},
         };
-        return FileSystemRequestHandler::Options{.fDefaultIndexFileNames = Sequence<String>{"index.html"_k},
+        return FileSystemRequestHandler::Options{.fDefaultIndexFileNames = Sequence<filesystem::path>{"index.html"},
                                                  .fCacheControlSettings  = kFSCacheControlSettings_};
     }};
 }
@@ -241,11 +240,14 @@ public:
             , Route{"api/v1/connections/?"_RegEx, [this] (Message& m) {
                         ActiveCallCounter_ acc{*this};
                         m.rwResponse ().contentType = InternetMediaTypes::kText_PLAIN;
-                        m.rwResponse ().writeln ("["sv);
+                        m.rwResponse ().writeln ("{"sv);
+                        m.rwResponse ().writeln ("  \"tickCount\": {},"_f (Time::GetTickCount()));
+                        m.rwResponse ().writeln ("  \"connections\": ["sv);
                         for (auto i : this->fConnectionMgr_.connections ()) {
-                            m.rwResponse ().writeln ("  {}"_f(i));
+                            m.rwResponse ().writeln ("    {},"_f(i));
                         }
-                        m.rwResponse ().writeln ("]"sv);
+                        m.rwResponse ().writeln ("  ]"sv);
+                        m.rwResponse ().writeln ("}"sv);
                     }}
 
               , Route{
@@ -276,8 +278,7 @@ public:
                               sort = sort.value_or (DeviceSortParameters{});
                               sort->fSearchTerms +=
                                   DeviceSortParameters::SearchTerm{DefaultNames<DeviceSortParameters::SearchTerm::By>{}.GetValue (
-                                      o->As<String> ().As<wstring> ().c_str (), ClientErrorException{
-                                                                                                                                              "Invalid argument to query string sortBy"sv})};
+                                      o->As<String> ().As<wstring> ().c_str (), ClientErrorException{"Invalid argument to query string sortBy"sv})};
                           });
                       }
                       optional<Set<GUID>> ids = nullopt;
@@ -476,8 +477,9 @@ public:
         , fStatsIntervalTimerAdder_{[this] () {
                                    Debug::TraceContextBumper ctx{"webserver status gather TIMER HANDLER"}; // to debug https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/78
                                    OperationalStatisticsMgr::sThe.RecordActiveRunningTasksCount (fActiveCallCnt_);
-  OperationalStatisticsMgr::sThe.RecordOpenConnectionCount (fConnectionMgr_.statistics ().fConnections.fNumberOfOpenConnections);
-                                   OperationalStatisticsMgr::sThe.RecordActiveRunningTasksCount (fConnectionMgr_.statistics ().fConnections.fNumberOfActiveConnections);                               },
+                                   OperationalStatisticsMgr::sThe.RecordOpenConnectionCount (fConnectionMgr_.statistics ().fConnections.fNumberOfOpenConnections);
+                                   OperationalStatisticsMgr::sThe.RecordActiveRunningTasksCount (fConnectionMgr_.statistics ().fConnections.fNumberOfActiveConnections);
+                               },
                                15s, IntervalTimer::Adder::eRunImmediately}
     {
         using Stroika::Frameworks::WebServer::DefaultFaultInterceptor;

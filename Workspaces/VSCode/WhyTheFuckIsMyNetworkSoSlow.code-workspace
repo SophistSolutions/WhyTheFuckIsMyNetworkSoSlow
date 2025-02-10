@@ -40,7 +40,8 @@
 			"memory": "cpp",
 			"sstream": "cpp",
 			"strstream": "cpp",
-			"tuple": "cpp"
+			"tuple": "cpp",
+			"random": "cpp"
 		}
 	}
 }
