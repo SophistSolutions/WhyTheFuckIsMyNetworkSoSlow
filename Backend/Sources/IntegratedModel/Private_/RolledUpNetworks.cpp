@@ -6,7 +6,6 @@
 #include "Stroika/Foundation/Cache/SynchronizedCallerStalenessCache.h"
 #include "Stroika/Foundation/Common/GUID.h"
 #include "Stroika/Foundation/Common/KeyValuePair.h"
-#include "Stroika/Foundation/Common/Property.h"
 #include "Stroika/Foundation/Containers/KeyedCollection.h"
 #include "Stroika/Foundation/Containers/Set.h"
 #include "Stroika/Foundation/DataExchange/ObjectVariantMapper.h"
@@ -40,7 +39,6 @@ using namespace WhyTheFuckIsMyNetworkSoSlow;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices;
 
-using Stroika::Foundation::Common::ConstantProperty;
 using Stroika::Foundation::Common::GUID;
 
 using WebServices::Model::Device;
@@ -194,8 +192,8 @@ auto RolledUpNetworks::MergeIn_ (DBAccess::Mgr* dbAccessMgr, const Network& net2
     return PassFailType_::eFail;
 }
 
-auto RolledUpNetworks::ShouldRollupInto_ (const Network&                  net2MergeIn,
-                                          const Network::FingerprintType& net2MergeInFingerprint) -> tuple<optional<Network>, PassFailType_>
+auto RolledUpNetworks::ShouldRollupInto_ (const Network& net2MergeIn, const Network::FingerprintType& net2MergeInFingerprint)
+    -> tuple<optional<Network>, PassFailType_>
 {
     auto formerRollupID = fMapFingerprint2RollupID.Lookup (net2MergeInFingerprint);
     if (formerRollupID) {

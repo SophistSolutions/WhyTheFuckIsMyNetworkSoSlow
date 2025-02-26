@@ -17,6 +17,7 @@
 #include "Stroika/Foundation/Database/SQL/ORM/Versioning.h"
 #include "Stroika/Foundation/Database/SQL/SQLite.h"
 #include "Stroika/Foundation/Debug/Trace.h"
+#include "Stroika/Foundation/Execution/LazyInitialized.h"
 #include "Stroika/Foundation/Execution/Logger.h"
 #include "Stroika/Foundation/Execution/Sleep.h"
 #include "Stroika/Foundation/Execution/Synchronized.h"
@@ -44,6 +45,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_::DB
     using Stroika::Foundation::Containers::Sequence;
     using Stroika::Foundation::DataExchange::ObjectVariantMapper;
     using Stroika::Foundation::DataExchange::VariantValue;
+    using Stroika::Foundation::Execution::LazyInitialized;
     using Stroika::Foundation::Execution::Synchronized;
     using Stroika::Foundation::Time::Duration;
 
@@ -143,10 +145,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_::DB
          *  Combined mapper for objects we write to the database. Contains all the objects mappers we need merged together,
          *  and any touchups on representation we need (like writing GUID as BLOB rather than string).
          */
-        static const ConstantProperty<ObjectVariantMapper> kDBObjectMapper_;
-        static const Schema_Table                          kDeviceUserSettingsSchema_;
-        static const Schema_Table                          kNetworkUserSettingsSchema_;
-        static const Schema_Table                          kDeviceTableSchema_;
+        static const LazyInitialized<ObjectVariantMapper> kDBObjectMapper_;
+        static const Schema_Table                         kDeviceUserSettingsSchema_;
+        static const Schema_Table                         kNetworkUserSettingsSchema_;
+        static const Schema_Table                         kDeviceTableSchema_;
 
         static const Schema_Table kNetworkInterfaceTableSchema_;
         static const Schema_Table kNetworkTableSchema_;

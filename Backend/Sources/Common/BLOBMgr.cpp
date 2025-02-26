@@ -4,7 +4,6 @@
 #include "Stroika/Frameworks/StroikaPreComp.h"
 
 #include "Stroika/Foundation/Characters/ToString.h"
-#include "Stroika/Foundation/Common/Property.h"
 #include "Stroika/Foundation/Common/StroikaVersion.h"
 #include "Stroika/Foundation/DataExchange/ObjectVariantMapper.h"
 #include "Stroika/Foundation/Execution/Synchronized.h"
@@ -23,7 +22,6 @@ using namespace Stroika::Foundation::Containers;
 using namespace Stroika::Foundation::Execution;
 
 using Memory::BLOB;
-using Stroika::Foundation::Common::ConstantProperty;
 using Stroika::Foundation::Common::GUID;
 using Stroika::Foundation::Database::SQL::ORM::Schema::CatchAllField;
 using Stroika::Foundation::Database::SQL::ORM::Schema::Field;
@@ -92,13 +90,13 @@ namespace {
      *  Combined mapper for objects we write to the database. Contains all the objects mappers we need merged together,
      *  and any touchups on represenation we need (like writing GUID as BLOB rather than string).
      */
-    const ConstantProperty<ObjectVariantMapper> kDBObjectMapper_{[] () {
+    const ObjectVariantMapper kDBObjectMapper_{[] () {
         ObjectVariantMapper mapper;
         mapper += DBRecs_::BLOB_::kMapper;
         mapper += DBRecs_::BLOBURL_::kMapper;
         mapper.AddCommonType<GUID> (kRepresentIDAs_); // store GUIDs as BLOBs - at least for database interactions - cuz more efficient
         return mapper;
-    }};
+    }()};
 
     const Table kBLOBTableSchema_{
         "BLOB"sv, Collection<Field>{

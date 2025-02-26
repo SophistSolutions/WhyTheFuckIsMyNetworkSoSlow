@@ -5,7 +5,6 @@
 
 #include "Stroika/Foundation/Characters/ToString.h"
 #include "Stroika/Foundation/Common/ObjectForSideEffects.h"
-#include "Stroika/Foundation/Common/Property.h"
 #include "Stroika/Foundation/Containers/Set.h"
 #include "Stroika/Foundation/Cryptography/Digest/Algorithm/MD5.h"
 #include "Stroika/Foundation/Cryptography/Format.h"
@@ -139,33 +138,35 @@ namespace {
 }
 
 namespace {
-    const ConstantProperty<Headers> kDefaultResponseHeadersStaticSite_{[] () {
+    const Headers kDefaultResponseHeadersStaticSite_{[] () {
         const String kServerString_ = "Why-The-Fuck-Is-My-Network-So-Slow/"sv + AppVersion::kVersion.AsMajorMinorString ();
         Headers      h;
         h.server = kServerString_;
         //h.cacheControl = HTTP::CacheControl::kMustRevalidatePrivate;
-        h.cacheControl = HTTP::CacheControl{/*.fCacheability=*/HTTP::CacheControl::ePublic};
+        // h.cacheControl = HTTP::CacheControl{.fCacheability=HTTP::CacheControl::ePublic};
         return h;
-    }};
-    CacheControl                    mkCacheControlForAPI_ (Duration ttl)
+    }()};
+    CacheControl  mkCacheControlForAPI_ (Duration ttl)
     {
         //auto cc    = HTTP::CacheControl::kMustRevalidatePrivate;
-        auto cc    = HTTP::CacheControl{/*.fCacheability=*/HTTP::CacheControl::ePrivate};
+        auto cc    = HTTP::CacheControl{.fCacheability = HTTP::CacheControl::ePrivate};
         cc.fMaxAge = static_cast<uint32_t> (ttl.As<int> ());
         return cc;
     }
 }
 
 namespace {
-    const ConstantProperty<FileSystemRequestHandler::Options> kStaticSiteHandlerOptions_{[] () {
+    const FileSystemRequestHandler::Options kStaticSiteHandlerOptions_{[] () {
         Sequence<pair<RegularExpression, CacheControl>> kFSCacheControlSettings_{
-            pair<RegularExpression, CacheControl>{RegularExpression{".*[0-9a-fA-F]+\\.(js|css|js\\.map)"sv, eCaseInsensitive}, CacheControl::kImmutable},
-            pair<RegularExpression, CacheControl>{RegularExpression::kAny,
-                                                  CacheControl{.fCacheability = CacheControl::ePublic, .fMaxAge = Duration{24h}.As<int32_t> ()}},
+            // Empirically, vite/quasar appears to put hash/immutable files into dist/spa/assets/AboutPage-BBsu2LrN.css, AboutPage-D6hvYwgY.js etc...
+            {RegularExpression{".*\\bassets\\/.+"sv, eCaseInsensitive}, CacheControl::kImmutable},
+            {RegularExpression::kAny, CacheControl{.fCacheability = CacheControl::ePublic, .fMaxAge = Duration{5min}.As<int32_t> ()}},
         };
-        return FileSystemRequestHandler::Options{.fDefaultIndexFileNames = Sequence<filesystem::path>{"index.html"},
-                                                 .fCacheControlSettings  = kFSCacheControlSettings_};
-    }};
+        return FileSystemRequestHandler::Options{.fDefaultIndexFileNames = Sequence<filesystem::path>{"index.html"sv},
+                                                 .fCacheControlSettings  = kFSCacheControlSettings_,
+                                                 // fallback needed for createWebHistory router mode
+                                                 .fFallbackFile = "index.html"};
+    }()};
 }
 
 class WebServer::Rep_ {

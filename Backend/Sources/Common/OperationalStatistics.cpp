@@ -4,7 +4,6 @@
 #include "Stroika/Frameworks/StroikaPreComp.h"
 
 #include "Stroika/Foundation/Characters/ToString.h"
-#include "Stroika/Foundation/Common/Property.h"
 #include "Stroika/Foundation/DataExchange/ObjectVariantMapper.h"
 #include "Stroika/Foundation/Execution/Synchronized.h"
 #include "Stroika/Foundation/IO/Network/Transfer/Connection.h"
@@ -23,7 +22,6 @@ using namespace Stroika::Foundation::Containers;
 using namespace Stroika::Foundation::Execution;
 
 using Memory::BLOB;
-using Stroika::Foundation::Common::ConstantProperty;
 using Stroika::Foundation::Common::GUID;
 using Stroika::Foundation::Database::SQL::ORM::Schema::CatchAllField;
 using Stroika::Foundation::Database::SQL::ORM::Schema::Field;
