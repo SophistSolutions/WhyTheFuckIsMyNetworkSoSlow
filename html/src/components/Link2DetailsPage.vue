@@ -10,7 +10,7 @@ const props = defineProps({
     round
     dense
     title="View more details in new page"
-    :href="props.link"
+    :to="props.link"
     target="_blank"
   >
     <img src="images/as-new-page-link.png" width="19" />
