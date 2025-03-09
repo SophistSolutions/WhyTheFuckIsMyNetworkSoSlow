@@ -811,8 +811,6 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
                 unsigned int               fCallsCompleted{};
                 CommonStatistics<Duration> fCallTimes;
                 unsigned int               fErrors{};
-                optional<float>            fMedianWebServerConnections;
-                optional<float>            fMedianProcessingWebServerConnections;
                 optional<float>            fMedianRunningAPITasks;
 
                 nonvirtual String ToString () const;

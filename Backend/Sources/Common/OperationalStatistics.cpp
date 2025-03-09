@@ -121,26 +121,26 @@ auto OperationalStatisticsMgr::GetStatistics () const -> Statistics
         result.fRecentAPI.fErrors =
             static_cast<unsigned int> (allApplicable.Count ([] (const Rec_& r) { return r.fKind == Rec_::Kind::eAPIError; }));
     }
-    {
-        Iterable<float> openWSConnections = allApplicable.Map<Iterable<float>> ([] (const Rec_& r) -> optional<float> {
-            if (r.fKind == Rec_::Kind::eAPIOpenConnectionCount)
-                return static_cast<float> (r.fLength);
-            return nullopt;
-        });
-        if (not openWSConnections.empty ()) {
-            result.fRecentAPI.fMedianWebServerConnections = Math::Median (openWSConnections);
-        }
-    }
-    {
-        Iterable<float> processingWSConnections = allApplicable.Map<Iterable<float>> ([] (const Rec_& r) -> optional<float> {
-            if (r.fKind == Rec_::Kind::eAPIOpenConnectionCount)
-                return static_cast<float> (r.fLength);
-            return nullopt;
-        });
-        if (not processingWSConnections.empty ()) {
-            result.fRecentAPI.fMedianProcessingWebServerConnections = Math::Median (processingWSConnections);
-        }
-    }
+    // {
+    //     Iterable<float> openWSConnections = allApplicable.Map<Iterable<float>> ([] (const Rec_& r) -> optional<float> {
+    //         if (r.fKind == Rec_::Kind::eAPIOpenConnectionCount)
+    //             return static_cast<float> (r.fLength);
+    //         return nullopt;
+    //     });
+    //     if (not openWSConnections.empty ()) {
+    //         result.fRecentAPI.fMedianWebServerConnections = Math::Median (openWSConnections);
+    //     }
+    // }
+    // {
+    //     Iterable<float> processingWSConnections = allApplicable.Map<Iterable<float>> ([] (const Rec_& r) -> optional<float> {
+    //         if (r.fKind == Rec_::Kind::eAPIOpenConnectionCount)
+    //             return static_cast<float> (r.fLength);
+    //         return nullopt;
+    //     });
+    //     if (not processingWSConnections.empty ()) {
+    //         result.fRecentAPI.fMedianProcessingWebServerConnections = Math::Median (processingWSConnections);
+    //     }
+    // }
     {
         Iterable<float> activeRunningWSAPITasks = allApplicable.Map<Iterable<float>> ([] (const Rec_& r) -> optional<float> {
             if (r.fKind == Rec_::Kind::eAPIActiveRunningTasks)
@@ -151,16 +151,16 @@ auto OperationalStatisticsMgr::GetStatistics () const -> Statistics
             result.fRecentAPI.fMedianRunningAPITasks = Math::Median (activeRunningWSAPITasks);
         }
     }
-    {
-        Iterable<float> activeWSConnections = allApplicable.Map<Iterable<float>> ([] (const Rec_& r) -> optional<float> {
-            if (r.fKind == Rec_::Kind::eAPIOpenConnectionCount)
-                return static_cast<float> (r.fLength);
-            return nullopt;
-        });
-        if (not activeWSConnections.empty ()) {
-            result.fRecentAPI.fMedianProcessingWebServerConnections = Math::Median (activeWSConnections);
-        }
-    }
+    // {
+    //     Iterable<float> activeWSConnections = allApplicable.Map<Iterable<float>> ([] (const Rec_& r) -> optional<float> {
+    //         if (r.fKind == Rec_::Kind::eAPIOpenConnectionCount)
+    //             return static_cast<float> (r.fLength);
+    //         return nullopt;
+    //     });
+    //     if (not activeWSConnections.empty ()) {
+    //         result.fRecentAPI.fMedianProcessingWebServerConnections = Math::Median (activeWSConnections);
+    //     }
+    // }
     {
         Iterable<DurationSeconds> dbReadTimes = allApplicable.Map<Iterable<DurationSeconds>> ([] (const Rec_& r) -> optional<DurationSeconds> {
             if (r.fKind == Rec_::Kind::eDBRead)

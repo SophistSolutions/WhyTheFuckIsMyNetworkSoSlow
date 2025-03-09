@@ -22,9 +22,11 @@ export interface IAPIEndpoint {
   callsCompleted: number;
   errors: number;
   callTimes?: ICommonStatistics;
-  medianProcessingWebServerConnections?: number;
   medianRunningAPITasks?: number;
-  medianWebServerConnections?: number;
+}
+export interface IWebServerStats {
+  threadPool: {threads: number, tasksStillQueued: number, averageTaskRunTime?: string;}
+  connections: {open: number; active: number; openConnectionsLifetime: ICommonStatistics, openConnectionsRequests: ICommonStatistics, activeConnectionsRequests: ICommonStatistics, piningForTheFjords: number}
 }
 export interface IDatabase {
   errors?: number;
@@ -46,6 +48,7 @@ export interface ICurrentProcess {
 }
 export interface IServerInfo {
   apiEndpoint?: IAPIEndpoint;
+  webServer?:IWebServerStats;
   componentVersions: IComponent[];
   currentMachine: ICurrentMachine;
   currentProcess: ICurrentProcess;

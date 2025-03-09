@@ -239,17 +239,18 @@ public:
              * /connections - just for debugging - maybe useful - probably wouldn't leave i a real product
              */
             , Route{"api/v1/connections/?"_RegEx, [this] (Message& m) {
-                        ActiveCallCounter_ acc{*this};
-                        m.rwResponse ().contentType = InternetMediaTypes::kText_PLAIN;
-                        m.rwResponse ().writeln ("{"sv);
-                        m.rwResponse ().writeln ("  \"tickCount\": {},"_f (Time::GetTickCount()));
-                        m.rwResponse ().writeln ("  \"connections\": ["sv);
-                        for (auto i : this->fConnectionMgr_.connections ()) {
-                            m.rwResponse ().writeln ("    {},"_f(i));
-                        }
-                        m.rwResponse ().writeln ("  ]"sv);
-                        m.rwResponse ().writeln ("}"sv);
-                    }}
+                ActiveCallCounter_ acc{*this};
+                m.rwResponse ().contentType = InternetMediaTypes::kText_PLAIN;
+                m.rwResponse ().writeln ("{"sv);
+                m.rwResponse ().writeln ("  \"tickCount\": {},"_f (Time::GetTickCount()));
+                m.rwResponse ().writeln ("  \"connections\": ["sv);
+                 // show active first
+                 for (auto i : this->fConnectionMgr_.connections ().OrderBy ([] (const Connection::Stats& l, const Connection::Stats& r) { return l.fActive > r.fActive; })) {
+                    m.rwResponse ().writeln ("    {},"_f(i));
+                }
+                m.rwResponse ().writeln ("  ]"sv);
+                m.rwResponse ().writeln ("}"sv);
+             }}
 
               , Route{
                   "api/v1/blob/(.+)"_RegEx,

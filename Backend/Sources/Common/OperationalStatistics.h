@@ -127,10 +127,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
             optional<Duration> fMeanDuration;
             optional<Duration> fMedianDuration;
             optional<Duration> fMaxDuration;
-            optional<float>    fMedianWebServerConnections;
-            optional<float>    fMedianProcessingWebServerConnections;
-            optional<float>    fMedianRunningAPITasks;
-            unsigned int       fErrors{};
+            // optional<float>    fMedianWebServerConnections;
+            // optional<float>    fMedianProcessingWebServerConnections;
+            optional<float> fMedianRunningAPITasks;
+            unsigned int    fErrors{};
         };
         struct DB {
             unsigned int       fReads{};
