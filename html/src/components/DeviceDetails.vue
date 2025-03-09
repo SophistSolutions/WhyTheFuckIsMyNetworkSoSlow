@@ -3,11 +3,11 @@ import { onMounted, onUnmounted, Ref, ref, computed } from 'vue';
 import moment from 'moment';
 import { DateTime } from 'luxon';
 import JsonViewer from 'vue-json-viewer';
-import { PluralizeNoun } from 'src/utils/Linguistics';
 import { Notify } from 'quasar';
 
-import { IDevice, INetworkAttachmentInfo } from '../models/device/IDevice';
-import { ComputeServiceTypeIconURL } from '../models/device/Utils';
+import { PluralizeNoun } from 'src/utils/Linguistics';
+import { IDevice, INetworkAttachmentInfo } from 'src/models/device/IDevice';
+import { ComputeServiceTypeIconURL } from 'src/models/device/Utils';
 import {
   GetNetworkLink,
   GetNetworkName,
@@ -15,8 +15,8 @@ import {
   SortNetworks,
   FormatIDateTimeRange,
   FormatSeenMap,
-} from '../models/network/Utils';
-import * as proxyAPI from '../proxy/API';
+} from 'src/models/network/Utils';
+import * as proxyAPI from 'src/proxy/API';
 
 // Components
 import ReadOnlyTextWithHover from '../components/ReadOnlyTextWithHover.vue';
