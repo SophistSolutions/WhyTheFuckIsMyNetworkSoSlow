@@ -41,7 +41,9 @@
 			"sstream": "cpp",
 			"strstream": "cpp",
 			"tuple": "cpp",
-			"random": "cpp"
+			"random": "cpp",
+			"applicationversion": "cpp",
+			"stroikaversion": "cpp"
 		}
 	}
 }
