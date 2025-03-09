@@ -198,8 +198,8 @@ int main (int argc, const char* argv[])
             if (errCode == errc::permission_denied) {
                 warningOnly = true;
                 exceptMsg   = exceptMsg +
-                            " Some device discovery features (SSDP Listen) may not function properly. Run as administrator once, or "
-                            "re-run the installer to fix this."sv;
+                            " Some device discovery features (e.g. SSDP Listen) may not function properly. Run as administrator once, or "
+                            "re-run the installer to fix this (setup firewall exceptions)."sv;
             }
         }
         if (warningOnly) {

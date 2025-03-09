@@ -877,6 +877,8 @@ namespace {
             {
                 // SSDP can fail due to lack of permissions to bind to the appropriate sockets, or for example under WSL where we get protocol unsupported.
                 // WARN to syslog, but no need to stop app
+                optional<String> messageAboutFailedStartSSDPListener;
+                optional<String> messageAboutFailedStartSSDPSearcher;
                 if (fListener_ == nullptr) {
                     try {
                         fListener_ = make_unique<SSDP::Client::Listener> (
@@ -886,8 +888,7 @@ namespace {
                         }
                     }
                     catch (...) {
-                        Logger::sThe.Log (Logger::eError, "Problem starting SSDP Listener - so that source of discovery will be (temporarily - will retry) unavailable: {}"_f,
-                                          current_exception ());
+                        messageAboutFailedStartSSDPListener = "Problem starting SSDP Listener: {}"_f(current_exception ());
                     }
                 }
                 if (fSearcher_ == nullptr) {
@@ -902,8 +903,23 @@ namespace {
                     }
                     catch (...) {
                         // only warning because searcher much less important - just helpful at very start of discovery
-                        Logger::sThe.Log (Logger::eWarning, "Problem starting SSDP Searcher - so that source of discovery will be (temporarily - will retry) unavailable: {}"_f,
-                                          current_exception ());
+                        messageAboutFailedStartSSDPSearcher = "Problem starting SSDP Searcher: {}"_f(current_exception ());
+                    }
+                }
+                if (messageAboutFailedStartSSDPListener and messageAboutFailedStartSSDPSearcher) {
+                    // more serious problem if both unavailable
+                    Logger::sThe.Log (Logger::eWarning, "{}"_f, messageAboutFailedStartSSDPListener);
+                    Logger::sThe.Log (Logger::eWarning, "{}"_f, messageAboutFailedStartSSDPSearcher);
+                    Logger::sThe.Log (Logger::eWarning, "{}"_f,
+                                      "With both unavailable, a significant source of discovery will be missed - but connection to these services will be retried automatically"_k);
+                }
+                else {
+                    // truly minor if only one unavailable
+                    if (messageAboutFailedStartSSDPListener) {
+                        Logger::sThe.Log (Logger::eWarning, "{} (minor because SSDP Searcher is working)."_f, messageAboutFailedStartSSDPListener);
+                    }
+                    else if (messageAboutFailedStartSSDPSearcher) {
+                        Logger::sThe.Log (Logger::eWarning, "{} (minor because SSDP Listener is working)."_f, messageAboutFailedStartSSDPSearcher);
                     }
                 }
             }
@@ -1074,7 +1090,7 @@ namespace {
      */
         struct MyNeighborDiscoverer_ {
             MyNeighborDiscoverer_ ()
-                : fMyThread_{Thread::CleanupPtr::eAbortBeforeWaiting, Thread::New (DiscoveryChecker_, Thread::eAutoStart, L"MyNeighborDiscoverer"sv)}
+                : fMyThread_{Thread::CleanupPtr::eAbortBeforeWaiting, Thread::New (DiscoveryChecker_, Thread::eAutoStart, "MyNeighborDiscoverer"sv)}
             {
             }
 
