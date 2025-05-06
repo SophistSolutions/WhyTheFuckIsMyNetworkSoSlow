@@ -211,7 +211,7 @@ GUID Mgr::GenNewDeviceID (const Set<String>& hwAddresses)
 
 GUID Mgr::GenNewNetworkID ([[maybe_unused]] const Model::Network& rollupNetwork, const Model::Network& containedNetwork)
 {
-    Debug::TimingTrace                ttrc{L"GenNewNetworkID", 1ms}; // sb very quick
+    Debug::TimingTrace                ttrc{"GenNewNetworkID", 1ms}; // sb very quick
     GUID                              newRes = GUID::GenerateNew ();
     Model::Network::UserOverridesType tmp;
     tmp.fAggregateFingerprints = Set<GUID>{containedNetwork.GenerateFingerprintFromProperties ()};
@@ -234,7 +234,7 @@ GUID Mgr::GenNewNetworkID ([[maybe_unused]] const Model::Network& rollupNetwork,
 
 bool Mgr::SetDeviceUserSettings (const GUID& id, const std::optional<Device::UserOverridesType>& settings)
 {
-    Debug::TimingTrace ttrc{L"IntegratedModel ... SetDeviceUserSettings", 100ms};
+    Debug::TimingTrace ttrc{"IntegratedModel ... SetDeviceUserSettings", 100ms};
     // first check if legit id, and then store
     // @todo check if good id and throw if not...
     auto lk = fCachedDeviceUserSettings_.rwget ();
@@ -259,7 +259,7 @@ bool Mgr::SetDeviceUserSettings (const GUID& id, const std::optional<Device::Use
 
 bool Mgr::SetNetworkUserSettings (const GUID& id, const std::optional<Network::UserOverridesType>& settings)
 {
-    Debug::TimingTrace ttrc{L"IntegratedModel ... SetNetworkUserSettings", 100ms};
+    Debug::TimingTrace ttrc{"IntegratedModel ... SetNetworkUserSettings", 100ms};
     // first check if legit id, and then store
     // @todo check if good id and throw if not...
     auto lk = fCachedNetworkUserSettings_.rwget ();
@@ -312,6 +312,7 @@ void Mgr::BackgroundDatabaseThread_ ()
     while (true) {
         try {
             // periodically write the latest discovered data to the database
+            Debug::TraceContextBumper ctx1{"inner loop"};
 
             // UPDATE fDBNetworkInterfaces_ INCREMENTALLY to reflect reflect these merges
             FromDiscovery::GetNetworkInterfaces ().Apply ([this] (const Model::NetworkInterface& ni) {
