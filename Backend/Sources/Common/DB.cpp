@@ -83,7 +83,7 @@ SQL::Connection::Ptr WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB::NewCon
     // Logically I THINK (from docs) - should use eMultiThread but experiemnt with eSerialized to see if fixes sporadic failures (mostly on unix)- but maybe just now saw on windows - flying...--LGP 2023-03-92
     // Serialized didn't hlep - still get tons of 'Device or resource busy on database extion lastsql select * from BLOBURL'...., (at least wtih stk 2.1) - so go back to multithread - makes more sense -- LGP 2023-09-13
     constexpr auto kThreadModel_ = Options::ThreadingMode::eMultiThread;
-    //constexpr auto kThreadModel_ = Options::ThreadingMode::eSerialized;
+    //constexpr auto kThreadModel_ = Options::ThreadingMode::eSerialized;   // tried and didn't help
     auto dbPath = pFileName ();
     filesystem::create_directories (dbPath.parent_path ());
     auto options = Options{.fDBPath = dbPath, .fThreadingMode = kThreadModel_};
@@ -107,7 +107,8 @@ SQL::Connection::Ptr WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB::NewCon
      *  COULD possibly redo this using much smaller timeout if I used a SINGLE SHARED connection (in eMultiThreaded mode as above).
      *  Unclear how that would affect checking on underlying statement objects (I think fine but need to review).
      */
-    options.fBusyTimeout = 2.5s;
+    //options.fBusyTimeout = 2.5s;  // Since Stroika v3.0d19 - just use default --LGP 2025-05-05
+    options.fBusyTimeout = 10min; // This appears to cause no problems, and solves all the busy-timeout problems - dont FULLY understand, but good enuf for now --LGP 2025-05-05
     options.fJournalMode = JournalModeType::eWAL2;
 
     auto conn = SQLite::Connection::New (options);
