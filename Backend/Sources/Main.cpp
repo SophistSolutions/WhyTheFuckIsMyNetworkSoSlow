@@ -66,9 +66,8 @@ namespace {
 namespace {
     void ShowUsage_ (const Main& m, const Execution::InvalidCommandLineArgument& e = {})
     {
-        if (not e.fMessage.empty ()) {
-            cerr << "Error: " << e.fMessage << endl;
-            cerr << endl;
+        if (not e.As<String> ().empty ()) {
+            cerr << "Error: " << e.As<String> () << endl<< endl;
         }
         cerr << "Usage: " << m.GetServiceDescription ().fRegistrationName << " [options] where options can be :\n ";
         if (m.GetServiceIntegrationFeatures ().Contains (Main::ServiceIntegrationFeatures::eInstall)) {
