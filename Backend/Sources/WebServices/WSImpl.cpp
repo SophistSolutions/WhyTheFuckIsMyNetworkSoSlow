@@ -41,7 +41,7 @@
 #include "Stroika/Frameworks/SystemPerformance/Instruments/Process.h"
 #include "Stroika/Frameworks/SystemPerformance/Measurement.h"
 
-#include "Stroika/Stroika-Current-Version.h"
+#include "Stroika/Current-Version.h"
 
 #include "../Common/BLOBMgr.h"
 #include "../Common/DB.h"
