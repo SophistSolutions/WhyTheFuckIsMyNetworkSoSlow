@@ -2,12 +2,9 @@
 ###		@todo	dont rebuild if not needed (so add dependencies)
 ###		@todo	use files to track various things so we can skip steps making this build faster - like if we did check
 ###				for preqequisites, or more importantly already built html
+export TOP_ROOT		:=	$(abspath ../)/
+StroikaRoot			:=	$(TOP_ROOT)ThirdPartyComponents/Stroika/StroikaRoot/
 
-
-export TOP_ROOT:=$(abspath ../)/
-StroikaRoot:=$(TOP_ROOT)ThirdPartyComponents/Stroika/StroikaRoot/
-
-include $(StroikaRoot)ScriptsLib/Makefile-Common.mk
 include $(StroikaRoot)ScriptsLib/SharedMakeVariables-Default.mk
 
 PER_CONFIGURATION_BUILDS_DIR:=$(shell realpath --canonicalize-missing ../Builds/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow/html)/

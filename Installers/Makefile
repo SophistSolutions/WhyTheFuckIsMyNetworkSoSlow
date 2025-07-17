@@ -1,23 +1,17 @@
-export TOP_ROOT=$(abspath ../)/
-StroikaRoot=$(TOP_ROOT)ThirdPartyComponents/Stroika/StroikaRoot/
-
-ifneq ($(CONFIGURATION),)
-	include $(StroikaRoot)IntermediateFiles/$(CONFIGURATION)/Configuration.mk
-endif
-
-include $(StroikaRoot)ScriptsLib/Makefile-Common.mk
+export TOP_ROOT:=$(abspath ../)/
+StroikaRoot :=	$(TOP_ROOT)ThirdPartyComponents/Stroika/StroikaRoot/
 
 BASIC_NAME_LC=whythefuckismynetworksoslow
 BASIC_NAME=WhyTheFuckIsMyNetworkSoSlow
 OUTDIR_NAME=WhyTheFuckIsMyNetworkSoSlow
 BASIC_BACKEND_NAME=$(BASIC_NAME)-Backend
 
+ObjDir		:=	$(StroikaRoot)IntermediateFiles/$(CONFIGURATION)/$(OUTDIR_NAME)/
 
-ObjDir				=	$(StroikaRoot)IntermediateFiles/$(CONFIGURATION)/$(OUTDIR_NAME)/
 
-include $(StroikaRoot)ScriptsLib/SharedBuildRules-Default.mk
 include $(StroikaRoot)ScriptsLib/SharedMakeVariables-Default.mk
 
+include $(StroikaRoot)ScriptsLib/SharedBuildRules-Default.mk
 
 TARGET_OUT_DIR=			$(StroikaRoot)Builds/$(CONFIGURATION)/$(OUTDIR_NAME)/
 
@@ -28,14 +22,13 @@ BUILT_HTML_DIR					=	$(TARGET_OUT_DIR)html/
 VERSION_FILE_IN=$(TOP_ROOT)VERSION
 
 
-
 MAJOR_DOT_MINOR_VERSION=$(shell $(StroikaRoot)/ScriptsLib/ExtractVersionInformation $(VERSION_FILE_IN) Major.Minor)
 INSTALLER_RELEASE_TAG=$(shell $(StroikaRoot)/ScriptsLib/ExtractVersionInformation $(VERSION_FILE_IN) DecoratedStageInfo)
 FULLVERSION=$(shell $(StroikaRoot)/ScriptsLib/ExtractVersionInformation $(VERSION_FILE_IN) FullVersionString)
 #INSTALLER_PLATFORM_TAG?=$(shell uname -m)
 INSTALLER_PLATFORM_TAG?=$(ARCH)
 INSTALLER_OS_TAG?=$(shell uname -s)
-ifeq (CYGWIN,$(findstring CYGWIN,$(INSTALLER_OS_TAG)))
+ifeq (Windows,$(TargetPlatforms))
 INSTALLER_OS_TAG=Windows
 endif
 

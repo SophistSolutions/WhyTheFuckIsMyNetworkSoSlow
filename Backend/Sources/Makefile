@@ -1,17 +1,11 @@
-export TOP_ROOT:=$(abspath ../../)/
-StroikaRoot:=$(TOP_ROOT)ThirdPartyComponents/Stroika/StroikaRoot/
+export TOP_ROOT	:=	$(abspath ../../)/
+StroikaRoot		:=	$(TOP_ROOT)ThirdPartyComponents/Stroika/StroikaRoot/
+SrcDir			:=	$(TOP_ROOT)Backend/Sources/
+ObjDir			:=	$(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow-Backend/
 
-ifneq ($(CONFIGURATION),)
-	-include $(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/Configuration.mk
-endif
-
-SrcDir	:=	$(TOP_ROOT)Backend/Sources/
-ObjDir	:=	$(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow-Backend/
-
-include $(StroikaRoot)ScriptsLib/Makefile-Common.mk
-include $(StroikaRoot)ScriptsLib/SharedBuildRules-Default.mk
 include $(StroikaRoot)ScriptsLib/SharedMakeVariables-Default.mk
 
+include $(StroikaRoot)ScriptsLib/SharedBuildRules-Default.mk
 
 CPPFLAGS += -I"$(call FUNCTION_CONVERT_FILEPATH_TO_COMPILER_NATIVE,$(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow)"
 
@@ -56,9 +50,9 @@ Objs += $(SUBDIR_OBJS)
 $(TARGETEXE):	$(Objs) $(StroikaLibs)
 	@$(StroikaRoot)ScriptsLib/PrintProgressLine $(MAKE_INDENT_LEVEL) "Linking `$(StroikaRoot)ScriptsLib/SubstituteBackVariables $@`" "... "
 	@if [ $(ECHO_BUILD_LINES) -eq 1 ]; then\
-	    $(StroikaRoot)ScriptsLib/PrintProgressLine $$(($(MAKE_INDENT_LEVEL)+1)) '$(call DEFAULT_LINK_LINE,$@)';\
+	    $(StroikaRoot)ScriptsLib/PrintProgressLine $$(($(MAKE_INDENT_LEVEL)+1)) '$(call DEFAULT_LINK_LINE,$@, stroika-frameworks)';\
 	fi
-	@$(call DEFAULT_LINK_LINE,$@)
+	@$(call DEFAULT_LINK_LINE,$@, stroika-frameworks)
 
 
 clean::

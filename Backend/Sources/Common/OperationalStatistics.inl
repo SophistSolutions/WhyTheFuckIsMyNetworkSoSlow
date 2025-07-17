@@ -51,10 +51,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
     {
         lock_guard lk{fMutex_};
         ++fNextHistory_;
-        if (fNextHistory_ == Memory::NEltsOf (fRollingHistory_)) {
+        if (fNextHistory_ == std::size (fRollingHistory_)) {
             fNextHistory_ = 0;
         }
-        Assert (fNextHistory_ < Memory::NEltsOf (fRollingHistory_));
+        Assert (fNextHistory_ < std::size (fRollingHistory_));
         fRollingHistory_[fNextHistory_] = r;
     }
 
