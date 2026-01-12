@@ -192,7 +192,8 @@ jobs:
       # vm has 2 virtual CPUs, but 8GB ram, so jobs=2 (empirical sometimes run out of RAM jobs=3), and QUICK_BUILD avoids some internal testing
       MAKEFLAGS: "--jobs=2 QUICK_BUILD=1"
       WTF_TOP_ROOT: "c:/WhyTheFuckIsMyNetworkSoSlow/"
-      STROIKA_TOP_ROOT: "${WTF_TOP_ROOT}ThirdPartyComponents/Stroika/StroikaRoot/"
+      # STROIKA_TOP_ROOT: "${{ env.WTF_TOP_ROOT }}ThirdPartyComponents/Stroika/StroikaRoot/"
+      STROIKA_TOP_ROOT: "c:/WhyTheFuckIsMyNetworkSoSlow/ThirdPartyComponents/Stroika/StroikaRoot/"
     steps:
       - uses: actions/checkout@v4
         with: 
