@@ -221,6 +221,10 @@ jobs:
           docker ps -a
           docker exec buildContainer systeminfo
           docker exec buildContainer df -h
+      - name: Create build root structure
+        shell: "bash"
+        run: |
+          docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow/ThirdPartyComponents/Stroika/StroikaRoot buildContainer sh -c "make build-root"
       - name: Configure
         shell: "bash"
         run: |
