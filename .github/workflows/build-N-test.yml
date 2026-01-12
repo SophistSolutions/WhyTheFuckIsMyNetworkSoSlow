@@ -3,7 +3,9 @@
 #
 # build-N-test
 #
-
+##
+## TODO - GET MACOS WORKING TOO AND CLEANUPS!!!
+##      - make sure getting good/usable installers built and logfiles archived
 name: build-N-test
 
 on:
