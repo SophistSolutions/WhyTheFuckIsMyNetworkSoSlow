@@ -1,6 +1,6 @@
 [
     {
-        "comment": "ubuntu 24.04"
+        "#": "ubuntu 24.04"
     },
     {
         "build_job": "Linux",
@@ -37,18 +37,18 @@
     },
     {},
     {
-        "comment": "MacOS"
+        "#": "MacOS"
     },
     {},
     {
-        "comment": "Windows"
+        "#": "Windows"
     },
     {
         "build_job": "Windows",
         "displayTargetName": "windows-vs2k22-x86_64-Debug",
         "runs_on": "windows-2025",
         "container_image": "sophistsolutionsinc/whythefuckismynetworksoslow-windows-vs2k22:v1",
-        "config_name": "Release",
+        "config_name": "Debug",
         "extra_config_args": "--arch x86_64 --apply-default-debug-flags",
         "run_on_branch": "v1-Release"
     },
