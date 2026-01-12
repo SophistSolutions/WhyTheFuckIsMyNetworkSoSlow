@@ -244,11 +244,11 @@ jobs:
         run: |
           df -h
           docker exec buildContainer df -h
-          - name: Stop Build Container
-          shell: "bash"
-          if: always()
-          run: |
-            docker stop buildContainer
+      - name: Stop Build Container
+        shell: "bash"
+        if: always()
+        run: |
+          docker stop buildContainer
       - name: DEBUG
         shell: "bash"
         if: always()
