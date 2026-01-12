@@ -238,7 +238,7 @@ jobs:
       - name: Build All
         shell: "bash"
         run: |
-          docker exec --workdir ${WTF_TOP_ROOT} --env MAKEFLAGS="$MAKEFLAGS" buildContainer make ECHO_BUILD_LINES=1 all
+          docker exec --workdir ${WTF_TOP_ROOT} --env MAKEFLAGS="$MAKEFLAGS" buildContainer make all
       - name: Build System Info
         shell: "bash"
         run: |
