@@ -224,7 +224,7 @@ jobs:
       - name: Create build root structure
         shell: "bash"
         run: |
-          docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow/ThirdPartyComponents/Stroika/StroikaRoot buildContainer sh -c "make build-root"
+          docker exec --workdir c:/WhyTheFuckIsMyNetworkSoSlow buildContainer sh -c "make build-root"
       - name: Configure
         shell: "bash"
         run: |
