@@ -25,6 +25,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices {
      *  Implementation of WebService calls.
      */
     class WSImpl final : public IWSAPI {
+    public:
         /**
          * Function that can be called safely on a webserver connection-manager
          */
