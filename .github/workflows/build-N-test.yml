@@ -268,10 +268,9 @@ jobs:
           docker stop buildContainer
       - name: DEBUG
         shell: "bash"
-        if: always()
+        if: false
         run: |
           echo "CWD:" ; ls -l 
-          echo hi mom
           echo "Builds/${{ matrix.config_name }}:" ; ls -l Builds/${{ matrix.config_name }}
     #   - name: Copy Build Artifacts
     #     shell: "bash"
@@ -279,7 +278,6 @@ jobs:
     #     run: |
     #       docker cp buildContainer:WhyTheFuckIsMyNetworkSoSlow/Builds/${{ matrix.config_name }}/ $ARTIFACTS_DIR 2> /dev/null
       - name: Archive Build Results
-        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: Build (${{ matrix.displayTargetName }})
@@ -290,7 +288,6 @@ jobs:
             Builds/${{ matrix.config_name }}/WhyTheFuckIsMyNetworkSoSlow/WhyTheFuckIsMyNetworkSoSlow-Backend.exe
             Builds/${{ matrix.config_name }}/WhyTheFuckIsMyNetworkSoSlow/WhyTheFuckIsMyNetworkSoSlow-Backend.pdb
       - name: Archive Installers
-        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: Installer (${{ matrix.displayTargetName }})
@@ -306,9 +303,9 @@ jobs:
           if-no-files-found: warn
           path: |
             IntermediateFiles/${{ matrix.config_name }}/WhyTheFuckIsMyNetworkSoSlow/html/Build.txt
-      - name: Archive Installer Results
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.displayTargetName }} Installers
-          path: |
-            ${{ env.ARTIFACTS_DIR }}/WhyTheFuckIsMyNetworkSoSlow/*.msi
+      # - name: Archive Installer Results
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: ${{ matrix.displayTargetName }} Installers
+      #     path: |
+      #       ${{ env.ARTIFACTS_DIR }}/WhyTheFuckIsMyNetworkSoSlow/*.msi
