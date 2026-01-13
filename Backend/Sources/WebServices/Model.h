@@ -655,8 +655,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
 
             // Automatically merge into this device anything with the given device hardware address
             optional<Set<String>> fAggregateDeviceHardwareAddresses;
-            
-            bool                  operator== (const UserOverridesType&) const = default;
+
+            bool operator== (const UserOverridesType&) const = default;
 
             nonvirtual bool IsNonTrivial () const;
 
