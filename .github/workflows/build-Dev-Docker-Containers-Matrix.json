@@ -1,7 +1,7 @@
 [
     {
-        "comment": "Linux",
-        "comment2": "ubuntu 24.04"
+        "#": "Linux",
+        "#2": "ubuntu 24.04"
     },
     {
         "build_job": "Linux",
@@ -16,7 +16,28 @@
         "container_images": "sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2404"
     },
     {
-        "comment": "Windows"
+        "#": "MacOS"
+    },
+    {
+        "build_job": "MacOS",
+        "displayTargetName": "MacOS-15-XCode-16.4-Debug",
+        "runs_on": "macos-15",
+        "xcode": "16.4",
+        "config_name": "Debug",
+        "extra_config_args": "--apply-default-debug-flags --trace2file enable",
+        "run_on_branch": "v1-Release"
+    },
+    {
+        "build_job": "MacOS",
+        "displayTargetName": "MacOS-15-XCode-16.4",
+        "runs_on": "macos-15",
+        "xcode": "16.4",
+        "config_name": "Release",
+        "extra_config_args": "--apply-default-release-flags --trace2file enable",
+        "run_on_branch": "always"
+    },
+    {
+        "#": "Windows"
     },
     {
         "build_job": "Windows",
