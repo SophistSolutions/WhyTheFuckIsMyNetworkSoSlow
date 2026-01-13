@@ -134,6 +134,8 @@ jobs:
         with:
           xcode-version: ${{ matrix.xcode }}
       - uses: actions/checkout@v4
+        with:
+            submodules: recursive
       - name: Build System Info
         run: |
           echo "CWD: `pwd`"
