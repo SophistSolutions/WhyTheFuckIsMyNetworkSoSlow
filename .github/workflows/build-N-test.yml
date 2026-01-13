@@ -154,7 +154,7 @@ jobs:
           brew install libtool
           brew install automake
           brew install pkg-config
-          make install-realpath
+          make --directory=ThirdPartyComponents/Stroika/StroikaRoot install-realpath
       - name: Create build root structure
         shell: "bash"
         run: |
