@@ -16,18 +16,6 @@
         "container_images": "sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2404"
     },
     {
-        "#": "MacOS"
-    },
-    {
-        "build_job": "MacOS",
-        "displayTargetName": "MacOS-15",
-        "runs_on": "macos-15",
-        "xcode": "16.4",
-        "config_name": "Release",
-        "extra_config_args": "--apply-default-release-flags --trace2file enable",
-        "run_on_branch": "always"
-    },
-    {
         "#": "Windows"
     },
     {

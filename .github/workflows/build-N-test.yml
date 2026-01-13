@@ -104,6 +104,20 @@ jobs:
           path: |
             Builds/${{ matrix.config_name }}/WhyTheFuckIsMyNetworkSoSlow/*.deb
   
+
+  build-n-test-MacOS-DEBUG:
+    needs: MacOSMatrixPrep
+    runs-on: ubuntu-latest
+    steps:
+      - name: DEBUG1
+        shell: "bash"
+        run: |
+          echo ${{ needs.MacOSMatrixPrep.outputs.matrix }}
+      - name: DEBUG2
+        shell: "bash"
+        run: |
+          echo ${{ fromJson(needs.MacOSMatrixPrep.outputs.matrix) }}
+        
   build-n-test-MacOS:
     needs: MacOSMatrixPrep
     runs-on: ${{ matrix.runs_on }}
