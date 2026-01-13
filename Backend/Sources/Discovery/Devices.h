@@ -88,7 +88,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
             return not(*this == rhs);
         }
 #else
-        auto operator<=> (const NetworkAttachmentInfo&) const = default;
+        bool operator== (const NetworkAttachmentInfo&) const = default;
 #endif
 
         nonvirtual String ToString () const;
@@ -136,7 +136,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
                 return not(*this == rhs);
             }
 #else
-            auto operator<=> (const SeenType&) const = default;
+            bool operator== (const SeenType&) const = default;
 #endif
         };
         SeenType                  fSeen;
@@ -218,7 +218,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
             return not(*this == rhs);
         }
 #else
-        auto operator<=> (const Device&) const = default;
+        bool operator== (const Device&) const = default;
 #endif
     };
 

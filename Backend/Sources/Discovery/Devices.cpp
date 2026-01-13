@@ -345,7 +345,7 @@ namespace {
                 return not(*this == rhs);
             }
 #else
-            auto operator<=> (const SSDPInfo&) const = default;
+            bool operator== (const SSDPInfo&) const = default;
 #endif
 
             String ToString () const
@@ -625,7 +625,7 @@ namespace {
             return not(*this == rhs);
         }
 #else
-        auto operator<=> (const DiscoveryInfo_&) const = default;
+        bool operator== (const DiscoveryInfo_&) const = default;
 #endif
 
         String ToString () const
