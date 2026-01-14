@@ -164,10 +164,6 @@ jobs:
           cd ThirdPartyComponents/Stroika/StroikaRoot
           ./configure ${{ matrix.config_name }} ${{ matrix.extra_config_args }}
           cat ConfigurationFiles/${{ matrix.config_name }}.xml
-      - name: Build third-party-components
-        run: |
-          make third-party-components
-          make clean
       - name: Build All
         run: |
           make all
