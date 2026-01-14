@@ -108,7 +108,8 @@ SQL::Connection::Ptr WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB::NewCon
      *  Unclear how that would affect checking on underlying statement objects (I think fine but need to review).
      */
     //options.fBusyTimeout = 2.5s;  // Since Stroika v3.0d19 - just use default --LGP 2025-05-05
-    options.fBusyTimeout = 10min; // This appears to cause no problems, and solves all the busy-timeout problems - dont FULLY understand, but good enuf for now --LGP 2025-05-05
+    // options.fBusyTimeout = 10min; // This appears to cause no problems, and solves all the busy-timeout problems - dont FULLY understand, but good enuf for now --LGP 2025-05-05
+    options.fBusyTimeout = 1min; // Try vaguely more reasonable timeout --LGP 2026-01-14
     options.fJournalMode = JournalModeType::eWAL2;
 
     auto conn = SQLite::Connection::New (options);
