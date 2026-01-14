@@ -55,5 +55,7 @@ fi
 
 %files
 /opt/WhyTheFuckIsMyNetworkSoSlow/WhyTheFuckIsMyNetworkSoSlow-Backend
+/opt/WhyTheFuckIsMyNetworkSoSlow/data/*
+/opt/WhyTheFuckIsMyNetworkSoSlow/html/*
 /usr/lib/systemd/system/whythefuckismynetworksoslow.service
 %config(noreplace) /var/opt/WhyTheFuckIsMyNetworkSoSlow/
