@@ -104,31 +104,17 @@ jobs:
           path: |
             Builds/${{ matrix.config_name }}/WhyTheFuckIsMyNetworkSoSlow/*.deb
   
-
-  build-n-test-MacOS-DEBUG:
-    needs: MacOSMatrixPrep
-    runs-on: ubuntu-latest
-    steps:
-      - name: DEBUG1
-        shell: "bash"
-        run: |
-          echo ${{ needs.MacOSMatrixPrep.outputs.matrix }}
-      - name: DEBUG2
-        shell: "bash"
-        run: |
-          echo ${{ fromJson(needs.MacOSMatrixPrep.outputs.matrix) }}
-        
   build-n-test-MacOS:
     needs: MacOSMatrixPrep
     runs-on: ${{ matrix.runs_on }}
     strategy:
       matrix: ${{fromJson(needs.MacOSMatrixPrep.outputs.matrix)}}
-
     env:
       # vm has 2 virtual CPUs, but 8GB ram, so jobs=3 (empirical), and QUICK_BUILD avoids some internal testing
       MAKEFLAGS: "--jobs=3 QUICK_BUILD=1"
       # EXPERIMENTAL FIX TO LIBIDB2 not found https://github.com/actions/runner-images/issues/9638
       LIBRARY_PATH: "/opt/homebrew/lib"
+      STROIKA_TOP_ROOT: "ThirdPartyComponents/Stroika/StroikaRoot"
     steps:
       - uses: maxim-lobanov/setup-xcode@v1
         with:
@@ -154,14 +140,14 @@ jobs:
           brew install libtool
           brew install automake
           brew install pkg-config
-          make --directory=ThirdPartyComponents/Stroika/StroikaRoot install-realpath
+          make --directory=${STROIKA_TOP_ROOT} install-realpath
       - name: Create build root structure
         shell: "bash"
         run: |
           make build-root
       - name: Configure
         run: |
-          cd ThirdPartyComponents/Stroika/StroikaRoot
+          cd ${STROIKA_TOP_ROOT}
           ./configure ${{ matrix.config_name }} ${{ matrix.extra_config_args }}
           cat ConfigurationFiles/${{ matrix.config_name }}.xml
       - name: Build All
@@ -217,10 +203,12 @@ jobs:
         with: 
             submodules: recursive
       # https://stackoverflow.com/questions/58033366/how-to-get-current-branch-within-github-actions
+      # Not sure what this was for - DEBUGGING?
       - name: Extract branch name
+        if: false
         shell: bash
         run: echo "branch=`echo ${GITHUB_REF#refs/heads/}`" >> $GITHUB_OUTPUT
-        id: extract_branch
+        # id: extract_branch
       - name: Build System Info
         shell: "bash"
         run: |
