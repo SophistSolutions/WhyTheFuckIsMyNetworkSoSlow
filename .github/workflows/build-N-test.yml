@@ -157,6 +157,7 @@ jobs:
         if: always()
         run: |
           mkdir /tmp/LOGS-ARCHIVE
+          cp IntermediateFiles/${{ matrix.config_name }}/WhyTheFuckIsMyNetworkSoSlow/html/Build.txt /tmp/LOGS-ARCHIVE/npm-Build.txt || :
           cp $TMPDIR/Trace*.txt /tmp/LOGS-ARCHIVE || :
       - name: DEBUG Workaround GitHub-Actions-MacOS Issue with env.TMPDIR
         if: always()
@@ -178,21 +179,21 @@ jobs:
           path: |
             Builds/${{ matrix.config_name }}/PerformanceDump.txt
             /tmp/LOGS-ARCHIVE
-            #${{ env.TMPDIR }}/Trace*.txt
-      - name: Archive Sample Results
+      - name: Archive Build Results
         uses: actions/upload-artifact@v4
         with:
-          name: Samples (${{ matrix.displayTargetName }})
+          name: Build (${{ matrix.displayTargetName }})
           if-no-files-found: warn
           path: |
-            Builds/${{ matrix.config_name }}/Samples-*
+            Builds/${{ matrix.config_name }}/WhyTheFuckIsMyNetworkSoSlow/data/
+            Builds/${{ matrix.config_name }}/WhyTheFuckIsMyNetworkSoSlow/html/
+            Builds/${{ matrix.config_name }}/WhyTheFuckIsMyNetworkSoSlow/WhyTheFuckIsMyNetworkSoSlow-Backend
 
   build-n-test-Windows:
     needs: WindowsMatrixPrep
     runs-on: ${{ matrix.runs_on }}
     strategy:
       matrix: ${{fromJson(needs.WindowsMatrixPrep.outputs.matrix)}}
-
     env:
       # vm has 2 virtual CPUs, but 8GB ram, so jobs=2 (empirical sometimes run out of RAM jobs=3), and QUICK_BUILD avoids some internal testing
       MAKEFLAGS: "--jobs=2 QUICK_BUILD=1"
@@ -259,11 +260,6 @@ jobs:
         run: |
           echo "CWD:" ; ls -l 
           echo "Builds/${{ matrix.config_name }}:" ; ls -l Builds/${{ matrix.config_name }}
-    #   - name: Copy Build Artifacts
-    #     shell: "bash"
-    #     # due to flaws in docker (windows must stop) - and cp no wildcards
-    #     run: |
-    #       docker cp buildContainer:WhyTheFuckIsMyNetworkSoSlow/Builds/${{ matrix.config_name }}/ $ARTIFACTS_DIR 2> /dev/null
       - name: Archive Build Results
         uses: actions/upload-artifact@v4
         with:
@@ -290,9 +286,3 @@ jobs:
           if-no-files-found: warn
           path: |
             IntermediateFiles/${{ matrix.config_name }}/WhyTheFuckIsMyNetworkSoSlow/html/Build.txt
-      # - name: Archive Installer Results
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: ${{ matrix.displayTargetName }} Installers
-      #     path: |
-      #       ${{ env.ARTIFACTS_DIR }}/WhyTheFuckIsMyNetworkSoSlow/*.msi
