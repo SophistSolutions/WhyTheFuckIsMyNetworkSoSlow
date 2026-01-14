@@ -75,7 +75,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_::DB
         Mgr& operator= (const Mgr&) = delete;
 
     public:
-        ~Mgr ();
+        virtual ~Mgr ();
 
     public:
         nonvirtual GUID GenNewDeviceID (const Set<String>& hwAddresses);
