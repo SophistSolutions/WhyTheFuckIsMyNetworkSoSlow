@@ -18,7 +18,7 @@ watch(breadcrumbsRO, () => {
   <q-breadcrumbs separator=">" active-color="secondary">
     <template v-for="(item, index) in breadcrumbs" :key="index">
       <q-breadcrumbs-el
-        :to="item.href"
+        :href="item.href"
         :disabled="item.disabled"
         :label="item.text"
         class="breadcrumbElt"

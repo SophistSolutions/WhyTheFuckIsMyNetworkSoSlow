@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted } from "vue";
 
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute, useRouter } from "vue-router";
 
-import EssentialLink from 'components/EssentialLink.vue';
-import ToolbarBreadcrumbs from 'components/ToolbarBreadcrumbs.vue';
+import EssentialLink from "components/EssentialLink.vue";
+import ToolbarBreadcrumbs from "components/ToolbarBreadcrumbs.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -12,28 +12,28 @@ const router = useRouter();
 // Leave around stuff from sample layout, for a bit...
 const linksList = [
   {
-    title: 'Home',
-    caption: 'Overview',
-    icon: 'home',
-    link: '/#/',
+    title: "Home",
+    caption: "Overview",
+    icon: "home",
+    link: "/#/",
   },
   {
-    title: 'About',
-    caption: 'About this application',
-    icon: 'api',
-    link: '/#/about',
+    title: "About",
+    caption: "About this application",
+    icon: "api",
+    link: "/#/about",
   },
   {
-    title: 'Devices',
-    caption: 'All devices (or filter)',
-    icon: 'devices',
-    link: '/#/devices',
+    title: "Devices",
+    caption: "All devices (or filter)",
+    icon: "devices",
+    link: "/#/devices",
   },
   {
-    title: 'Networks',
-    caption: 'All networks (or filter)',
-    icon: 'wifi',
-    link: '/#/networks',
+    title: "Networks",
+    caption: "All networks (or filter)",
+    icon: "wifi",
+    link: "/#/networks",
   },
 ];
 
@@ -44,7 +44,7 @@ function toggleLeftDrawer() {
 }
 
 const defaultContextMenu = [
-  { name: 'No special operations on this page', enabled: false },
+  { name: "No special operations on this page", enabled: false },
 ];
 var breadcrumbs = ref([]);
 var contextMenu = ref(defaultContextMenu);
@@ -69,24 +69,13 @@ onMounted(() => {
   breadcrumbs.value = route.meta.breadcrumbs;
   contextMenu.value = route.meta.contextMenu ?? defaultContextMenu;
 });
-
-function phred() {
-  console.log('called phred');
-}
 </script>
 
 <template>
   <q-layout view="lHh Lpr lFf">
     <q-header elevated>
       <q-toolbar class="justify-between">
-        <q-btn
-          flat
-          dense
-          round
-          icon="menu"
-          aria-label="Menu"
-          @click="toggleLeftDrawer"
-        />
+        <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
         <q-toolbar-title> WhyTheFuckIsMyNetworkSoSlow </q-toolbar-title>
         <ToolbarBreadcrumbs v-model:breadcrumbs="breadcrumbs" />
         <q-btn
@@ -122,11 +111,7 @@ function phred() {
     <q-drawer v-model="leftDrawerOpen" bordered>
       <q-list>
         <q-item-label header>WTF Objects</q-item-label>
-        <EssentialLink
-          v-for="link in linksList"
-          :key="link.title"
-          v-bind="link"
-        />
+        <EssentialLink v-for="link in linksList" :key="link.title" v-bind="link" />
       </q-list>
     </q-drawer>
 
