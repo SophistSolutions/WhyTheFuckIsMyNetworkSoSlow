@@ -31,11 +31,11 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         struct Logging {
             optional<bool>        ToStdOut;
             static constexpr bool kToStdOut_Default = false;
-#if qPlatform_POSIX
+#if qStroika_Foundation_Common_Platform_POSIX
             optional<bool>        ToSysLog;
             static constexpr bool kToSysLog_Default = true;
 #endif
-#if qPlatform_Windows
+#if qStroika_Foundation_Common_Platform_Windows
             optional<bool>        ToWindowsEventLog;
             static constexpr bool kToWindowsEventLog_Default = true;
 #endif

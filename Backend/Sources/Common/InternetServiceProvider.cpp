@@ -30,9 +30,9 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common;
 String BackendApp::Common::InternetServiceProvider::ToString () const
 {
     StringBuilder sb;
-    sb += L"{";
-    sb += L"name: " + Characters::ToString (name) + L", ";
-    sb += L"}";
+    sb << "{"sv;
+    sb << "name: " << name << ", ";
+    sb << "}"sv;
     return sb.str ();
 }
 

@@ -30,13 +30,13 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common;
 String BackendApp::Common::GEOLocationInformation::ToString () const
 {
     StringBuilder sb;
-    sb += L"{";
-    sb += L"Country-Code: " + Characters::ToString (fCountryCode) + L", ";
-    sb += L"City: " + Characters::ToString (fCity) + L", ";
-    sb += L"Region-Code: " + Characters::ToString (fRegionCode) + L", ";
-    sb += L"Postal-Code: " + Characters::ToString (fPostalCode) + L", ";
-    sb += L"Latitude-And-Longitude: " + Characters::ToString (fLatitudeAndLongitude) + L", ";
-    sb += L"}";
+    sb << "{";
+    sb << "Country-Code: " << fCountryCode << ", "sv;
+    sb << "City: " << fCity << ", "sv;
+    sb << "Region-Code: " << fRegionCode << ", "sv;
+    sb << "Postal-Code: " << fPostalCode << ", "sv;
+    sb << "Latitude-And-Longitude: "sv << fLatitudeAndLongitude << ", "sv;
+    sb << "}"sv;
     return sb.str ();
 }
 

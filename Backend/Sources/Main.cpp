@@ -15,7 +15,7 @@
 #include "Stroika/Foundation/Execution/Thread.h"
 #include "Stroika/Foundation/Execution/Users.h"
 #include "Stroika/Foundation/Execution/WaitableEvent.h"
-#if qPlatform_Windows
+#if qStroika_Foundation_Common_Platform_Windows
 #include "Stroika/Foundation/Execution/Platform/Windows/Exception.h"
 #include "Stroika/Foundation/Execution/Platform/Windows/StructuredException.h"
 #endif
@@ -121,7 +121,7 @@ int main (int argc, const char* argv[])
     /*
      *  Setup basic (optional) error handling.
      */
-#if qPlatform_Windows
+#if qStroika_Foundation_Common_Platform_Windows
     Execution::Platform::Windows::RegisterDefaultHandler_invalid_parameter ();
     Execution::Platform::Windows::RegisterDefaultHandler_StructuredException ();
 #endif
@@ -135,7 +135,7 @@ int main (int argc, const char* argv[])
     /*
      *  Ignore SIGPIPE is common practice/helpful in POSIX, but not required by the service manager.
      */
-#if qPlatform_POSIX
+#if qStroika_Foundation_Common_Platform_POSIX
     SignalHandlerRegistry::sThe.SetSignalHandlers (SIGPIPE, SignalHandlerRegistry::kIGNORED);
 #endif
 
@@ -160,7 +160,7 @@ int main (int argc, const char* argv[])
         if (loggingConfig.ToSysLog.value_or (Logging::kToSysLog_Default)) {
             appenders += make_shared<Logger::SysLogAppender> (kAppName_);
         }
-#elif qPlatform_Windows
+#elif qStroika_Foundation_Common_Platform_Windows
         if (loggingConfig.ToWindowsEventLog.value_or (Logging::kToWindowsEventLog_Default)) {
             appenders += make_shared<Logger::WindowsEventLogAppender> (kAppName_);
         }
@@ -180,7 +180,7 @@ int main (int argc, const char* argv[])
      *
      * Maybe best to do this with installer, not direct code here (see https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/13)
      */
-#if qPlatform_Windows
+#if qStroika_Foundation_Common_Platform_Windows
     try {
         static constexpr Activity kSettingUpFirewall_{"setting up firewall"sv};
         DeclareActivity           da{&kSettingUpFirewall_};

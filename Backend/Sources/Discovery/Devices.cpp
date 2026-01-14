@@ -447,7 +447,7 @@ namespace {
                         else {
                             fNames.Add (speakerGroup + *m2, 99);
 #if qDebug
-                            fDebugProps.Add (L"SSDP-DeviceType2FriendlyName-SONOS-HACK-speakergroup"sv, speakerGroup + *m2);
+                            fDebugProps.Add ("SSDP-DeviceType2FriendlyName-SONOS-HACK-speakergroup"sv, speakerGroup + *m2);
 #endif
                         }
                     }
@@ -457,7 +457,7 @@ namespace {
                 if (not fSSDPInfo->fDeviceType2FriendlyNameMap.empty () and not fSSDPInfo->fDeviceType2FriendlyNameMap.Nth (0).fValue.empty ()) {
                     fNames.Add (fSSDPInfo->fDeviceType2FriendlyNameMap.Nth (0).fValue, 95);
 #if qDebug
-                    fDebugProps.Add (L"SSDP-DeviceType2FriendlyName"sv, fSSDPInfo->fDeviceType2FriendlyNameMap.Nth (0).fValue);
+                    fDebugProps.Add ("SSDP-DeviceType2FriendlyName"sv, fSSDPInfo->fDeviceType2FriendlyNameMap.Nth (0).fValue);
 #endif
                 }
 
@@ -468,7 +468,7 @@ namespace {
                 if (auto o = ReverseDNSLookup_ (i)) {
                     fNames.Add (*o, 96);
 #if qDebug
-                    fDebugProps.Add (L"reverse-dns-name"sv, *o);
+                    fDebugProps.Add ("reverse-dns-name"sv, *o);
 #endif
                     break;
                 }
@@ -562,10 +562,10 @@ namespace {
                 static const String kSMBPort_ = Characters::Format ("tcp:{}"_f, IO::Network::WellKnownPorts::TCP::kSMB);
                 for (const auto& hwa : GetHardwareAddresses ()) {
                     if (auto o = BackendApp::Common::LookupEthernetMACAddressOUIFromPrefix (hwa)) {
-                        if (o == L"Oracle VirtualBox virtual NIC"sv) {
+                        if (o == "Oracle VirtualBox virtual NIC"sv) {
                             fTypes.Add (Discovery::DeviceType::eVirtualMachine);
                         }
-                        if ((o == L"Synology Incorporated"sv or o == L"Buffalo.inc"sv or o == L"Seagate Technology"sv or o == L"Seagate Cloud Systems"sv) and
+                        if ((o == "Synology Incorporated"sv or o == "Buffalo.inc"sv or o == "Seagate Technology"sv or o == "Seagate Cloud Systems"sv) and
                             fOpenPorts and fOpenPorts->Contains (kSMBPort_)) {
                             fTypes.Add (Discovery::DeviceType::eNetworkAttachedStorage);
                         }
@@ -576,8 +576,8 @@ namespace {
             static const String kIPPPort_ = Characters::Format ("tcp:{}"_f, IO::Network::WellKnownPorts::TCP::kIPP);
             static const String kLPDPort_ = Characters::Format ("tcp:{}"_f, IO::Network::WellKnownPorts::TCP::kLPD);
             if (fOpenPorts and (fOpenPorts->Contains (kIPPPort_) or fOpenPorts->Contains (kLPDPort_)) and
-                (fManufacturer and (fManufacturer->Contains (L"Hewlett Packard"_k) or fManufacturer->Contains (L"Epson"_k) or
-                                    fManufacturer->Contains (L"Canon"_k) or fManufacturer->Contains (L"Brother"_k)))) {
+                (fManufacturer and (fManufacturer->Contains ("Hewlett Packard"_k) or fManufacturer->Contains ("Epson"_k) or
+                                    fManufacturer->Contains ("Canon"_k) or fManufacturer->Contains ("Brother"_k)))) {
                 fTypes.Add (DeviceType::ePrinter);
             }
 
@@ -590,14 +590,14 @@ namespace {
                                                                 Mapping<String, VariantValue> {
                                                                     fSSDPInfo->fDeviceType2FriendlyNameMap
                                                                 }},
-                                     pair<String, VariantValue>{L"USNs"sv, kMyMapper_.FromObject (fSSDPInfo->fUSNs)},
-                                     pair<String, VariantValue>{L"server"sv, fSSDPInfo->fServer},
-                                     pair<String, VariantValue>{L"manufacturer"sv, fSSDPInfo->fManufacturer},
-                                     pair<String, VariantValue>{L"manufacturer-URL"sv, kMyMapper_.FromObject (fSSDPInfo->fManufacturerURI)},
-                                     pair<String, VariantValue>{L"lastAdvertisement"sv, kMyMapper_.FromObject (fSSDPInfo->fLastAdvertisement)},
-                                     pair<String, VariantValue>{L"lastSSDPMessageReceivedAt"sv, fSSDPInfo->fLastSSDPMessageRecievedAt},
+                                     pair<String, VariantValue>{"USNs"sv, kMyMapper_.FromObject (fSSDPInfo->fUSNs)},
+                                     pair<String, VariantValue>{"server"sv, fSSDPInfo->fServer},
+                                     pair<String, VariantValue>{"manufacturer"sv, fSSDPInfo->fManufacturer},
+                                     pair<String, VariantValue>{"manufacturer-URL"sv, kMyMapper_.FromObject (fSSDPInfo->fManufacturerURI)},
+                                     pair<String, VariantValue>{"lastAdvertisement"sv, kMyMapper_.FromObject (fSSDPInfo->fLastAdvertisement)},
+                                     pair<String, VariantValue>{"lastSSDPMessageReceivedAt"sv, fSSDPInfo->fLastSSDPMessageRecievedAt},
                                      pair<String, VariantValue> {
-                                         L"locations"sv,
+                                         "locations"sv,
                                          kMyMapper_.FromObject (fSSDPInfo->fLocations)
                                      }
                                  }});
@@ -735,7 +735,7 @@ namespace {
                                 tmp.fAttachedNetworks += thisDevice->fAttachedNetworks;
                                 Memory::AccumulateIf (&tmp.fAttachedInterfaces, thisDevice->fAttachedInterfaces);
 #if qDebug
-                                tmp.fDebugProps.Add (L"Updated-By-MyDeviceDiscoverer_-At", DateTime::Now ());
+                                tmp.fDebugProps.Add ("Updated-By-MyDeviceDiscoverer_-At", DateTime::Now ());
 #endif
                                 return tmp;
                             }
@@ -996,13 +996,13 @@ namespace {
                         tmp = *o; // then merge in possible additions
                         tmp.AddNetworkAddresses_ (locAddrs);
 #if qDebug
-                        tmp.fDebugProps.Add (L"Updated-By-SSDPDeviceDiscoverer_-At", DateTime::Now ());
+                        tmp.fDebugProps.Add ("Updated-By-SSDPDeviceDiscoverer_-At", DateTime::Now ());
 #endif
                         return tmp;
                     }
                     else {
 #if qDebug
-                        tmp.fDebugProps.Add (L"Found-By-SSDPDeviceDiscoverer_-At", DateTime::Now ());
+                        tmp.fDebugProps.Add ("Found-By-SSDPDeviceDiscoverer_-At", DateTime::Now ());
 #endif
                         tmp.fGUID = GUID::GenerateNew ();
                         return tmp;
@@ -1046,11 +1046,11 @@ namespace {
 #endif
 
                 if (not di.fOperatingSystem.has_value ()) {
-                    if (di.fSSDPInfo->fServer and di.fSSDPInfo->fServer->Contains (L"Linux"_k)) {
-                        di.fOperatingSystem = Discovery::OperatingSystem{L"Linux"_k};
+                    if (di.fSSDPInfo->fServer and di.fSSDPInfo->fServer->Contains ("Linux"_k)) {
+                        di.fOperatingSystem = Discovery::OperatingSystem{"Linux"_k};
                     }
-                    else if (di.fSSDPInfo->fServer and di.fSSDPInfo->fServer->Contains (L"POSIX"_k)) {
-                        di.fOperatingSystem = Discovery::OperatingSystem{L"Unix"_k};
+                    else if (di.fSSDPInfo->fServer and di.fSSDPInfo->fServer->Contains ("POSIX"_k)) {
+                        di.fOperatingSystem = Discovery::OperatingSystem{"Unix"_k};
                     }
                 }
                 di.PatchDerivedFields ();
@@ -1060,7 +1060,7 @@ namespace {
                         [&] (auto&& writeLock) {
                             writeLock.rwref ().Add (di);
 #if qLOCK_DEBUGGING_
-                            DbgTrace (L"!!! succeeded  updating writelock ***RecieveSSDPAdvertisement_");
+                            DbgTrace ("!!! succeeded  updating writelock ***RecieveSSDPAdvertisement_"_f);
 #endif
                         },
                         5s)) {
@@ -1092,14 +1092,14 @@ namespace {
     private:
         static void DiscoveryChecker_ ()
         {
-            Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"{}::MyNeighborDiscoverer_::DiscoveryChecker_")};
-            static constexpr Activity kDiscovering_NetNeighbors_{L"discovering this network neighbors"sv};
+            Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs ("{}::MyNeighborDiscoverer_::DiscoveryChecker_")};
+            static constexpr Activity kDiscovering_NetNeighbors_{"discovering this network neighbors"sv};
             using Neighbor = NeighborsMonitor::Neighbor;
             NeighborsMonitor monitor{};
             while (true) {
                 try {
                     DeclareActivity           da{&kDiscovering_NetNeighbors_};
-                    Debug::TraceContextBumper ctx1{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"monitor.GetNeighbors ()")};
+                    Debug::TraceContextBumper ctx1{Stroika_Foundation_Debug_OptionalizeTraceArgs ("monitor.GetNeighbors ()")};
                     for (const Neighbor& i : monitor.GetNeighbors ()) {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
                         DbgTrace ("i={}"_f, i);
@@ -1116,7 +1116,7 @@ namespace {
                     again:
                         Execution::Sleep (retriedLockCount * 1s); // sleep without the lock, but not first time processing message - just on retries
 #if qLOCK_DEBUGGING_
-                        Debug::TraceContextBumper ctxLock1{L"sDiscoveredDevices_ - discovering this network neighbors "};
+                        Debug::TraceContextBumper ctxLock1{"sDiscoveredDevices_ - discovering this network neighbors "};
 #endif
 
                         // merge in data
@@ -1128,15 +1128,15 @@ namespace {
                                 tmp = *o;
                                 tmp.AddNetworkAddresses_ (i.fInternetAddress, i.fHardwareAddress); // merge in additions
 #if qDebug
-                                tmp.fDebugProps.Add (L"Updated-By-MyNeighborDiscoverer_-At", DateTime::Now ());
+                                tmp.fDebugProps.Add ("Updated-By-MyNeighborDiscoverer_-At", DateTime::Now ());
 #endif
                                 return tmp;
                             }
                             else {
                                 tmp.fGUID = GUID::GenerateNew ();
 #if qDebug
-                                tmp.fDebugProps.Add (L"Found-By-MyNeighborDiscoverer_-At"sv, DateTime::Now ());
-                                tmp.fDebugProps.Add (L"Found-By-MyNeighborDiscoverer_-I"sv, Characters::ToString (i)); // to debug why sometimes we add but has no network info
+                                tmp.fDebugProps.Add ("Found-By-MyNeighborDiscoverer_-At"sv, DateTime::Now ());
+                                tmp.fDebugProps.Add ("Found-By-MyNeighborDiscoverer_-I"sv, Characters::ToString (i)); // to debug why sometimes we add but has no network info
 #endif
                                 return tmp;
                             }
@@ -1205,15 +1205,15 @@ namespace {
      */
     struct RandomWalkThroughSubnetDiscoverer_ {
         RandomWalkThroughSubnetDiscoverer_ ()
-            : fMyThread_{Thread::CleanupPtr::eAbortBeforeWaiting, Thread::New (Checker_, Thread::eAutoStart, L"RandomWalkThroughSubnetDiscoverer")}
+            : fMyThread_{Thread::CleanupPtr::eAbortBeforeWaiting, Thread::New (Checker_, Thread::eAutoStart, "RandomWalkThroughSubnetDiscoverer")}
         {
         }
 
     private:
         static void Checker_ ()
         {
-            Debug::TraceContextBumper ctx{L"RandomWalkThroughSubnetDiscoverer_::Checker_"};
-            static constexpr Activity kDiscovering_THIS_{L"discovering by random scans"sv};
+            Debug::TraceContextBumper ctx{"RandomWalkThroughSubnetDiscoverer_::Checker_"};
+            static constexpr Activity kDiscovering_THIS_{"discovering by random scans"sv};
 
             static constexpr auto kMinTimeBetweenScans_{5s};
             static constexpr auto kOnErrorTimeBetweenScans_{30s};
@@ -1544,7 +1544,7 @@ namespace {
 
 Discovery::DevicesMgr::Activator::Activator ()
 {
-    Debug::TraceContextBumper ctx{L"Discovery::DevicesMgr::Activator::Activator"};
+    Debug::TraceContextBumper ctx{"Discovery::DevicesMgr::Activator::Activator"};
     Require (not IsActive_ ());
     if constexpr (kInclude_SSDP_Discoverer_) {
         sSSDPDeviceDiscoverer_ = make_unique<SSDPDeviceDiscoverer_> ();
@@ -1563,7 +1563,7 @@ Discovery::DevicesMgr::Activator::Activator ()
 
 Discovery::DevicesMgr::Activator::~Activator ()
 {
-    Debug::TraceContextBumper ctx{L"Discovery::DevicesMgr::Activator::~Activator"};
+    Debug::TraceContextBumper ctx{"Discovery::DevicesMgr::Activator::~Activator"};
     Require (IsActive_ ());
     if constexpr (kInclude_SSDP_Discoverer_) {
         sSSDPDeviceDiscoverer_.reset ();
@@ -1598,9 +1598,9 @@ optional<GUID> Discovery::DevicesMgr::GetThisDeviceID () const
 Collection<Discovery::Device> Discovery::DevicesMgr::GetActiveDevices (optional<Time::DurationSeconds> allowedStaleness) const
 {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
-    Debug::TraceContextBumper ctx{L"Discovery::GetActiveDevices"};
+    Debug::TraceContextBumper ctx{"Discovery::GetActiveDevices"};
 #endif
-    Debug::TimingTrace ttrc{L"Discovery::DevicesMgr::GetActiveDevices", 1.0s};
+    Debug::TimingTrace ttrc{"Discovery::DevicesMgr::GetActiveDevices", 1.0s};
 
     Require (IsActive_ ());
     Collection<Discovery::Device> results;
@@ -1622,10 +1622,10 @@ Collection<Discovery::Device> Discovery::DevicesMgr::GetActiveDevices (optional<
 void Discovery::DevicesMgr::ReScan (const GUID& deviceID)
 {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
-    Debug::TraceContextBumper ctx{L"Discovery::ReScan"};
+    Debug::TraceContextBumper ctx{"Discovery::ReScan"};
 #endif
-    Debug::TimingTrace        ttrc{L"Discovery::DevicesMgr::ReScan"};
-    static constexpr Activity kRescanning_Device_{L"rescanning device"sv};
+    Debug::TimingTrace        ttrc{"Discovery::DevicesMgr::ReScan"};
+    static constexpr Activity kRescanning_Device_{"rescanning device"sv};
     DeclareActivity           da{&kRescanning_Device_};
 
     auto findDeviceInfoAndClearFoundPorts = [] (const GUID& deviceID) {
@@ -1638,7 +1638,7 @@ void Discovery::DevicesMgr::ReScan (const GUID& deviceID)
             l.rwref ().Add (tmp);
             return tmp;
         }
-        Execution::Throw (IO::Network::HTTP::ClientErrorException{L"deviceID not recognized"sv});
+        Execution::Throw (IO::Network::HTTP::ClientErrorException{"deviceID not recognized"sv});
     };
     auto addOpenPorts = [] (const GUID& deviceID, const PortScanResults& portScanResults) {
         auto l = sDiscoveredDevices_.rwget ();
@@ -1671,7 +1671,6 @@ VariantValue DevicesMgr::ScanAndReturnReport (const InternetAddress& addr)
 {
     PortScanResults               results = ScanPorts (addr, ScanOptions{ScanOptions::eFull});
     Mapping<String, VariantValue> result;
-    result.Add (L"openPorts",
-                VariantValue{results.fDiscoveredOpenPorts.Map<Sequence<VariantValue>> ([] (String i) { return VariantValue{i}; })});
+    result.Add ("openPorts", VariantValue{results.fDiscoveredOpenPorts.Map<Sequence<VariantValue>> ([] (String i) { return VariantValue{i}; })});
     return VariantValue{result};
 }

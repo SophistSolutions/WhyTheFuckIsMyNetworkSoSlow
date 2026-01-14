@@ -128,7 +128,7 @@ namespace {
 }
 
 namespace {
-    constexpr Activity kContructing_WebServer_{L"constructing webserver"sv};
+    constexpr Activity kContructing_WebServer_{"constructing webserver"sv};
 }
 
 namespace {
@@ -165,7 +165,7 @@ namespace {
         return FileSystemRequestHandler::Options{.fDefaultIndexFileNames = Sequence<filesystem::path>{"index.html"sv},
                                                  .fCacheControlSettings  = kFSCacheControlSettings_,
                                                  // fallback needed for createWebHistory router mode
-                                                 .fFallbackFile = "index.html"};
+                                                 .fFallbackFile = "index.html"sv};
     }()};
 }
 
@@ -185,12 +185,12 @@ private:
     static constexpr unsigned int kMaxThreads_{kMaxWSConnectionsPerUser_ + kMaxGUIConnectionssPerUser_ + 1}; // handle the BURST quickly of requests at start, but then no need (just reduces startup latency), plus one just in case...
 
 private:
-    shared_ptr<IWSAPI>                                fWSAPI_;
-    const Sequence<Route>                             fWSRoutes_;
-    const Sequence<Route>                             fStaticRoutes_;
-    optional<DeclareActivity<Activity<wstring_view>>> fEstablishActivity1_{&kContructing_WebServer_};
-    ConnectionManager                                 fConnectionMgr_;
-    [[no_unique_address]] EmptyObjectForSideEffects   fIgnore1_{[this] () { fEstablishActivity1_.reset (); }};
+    shared_ptr<IWSAPI>                               fWSAPI_;
+    const Sequence<Route>                            fWSRoutes_;
+    const Sequence<Route>                            fStaticRoutes_;
+    optional<DeclareActivity<Activity<string_view>>> fEstablishActivity1_{&kContructing_WebServer_};
+    ConnectionManager                                fConnectionMgr_;
+    [[no_unique_address]] EmptyObjectForSideEffects  fIgnore1_{[this] () { fEstablishActivity1_.reset (); }};
 
     atomic<unsigned int> fActiveCallCnt_{0};
     struct ActiveCallCounter_ {

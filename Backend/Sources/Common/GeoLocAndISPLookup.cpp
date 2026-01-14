@@ -32,8 +32,8 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common;
 namespace {
     String NormalizeISPName_ (const String& ispName)
     {
-        if (ispName.Contains (L"d/b/a Verizon"_k)) {
-            return L"Verizon"_k;
+        if (ispName.Contains ("d/b/a Verizon"_k)) {
+            return "Verizon"_k;
         }
         return ispName;
     }
@@ -64,7 +64,7 @@ optional<tuple<GEOLocationInformation, InternetServiceProvider>> BackendApp::Com
      *          EXAMPLE: http://ip-api.com/json/108.49.190.49
      */
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
-    Debug::TraceContextBumper ctx{L"GEOLocAndISPLookup"};
+    Debug::TraceContextBumper ctx{"GEOLocAndISPLookup"};
 #endif
     constexpr Time::DurationSeconds kInfoTimeoutInSeconds_{10 * 60.0s};
 #if qCompilerAndStdLib_template_template_argument_as_different_template_paramters_Buggy
@@ -75,27 +75,27 @@ optional<tuple<GEOLocationInformation, InternetServiceProvider>> BackendApp::Com
         [] (InternetAddress ia) -> optional<tuple<GEOLocationInformation, InternetServiceProvider>> {
             using namespace DataExchange;
             using namespace IO::Network::Transfer;
-            Debug::TraceContextBumper ctx{L"GEOLocAndISPLookup::{}... real lookup - cache miss"};
+            Debug::TraceContextBumper ctx{"GEOLocAndISPLookup::{}... real lookup - cache miss"};
 
             auto&&                        connection = Connection::New ();
             Mapping<String, VariantValue> m          = Variant::JSON::Reader ()
-                                                  .Read (connection.GET (URI{L"http://ip-api.com/json/" + ia.ToString ()}).GetDataTextInputStream ())
+                                                  .Read (connection.GET (URI{"http://ip-api.com/json/" + ia.ToString ()}).GetDataTextInputStream ())
                                                   .As<Mapping<String, VariantValue>> ();
             GEOLocationInformation geoloc{};
             auto                   cvt = [] (optional<VariantValue> v) -> optional<String> {
                 return v ? optional<String>{v->As<String> ()} : optional<String>{};
             };
-            geoloc.fRegionCode         = cvt (m.Lookup (L"region"_k));
-            geoloc.fCountryCode        = cvt (m.Lookup (L"countryCode"_k));
-            geoloc.fCity               = cvt (m.Lookup (L"city"_k));
-            geoloc.fPostalCode         = cvt (m.Lookup (L"zip"_k));
-            optional<VariantValue> lat = m.Lookup (L"lat"_k);
-            optional<VariantValue> lon = m.Lookup (L"lon"_k);
+            geoloc.fRegionCode         = cvt (m.Lookup ("region"_k));
+            geoloc.fCountryCode        = cvt (m.Lookup ("countryCode"_k));
+            geoloc.fCity               = cvt (m.Lookup ("city"_k));
+            geoloc.fPostalCode         = cvt (m.Lookup ("zip"_k));
+            optional<VariantValue> lat = m.Lookup ("lat"_k);
+            optional<VariantValue> lon = m.Lookup ("lon"_k);
             if (lat and lon) {
                 geoloc.fLatitudeAndLongitude = make_tuple (lat->As<float> (), lon->As<float> ());
             }
             InternetServiceProvider isp{};
-            isp.name = NormalizeISPName_ (cvt (m.Lookup (L"isp"_k)));
+            isp.name = NormalizeISPName_ (cvt (m.Lookup ("isp"_k)));
             return make_tuple (geoloc, isp);
         },
         SynchronizedTimedCache<tuple<InternetAddress>, optional<tuple<GEOLocationInformation, InternetServiceProvider>>>{kInfoTimeoutInSeconds_}
