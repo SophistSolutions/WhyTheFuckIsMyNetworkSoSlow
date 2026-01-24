@@ -33,7 +33,11 @@
  */
 namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
 
+#if qUseNewDocumentDBAPI
+    //using namespace Stroika::Foundation::Database::Document;
+#else
     using namespace Stroika::Foundation::Database::SQL;
+#endif
     using Stroika::Foundation::Common::ReadOnlyProperty;
     using Stroika::Foundation::Common::Version;
     using Stroika::Foundation::Traversal::Iterable;
@@ -58,15 +62,26 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         DB (const DB&) = default;
         DB (DB&&)      = default;
 
+#if qUseNewDocumentDBAPI || 1
+    public:
+        /**
+         *
+         */
+        nonvirtual Database::Document::Connection::Ptr NewConnection2 ();
+#endif
+#if !qUseNewDocumentDBAPI
     public:
         /**
          *  Note - each Connection::Ptr can be used from any thread, but is not internally synchronized and must be used from one thread at a time.
          */
         nonvirtual SQL::Connection::Ptr NewConnection ();
+#endif
 
+#if !qUseNewDocumentDBAPI
     public:
         template <typename T>
         nonvirtual T AddOrMergeUpdate (ORM::TableConnection<T>* dbConnTable, const T& d);
+#endif
 
     public:
         static const ReadOnlyProperty<filesystem::path> pFileName;

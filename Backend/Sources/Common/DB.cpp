@@ -34,8 +34,10 @@ using namespace Stroika::Foundation::Memory;
 using namespace Stroika::Foundation::IO::Network;
 using namespace Stroika::Foundation::IO::Network::HTTP;
 
+#if !qUseNewDocumentDBAPI
 using namespace SQL::ORM;
 using namespace SQL::SQLite;
+#endif
 
 /*
  ********************************************************************************
@@ -76,6 +78,13 @@ const ReadOnlyProperty<uintmax_t> WhyTheFuckIsMyNetworkSoSlow::BackendApp::Commo
 #endif
     return szTotal;
 }};
+
+#if qUseNewDocumentDBAPI || 1
+Database::Document::Connection::Ptr NewConnection2 ()
+{
+    return Database::Document::Connection::Ptr{};
+}
+#endif
 
 #if !qUseNewDocumentDBAPI
 WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB::DB (Version targetDBVersion, const Iterable<ORM::Schema::Table>& tables)
