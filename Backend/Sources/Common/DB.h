@@ -8,13 +8,25 @@
 
 #include "Stroika/Foundation/Common/Property.h"
 #include "Stroika/Foundation/Common/Version.h"
-#include "Stroika/Foundation/Database/SQL/Connection.h"
-#include "Stroika/Foundation/Database/SQL/ORM/Schema.h"
-#include "Stroika/Foundation/Database/SQL/ORM/TableConnection.h"
 #include "Stroika/Foundation/Execution/Thread.h"
 #include "Stroika/Foundation/Execution/TimeOutException.h"
 
 #include "OperationalStatistics.h"
+
+#ifndef qUseNewDocumentDBAPI
+#define qUseNewDocumentDBAPI 0
+#endif
+
+#if qUseNewDocumentDBAPI || 1
+#include "Stroika/Foundation/Database/Document/Collection.h"
+#include "Stroika/Foundation/Database/Document/Connection.h"
+#endif
+
+#if !qUseNewDocumentDBAPI
+#include "Stroika/Foundation/Database/SQL/Connection.h"
+#include "Stroika/Foundation/Database/SQL/ORM/Schema.h"
+#include "Stroika/Foundation/Database/SQL/ORM/TableConnection.h"
+#endif
 
 /**
  *  Wrapper on persistence.
@@ -32,13 +44,17 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
      *  database is multithreaded, but each 'DB' object ???
      */
     class DB {
+#if !qUseNewDocumentDBAPI
     public:
         //constexpr VariantValue::Type kRepresentIDAs_ = VariantValue::Type::eBLOB;     // probably more performant
         static constexpr VariantValue::Type kRepresentIDAs_ = VariantValue::Type::eString; // more readable in DB tool
+#endif
 
     public:
         DB () = delete;
+#if !qUseNewDocumentDBAPI
         DB (Version targetDBVersion, const Iterable<ORM::Schema::Table>& tables);
+#endif
         DB (const DB&) = default;
         DB (DB&&)      = default;
 
@@ -64,9 +80,11 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
     public:
         struct WriteStatsContext;
 
+#if !qUseNewDocumentDBAPI
     private:
         Version                      fTargetDBVersion_;
         Iterable<ORM::Schema::Table> fTables_;
+#endif
     };
 
     struct DB::ReadStatsContext : OperationalStatisticsMgr::ProcessDBCmd {
@@ -77,13 +95,14 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         WriteStatsContext ();
     };
 
+#if !qUseNewDocumentDBAPI
     /**
      *  Define callback function used for logging/reporting status in DB access code.
      *  Set traceSQL = true here (or in particular calls for just those tables) to see logging of reads and writes.
      */
     template <typename TABLE_CONNECTION>
     auto mkOperationalStatisticsMgrProcessDBCmd (bool traceSQL = false) -> typename TABLE_CONNECTION::OpertionCallbackPtr;
-
+#endif
 }
 
 /*

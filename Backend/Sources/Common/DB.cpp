@@ -44,7 +44,11 @@ using namespace SQL::SQLite;
  */
 const ReadOnlyProperty<filesystem::path> WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB::pFileName{
     [] ([[maybe_unused]] const auto* property) -> filesystem::path {
+#if qUseNewDocumentDBAPI
+        return IO::FileSystem::WellKnownLocations::GetApplicationData () / "WhyTheFuckIsMyNetworkSoSlow" / "db-v.json";
+#else
         return IO::FileSystem::WellKnownLocations::GetApplicationData () / "WhyTheFuckIsMyNetworkSoSlow" / "db-v16.db";
+#endif
     }};
 
 const ReadOnlyProperty<uintmax_t> WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB::pFileSize{[] ([[maybe_unused]] const auto* property) -> uintmax_t {
@@ -59,6 +63,7 @@ const ReadOnlyProperty<uintmax_t> WhyTheFuckIsMyNetworkSoSlow::BackendApp::Commo
     };
     filesystem::path p = pFileName ();
     incSize (p);
+#if !qUseNewDocumentDBAPI
     p = pFileName ();
     p += "-journal";
     incSize (p);
@@ -68,9 +73,11 @@ const ReadOnlyProperty<uintmax_t> WhyTheFuckIsMyNetworkSoSlow::BackendApp::Commo
     p = pFileName ();
     p += "-wal";
     incSize (p);
+#endif
     return szTotal;
 }};
 
+#if !qUseNewDocumentDBAPI
 WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB::DB (Version targetDBVersion, const Iterable<ORM::Schema::Table>& tables)
     : fTargetDBVersion_{targetDBVersion}
     , fTables_{tables}
@@ -118,3 +125,4 @@ SQL::Connection::Ptr WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB::NewCon
 
     return conn;
 }
+#endif

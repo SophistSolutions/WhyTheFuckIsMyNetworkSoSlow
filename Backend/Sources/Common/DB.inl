@@ -24,6 +24,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
      *************************************** DB *************************************
      ********************************************************************************
      */
+#if !qUseNewDocumentDBAPI
     template <typename T>
     T DB::AddOrMergeUpdate (ORM::TableConnection<T>* dbConnTable, const T& d)
     {
@@ -48,6 +49,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         Ensure (result.has_value ());
         return *result;
     }
+#endif
 
     /*
      ********************************************************************************
@@ -69,6 +71,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
     {
     }
 
+#if !qUseNewDocumentDBAPI
     /*
      ********************************************************************************
      ********************* mkOperationalStatisticsMgrProcessDBCmd *******************
@@ -130,6 +133,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         };
         return r;
     }
+#endif
 
 }
 
