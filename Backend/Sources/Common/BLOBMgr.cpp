@@ -19,14 +19,17 @@ using namespace Stroika::Foundation;
 using namespace Stroika::Foundation::Characters;
 using namespace Stroika::Foundation::Common;
 using namespace Stroika::Foundation::Containers;
+using namespace Stroika::Foundation::DataExchange;
 using namespace Stroika::Foundation::Execution;
 
 using Memory::BLOB;
 using Stroika::Foundation::Common::GUID;
+#if !qUseNewDocumentDBAPI
 using Stroika::Foundation::Database::SQL::ORM::Schema::CatchAllField;
 using Stroika::Foundation::Database::SQL::ORM::Schema::Field;
 using Stroika::Foundation::Database::SQL::ORM::Schema::Table;
-using Stroika::Foundation::DataExchange::ObjectVariantMapper;
+#endif
+// using Stroika::Foundation::DataExchange::ObjectVariantMapper;
 
 using namespace WhyTheFuckIsMyNetworkSoSlow;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp;
@@ -84,7 +87,11 @@ namespace {
         }();
     }
 
+#if qUseNewDocumentDBAPI
+    constexpr VariantValue::Type kRepresentIDAs_ = VariantValue::Type::eString;
+#else
     constexpr VariantValue::Type kRepresentIDAs_ = VariantValue::Type::eBLOB; // else as string
+#endif
 
     /*
      *  Combined mapper for objects we write to the database. Contains all the objects mappers we need merged together,
@@ -98,6 +105,7 @@ namespace {
         return mapper;
     }()};
 
+#if !qUseNewDocumentDBAPI
     const Table kBLOBTableSchema_{
         "BLOB"sv, Collection<Field>{
                       {.fName = "id"sv, .fRequired = true, .fVariantValueType = kRepresentIDAs_, .fIsKeyField = true, .fDefaultExpression = "randomblob(16)"sv},
@@ -111,12 +119,21 @@ namespace {
                                          {.fName = "blobid"sv, .fRequired = true, .fVariantValueType = VariantValue::eBLOB},
                                          {.fName = "etag"sv, .fVariantValueType = VariantValue::eString},
                                      }};
+#endif
 
     struct DBConn_ {
+#if !qUseNewDocumentDBAPI
         using BLOBURLTableConnection_ =
             SQL::ORM::TableConnection<DBRecs_::BLOBURL_, SQL::ORM::TableConnectionTraits<DBRecs_::BLOBURL_, IO::Network::URI>>;
+#endif
         DBConn_ ()
         {
+#if qUseNewDocumentDBAPI
+            BackendApp::Common::DB    db{};
+            Document::Connection::Ptr conn = db.GetInternallySynchronizedConnection ();
+            fBLOBs    = Document::ObjectCollection::New<DBRecs_::BLOB_> (conn.CreateCollection ("BLOBs"), kDBObjectMapper_);
+            fBLOBURLs = Document::ObjectCollection::New<DBRecs_::BLOBURL_> (conn.CreateCollection ("BLOB-URLs"), kDBObjectMapper_);
+#else
             constexpr Version kCurrentVersion_ = Version{1, 0, VersionStage::Alpha, 0};
             BackendApp::Common::DB db{kCurrentVersion_, Traversal::Iterable<Database::SQL::ORM::Schema::Table>{kBLOBTableSchema_, kBLOBURLTableSchema_}};
             SQL::Connection::Ptr conn = db.NewConnection ();
@@ -126,13 +143,30 @@ namespace {
                                                               mkOperationalStatisticsMgrProcessDBCmd<BLOBURLTableConnection_> ());
             fLookupBLOBByValueAndContentType =
                 make_shared<SQL::Statement> (conn.mkStatement ("SELECT * from BLOB where blob=:b and contentType=:ct;"sv));
+#endif
         }
+#if qUseNewDocumentDBAPI
+        Document::ObjectCollection::Ptr<DBRecs_::BLOB_>    fBLOBs;
+        Document::ObjectCollection::Ptr<DBRecs_::BLOBURL_> fBLOBURLs;
+#endif
+#if !qUseNewDocumentDBAPI
         shared_ptr<SQL::ORM::TableConnection<DBRecs_::BLOB_>> fBLOBs;
         shared_ptr<BLOBURLTableConnection_>                   fBLOBURLs;
         shared_ptr<SQL::Statement>                            fLookupBLOBByValueAndContentType;
+#endif
 
         optional<GUID> Lookup (const BLOB& b, const optional<InternetMediaType>& ct) const
         {
+#if qUseNewDocumentDBAPI
+            for (DBRecs_::BLOB_ i : fBLOBs.GetAll ()) {
+                if (ct != nullopt and i.fContentType != nullopt and *ct != *i.fContentType) {
+                    continue;
+                }
+                if (i.fBLOB == b) {
+                    return i.fID;
+                }
+            }
+#else
             fLookupBLOBByValueAndContentType->Reset ();
             fLookupBLOBByValueAndContentType->Bind ("b"sv, b);
             fLookupBLOBByValueAndContentType->Bind ("ct"sv, ct ? ct->As<String> () : VariantValue{});
@@ -140,6 +174,7 @@ namespace {
             if (auto row = fLookupBLOBByValueAndContentType->GetNextRow ()) {
                 return row->Lookup ("id"sv)->As<BLOB> ();
             }
+#endif
             return nullopt;
         }
     };
@@ -158,7 +193,6 @@ namespace {
 BLOBMgr::Activator::Activator ()
 {
     Debug::TraceContextBumper ctx{"BLOBMgr::Activator::Activator"};
-    using Execution::ThreadPool;
     BLOBMgr::sThe.fThreadPool_.store (make_unique<ThreadPool> (ThreadPool::Options{1, "URLBLOBFetcher"_k}));
     sConn_.store (make_shared<DBConn_> ());
 }
@@ -181,7 +215,11 @@ GUID BLOBMgr::AddBLOB (const BLOB& b, const optional<InternetMediaType>& ct)
         return *id;
     }
     GUID g = GUID::GenerateNew ();
+#if qUseNewDocumentDBAPI
+    sConn_.rwget ().rwref ()->fBLOBs.Add (DBRecs_::BLOB_{.fID = g, .fBLOB = b, .fContentType = ct});
+#else
     sConn_.rwget ().rwref ()->fBLOBs->AddNew (DBRecs_::BLOB_{g, b, ct});
+#endif
     return g;
 }
 
@@ -206,7 +244,11 @@ GUID BLOBMgr::AddBLOBFromURL (const URI& url, bool recheckIfExpired)
     auto       data = fetchData (url);
     GUID       guid = AddBLOB (data.first, data.second);
     lock_guard lock{sConn_};
-    sConn_.rwget ().rwref ()->fBLOBURLs->AddOrUpdate (DBRecs_::BLOBURL_{url, guid});
+#if qUseNewDocumentDBAPI
+    sConn_.rwget ().rwref ()->fBLOBURLs.Add (DBRecs_::BLOBURL_{.fURI = url, .fBLOBID = guid});
+#else
+    sConn_.rwget ().rwref ()->fBLOBURLs->AddOrUpdate (DBRecs_::BLOBURL_{.fURI = url, .fBLOBID = guid});
+#endif
     DbgTrace ("Added blob mapping: {} maps to blobid {}"_f, url, guid);
     return guid;
 }
@@ -219,9 +261,13 @@ optional<GUID> BLOBMgr::AsyncAddBLOBFromURL (const URI& url, bool recheckIfExpir
     // Use Stroika HTTP-Cache object support to handle age/etag stuff automatically
     optional<GUID> storeGUID;
     {
+#if qUseNewDocumentDBAPI
+        AssertNotImplemented ();
+#else
         if (optional<DBRecs_::BLOBURL_> cachedURLObj = sConn_.rwget ().rwref ()->fBLOBURLs->Get (url)) {
             storeGUID = cachedURLObj->fBLOBID;
         }
+#endif
     }
     if (not storeGUID.has_value ()) {
         fThreadPool_.rwget ().rwref ()->AddTask ([url, recheckIfExpired, this] () {
@@ -233,15 +279,24 @@ optional<GUID> BLOBMgr::AsyncAddBLOBFromURL (const URI& url, bool recheckIfExpir
 
 optional<GUID> BLOBMgr::Lookup (const URI& url)
 {
+#if qUseNewDocumentDBAPI
+    AssertNotImplemented ();
+#else
     if (optional<DBRecs_::BLOBURL_> cachedURLObj = sConn_.rwget ().rwref ()->fBLOBURLs->Get (url)) {
         return cachedURLObj->fBLOBID;
     }
+#endif
     return nullopt;
 }
 
 tuple<BLOB, optional<InternetMediaType>> BLOBMgr::GetBLOB (const GUID& id) const
 {
+#if qUseNewDocumentDBAPI
+    AssertNotImplemented ();
+    optional<DBRecs_::BLOB_> ob;
+#else
     optional<DBRecs_::BLOB_> ob = sConn_.rwget ().rwref ()->fBLOBs->Get (id);
+#endif
     if (ob) {
         return make_tuple (ob->fBLOB, ob->fContentType);
     }

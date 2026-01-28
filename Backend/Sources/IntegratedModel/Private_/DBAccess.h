@@ -12,10 +12,12 @@
 #include "Stroika/Foundation/Containers/Collection.h"
 #include "Stroika/Foundation/Containers/Sequence.h"
 #include "Stroika/Foundation/DataExchange/ObjectVariantMapper.h"
+#if !qUseNewDocumentDBAPI
 #include "Stroika/Foundation/Database/SQL/ORM/Schema.h"
 #include "Stroika/Foundation/Database/SQL/ORM/TableConnection.h"
 #include "Stroika/Foundation/Database/SQL/ORM/Versioning.h"
 #include "Stroika/Foundation/Database/SQL/SQLite.h"
+#endif
 #include "Stroika/Foundation/Debug/Trace.h"
 #include "Stroika/Foundation/Execution/LazyInitialized.h"
 #include "Stroika/Foundation/Execution/Logger.h"
@@ -117,6 +119,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_::DB
          */
         virtual void CheckDatabaseLoadCompleted () = 0;
 
+#if !qUseNewDocumentDBAPI
     private:
         using Schema_Table         = SQL::ORM::Schema::Table;
         using Schema_Field         = SQL::ORM::Schema::Field;
@@ -124,9 +127,12 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_::DB
 
     private:
         static constexpr auto kRepresentIDAs_ = BackendApp::Common::DB::kRepresentIDAs_;
+#endif
 
+#if !qUseNewDocumentDBAPI
     private:
         static String GenRandomIDString_ (VariantValue::Type t);
+#endif
 
     private:
         struct ExternalDeviceUserSettingsElt_ {
@@ -146,27 +152,37 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_::DB
          *  and any touchups on representation we need (like writing GUID as BLOB rather than string).
          */
         static const LazyInitialized<ObjectVariantMapper> kDBObjectMapper_;
-        static const Schema_Table                         kDeviceUserSettingsSchema_;
-        static const Schema_Table                         kNetworkUserSettingsSchema_;
-        static const Schema_Table                         kDeviceTableSchema_;
+#if !qUseNewDocumentDBAPI
+        static const Schema_Table kDeviceUserSettingsSchema_;
+        static const Schema_Table kNetworkUserSettingsSchema_;
+        static const Schema_Table kDeviceTableSchema_;
 
         static const Schema_Table kNetworkInterfaceTableSchema_;
         static const Schema_Table kNetworkTableSchema_;
+#endif
 
     private:
         static constexpr Version kCurrentVersion_ = Version{1, 0, VersionStage::Alpha, 0};
         BackendApp::Common::DB fDB_; // Not accessed directly except during construction/destruction (each TableConnection gets its own DB::ConnectionPtr)
-        Execution::Thread::Ptr                                                               fDatabaseSyncThread_{};
-        Synchronized<Mapping<GUID, Device::UserOverridesType>>                               fCachedDeviceUserSettings_;
+        Execution::Thread::Ptr                                  fDatabaseSyncThread_{};
+        Synchronized<Mapping<GUID, Device::UserOverridesType>>  fCachedDeviceUserSettings_;
+        Synchronized<Mapping<GUID, Network::UserOverridesType>> fCachedNetworkUserSettings_;
+#if !qUseNewDocumentDBAPI
         Synchronized<unique_ptr<SQL::ORM::TableConnection<ExternalDeviceUserSettingsElt_>>>  fDeviceUserSettingsTableConnection_;
-        Synchronized<Mapping<GUID, Network::UserOverridesType>>                              fCachedNetworkUserSettings_;
         Synchronized<unique_ptr<SQL::ORM::TableConnection<ExternalNetworkUserSettingsElt_>>> fNetworkUserSettingsTableConnection_;
         unique_ptr<SQL::ORM::TableConnection<Device>>           fDeviceTableConnection_;  // only accessed from a background database thread
         unique_ptr<SQL::ORM::TableConnection<Network>>          fNetworkTableConnection_; // ''
         unique_ptr<SQL::ORM::TableConnection<NetworkInterface>> fNetworkInterfaceTableConnection_; // ''
-        Synchronized<DeviceCollection>                          fDBDevices_;                       // mirror database contents in RAM
-        Synchronized<NetworkCollection>                         fDBNetworks_;                      // ''
-        Synchronized<NetworkInterfaceCollection>                fDBNetworkInterfaces_;             // ''
+#endif
+        Synchronized<DeviceCollection>           fDBDevices_;           // mirror database contents in RAM
+        Synchronized<NetworkCollection>          fDBNetworks_;          // ''
+        Synchronized<NetworkInterfaceCollection> fDBNetworkInterfaces_; // ''
+
+#if qUseNewDocumentDBAPI
+        Document::ObjectCollection::Ptr<Device>           fDocumentDB_DevicesCollection_;
+        Document::ObjectCollection::Ptr<Network>          fDocumentDB_NetworkCollection_;
+        Document::ObjectCollection::Ptr<NetworkInterface> fDocumentDB_NetworkInterfacesCollection_;
+#endif
 
         // the latest copy of what is in the DB (manually kept up to date)
         // NOTE: These are all non-rolled up objects

@@ -12,18 +12,41 @@
 
 #include "Stroika/Foundation/Characters/ToString.h"
 #include "Stroika/Foundation/Common/StroikaVersion.h"
+#if !qUseNewDocumentDBAPI
 #include "Stroika/Foundation/Database/SQL/Transaction.h"
+#endif
 #include "Stroika/Foundation/Debug/Assertions.h"
 #include "Stroika/Foundation/Debug/Trace.h"
 #include "Stroika/Foundation/Execution/Logger.h"
 
 namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
 
-    /*
+/*
      ********************************************************************************
      *************************************** DB *************************************
      ********************************************************************************
      */
+#if qUseNewDocumentDBAPI
+    template <typename T>
+    T DB::AddOrMergeUpdate (Document::ObjectCollection::Ptr<T> dbCollection, const T& d)
+    {
+        using namespace Stroika::Foundation;
+        using namespace Stroika::Foundation::Characters;
+        Debug::TraceContextBumper ctx{"DB::AddOrMergeUpdate", "...,d={}"_f, d};
+        RequireNotNull (dbCollection);
+        std::optional<T> result;
+        if (auto dbObj = dbCollection->GetOne (d.fID.template As<String> ())) {
+            result = T::Merge (*dbObj, d);
+            dbCollection->Replace (*result);
+        }
+        else {
+            result = d;
+            dbCollection->Add (d);
+        }
+        Ensure (result.has_value ());
+        return *result;
+    }
+#endif
 #if !qUseNewDocumentDBAPI
     template <typename T>
     T DB::AddOrMergeUpdate (ORM::TableConnection<T>* dbConnTable, const T& d)

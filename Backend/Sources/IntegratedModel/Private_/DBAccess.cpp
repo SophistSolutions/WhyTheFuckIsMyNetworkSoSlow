@@ -50,9 +50,11 @@ using WebServices::Model::NetworkCollection;
 using WebServices::Model::NetworkInterface;
 using WebServices::Model::NetworkInterfaceCollection;
 
+#if !qUseNewDocumentDBAPI
 using Schema_Table         = SQL::ORM::Schema::Table;
 using Schema_Field         = SQL::ORM::Schema::Field;
 using Schema_CatchAllField = SQL::ORM::Schema::CatchAllField;
+#endif
 
 using IntegratedModel::Private_::DBAccess::Mgr;
 
@@ -80,11 +82,14 @@ const LazyInitialized<ObjectVariantMapper> Mgr::kDBObjectMapper_{[] () {
     });
 
     // ONLY DO THIS FOR WHEN WRITING TO DB -- store GUIDs as BLOBs - at least for database interactions (cuz probably more efficient)
+#if !qUseNewDocumentDBAPI
     mapper.AddCommonType<GUID> (BackendApp::Common::DB::kRepresentIDAs_);
+#endif
 
     return mapper;
 }};
 
+#if !qUseNewDocumentDBAPI
 const Schema_Table Mgr::kDeviceUserSettingsSchema_{"DeviceUserSettings"sv,
                                                    /*
      */
@@ -144,13 +149,18 @@ const Schema_Table Mgr::kNetworkTableSchema_{
         {.fName = "friendlyName"sv, .fVariantValueType = VariantValue::eString},
     },
     Schema_CatchAllField{}};
+#endif
 
 Mgr::Mgr ()
+#if !qUseNewDocumentDBAPI
     : fDB_{kCurrentVersion_, Traversal::Iterable<Schema_Table>{kDeviceTableSchema_, kDeviceUserSettingsSchema_, kNetworkTableSchema_,
                                                                kNetworkInterfaceTableSchema_, kNetworkUserSettingsSchema_}}
+#endif
 {
-    Debug::TraceContextBumper ctx{L"IntegratedModel::{}::Mgr_::CTOR"};
+    Debug::TraceContextBumper ctx{"IntegratedModel::{}::Mgr_::CTOR"};
+
     // Each TableConnection gets its own DB::Connection::Ptr
+#if !qUseNewDocumentDBAPI
     fDeviceUserSettingsTableConnection_ = make_unique<SQL::ORM::TableConnection<ExternalDeviceUserSettingsElt_>> (
         fDB_.NewConnection (), kDeviceUserSettingsSchema_, kDBObjectMapper_,
         BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<ExternalDeviceUserSettingsElt_>> ());
@@ -166,6 +176,11 @@ Mgr::Mgr ()
     fNetworkInterfaceTableConnection_ = make_unique<SQL::ORM::TableConnection<NetworkInterface>> (
         fDB_.NewConnection (), kNetworkInterfaceTableSchema_, kDBObjectMapper_,
         BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd<SQL::ORM::TableConnection<NetworkInterface>> ());
+#endif
+
+#if qUseNewDocumentDBAPI
+    AssertNotImplemented ();
+#else
     try {
         Debug::TimingTrace ttrc{L"...load of fCachedDeviceUserSettings_ from database ", 1s};
         fCachedDeviceUserSettings_.store (Mapping<GUID, Model::Device::UserOverridesType>{
@@ -186,6 +201,7 @@ Mgr::Mgr ()
         Logger::sThe.Log (Logger::eCriticalError, "Failed to load fCachedNetworkUserSettings_ from db: {}"_f, current_exception ());
         Execution::ReThrow ();
     }
+#endif
 }
 
 Mgr::~Mgr ()
@@ -240,19 +256,27 @@ bool Mgr::SetDeviceUserSettings (const GUID& id, const std::optional<Device::Use
     auto lk = fCachedDeviceUserSettings_.rwget ();
     if (settings) {
         if (fCachedDeviceUserSettings_.cget ().cref ().Lookup (id) != settings) {
+#if qUseNewDocumentDBAPI
+            AssertNotImplemented ();
+#else
             fDeviceUserSettingsTableConnection_.rwget ().cref ()->AddOrUpdate (ExternalDeviceUserSettingsElt_{id, *settings});
+#endif
             fCachedDeviceUserSettings_.rwget ().rwref ().Add (id, *settings);
             return true;
         }
         return false;
     }
     else {
+#if qUseNewDocumentDBAPI
+        AssertNotImplemented ();
+#else
         if constexpr (kRepresentIDAs_ == VariantValue::Type::eString) {
             fDeviceUserSettingsTableConnection_.rwget ().cref ()->Delete (VariantValue{id.As<String> ()});
         }
         else {
             fDeviceUserSettingsTableConnection_.rwget ().cref ()->Delete (id);
         }
+#endif
         return fCachedDeviceUserSettings_.rwget ().rwref ().RemoveIf (id);
     }
 }
@@ -265,23 +289,32 @@ bool Mgr::SetNetworkUserSettings (const GUID& id, const std::optional<Network::U
     auto lk = fCachedNetworkUserSettings_.rwget ();
     if (settings) {
         if (fCachedNetworkUserSettings_.cget ().cref ().Lookup (id) != settings) {
+#if qUseNewDocumentDBAPI
+            AssertNotImplemented ();
+#else
             fNetworkUserSettingsTableConnection_.rwget ().cref ()->AddOrUpdate (ExternalNetworkUserSettingsElt_{id, *settings});
+#endif
             fCachedNetworkUserSettings_.rwget ().rwref ().Add (id, *settings);
             return true;
         }
         return false;
     }
     else {
+#if qUseNewDocumentDBAPI
+        AssertNotImplemented ();
+#else
         if constexpr (kRepresentIDAs_ == VariantValue::Type::eString) {
             fNetworkUserSettingsTableConnection_.rwget ().cref ()->Delete (VariantValue{id.As<String> ()});
         }
         else {
             fNetworkUserSettingsTableConnection_.rwget ().cref ()->Delete (id);
         }
+#endif
         return fCachedNetworkUserSettings_.rwget ().rwref ().RemoveIf (id);
     }
 }
 
+#if !qUseNewDocumentDBAPI
 String Mgr::GenRandomIDString_ (VariantValue::Type t)
 {
     switch (t) {
@@ -294,15 +327,16 @@ String Mgr::GenRandomIDString_ (VariantValue::Type t)
                    L"1) as v) ";
         default:
             RequireNotReached ();
-            return L"";
+            return ""sv;
     }
 }
+#endif
 
 void Mgr::_StartBackgroundThread ()
 {
 
     Require (fDatabaseSyncThread_ == nullptr);
-    fDatabaseSyncThread_ = Thread::New ([this] () { BackgroundDatabaseThread_ (); }, Thread::eAutoStart, L"BackgroundDatabaseThread"sv);
+    fDatabaseSyncThread_ = Thread::New ([this] () { BackgroundDatabaseThread_ (); }, Thread::eAutoStart, "BackgroundDatabaseThread"sv);
 }
 
 void Mgr::BackgroundDatabaseThread_ ()
@@ -317,15 +351,25 @@ void Mgr::BackgroundDatabaseThread_ ()
             // UPDATE fDBNetworkInterfaces_ INCREMENTALLY to reflect reflect these merges
             FromDiscovery::GetNetworkInterfaces ().Apply ([this] (const Model::NetworkInterface& ni) {
                 Assert (ni.fAggregatesReversibly == nullopt); // dont write these summary values
+#if !qUseNewDocumentDBAPI
                 fNetworkInterfaceTableConnection_->AddOrUpdate (ni);
+#endif
                 fDBNetworkInterfaces_.rwget ()->Add (ni);
+#if qUseNewDocumentDBAPI
+                fDocumentDB_NetworkInterfacesCollection_.AddOrUpdate (ni);
+#endif
             });
 
             // UPDATE fDBNetworks_ INCREMENTALLY to reflect reflect these merges
             FromDiscovery::GetNetworks ().Apply ([this] (const Model::Network& n) {
                 Assert (n.fSeen);                            // don't track/write items which have never been seen
                 Assert (n.fAggregatesReversibly == nullopt); // dont write these summary values
+#if !qUseNewDocumentDBAPI
                 fNetworkTableConnection_->AddOrUpdate (n);
+#endif
+#if qUseNewDocumentDBAPI
+                fDocumentDB_NetworkCollection_.AddOrUpdate (n);
+#endif
                 fDBNetworks_.rwget ()->Add (n);
             });
 
@@ -335,8 +379,15 @@ void Mgr::BackgroundDatabaseThread_ ()
                 Assert (d.fSeen.EverSeen ());                // don't track/write items which have never been seen
                 Assert (d.fUserOverrides == nullopt);        // tracked on rollup devices, not snapshot devices
                 Assert (d.fAggregatesReversibly == nullopt); // dont write these summary values
+#if qUseNewDocumentDBAPI
+                Device rec2Update;
+#else
                 auto rec2Update = fDB_.AddOrMergeUpdate (fDeviceTableConnection_.get (), d);
+#endif
                 fDBDevices_.rwget ()->Add (rec2Update);
+#if qUseNewDocumentDBAPI
+                fDocumentDB_DevicesCollection_.AddOrUpdate (rec2Update);
+#endif
             });
 
             // only update periodically
@@ -364,7 +415,18 @@ void Mgr::_OneTimeStartupLoadDB ()
     optional<unsigned int>    netInterfaceSnapshotsLoaded{};
     optional<unsigned int>    netSnapshotsLoaded{};
     optional<unsigned int>    deviceSnapshotsLoaded{};
-    auto                      fetchInterfacesNetworks = [this] () -> unsigned int {
+
+#if qUseNewDocumentDBAPI
+    {
+        auto conn                      = fDB_.GetInternallySynchronizedConnection ();
+        fDocumentDB_DevicesCollection_ = Document::ObjectCollection::New<Device> (conn.CreateCollection ("Devices"sv), kDBObjectMapper_);
+        fDocumentDB_NetworkCollection_ = Document::ObjectCollection::New<Network> (conn.CreateCollection ("Networks"sv), kDBObjectMapper_);
+        fDocumentDB_NetworkInterfacesCollection_ =
+            Document::ObjectCollection::New<NetworkInterface> (conn.CreateCollection ("NetworkInteraces"sv), kDBObjectMapper_);
+    }
+#endif
+
+    auto fetchInterfacesNetworks = [this] () -> unsigned int {
         try {
             Debug::TimingTrace ttrc{L"...initial load of fDBNetworkInterfaces_ from database ", 1s};
             auto errorHandler = [] ([[maybe_unused]] const SQL::Statement::Row& r, const exception_ptr& e) -> optional<NetworkInterface> {
@@ -372,7 +434,12 @@ void Mgr::_OneTimeStartupLoadDB ()
                 Logger::sThe.Log (Logger::eError, "Error reading database of persisted network interfaces snapshot ('{}'): {}"_f, r, e);
                 return nullopt;
             };
+#if qUseNewDocumentDBAPI
+            Sequence<NetworkInterface> all;
+            AssertNotImplemented ();
+#else
             auto all = fNetworkInterfaceTableConnection_->GetAll (errorHandler);
+#endif
             fDBNetworkInterfaces_.store (NetworkInterfaceCollection{all});
             return static_cast<unsigned int> (all.size ());
         }
@@ -389,7 +456,12 @@ void Mgr::_OneTimeStartupLoadDB ()
                 Logger::sThe.Log (Logger::eError, "Error reading database of persisted network snapshot ('{}'): {}"_f, r, e);
                 return nullopt;
             };
+#if qUseNewDocumentDBAPI
+            Sequence<Network> all;
+            AssertNotImplemented ();
+#else
             auto all = fNetworkTableConnection_->GetAll (errorHandler);
+#endif
             fDBNetworks_.store (NetworkCollection{all});
             return static_cast<unsigned int> (all.size ());
         }
@@ -406,7 +478,12 @@ void Mgr::_OneTimeStartupLoadDB ()
                 Logger::sThe.Log (Logger::eError, "Error reading database of persisted device snapshot ('{}'): {}"_f, r, e);
                 return nullopt;
             };
+#if qUseNewDocumentDBAPI
+            Sequence<Device> all;
+            AssertNotImplemented ();
+#else
             auto all = fDeviceTableConnection_->GetAll (errorHandler);
+#endif
             if constexpr (qDebug) {
                 all.Apply ([] ([[maybe_unused]] const Device& d) { Assert (!d.fUserOverrides); }); // tracked on rollup devices, not snapshot devices
             }

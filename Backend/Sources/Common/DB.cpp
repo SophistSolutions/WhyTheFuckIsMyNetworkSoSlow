@@ -10,10 +10,15 @@
 #include "Stroika/Foundation/Containers/KeyedCollection.h"
 #include "Stroika/Foundation/Containers/Set.h"
 #include "Stroika/Foundation/DataExchange/ObjectVariantMapper.h"
+#if !qUseNewDocumentDBAPI
 #include "Stroika/Foundation/Database/SQL/ORM/Schema.h"
 #include "Stroika/Foundation/Database/SQL/ORM/TableConnection.h"
 #include "Stroika/Foundation/Database/SQL/ORM/Versioning.h"
 #include "Stroika/Foundation/Database/SQL/SQLite.h"
+#endif
+//#if qUseNewDocumentDBAPI
+#include "Stroika/Foundation/Database/Document/LocalDocumentDB.h"
+//#endif
 #include "Stroika/Foundation/Debug/TimingTrace.h"
 #include "Stroika/Foundation/Execution/Sleep.h"
 #include "Stroika/Foundation/Execution/Synchronized.h"
@@ -47,7 +52,7 @@ using namespace SQL::SQLite;
 const ReadOnlyProperty<filesystem::path> WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB::pFileName{
     [] ([[maybe_unused]] const auto* property) -> filesystem::path {
 #if qUseNewDocumentDBAPI
-        return IO::FileSystem::WellKnownLocations::GetApplicationData () / "WhyTheFuckIsMyNetworkSoSlow" / "db-v.json";
+        return IO::FileSystem::WellKnownLocations::GetApplicationData () / "WhyTheFuckIsMyNetworkSoSlow" / "db-fs-v1";
 #else
         return IO::FileSystem::WellKnownLocations::GetApplicationData () / "WhyTheFuckIsMyNetworkSoSlow" / "db-v16.db";
 #endif
@@ -79,10 +84,17 @@ const ReadOnlyProperty<uintmax_t> WhyTheFuckIsMyNetworkSoSlow::BackendApp::Commo
     return szTotal;
 }};
 
-#if qUseNewDocumentDBAPI || 1
-Database::Document::Connection::Ptr NewConnection2 ()
+#if qUseNewDocumentDBAPI
+Database::Document::Connection::Ptr WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB::GetInternallySynchronizedConnection ()
 {
-    return Database::Document::Connection::Ptr{};
+    using namespace Database::Document;
+    auto rwLock = fConn_.rwget ();
+    if (rwLock.rwref () == nullptr) {
+        auto f = pFileName ();
+        rwLock.store (LocalDocumentDB::New (LocalDocumentDB::Options{.fInternallySynchronizedLetter = Execution::eInternallySynchronized,
+                                                                     .fStorage = LocalDocumentDB::Options::DirectoryFileStorage{.fRoot = f}}));
+    }
+    return rwLock.cref ();
 }
 #endif
 

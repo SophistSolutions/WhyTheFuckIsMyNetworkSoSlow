@@ -129,8 +129,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         using SystemIDType = IO::Network::Interface::SystemIDType;
 
         /**
-         *  GUID for this interface - MANUFACTURED by WTF
-         // @todo rename fID, and actually auto-generate it uniquely somehow (or OK to use windows based one)
+         *  GUID for this interface - MANUFACTURED by WTF (really database layer)
          */
         GUID fID;
 

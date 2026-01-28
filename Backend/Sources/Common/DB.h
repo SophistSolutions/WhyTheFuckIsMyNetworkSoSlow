@@ -17,11 +17,11 @@
 #define qUseNewDocumentDBAPI 0
 #endif
 
-#if qUseNewDocumentDBAPI || 1
+#if qUseNewDocumentDBAPI
 #include "Stroika/Foundation/Database/Document/Collection.h"
 #include "Stroika/Foundation/Database/Document/Connection.h"
+#include "Stroika/Foundation/Database/Document/ObjectCollection.h"
 #endif
-
 #if !qUseNewDocumentDBAPI
 #include "Stroika/Foundation/Database/SQL/Connection.h"
 #include "Stroika/Foundation/Database/SQL/ORM/Schema.h"
@@ -33,9 +33,7 @@
  */
 namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
 
-#if qUseNewDocumentDBAPI
-    //using namespace Stroika::Foundation::Database::Document;
-#else
+#if !qUseNewDocumentDBAPI
     using namespace Stroika::Foundation::Database::SQL;
 #endif
     using Stroika::Foundation::Common::ReadOnlyProperty;
@@ -55,19 +53,19 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
 #endif
 
     public:
-        DB () = delete;
+        DB () = default;
 #if !qUseNewDocumentDBAPI
         DB (Version targetDBVersion, const Iterable<ORM::Schema::Table>& tables);
 #endif
         DB (const DB&) = default;
         DB (DB&&)      = default;
 
-#if qUseNewDocumentDBAPI || 1
+#if qUseNewDocumentDBAPI
     public:
         /**
          *
          */
-        nonvirtual Database::Document::Connection::Ptr NewConnection2 ();
+        nonvirtual Database::Document::Connection::Ptr GetInternallySynchronizedConnection ();
 #endif
 #if !qUseNewDocumentDBAPI
     public:
@@ -75,6 +73,12 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
          *  Note - each Connection::Ptr can be used from any thread, but is not internally synchronized and must be used from one thread at a time.
          */
         nonvirtual SQL::Connection::Ptr NewConnection ();
+#endif
+
+#if qUseNewDocumentDBAPI
+    public:
+        template <typename T>
+        nonvirtual T AddOrMergeUpdate (Document::ObjectCollection::Ptr<T> dbCollection, const T& d);
 #endif
 
 #if !qUseNewDocumentDBAPI
@@ -94,6 +98,14 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
 
     public:
         struct WriteStatsContext;
+
+#if qUseNewDocumentDBAPI
+    private:
+        /**
+         *
+         */
+        Execution::Synchronized<Database::Document::Connection::Ptr> fConn_;
+#endif
 
 #if !qUseNewDocumentDBAPI
     private:

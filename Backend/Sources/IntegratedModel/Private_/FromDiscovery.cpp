@@ -57,7 +57,7 @@ namespace {
             // this (due to firewalls, NAT etc).
             // Use relative URL for now, as that should work for most cases
             if (g) {
-                return URI{nullopt, nullopt, L"/api/v1/blob/" + g->ToString ()};
+                return URI{nullopt, nullopt, "/api/v1/blob/"_k + g->ToString ()};
             }
         }
         catch (const std::system_error& e) {
