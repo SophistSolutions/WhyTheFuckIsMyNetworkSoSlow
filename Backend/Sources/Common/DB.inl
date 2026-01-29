@@ -33,15 +33,15 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         using namespace Stroika::Foundation;
         using namespace Stroika::Foundation::Characters;
         Debug::TraceContextBumper ctx{"DB::AddOrMergeUpdate", "...,d={}"_f, d};
-        RequireNotNull (dbCollection);
-        std::optional<T> result;
-        if (auto dbObj = dbCollection->GetOne (d.fID.template As<String> ())) {
+        std::optional<T>          result;
+        // @todo transaction here...
+        if (auto dbObj = dbCollection.Get (d.fID.template As<String> ())) {
             result = T::Merge (*dbObj, d);
-            dbCollection->Replace (*result);
+            dbCollection.Replace (*result);
         }
         else {
             result = d;
-            dbCollection->Add (d);
+            dbCollection.Add (d);
         }
         Ensure (result.has_value ());
         return *result;

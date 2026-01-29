@@ -29,7 +29,6 @@ using Stroika::Foundation::Database::SQL::ORM::Schema::CatchAllField;
 using Stroika::Foundation::Database::SQL::ORM::Schema::Field;
 using Stroika::Foundation::Database::SQL::ORM::Schema::Table;
 #endif
-// using Stroika::Foundation::DataExchange::ObjectVariantMapper;
 
 using namespace WhyTheFuckIsMyNetworkSoSlow;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp;
@@ -245,7 +244,7 @@ GUID BLOBMgr::AddBLOBFromURL (const URI& url, bool recheckIfExpired)
     GUID       guid = AddBLOB (data.first, data.second);
     lock_guard lock{sConn_};
 #if qUseNewDocumentDBAPI
-    sConn_.rwget ().rwref ()->fBLOBURLs.Add (DBRecs_::BLOBURL_{.fURI = url, .fBLOBID = guid});
+    sConn_.rwget ().rwref ()->fBLOBURLs.AddOrUpdate (DBRecs_::BLOBURL_{.fURI = url, .fBLOBID = guid});
 #else
     sConn_.rwget ().rwref ()->fBLOBURLs->AddOrUpdate (DBRecs_::BLOBURL_{.fURI = url, .fBLOBID = guid});
 #endif
@@ -262,7 +261,12 @@ optional<GUID> BLOBMgr::AsyncAddBLOBFromURL (const URI& url, bool recheckIfExpir
     optional<GUID> storeGUID;
     {
 #if qUseNewDocumentDBAPI
-        AssertNotImplemented ();
+        using Document::Filter;
+        using namespace Database::Document;
+        if (optional<DBRecs_::BLOBURL_> cachedURLObj = sConn_.rwget ().rwref ()->fBLOBURLs.Get (
+                Filter{{FilterElements::Equals{.fLHS = FilterElements::FieldName{"uri"sv}, .fRHS = FilterElements::Value{url.As<String> ()}}}})) {
+            storeGUID = cachedURLObj->fBLOBID;
+        }
 #else
         if (optional<DBRecs_::BLOBURL_> cachedURLObj = sConn_.rwget ().rwref ()->fBLOBURLs->Get (url)) {
             storeGUID = cachedURLObj->fBLOBID;
@@ -280,7 +284,12 @@ optional<GUID> BLOBMgr::AsyncAddBLOBFromURL (const URI& url, bool recheckIfExpir
 optional<GUID> BLOBMgr::Lookup (const URI& url)
 {
 #if qUseNewDocumentDBAPI
-    AssertNotImplemented ();
+    using Document::Filter;
+    using namespace Database::Document;
+    if (optional<DBRecs_::BLOBURL_> cachedURLObj = sConn_.rwget ().rwref ()->fBLOBURLs.Get (
+            Filter{{FilterElements::Equals{.fLHS = FilterElements::FieldName{"uri"sv}, .fRHS = FilterElements::Value{url.As<String> ()}}}})) {
+        return cachedURLObj->fBLOBID;
+    }
 #else
     if (optional<DBRecs_::BLOBURL_> cachedURLObj = sConn_.rwget ().rwref ()->fBLOBURLs->Get (url)) {
         return cachedURLObj->fBLOBID;
@@ -292,8 +301,7 @@ optional<GUID> BLOBMgr::Lookup (const URI& url)
 tuple<BLOB, optional<InternetMediaType>> BLOBMgr::GetBLOB (const GUID& id) const
 {
 #if qUseNewDocumentDBAPI
-    AssertNotImplemented ();
-    optional<DBRecs_::BLOB_> ob;
+    optional<DBRecs_::BLOB_> ob = sConn_.rwget ().rwref ()->fBLOBs.Get (id.As<String> ());
 #else
     optional<DBRecs_::BLOB_> ob = sConn_.rwget ().rwref ()->fBLOBs->Get (id);
 #endif
