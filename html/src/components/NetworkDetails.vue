@@ -1,35 +1,30 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, computed, ComputedRef, ref } from 'vue';
-import { Notify } from 'quasar';
+import { onMounted, onUnmounted, computed, ComputedRef, ref } from "vue";
+import { Notify } from "quasar";
+import JsonViewer from "vue-json-viewer";
+import { DateTime } from "luxon";
 
-import JsonViewer from 'vue-json-viewer';
-import moment from 'moment';
-
-import { IDevice } from '../models/device/IDevice';
-
-import {
-  patchNetworkUserProps_name,
-  patchNetworkUserProps_notes,
-} from '../proxy/API';
-
+import { IDevice } from "src/models/device/IDevice";
+import { IDateTimeRange } from "src/models/common/IDateTimeRange";
+import { patchNetworkUserProps_name, patchNetworkUserProps_notes } from "src/proxy/API";
 import {
   FormatLocation,
   GetDeviceIDsInNetwork,
   GetDevicesForNetworkLink,
   GetNetworkCIDRs,
   FormatIDateTimeRange,
-} from '../models/network/Utils';
+} from "src/models/network/Utils";
+import { PluralizeNoun } from "src/utils/Linguistics";
 
-import { PluralizeNoun } from 'src/utils/Linguistics';
+import { useNetStateStore } from "src/stores/Net-State-store";
+import { INetwork } from "src/models/network/INetwork";
 
 // Components
-import ReadOnlyTextWithHover from '../components/ReadOnlyTextWithHover.vue';
-import Link2DetailsPage from '../components/Link2DetailsPage.vue';
-import NetworkInterfacesDetails from '../components/NetworkInterfacesDetails.vue';
-import PopupEditTextField from '../components/PopupEditTextField.vue';
+import ReadOnlyTextWithHover from "../components/ReadOnlyTextWithHover.vue";
+import Link2DetailsPage from "../components/Link2DetailsPage.vue";
+import NetworkInterfacesDetails from "../components/NetworkInterfacesDetails.vue";
+import PopupEditTextField from "../components/PopupEditTextField.vue";
 
-import { useNetStateStore } from '../stores/Net-State-store';
-import { INetwork } from 'src/models/network/INetwork';
 
 const store = useNetStateStore();
 
@@ -65,7 +60,7 @@ let defaultDisplayedNameForPopup_ = computed<string>(() => {
   ) {
     return currentNetwork.value.names[0].name;
   }
-  return '';
+  return "";
 });
 
 function doFetches() {
@@ -118,7 +113,7 @@ async function notifyOfNetworkNameEdit_(v: any) {
     try {
       await patchNetworkUserProps_name(currentNetwork.value?.id, v);
       store.fetchNetworks([currentNetwork.value?.id]);
-      Notify.create('updated');
+      Notify.create("updated");
     } catch (e) {
       Notify.create(`Failed updating network name: ${e.message}!`);
     }
@@ -129,7 +124,7 @@ async function notifyOfNetworkNotesEdit_(v: any) {
     try {
       await patchNetworkUserProps_notes(currentNetwork.value?.id, v);
       store.fetchNetworks([currentNetwork.value?.id]);
-      Notify.create('updated');
+      Notify.create("updated");
     } catch (e) {
       Notify.create(`Failed updating network notes: ${e.message}!`);
     }
@@ -147,15 +142,17 @@ function validateNetworkName_(v: any) {
 function SortNetworkIDsByMostRecentFirst_(ids: Array<string>): Array<string> {
   let r: Array<string> = ids.filter((x) => true);
   r.sort((l, r) => {
-    let lSeen = store.getNetwork(l)?.seen;
-    let rSeen = store.getNetwork(r)?.seen;
+    let lSeen: IDateTimeRange | undefined = store.getNetwork(l)?.seen;
+    let rSeen: IDateTimeRange | undefined = store.getNetwork(r)?.seen;
     if (lSeen?.upperBound == null) {
       return 1;
     }
     if (rSeen?.upperBound == null) {
       return -1;
     }
-    return moment(rSeen.upperBound).diff(lSeen.upperBound);
+    return DateTime.fromJSDate(rSeen.upperBound).diff(
+      DateTime.fromJSDate(lSeen.upperBound)
+    ).shiftTo('seconds').seconds;
   });
   return r;
 }
@@ -180,7 +177,7 @@ const aliases = computed<string[] | undefined>(() => {
       <div class="col-3">Name</div>
       <div class="col">
         <span>{{
-          currentNetwork.names.length > 0 ? currentNetwork.names[0].name : ''
+          currentNetwork.names.length > 0 ? currentNetwork.names[0].name : ""
         }}</span>
         <q-icon dense dark size="xs" name="edit" v-if="props.allowEdit" />
         <PopupEditTextField
@@ -197,10 +194,10 @@ const aliases = computed<string[] | undefined>(() => {
     </div>
     <div class="row" v-if="aliases && aliases.length > 1">
       <div class="col-3">
-        {{ PluralizeNoun('Alias', aliases.length) }}
+        {{ PluralizeNoun("Alias", aliases.length) }}
       </div>
       <div class="col">
-        {{ aliases.join(', ') }}
+        {{ aliases.join(", ") }}
       </div>
     </div>
     <div class="row">
@@ -215,10 +212,7 @@ const aliases = computed<string[] | undefined>(() => {
         {{ FormatIDateTimeRange(currentNetwork.seen) }}
       </div>
     </div>
-    <div
-      class="row"
-      v-if="props.allowEdit || currentNetwork?.userOverrides?.notes"
-    >
+    <div class="row" v-if="props.allowEdit || currentNetwork?.userOverrides?.notes">
       <div class="col-3">Notes</div>
       <div class="col">
         <span>{{ currentNetwork?.userOverrides?.notes }}</span>
@@ -235,14 +229,14 @@ const aliases = computed<string[] | undefined>(() => {
     </div>
     <div class="row">
       <div class="col-3">
-        {{ PluralizeNoun('CIDR', currentNetwork.networkAddresses.length) }}
+        {{ PluralizeNoun("CIDR", currentNetwork.networkAddresses.length) }}
       </div>
       <div class="col">{{ GetNetworkCIDRs(currentNetwork) }}</div>
     </div>
     <div class="row" v-if="currentNetwork.geographicLocation">
       <div class="col-3">Geographic Location</div>
       <div class="col">
-        {{ FormatLocation(currentNetwork.geographicLocation) ?? '?' }}
+        {{ FormatLocation(currentNetwork.geographicLocation) ?? "?" }}
       </div>
     </div>
     <div class="row" v-if="currentNetwork.internetServiceProvider">
@@ -253,7 +247,7 @@ const aliases = computed<string[] | undefined>(() => {
       <div class="col-3">
         {{
           PluralizeNoun(
-            'Device',
+            "Device",
             GetDeviceIDsInNetwork(currentNetwork, allDevices).length
           )
         }}
@@ -266,16 +260,13 @@ const aliases = computed<string[] | undefined>(() => {
     </div>
     <div
       class="row"
-      v-if="
-        currentNetwork.externalAddresses &&
-        currentNetwork.externalAddresses.length
-      "
+      v-if="currentNetwork.externalAddresses && currentNetwork.externalAddresses.length"
     >
       <div class="col-3">
         External IP
-        {{ PluralizeNoun('Address', currentNetwork.externalAddresses.length) }}
+        {{ PluralizeNoun("Address", currentNetwork.externalAddresses.length) }}
       </div>
-      <div class="col">{{ currentNetwork.externalAddresses.join(', ') }}</div>
+      <div class="col">{{ currentNetwork.externalAddresses.join(", ") }}</div>
     </div>
     <div
       class="row"
@@ -289,7 +280,7 @@ const aliases = computed<string[] | undefined>(() => {
         Gateway (IP/Hardware)
         {{
           PluralizeNoun(
-            'Address',
+            "Address",
             Math.max(
               currentNetwork.gateways?.length,
               currentNetwork.gatewayHardwareAddresses?.length
@@ -298,18 +289,15 @@ const aliases = computed<string[] | undefined>(() => {
         }}
       </div>
       <div class="col">
-        {{ currentNetwork.gateways?.join(', ') }} /
-        {{ currentNetwork.gatewayHardwareAddresses?.join(', ') }}
+        {{ currentNetwork.gateways?.join(", ") }} /
+        {{ currentNetwork.gatewayHardwareAddresses?.join(", ") }}
       </div>
     </div>
-    <div
-      class="row"
-      v-if="currentNetwork.DNSServers && currentNetwork.DNSServers.length"
-    >
+    <div class="row" v-if="currentNetwork.DNSServers && currentNetwork.DNSServers.length">
       <div class="col-3">
-        {{ PluralizeNoun('DNS Server', currentNetwork.DNSServers.length) }}
+        {{ PluralizeNoun("DNS Server", currentNetwork.DNSServers.length) }}
       </div>
-      <div class="col">{{ currentNetwork.DNSServers.join(', ') }}</div>
+      <div class="col">{{ currentNetwork.DNSServers.join(", ") }}</div>
     </div>
     <div
       class="row"
@@ -358,15 +346,10 @@ const aliases = computed<string[] | undefined>(() => {
         </div>
       </div>
     </div>
-    <div
-      class="row"
-      v-if="currentNetwork.attachedInterfaces && props.showExtraDetails"
-    >
+    <div class="row" v-if="currentNetwork.attachedInterfaces && props.showExtraDetails">
       <div class="col-3">
         Attached Network
-        {{
-          PluralizeNoun('Interface', currentNetwork.attachedInterfaces.length)
-        }}
+        {{ PluralizeNoun("Interface", currentNetwork.attachedInterfaces.length) }}
       </div>
       <div class="col">
         <NetworkInterfacesDetails
@@ -374,10 +357,7 @@ const aliases = computed<string[] | undefined>(() => {
         />
       </div>
     </div>
-    <div
-      class="row"
-      v-if="currentNetwork.userOverrides && props.showExtraDetails"
-    >
+    <div class="row" v-if="currentNetwork.userOverrides && props.showExtraDetails">
       <div class="col-3">USEROVERRIDES</div>
       <div class="col">
         <json-viewer
