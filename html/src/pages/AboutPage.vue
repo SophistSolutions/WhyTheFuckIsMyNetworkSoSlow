@@ -179,7 +179,7 @@ function webServerMsg_(info: IWebServerStats): string {
       </q-card>
 
       <!--App Stats-->
-      <q-card class="pageCard col-11" v-if="about">
+      <q-card class="pageCard col-11">
         <q-card-section>
           <div class="row">
             <div class="col-3 text-h6">WTF App</div>
@@ -192,14 +192,14 @@ function webServerMsg_(info: IWebServerStats): string {
                 <div class="col-3" title="last successful message received">Web Services URL</div>
                 <div class="col">{{ gRuntimeConfiguration.API_ROOT }}</div>
               </div>
-              <div class="row" style="margin-left: 2em">
-                <div class="col-3" title="last successful message received">Last message</div>
+              <div class="row" >
+                <div class="col-4" title="last successful message received">Last message</div>
                 <div class="col" :style="lastSuccessfulAPICallMessageStyle">{{
                   lastSuccessfulAPICallMessage
                 }}</div>
               </div>
-              <div class="row" style="margin-left: 2em">
-                <div class="col-3" title="Web Service">API Docs:</div>
+              <div class="row" >
+                <div class="col-4" title="Web Service">API Docs:</div>
                 <a :href="gRuntimeConfiguration.API_ROOT + '/api'" target="_new">{{ gRuntimeConfiguration.API_ROOT
                 }}/api</a>
               </div>
