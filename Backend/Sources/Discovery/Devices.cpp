@@ -660,7 +660,7 @@ namespace {
 // turn on tracking of locks on sDiscoveredDevices_
 #if qDefaultTracingOn && qLOCK_DEBUGGING_
     int ignored = [] () {
-        sDiscoveredDevices_.fDbgTraceLocksName = L"DiscoveredDevices_";
+        sDiscoveredDevices_.fDbgTraceLocksName = "DiscoveredDevices_";
         return 0;
     }();
 #endif
@@ -776,6 +776,9 @@ namespace {
                                 &l,
                                 [&] (auto&& writeLock) {
                                     writeLock.rwref ().Add (di);
+                                    if (retriedLockCount > 0) {
+                                        DbgTrace ("MyDeviceDiscoverer_: sDiscoveredDevices_ succeeded so clearing retrying count (was cnt={})"_f, retriedLockCount);
+                                    }
 #if qLOCK_DEBUGGING_
                                     DbgTrace ("!!! succeeded  updating writelock ***MyDeviceDiscoverer_"_f);
 #endif
@@ -1144,7 +1147,7 @@ namespace {
 
                         if (di.fAttachedNetworks.empty ()) {
                             DbgTrace ("Ignoring MyNeighborDiscoverer_ device {} because it was not on a known network (neighbor: {})"_f, di, i);
-                            return;
+                            continue;
                         }
                         Assert (not di.GetInternetAddresses ().empty ()); // can happen if we find address in tmp.AddIPAddress_() that's not bound to any adapter (but that shouldn't happen so investigate but is for now so ignore breifly)
 
@@ -1169,6 +1172,9 @@ namespace {
                                 &l,
                                 [&] (auto&& writeLock) {
                                     writeLock.rwref ().Add (di);
+                                    if (retriedLockCount > 0) {
+                                        DbgTrace ("MyNeighborDiscoverer_: sDiscoveredDevices_ succeeded so clearing retrying count (was cnt={})"_f, retriedLockCount);
+                                    }
 #if qLOCK_DEBUGGING_
                                     DbgTrace ("!!! succeeded  updating with writelock ***MyNeighborDiscoverer_"_f);
 #endif
@@ -1651,7 +1657,7 @@ void Discovery::DevicesMgr::ReScan (const GUID& deviceID)
             tmp.PatchDerivedFields ();
             Assert (tmp.fGUID != GUID{});
             l.rwref ().Add (tmp);
-            DbgTrace ("Updated device %s for fKnownOpenPorts: {}"_f, tmp.fGUID, portScanResults.fDiscoveredOpenPorts);
+            DbgTrace ("Updated device {} for fKnownOpenPorts: {}"_f, tmp.fGUID, portScanResults.fDiscoveredOpenPorts);
         }
         else {
             AssertNotReached ();
