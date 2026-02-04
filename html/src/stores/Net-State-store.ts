@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import { Ref } from 'vue';
 
 import { INetwork } from '../models/network/INetwork';
 import { INetworkInterface } from '../models/network/INetworkInterface';
@@ -30,6 +31,7 @@ interface ILoading {
 export const useNetStateStore = defineStore('Net-State-Store', {
   state: () => ({
     about: undefined as IAbout | undefined,
+    lastSuccessfulAPICall: undefined as Ref<Date | undefined>,
     rolledUpAvailableNetworkIDs: new Set() as Set<string>,
     // cache of objects, some of which maybe primary networks (rollups) and some maybe details
     networkDetails: {} as { [key: string]: INetwork },
@@ -50,6 +52,9 @@ export const useNetStateStore = defineStore('Net-State-Store', {
     loadingDeviceDetailsForID: new Set() as Set<string>,
   }),
   getters: {
+    getLastSuccessfulAPICall: (state) => {
+      return state.lastSuccessfulAPICall;
+    },
     getLoading_Networks: (state) => {
       return state.loadingActiveNetworks;
     },
@@ -86,9 +91,6 @@ export const useNetStateStore = defineStore('Net-State-Store', {
     getDevice: (state) => {
       return (id: string) => state.deviceDetails[id];
     },
-    getAboutInfo: (state) => {
-      return state.about;
-    },
   },
   actions: {
     async fetchAvailableNetworks() {
@@ -109,6 +111,7 @@ export const useNetStateStore = defineStore('Net-State-Store', {
           this.rolledUpAvailableNetworkIDs.add(i)
         );
         this.loadingActiveNetworks.numberOfTimesLoaded++;
+        this.lastSuccessfulAPICall = new Date();
       } finally {
         this.loadingActiveNetworks.numberOfOutstandingLoadRequests--;
       }
@@ -151,6 +154,7 @@ export const useNetStateStore = defineStore('Net-State-Store', {
               console.log('new network value: id=', r.id);
             }
             this.networkDetails[i] = r;
+            this.lastSuccessfulAPICall = new Date();
           }
         } finally {
           this.loadingNetworkDetailsForID.delete(i);
@@ -159,6 +163,7 @@ export const useNetStateStore = defineStore('Net-State-Store', {
     },
     async fetchAboutInfo() {
       this.about = await fetchAboutInfo();
+      this.lastSuccessfulAPICall = new Date();
     },
     async fetchActiveDevices(searchSpecs?: ISortBy) {
       // primitive WSAPI throttling
@@ -173,6 +178,7 @@ export const useNetStateStore = defineStore('Net-State-Store', {
         this.rolledUpDeviceIDs.clear(); // unclear but probably sensible - careful of reactivity
         devices.forEach(async (i: string) => this.rolledUpDeviceIDs.add(i));
         this.loadingActiveDevices.numberOfTimesLoaded++;
+        this.lastSuccessfulAPICall = new Date();
       } finally {
         this.loadingActiveDevices.numberOfOutstandingLoadRequests--;
       }
@@ -196,6 +202,7 @@ export const useNetStateStore = defineStore('Net-State-Store', {
               console.log('new device value: named=', r.name);
             }
             this.deviceDetails[i] = r;
+            this.lastSuccessfulAPICall = new Date();
           }
         } finally {
           this.loadingDeviceDetailsForID.delete(i);

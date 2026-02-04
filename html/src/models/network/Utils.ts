@@ -1,5 +1,4 @@
 import { IDateTimeRange } from 'src/models/common/IDateTimeRange';
-import moment from 'moment';
 import { DateTime } from 'luxon';
 
 import { IDevice, INetworkAttachmentInfo } from '../../models/device/IDevice';
@@ -42,14 +41,12 @@ export function FormatIDateTimeRange(
   summaryOnly?: boolean
 ): string | undefined {
   if (seenRange) {
-    //const toText: string | undefined = seenRange?.upperBound? moment(seenRange.upperBound).fromNow(): undefined;
     const toText: string | undefined = seenRange?.upperBound
       ? (DateTime.fromJSDate(seenRange.upperBound).toRelative() as string)
       : undefined;
     if (summaryOnly) {
       return toText;
     }
-    //const fromText: string | undefined = seenRange?.lowerBound? moment(seenRange.lowerBound).fromNow(): undefined;
     const fromText: string | undefined = seenRange?.lowerBound
       ? (DateTime.fromJSDate(seenRange.lowerBound).toRelative() as string)
       : undefined;
@@ -92,7 +89,6 @@ export function GetNetworkName(n: INetwork): string {
 export function SortNetworks(nws: INetwork[]) {
   const result = Object.assign([], nws);
   result.sort((l: INetwork, r: INetwork) => {
-    //let res = -moment(l.seen?.upperBound).diff(r.seen?.upperBound);
     let res = -DateTime.fromJSDate(l.seen?.upperBound)?.diff(
       DateTime.fromJSDate(r.seen?.upperBound)
     );

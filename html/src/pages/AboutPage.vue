@@ -1,31 +1,73 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, computed } from 'vue';
-import { useQuasar } from 'quasar';
-import moment from 'moment';
-import prettyBytes from 'pretty-bytes';
+import { onMounted, onUnmounted, computed, ref } from "vue";
+import { storeToRefs } from "pinia";
+import { useQuasar } from "quasar";
+import moment from "moment";
+import prettyBytes from "pretty-bytes";
+import { Duration, DateTime } from "luxon";
 
-import { kCompileTimeConfiguration } from '../config/config';
-import { IAbout, IAPIEndpoint, IComponent, IDatabase, IWebServerStats } from 'src/models/IAbout';
-import { useNetStateStore } from '../stores/Net-State-store';
-import { PluralizeNoun } from 'src/utils/Linguistics';
+import { kCompileTimeConfiguration } from "../config/config";
+import {
+  IAbout,
+  IAPIEndpoint,
+  IComponent,
+  IDatabase,
+  IWebServerStats,
+} from "src/models/IAbout";
+import { useNetStateStore } from "../stores/Net-State-store";
+import { PluralizeNoun } from "src/utils/Linguistics";
+import { gRuntimeConfiguration } from 'boot/configuration';
 
 let polling: undefined | NodeJS.Timeout;
 const $q = useQuasar();
 
 const kUIComponents: IComponent[] = [
   {
-    name: 'Vue ',
+    name: "Vue ",
     version: kCompileTimeConfiguration.VUE_VERSION,
-    URL: 'https://vuejs.org/',
+    URL: "https://vuejs.org/",
   },
-  { name: 'Quasar ', version: $q.version, URL: 'https://quasar.dev/' },
+  { name: "Quasar ", version: $q.version, URL: "https://quasar.dev/" },
 ];
 
 const kRefreshFrequencyInSeconds_: number = 10;
 
 const store = useNetStateStore();
 
-let aboutData = computed(() => store.getAboutInfo);
+const { about } = storeToRefs(store);
+const { lastSuccessfulAPICall } = storeToRefs(store);
+
+// Data / functions to show 'last successful communications'
+const pageLoadedAt = new Date();
+const now = ref(new Date()); // reactive now
+function timeDiffInSeconds_(start: Date, end: Date) {
+  return DateTime.fromJSDate(start).diff(DateTime.fromJSDate(end), "seconds").seconds;
+}
+const lastSuccessfulAPICallMessageStyle = computed(() => {
+  // show in red if we've gotten some data, but not recently
+  if (lastSuccessfulAPICall.value) {
+    return timeDiffInSeconds_(now.value, lastSuccessfulAPICall.value) < 30
+      ? ""
+      : "color: red";
+  } else {
+    // show in red if we've never gotten data, and the page loaded a while ago
+    return timeDiffInSeconds_(now.value, pageLoadedAt) < 5 ? "" : "color: red";
+  }
+});
+function mySince_(agoDate: Date, nowDate: Date) {
+  if (Math.abs(timeDiffInSeconds_(nowDate, agoDate)) < kRefreshFrequencyInSeconds_) {
+    return "now";
+  }
+  return DateTime.fromJSDate(agoDate).toRelative({
+    base: DateTime.fromJSDate(nowDate),
+    round: true,
+  });
+}
+const lastSuccessfulAPICallMessage = computed(() => {
+  return lastSuccessfulAPICall.value
+    ? mySince_(lastSuccessfulAPICall.value, now.value)
+    : "no data received yet";
+});
 
 onMounted(() => {
   // first time check quickly, then more gradually
@@ -35,36 +77,33 @@ onMounted(() => {
   }
   polling = setInterval(() => {
     store.fetchAboutInfo();
+    now.value = new Date(); // keep updating reactive now date, so lastSuccessfulAPICallMessage changes
   }, kRefreshFrequencyInSeconds_ * 1000);
 });
 onUnmounted(() => {
   clearInterval(polling);
 });
 
-function prettyPrintMSTime(time?: string) {
+function prettyPrintMSDuration(time?: string) {
   if (time == undefined) {
-    return '?';
+    return "?";
   }
-  var m = moment.duration(time);
-  if (m.asMilliseconds() < 1.0) {
-    return (m.milliseconds() * 1000).toFixed(1) + 'μs';
-  }
-  return m.milliseconds().toFixed(1) + 'ms';
+  return Duration.fromISO(time).toHuman({ unitDisplay: "narrow", showZeros: false });
 }
 function wsAPIMsg(info: IAPIEndpoint, showShort: boolean): string {
   let msg = "";
   msg += `${info.callsCompleted} calls completed; `;
   msg += `${info.medianRunningAPITasks} running tasks; `;
   msg += `${info.errors} ${PluralizeNoun("error", info.errors)}; `;
-  msg += `times: ${prettyPrintMSTime(info.callTimes.median)}, max ${prettyPrintMSTime(
-    info.callTimes.max
-  )}`;
+  msg += `times: ${prettyPrintMSDuration(
+    info.callTimes.median
+  )}, max ${prettyPrintMSDuration(info.callTimes.max)}`;
   return msg;
 }
 function dbStatsMsg(info: IDatabase, showShort: boolean): string {
-  let msg = '';
+  let msg = "";
   if (!showShort || info.errors != 0) {
-    msg += `${info.errors} ${PluralizeNoun('error', info.errors)}; `;
+    msg += `${info.errors} ${PluralizeNoun("error", info.errors)}; `;
   }
   if (info.fileSize) {
     msg += `${prettyBytes(info.fileSize)}; `;
@@ -73,33 +112,41 @@ function dbStatsMsg(info: IDatabase, showShort: boolean): string {
     msg += `${info.reads} reads, ${info.writes} writes; `;
   }
   if (showShort) {
-    msg += `${prettyPrintMSTime(
+    msg += `${prettyPrintMSDuration(
       info.medianReadDuration
-    )} reads, ${prettyPrintMSTime(info.medianWriteDuration)} writes`;
+    )} reads, ${prettyPrintMSDuration(info.medianWriteDuration)} writes`;
   } else {
-    msg += `Med ${prettyPrintMSTime(
+    msg += `Med ${prettyPrintMSDuration(
       info.medianReadDuration
-    )} read duration, Med ${prettyPrintMSTime(
+    )} read duration, Med ${prettyPrintMSDuration(
       info.medianWriteDuration
     )} write duration`;
   }
   if (showShort) {
     if (info.maxDuration != undefined) {
-      msg += `; max ${prettyPrintMSTime(info.maxDuration)}`;
+      msg += `; max ${prettyPrintMSDuration(info.maxDuration)}`;
     }
   } else {
     if (info.maxDuration != undefined) {
-      msg += `; max ${prettyPrintMSTime(info.maxDuration)} I/O duration`;
+      msg += `; max ${prettyPrintMSDuration(info.maxDuration)} I/O duration`;
     }
   }
   return msg;
 }
 function webServerMsg_(info: IWebServerStats): string {
   let msg = "";
-  msg += `threadPool: {size: ${info.threadPool.threads}, queued: ${info.threadPool.tasksStillQueued}, aveRunTime: ${prettyPrintMSTime(info.threadPool.averageTaskRunTime)}}\n`
-  msg += `connections: {open: ${info.connections.open}, active: ${info.connections.active}, openLifetime: ${prettyPrintMSTime(info.connections.openConnectionsLifetime.median)}, openRequestsLifetime: ${prettyPrintMSTime(info.connections.openConnectionsRequests.median)}, activeRequestsLifetime: ${prettyPrintMSTime(info.connections.activeConnectionsRequests.median)}}`
+  msg += `threadPool: {size: ${info.threadPool.threads}, queued: ${info.threadPool.tasksStillQueued
+    }, aveRunTime: ${prettyPrintMSDuration(info.threadPool.averageTaskRunTime)}}\n`;
+  msg += `connections: {open: ${info.connections.open}, active: ${info.connections.active
+    }, openLifetime: ${prettyPrintMSDuration(
+      info.connections.openConnectionsLifetime.median
+    )}, openRequestsLifetime: ${prettyPrintMSDuration(
+      info.connections.openConnectionsRequests.median
+    )}, activeRequestsLifetime: ${prettyPrintMSDuration(
+      info.connections.activeConnectionsRequests.median
+    )}}`;
   if (info.connections.piningForTheFjords != 0) {
-    msg += `piningForTheFjords: ${info.connections.piningForTheFjords},`
+    msg += `piningForTheFjords: ${info.connections.piningForTheFjords},`;
   }
   return msg;
 }
@@ -116,45 +163,51 @@ function webServerMsg_(info: IWebServerStats): string {
       <q-card class="pageCard col-11">
         <q-card-section class="text-h6">
           <span>Vision</span>
-          <span style="font-style: italic; font-weight: normal"
-            >(much not yet implemented)</span
-          >
+          <span style="font-style: italic; font-weight: normal">(much not yet implemented)</span>
         </q-card-section>
         <q-card-section style="margin-left: 2em">
-          Why The Fuck is My Network So Slow monitors your local network, and
-          tracks over time what devices are on the network, and what traffic
-          those devices generate. It also monitors the 'speed' of your various
-          network links. It allows you to see what is normal behavior on your
-          network, and notify you of interesting abberations, to help see why
-          your network maybe sometimes slow.
+          Why The Fuck is My Network So Slow monitors your local network, and tracks over
+          time what devices are on the network, and what traffic those devices generate.
+          It also monitors the 'speed' of your various network links. It allows you to see
+          what is normal behavior on your network, and notify you of interesting
+          abberations, to help see why your network maybe sometimes slow.
         </q-card-section>
         <q-card-section style="margin-left: 2em">
-          Multiple WTF instances can be setup on different machines on a network
-          to share information with each other, to help get a better
-          multi-dimensional (and sometimes more consitent) view of your network.
+          Multiple WTF instances can be setup on different machines on a network to share
+          information with each other, to help get a better multi-dimensional (and
+          sometimes more consitent) view of your network.
         </q-card-section>
       </q-card>
 
       <!--App Stats-->
-      <q-card class="pageCard col-11" v-if="aboutData">
+      <q-card class="pageCard col-11" v-if="about">
         <q-card-section>
           <div class="row">
             <div class="col-3 text-h6">WTF App</div>
             <div class="col-9">
-              <div class="row" v-if="aboutData">
+              <div class="row" v-if="about">
                 <div class="col-3">Version</div>
-                <div class="col">{{ aboutData.applicationVersion }}</div>
+                <div class="col">{{ about.applicationVersion }}</div>
               </div>
-              <div class="row" v-if="aboutData">
+              <div class="row">
+                <div class="col-3" title="last successful message received">Web Services URL</div>
+                <div class="col">{{ gRuntimeConfiguration.API_ROOT }}</div>
+              </div>
+              <div class="row" style="margin-left: 2em">
+                <div class="col-3" title="last successful message received">Last message</div>
+                <div class="col" :style="lastSuccessfulAPICallMessageStyle">{{
+                  lastSuccessfulAPICallMessage
+                }}</div>
+              </div>
+              <div class="row" style="margin-left: 2em">
+                <div class="col-3" title="Web Service">API Docs:</div>
+                <a :href="gRuntimeConfiguration.API_ROOT + '/api'" target="_new">{{ gRuntimeConfiguration.API_ROOT
+                }}/api</a>
+              </div>
+              <div class="row" v-if="about">
                 <div class="col-3">Components</div>
                 <div class="col">
-                  <div
-                    class="row"
-                    v-for="c in aboutData.serverInfo.componentVersions.concat(
-                      kUIComponents
-                    )"
-                    :key="c.name"
-                  >
+                  <div class="row" v-for="c in about.serverInfo.componentVersions.concat(kUIComponents)" :key="c.name">
                     <div class="col-2">
                       <a :href="c.URL" target="_new">{{ c.name }}</a>
                     </div>
@@ -162,131 +215,80 @@ function webServerMsg_(info: IWebServerStats): string {
                   </div>
                 </div>
               </div>
-              <div class="row" v-if="aboutData">
-                <div
-                  class="col-3"
-                  title="Average CPU usage of the WTF (server app process) over the last 30 seconds;
-Units 1=1 logical core"
-                >
+              <div class="row" v-if="about">
+                <div class="col-3" title="Average CPU usage of the WTF (server app process) over the last 30 seconds;
+Units 1=1 logical core">
                   CPU-Usage
                 </div>
                 <div class="col">
                   {{
-                    aboutData.serverInfo.currentProcess.averageCPUTimeUsed?.toFixed(
-                      2
-                    ) || '?'
+                    about.serverInfo.currentProcess.averageCPUTimeUsed?.toFixed(2) || "?"
                   }}
                   CPUs
                 </div>
               </div>
-              <div
-                class="row"
-                v-if="aboutData"
-                title="Combined I/O rate (network+disk)"
-              >
-                <div class="col-3 truncateWithElipsis">
-                  IO Rate (read; write)
-                </div>
-                <div
-                  class="col"
-                  v-if="
-                    aboutData.serverInfo.currentProcess.combinedIOReadRate !=
-                      undefined &&
-                    aboutData.serverInfo.currentProcess.combinedIOWriteRate !=
-                      undefined
-                  "
-                >
+              <div class="row" v-if="about" title="Combined I/O rate (network+disk)">
+                <div class="col-3 truncateWithElipsis">IO Rate (read; write)</div>
+                <div class="col" v-if="
+                  about.serverInfo.currentProcess.combinedIOReadRate != undefined &&
+                  about.serverInfo.currentProcess.combinedIOWriteRate != undefined
+                ">
                   {{
-                    prettyBytes(
-                      aboutData.serverInfo.currentProcess.combinedIOReadRate
-                    )
+                    prettyBytes(about.serverInfo.currentProcess.combinedIOReadRate)
                   }}/sec ;
                   {{
-                    prettyBytes(
-                      aboutData.serverInfo.currentProcess.combinedIOWriteRate
-                    )
+                    prettyBytes(about.serverInfo.currentProcess.combinedIOWriteRate)
                   }}/sec
                 </div>
               </div>
-              <div class="row" v-if="aboutData">
-                <div
-                  class="col-3"
-                  title="How long has the service been running"
-                >
+              <div class="row" v-if="about">
+                <div class="col-3" title="How long has the service been running">
                   Uptime
                 </div>
-                <div
-                  class="col"
-                  v-if="aboutData.serverInfo.currentProcess.processUptime"
-                >
+                <div class="col" v-if="about.serverInfo.currentProcess.processUptime">
                   {{
                     moment
-                      .duration(
-                        aboutData.serverInfo?.currentProcess?.processUptime
-                      )
+                      .duration(about.serverInfo?.currentProcess?.processUptime)
                       .humanize()
                   }}
                 </div>
               </div>
-              <div class="row" v-if="aboutData">
-                <div
-                  class="col-3"
-                  title="Working set size, or RSS resident set size (how much RAM is an active use)"
-                >
+              <div class="row" v-if="about">
+                <div class="col-3" title="Working set size, or RSS resident set size (how much RAM is an active use)">
                   Memory
                 </div>
-                <div
-                  class="col"
-                  v-if="
-                    aboutData.serverInfo.currentProcess.workingOrResidentSetSize
-                  "
-                >
+                <div class="col" v-if="about.serverInfo.currentProcess.workingOrResidentSetSize">
                   {{
-                    prettyBytes(
-                      aboutData.serverInfo.currentProcess
-                        .workingOrResidentSetSize
-                    )
+                    prettyBytes(about.serverInfo.currentProcess.workingOrResidentSetSize)
                   }}
                 </div>
               </div>
-              <div class="row" v-if="aboutData">
-                <div
-                  class="col-3"
-                  title="Information about app WebService endpoint (median #connections, timing, Q-lengths) over the last 5 minutes"
-                >
+              <div class="row" v-if="about">
+                <div class="col-3"
+                  title="Information about app WebService endpoint (median #connections, timing, Q-lengths) over the last 5 minutes">
                   WSAPI
                 </div>
-                <div
-                  class="col"
-                  v-if="aboutData.serverInfo.apiEndpoint"
-                  :title="wsAPIMsg(aboutData.serverInfo.apiEndpoint, false)"
-                >
-                  {{ wsAPIMsg(aboutData.serverInfo.apiEndpoint, true) }}
+                <div class="col" v-if="about.serverInfo.apiEndpoint"
+                  :title="wsAPIMsg(about.serverInfo.apiEndpoint, false)">
+                  {{ wsAPIMsg(about.serverInfo.apiEndpoint, true) }}
                 </div>
               </div>
-              <div class="row" v-if="aboutData">
-                <div
-                  class="col-3"
-                  title="Information about database: size on disk, median read/write times over the last 5 minutes; hover for more details"
-                >
+              <div class="row" v-if="about">
+                <div class="col-3"
+                  title="Information about database: size on disk, median read/write times over the last 5 minutes; hover for more details">
                   DB
                 </div>
-                <div
-                  class="col"
-                  v-if="aboutData.serverInfo.database"
-                  :title="dbStatsMsg(aboutData.serverInfo.database, false)"
-                >
-                  {{ dbStatsMsg(aboutData.serverInfo.database, true) }}
+                <div class="col" v-if="about.serverInfo.database" :title="dbStatsMsg(about.serverInfo.database, false)">
+                  {{ dbStatsMsg(about.serverInfo.database, true) }}
                 </div>
               </div>
-              <div class="row" v-if="aboutData">
+              <div class="row" v-if="about">
                 <div class="col-3"
                   title="Information about app WebServer Stats (median #connections, timing, Q-lengths) over the last 5 minutes">
                   WebServer
                 </div>
-                <div class="col" v-if="aboutData.serverInfo.webServer"
-                  :title="webServerMsg_(aboutData.serverInfo.webServer, )">
-                  {{ webServerMsg_(aboutData.serverInfo.webServer) }}
+                <div class="col" v-if="about.serverInfo.webServer" :title="webServerMsg_(about.serverInfo.webServer)">
+                  {{ webServerMsg_(about.serverInfo.webServer) }}
                 </div>
               </div>
             </div>
@@ -295,72 +297,43 @@ Units 1=1 logical core"
       </q-card>
 
       <!--App Running on-->
-      <q-card class="pageCard col-11" v-if="aboutData">
+      <q-card class="pageCard col-11" v-if="about">
         <q-card-section>
           <div>
-            <div class="row" v-if="aboutData">
+            <div class="row" v-if="about">
               <div class="col-3 text-h6">WTF Running on</div>
               <div class="col-9">
                 <div class="row">
                   <div class="col-3">OS</div>
                   <div class="col">
                     {{
-                      aboutData.serverInfo.currentMachine.operatingSystem
-                        .fullVersionedName
+                      about.serverInfo.currentMachine.operatingSystem.fullVersionedName
                     }}
                   </div>
                 </div>
-                <div
-                  class="row"
-                  title="How long has the machine (hosting the service) been running"
-                >
+                <div class="row" title="How long has the machine (hosting the service) been running">
                   <div class="col-3">Uptime</div>
                   <div class="col">
                     {{
                       moment
-                        .duration(
-                          aboutData.serverInfo.currentMachine.machineUptime
-                        )
+                        .duration(about.serverInfo.currentMachine.machineUptime)
                         .humanize()
                     }}
                   </div>
                 </div>
-                <div
-                  class="row"
-                  title="How many threads in each (logical) processors Run-Q on average. 0 means no use, 1 means ALL cores fully used with no Q, and 2 means all cores fully utilized and each core with a Q length of 1"
-                >
+                <div class="row"
+                  title="How many threads in each (logical) processors Run-Q on average. 0 means no use, 1 means ALL cores fully used with no Q, and 2 means all cores fully utilized and each core with a Q length of 1">
                   <div class="col-3">Run-Q</div>
-                  <div
-                    class="col"
-                    v-if="
-                      aboutData.serverInfo.currentMachine.runQLength != null
-                    "
-                  >
-                    {{
-                      aboutData.serverInfo.currentMachine.runQLength?.toFixed(
-                        2
-                      ) || '?'
-                    }}
+                  <div class="col" v-if="about.serverInfo.currentMachine.runQLength != null">
+                    {{ about.serverInfo.currentMachine.runQLength?.toFixed(2) || "?" }}
                     threads
                   </div>
                 </div>
-                <div
-                  class="row"
-                  title="Average CPU usage for the last 30 seconds for the entire machine hosting the service.
-Units 1=1 logical core"
-                >
+                <div class="row" title="Average CPU usage for the last 30 seconds for the entire machine hosting the service.
+Units 1=1 logical core">
                   <div class="col-3">CPU-Usage</div>
-                  <div
-                    class="col"
-                    v-if="
-                      aboutData.serverInfo.currentMachine.totalCPUUsage != null
-                    "
-                  >
-                    {{
-                      aboutData.serverInfo.currentMachine.totalCPUUsage?.toFixed(
-                        2
-                      ) || '?'
-                    }}
+                  <div class="col" v-if="about.serverInfo.currentMachine.totalCPUUsage != null">
+                    {{ about.serverInfo.currentMachine.totalCPUUsage?.toFixed(2) || "?" }}
                     CPUs
                   </div>
                 </div>
@@ -379,23 +352,15 @@ Units 1=1 logical core"
               <div class="row">
                 <div class="col-4">Lewis G. Pringle, Jr.</div>
                 <div class="col">
-                  <a
-                    href="https://www.linkedin.com/in/lewispringle/"
-                    target="_new"
-                    >LinkedIn</a
-                  >
+                  <a href="https://www.linkedin.com/in/lewispringle/" target="_new">LinkedIn</a>
                   |
-                  <a href="https://github.com/LewisPringle" target="_new"
-                    >GitHub</a
-                  >
+                  <a href="https://github.com/LewisPringle" target="_new">GitHub</a>
                 </div>
               </div>
               <div class="row">
                 <div class="col-4">Robert Lemos Pringle</div>
                 <div class="col">
-                  <a href="https://github.com/robertpringle" target="_new"
-                    >GitHub</a
-                  >
+                  <a href="https://github.com/robertpringle" target="_new">GitHub</a>
                 </div>
               </div>
             </div>
@@ -409,11 +374,8 @@ Units 1=1 logical core"
           <div class="row">
             <div class="col-3 text-h6">Report issues at</div>
             <div class="col-9">
-              <a
-                href="https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues"
-                target="_new"
-                >github issues</a
-              >
+              <a href="https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues" target="_new">github
+                issues</a>
             </div>
           </div>
         </q-card-section>
