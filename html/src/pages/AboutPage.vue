@@ -2,7 +2,6 @@
 import { onMounted, onUnmounted, computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 import { useQuasar } from "quasar";
-import moment from "moment";
 import prettyBytes from "pretty-bytes";
 import { Duration, DateTime } from "luxon";
 
@@ -247,9 +246,8 @@ Units 1=1 logical core">
                 </div>
                 <div class="col" v-if="about.serverInfo.currentProcess.processUptime">
                   {{
-                    moment
-                      .duration(about.serverInfo?.currentProcess?.processUptime)
-                      .humanize()
+                    Duration.fromISO(about.serverInfo?.currentProcess?.processUptime)
+                      .toHuman()
                   }}
                 </div>
               </div>
@@ -315,9 +313,8 @@ Units 1=1 logical core">
                   <div class="col-3">Uptime</div>
                   <div class="col">
                     {{
-                      moment
-                        .duration(about.serverInfo.currentMachine.machineUptime)
-                        .humanize()
+                      Duration.fromISO(about.serverInfo.currentMachine.machineUptime)
+                        .toHuman()
                     }}
                   </div>
                 </div>

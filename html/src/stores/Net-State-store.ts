@@ -52,9 +52,6 @@ export const useNetStateStore = defineStore('Net-State-Store', {
     loadingDeviceDetailsForID: new Set() as Set<string>,
   }),
   getters: {
-    getLastSuccessfulAPICall: (state) => {
-      return state.lastSuccessfulAPICall;
-    },
     getLoading_Networks: (state) => {
       return state.loadingActiveNetworks;
     },
