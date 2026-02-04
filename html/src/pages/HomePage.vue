@@ -6,22 +6,22 @@ import {
   computed,
   ComputedRef,
 } from 'vue';
-import moment from 'moment';
+import { DateTime, } from "luxon";
 
-import { IDevice } from '../models/device/IDevice';
-import { INetwork } from '../models/network/INetwork';
+import { IDevice } from 'src/models/device/IDevice';
+import { INetwork } from 'src/models/network/INetwork';
 import { PluralizeNoun } from 'src/utils/Linguistics';
 import {
   GetDeviceIDsInNetwork,
   GetDevicesForNetworkLink,
   GetNetworkLink,
   GetNetworkName,
-} from '../models/network/Utils';
+} from 'src/models/network/Utils';
 
-import { useNetStateStore } from '../stores/Net-State-store';
+import { useNetStateStore } from 'src/stores/Net-State-store';
 
 // Components
-import ReadOnlyTextWithHover from '../components/ReadOnlyTextWithHover.vue';
+import ReadOnlyTextWithHover from 'src/components/ReadOnlyTextWithHover.vue';
 
 defineComponent({
   components: {
@@ -53,10 +53,9 @@ const kMinHoursToBeConsideredProbablyActive_ = 1;
 function showNetworkPriority_(n: INetwork) {
   // @todo - probaly just include 'active' and 'favorite' networks here (as it hints in UI)
   let r: number = 0;
-  const now = moment(new Date());
+  const now = DateTime.now();
   if (n.seen?.upperBound) {
-    var hours = moment.duration(now.diff(n.seen.upperBound)).asHours();
-    if (hours < kMinHoursToBeConsideredProbablyActive_) {
+    if (now.diff(DateTime.fromJSDate(n.seen?.upperBound)).toMillis() > 60 * 60 * 1000) {
       r += 11;
     }
   }
@@ -147,22 +146,15 @@ let allDevices: ComputedRef<IDevice[]> = computed(() => store.getDevices);
               <router-link to="/networks">Networks</router-link> (active +
               favorites)
               <ul>
-                <li
-                  v-for="network in shownNetworksAsDisplayed"
-                  :key="network.id"
-                  class="q-mb-md"
-                >
-                  <ReadOnlyTextWithHover
-                    :message="network.name"
-                    :link="network.link"
-                  />
+                <li v-for="network in shownNetworksAsDisplayed" :key="network.id" class="q-mb-md">
+                  <ReadOnlyTextWithHover :message="network.name" :link="network.link" />
                   <div v-if="network.internetInfo">
                     : {{ network.internetInfo }}
                   </div>
                   <div>
                     : Last Seen:
                     {{
-                      moment(network.originalNetwork.seen?.upperBound).fromNow()
+                      DateTime.fromJSDate(network.originalNetwork.seen?.upperBound).toRelative()
                     }}
                   </div>
                   <div>
@@ -171,11 +163,8 @@ let allDevices: ComputedRef<IDevice[]> = computed(() => store.getDevices);
                       GetDeviceIDsInNetwork(network.originalNetwork, allDevices)
                         .length
                     }}
-                    <a
-                      :href="
-                        GetDevicesForNetworkLink(network.originalNetwork.id)
-                      "
-                      >{{
+                    <a :href="GetDevicesForNetworkLink(network.originalNetwork.id)
+                      ">{{
                         PluralizeNoun(
                           'device',
                           GetDeviceIDsInNetwork(
@@ -183,8 +172,7 @@ let allDevices: ComputedRef<IDevice[]> = computed(() => store.getDevices);
                             allDevices
                           ).length
                         )
-                      }}</a
-                    >
+                      }}</a>
                     , operating normally
                   </div>
                 </li>
