@@ -8,12 +8,12 @@ import {
   ComputedRef,
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import moment from 'moment';
+import { DateTime } from "luxon";
 import { useQuasar } from 'quasar';
 import { useStorage } from '@vueuse/core';
 
-import { IDevice } from '../models/device/IDevice';
-import { INetwork } from '../models/network/INetwork';
+import { IDevice } from 'src/models/device/IDevice';
+import { INetwork } from 'src/models/network/INetwork';
 import {
   GetNetworkName,
   GetNetworkCIDRs,
@@ -21,17 +21,17 @@ import {
   GetDeviceIDsInNetwork,
   GetDevicesForNetworkLink,
   SortNetworks,
-} from '../models/network/Utils';
+} from 'src/models/network/Utils';
 
 // Components
-import Search from '../components/Search.vue';
-import ClearButton from '../components/ClearButton.vue';
-import NetworkDetails from '../components/NetworkDetails.vue';
-import ReadOnlyTextWithHover from '../components/ReadOnlyTextWithHover.vue';
-import Link2DetailsPage from '../components/Link2DetailsPage.vue';
-import FilterSummaryMessage from '../components/FilterSummaryMessage.vue';
+import Search from 'src/components/Search.vue';
+import ClearButton from 'src/components/ClearButton.vue';
+import NetworkDetails from 'src/components/NetworkDetails.vue';
+import ReadOnlyTextWithHover from 'src/components/ReadOnlyTextWithHover.vue';
+import Link2DetailsPage from 'src/components/Link2DetailsPage.vue';
+import FilterSummaryMessage from 'src/components/FilterSummaryMessage.vue';
 
-import { useNetStateStore } from '../stores/Net-State-store';
+import { useNetStateStore } from 'src/stores/Net-State-store';
 const $q = useQuasar();
 
 const store = useNetStateStore();
@@ -257,11 +257,11 @@ const loading = computed<boolean>(
 let filteredExtendedNetworks: ComputedRef<object[]> = computed(() => {
   const result: object[] = [];
   SortNetworks(allNetworks.value).forEach((i: INetwork) => {
-    let lastSeenStr = moment(i.seen?.upperBound).fromNow();
+    let lastSeenStr = DateTime.fromJSDate(i.seen?.upperBound).toRelative();
     let statusStr = '?';
     if (
       i.seen?.upperBound != null &&
-      moment().diff(moment(i.seen?.upperBound), 'seconds') < 60
+      DateTime.now().diff(DateTime.fromJSDate(i.seen?.upperBound), 'seconds').seconds < 60
     ) {
       lastSeenStr = 'active';
       statusStr = 'healthy'; // tmphack
@@ -348,57 +348,27 @@ const pagination = ref({
   <Teleport to="#CHILD_HEADER_SECTION" v-if="addHeaderSectionBugWorkaround">
     <q-toolbar class="justify-between secondary-toolbar">
       <Search v-model:searchFor="search" />
-      <FilterSummaryMessage
-        dense
-        :filtered="filtered"
-        :nItemsSelected="filteredExtendedNetworks.length"
-        :nTotalItems="allNetworks?.length"
-        itemsName="networks"
-      />
+      <FilterSummaryMessage dense :filtered="filtered" :nItemsSelected="filteredExtendedNetworks.length"
+        :nTotalItems="allNetworks?.length" itemsName="networks" />
       <ClearButton v-if="filtered" @click="clearFilter" />
     </q-toolbar>
     <q-toolbar class="justify-between secondary-toolbar">
-      <q-select
-        v-model="pageUserOptions.VisibleColumns"
-        multiple
-        dense
-        options-dense
-        :display-value="$q.lang.table.columns"
-        emit-value
-        map-options
-        :options="headers"
-        option-value="name"
-        style="min-width: 150px"
-        label="Shown"
-        dark
-        :options-dark="false"
-      />
+      <q-select v-model="pageUserOptions.VisibleColumns" multiple dense options-dense
+        :display-value="$q.lang.table.columns" emit-value map-options :options="headers" option-value="name"
+        style="min-width: 150px" label="Shown" dark :options-dark="false" />
     </q-toolbar>
   </Teleport>
   <q-page padding class="justify-center row">
     <q-card class="pageCard listCard col-11">
       <q-card-section>
         <div class="row text-h5">Networks</div>
-        <q-table
-          table-class="itemList"
-          :rows="filteredExtendedNetworks"
-          :columns="headers"
-          row-key="id"
-          dense
-          separator="none"
-          :visible-columns="pageUserOptions.VisibleColumns"
-          :pagination.sync="pagination"
-          hide-bottom
-          :loading="loading"
-          flat
-        >
+        <q-table table-class="itemList" :rows="filteredExtendedNetworks" :columns="headers" row-key="id" dense
+          separator="none" :visible-columns="pageUserOptions.VisibleColumns" :pagination.sync="pagination" hide-bottom
+          :loading="loading" flat>
           <template v-slot:body="props">
             <q-tr :props="props">
               <q-td :props="props" key="name">
-                <ReadOnlyTextWithHover
-                  :message="props.row.name"
-                  :link="'/#/network/' + props.row.id"
-                />
+                <ReadOnlyTextWithHover :message="props.row.name" :link="'/#/network/' + props.row.id" />
               </q-td>
               <q-td :props="props" key="CIDRs">
                 <ReadOnlyTextWithHover :message="props.row.CIDRs" />
@@ -421,30 +391,19 @@ const pagination = ref({
                 }}</a>
               </q-td>
               <q-td :props="props" key="manufacturerSummary">
-                <ReadOnlyTextWithHover
-                  :message="props.row.manufacturerSummary"
-                />
+                <ReadOnlyTextWithHover :message="props.row.manufacturerSummary" />
               </q-td>
               <q-td :props="props" key="expand">
                 <div class="row no-wrap items-baseline">
-                  <q-btn
-                    :icon="props.expand ? 'mdi-chevron-up' : 'mdi-chevron-down'"
-                    flat
-                    round
-                    dense
-                    title="Toggle details expanded"
-                    @click="rowClicked(props)"
-                  ></q-btn>
+                  <q-btn :icon="props.expand ? 'mdi-chevron-up' : 'mdi-chevron-down'" flat round dense
+                    title="Toggle details expanded" @click="rowClicked(props)"></q-btn>
                   <Link2DetailsPage :link="'/#/network/' + props.row.id" />
                 </div>
               </q-td>
             </q-tr>
             <q-tr v-if="props.expand" :props="props">
               <q-td :colspan="pageUserOptions.VisibleColumns.length">
-                <NetworkDetails
-                  class="detailsSection z-top"
-                  :networkId="props.row.id"
-                />
+                <NetworkDetails class="detailsSection z-top" :networkId="props.row.id" />
               </q-td>
             </q-tr>
           </template>
