@@ -379,3 +379,8 @@ optional<IntegratedModel::NetworkInterface> IntegratedModel::Mgr::GetNetworkInte
     }
     return result;
 }
+
+uintmax_t IntegratedModel::Mgr::GetDBFileSize () const
+{
+    return sDBAccessMgr_->GetDBFileSize ();
+}

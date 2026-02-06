@@ -520,3 +520,8 @@ void Mgr::_OneTimeStartupLoadDB ()
         }
     }
 }
+
+uintmax_t Mgr::GetDBFileSize () const
+{
+    return this->fDB_.GetFileSize ();
+}

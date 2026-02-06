@@ -58,7 +58,11 @@ const ReadOnlyProperty<filesystem::path> WhyTheFuckIsMyNetworkSoSlow::BackendApp
 #endif
     }};
 
-const ReadOnlyProperty<uintmax_t> WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB::pFileSize{[] ([[maybe_unused]] const auto* property) -> uintmax_t {
+uintmax_t WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB::GetFileSize () const
+{
+#if qUseNewDocumentDBAPI
+    return GetInternallySynchronizedConnection ().GetSpaceConsumed ();
+#else
     // add sizes of various component files (WAL, etc)
     uintmax_t szTotal{};
     auto      incSize = [&] (const filesystem::path& p) {
@@ -70,7 +74,6 @@ const ReadOnlyProperty<uintmax_t> WhyTheFuckIsMyNetworkSoSlow::BackendApp::Commo
     };
     filesystem::path p = pFileName ();
     incSize (p);
-#if !qUseNewDocumentDBAPI
     p = pFileName ();
     p += "-journal";
     incSize (p);
@@ -80,12 +83,12 @@ const ReadOnlyProperty<uintmax_t> WhyTheFuckIsMyNetworkSoSlow::BackendApp::Commo
     p = pFileName ();
     p += "-wal";
     incSize (p);
-#endif
     return szTotal;
-}};
+#endif
+}
 
 #if qUseNewDocumentDBAPI
-Database::Document::Connection::Ptr WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB::GetInternallySynchronizedConnection ()
+Database::Document::Connection::Ptr WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB::GetInternallySynchronizedConnection () const
 {
     using namespace Database::Document;
     auto rwLock = fConn_.rwget ();
@@ -145,5 +148,49 @@ SQL::Connection::Ptr WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB::NewCon
     Database::SQL::ORM::ProvisionForVersion (conn, fTargetDBVersion_, fTables_);
 
     return conn;
+}
+#endif
+
+#if qUseNewDocumentDBAPI
+auto WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd (bool traceDB) -> Database::Document::Connection::OpertionCallbackPtr
+{
+    using namespace Characters;
+    using Database::Document::Connection::Operation;
+    shared_ptr<OperationalStatisticsMgr::ProcessDBCmd> tmp; // use shared_ptr in lambda so copies of lambda share same object
+    // @todo note - COULD use same shared_ptr object to store a Debug::TraceContextBumper object so we get /DBRead messages elided from log most of the time (when quick and /DBWrite).
+    auto r = [=] (Operation op, const Database::Document::Connection::Ptr& documentDBConnection, const optional<String>& collectionName,
+                  const exception_ptr& e) mutable noexcept {
+        switch (op) {
+            case Operation::eStartingRead:
+                if (traceDB) {
+                    DbgTrace ("<DBRead: {}>"_f, collectionName);
+                }
+                IgnoreExceptionsExceptThreadAbortForCall (tmp = make_shared<DB::ReadStatsContext> ());
+                break;
+            case Operation::eCompletedRead:
+                if (traceDB) {
+                    DbgTrace ("</DBRead>"_f);
+                }
+                tmp.reset ();
+                break;
+            case Operation::eStartingWrite:
+                if (traceDB) {
+                    DbgTrace ("<DBWrite: {}>"_f, collectionName);
+                }
+                IgnoreExceptionsExceptThreadAbortForCall (tmp = make_shared<DB::WriteStatsContext> ());
+                break;
+            case Operation::eCompletedWrite:
+                if (traceDB) {
+                    DbgTrace ("</DBWrite>"_f);
+                }
+                tmp.reset ();
+                break;
+            case Operation::eNotifyError:
+                Execution::Logger::sThe.Log (Execution::Logger::eWarning, "Database operation exception: {}"_f, e);
+                tmp->NoteError ();
+                break;
+        }
+    };
+    return r;
 }
 #endif

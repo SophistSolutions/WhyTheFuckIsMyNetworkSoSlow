@@ -124,6 +124,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel {
         /**
          */
         nonvirtual std::optional<NetworkInterface> GetNetworkInterface (const Common::GUID& id, optional<Duration>* ttl = nullptr) const;
+
+    public:
+        nonvirtual uintmax_t GetDBFileSize () const;
     };
     inline Mgr Mgr::sThe;
 

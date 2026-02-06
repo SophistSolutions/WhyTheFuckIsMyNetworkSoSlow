@@ -777,7 +777,8 @@ namespace {
                                 [&] (auto&& writeLock) {
                                     writeLock.rwref ().Add (di);
                                     if (retriedLockCount > 0) {
-                                        DbgTrace ("MyDeviceDiscoverer_: sDiscoveredDevices_ succeeded so clearing retrying count (was cnt={})"_f, retriedLockCount);
+                                        DbgTrace ("MyDeviceDiscoverer_: sDiscoveredDevices_ succeeded so clearing retrying count (was cnt={})"_f,
+                                                  retriedLockCount);
                                     }
 #if qLOCK_DEBUGGING_
                                     DbgTrace ("!!! succeeded  updating writelock ***MyDeviceDiscoverer_"_f);
@@ -1173,7 +1174,8 @@ namespace {
                                 [&] (auto&& writeLock) {
                                     writeLock.rwref ().Add (di);
                                     if (retriedLockCount > 0) {
-                                        DbgTrace ("MyNeighborDiscoverer_: sDiscoveredDevices_ succeeded so clearing retrying count (was cnt={})"_f, retriedLockCount);
+                                        DbgTrace ("MyNeighborDiscoverer_: sDiscoveredDevices_ succeeded so clearing retrying count (was cnt={})"_f,
+                                                  retriedLockCount);
                                     }
 #if qLOCK_DEBUGGING_
                                     DbgTrace ("!!! succeeded  updating with writelock ***MyNeighborDiscoverer_"_f);

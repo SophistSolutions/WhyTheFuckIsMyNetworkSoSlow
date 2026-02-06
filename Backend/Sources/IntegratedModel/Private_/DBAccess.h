@@ -119,6 +119,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_::DB
          */
         virtual void CheckDatabaseLoadCompleted () = 0;
 
+    public:
+        nonvirtual uintmax_t GetDBFileSize () const;
 #if !qUseNewDocumentDBAPI
     private:
         using Schema_Table         = SQL::ORM::Schema::Table;

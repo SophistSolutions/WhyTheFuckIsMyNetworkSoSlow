@@ -206,7 +206,7 @@ About WSImpl::GetAbout () const
         r.fMeanWriteDuration   = stats.fRecentDB.fMeanWriteDuration;
         r.fMedianWriteDuration = stats.fRecentDB.fMedianWriteDuration;
         r.fMaxDuration         = stats.fRecentDB.fMaxDuration;
-        r.fFileSize            = WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB::pFileSize ();
+        r.fFileSize            = IntegratedModel::Mgr::sThe.GetDBFileSize ();
         return r;
     }();
     auto healthcheck = healthcheck_GET ();

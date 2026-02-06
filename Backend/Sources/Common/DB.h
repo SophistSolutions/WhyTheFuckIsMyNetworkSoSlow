@@ -14,7 +14,7 @@
 #include "OperationalStatistics.h"
 
 #ifndef qUseNewDocumentDBAPI
-#define qUseNewDocumentDBAPI 0
+#define qUseNewDocumentDBAPI 1
 #endif
 
 #if qUseNewDocumentDBAPI
@@ -65,7 +65,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         /**
          *
          */
-        nonvirtual Database::Document::Connection::Ptr GetInternallySynchronizedConnection ();
+        nonvirtual Database::Document::Connection::Ptr GetInternallySynchronizedConnection () const;
 #endif
 #if !qUseNewDocumentDBAPI
     public:
@@ -91,7 +91,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         static const ReadOnlyProperty<filesystem::path> pFileName;
 
     public:
-        static const ReadOnlyProperty<uintmax_t> pFileSize;
+       nonvirtual uintmax_t GetFileSize () const;
 
     public:
         struct ReadStatsContext;
@@ -104,7 +104,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         /**
          *
          */
-        Execution::Synchronized<Database::Document::Connection::Ptr> fConn_;
+        mutable Execution::Synchronized<Database::Document::Connection::Ptr> fConn_;
 #endif
 
 #if !qUseNewDocumentDBAPI
@@ -122,6 +122,12 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         WriteStatsContext ();
     };
 
+#if qUseNewDocumentDBAPI
+    /**
+     *  Define callback function used for logging/reporting status in DB access code.
+     */
+    auto mkOperationalStatisticsMgrProcessDBCmd (bool traceDB = false) -> Database::Document::Connection::OpertionCallbackPtr;
+#endif
 #if !qUseNewDocumentDBAPI
     /**
      *  Define callback function used for logging/reporting status in DB access code.
