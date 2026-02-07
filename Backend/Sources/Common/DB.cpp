@@ -93,9 +93,21 @@ Database::Document::Connection::Ptr WhyTheFuckIsMyNetworkSoSlow::BackendApp::Com
     using namespace Database::Document;
     auto rwLock = fConn_.rwget ();
     if (rwLock.rwref () == nullptr) {
-        auto f = pFileName ();
-        rwLock.store (LocalDocumentDB::New (LocalDocumentDB::Options{.fInternallySynchronizedLetter = Execution::eInternallySynchronized,
-                                                                     .fStorage = LocalDocumentDB::Options::DirectoryFileStorage{.fRoot = f}}));
+        auto f       = pFileName ();
+        auto options = LocalDocumentDB::Options{.fInternallySynchronizedLetter = Execution::eInternallySynchronized,
+                                                .fStorage = LocalDocumentDB::Options::DirectoryFileStorage{.fRoot = f}};
+             // track usage
+#if qStroika_Foundation_Debug_AssertionsChecked
+        options.fOperationLoggingCallback = BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd (true);
+#else
+        options.fOperationLoggingCallback = BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd ();
+#endif
+#if qStroika_Foundation_Common_Platform_Windows
+        // Could avoid the need for this by excluding the location of the DB from antivirus tools, but this is more
+        // general and shouldn't cause any problems if the user does that.
+        get<LocalDocumentDB::Options::DirectoryFileStorage> (options.fStorage).fRetryOnSharingViolationFor = 5s;
+#endif
+        rwLock.store (LocalDocumentDB::New (options));
     }
     return rwLock.cref ();
 }
@@ -158,8 +170,8 @@ auto WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::mkOperationalStatisticsMgr
     using Database::Document::Connection::Operation;
     shared_ptr<OperationalStatisticsMgr::ProcessDBCmd> tmp; // use shared_ptr in lambda so copies of lambda share same object
     // @todo note - COULD use same shared_ptr object to store a Debug::TraceContextBumper object so we get /DBRead messages elided from log most of the time (when quick and /DBWrite).
-    auto r = [=] (Operation op, const Database::Document::Connection::Ptr& documentDBConnection, const optional<String>& collectionName,
-                  const exception_ptr& e) mutable noexcept {
+    auto r = [=] (Operation op, [[maybe_unused]] const Database::Document::Connection::Ptr& documentDBConnection,
+                  const optional<String>& collectionName, const exception_ptr& e) mutable noexcept {
         switch (op) {
             case Operation::eStartingRead:
                 if (traceDB) {

@@ -91,7 +91,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         static const ReadOnlyProperty<filesystem::path> pFileName;
 
     public:
-       nonvirtual uintmax_t GetFileSize () const;
+        nonvirtual uintmax_t GetFileSize () const;
 
     public:
         struct ReadStatsContext;
