@@ -429,14 +429,14 @@ void Mgr::_OneTimeStartupLoadDB ()
     auto fetchInterfacesNetworks = [this] () -> unsigned int {
         try {
             Debug::TimingTrace ttrc{L"...initial load of fDBNetworkInterfaces_ from database ", 1s};
+#if qUseNewDocumentDBAPI
+            auto all = fNetworkInterfaceTableConnection_.GetAll ();
+#else
             auto errorHandler = [] ([[maybe_unused]] const SQL::Statement::Row& r, const exception_ptr& e) -> optional<NetworkInterface> {
                 // Just drop the record on the floor after logging
                 Logger::sThe.Log (Logger::eError, "Error reading database of persisted network interfaces snapshot ('{}'): {}"_f, r, e);
                 return nullopt;
             };
-#if qUseNewDocumentDBAPI
-            auto all = fNetworkInterfaceTableConnection_.GetAll ();
-#else
             auto all = fNetworkInterfaceTableConnection_->GetAll (errorHandler);
 #endif
             fDBNetworkInterfaces_.store (NetworkInterfaceCollection{all});
@@ -450,14 +450,14 @@ void Mgr::_OneTimeStartupLoadDB ()
     auto fetchNets = [this] () -> unsigned int {
         try {
             Debug::TimingTrace ttrc{L"...initial load of fDBNetworks_ from database ", 1s};
+#if qUseNewDocumentDBAPI
+            auto all = fNetworkTableConnection_.GetAll ();
+#else
             auto errorHandler = [] ([[maybe_unused]] const SQL::Statement::Row& r, const exception_ptr& e) -> optional<Network> {
                 // Just drop the record on the floor after logging
                 Logger::sThe.Log (Logger::eError, "Error reading database of persisted network snapshot ('{}'): {}"_f, r, e);
                 return nullopt;
             };
-#if qUseNewDocumentDBAPI
-            auto all = fNetworkTableConnection_.GetAll ();
-#else
             auto all = fNetworkTableConnection_->GetAll (errorHandler);
 #endif
             fDBNetworks_.store (NetworkCollection{all});
@@ -471,14 +471,14 @@ void Mgr::_OneTimeStartupLoadDB ()
     auto fetchDevices = [this] () -> unsigned int {
         try {
             Debug::TimingTrace ttrc{L"...initial load of fDBDevices_ from database ", 1s};
+#if qUseNewDocumentDBAPI
+            auto all = fDeviceTableConnection_.GetAll ();
+#else
             auto errorHandler = [] ([[maybe_unused]] const SQL::Statement::Row& r, const exception_ptr& e) -> optional<Device> {
                 // Just drop the record on the floor after logging
                 Logger::sThe.Log (Logger::eError, "Error reading database of persisted device snapshot ('{}'): {}"_f, r, e);
                 return nullopt;
             };
-#if qUseNewDocumentDBAPI
-            auto all = fDeviceTableConnection_.GetAll ();
-#else
             auto all = fDeviceTableConnection_->GetAll (errorHandler);
 #endif
             if constexpr (qDebug) {

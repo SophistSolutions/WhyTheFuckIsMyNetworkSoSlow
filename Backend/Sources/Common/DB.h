@@ -21,11 +21,11 @@
 #include "Stroika/Foundation/Database/Document/Collection.h"
 #include "Stroika/Foundation/Database/Document/Connection.h"
 #include "Stroika/Foundation/Database/Document/ObjectCollection.h"
-#endif
-#if !qUseNewDocumentDBAPI
+#else
 #include "Stroika/Foundation/Database/SQL/Connection.h"
 #include "Stroika/Foundation/Database/SQL/ORM/Schema.h"
 #include "Stroika/Foundation/Database/SQL/ORM/TableConnection.h"
+#include "Stroika/Foundation/Database/SQL/ORM/Versioning.h"
 #endif
 
 /**
@@ -75,14 +75,11 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         nonvirtual SQL::Connection::Ptr NewConnection ();
 #endif
 
-#if qUseNewDocumentDBAPI
     public:
+#if qUseNewDocumentDBAPI
         template <typename T>
         nonvirtual T AddOrMergeUpdate (Document::ObjectCollection::Ptr<T> dbCollection, const T& d);
-#endif
-
-#if !qUseNewDocumentDBAPI
-    public:
+#else
         template <typename T>
         nonvirtual T AddOrMergeUpdate (ORM::TableConnection<T>* dbConnTable, const T& d);
 #endif
@@ -125,10 +122,10 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
 #if qUseNewDocumentDBAPI
     /**
      *  Define callback function used for logging/reporting status in DB access code.
+     *  Set traceDB = true here (or in particular calls for just those tables) to see logging of reads and writes.
      */
     auto mkOperationalStatisticsMgrProcessDBCmd (bool traceDB = false) -> Database::Document::Connection::OpertionCallbackPtr;
-#endif
-#if !qUseNewDocumentDBAPI
+#else
     /**
      *  Define callback function used for logging/reporting status in DB access code.
      *  Set traceSQL = true here (or in particular calls for just those tables) to see logging of reads and writes.

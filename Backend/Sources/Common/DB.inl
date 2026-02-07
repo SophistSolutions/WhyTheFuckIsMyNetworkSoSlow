@@ -46,8 +46,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         Ensure (result.has_value ());
         return *result;
     }
-#endif
-#if !qUseNewDocumentDBAPI
+#else
     template <typename T>
     T DB::AddOrMergeUpdate (ORM::TableConnection<T>* dbConnTable, const T& d)
     {

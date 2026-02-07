@@ -12,12 +12,6 @@
 #include "Stroika/Foundation/Containers/Collection.h"
 #include "Stroika/Foundation/Containers/Sequence.h"
 #include "Stroika/Foundation/DataExchange/ObjectVariantMapper.h"
-#if !qUseNewDocumentDBAPI
-#include "Stroika/Foundation/Database/SQL/ORM/Schema.h"
-#include "Stroika/Foundation/Database/SQL/ORM/TableConnection.h"
-#include "Stroika/Foundation/Database/SQL/ORM/Versioning.h"
-#include "Stroika/Foundation/Database/SQL/SQLite.h"
-#endif
 #include "Stroika/Foundation/Debug/Trace.h"
 #include "Stroika/Foundation/Execution/LazyInitialized.h"
 #include "Stroika/Foundation/Execution/Logger.h"
@@ -175,8 +169,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_::DB
         Document::ObjectCollection::Ptr<Device>           fDeviceTableConnection_;  // only accessed from a background database thread
         Document::ObjectCollection::Ptr<Network>          fNetworkTableConnection_; // ''
         Document::ObjectCollection::Ptr<NetworkInterface> fNetworkInterfaceTableConnection_; // ''
-#endif
-#if !qUseNewDocumentDBAPI
+#else
         Synchronized<unique_ptr<SQL::ORM::TableConnection<ExternalDeviceUserSettingsElt_>>>  fDeviceUserSettingsTableConnection_;
         Synchronized<unique_ptr<SQL::ORM::TableConnection<ExternalNetworkUserSettingsElt_>>> fNetworkUserSettingsTableConnection_;
         unique_ptr<SQL::ORM::TableConnection<Device>>           fDeviceTableConnection_;  // only accessed from a background database thread
