@@ -96,9 +96,9 @@ Database::Document::Connection::Ptr WhyTheFuckIsMyNetworkSoSlow::BackendApp::Com
         auto f       = pFileName ();
         auto options = LocalDocumentDB::Options{.fInternallySynchronizedLetter = Execution::eInternallySynchronized,
                                                 .fStorage = LocalDocumentDB::Options::DirectoryFileStorage{.fRoot = f}};
-             // track usage
+        // track usage
 #if qStroika_Foundation_Debug_AssertionsChecked
-        options.fOperationLoggingCallback = BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd (true);
+        options.fOperationLoggingCallback = BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd (/*true*/);
 #else
         options.fOperationLoggingCallback = BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd ();
 #endif

@@ -1321,7 +1321,7 @@ namespace {
 
                         // then flag found device and when via random pings/portscan, and record portscan result.
                         if (scanResults.fDiscoveredOpenPorts.empty ()) {
-                            DbgTrace ("No obvious device at ip {} for because no scan results (ScanOptions::eQuick)"_f, ia);
+                            DbgTrace ("No obvious device at ip {} because no scan results (ScanOptions::eQuick)"_f, ia);
                         }
                         else {
                             DiscoveryInfo_ tmp{};
