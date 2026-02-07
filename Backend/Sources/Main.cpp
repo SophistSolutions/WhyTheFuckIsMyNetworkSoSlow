@@ -40,30 +40,6 @@ using namespace WhyTheFuckIsMyNetworkSoSlow;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp;
 
 namespace {
-    void FatalErorrHandler_ (const Characters::SDKChar* msg) noexcept
-    {
-        Thread::SuppressInterruptionInContext suppressCtx;
-        DbgTrace ("Fatal Error {} encountered"_f, String::FromSDKString (msg));
-        Logger::sThe.Log (Logger::eCriticalError, "Fatal Error: {}; Aborting..."_f, String::FromSDKString (msg));
-        Logger::sThe.Log (Logger::eCriticalError, "Backtrace: {}"_f, Debug::BackTrace::Capture ());
-        if (std::exception_ptr exc = std::current_exception ()) {
-            Logger::sThe.Log (Logger::eCriticalError, "Uncaught exception: {}"_f, exc);
-        }
-        Logger::sThe.Flush ();
-        std::_Exit (EXIT_FAILURE); // skip
-    }
-    void FatalSignalHandler_ (Execution::SignalID signal) noexcept
-    {
-        Thread::SuppressInterruptionInContext suppressCtx;
-        DbgTrace ("Fatal Signal encountered: {}"_f, Execution::SignalToName (signal));
-        Logger::sThe.Log (Logger::eCriticalError, "Fatal Signal: {}; Aborting..."_f, Execution::SignalToName (signal));
-        Logger::sThe.Log (Logger::eCriticalError, "Backtrace: {}"_f, Debug::BackTrace::Capture ());
-        Logger::sThe.Flush ();
-        std::_Exit (EXIT_FAILURE); // skip
-    }
-}
-
-namespace {
     void ShowUsage_ (const Main& m, const Execution::InvalidCommandLineArgument& e = {})
     {
         if (not e.As<String> ().empty ()) {
@@ -125,12 +101,12 @@ int main (int argc, const char* argv[])
     Execution::Platform::Windows::RegisterDefaultHandler_invalid_parameter ();
     Execution::Platform::Windows::RegisterDefaultHandler_StructuredException ();
 #endif
-    Debug::RegisterDefaultFatalErrorHandlers (FatalErorrHandler_);
+    Debug::RegisterDefaultFatalErrorHandlers (Execution::DefaultLoggingFatalErrorHandler);
 
     /*
      *  SetStandardCrashHandlerSignals not really needed, but helpful for many applications so you get a decent log message/debugging on crash.
      */
-    SignalHandlerRegistry::sThe.SetStandardCrashHandlerSignals (SignalHandler{FatalSignalHandler_, SignalHandler::Type::eDirect});
+    SignalHandlerRegistry::sThe.SetStandardCrashHandlerSignals (SignalHandler{DefaultLoggingCrashSignalHandler, SignalHandler::Type::eDirect});
 
     /*
      *  Ignore SIGPIPE is common practice/helpful in POSIX, but not required by the service manager.
@@ -146,22 +122,32 @@ int main (int argc, const char* argv[])
         .fLogBufferingEnabled         = true,
         .fSuppressDuplicatesThreshold = 5min,
     }};
-    Logger::sThe.SetAppenders ([] () {
-        static const String kAppName_                            = "WhyTheFuckIsMyNetworkSoSlow"sv;
-        using Logging                                            = BackendApp::Common::AppConfigurationType::Logging;
-        Logging                                    loggingConfig = BackendApp::Common::gAppConfiguration->fLogging.value_or (Logging{});
+
+    /*
+     * log to stdout, before reading into gAppConfiguration
+     */
+    Logger::sThe.SetAppenders (make_shared<Logger::StreamAppender> (
+        IO::FileSystem::FileOutputStream::New (STDOUT_FILENO, IO::FileSystem::FileStream::AdoptFDPolicy::eDisconnectOnDestruction)));
+    BackendApp::Common::gAppConfiguration.AssureLoaded ();
+
+    /*
+     * Setup Logger as configured
+     */
+    Logger::sThe.SetAppenders ([&] () {
+        static const String kAppName_  = "WhyTheFuckIsMyNetworkSoSlow"sv;
+        using LoggingConfigurationType = BackendApp::Common::AppConfigurationType::Logging;
+        LoggingConfigurationType loggingConfig{BackendApp::Common::gAppConfiguration->fLogging.value_or (LoggingConfigurationType{})};
         Sequence<shared_ptr<Logger::IAppenderRep>> appenders;
-        Logger::sThe.SetAppenders (nullptr);
-        if (loggingConfig.ToStdOut.value_or (Logging::kToStdOut_Default)) {
+        if (loggingConfig.ToStdOut.value_or (LoggingConfigurationType::kToStdOut_Default)) {
             appenders += make_shared<Logger::StreamAppender> (
-                IO::FileSystem::FileOutputStream::New (1, IO::FileSystem::FileStream::AdoptFDPolicy::eDisconnectOnDestruction));
+                IO::FileSystem::FileOutputStream::New (STDOUT_FILENO, IO::FileSystem::FileStream::AdoptFDPolicy::eDisconnectOnDestruction));
         }
-#if qHas_Syslog
-        if (loggingConfig.ToSysLog.value_or (Logging::kToSysLog_Default)) {
+#if qStroika_HasComponent_syslog
+        if (loggingConfig.ToSysLog.value_or (LoggingConfigurationType::kToSysLog_Default)) {
             appenders += make_shared<Logger::SysLogAppender> (kAppName_);
         }
 #elif qStroika_Foundation_Common_Platform_Windows
-        if (loggingConfig.ToWindowsEventLog.value_or (Logging::kToWindowsEventLog_Default)) {
+        if (loggingConfig.ToWindowsEventLog.value_or (LoggingConfigurationType::kToWindowsEventLog_Default)) {
             appenders += make_shared<Logger::WindowsEventLogAppender> (kAppName_);
         }
 #endif

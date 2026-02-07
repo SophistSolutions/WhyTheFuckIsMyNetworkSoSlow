@@ -92,7 +92,7 @@ namespace {
                               GetRawNetworkInterfaces ().size (), GetRawNetworks ().size (), GetRawDevices ().size ());
             // @todo post-processing, maybe deleting some user settings
             PruneBadNetworks_ ();
-            Logger::sThe.Log (Logger::eInfo, "Successfully opened, and post-processed database ({})"_f, BackendApp::Common::DB::pFileName ());
+            Logger::sThe.Log (Logger::eInfo, "Successfully opened, and post-processed database ('{}')"_f, BackendApp::Common::DB::pFileName ());
             fFinishedInitialDBLoad_ = true;
         }
         void PruneBadNetworks_ ()
