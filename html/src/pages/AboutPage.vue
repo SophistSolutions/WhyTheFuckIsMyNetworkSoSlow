@@ -91,12 +91,25 @@ function prettyPrintMSDuration(time?: string) {
 }
 function wsAPIMsg(info: IAPIEndpoint, showShort: boolean): string {
   let msg = "";
-  msg += `${info.callsCompleted} calls completed; `;
-  msg += `${info.medianRunningAPITasks} running tasks; `;
+  if (showShort) {
+    msg += `${info.callsCompleted} completed; `;
+    msg += `${info.medianRunningAPITasks} running; `;
+  }
+  else {
+    msg += `${info.callsCompleted} calls completed; `;
+    msg += `${info.medianRunningAPITasks} running tasks; `;
+  }
   msg += `${info.errors} ${PluralizeNoun("error", info.errors)}; `;
-  msg += `times: ${prettyPrintMSDuration(
-    info.callTimes.median
-  )}, max ${prettyPrintMSDuration(info.callTimes.max)}`;
+  if (showShort) {
+    msg += `times: ${prettyPrintMSDuration(
+      info.callTimes.median
+    )}, max ${prettyPrintMSDuration(info.callTimes.max)}`;
+  }
+  else {
+    msg += `\n median duration: ${prettyPrintMSDuration(
+      info.callTimes.median
+    )}, max duration: ${prettyPrintMSDuration(info.callTimes.max)}`;
+  }
   return msg;
 }
 function dbStatsMsg(info: IDatabase, showShort: boolean): string {
@@ -190,13 +203,13 @@ function webServerMsg_(info: IWebServerStats): string {
                 <div class="col-3" title="last successful message received">Web Services URL</div>
                 <div class="col">{{ gRuntimeConfiguration.API_ROOT }}</div>
               </div>
-              <div class="row" >
+              <div class="row">
                 <div class="col-4" title="last successful message received">Last message</div>
                 <div class="col" :style="lastSuccessfulAPICallMessageStyle">{{
                   lastSuccessfulAPICallMessage
                 }}</div>
               </div>
-              <div class="row" >
+              <div class="row">
                 <div class="col-4" title="Web Service">API Docs:</div>
                 <a :href="gRuntimeConfiguration.API_ROOT + '/api'" target="_new">{{ gRuntimeConfiguration.API_ROOT
                 }}/api</a>
