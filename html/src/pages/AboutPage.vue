@@ -87,7 +87,13 @@ function prettyPrintMSDuration(time?: string) {
   if (time == undefined) {
     return "?";
   }
-  return Duration.fromISO(time).toHuman({ unitDisplay: "narrow", showZeros: false });
+  // Sadly, this works poorly for sub-millisecond timing (as we often get). luxon fromISO just drops anything beyond ms accuracy
+  // on the floor. Hard to fix witout re-implementing fromISO
+  const d = Duration.fromISO(time);
+  if (d.toMillis() == 0) {
+    return "0s";
+  }
+  return d.toHuman({ unitDisplay: "narrow", showZeros: false });
 }
 function wsAPIMsg(info: IAPIEndpoint, showShort: boolean): string {
   let msg = "";
