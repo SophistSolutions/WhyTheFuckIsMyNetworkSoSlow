@@ -108,26 +108,24 @@ function dbStatsMsg(info: IDatabase, showShort: boolean): string {
     msg += `${prettyBytes(info.fileSize)}; `;
   }
   if (!showShort) {
-    msg += `${info.reads} reads, ${info.writes} writes; `;
+    msg += `N calls: ${info.reads} reads, ${info.writes} writes; `;
   }
   if (showShort) {
-    msg += `${prettyPrintMSDuration(
-      info.medianReadDuration
-    )} reads, ${prettyPrintMSDuration(info.medianWriteDuration)} writes`;
+    msg += `${prettyPrintMSDuration(info.medianReadDuration)} reads, ${prettyPrintMSDuration(info.medianWriteDuration)} writes`;
   } else {
-    msg += `Med ${prettyPrintMSDuration(
+    msg += `\n${prettyPrintMSDuration(
       info.medianReadDuration
-    )} read duration, Med ${prettyPrintMSDuration(
+    )} median read duration, ${prettyPrintMSDuration(
       info.medianWriteDuration
-    )} write duration`;
+    )} median write duration`;
   }
   if (showShort) {
     if (info.maxDuration != undefined) {
-      msg += `; max ${prettyPrintMSDuration(info.maxDuration)}`;
+      msg += `; max I/O ${prettyPrintMSDuration(info.maxDuration)} `;
     }
   } else {
     if (info.maxDuration != undefined) {
-      msg += `; max ${prettyPrintMSDuration(info.maxDuration)} I/O duration`;
+      msg += `;\n${prettyPrintMSDuration(info.maxDuration)} max I/O duration`;
     }
   }
   return msg;
