@@ -42,6 +42,27 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         };
         optional<Logging> fLogging;
 
+        struct SingleFileJSONStorage {
+            /**
+             * Where the file is stored.
+             */
+            filesystem::path fFile;
+        };
+        struct DirectoryJSONStorage final {
+            /**
+             * The directory where the files are stored.
+             */
+            filesystem::path fRoot;
+        };
+        struct SQLiteStorage {
+            /**
+             * Where the file is stored.
+             */
+            filesystem::path fFile;
+        };
+        using DatabaseConfigurationType = variant<monostate, SingleFileJSONStorage, DirectoryJSONStorage, SQLiteStorage>;
+        DatabaseConfigurationType fDatabase;
+
         static const DataExchange::ObjectVariantMapper kMapper;
     };
 

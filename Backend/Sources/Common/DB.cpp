@@ -15,10 +15,13 @@
 #include "Stroika/Foundation/Execution/Synchronized.h"
 #include "Stroika/Foundation/IO/FileSystem/WellKnownLocations.h"
 
+#include "../Common/AppConfiguration.h"
+
 #include "DB.h"
 
 #if qUseNewDocumentDBAPI
 #include "Stroika/Foundation/Database/Document/LocalDocumentDB.h"
+#include "Stroika/Foundation/Database/Document/SQLite.h"
 #else
 #include "Stroika/Foundation/Database/SQL/SQLite.h"
 #endif
@@ -40,6 +43,12 @@ using namespace Stroika::Foundation::IO::Network::HTTP;
 using namespace SQL::ORM;
 using namespace SQL::SQLite;
 #endif
+#if qUseNewDocumentDBAPI
+using DatabaseConfigurationType = WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::AppConfigurationType::DatabaseConfigurationType;
+using DirectoryJSONStorage      = WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::AppConfigurationType::DirectoryJSONStorage;
+using SingleFileJSONStorage     = WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::AppConfigurationType::SingleFileJSONStorage;
+using SQLiteStorage             = WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::AppConfigurationType::SQLiteStorage;
+#endif
 
 /*
  ********************************************************************************
@@ -49,9 +58,41 @@ using namespace SQL::SQLite;
 const ReadOnlyProperty<filesystem::path> WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB::pFileName{
     [] ([[maybe_unused]] const auto* property) -> filesystem::path {
 #if qUseNewDocumentDBAPI
+        DatabaseConfigurationType dbConfig{BackendApp::Common::gAppConfiguration->fDatabase};
+        if (SingleFileJSONStorage* osjs = get_if<SingleFileJSONStorage> (&dbConfig)) {
+            filesystem::path p = osjs->fFile;
+            if (p.empty ()) {
+                p = "db-fs-single-v1";
+            }
+            if (p.is_relative ()) {
+                p = IO::FileSystem::WellKnownLocations::GetApplicationData () / "WhyTheFuckIsMyNetworkSoSlow" / p;
+            }
+            return p;
+        }
+        else if (DirectoryJSONStorage* odjs = get_if<DirectoryJSONStorage> (&dbConfig)) {
+            filesystem::path p = odjs->fRoot;
+            if (p.empty ()) {
+                p = "db-fs-v1";
+            }
+            if (p.is_relative ()) {
+                p = IO::FileSystem::WellKnownLocations::GetApplicationData () / "WhyTheFuckIsMyNetworkSoSlow" / p;
+            }
+            return p;
+        }
+        else if (SQLiteStorage* osqlite = get_if<SQLiteStorage> (&dbConfig)) {
+            filesystem::path p = osqlite->fFile;
+            if (p.empty ()) {
+                p = "db-doc-v1.db";
+            }
+            if (p.is_relative ()) {
+                p = IO::FileSystem::WellKnownLocations::GetApplicationData () / "WhyTheFuckIsMyNetworkSoSlow" / p;
+            }
+            return p;
+        }
+        AssertNotReached ();
         return IO::FileSystem::WellKnownLocations::GetApplicationData () / "WhyTheFuckIsMyNetworkSoSlow" / "db-fs-v1";
 #else
-        return IO::FileSystem::WellKnownLocations::GetApplicationData () / "WhyTheFuckIsMyNetworkSoSlow" / "db-v16.db";
+        return IO::FileSystem::WellKnownLocations::GetApplicationData () / "WhyTheFuckIsMyNetworkSoSlow" / "db-v17.db";
 #endif
     }};
 
@@ -90,21 +131,62 @@ Database::Document::Connection::Ptr WhyTheFuckIsMyNetworkSoSlow::BackendApp::Com
     using namespace Database::Document;
     auto rwLock = fConn_.rwget ();
     if (rwLock.rwref () == nullptr) {
-        auto f       = pFileName ();
-        auto options = LocalDocumentDB::Options{.fInternallySynchronizedLetter = Execution::eInternallySynchronized,
-                                                .fStorage = LocalDocumentDB::Options::DirectoryFileStorage{.fRoot = f}};
-        // track usage
-#if qStroika_Foundation_Debug_AssertionsChecked
-        options.fOperationLoggingCallback = BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd (/*true*/);
-#else
-        options.fOperationLoggingCallback = BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd ();
-#endif
+        DatabaseConfigurationType dbConfig{BackendApp::Common::gAppConfiguration->fDatabase};
+
+        // For default configuration, if no db specified, fill in sensible default.
+        if (get_if<monostate> (&dbConfig)) {
+            dbConfig = DirectoryJSONStorage{.fRoot = "db-localDBDir-v1"}; // @todo see if this is best or SQLITE
+            // update App Config
+            BackendApp::Common::AppConfigurationType appCfg = BackendApp::Common::gAppConfiguration.Get ();
+            appCfg.fDatabase                                = dbConfig;
+            BackendApp::Common::gAppConfiguration.Set (appCfg);
+        }
+
+        auto f = pFileName ();
+        if (get_if<SingleFileJSONStorage> (&dbConfig)) {
+            LocalDocumentDB::Options options;
+            options = LocalDocumentDB::Options{.fInternallySynchronizedLetter = Execution::eInternallySynchronized,
+                                               .fStorage                      = LocalDocumentDB::Options::SingleFileStorage{.fFile = f}};
 #if qStroika_Foundation_Common_Platform_Windows
-        // Could avoid the need for this by excluding the location of the DB from antivirus tools, but this is more
-        // general and shouldn't cause any problems if the user does that.
-        get<LocalDocumentDB::Options::DirectoryFileStorage> (options.fStorage).fRetryOnSharingViolationFor = 5s;
+            // Could avoid the need for this by excluding the location of the DB from antivirus tools, but this is more
+            // general and shouldn't cause any problems if the user does that.
+            get<LocalDocumentDB::Options::SingleFileStorage> (options.fStorage).fRetryOnSharingViolationFor = 5s;
 #endif
-        rwLock.store (LocalDocumentDB::New (options));
+            // track usage
+#if qStroika_Foundation_Debug_AssertionsChecked
+            options.fOperationLoggingCallback = BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd (/*true*/);
+#else
+            options.fOperationLoggingCallback = BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd ();
+#endif
+            rwLock.store (LocalDocumentDB::New (options));
+        }
+        else if (get_if<DirectoryJSONStorage> (&dbConfig)) {
+            LocalDocumentDB::Options options;
+            options = LocalDocumentDB::Options{.fInternallySynchronizedLetter = Execution::eInternallySynchronized,
+                                               .fStorage                      = LocalDocumentDB::Options::DirectoryFileStorage{.fRoot = f}};
+#if qStroika_Foundation_Common_Platform_Windows
+            // Could avoid the need for this by excluding the location of the DB from antivirus tools, but this is more
+            // general and shouldn't cause any problems if the user does that.
+            get<LocalDocumentDB::Options::DirectoryFileStorage> (options.fStorage).fRetryOnSharingViolationFor = 5s;
+#endif
+            // track usage
+#if qStroika_Foundation_Debug_AssertionsChecked
+            options.fOperationLoggingCallback = BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd (/*true*/);
+#else
+            options.fOperationLoggingCallback = BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd ();
+#endif
+            rwLock.store (LocalDocumentDB::New (options));
+        }
+        else if (get_if<SQLiteStorage> (&dbConfig)) {
+            Database::Document::SQLite::Connection::Options options;
+            options = Database::Document::SQLite::Connection::Options{.fDBPath = f};
+#if qStroika_Foundation_Debug_AssertionsChecked
+            options.fOperationLoggingCallback = BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd (/*true*/);
+#else
+            options.fOperationLoggingCallback = BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd ();
+#endif
+            rwLock.store (SQLite::Connection::New (options));
+        }
     }
     return rwLock.cref ();
 }

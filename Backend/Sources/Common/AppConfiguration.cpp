@@ -51,8 +51,51 @@ const ObjectVariantMapper AppConfigurationType::kMapper = [] () {
         {.fOmitNullEntriesInFromObject = false});
     mapper.AddCommonType<optional<AppConfigurationType::Logging>> ();
 
-    mapper.AddClass<AppConfigurationType> ({{"Logging"sv, &AppConfigurationType::fLogging}, {"WebServerPort"sv, &AppConfigurationType::WebServerPort}},
+    mapper.AddClass<SingleFileJSONStorage> ({{"File"sv, &SingleFileJSONStorage::fFile}}, {.fOmitNullEntriesInFromObject = false});
+    mapper.AddClass<DirectoryJSONStorage> ({{"Root"sv, &DirectoryJSONStorage::fRoot}}, {.fOmitNullEntriesInFromObject = false});
+    mapper.AddClass<SQLiteStorage> ({{"File"sv, &SQLiteStorage::fFile}}, {.fOmitNullEntriesInFromObject = false});
+
+    // Treat a VARIANT as a Mapping (regular object) - but with only one of the values possible
+    mapper.Add<DatabaseConfigurationType> (
+        [] (const ObjectVariantMapper& mapper, const DatabaseConfigurationType* obj) -> VariantValue {
+            if (auto sfj = get_if<SingleFileJSONStorage> (obj)) {
+                Mapping<String, VariantValue> t;
+                t.Add ("SingleFileJSONStorage"sv, mapper.FromObject (*sfj));
+                return VariantValue{t};
+            }
+            else if (auto dfj = get_if<DirectoryJSONStorage> (obj)) {
+                Mapping<String, VariantValue> t;
+                t.Add ("DirectoryJSONStorage"sv, mapper.FromObject (*dfj));
+                return VariantValue{t};
+            }
+            else if (auto msql = get_if<SQLiteStorage> (obj)) {
+                Mapping<String, VariantValue> t;
+                t.Add ("SQLiteStorage"sv, mapper.FromObject (*msql));
+                return VariantValue{t};
+            }
+            return VariantValue{}; // monostate => empty/missing data
+        },
+        [] (const ObjectVariantMapper& mapper, const VariantValue& d, DatabaseConfigurationType* intoObj) -> void {
+            Mapping<String, VariantValue> vv = d.As<Mapping<String, VariantValue>> ();
+            if (auto sfj = vv.Lookup ("SingleFileJSONStorage"sv)) {
+                *intoObj = mapper.ToObject<SingleFileJSONStorage> (*sfj);
+            }
+            else if (auto dfj = vv.Lookup ("DirectoryJSONStorage"sv)) {
+                *intoObj = mapper.ToObject<DirectoryJSONStorage> (*dfj);
+            }
+            else if (auto msql = vv.Lookup ("SQLiteStorage"sv)) {
+                *intoObj = mapper.ToObject<SQLiteStorage> (*msql);
+            }
+            else {
+                *intoObj = DatabaseConfigurationType{}; // monostate
+            }
+        });
+
+    mapper.AddClass<AppConfigurationType> ({{"Logging"sv, &AppConfigurationType::fLogging},
+                                            {"WebServerPort"sv, &AppConfigurationType::WebServerPort},
+                                            {"Database"sv, &AppConfigurationType::fDatabase}},
                                            {.fOmitNullEntriesInFromObject = false});
+
     return mapper;
 }();
 

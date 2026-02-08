@@ -87,12 +87,13 @@ namespace {
         virtual void _OneTimeStartupLoadDB () override
         {
             Debug::TraceContextBumper ctx{"MyDBAccessRep_::_OneTimeStartupLoadDB"};
+            Logger::sThe.Log (Logger::eInfo, "Opening database: '{}'"_f, BackendApp::Common::DB::pFileName ());
             inherited::_OneTimeStartupLoadDB ();
             Logger::sThe.Log (Logger::eInfo, "Loaded {} network interface snapshots, {} network snapshots and {} device snapshots from database"_f,
                               GetRawNetworkInterfaces ().size (), GetRawNetworks ().size (), GetRawDevices ().size ());
             // @todo post-processing, maybe deleting some user settings
             PruneBadNetworks_ ();
-            Logger::sThe.Log (Logger::eInfo, "Successfully opened, and post-processed database ('{}')"_f, BackendApp::Common::DB::pFileName ());
+            Logger::sThe.Log (Logger::eInfo, "Successfully post-processed database"_f);
             fFinishedInitialDBLoad_ = true;
         }
         void PruneBadNetworks_ ()

@@ -122,7 +122,7 @@ const Schema_Table Mgr::kDeviceTableSchema_{
     Schema_CatchAllField{}};
 
 const Schema_Table Mgr::kNetworkInterfaceTableSchema_{
-    "NetworkInteraces"sv,
+    "NetworkInterfaces"sv,
     /*
      *  use the same names as the ObjectVariantMapper for simpler mapping, or specify an alternate name
      *  for ID, just as an example.
@@ -169,7 +169,7 @@ Mgr::Mgr ()
     fDeviceTableConnection_  = Document::ObjectCollection::New<Device> (conn.CreateCollection ("Devices"sv), kDBObjectMapper_);
     fNetworkTableConnection_ = Document::ObjectCollection::New<Network> (conn.CreateCollection ("Networks"sv), kDBObjectMapper_);
     fNetworkInterfaceTableConnection_ =
-        Document::ObjectCollection::New<NetworkInterface> (conn.CreateCollection ("NetworkInteraces"sv), kDBObjectMapper_);
+        Document::ObjectCollection::New<NetworkInterface> (conn.CreateCollection ("NetworkInterfaces"sv), kDBObjectMapper_);
 #else
     // Each TableConnection gets its own DB::Connection::Ptr
     fDeviceUserSettingsTableConnection_ = make_unique<SQL::ORM::TableConnection<ExternalDeviceUserSettingsElt_>> (
