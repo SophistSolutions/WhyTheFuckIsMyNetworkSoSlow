@@ -78,5 +78,9 @@ push-images:
 dev-containers:
 ifeq (${DETECTED_HOST_OS},Linux)
 	DOCKER_BUILD_EXTRAS_="$(DOCKER_BUILD_EXTRAS_FOR_DEV_)" make build-images
-	cd ${StroikaRoot} && SANDBOX_FROM=/Sandbox CONTAINER_NAME=WTF-Dev-2004 CONTAINER_IMAGE=sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004 INCLUDE_EXTRA_PERSONAL_MOUNT_FILES=1 EXTRA_DOCKER_ARGS="--publish 11222:22" ECHO_DOCKER_COMMANDS=1 ScriptsLib/RunInDockerEnvironment
+	cd ${StroikaRoot} && SANDBOX_FROM=/Sandbox CONTAINER_NAME=WTF-Dev-2204 CONTAINER_IMAGE=sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204 INCLUDE_EXTRA_PERSONAL_MOUNT_FILES=1 EXTRA_DOCKER_ARGS="--publish 11223:22" ECHO_DOCKER_COMMANDS=1 ScriptsLib/RunInDockerEnvironment
+	cd ${StroikaRoot} && SANDBOX_FROM=/Sandbox CONTAINER_NAME=WTF-Dev-2404 CONTAINER_IMAGE=sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2404 INCLUDE_EXTRA_PERSONAL_MOUNT_FILES=1 EXTRA_DOCKER_ARGS="--publish 11224:22" ECHO_DOCKER_COMMANDS=1 ScriptsLib/RunInDockerEnvironment
 endif
+
+start-dev-containers:
+	for i in WTF-Dev-2204 WTF-Dev-2404; do docker start $$i; docker exec -it $$i sudo service ssh start; done
