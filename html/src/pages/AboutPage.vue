@@ -88,9 +88,15 @@ function prettyPrintMSDuration(time?: string) {
     return "?";
   }
   // Sadly, this works poorly for sub-millisecond timing (as we often get). luxon fromISO just drops anything beyond ms accuracy
-  // on the floor. Hard to fix witout re-implementing fromISO
+  // on the floor. Primitive special case handling of parse logic seems to be enuf for now...
   const d = Duration.fromISO(time);
   if (d.toMillis() == 0) {
+    if (time.startsWith("PT") && time.endsWith("S")) {
+      const ts = Number.parseFloat (time.substring (2, time.length-3));
+      if (ts < 0.001 && ts > 0.000001) {
+        return (ts*1000*1000).toFixed(1) + "μs";
+      }
+    }
     return "0s";
   }
   return d.toHuman({ unitDisplay: "narrow", showZeros: false });
