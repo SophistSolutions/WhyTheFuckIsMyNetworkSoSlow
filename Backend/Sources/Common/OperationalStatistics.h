@@ -123,28 +123,21 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
      */
     struct OperationalStatisticsMgr::Statistics {
         struct WSAPI {
-            unsigned int       fCallsCompleted{};
-            optional<Duration> fMeanDuration;
-            optional<Duration> fMedianDuration;
-            optional<Duration> fMaxDuration;
-            // optional<float>    fMedianWebServerConnections;
-            // optional<float>    fMedianProcessingWebServerConnections;
-            optional<float> fMedianRunningAPITasks;
-            unsigned int    fErrors{};
+            unsigned int                     fCallsCompleted{};
+            Math::CommonStatistics<Duration> fCallTimes;
+            optional<float>                  fMedianRunningAPITasks;
+            unsigned int                     fErrors{};
         };
-        struct DB {
-            unsigned int       fReads{};
-            unsigned int       fWrites{};
-            unsigned int       fErrors{};
-            optional<Duration> fMeanReadDuration;
-            optional<Duration> fMedianReadDuration;
-            optional<Duration> fMeanWriteDuration;
-            optional<Duration> fMedianWriteDuration;
-            optional<Duration> fMaxDuration;
-        };
-
         WSAPI fRecentAPI;
-        DB    fRecentDB;
+
+        struct DB {
+            unsigned int                     fReads{};
+            unsigned int                     fWrites{};
+            unsigned int                     fErrors{};
+            Math::CommonStatistics<Duration> fReadDurationStats;
+            Math::CommonStatistics<Duration> fWriteDurationStats;
+        };
+        DB fRecentDB;
     };
 
     inline OperationalStatisticsMgr OperationalStatisticsMgr::sThe; // @todo recondider if this follows new Stroika Singleton pattern -- LGP 2020-08-20

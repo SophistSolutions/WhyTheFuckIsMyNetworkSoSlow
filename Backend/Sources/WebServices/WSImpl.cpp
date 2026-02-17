@@ -170,12 +170,9 @@ About WSImpl::GetAbout () const
     Common::OperationalStatisticsMgr::Statistics stats    = Common::OperationalStatisticsMgr::sThe.GetStatistics ();
     APIEndpoint                                  apiStats = [&] () {
         APIEndpoint r;
-        r.fCallsCompleted = stats.fRecentAPI.fCallsCompleted;
-        r.fCallTimes      = CommonStatistics<Duration>{
-                                                  .fMax = stats.fRecentAPI.fMaxDuration, .fMean = stats.fRecentAPI.fMeanDuration, .fMedian = stats.fRecentAPI.fMedianDuration};
-        r.fErrors = stats.fRecentAPI.fErrors;
-        // r.fMedianWebServerConnections           = stats.fRecentAPI.fMedianWebServerConnections;
-        // r.fMedianProcessingWebServerConnections = stats.fRecentAPI.fMedianProcessingWebServerConnections;
+        r.fCallsCompleted        = stats.fRecentAPI.fCallsCompleted;
+        r.fCallTimes             = stats.fRecentAPI.fCallTimes;
+        r.fErrors                = stats.fRecentAPI.fErrors;
         r.fMedianRunningAPITasks = stats.fRecentAPI.fMedianRunningAPITasks;
         return r;
     }();
@@ -198,15 +195,12 @@ About WSImpl::GetAbout () const
     }();
     Database dbStats = [&] () {
         Database r;
-        r.fReads               = stats.fRecentDB.fReads;
-        r.fWrites              = stats.fRecentDB.fWrites;
-        r.fErrors              = stats.fRecentDB.fErrors;
-        r.fMeanReadDuration    = stats.fRecentDB.fMeanReadDuration;
-        r.fMedianReadDuration  = stats.fRecentDB.fMedianReadDuration;
-        r.fMeanWriteDuration   = stats.fRecentDB.fMeanWriteDuration;
-        r.fMedianWriteDuration = stats.fRecentDB.fMedianWriteDuration;
-        r.fMaxDuration         = stats.fRecentDB.fMaxDuration;
-        r.fFileSize            = IntegratedModel::Mgr::sThe.GetDBFileSize ();
+        r.fReads              = stats.fRecentDB.fReads;
+        r.fWrites             = stats.fRecentDB.fWrites;
+        r.fErrors             = stats.fRecentDB.fErrors;
+        r.fReadDurationStats  = stats.fRecentDB.fReadDurationStats;
+        r.fWriteDurationStats = stats.fRecentDB.fWriteDurationStats;
+        r.fFileSize           = IntegratedModel::Mgr::sThe.GetDBFileSize ();
         return r;
     }();
     auto healthcheck = healthcheck_GET ();
