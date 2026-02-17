@@ -1,5 +1,8 @@
 RENAME to WTFNetSlow (shorter, and simone happier)
 
+- Add feature to peridocially WRITE to single .json file and option to LOAD DB from .json file.
+- probably LOSE old SQL ORM code (simpler/cleaner - but test performance carefully to be sure).
+-------------------
 
 Fix .prettierrc - so formatting reasonable/uniform.
 
