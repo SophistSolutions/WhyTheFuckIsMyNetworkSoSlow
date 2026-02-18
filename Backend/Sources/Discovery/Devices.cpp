@@ -1573,6 +1573,7 @@ Discovery::DevicesMgr::Activator::~Activator ()
 {
     Debug::TraceContextBumper ctx{"Discovery::DevicesMgr::Activator::~Activator"};
     Require (IsActive_ ());
+    Execution::Thread::SuppressInterruptionInContext suppressInterruption; // must complete this abort and wait for done - this cannot abort/throw
     if constexpr (kInclude_SSDP_Discoverer_) {
         sSSDPDeviceDiscoverer_.reset ();
     }

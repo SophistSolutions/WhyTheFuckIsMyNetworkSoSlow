@@ -68,6 +68,7 @@ Discovery::NetworkInterfacesMgr::Activator::~Activator ()
 {
     DbgTrace ("Discovery::NetworkInterfacesMgr::Activator::~Activator: deactivating network discovery"_f);
     Require (sActive_);
+    Execution::Thread::SuppressInterruptionInContext suppressInterruption; // must complete this abort and wait for done - this cannot abort/throw
     sActive_ = false;
     // @todo must shutdown any background threads
 }

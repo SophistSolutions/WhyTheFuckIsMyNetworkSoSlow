@@ -199,6 +199,7 @@ BLOBMgr::Activator::Activator ()
 BLOBMgr::Activator::~Activator ()
 {
     Debug::TraceContextBumper ctx{"BLOBMgr::Activator::~Activator"};
+    Execution::Thread::SuppressInterruptionInContext suppressInterruption; // must complete this abort and wait for done - this cannot abort/throw
     BLOBMgr::sThe.fThreadPool_.store (nullptr);
     sConn_.store (nullptr);
 }
