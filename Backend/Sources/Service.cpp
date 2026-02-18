@@ -53,8 +53,8 @@ void WTFAppServiceRep::MainLoop (const std::function<void ()>& startedCB)
     // of dependencies on shutdown
     //
     // optional declareActivity object, so can just 'activate' it when we start to shutdown
-    constexpr Activity                  kShuttingDownServices_{"shutting down modules"sv};
-    optional<DeclareActivity<decltype(kShuttingDownServices_)>> oDeclareActivity{};
+    constexpr Activity                                           kShuttingDownServices_{"shutting down modules"sv};
+    optional<DeclareActivity<decltype (kShuttingDownServices_)>> oDeclareActivity{};
 
     Common::BLOBMgr::Activator                 blobMgrActivator;
     Discovery::NetworkInterfacesMgr::Activator networkInterfacesMgrActivator;
@@ -68,7 +68,7 @@ void WTFAppServiceRep::MainLoop (const std::function<void ()>& startedCB)
     [[maybe_unused]] auto&& cleanup = Execution::Finally ([&] () {
         Execution::Thread::SuppressInterruptionInContext suppressSoWeActuallyShutDownOtherTaskWhenWereBeingShutDown;
         Logger::sThe.Log (Logger::eInfo, "Beginning service shutdown"_f);
-        oDeclareActivity.emplace( &kShuttingDownServices_);
+        oDeclareActivity.emplace (&kShuttingDownServices_);
     });
 
     // Wait here until a 'service stop' command sends a thread-abort, and that will cause this wait to be abandoned and this stackframe to unwind
