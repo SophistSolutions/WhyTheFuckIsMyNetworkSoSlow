@@ -16,6 +16,7 @@
 #include "Stroika/Foundation/Cryptography/Format.h"
 #include "Stroika/Foundation/DataExchange/Variant/JSON/Reader.h"
 #include "Stroika/Foundation/Execution/IntervalTimer.h"
+#include "Stroika/Foundation/Execution/Thread.h"
 #include "Stroika/Foundation/IO/Network/Interface.h"
 #include "Stroika/Foundation/IO/Network/LinkMonitor.h"
 #include "Stroika/Foundation/IO/Network/Neighbors.h"
