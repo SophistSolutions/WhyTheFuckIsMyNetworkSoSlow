@@ -704,7 +704,7 @@ namespace {
     // @todo redo this with IDs, and have the thread keep running to update network info
     struct MyDeviceDiscoverer_ {
         MyDeviceDiscoverer_ ()
-            : fMyDeviceDiscovererThread_{Thread::CleanupPtr::eAbortBeforeWaiting, Thread::New (DiscoveryChecker_, Thread::eAutoStart, L"MyDeviceDiscoverer"_k)}
+            : fMyDeviceDiscovererThread_{Thread::CleanupPtr::eAbortBeforeWaiting, Thread::New (DiscoveryChecker_, Thread::eAutoStart, "MyDeviceDiscoverer"_k)}
         {
         }
 
@@ -1213,7 +1213,7 @@ namespace {
      */
     struct RandomWalkThroughSubnetDiscoverer_ {
         RandomWalkThroughSubnetDiscoverer_ ()
-            : fMyThread_{Thread::CleanupPtr::eAbortBeforeWaiting, Thread::New (Checker_, Thread::eAutoStart, "RandomWalkThroughSubnetDiscoverer")}
+            : fMyThread_{Thread::CleanupPtr::eAbortBeforeWaiting, Thread::New (Checker_, Thread::eAutoStart, "RandomWalkThroughSubnetDiscoverer"sv)}
         {
         }
 
