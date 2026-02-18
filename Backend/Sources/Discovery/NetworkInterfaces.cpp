@@ -116,7 +116,7 @@ namespace {
     Collection<NetworkInterface> CollectAllNetworkInterfaces_ ()
     {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
-        Debug::TraceContextBumper ctx{L"CollectAllNetworkInterfaces_"};
+        Debug::TraceContextBumper ctx{"CollectAllNetworkInterfaces_"};
 #endif
         Require (sActive_);
         SystemInterfacesMgr      sysNetInterfaces;
@@ -128,13 +128,13 @@ namespace {
 #if qDebug
                 // nothing useful to add yet
                 ni.fDebugProps.Add (
-                    L"test"sv, VariantValue{Mapping<String, VariantValue>{pair<String, VariantValue>{"updatedAt"sv, Time::DateTime::Now ()}}});
+                    "test"sv, VariantValue{Mapping<String, VariantValue>{pair<String, VariantValue>{"updatedAt"sv, Time::DateTime::Now ()}}});
 #endif
             }
             results.push_back (ni);
         }
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
-        DbgTrace (L"returns: %s", Characters::ToString (results).c_str ());
+        DbgTrace ("returns: {}", results);
 #endif
         return results;
     }
