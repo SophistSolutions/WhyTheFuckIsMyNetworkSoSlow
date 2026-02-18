@@ -7,6 +7,7 @@
 
 #include "Stroika/Foundation/Characters/ToString.h"
 #include "Stroika/Foundation/Debug/Trace.h"
+#include "Stroika/Foundation/Execution/Activity.h"
 #include "Stroika/Foundation/Execution/Finally.h"
 #include "Stroika/Foundation/Execution/Logger.h"
 #include "Stroika/Foundation/Execution/Thread.h"
@@ -36,6 +37,8 @@ using namespace WhyTheFuckIsMyNetworkSoSlow;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp;
 using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices;
 
+using Execution::Activity;
+using Execution::DeclareActivity;
 using Execution::Logger;
 
 namespace {
@@ -48,6 +51,11 @@ void WTFAppServiceRep::MainLoop (const std::function<void ()>& startedCB)
     // Activator objects cause the discovery modules to start/stop so RAAI controls startup/shutdown even with exceptions
     // deviceMgr calls NetworkMgr so order here is important. And webserver can call either. Allowing destruction to shutdown guarantees proper ordering
     // of dependencies on shutdown
+    //
+    // optional declareActivity object, so can just 'activate' it when we start to shutdown
+    constexpr Activity                  kShuttingDownServices_{"shutting down modules"sv};
+    optional<DeclareActivity<decltype(kShuttingDownServices_)>> oDeclareActivity{};
+
     Common::BLOBMgr::Activator                 blobMgrActivator;
     Discovery::NetworkInterfacesMgr::Activator networkInterfacesMgrActivator;
     Discovery::NetworksMgr::Activator          networkMgrActivator;
@@ -60,6 +68,7 @@ void WTFAppServiceRep::MainLoop (const std::function<void ()>& startedCB)
     [[maybe_unused]] auto&& cleanup = Execution::Finally ([&] () {
         Execution::Thread::SuppressInterruptionInContext suppressSoWeActuallyShutDownOtherTaskWhenWereBeingShutDown;
         Logger::sThe.Log (Logger::eInfo, "Beginning service shutdown"_f);
+        oDeclareActivity.emplace( &kShuttingDownServices_);
     });
 
     // Wait here until a 'service stop' command sends a thread-abort, and that will cause this wait to be abandoned and this stackframe to unwind
