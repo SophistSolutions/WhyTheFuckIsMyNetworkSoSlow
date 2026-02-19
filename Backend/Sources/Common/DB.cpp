@@ -10,6 +10,8 @@
 #include "Stroika/Foundation/Containers/KeyedCollection.h"
 #include "Stroika/Foundation/Containers/Set.h"
 #include "Stroika/Foundation/DataExchange/ObjectVariantMapper.h"
+#include "Stroika/Foundation/Database/Document/LocalDocumentDB.h"
+#include "Stroika/Foundation/Database/Document/SQLite.h"
 #include "Stroika/Foundation/Debug/TimingTrace.h"
 #include "Stroika/Foundation/Execution/Sleep.h"
 #include "Stroika/Foundation/Execution/Synchronized.h"
@@ -18,13 +20,6 @@
 #include "../Common/AppConfiguration.h"
 
 #include "DB.h"
-
-#if qUseNewDocumentDBAPI
-#include "Stroika/Foundation/Database/Document/LocalDocumentDB.h"
-#include "Stroika/Foundation/Database/Document/SQLite.h"
-#else
-#include "Stroika/Foundation/Database/SQL/SQLite.h"
-#endif
 
 using namespace std;
 
@@ -39,16 +34,10 @@ using namespace Stroika::Foundation::Memory;
 using namespace Stroika::Foundation::IO::Network;
 using namespace Stroika::Foundation::IO::Network::HTTP;
 
-#if !qUseNewDocumentDBAPI
-using namespace SQL::ORM;
-using namespace SQL::SQLite;
-#endif
-#if qUseNewDocumentDBAPI
 using DatabaseConfigurationType = WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::AppConfigurationType::DatabaseConfigurationType;
 using DirectoryJSONStorage      = WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::AppConfigurationType::DirectoryJSONStorage;
 using SingleFileJSONStorage     = WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::AppConfigurationType::SingleFileJSONStorage;
 using SQLiteStorage             = WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::AppConfigurationType::SQLiteStorage;
-#endif
 
 /*
  ********************************************************************************
@@ -57,7 +46,6 @@ using SQLiteStorage             = WhyTheFuckIsMyNetworkSoSlow::BackendApp::Commo
  */
 const ReadOnlyProperty<filesystem::path> WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB::pFileName{
     [] ([[maybe_unused]] const auto* property) -> filesystem::path {
-#if qUseNewDocumentDBAPI
         DatabaseConfigurationType dbConfig{BackendApp::Common::gAppConfiguration->fDatabase};
         if (SingleFileJSONStorage* osjs = get_if<SingleFileJSONStorage> (&dbConfig)) {
             filesystem::path p = osjs->fFile;
@@ -91,41 +79,13 @@ const ReadOnlyProperty<filesystem::path> WhyTheFuckIsMyNetworkSoSlow::BackendApp
         }
         AssertNotReached ();
         return IO::FileSystem::WellKnownLocations::GetApplicationData () / "WhyTheFuckIsMyNetworkSoSlow" / "db-fs-v1";
-#else
-        return IO::FileSystem::WellKnownLocations::GetApplicationData () / "WhyTheFuckIsMyNetworkSoSlow" / "db-v17.db";
-#endif
     }};
 
 uintmax_t WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB::GetFileSize () const
 {
-#if qUseNewDocumentDBAPI
     return GetInternallySynchronizedConnection ().GetSpaceConsumed ();
-#else
-    // add sizes of various component files (WAL, etc)
-    uintmax_t szTotal{};
-    auto      incSize = [&] (const filesystem::path& p) {
-        error_code ec{};
-        uintmax_t  sz = filesystem::file_size (p, ec);
-        if (!ec) {
-            szTotal += sz;
-        }
-    };
-    filesystem::path p = pFileName ();
-    incSize (p);
-    p = pFileName ();
-    p += "-journal";
-    incSize (p);
-    p = pFileName ();
-    p += "-shm";
-    incSize (p);
-    p = pFileName ();
-    p += "-wal";
-    incSize (p);
-    return szTotal;
-#endif
 }
 
-#if qUseNewDocumentDBAPI
 Database::Document::Connection::Ptr WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB::GetInternallySynchronizedConnection () const
 {
     using namespace Database::Document;
@@ -190,59 +150,7 @@ Database::Document::Connection::Ptr WhyTheFuckIsMyNetworkSoSlow::BackendApp::Com
     }
     return rwLock.cref ();
 }
-#endif
 
-#if !qUseNewDocumentDBAPI
-WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB::DB (Version targetDBVersion, const Iterable<ORM::Schema::Table>& tables)
-    : fTargetDBVersion_{targetDBVersion}
-    , fTables_{tables}
-{
-}
-
-SQL::Connection::Ptr WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB::NewConnection ()
-{
-    using SQLite::Connection::Options;
-    // Logically I THINK (from docs) - should use eMultiThread but experiemnt with eSerialized to see if fixes sporadic failures (mostly on unix)- but maybe just now saw on windows - flying...--LGP 2023-03-92
-    // Serialized didn't hlep - still get tons of 'Device or resource busy on database extion lastsql select * from BLOBURL'...., (at least wtih stk 2.1) - so go back to multithread - makes more sense -- LGP 2023-09-13
-    constexpr auto kThreadModel_ = Options::ThreadingMode::eMultiThread;
-    //constexpr auto kThreadModel_ = Options::ThreadingMode::eSerialized;   // tried and didn't help
-    auto dbPath = pFileName ();
-    filesystem::create_directories (dbPath.parent_path ());
-    auto options = Options{.fDBPath = dbPath, .fThreadingMode = kThreadModel_};
-
-    /*
-     *  Software doing database accesses must handle busy timeout exceptions, but
-     *  reducing thier frequency probably produces better, smoother operation.
-     * 
-     *  We get TONS of SQLITE_BUSY errors using the default JournalMode, but if you read
-     *  https://sqlite.org/wal.html, you will see WAL is recommended for multiple readers/writers on DB.
-     * 
-     *  NOTE - though much better, still not working perfectly with these settings. Sometimes gets SQLITE_BUSY.
-     *  Our rollup code sometimes calls through to the database (from calling webservice thread), and we have background requests to add records
-     *  from the AddOrMergeUpdate () calls (another thread). These sometimes contend and at least on raspberrypi
-     *  the conflict can exceed 1 second. Don't want the timeout too long, cuz better to see warnings in the logs
-     *  than sluggish operation and no warnings.
-     *
-     *  As of 2022-09-08 experimenting with 2.5s;
-     * 
-     *  See https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/35
-     *  COULD possibly redo this using much smaller timeout if I used a SINGLE SHARED connection (in eMultiThreaded mode as above).
-     *  Unclear how that would affect checking on underlying statement objects (I think fine but need to review).
-     */
-    //options.fBusyTimeout = 2.5s;  // Since Stroika v3.0d19 - just use default --LGP 2025-05-05
-    // options.fBusyTimeout = 10min; // This appears to cause no problems, and solves all the busy-timeout problems - dont FULLY understand, but good enuf for now --LGP 2025-05-05
-    options.fBusyTimeout = 1min; // Try vaguely more reasonable timeout --LGP 2026-01-14
-    options.fJournalMode = JournalModeType::eWAL2;
-
-    auto conn = SQLite::Connection::New (options);
-
-    Database::SQL::ORM::ProvisionForVersion (conn, fTargetDBVersion_, fTables_);
-
-    return conn;
-}
-#endif
-
-#if qUseNewDocumentDBAPI
 auto WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::mkOperationalStatisticsMgrProcessDBCmd (bool traceDB) -> Database::Document::Connection::OpertionCallbackPtr
 {
     using namespace Characters;
@@ -284,4 +192,3 @@ auto WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::mkOperationalStatisticsMgr
     };
     return r;
 }
-#endif
