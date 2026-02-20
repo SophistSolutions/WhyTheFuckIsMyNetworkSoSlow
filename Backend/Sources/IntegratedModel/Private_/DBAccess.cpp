@@ -8,12 +8,15 @@
 #include "Stroika/Foundation/Containers/KeyedCollection.h"
 #include "Stroika/Foundation/Containers/Set.h"
 #include "Stroika/Foundation/DataExchange/ObjectVariantMapper.h"
+#include "Stroika/Foundation/Database/Document/LocalDocumentDB.h"
+#include "Stroika/Foundation/Database/Document/ObjectCollection.h"
 #include "Stroika/Foundation/Debug/TimingTrace.h"
 #include "Stroika/Foundation/Execution/Logger.h"
+#include "Stroika/Foundation/IO/FileSystem/WellKnownLocations.h"
 
+#include "../../Common/AppConfiguration.h"
 #include "../../Common/BLOBMgr.h"
 #include "../../Common/EthernetMACAddressOUIPrefixes.h"
-
 #include "../../Discovery/Devices.h"
 #include "../../Discovery/NetworkInterfaces.h"
 #include "../../Discovery/Networks.h"
@@ -201,7 +204,6 @@ bool Mgr::SetNetworkUserSettings (const GUID& id, const std::optional<Network::U
 
 void Mgr::_StartBackgroundThread ()
 {
-
     Require (fDatabaseSyncThread_ == nullptr);
     fDatabaseSyncThread_ = Thread::New ([this] () { BackgroundDatabaseThread_ (); }, Thread::eAutoStart, "BackgroundDatabaseThread"sv);
 }
@@ -240,6 +242,10 @@ void Mgr::BackgroundDatabaseThread_ ()
                 fDBDevices_.rwget ()->Add (rec2Update);
             });
 
+            if (auto backupCfg = BackendApp::Common::gAppConfiguration->fBackupData) {
+                BackupDB2_ (backupCfg->fFile);
+            }
+
             // only update periodically
             Execution::Sleep (30s);
         }
@@ -251,6 +257,57 @@ void Mgr::BackgroundDatabaseThread_ ()
                               current_exception ());
             Execution::Sleep (30s);
         }
+    }
+}
+
+void Mgr::BackupDB2_ (const filesystem::path& backupFile)
+{
+    Debug::TraceContextBumper ctx{"BackupDB2_"};
+    try {
+        using namespace Database;
+        using namespace Database::Document;
+
+        filesystem::path fullBackupFileName = backupFile;
+        if (fullBackupFileName.empty ()) {
+            fullBackupFileName = "backup.json"sv;
+        }
+        if (fullBackupFileName.is_relative ()) {
+            fullBackupFileName = IO::FileSystem::WellKnownLocations::GetApplicationData () / "WhyTheFuckIsMyNetworkSoSlow" / fullBackupFileName;
+        }
+
+        LocalDocumentDB::Options options{.fInternallySynchronizedLetter = Execution::eInternallySynchronized,
+                                         .fStorage                      = LocalDocumentDB::Options::SingleFileStorage{
+                                                                  .fFile = fullBackupFileName, .fForceCreateNew = true, .fFlushOnEachWrite = false}};
+        auto                     db = LocalDocumentDB::New (options);
+
+        ObjectCollection::Ptr<ExternalDeviceUserSettingsElt_> deviceUserSettings =
+            ObjectCollection::New<ExternalDeviceUserSettingsElt_> (db.CreateCollection ("DeviceUserSettings"sv), kDBObjectMapper_);
+        ObjectCollection::Ptr<ExternalNetworkUserSettingsElt_> networkUserSettingsTableConnection_ =
+            ObjectCollection::New<ExternalNetworkUserSettingsElt_> (db.CreateCollection ("NetworkUserSettings"sv), kDBObjectMapper_);
+        ObjectCollection::Ptr<Device> deviceTableConnection_ = ObjectCollection::New<Device> (db.CreateCollection ("Devices"sv), kDBObjectMapper_);
+        ObjectCollection::Ptr<Network> networkTableConnection_ = ObjectCollection::New<Network> (db.CreateCollection ("Networks"sv), kDBObjectMapper_);
+        ObjectCollection::Ptr<NetworkInterface> networkInterfaceTableConnection_ =
+            ObjectCollection::New<NetworkInterface> (db.CreateCollection ("NetworkInterfaces"sv), kDBObjectMapper_);
+
+        fCachedDeviceUserSettings_.load ().Apply ([&] (const KeyValuePair<GUID, Device::UserOverridesType>& i) {
+            deviceUserSettings.Add (ExternalDeviceUserSettingsElt_{.fDeviceID = i.fKey, .fUserSettings = i.fValue});
+        });
+        fCachedNetworkUserSettings_.load ().Apply ([&] (const KeyValuePair<GUID, Network::UserOverridesType>& i) {
+            networkUserSettingsTableConnection_.Add (ExternalNetworkUserSettingsElt_{.fNetworkID = i.fKey, .fUserSettings = i.fValue});
+        });
+        fDBDevices_.load ().Apply ([&] (const Device& i) { deviceTableConnection_.Add (i); });
+        fDBNetworks_.load ().Apply ([&] (const Network& i) { networkTableConnection_.Add (i); });
+        fDBNetworkInterfaces_.load ().Apply ([&] (const NetworkInterface& i) { networkInterfaceTableConnection_.Add (i); });
+        db.Flush ();
+
+        static bool sNotedFilenameOnce_{false};
+        if (not sNotedFilenameOnce_) {
+            sNotedFilenameOnce_ = true;
+            Logger::sThe.Log (Logger::eInfo, "Backed up database to file {}"_f, fullBackupFileName);
+        }
+    }
+    catch (...) {
+        Logger::sThe.Log (Logger::eError, "Failed to backup database to file {}: {}"_f, backupFile, current_exception ());
     }
 }
 

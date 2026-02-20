@@ -63,6 +63,19 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         using DatabaseConfigurationType = variant<monostate, SingleFileJSONStorage, DirectoryJSONStorage, SQLiteStorage>;
         DatabaseConfigurationType fDatabase;
 
+        /**
+         * If present, the DB is peridocally backed up to the file specified.
+         */
+        struct BackupData {
+            /**
+             * Where the file is stored.
+             * 
+             * @todo TBD how often to backup.
+             */
+            filesystem::path fFile;
+        };
+        optional<BackupData> fBackupData;
+
         static const DataExchange::ObjectVariantMapper kMapper;
     };
 

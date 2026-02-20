@@ -91,9 +91,17 @@ const ObjectVariantMapper AppConfigurationType::kMapper = [] () {
             }
         });
 
+    mapper.AddClass<AppConfigurationType::BackupData> (
+        {
+            {"File"sv, &AppConfigurationType::BackupData::fFile},
+        },
+        {.fOmitNullEntriesInFromObject = false});
+    mapper.AddCommonType<optional<AppConfigurationType::BackupData>> ();
+
     mapper.AddClass<AppConfigurationType> ({{"Logging"sv, &AppConfigurationType::fLogging},
                                             {"WebServerPort"sv, &AppConfigurationType::WebServerPort},
-                                            {"Database"sv, &AppConfigurationType::fDatabase}},
+                                            {"Database"sv, &AppConfigurationType::fDatabase},
+                                            {"BackupData"sv, &AppConfigurationType::fBackupData}},
                                            {.fOmitNullEntriesInFromObject = false});
 
     return mapper;

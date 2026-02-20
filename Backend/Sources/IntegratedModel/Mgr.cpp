@@ -9,10 +9,6 @@
 #include "Stroika/Foundation/Containers/KeyedCollection.h"
 #include "Stroika/Foundation/Containers/Set.h"
 #include "Stroika/Foundation/DataExchange/ObjectVariantMapper.h"
-// #include "Stroika/Foundation/Database/SQL/ORM/Schema.h"
-// #include "Stroika/Foundation/Database/SQL/ORM/TableConnection.h"
-// #include "Stroika/Foundation/Database/SQL/ORM/Versioning.h"
-// #include "Stroika/Foundation/Database/SQL/SQLite.h"
 #include "Stroika/Foundation/Debug/TimingTrace.h"
 #include "Stroika/Foundation/Execution/Logger.h"
 #include "Stroika/Foundation/Execution/Sleep.h"
@@ -159,7 +155,7 @@ namespace {
     constexpr chrono::duration<double> kTTLForHistroicalDBObjectsReturned_{24h};
 
     /**
-     *  \breif RollupSummary_ - Data structures representing a rollups of various bits of networking/device etc data
+     *  \brief RollupSummary_ - Data structures representing a rollups of various bits of networking/device etc data
      * 
      *  \note   These rollup objects are copyable.
      * 

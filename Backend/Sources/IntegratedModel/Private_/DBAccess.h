@@ -160,6 +160,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_::DB
     private:
         void BackgroundDatabaseThread_ ();
 
+    private:
+        void BackupDB2_ (const filesystem::path& backupFile);
+
     protected:
         /*
          *  Called to load the database. Even if the database is not present (being created) - this will be called once
