@@ -229,3 +229,13 @@ tuple<BLOB, optional<InternetMediaType>> BLOBMgr::GetBLOB (const GUID& id) const
     }
     Execution::Throw (Execution::Exception<>{"No such blob"sv});
 }
+
+void BLOBMgr::BackupTo (const Database::Document::Connection::Ptr& dbConn)
+{
+    Database::Document::Collection::Ptr fromBlobs            = sConn_.rwget ().rwref ()->fBLOBs;
+    Database::Document::Collection::Ptr fromBLOBURUls        = sConn_.rwget ().rwref ()->fBLOBURLs;
+    Database::Document::Collection::Ptr toBlobsCollection    = dbConn.CreateCollection ("BLOBs"sv);
+    Database::Document::Collection::Ptr toBlobURLsCollection = dbConn.CreateCollection ("BLOB-URLs"sv);
+    fromBlobs.GetAll ().Apply ([&] (const Document::Document& i) { toBlobsCollection.Add (i); });
+    fromBLOBURUls.GetAll ().Apply ([&] (const Document::Document& i) { toBlobURLsCollection.Add (i); });
+}

@@ -11,6 +11,7 @@
 #include "Stroika/Foundation/Containers/Bijection.h"
 #include "Stroika/Foundation/Containers/Mapping.h"
 #include "Stroika/Foundation/DataExchange/InternetMediaType.h"
+#include "Stroika/Foundation/Database/Document/Connection.h"
 #include "Stroika/Foundation/Execution/Synchronized.h"
 #include "Stroika/Foundation/Execution/ThreadPool.h"
 #include "Stroika/Foundation/IO/Network/URI.h"
@@ -84,6 +85,11 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         /**
          */
         nonvirtual tuple<BLOB, optional<InternetMediaType>> GetBLOB (const GUID& id) const;
+
+    public:
+        /**
+         */
+        nonvirtual void BackupTo (const Stroika::Foundation::Database::Document::Connection::Ptr& dbConn);
 
     private:
         Execution::Synchronized<unique_ptr<Execution::ThreadPool>> fThreadPool_;

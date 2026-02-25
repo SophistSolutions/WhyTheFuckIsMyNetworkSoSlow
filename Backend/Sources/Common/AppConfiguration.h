@@ -76,6 +76,17 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
         };
         optional<BackupData> fBackupData;
 
+        /**
+         * Utility to reload from a JSON file, which is easier to edit/view.
+         */
+        struct DBStartupLoadFrom {
+            /**
+             * If present, load from this file.
+             */
+            optional<filesystem::path> fFile;
+        };
+        optional<DBStartupLoadFrom> fStartupLoadFrom;
+
         static const DataExchange::ObjectVariantMapper kMapper;
     };
 

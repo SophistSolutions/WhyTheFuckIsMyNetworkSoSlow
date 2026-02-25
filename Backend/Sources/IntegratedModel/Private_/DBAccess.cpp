@@ -262,7 +262,7 @@ void Mgr::BackgroundDatabaseThread_ ()
 
 void Mgr::BackupDB2_ (const filesystem::path& backupFile)
 {
-    Debug::TraceContextBumper ctx{"BackupDB2_"};
+    Debug::TraceContextBumper ctx{"IntegratedModel::Private_::DBAccess::Mgr::BackupDB2_"};
     try {
         using namespace Database;
         using namespace Database::Document;
@@ -277,8 +277,15 @@ void Mgr::BackupDB2_ (const filesystem::path& backupFile)
 
         LocalDocumentDB::Options options{.fInternallySynchronizedLetter = Execution::eInternallySynchronized,
                                          .fStorage                      = LocalDocumentDB::Options::SingleFileStorage{
-                                                                  .fFile = fullBackupFileName, .fForceCreateNew = true, .fFlushOnEachWrite = false}};
+                                                                  .fFile             = fullBackupFileName,
+                                                                  .fForceCreateNew   = true,
+                                                                  .fFlushOnEachWrite = false,
+                                                                  .fSerialization    = make_tuple (DataExchange::Variant::JSON::Reader{},
+                                                                                                   DataExchange::Variant::JSON::Writer{DataExchange::Variant::JSON::Writer::Options{
+                                                                                                       .fPrettyPrint = true, .fCanonicalize = true}})}};
         auto                     db = LocalDocumentDB::New (options);
+
+        BackendApp::Common::BLOBMgr::sThe.BackupTo (db);
 
         ObjectCollection::Ptr<ExternalDeviceUserSettingsElt_> deviceUserSettings =
             ObjectCollection::New<ExternalDeviceUserSettingsElt_> (db.CreateCollection ("DeviceUserSettings"sv), kDBObjectMapper_);
@@ -303,7 +310,7 @@ void Mgr::BackupDB2_ (const filesystem::path& backupFile)
         static bool sNotedFilenameOnce_{false};
         if (not sNotedFilenameOnce_) {
             sNotedFilenameOnce_ = true;
-            Logger::sThe.Log (Logger::eInfo, "Backed up database to file {}"_f, fullBackupFileName);
+            Logger::sThe.Log (Logger::eInfo, "Backed up database to file {} (will repeat roughly every 30 seconds)"_f, fullBackupFileName);
         }
     }
     catch (...) {

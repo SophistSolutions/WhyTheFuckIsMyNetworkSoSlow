@@ -42,6 +42,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
          */
         nonvirtual Database::Document::Connection::Ptr GetInternallySynchronizedConnection () const;
 
+    private:
+        nonvirtual Database::Document::Connection::Ptr CreateCachedInternallySynchronizedConnection_ () const;
+
     public:
         template <typename T>
         nonvirtual T AddOrMergeUpdate (Document::ObjectCollection::Ptr<T> dbCollection, const T& d);
@@ -60,9 +63,9 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
 
     private:
         /**
-         *
+         * static so we construct once, do any initialization/setup once. Ptr references internally synchronized letter.
          */
-        mutable Execution::Synchronized<Database::Document::Connection::Ptr> fConn_;
+        static inline Execution::Synchronized<Database::Document::Connection::Ptr> sConn_;
     };
 
     struct DB::ReadStatsContext : OperationalStatisticsMgr::ProcessDBCmd {
