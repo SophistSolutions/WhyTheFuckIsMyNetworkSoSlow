@@ -4,7 +4,7 @@
 #include "Stroika/Frameworks/StroikaPreComp.h"
 
 #include "Stroika/Foundation/Cache/Memoizer.h"
-#include "Stroika/Foundation/Cache/SynchronizedTimedCache.h"
+#include "Stroika/Foundation/Cache/TimedCache.h"
 #include "Stroika/Foundation/Characters/StringBuilder.h"
 #include "Stroika/Foundation/Characters/ToString.h"
 #include "Stroika/Foundation/DataExchange/Variant/JSON/Reader.h"

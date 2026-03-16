@@ -7,7 +7,7 @@
 
 #include "Stroika/Foundation/Cache/BloomFilter.h"
 #include "Stroika/Foundation/Cache/SynchronizedCallerStalenessCache.h"
-#include "Stroika/Foundation/Cache/SynchronizedTimedCache.h"
+#include "Stroika/Foundation/Cache/TimedCache.h"
 #include "Stroika/Foundation/Characters/Format.h"
 #include "Stroika/Foundation/Characters/RegularExpression.h"
 #include "Stroika/Foundation/Characters/StringBuilder.h"
@@ -97,7 +97,7 @@ namespace {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
         Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs ("{}::ReverseDNSLookup_", "inetAddr={}"_f, inetAddr)};
 #endif
-        static const Time::Duration kCacheTTL_{5min}; // @todo fix when Stroika Duration bug supports constexpr this should
+        static constexpr auto kCacheTTL_{5min};
         static Cache::SynchronizedTimedCache<InternetAddress, optional<String>> sCache_{kCacheTTL_};
         //sCache_.fHoldWriteLockDuringCacheFill = true; // see random false positive - see if this affects -LGP 2022-11-21 - assertexternally...https://stroika.atlassian.net/browse/STK-956
         try {
@@ -113,7 +113,7 @@ namespace {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
         Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs ("{}::DNSLookup_", "hostOrIPAddress={}"_f, hostOrIPAddress)};
 #endif
-        static const Time::Duration kCacheTTL_{5min}; // @todo fix when Stroika Duration bug supports constexpr this should
+        static constexpr auto  kCacheTTL_{5min};
         static Cache::SynchronizedTimedCache<String, Set<InternetAddress>> sCache_{kCacheTTL_};
         return sCache_.LookupValue (hostOrIPAddress, [] (const String& hostOrIPAddress) -> Set<InternetAddress> {
             return Set<InternetAddress>{DNS::kThe.GetHostAddresses (hostOrIPAddress)};

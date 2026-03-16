@@ -154,6 +154,10 @@ int main (int argc, const char* argv[])
         return appenders;
     }());
 
+#if qStroika_Foundation_Debug_TraceToFile
+    Logger::sThe.Log (Logger::eInfo, "Debugging Log2TraceFile: {}"_f, Debug::GetTraceFileName ());
+#endif
+
     /*
      *  Parse command line arguments, and start looking at options.
      */
