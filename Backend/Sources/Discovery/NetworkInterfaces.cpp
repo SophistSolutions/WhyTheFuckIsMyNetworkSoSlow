@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "Stroika/Foundation/Cache/SynchronizedCallerStalenessCache.h"
+#include "Stroika/Foundation/Cache/TimedCache.h"
 #include "Stroika/Foundation/Characters/StringBuilder.h"
 #include "Stroika/Foundation/Characters/ToString.h"
 #include "Stroika/Foundation/Cryptography/Format.h"
@@ -156,7 +156,7 @@ Collection<NetworkInterface> Discovery::NetworkInterfacesMgr::CollectAllNetworkI
     Collection<NetworkInterface> results;
     using Cache::SynchronizedCallerStalenessCache;
     static SynchronizedCallerStalenessCache<void, Collection<NetworkInterface>> sCache_;
-    results = sCache_.LookupValue (sCache_.Ago (allowedStaleness.value_or (kDefaultItemCacheLifetime_)),
+    results = sCache_.LookupValue (allowedStaleness.value_or (kDefaultItemCacheLifetime_),
                                    [] () -> Collection<NetworkInterface> { return CollectAllNetworkInterfaces_ (); });
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
     DbgTrace ("returns: {}"_f, results);

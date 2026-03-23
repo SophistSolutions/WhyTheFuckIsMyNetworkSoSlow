@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "Stroika/Foundation/Cache/Memoizer.h"
-#include "Stroika/Foundation/Cache/SynchronizedCallerStalenessCache.h"
+#include "Stroika/Foundation/Cache/TimedCache.h"
 #include "Stroika/Foundation/Characters/StringBuilder.h"
 #include "Stroika/Foundation/Characters/ToString.h"
 #include "Stroika/Foundation/Containers/Mapping.h"
@@ -51,7 +51,7 @@ namespace {
     {
         using Cache::SynchronizedCallerStalenessCache;
         static SynchronizedCallerStalenessCache<void, optional<InternetAddress>> sCache_;
-        return sCache_.LookupValue (sCache_.Ago (allowedStaleness.value_or (30s)), [] () -> optional<InternetAddress> {
+        return sCache_.LookupValue (allowedStaleness.value_or (30s), [] () -> optional<InternetAddress> {
             /*
              * Alternative sources for this information:
              *
@@ -359,8 +359,7 @@ Sequence<Network> Discovery::NetworksMgr::CollectActiveNetworks (optional<Time::
     Require (sActive_);
     Sequence<Network>                                                       results;
     static Cache::SynchronizedCallerStalenessCache<void, Sequence<Network>> sCache_;
-    results = sCache_.LookupValue (sCache_.Ago (allowedStaleness.value_or (kDefaultItemCacheLifetime_)),
-                                   [] () { return CollectActiveNetworks_ (); });
+    results = sCache_.LookupValue (allowedStaleness.value_or (kDefaultItemCacheLifetime_), [] () { return CollectActiveNetworks_ (); });
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
     DbgTrace ("returns: {}"_f, results);
 #endif

@@ -3,7 +3,7 @@
  */
 #include "Stroika/Frameworks/StroikaPreComp.h"
 
-#include "Stroika/Foundation/Cache/SynchronizedCallerStalenessCache.h"
+#include "Stroika/Foundation/Cache/TimedCache.h"
 #include "Stroika/Foundation/Common/GUID.h"
 #include "Stroika/Foundation/Common/KeyValuePair.h"
 #include "Stroika/Foundation/Containers/KeyedCollection.h"
@@ -141,7 +141,7 @@ RolledUpNetworkInterfaces RolledUpNetworkInterfaces::GetCached (DBAccess::Mgr* d
     //      https://stroika.atlassian.net/browse/STK-906 - possible enhancement to this configuration to work better avoiding
     //      See https://stroika.atlassian.net/browse/STK-907 - about needing some new mechanism in Stroika for deadlock detection/avoidance.
     // sCache_.fHoldWriteLockDuringCacheFill = true; // so only one call to filler lambda at a time
-    return sCache_.LookupValue (sCache_.Ago (allowedStaleness), [dbAccessMgr] () -> RolledUpNetworkInterfaces {
+    return sCache_.LookupValue (allowedStaleness, [dbAccessMgr] () -> RolledUpNetworkInterfaces {
         /*
          *  DEADLOCK NOTE
          *      Since this can be called while rolling up DEVICES, its important that this code not call anything involving device rollup since

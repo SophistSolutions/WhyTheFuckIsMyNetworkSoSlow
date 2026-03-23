@@ -3,7 +3,7 @@
  */
 #include "Stroika/Frameworks/StroikaPreComp.h"
 
-#include "Stroika/Foundation/Cache/SynchronizedCallerStalenessCache.h"
+#include "Stroika/Foundation/Cache/TimedCache.h"
 #include "Stroika/Foundation/Common/GUID.h"
 #include "Stroika/Foundation/Common/KeyValuePair.h"
 #include "Stroika/Foundation/Containers/KeyedCollection.h"
@@ -138,7 +138,7 @@ RolledUpDevices RolledUpDevices::GetCached (DBAccess::Mgr* dbAccessMgr, Time::Du
     //      https://stroika.atlassian.net/browse/STK-906 - possible enhancement to this configuration to work better avoiding
     //      See https://stroika.atlassian.net/browse/STK-907 - about needing some new mechanism in Stroika for deadlock detection/avoidance.
     // sCache_.fHoldWriteLockDuringCacheFill = true; // so only one call to filler lambda at a time
-    return sCache_.LookupValue (sCache_.Ago (allowedStaleness), [dbAccessMgr, allowedStaleness] () -> RolledUpDevices {
+    return sCache_.LookupValue (allowedStaleness, [dbAccessMgr, allowedStaleness] () -> RolledUpDevices {
         Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...RolledUpDevices::GetCached...cachefiller")};
         Debug::TimingTrace        ttrc{L"RolledUpDevices::GetCached...cachefiller", 1s};
 

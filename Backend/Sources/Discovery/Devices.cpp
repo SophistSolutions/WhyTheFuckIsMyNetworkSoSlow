@@ -6,7 +6,6 @@
 #include <random>
 
 #include "Stroika/Foundation/Cache/BloomFilter.h"
-#include "Stroika/Foundation/Cache/SynchronizedCallerStalenessCache.h"
 #include "Stroika/Foundation/Cache/TimedCache.h"
 #include "Stroika/Foundation/Characters/Format.h"
 #include "Stroika/Foundation/Characters/RegularExpression.h"
@@ -97,7 +96,7 @@ namespace {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
         Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs ("{}::ReverseDNSLookup_", "inetAddr={}"_f, inetAddr)};
 #endif
-        static constexpr auto kCacheTTL_{5min};
+        static constexpr auto                                                   kCacheTTL_{5min};
         static Cache::SynchronizedTimedCache<InternetAddress, optional<String>> sCache_{kCacheTTL_};
         //sCache_.fHoldWriteLockDuringCacheFill = true; // see random false positive - see if this affects -LGP 2022-11-21 - assertexternally...https://stroika.atlassian.net/browse/STK-956
         try {
@@ -113,7 +112,7 @@ namespace {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
         Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs ("{}::DNSLookup_", "hostOrIPAddress={}"_f, hostOrIPAddress)};
 #endif
-        static constexpr auto  kCacheTTL_{5min};
+        static constexpr auto                                              kCacheTTL_{5min};
         static Cache::SynchronizedTimedCache<String, Set<InternetAddress>> sCache_{kCacheTTL_};
         return sCache_.LookupValue (hostOrIPAddress, [] (const String& hostOrIPAddress) -> Set<InternetAddress> {
             return Set<InternetAddress>{DNS::kThe.GetHostAddresses (hostOrIPAddress)};
@@ -1615,7 +1614,7 @@ Collection<Discovery::Device> Discovery::DevicesMgr::GetActiveDevices (optional<
     Collection<Discovery::Device> results;
     using Cache::SynchronizedCallerStalenessCache;
     static SynchronizedCallerStalenessCache<void, Collection<Discovery::Device>> sCache_;
-    results = sCache_.LookupValue (sCache_.Ago (allowedStaleness.value_or (kDefaultItemCacheLifetime_)), [] () {
+    results = sCache_.LookupValue (allowedStaleness.value_or (kDefaultItemCacheLifetime_), [] () {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
         DbgTrace ("sDiscoveredDevices_: {}"_f, sDiscoveredDevices_.load ());
 #endif
