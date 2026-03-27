@@ -1612,9 +1612,8 @@ Collection<Discovery::Device> Discovery::DevicesMgr::GetActiveDevices (optional<
 
     Require (IsActive_ ());
     Collection<Discovery::Device> results;
-    using Cache::SynchronizedCallerStalenessCache;
-    static SynchronizedCallerStalenessCache<void, Collection<Discovery::Device>> sCache_;
-    results = sCache_.LookupValue (allowedStaleness.value_or (kDefaultItemCacheLifetime_), [] () {
+    static Cache::TimedCache      sCache_ = Cache::SynchronizedTimedCache<void, Collection<Discovery::Device>>{};
+    results                               = sCache_.LookupValue (allowedStaleness.value_or (kDefaultItemCacheLifetime_), [] () {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
         DbgTrace ("sDiscoveredDevices_: {}"_f, sDiscoveredDevices_.load ());
 #endif

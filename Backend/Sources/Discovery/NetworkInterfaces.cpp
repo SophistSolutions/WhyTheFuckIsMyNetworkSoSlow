@@ -154,10 +154,9 @@ Collection<NetworkInterface> Discovery::NetworkInterfacesMgr::CollectAllNetworkI
 #endif
     Require (sActive_);
     Collection<NetworkInterface> results;
-    using Cache::SynchronizedCallerStalenessCache;
-    static SynchronizedCallerStalenessCache<void, Collection<NetworkInterface>> sCache_;
-    results = sCache_.LookupValue (allowedStaleness.value_or (kDefaultItemCacheLifetime_),
-                                   [] () -> Collection<NetworkInterface> { return CollectAllNetworkInterfaces_ (); });
+    static Cache::TimedCache     sCache_ = Cache::SynchronizedTimedCache<void, Collection<NetworkInterface>>{};
+    results                              = sCache_.LookupValue (allowedStaleness.value_or (kDefaultItemCacheLifetime_),
+                                                                [] () -> Collection<NetworkInterface> { return CollectAllNetworkInterfaces_ (); });
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
     DbgTrace ("returns: {}"_f, results);
 #endif

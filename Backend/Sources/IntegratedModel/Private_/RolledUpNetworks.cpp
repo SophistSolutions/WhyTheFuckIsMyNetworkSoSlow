@@ -127,12 +127,14 @@ RolledUpNetworks RolledUpNetworks::GetCached (DBAccess::Mgr* dbAccessMgr, Time::
     Debug::TimingTrace        ttrc{L"RolledUpNetworks::GetCached", 1s};
     // SynchronizedCallerStalenessCache object just assures one rollup RUNS internally at a time, and
     // that two calls in rapid succession, the second call re-uses the previous value
-    static Cache::SynchronizedCallerStalenessCache<void, RolledUpNetworks> sCache_;
+    static Cache::TimedCache sCache_{Cache::SynchronizedTimedCache<void, RolledUpNetworks>{}};
     // Disable fHoldWriteLockDuringCacheFill due to https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/23
     // See also
     //      https://stroika.atlassian.net/browse/STK-906 - possible enhancement to this configuration to work better avoiding
     //      See https://stroika.atlassian.net/browse/STK-907 - about needing some new mechanism in Stroika for deadlock detection/avoidance.
     // sCache_.fHoldWriteLockDuringCacheFill = true; // so only one call to filler lambda at a time
+    // NOW testable with TRAITS on TimedCache!!! --LGP 2026-03-27
+    // BUT because of DEADLOCK issue noted below - probably should explicitly set to FALSE (already defaults to false) --LGP 2026-03-27
     return sCache_.LookupValue (allowedStaleness, [allowedStaleness, dbAccessMgr] () -> RolledUpNetworks {
         /*
          *  DEADLOCK NOTE
@@ -140,7 +142,7 @@ RolledUpNetworks RolledUpNetworks::GetCached (DBAccess::Mgr* dbAccessMgr, Time::
          *      that could trigger a deadlock.
          */
         Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs ("...RolledUpNetworks::GetCached...cachefiller")};
-        Debug::TimingTrace        ttrc{L"RolledUpNetworks::GetCached...cachefiller", 1s};
+        Debug::TimingTrace        ttrc{"RolledUpNetworks::GetCached...cachefiller", 1s};
 
         // Start with the existing rolled up objects
         // and merge in any more recent discovery changes
@@ -195,7 +197,7 @@ auto RolledUpNetworks::MergeIn_ (DBAccess::Mgr* dbAccessMgr, const Network& net2
 auto RolledUpNetworks::ShouldRollupInto_ (const Network& net2MergeIn, const Network::FingerprintType& net2MergeInFingerprint)
     -> tuple<optional<Network>, PassFailType_>
 {
-    auto formerRollupID = fMapFingerprint2RollupID.Lookup (net2MergeInFingerprint);
+    optional<GUID> formerRollupID = fMapFingerprint2RollupID.Lookup (net2MergeInFingerprint);
     if (formerRollupID) {
         auto alreadyRolledUpNetwork = Memory::ValueOf (fRolledUpNetworks_.Lookup (*formerRollupID)); // must be in list because we keep those in sync here in this class
         if (ShouldRollupInto_CheckIsCompatibleWithTarget_ (net2MergeIn, net2MergeInFingerprint, alreadyRolledUpNetwork)) {

@@ -49,8 +49,7 @@ using namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery;
 namespace {
     optional<InternetAddress> LookupExternalInternetAddress_ (optional<Time::DurationSeconds> allowedStaleness = {})
     {
-        using Cache::SynchronizedCallerStalenessCache;
-        static SynchronizedCallerStalenessCache<void, optional<InternetAddress>> sCache_;
+        static Cache::TimedCache sCache_ = Cache::SynchronizedTimedCache<void, optional<InternetAddress>>{};
         return sCache_.LookupValue (allowedStaleness.value_or (30s), [] () -> optional<InternetAddress> {
             /*
              * Alternative sources for this information:
@@ -357,8 +356,8 @@ Sequence<Network> Discovery::NetworksMgr::CollectActiveNetworks (optional<Time::
     Debug::TraceContextBumper ctx{"Discovery::CollectAllNetworkInterfaces"};
 #endif
     Require (sActive_);
-    Sequence<Network>                                                       results;
-    static Cache::SynchronizedCallerStalenessCache<void, Sequence<Network>> sCache_;
+    Sequence<Network>        results;
+    static Cache::TimedCache sCache_ = Cache::SynchronizedTimedCache<void, Sequence<Network>>{};
     results = sCache_.LookupValue (allowedStaleness.value_or (kDefaultItemCacheLifetime_), [] () { return CollectActiveNetworks_ (); });
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
     DbgTrace ("returns: {}"_f, results);

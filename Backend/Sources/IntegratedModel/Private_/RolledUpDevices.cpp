@@ -132,14 +132,16 @@ RolledUpDevices RolledUpDevices::GetCached (DBAccess::Mgr* dbAccessMgr, Time::Du
     Debug::TimingTrace        ttrc{L"...RolledUpDevices::GetCached", 1s};
     // SynchronizedCallerStalenessCache object just assures one rollup RUNS internally at a time, and
     // that two calls in rapid succession, the second call re-uses the previous value
-    static Cache::SynchronizedCallerStalenessCache<void, RolledUpDevices> sCache_;
+    static Cache::TimedCache sCache_ = Cache::SynchronizedTimedCache<void, RolledUpDevices>{};
     // Disable this cache setting due to https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/23
     // See also
     //      https://stroika.atlassian.net/browse/STK-906 - possible enhancement to this configuration to work better avoiding
     //      See https://stroika.atlassian.net/browse/STK-907 - about needing some new mechanism in Stroika for deadlock detection/avoidance.
     // sCache_.fHoldWriteLockDuringCacheFill = true; // so only one call to filler lambda at a time
+    // NOW testable with TRAITS on TimedCache!!! --LGP 2026-03-27
+    // BUT because of DEADLOCK issue noted below - probably should explicitly set to FALSE (already defaults to false) --LGP 2026-03-27
     return sCache_.LookupValue (allowedStaleness, [dbAccessMgr, allowedStaleness] () -> RolledUpDevices {
-        Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...RolledUpDevices::GetCached...cachefiller")};
+        Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs ("...RolledUpDevices::GetCached...cachefiller")};
         Debug::TimingTrace        ttrc{L"RolledUpDevices::GetCached...cachefiller", 1s};
 
         auto rolledUpNetworks = RolledUpNetworks::GetCached (dbAccessMgr, allowedStaleness * 3.0); // longer allowedStaleness cuz we dont care much about this and the parts
