@@ -148,16 +148,20 @@ RolledUpNetworkInterfaces RolledUpNetworkInterfaces::GetCached (DBAccess::Mgr* d
          *  DEADLOCK NOTE
          *      Since this can be called while rolling up DEVICES, its important that this code not call anything involving device rollup since
          *      that could trigger a deadlock.
+         * 
+         *      Just calls discovery layer code, and database.
          */
         Debug::TraceContextBumper ctx{
-            Stroika_Foundation_Debug_OptionalizeTraceArgs (L"...RolledUpNetworkInterfaces::GetCached...cachefiller")};
-        Debug::TimingTrace ttrc{L"RolledUpNetworkInterfaces::GetCached...cachefiller", 1s};
+            Stroika_Foundation_Debug_OptionalizeTraceArgs ("...RolledUpNetworkInterfaces::GetCached...cachefiller")};
+        Debug::TimingTrace ttrc{"RolledUpNetworkInterfaces::GetCached...cachefiller", 1s};
 
         // Start with the existing rolled up objects
         // and merge in any more recent discovery changes
         RolledUpNetworkInterfaces result = [dbAccessMgr] () {
             auto lk = sRolledUpNetworksInterfaces_.rwget ();
-            if (not lk.cref ().has_value ()) {
+            if (lk.cref () == nullopt) {
+                // INITIALIZE first time from DB
+                Debug::TraceContextBumper ctxxxx{"abc1xxxx"};
                 dbAccessMgr->CheckDatabaseLoadCompleted ();
                 // @todo add more stuff here - empty preset rules from DB
                 // merge two tables - ID to fingerprint and user settings tables and store those in this rollup early
@@ -165,7 +169,8 @@ RolledUpNetworkInterfaces RolledUpNetworkInterfaces::GetCached (DBAccess::Mgr* d
                 RolledUpNetworkInterfaces rollup = RolledUpNetworkInterfaces{dbAccessMgr->GetRawDevices (), dbAccessMgr->GetRawNetworkInterfaces ()};
                 // handle orphaned network interfaces
                 {
-                    auto orphanedRawInterfaces =
+                    Debug::TraceContextBumper ctxxxxxxx{"abc1xx234234xxxx"};
+                    auto                      orphanedRawInterfaces =
                         rollup.GetRawNetworkInterfaces ().Where ([&] (auto ni) { return rollup.GetAttachedToDeviceIDs (ni.fID) == nullopt; });
                     if (not orphanedRawInterfaces.empty ()) {
                         DbgTrace ("Found: orphanedRawInterfaces={}"_f, orphanedRawInterfaces);
@@ -179,9 +184,13 @@ RolledUpNetworkInterfaces RolledUpNetworkInterfaces::GetCached (DBAccess::Mgr* d
                         // NOTE - we OMIT
                     }
                 }
-                lk.store (rollup);
+                return rollup;
+                // DbgTrace ("about to store into lk");
+                // lk.store (rollup);  // not clear why we bother storing here if about to store again
             }
-            return Memory::ValueOf (lk.load ());
+            else {
+                return **lk;
+            }
         }();
         // not sure we want to allow this? @todo consider throwing here or asserting out cuz nets rollup IDs would change after this
         result.MergeIn_ (FromDiscovery::GetMyDeviceID (), FromDiscovery::GetNetworkInterfaces ());
