@@ -152,17 +152,19 @@ RolledUpDevices RolledUpDevices::GetCached (DBAccess::Mgr* dbAccessMgr, Time::Du
         // Start with the existing rolled up objects
         // and merge in any more recent discovery changes
         RolledUpDevices result = [&] () {
-            auto lk = sRolledUpDevicesSoFar_.rwget ();
-            if (not lk.cref ().has_value ()) {
+            auto lk = sRolledUpDevicesSoFar_.cget ();
+            if (lk.cref () == nullopt) {
                 dbAccessMgr->CheckDatabaseLoadCompleted ();
                 // @todo add more stuff here - empty preset rules from DB
                 // merge two tables - ID to fingerprint and user settings tables and store those in this rollup early
                 // maybe make CTOR for rolledupnetworks take in ital DB netwworks and rules, and have copyis CTOR taking orig networks and new rules?
                 RolledUpDevices initialDBDevices{dbAccessMgr, dbAccessMgr->GetRawDevices (), dbAccessMgr->GetDeviceUserSettings (),
                                                  rolledUpNetworks, rolledUpNetworkInterfacess};
-                lk.store (initialDBDevices);
+              return initialDBDevices;
             }
-            return Memory::ValueOf (lk.load ());
+            else {
+                return *lk.cref();
+            }
         }();
         // not sure we want to allow this? @todo consider throwing here or asserting out cuz nets rollup IDs would change after this
         result.MergeIn (dbAccessMgr, IntegratedModel::Private_::FromDiscovery::GetDevices ());

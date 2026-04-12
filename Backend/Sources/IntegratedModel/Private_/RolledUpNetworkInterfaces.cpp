@@ -158,10 +158,9 @@ RolledUpNetworkInterfaces RolledUpNetworkInterfaces::GetCached (DBAccess::Mgr* d
         // Start with the existing rolled up objects
         // and merge in any more recent discovery changes
         RolledUpNetworkInterfaces result = [dbAccessMgr] () {
-            auto lk = sRolledUpNetworksInterfaces_.rwget ();
+            auto lk = sRolledUpNetworksInterfaces_.cget ();
             if (lk.cref () == nullopt) {
                 // INITIALIZE first time from DB
-                Debug::TraceContextBumper ctxxxx{"abc1xxxx"};
                 dbAccessMgr->CheckDatabaseLoadCompleted ();
                 // @todo add more stuff here - empty preset rules from DB
                 // merge two tables - ID to fingerprint and user settings tables and store those in this rollup early
@@ -169,7 +168,6 @@ RolledUpNetworkInterfaces RolledUpNetworkInterfaces::GetCached (DBAccess::Mgr* d
                 RolledUpNetworkInterfaces rollup = RolledUpNetworkInterfaces{dbAccessMgr->GetRawDevices (), dbAccessMgr->GetRawNetworkInterfaces ()};
                 // handle orphaned network interfaces
                 {
-                    Debug::TraceContextBumper ctxxxxxxx{"abc1xx234234xxxx"};
                     auto                      orphanedRawInterfaces =
                         rollup.GetRawNetworkInterfaces ().Where ([&] (auto ni) { return rollup.GetAttachedToDeviceIDs (ni.fID) == nullopt; });
                     if (not orphanedRawInterfaces.empty ()) {
@@ -185,11 +183,9 @@ RolledUpNetworkInterfaces RolledUpNetworkInterfaces::GetCached (DBAccess::Mgr* d
                     }
                 }
                 return rollup;
-                // DbgTrace ("about to store into lk");
-                // lk.store (rollup);  // not clear why we bother storing here if about to store again
             }
             else {
-                return **lk;
+                return *lk.cref();
             }
         }();
         // not sure we want to allow this? @todo consider throwing here or asserting out cuz nets rollup IDs would change after this

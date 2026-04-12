@@ -148,16 +148,19 @@ RolledUpNetworks RolledUpNetworks::GetCached (DBAccess::Mgr* dbAccessMgr, Time::
         // and merge in any more recent discovery changes
         RolledUpNetworks result = [allowedStaleness, dbAccessMgr] () {
             auto rolledUpNetworkInterfacess = RolledUpNetworkInterfaces::GetCached (dbAccessMgr, allowedStaleness * 3.0); // longer allowedStaleness cuz we dont care much about this and the parts
-                // we look at really dont change
-            auto lk = sRolledUpNetworks_.rwget ();
-            if (not lk.cref ().has_value ()) {
+            // we look at really dont change
+            auto lk = sRolledUpNetworks_.cget ();
+            if (lk.cref () == nullopt) {
+                // first time through, so load from database lazily
                 dbAccessMgr->CheckDatabaseLoadCompleted ();
                 // @todo add more stuff here - empty preset rules from DB
                 // merge two tables - ID to fingerprint and user settings tables and store those in this rollup early
                 // maybe make CTOR for rolledupnetworks take in ital DB netwworks and rules, and have copyis CTOR taking orig networks and new rules?
-                lk.store (RolledUpNetworks{dbAccessMgr, dbAccessMgr->GetRawNetworks (), dbAccessMgr->GetNetworkUserSettings (), rolledUpNetworkInterfacess});
+                return RolledUpNetworks{dbAccessMgr, dbAccessMgr->GetRawNetworks (), dbAccessMgr->GetNetworkUserSettings (), rolledUpNetworkInterfacess};
             }
-            return Memory::ValueOf (lk.load ());
+            else {
+                return *lk.cref ();
+            }
         }();
         result.MergeIn (dbAccessMgr, IntegratedModel::Private_::FromDiscovery::GetNetworks ());
         sRolledUpNetworks_.store (result); // save here so we can update rollup networks instead of creating anew each time
