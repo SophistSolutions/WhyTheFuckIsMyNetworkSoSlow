@@ -9,9 +9,12 @@ High level summary of changes in WhyTheFuckIsMyNetworkSoSlow.
 
 ### 1.0d20 {2026-05-01}
 
+
+===BEFORE RELEASE FIX BUILD SYS REGRESION - GITHUB ACTIONS RUN OUT OF SPACE
+
 #### TLDR
 - Use Stroika 3.0d23
-- Major cleanups to database backend, rollups, refactoring, stability
+- Major cleanups to database backend (Stroika DocumentDB support), rollups, refactoring, stability
 - UI
   - major cleanups and depth, and user settings, editable, notes etc. Still no IMPORTANT new functionality
     but fast and stable

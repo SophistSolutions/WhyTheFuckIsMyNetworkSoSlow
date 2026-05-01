@@ -81,6 +81,8 @@ jobs:
     defaults:
       run:
         shell: msys2 {0}
+    env:
+      USE_DOCKER_ROOT: "D:/docker"
     steps:
       - uses: msys2/setup-msys2@v2
         with:
@@ -100,6 +102,34 @@ jobs:
           # Was running out of space, and doesn't seem to be commandline way to set storage opts, so
           # add --storage-opts ["size=60GB"] or some such, to this file, and see if it works better, but not needed for now --LGP 2024-02-26
           echo "C:/ProgramData/Docker/config/daemon.json:" -n ; cat "C:/ProgramData/Docker/config/daemon.json"
+      - name: Setup Docker to use ${{env.USE_DOCKER_ROOT}} as data-root
+        shell: powershell
+        run: |
+          mkdir ${{env.USE_DOCKER_ROOT}}
+          $configFile = "C:\ProgramData\Docker\config\daemon.json"
+          # Ensure the config file exists
+          if (-not (Test-Path $configFile)) {
+            New-Item $configFile -ItemType File
+            $config = @{}
+          } else {
+            $config = Get-Content $configFile | ConvertFrom-Json
+          }
+          # Add or update the 'data-root' property using Add-Member
+          # -Force allows updating the property if it already exists
+          $config | Add-Member -MemberType NoteProperty -Name "data-root" -Value "${{env.USE_DOCKER_ROOT}}" -Force
+          # Write the updated config back to the file
+          $config | ConvertTo-Json -Depth 4 | Set-Content $configFile
+          # Print to verify updated properly
+          Get-Content -Path $configFile
+          # Restart Docker to apply changes
+          echo "Restarting Docker Service..."
+          Stop-Service Docker
+          Start-Service Docker
+          # Verify the new Docker Root Dir
+          echo "docker info:"
+          # docker info | Select-String "Docker Root Dir"
+          echo "docker info:"
+          docker info
       - name: Build Windows Container Images (build-images)
         run: |
           make --directory DockerBuildContainers --no-print-directory IMAGES="${{ matrix.container_images }}" build-images
