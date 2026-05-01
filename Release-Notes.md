@@ -6,11 +6,7 @@ High level summary of changes in WhyTheFuckIsMyNetworkSoSlow.
 
 ## History
 
-
 ### 1.0d20 {2026-05-01}
-
-
-===BEFORE RELEASE FIX BUILD SYS REGRESION - GITHUB ACTIONS RUN OUT OF SPACE
 
 #### TLDR
 - Use Stroika 3.0d23
