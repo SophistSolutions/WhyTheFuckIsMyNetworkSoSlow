@@ -38,6 +38,8 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel {
      * 
      *  This is where all the object identity logic and rollup logic lies.
      * 
+     *  \note Alias: Could have been called RollupManager
+     * 
      *  This delegates to the layer that does database storage, and discovery. And it provides access to settings
      *  that configure how rollup is done.
      * 
