@@ -1,7 +1,14 @@
 RENAME to WTFNetSlow (shorter, and simone happier)
 
-- Add feature to peridocially WRITE to single .json file and option to LOAD DB from .json file.
-- probably LOSE old SQL ORM code (simpler/cleaner - but test performance carefully to be sure).
+
+- MAJOR FEATURES FOR next minor release
+	- Run inside Docker Container (we have docker container for build, but separate container for RUN)
+		- but can I build a container inside a container? I think thats a no and a challenge
+		- maybe do with nested stepped containers? (stages)
+	- peridocially scan (ping) and collect stats, and show graphs for those stats
+	- fix mal-auto-detect best network rollup (and maybe further cleanup rollup logic)
+
+
 -------------------
 
 Fix .prettierrc - so formatting reasonable/uniform.
