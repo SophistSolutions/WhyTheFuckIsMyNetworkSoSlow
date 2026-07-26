@@ -3,9 +3,9 @@ StroikaRoot		:=	$(TOP_ROOT)ThirdPartyComponents/Stroika/StroikaRoot/
 SrcDir			:=	$(TOP_ROOT)Backend/Sources/
 ObjDir			:=	$(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow-Backend/
 
-include $(StroikaRoot)ScriptsLib/SharedMakeVariables-Default.mk
+include $(StroikaRoot)Build/Lib/Make/SharedMakeVariables-Default.mk
 
-include $(StroikaRoot)ScriptsLib/SharedBuildRules-Default.mk
+include $(StroikaRoot)Build/Lib/Make/SharedBuildRules-Default.mk
 
 CPPFLAGS += -I"$(call FUNCTION_CONVERT_FILEPATH_TO_COMPILER_NATIVE,$(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow)"
 
@@ -38,7 +38,7 @@ $(VERSION_FILE_OUT):	$(VERSION_FILE_IN)
 
 
 all:
-	@$(StroikaRoot)/ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "Building WhyTheFuckIsMyNetworkSoSlow/Backend:"
+	@$(StroikaRoot)/Build/Scripts/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "Building WhyTheFuckIsMyNetworkSoSlow/Backend:"
 	@mkdir -p $(TARGETEXEDir)
 	@$(MAKE) --silent $(VERSION_FILE_OUT) MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
 	@for s in ${SubDirs}; do $(MAKE) --directory $${s} -s MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1)) all; done

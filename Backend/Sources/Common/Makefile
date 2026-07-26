@@ -3,9 +3,9 @@ StroikaRoot	:=	$(TOP_ROOT)ThirdPartyComponents/Stroika/StroikaRoot/
 SrcDir		:=	$(TOP_ROOT)BackendApp/Sources/Common/
 ObjDir		:=	$(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow-Backend/Common/
 
-include $(StroikaRoot)ScriptsLib/SharedMakeVariables-Default.mk
+include $(StroikaRoot)Build/Lib/Make/SharedMakeVariables-Default.mk
 
-include $(StroikaRoot)ScriptsLib/SharedBuildRules-Default.mk
+include $(StroikaRoot)Build/Lib/Make/SharedBuildRules-Default.mk
 
 CPPFLAGS += -I"$(call FUNCTION_CONVERT_FILEPATH_TO_COMPILER_NATIVE,$(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow)"
 

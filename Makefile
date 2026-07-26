@@ -5,7 +5,7 @@ ifeq (,$(wildcard $(StroikaRoot)Makefile))
 $(warning "*** Submodules missing: perhaps you should run `git submodule update --init --recursive` ***")
 endif
 
-include $(StroikaRoot)ScriptsLib/SharedMakeVariables-Default.mk
+include $(StroikaRoot)Build/Lib/Make/SharedMakeVariables-Default.mk
 
 
 #not parallel because submakefiles use parallelism, but generally best to sequence these top level requests. Like if you say
@@ -19,25 +19,25 @@ CONFIGURATION_TAGS?=$(TAGS)
 APPLY_CONFIGS=$(or \
 				$(CONFIGURATION), \
 				$(if $(CONFIGURATION_TAGS), \
-					$(shell $(StroikaRoot)ScriptsLib/GetConfigurations --config-tags "$(CONFIGURATION_TAGS)"),\
+					$(shell $(StroikaRoot)Build/Scripts/GetConfigurations --config-tags "$(CONFIGURATION_TAGS)"),\
 					$(if $(filter clobber, $(MAKECMDGOALS)),\
-						$(shell $(StroikaRoot)ScriptsLib/GetConfigurations --all --quiet),\
-						$(shell $(StroikaRoot)ScriptsLib/GetConfigurations --all-default)\
+						$(shell $(StroikaRoot)Build/Scripts/GetConfigurations --all --quiet),\
+						$(shell $(StroikaRoot)Build/Scripts/GetConfigurations --all-default)\
 					)\
 				)\
 			)
 
 all:
-	@$(StroikaRoot)ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "Building WhyTheFuckIsMyNetworkSoSlow all{$(CONFIGURATION)}:"
+	@$(StroikaRoot)Build/Scripts/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "Building WhyTheFuckIsMyNetworkSoSlow all{$(CONFIGURATION)}:"
 	@$(MAKE) -silent IntermediateFiles/ASSURE_DEFAULT_CONFIGURATIONS_BUILT MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
 ifeq ($(CONFIGURATION),)
 	@#Cannot use APPLY_CONFIGS here because ConfigurationFiles may have changed and evaluated before here
-	@for i in `$(StroikaRoot)ScriptsLib/GetConfigurations --config-tags "$(CONFIGURATION_TAGS)" --all-default` ; do\
+	@for i in `$(StroikaRoot)Build/Scripts/GetConfigurations --config-tags "$(CONFIGURATION_TAGS)" --all-default` ; do\
 		$(MAKE) --no-print-directory --silent all CONFIGURATION=$$i MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1));\
 	done
 else
 	@$(MAKE) --directory=ThirdPartyComponents --no-print-directory all MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
-	@$(StroikaRoot)/ScriptsLib/CheckValidConfiguration $(CONFIGURATION)
+	@$(StroikaRoot)/Build/Scripts/CheckValidConfiguration $(CONFIGURATION)
 	@$(MAKE) --directory=html --no-print-directory  MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1)) all
 	@$(MAKE) --directory=Backend --no-print-directory MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1)) all
 	@$(MAKE) --silent installers MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
@@ -45,7 +45,7 @@ endif
 
 
 IntermediateFiles/ASSURE_DEFAULT_CONFIGURATIONS_BUILT:
-ifeq ($(shell $(StroikaRoot)ScriptsLib/GetConfigurations --quiet),)
+ifeq ($(shell $(StroikaRoot)Build/Scripts/GetConfigurations --quiet),)
 	@$(MAKE) -silent default-configurations MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
 endif
 
@@ -69,7 +69,7 @@ endif
 .PHONY: default-configurations
 default-configurations:
 	@if [ ! -d ConfigurationFiles ] ; then $(MAKE) --silent build-root; fi
-	@$(StroikaRoot)ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) Configuring...
+	@$(StroikaRoot)Build/Scripts/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) Configuring...
 ifeq ($(DETECTED_HOST_OS), Darwin)
 	@(export MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1)) && cd $(StroikaRoot) && ./configure Debug --build-by-default $(DETECTED_HOST_OS) --config-tag Unix $(STROIKA_CONFIG_PARAMS_COMMON) $(STROIKA_CONFIG_PARAMS_DEBUG));
 	@(export MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1)) && cd $(StroikaRoot) && ./configure Release --build-by-default $(DETECTED_HOST_OS) --config-tag Unix $(STROIKA_CONFIG_PARAMS_COMMON) $(STROIKA_CONFIG_PARAMS_RELEASE));
@@ -106,19 +106,19 @@ endif
 ifneq ($(findstring $(DETECTED_HOST_OS),MSYS-Cygwin),)
 	@$(MAKE) --silent Builds/__AUTOMATIC_MAKE_PROJECT_FILES__
 endif
-	@$(StroikaRoot)ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "Applying configuration(s) to vscode:"
-	@for i in `$(StroikaRoot)ScriptsLib/GetConfigurations --all` ; do\
-		$(StroikaRoot)ScriptsLib/ApplyConfiguration --only-vscode $$i;\
+	@$(StroikaRoot)Build/Scripts/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "Applying configuration(s) to vscode:"
+	@for i in `$(StroikaRoot)Build/Scripts/GetConfigurations --all` ; do\
+		$(StroikaRoot)Build/Scripts/ApplyConfiguration --only-vscode $$i;\
 	done
 
 build-root:
-	@$(StroikaRoot)ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) Making BuildRoot...
-	@export MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1)) && cd $(StroikaRoot) && ./ScriptsLib/MakeBuildRoot ../../../
+	@$(StroikaRoot)Build/Scripts/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) Making BuildRoot...
+	@export MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1)) && cd $(StroikaRoot) && ./Build/Scripts/MakeBuildRoot ../../../
 
 apply-configurations-to-vscode:
-	@$(StroikaRoot)ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "Applying configuration(s) to vscode:"
+	@$(StroikaRoot)Build/Scripts/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "Applying configuration(s) to vscode:"
 	@for i in $(APPLY_CONFIGS) ; do\
-		MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1)) $(StroikaRoot)ScriptsLib/ApplyConfiguration --only-vscode $$i;\
+		MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1)) $(StroikaRoot)Build/Scripts/ApplyConfiguration --only-vscode $$i;\
 	done
 
 list-configurations list-configuration-tags apply-configurations apply-configuration apply-configurations-if-needed reconfigure:
@@ -127,11 +127,11 @@ list-configurations list-configuration-tags apply-configurations apply-configura
 project-files:
 	@$(MAKE) --directory $(StroikaRoot) --silent CONFIGURATION_TAGS="$(CONFIGURATION_TAGS)" $@
 	@#Workaround https://stroika.atlassian.net/browse/STK-943
-	@cd Workspaces/VisualStudio.Net; rm -f Microsoft.Cpp.stroika.ConfigurationBased.props; $(StroikaRoot)/ScriptsLib/MakeSymbolicLink ../../ThirdPartyComponents/Stroika/StroikaRoot/Workspaces/VisualStudio.Net/Microsoft.Cpp.stroika.ConfigurationBased.props
-	@cd Workspaces/VisualStudio.Net; rm -f Microsoft.Cpp.stroika.user.props; $(StroikaRoot)/ScriptsLib/MakeSymbolicLink ../../ThirdPartyComponents/Stroika/StroikaRoot/Workspaces/VisualStudio.Net/Microsoft.Cpp.stroika.user.props
+	@cd Workspaces/VisualStudio.Net; rm -f Microsoft.Cpp.stroika.ConfigurationBased.props; $(StroikaRoot)/Build/Scripts/MakeSymbolicLink ../../ThirdPartyComponents/Stroika/StroikaRoot/Workspaces/VisualStudio.Net/Microsoft.Cpp.stroika.ConfigurationBased.props
+	@cd Workspaces/VisualStudio.Net; rm -f Microsoft.Cpp.stroika.user.props; $(StroikaRoot)/Build/Scripts/MakeSymbolicLink ../../ThirdPartyComponents/Stroika/StroikaRoot/Workspaces/VisualStudio.Net/Microsoft.Cpp.stroika.user.props
 
 distclean:
-	@$(StroikaRoot)ScriptsLib/PrintProgressLine $(MAKE_INDENT_LEVEL) "WhyTheFuckIsMyNetworkSoSlow $(call FUNCTION_CAPITALIZE_WORD,$@):"
+	@$(StroikaRoot)/Build/Scripts/PrintProgressLine $(MAKE_INDENT_LEVEL) "WhyTheFuckIsMyNetworkSoSlow $(call FUNCTION_CAPITALIZE_WORD,$@):"
 ifneq ($(CONFIGURATION),)
 	$(error "make distclean applies to all configurations - and deletes all configurations")
 endif
@@ -141,7 +141,7 @@ endif
 
 clean clobber:
 ifeq ($(CONFIGURATION),)
-	@$(StroikaRoot)ScriptsLib/PrintProgressLine $(MAKE_INDENT_LEVEL) "WhyTheFuckIsMyNetworkSoSlow $(call FUNCTION_CAPITALIZE_WORD,$@):"
+	@$(StroikaRoot)/Build/Scripts/PrintProgressLine $(MAKE_INDENT_LEVEL) "WhyTheFuckIsMyNetworkSoSlow $(call FUNCTION_CAPITALIZE_WORD,$@):"
 ifeq ($(CONFIGURATION_TAGS),)
 	@if [ "$@"=="clobber" ] ; then \
 		rm -rf IntermediateFiles/* Builds/*;\
@@ -159,7 +159,7 @@ else
 	done
 endif
 else
-	@$(StroikaRoot)ScriptsLib/PrintProgressLine $(MAKE_INDENT_LEVEL) "WhyTheFuckIsMyNetworkSoSlow $(call FUNCTION_CAPITALIZE_WORD,$@) {$(CONFIGURATION)}:"
+	@$(StroikaRoot)/Build/Scripts/PrintProgressLine $(MAKE_INDENT_LEVEL) "WhyTheFuckIsMyNetworkSoSlow $(call FUNCTION_CAPITALIZE_WORD,$@) {$(CONFIGURATION)}:"
 	@$(MAKE) --directory Backend --no-print-directory $@ MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
 	@$(MAKE) --directory html --no-print-directory $@ MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
 	@$(MAKE) --directory ThirdPartyComponents --no-print-directory $@ MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
@@ -174,7 +174,7 @@ endif
 
 .PHONY: installers installer-deb installer-rpm installer-wix
 installers installer-deb installer-rpm installer-wix:   $(TARGETEXE)
-	@$(StroikaRoot)/ScriptsLib/PrintProgressLine $(MAKE_INDENT_LEVEL) "Building Installers:"
+	@$(StroikaRoot)/Build/Scripts/PrintProgressLine $(MAKE_INDENT_LEVEL) "Building Installers:"
 	@$(MAKE) --no-print-directory --directory Installers MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1)) $@
 
 
@@ -184,8 +184,8 @@ update-submodules:
 
 STROIKA_COMMIT?=v3-Release
 latest-submodules:
-	@$(StroikaRoot)ScriptsLib/PrintProgressLine $(MAKE_INDENT_LEVEL) "WTF $(call FUNCTION_CAPITALIZE_WORD,$@):"
-	@$(StroikaRoot)ScriptsLib/PrintProgressLine $$(($(MAKE_INDENT_LEVEL)+1)) "Checkout Latest Stroika (STROIKA_COMMIT=${STROIKA_COMMIT})"
+	@$(StroikaRoot)/Build/Scripts/PrintProgressLine $(MAKE_INDENT_LEVEL) "WTF $(call FUNCTION_CAPITALIZE_WORD,$@):"
+	@$(StroikaRoot)/Build/Scripts/PrintProgressLine $$(($(MAKE_INDENT_LEVEL)+1)) "Checkout Latest Stroika (STROIKA_COMMIT=${STROIKA_COMMIT})"
 	@(cd $(StroikaRoot) && git checkout $(STROIKA_COMMIT) --quiet && git pull --quiet)
 
 
@@ -193,7 +193,7 @@ format-code:
 	@$(MAKE) --directory=Backend --no-print-directory format-code
 
 
-INSTALLER_TAG=$(shell $(StroikaRoot)/ScriptsLib/ExtractVersionInformation VERSION FullVersionString)
+INSTALLER_TAG=$(shell $(StroikaRoot)/Build/Scripts/ExtractVersionInformation VERSION FullVersionString)
 define CopyFileIf_
 	if [ -e Builds/${1}/WhyTheFuckIsMyNetworkSoSlow/${2} ] ; then\
     	cp Builds/${1}/WhyTheFuckIsMyNetworkSoSlow/${2} Release-$(INSTALLER_TAG)/${3};\

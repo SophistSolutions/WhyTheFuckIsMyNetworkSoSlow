@@ -3,9 +3,9 @@ StroikaRoot:=$(TOP_ROOT)ThirdPartyComponents/Stroika/StroikaRoot/
 SrcDir		:=	$(TOP_ROOT)BackendApp/Sources/Discovery/
 ObjDir		:=	$(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow-Backend/IntegratedModel/
 
-include $(StroikaRoot)ScriptsLib/SharedMakeVariables-Default.mk
+include $(StroikaRoot)Build/Lib/Make/SharedMakeVariables-Default.mk
 
-include $(StroikaRoot)ScriptsLib/SharedBuildRules-Default.mk
+include $(StroikaRoot)Build/Lib/Make/SharedBuildRules-Default.mk
 
 vpath %cpp $(SrcDir)
 

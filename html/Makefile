@@ -5,14 +5,14 @@
 export TOP_ROOT		:=	$(abspath ../)/
 StroikaRoot			:=	$(TOP_ROOT)ThirdPartyComponents/Stroika/StroikaRoot/
 
-include $(StroikaRoot)ScriptsLib/SharedMakeVariables-Default.mk
+include $(StroikaRoot)Build/Lib/Make/SharedMakeVariables-Default.mk
 
 PER_CONFIGURATION_BUILDS_DIR:=$(shell realpath --canonicalize-missing ../Builds/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow/html)/
 #lose trailing / on PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_ because on macos make THATDIR doesn't work with trailing slash (old WEIRD_MACOS_MAKEFILE_DIR_BUG -  MacOS XCode 10 - GNU Make 3.81)
 PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_:=$(shell realpath --canonicalize-missing ../IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow/html)
 
 all:
-	@$(StroikaRoot)/ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "WhyTheFuckIsMyNetworkSoSlow/HTML Build:"
+	@$(StroikaRoot)/Build/Scripts/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "WhyTheFuckIsMyNetworkSoSlow/HTML Build:"
 ifeq ($(CONFIGURATION),)
 	@echo "Cannot complete build without a configuraiton" && exit 1;
 endif
@@ -21,7 +21,7 @@ endif
 	@${MAKE} --silent MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1)) $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_)/dist
 
 clean clobber:
-	@$(StroikaRoot)/ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "WhyTheFuckIsMyNetworkSoSlow/HTML $(call FUNCTION_CAPITALIZE_WORD,$@) {$(CONFIGURATION)}:"
+	@$(StroikaRoot)/Build/Scripts/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "WhyTheFuckIsMyNetworkSoSlow/HTML $(call FUNCTION_CAPITALIZE_WORD,$@) {$(CONFIGURATION)}:"
 ifeq ($(CONFIGURATION),)
 	@rm -rf ../IntermediateFiles/*/WhyTheFuckIsMyNetworkSoSlow/html
 	@if [ "$@"=="clobber" ] ; then \
@@ -37,17 +37,17 @@ ifneq ($(CONFIGURATION),)
 endif
 
 check-prerequisites:
-	@$(StroikaRoot)/ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "Checking HTML prerequisites:"
+	@$(StroikaRoot)/Build/Scripts/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "Checking HTML prerequisites:"
 	@#todo - check if right version of node/npm installed?
-	@$(StroikaRoot)/ScriptsLib/PrintLevelLeader $$(($(MAKE_INDENT_LEVEL)+1)) && sh -c "(type node 2> /dev/null) || ($(StroikaRoot)/ScriptsLib/GetMessageForMissingTool node && exit 1)"
-	@$(StroikaRoot)ScriptsLib/PrintLevelLeader $$(($(MAKE_INDENT_LEVEL)+1)) && sh -c "(type npm 2> /dev/null) || ($(StroikaRoot)ScriptsLib/GetMessageForMissingTool npm && exit 1)"
+	@$(StroikaRoot)/Build/Scripts/PrintLevelLeader $$(($(MAKE_INDENT_LEVEL)+1)) && sh -c "(type node 2> /dev/null) || ($(StroikaRoot)/Build/Scripts/GetMessageForMissingTool node && exit 1)"
+	@$(StroikaRoot)Build/Scripts/PrintLevelLeader $$(($(MAKE_INDENT_LEVEL)+1)) && sh -c "(type npm 2> /dev/null) || ($(StroikaRoot)Build/Scripts/GetMessageForMissingTool npm && exit 1)"
 
 $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_)/dist: $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_)
-	@$(StroikaRoot)/ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "npm install ( log2 "`$(StroikaRoot)ScriptsLib/SubstituteBackVariables ${PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_}`"/NPM-Install.txt ) ..."
+	@$(StroikaRoot)/Build/Scripts/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "npm install ( log2 "`$(StroikaRoot)ScriptsLib/SubstituteBackVariables ${PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_}`"/NPM-Install.txt ) ..."
 	@cd $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_) && npm i > ${PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_}/NPM-Install.txt 2>&1
-	@$(StroikaRoot)ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "Building ( log2 "`$(StroikaRoot)ScriptsLib/SubstituteBackVariables ${PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_}`"/Build.txt ) ..."
+	@$(StroikaRoot)Build/Scripts/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "Building ( log2 "`$(StroikaRoot)ScriptsLib/SubstituteBackVariables ${PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_}`"/Build.txt ) ..."
 	@cd $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_) && npm run build > ${PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_}/Build.txt 2>&1
-	@$(StroikaRoot)ScriptsLib/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "Copying to:" `$(StroikaRoot)ScriptsLib/SubstituteBackVariables ${PER_CONFIGURATION_BUILDS_DIR}` "..."
+	@$(StroikaRoot)Build/Scripts/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "Copying to:" `$(StroikaRoot)ScriptsLib/SubstituteBackVariables ${PER_CONFIGURATION_BUILDS_DIR}` "..."
 	@rm -rf ${PER_CONFIGURATION_BUILDS_DIR} && mkdir -p ${PER_CONFIGURATION_BUILDS_DIR} && cp -r $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_)/dist/spa/* ${PER_CONFIGURATION_BUILDS_DIR}
 
 
