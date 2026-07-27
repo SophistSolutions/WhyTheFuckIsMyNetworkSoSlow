@@ -32,9 +32,9 @@ Objs	:=	\
 VERSION_FILE_IN=$(TOP_ROOT)VERSION
 VERSION_FILE_OUT=$(StroikaRoot)IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow/AppVersion.h
 $(VERSION_FILE_OUT):	$(VERSION_FILE_IN)
-	@$(StroikaRoot)ScriptsLib/PrintProgressLine $(MAKE_INDENT_LEVEL) "Building $(shell $(StroikaRoot)ScriptsLib/SubstituteBackVariables $(abspath $@))"
+	@$(StroikaRoot)Build/Scripts/PrintProgressLine $(MAKE_INDENT_LEVEL) "Building $(shell $(StroikaRoot)Build/Scripts/SubstituteBackVariables $(abspath $@))"
 	@mkdir -p $(StroikaRoot)IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow
-	@$(StroikaRoot)ScriptsLib/MakeVersionFile $(VERSION_FILE_IN) $(VERSION_FILE_OUT) AppCPlusPlusVersion AppVersion
+	@$(StroikaRoot)Build/Scripts/MakeVersionFile $(VERSION_FILE_IN) $(VERSION_FILE_OUT) AppCPlusPlusVersion AppVersion
 
 
 all:
@@ -48,9 +48,9 @@ all:
 Objs += $(SUBDIR_OBJS)
 
 $(TARGETEXE):	$(Objs) $(StroikaLibs)
-	@$(StroikaRoot)ScriptsLib/PrintProgressLine $(MAKE_INDENT_LEVEL) "Linking `$(StroikaRoot)ScriptsLib/SubstituteBackVariables $@`" "... "
+	@$(StroikaRoot)Build/Scripts/PrintProgressLine $(MAKE_INDENT_LEVEL) "Linking `$(StroikaRoot)Build/Scripts/SubstituteBackVariables $@`" "... "
 	@if [ $(ECHO_BUILD_LINES) -eq 1 ]; then\
-	    $(StroikaRoot)ScriptsLib/PrintProgressLine $$(($(MAKE_INDENT_LEVEL)+1)) '$(call DEFAULT_LINK_LINE,$@, stroika-frameworks)';\
+	    $(StroikaRoot)Build/Scripts/PrintProgressLine $$(($(MAKE_INDENT_LEVEL)+1)) '$(call DEFAULT_LINK_LINE,$@, stroika-frameworks)';\
 	fi
 	@$(call DEFAULT_LINK_LINE,$@, stroika-frameworks)
 

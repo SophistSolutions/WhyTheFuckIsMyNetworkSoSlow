@@ -22,7 +22,7 @@ FETCHURLS+=ftp://ftp.sophists.com/Pub/Mirror/nmap-mac-prefixes
 
 all:
 	@$(StroikaRoot)Build/Scripts/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "ThirdPartyComponents/OSI-MAC-Prefixes Build {$(CONFIGURATION)}:"
-	@$(StroikaRoot)ScriptsLib/CheckValidConfiguration $(CONFIGURATION)
+	@$(StroikaRoot)Build/Scripts/CheckValidConfiguration $(CONFIGURATION)
 	@$(MAKE) --silent $(OUT_FILE) CONFIGURATION=$(CONFIGURATION) MAKE_INDENT_LEVEL=$$(($(MAKE_INDENT_LEVEL)+1))
 	@$(StroikaRoot)Build/Scripts/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "ThirdPartyComponents/OSI-MAC-Prefixes Build $(OUT_FILE)...done"
 
@@ -32,4 +32,4 @@ clean clobber:
 
 $(OUT_FILE):
 	@mkdir -p $(BUILDS_DIR)
-	@MAKE_INDENT_LEVEL=$(MAKE_INDENT_LEVEL) $(StroikaRoot)ScriptsLib/WebGet $(OUT_FILE) $(FETCHURLS)
+	@MAKE_INDENT_LEVEL=$(MAKE_INDENT_LEVEL) $(StroikaRoot)Build/Scripts/WebGet $(OUT_FILE) $(FETCHURLS)

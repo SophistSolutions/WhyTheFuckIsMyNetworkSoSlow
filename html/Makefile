@@ -43,11 +43,11 @@ check-prerequisites:
 	@$(StroikaRoot)Build/Scripts/PrintLevelLeader $$(($(MAKE_INDENT_LEVEL)+1)) && sh -c "(type npm 2> /dev/null) || ($(StroikaRoot)Build/Scripts/GetMessageForMissingTool npm && exit 1)"
 
 $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_)/dist: $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_)
-	@$(StroikaRoot)/Build/Scripts/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "npm install ( log2 "`$(StroikaRoot)ScriptsLib/SubstituteBackVariables ${PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_}`"/NPM-Install.txt ) ..."
+	@$(StroikaRoot)/Build/Scripts/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "npm install ( log2 "`$(StroikaRoot)Build/Scripts/SubstituteBackVariables ${PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_}`"/NPM-Install.txt ) ..."
 	@cd $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_) && npm i > ${PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_}/NPM-Install.txt 2>&1
-	@$(StroikaRoot)Build/Scripts/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "Building ( log2 "`$(StroikaRoot)ScriptsLib/SubstituteBackVariables ${PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_}`"/Build.txt ) ..."
+	@$(StroikaRoot)Build/Scripts/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "Building ( log2 "`$(StroikaRoot)Build/Scripts/SubstituteBackVariables ${PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_}`"/Build.txt ) ..."
 	@cd $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_) && npm run build > ${PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_}/Build.txt 2>&1
-	@$(StroikaRoot)Build/Scripts/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "Copying to:" `$(StroikaRoot)ScriptsLib/SubstituteBackVariables ${PER_CONFIGURATION_BUILDS_DIR}` "..."
+	@$(StroikaRoot)Build/Scripts/PrintLevelLeader $(MAKE_INDENT_LEVEL) && $(ECHO) "Copying to:" `$(StroikaRoot)Build/Scripts/SubstituteBackVariables ${PER_CONFIGURATION_BUILDS_DIR}` "..."
 	@rm -rf ${PER_CONFIGURATION_BUILDS_DIR} && mkdir -p ${PER_CONFIGURATION_BUILDS_DIR} && cp -r $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_)/dist/spa/* ${PER_CONFIGURATION_BUILDS_DIR}
 
 
@@ -68,7 +68,7 @@ $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_)/TOOLS_CHECKED:
 
 
 $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_):
-	@$(StroikaRoot)ScriptsLib/PrintProgressLine $(MAKE_INDENT_LEVEL) "Preparing symbolic links for "`$(StroikaRoot)ScriptsLib/SubstituteBackVariables $@` "... "
+	@$(StroikaRoot)Build/Scripts/PrintProgressLine $(MAKE_INDENT_LEVEL) "Preparing symbolic links for "`$(StroikaRoot)Build/Scripts/SubstituteBackVariables $@` "... "
 	@rm -rf $@ && mkdir -p $@
 	@for i in ${SRC_FILES2Link_}; do cp -r `pwd`/$$i $(PER_CONFIGURATION_THIS_INTERMEDIATEFILES_DIR_NOSLASH_)/$$i; done
 

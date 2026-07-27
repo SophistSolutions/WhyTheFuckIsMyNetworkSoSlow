@@ -4,8 +4,8 @@ StroikaRoot=$(TOP_ROOT)ThirdPartyComponents/Stroika/StroikaRoot/
 DEFAULT_GOAL := help
 
 VERSION=$(shell dos2unix < ../VERSION | xargs echo -n)
-VERSION_Final=$(shell $(StroikaRoot)ScriptsLib/ExtractVersionInformation ../VERSION FinalBuild)
-DETECTED_HOST_OS=$(shell $(StroikaRoot)ScriptsLib/DetectedHostOS)
+VERSION_Final=$(shell $(StroikaRoot)Build/Scripts/ExtractVersionInformation ../VERSION FinalBuild)
+DETECTED_HOST_OS=$(shell $(StroikaRoot)Build/Scripts/DetectedHostOS)
 
 
 help:
@@ -78,8 +78,8 @@ push-images:
 dev-containers:
 ifeq (${DETECTED_HOST_OS},Linux)
 	DOCKER_BUILD_EXTRAS_="$(DOCKER_BUILD_EXTRAS_FOR_DEV_)" make build-images
-	cd ${StroikaRoot} && SANDBOX_FROM=/Sandbox CONTAINER_NAME=WTF-Dev-2204 CONTAINER_IMAGE=sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204 INCLUDE_EXTRA_PERSONAL_MOUNT_FILES=1 EXTRA_DOCKER_ARGS="--publish 11223:22" ECHO_DOCKER_COMMANDS=1 ScriptsLib/RunInDockerEnvironment
-	cd ${StroikaRoot} && SANDBOX_FROM=/Sandbox CONTAINER_NAME=WTF-Dev-2404 CONTAINER_IMAGE=sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2404 INCLUDE_EXTRA_PERSONAL_MOUNT_FILES=1 EXTRA_DOCKER_ARGS="--publish 11224:22" ECHO_DOCKER_COMMANDS=1 ScriptsLib/RunInDockerEnvironment
+	cd ${StroikaRoot} && SANDBOX_FROM=/Sandbox CONTAINER_NAME=WTF-Dev-2204 CONTAINER_IMAGE=sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204 INCLUDE_EXTRA_PERSONAL_MOUNT_FILES=1 EXTRA_DOCKER_ARGS="--publish 11223:22" ECHO_DOCKER_COMMANDS=1 Build/Scripts/RunInDockerEnvironment
+	cd ${StroikaRoot} && SANDBOX_FROM=/Sandbox CONTAINER_NAME=WTF-Dev-2404 CONTAINER_IMAGE=sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2404 INCLUDE_EXTRA_PERSONAL_MOUNT_FILES=1 EXTRA_DOCKER_ARGS="--publish 11224:22" ECHO_DOCKER_COMMANDS=1 Build/Scripts/RunInDockerEnvironment
 endif
 
 start-dev-containers:
