@@ -13,7 +13,7 @@
 #include "Stroika/Foundation/Execution/Logger.h"
 #include "Stroika/Foundation/Execution/Sleep.h"
 #include "Stroika/Foundation/Execution/Synchronized.h"
-#include "Stroika/Foundation/Execution/TimeOutException.h"
+#include "Stroika/Foundation/Execution/Timeout.h"
 #include "Stroika/Foundation/Time/Realtime.h"
 
 #include "../Common/BLOBMgr.h"
@@ -218,11 +218,13 @@ Sequence<IntegratedModel::Device> IntegratedModel::Mgr::GetDevices () const
 {
     Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs ("IntegratedModel::Mgr::GetDevices")};
     Debug::TimingTrace        ttrc{"IntegratedModel::Mgr::GetDevices", .1s};
+    AssertNotNull (sDBAccessMgr_);
     return Sequence<IntegratedModel::Device>{RollupSummary_::RolledUpDevices::GetCached (sDBAccessMgr_.get ()).GetDevices ()};
 }
 
 optional<IntegratedModel::Device> IntegratedModel::Mgr::GetDevice (const GUID& id, optional<Duration>* ttl) const
 {
+    AssertNotNull (sDBAccessMgr_);
     // first check rolled up devices, and then raw/unrolled up devices
     // NOTE - this doesn't check the 'dynamic' copy of the devices - it waits til those get migrated to the DB, once ever
     // 30 seconds roughtly...
@@ -263,11 +265,13 @@ optional<IntegratedModel::Device> IntegratedModel::Mgr::GetDevice (const GUID& i
 
 std::optional<IntegratedModel::Device::UserOverridesType> IntegratedModel::Mgr::GetDeviceUserSettings (const GUID& id) const
 {
+    AssertNotNull (sDBAccessMgr_);
     return sDBAccessMgr_->LookupDevicesUserSettings (id);
 }
 
 void IntegratedModel::Mgr::SetDeviceUserSettings (const Common::GUID& id, const std::optional<IntegratedModel::Device::UserOverridesType>& settings)
 {
+    AssertNotNull (sDBAccessMgr_);
     if (sDBAccessMgr_->SetDeviceUserSettings (id, settings)) {
         RollupSummary_::RolledUpDevices::InvalidateCache (sDBAccessMgr_.get ());
     }
@@ -275,6 +279,7 @@ void IntegratedModel::Mgr::SetDeviceUserSettings (const Common::GUID& id, const 
 
 std::optional<GUID> IntegratedModel::Mgr::GetCorrespondingDynamicDeviceID (const GUID& id) const
 {
+    AssertNotNull (sDBAccessMgr_);
     Set<GUID> dynamicDevices{Discovery::DevicesMgr::sThe.GetActiveDevices ().Map<Set<GUID>> ([] (const auto& d) { return d.fGUID; })};
     if (dynamicDevices.Contains (id)) {
         return id;
@@ -296,12 +301,14 @@ Sequence<IntegratedModel::Network> IntegratedModel::Mgr::GetNetworks () const
 {
     Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs ("IntegratedModel::Mgr::GetNetworks")};
     Debug::TimingTrace        ttrc{"IntegratedModel::Mgr::GetNetworks", 0.1s};
+    AssertNotNull (sDBAccessMgr_);
     return Sequence<IntegratedModel::Network>{RollupSummary_::RolledUpNetworks::GetCached (sDBAccessMgr_.get ()).GetNetworks ()};
 }
 
 optional<IntegratedModel::Network> IntegratedModel::Mgr::GetNetwork (const GUID& id, optional<Duration>* ttl) const
 {
     // first check rolled up networks, and then raw/unrolled up networks
+    AssertNotNull (sDBAccessMgr_);
     auto networkRollupsCache = RollupSummary_::RolledUpNetworks::GetCached (sDBAccessMgr_.get ());
     auto result              = networkRollupsCache.GetNetworks ().Lookup (id);
     if (result) {
@@ -329,11 +336,13 @@ optional<IntegratedModel::Network> IntegratedModel::Mgr::GetNetwork (const GUID&
 
 std::optional<IntegratedModel::Network::UserOverridesType> IntegratedModel::Mgr::GetNetworkUserSettings (const GUID& id) const
 {
+    AssertNotNull (sDBAccessMgr_);
     return sDBAccessMgr_->LookupNetworkUserSettings (id);
 }
 
 void IntegratedModel::Mgr::SetNetworkUserSettings (const Common::GUID& id, const std::optional<IntegratedModel::Network::UserOverridesType>& settings)
 {
+    AssertNotNull (sDBAccessMgr_);
     if (sDBAccessMgr_->SetNetworkUserSettings (id, settings)) {
         RollupSummary_::RolledUpNetworks::InvalidateCache (sDBAccessMgr_.get ());
     }
@@ -341,15 +350,17 @@ void IntegratedModel::Mgr::SetNetworkUserSettings (const Common::GUID& id, const
 
 Collection<IntegratedModel::NetworkInterface> IntegratedModel::Mgr::GetNetworkInterfaces () const
 {
-    // AS OF 2022-11-02 this returns the currently active network interfaces, but changed to mimic other accessors (rollups returned)
+    // AS OF 2022-11-02 this returned the currently active network interfaces, but changed to mimic other accessors (rollups returned)
     Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs ("IntegratedModel::Mgr::GetNetworkInterfaces")};
     Debug::TimingTrace        ttrc{"IntegratedModel::Mgr::GetNetworkInterfaces", 0.1s};
+    AssertNotNull (sDBAccessMgr_);
     return Collection<IntegratedModel::NetworkInterface>{
         RollupSummary_::RolledUpNetworkInterfaces::GetCached (sDBAccessMgr_.get ()).GetNetworkInterfacess ()};
 }
 
 optional<IntegratedModel::NetworkInterface> IntegratedModel::Mgr::GetNetworkInterface (const GUID& id, optional<Duration>* ttl) const
 {
+    AssertNotNull (sDBAccessMgr_);
     // AS OF 2022-11-02 this returned the currently active network interfaces, but changed (2022-11-02) to mimic other accessors (rollups returned by default then raw records)
     auto networkInterfacesCache = RollupSummary_::RolledUpNetworkInterfaces::GetCached (sDBAccessMgr_.get ());
     auto result                 = networkInterfacesCache.GetNetworkInterfacess ().Lookup (id);
@@ -379,5 +390,6 @@ optional<IntegratedModel::NetworkInterface> IntegratedModel::Mgr::GetNetworkInte
 
 uintmax_t IntegratedModel::Mgr::GetDBFileSize () const
 {
+    AssertNotNull (sDBAccessMgr_);
     return sDBAccessMgr_->GetDBFileSize ();
 }

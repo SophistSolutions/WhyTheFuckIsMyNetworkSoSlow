@@ -252,7 +252,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
 
     public:
         /**
-         *  Background scanning - initaiate rescan (later parameterize) @todo parameterize - scan known, scan unknown, scan particular network (CIDR);
+         *  Background scanning - initiate rescan (later parameterize) @todo parameterize - scan known, scan unknown, scan particular network (CIDR);
          *  Syncrhonous scan - return when complete.
          */
         nonvirtual void ReScan (const GUID& deviceID);
