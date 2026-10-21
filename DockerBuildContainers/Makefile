@@ -1,7 +1,7 @@
 export TOP_ROOT=$(abspath ../)/
 StroikaRoot=$(TOP_ROOT)ThirdPartyComponents/Stroika/StroikaRoot/
 
-DEFAULT_GOAL := help
+.DEFAULT_GOAL := help
 
 VERSION=$(shell dos2unix < ../VERSION | xargs echo -n)
 VERSION_Final=$(shell $(StroikaRoot)Build/Scripts/ExtractVersionInformation ../VERSION FinalBuild)
@@ -11,15 +11,17 @@ DETECTED_HOST_OS=$(shell $(StroikaRoot)Build/Scripts/DetectedHostOS)
 help:
 	@echo "make build-images to create the docker images on your computer"
 	@echo "to run the image, use:"
-	@echo "    docker run -it sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2004   OR"
+	@echo "    docker run -it sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2604   OR"
 	@echo "n.b. use --security-opt seccomp=unconfined to run debugger (ptrace/address randomization disable)"
 	@echo "and first thing when you run docker image, cat ReadMe.md"
+	@echo "make run-test-container WTF_TREE=... CONFIGURATION=... to run a WTF build on the host network (Linux)"
+	@echo "make test-deb-install DEB=... to install a built .deb in a clean ubuntu:26.04 container and run it"
 
 
 # You may want to comment these in to build WTF-Dev environment
 ## @todo maybe cleaner to remove these build args and do WTF-DEV Dockerfile and have it import different bases and just add this stuff?
 DOCKER_BUILD_EXTRAS_FOR_DEV_=\
-	--build-arg INCLUDE_OPENSSL=true \
+	--build-arg INCLUDE_OPENSSH=true \
 	--build-arg INCLUDE_HANDY_DEV_TOOLS=true \
 
 DOCKER_BUILD_EXTRAS_?=\
@@ -30,6 +32,7 @@ DEFAULT_IMAGES_?=
 ifeq (${DETECTED_HOST_OS},Linux)
 DEFAULT_IMAGES_+= sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204
 DEFAULT_IMAGES_+= sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2404
+DEFAULT_IMAGES_+= sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2604
 endif
 ifneq ($(findstring $(DETECTED_HOST_OS),MSYS-Cygwin),)
 DEFAULT_IMAGES_+= sophistsolutionsinc/whythefuckismynetworksoslow-windows-vs2k22
@@ -45,10 +48,13 @@ sophistsolutionsinc/whythefuckismynetworksoslow-windows-vs2k22:
 	docker build -f Windows-VS2k22/Dockerfile -t $@ -m 2G .
 
 sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204:
-	docker build -f Ubuntu-2204/Dockerfile -t $@ .
+	docker build -f Ubuntu-2204/Dockerfile -t $@ ${DOCKER_BUILD_EXTRAS_} .
 
 sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2404:
-	docker build -f Ubuntu-2404/Dockerfile -t $@ .
+	docker build -f Ubuntu-2404/Dockerfile -t $@ ${DOCKER_BUILD_EXTRAS_} .
+
+sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2604:
+	docker build -f Ubuntu-2604/Dockerfile -t $@ ${DOCKER_BUILD_EXTRAS_} .
 
 
 tag-images:
@@ -80,7 +86,42 @@ ifeq (${DETECTED_HOST_OS},Linux)
 	DOCKER_BUILD_EXTRAS_="$(DOCKER_BUILD_EXTRAS_FOR_DEV_)" make build-images
 	cd ${StroikaRoot} && SANDBOX_FROM=/Sandbox CONTAINER_NAME=WTF-Dev-2204 CONTAINER_IMAGE=sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204 INCLUDE_EXTRA_PERSONAL_MOUNT_FILES=1 EXTRA_DOCKER_ARGS="--publish 11223:22" ECHO_DOCKER_COMMANDS=1 Build/Scripts/RunInDockerEnvironment
 	cd ${StroikaRoot} && SANDBOX_FROM=/Sandbox CONTAINER_NAME=WTF-Dev-2404 CONTAINER_IMAGE=sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2404 INCLUDE_EXTRA_PERSONAL_MOUNT_FILES=1 EXTRA_DOCKER_ARGS="--publish 11224:22" ECHO_DOCKER_COMMANDS=1 Build/Scripts/RunInDockerEnvironment
+	cd ${StroikaRoot} && SANDBOX_FROM=/Sandbox CONTAINER_NAME=WTF-Dev-2604 CONTAINER_IMAGE=sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2604 INCLUDE_EXTRA_PERSONAL_MOUNT_FILES=1 EXTRA_DOCKER_ARGS="--publish 11225:22" ECHO_DOCKER_COMMANDS=1 Build/Scripts/RunInDockerEnvironment
 endif
 
 start-dev-containers:
-	for i in WTF-Dev-2204 WTF-Dev-2404; do docker start $$i; docker exec -it $$i sudo service ssh start; done
+	for i in WTF-Dev-2204 WTF-Dev-2404 WTF-Dev-2604; do docker start $$i; docker exec -it $$i sudo service ssh start; done
+
+
+# Run a WTF build from a tree on this host, on the host network - so discovery sees the real LAN - side by side with an
+# installed WTF service: its own data volume (AppSettings.json and the database), seeded with a WebServerPort other
+# than the service's 80. Ctrl+C stops it. The tree is mounted at its own path, so its links still resolve.
+#	make run-test-container WTF_TREE=/Sandbox/claude/WTF-protagoras-2604 CONFIGURATION=Debug
+WTF_TREE?=$(abspath ..)
+CONFIGURATION?=Debug
+TEST_CONTAINER_IMAGE?=sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2604
+TEST_CONTAINER_DATA_VOLUME?=wtf-test-data
+TEST_CONTAINER_PORT?=8080
+
+run-test-container:
+ifneq (${DETECTED_HOST_OS},Linux)
+	$(error run-test-container needs a Linux host - docker's host network)
+endif
+	docker run --rm -it --network host \
+		-v ${WTF_TREE}:${WTF_TREE} \
+		-v ${TEST_CONTAINER_DATA_VOLUME}:/var/opt/WhyTheFuckIsMyNetworkSoSlow \
+		${TEST_CONTAINER_IMAGE} \
+		bash -c 'test -f /var/opt/WhyTheFuckIsMyNetworkSoSlow/AppSettings.json || echo "{ \"WebServerPort\": ${TEST_CONTAINER_PORT} }" > /var/opt/WhyTheFuckIsMyNetworkSoSlow/AppSettings.json; exec ${WTF_TREE}/Builds/${CONFIGURATION}/WhyTheFuckIsMyNetworkSoSlow/WhyTheFuckIsMyNetworkSoSlow-Backend --run-directly'
+
+
+# Install a built .deb in a clean Ubuntu container - it has no systemd, so the postinst skips systemctl - and run the
+# installed program: catches a missing package dependency (the control file's Depends: is empty).
+#	make test-deb-install DEB=/Sandbox/claude/WTF-protagoras-2604/Builds/Release/WhyTheFuckIsMyNetworkSoSlow/<the .deb>
+TEST_DEB_IMAGE?=ubuntu:26.04
+
+test-deb-install:
+ifeq (${DEB},)
+	$(error test-deb-install needs DEB=<path to a .deb>)
+endif
+	docker run --rm -v $(abspath $(dir ${DEB})):/debs:ro ${TEST_DEB_IMAGE} \
+		bash -c 'apt-get -qq update > /dev/null && apt-get -qq install -y /debs/$(notdir ${DEB}) && /opt/WhyTheFuckIsMyNetworkSoSlow/WhyTheFuckIsMyNetworkSoSlow-Backend --version'

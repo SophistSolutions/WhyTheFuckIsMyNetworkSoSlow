@@ -16,6 +16,12 @@
         "container_images": "sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2404"
     },
     {
+        "build_job": "Linux",
+        "runs_on": "ubuntu-latest",
+        "displayTargetName": "whythefuckismynetworksoslow-buildvm-ubuntu-2604",
+        "container_images": "sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2604"
+    },
+    {
         "#": "Windows"
     },
     {

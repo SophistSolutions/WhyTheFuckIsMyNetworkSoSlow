@@ -26,7 +26,7 @@ make default-configurations
 then
 
 ```bash
-make CONFIGURAITON=YOUR-SELECTED-CONFIGURATION all -j10
+make CONFIGURATION=YOUR-SELECTED-CONFIGURATION all -j10
 ```
 
 to build just that one configuration (building one is faster than building many).
@@ -40,4 +40,4 @@ make TAGS=Unix all -j10
 to build all configurations with the tag Unix
 
 To learn more about Building Stroika-based applications and configurations, see
-[StroikaRoot/Documentation/Building Stroika.md](https://github.com/SophistSolutions/Stroika/blob/V2.1-Release/Documentation/Building%20Stroika.md)
+[StroikaRoot/Documentation/Building-Stroika.md](https://github.com/SophistSolutions/Stroika/blob/v3-Release/Documentation/Building-Stroika.md)
