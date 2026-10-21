@@ -18,6 +18,10 @@ history in a local database, and serves a web UI and a JSON API about them (`htt
 installs as a Windows service or a systemd unit. Version in `VERSION`; branches `v1-Dev` (work) and `v1-Release`. The
 README is out of date in places (it puts the API on port 8080) - trust the code.
 
+**Platforms** (LGP, 2026-10-21): on Linux, keep building for the older Ubuntu LTS releases as well as the newest - that
+is platform support, the reach of the .deb. On Windows, target the newest Visual Studio only: WTF is an application, not
+a library, so once it builds with VS2k26, VS2k22 goes.
+
 ## Layout
 
 - `Backend/Sources/` - the service: one executable, `WhyTheFuckIsMyNetworkSoSlow-Backend`, in namespace
@@ -83,7 +87,8 @@ Stroika's build section applies. The WTF-specific parts:
 
 - `Builds/<CONFIG>/WhyTheFuckIsMyNetworkSoSlow/WhyTheFuckIsMyNetworkSoSlow-Backend --run-directly` runs it in the
   foreground (`--help` lists the service commands). UI and API share one port, `WebServerPort` in `AppSettings`
-  (default 80 - which needs admin/root, unless it is set above 1024).
+  (default 80 - on Linux that needs root, unless it is set above 1024; on Windows any user can listen on it, and
+  without admin only the startup's firewall-rule setup fails, with a warning).
 - Its state is in `C:\ProgramData\WhyTheFuckIsMyNetworkSoSlow\` or `/var/opt/WhyTheFuckIsMyNetworkSoSlow/`:
   `AppSettings.json`, and the database (by default the directory `db-localDBDir-v1`). Until the database has loaded,
   the API answers 503.

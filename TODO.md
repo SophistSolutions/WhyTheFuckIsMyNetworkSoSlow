@@ -19,6 +19,14 @@ done.
   - Then the one Stroika 3.0d25 upgrade note to check on Linux: the interface listing now has IPv6 addresses, and
     interfaces with no IPv4 - look at which Networks appear.
 
+- **Windows: move from VS2k22 to VS2k26** (LGP 2026-10-21): DockerBuildContainers has only Windows-VS2k22 (on Stroika's
+  `stroika-buildvm-windows-msys-vs2k22:v3`), and CI builds Windows only in it. Stroika publishes
+  `stroika-buildvm-windows-msys-vs2k26` (and `-cygwin-vs2k26`). Add Windows-VS2k26 - Dockerfile, Makefile target, the
+  build-Dev-Docker-Containers matrix - and once the image is published, move build-N-test-Matrix.json's Windows entries
+  to it; then retire VS2k22 (WTF is an app, so it targets the newest Visual Studio only - see AGENTS.md). Windows
+  images build only on medusa-windows-dev, and only at night until Stroika's 3.0d25 release is done. (Goes with the VS
+  2026 solution, below.)
+
 - **Replace the WTF running on medusa** (2026-10-21) with a current build: LGP thinks the one there is broken - perhaps
   badly - probably by a Stroika WebServer bug fixed around 2026-09 (one candidate: the ConnectionManager teardown hang,
   https://github.com/SophistSolutions/Stroika/issues/1165, closed 2026-09-10). Needs the Linux build above (its .deb).
@@ -48,7 +56,8 @@ done.
   https://github.com/SophistSolutions/Stroika/issues/1206 makes the default non-recursive.
 
 - Visual Studio: `Workspaces/VisualStudio.net-2019` refers to Stroika's VS2019 projects, which no longer exist, and there
-  is no VS2026 solution (Skel now makes 2022 and 2026 ones).
+  is no VS2026 solution (Skel now makes 2022 and 2026 ones). Add the 2026 one, drop 2019 - and probably 2022 too, as
+  WTF targets the newest Visual Studio only.
 
 ## Watching
 
