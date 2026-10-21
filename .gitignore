@@ -8,3 +8,5 @@ Builds/
 RELEASES/
 IntermediateFiles/
 ConfigurationFiles/
+# Local Claude Code state (commit message drafts, open items, per-machine settings) - not shared across machines.
+.claude/
