@@ -167,7 +167,7 @@ namespace {
     NetworkInterface Discovery2Model_ (const Discovery::NetworkInterface& n)
     {
         NetworkInterface nwi;
-        nwi.fInternalInterfaceID = n.fInternalInterfaceID;
+        nwi.fInternalInterfaceID = n.fInterfaceID;
         nwi.fFriendlyName        = n.fFriendlyName;
         nwi.fDescription         = n.fDescription;
         //nwi.fNetworkGUID         = n.fNetworkGUID;    INTENTIONALLY OMITTED because doesn't correspond to our network ID, misleading, and unhelpful

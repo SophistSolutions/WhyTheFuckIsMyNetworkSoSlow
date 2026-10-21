@@ -124,7 +124,7 @@ namespace {
         for (const IO::Network::Interface& i : sysNetInterfaces.GetAll ()) {
             NetworkInterface ni{i};
             {
-                ni.fGUID = MapCurrentProcessInternalInterfaceIDToReportedProcessLifetimeGUID_ (i.fInternalInterfaceID);
+                ni.fGUID = MapCurrentProcessInternalInterfaceIDToReportedProcessLifetimeGUID_ (i.fInterfaceID);
 #if qDebug
                 // nothing useful to add yet
                 ni.fDebugProps.Add (

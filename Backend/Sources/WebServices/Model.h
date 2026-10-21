@@ -136,7 +136,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
         /**
          *  \brief platformInterfaceID
          *
-         * @see IO::Network::Interface::fInternalInterfaceID
+         * @see IO::Network::Interface::fInterfaceID
          *
          *      UNIX:
          *          interface name - e.g. eth0 - in the first column reported in ifconfig.
