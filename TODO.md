@@ -21,6 +21,23 @@ done.
   - A device description's relative URLs resolve against its `fURLBase`, when it has one: Discovery/Devices.cpp:973
     and 976 resolve against the LOCATION.
 
+- **Linux builds, in docker** (2026-10-21; LGP wants to talk it over before anything builds on a remote machine). So
+  far WTF is built and checked only on protagoras (MSVC). To decide and set up:
+  - Where: a stroika-dev container on medusa (stroika-dev-2604 has the newest g++), in a clone of WTF's own under
+    `/Sandbox/claude/`, synced from the Windows workspace by `git diff | ssh ... git apply`; or WTF's own build images
+    (`DockerBuildContainers/`: Ubuntu 22.04 and 24.04 - none for 26.04 yet).
+  - Configure inside the container (`make default-configurations`); build Debug, then Release and the .deb.
+  - Running it: the stroika-dev containers are on docker's bridge network (only ssh is published), so discovery there
+    sees no LAN - a run needs `--network host`, and raw sockets for ping and ARP. Port 80 and
+    `/var/opt/WhyTheFuckIsMyNetworkSoSlow/` need root, unless `WebServerPort` is above 1024.
+  - Then the Linux-only 3.0d25 check above: IPv6 addresses, and interfaces with no IPv4, in the interface listing.
+
+- **Replace the WTF running on medusa** (2026-10-21) with a current build: LGP thinks the one there is broken - perhaps
+  badly - probably by a Stroika WebServer bug fixed around 2026-09 (one candidate: the ConnectionManager teardown hang,
+  https://github.com/SophistSolutions/Stroika/issues/1165, closed 2026-09-10). Needs the Linux build above (its .deb).
+  First find out: how it runs there (the .deb's systemd unit, or docker), its version (`/api/v1/about`), what is
+  broken, and whether its database is to be kept.
+
 - **SSDP discovery, `RecieveSSDPAdvertisement_`** (Discovery/Devices.cpp:931-1077), the callback of both the SSDP
   Listener and the Search:
   - It does a DNS lookup and a GET of the device description, with no timeout, on Stroika's shared SSDP thread. Since
