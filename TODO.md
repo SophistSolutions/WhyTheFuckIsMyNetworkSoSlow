@@ -33,16 +33,21 @@ done.
   First find out: how it runs there (the .deb's systemd unit, or docker), its version (`/api/v1/about`), what is
   broken, and whether its database is to be kept.
 
-- **SSDP discovery, `RecieveSSDPAdvertisement_`** (Discovery/Devices.cpp:929-1080), the callback of both the SSDP
-  Listener and the Search:
-  - It does a DNS lookup and a GET of the device description, with no timeout, on Stroika's shared SSDP thread. Since
-    Stroika 3.0d25 a network change waits for it - minutes, for a device that just went away - and so does shutdown
-    (`Stop ()` and destruction wait for a running callback).
+- **SSDP discovery, `RecieveSSDPAdvertisement_`** (Discovery/Devices.cpp:929-1085), the callback of both the SSDP
+  Listener and the Search, runs on Stroika's shared SSDP thread - which, since Stroika 3.0d25, a network change and
+  shutdown (`Stop ()`, destruction) wait for. It holds that thread far too long (protagoras traces, 2026-10-21):
+  - Its lock-retry loop (Devices.cpp:999-1083) has no cap - each round waits up to 5 s to upgrade the lock, then sleeps
+    1 s, 2 s, ... - so near startup, callbacks took 24-41 s.
+  - The description GET has a 5 s timeout, but on Windows Stroika's WinHTTP backend applies it only to reading the body
+    (Stroika issue to come). There, a LOCATION that never accepts the connection takes Windows' 21 s TCP give-up: Windows'
+    own UPnP host advertises `http://[fe80::...]:2869/...` on the Tailscale interface, whose (Public) firewall profile
+    drops it - and it is refetched on every NOTIFY, so the thread was busy 21 s of every 22. The DNS lookup of a LOCATION
+    host name has no timeout at all.
   - It drops every ssdp:byebye: a byebye has no LOCATION, so `locAddrs` is empty (a WeakAssert in Debug) and the merge,
     `fAlive` included, is skipped - https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/93.
-  - Fix for both: Stroika 3.0d25's `SSDP::Client::CachingListener` (state per device, one call per change, removals
-    included), with descriptions fetched on a thread of WTF's own, with a timeout - as Stroika's SSDPClient sample does.
-    A smaller first step: a timeout on the GET.
+  - Fix for all: Stroika 3.0d25's `SSDP::Client::CachingListener` (state per device, one call per change, removals
+    included), with the description fetch and the merge on a thread of WTF's own - as Stroika's SSDPClient sample does
+    (its fetch has no timeout; WTF's keeps one) - and not refetching soon a description that just failed.
 
 - Discovery/Devices.cpp:660 tests `qDefaultTracingOn`, which Stroika never defines for readers, so that block (lock
   debugging, `qLOCK_DEBUGGING_`) has never compiled.

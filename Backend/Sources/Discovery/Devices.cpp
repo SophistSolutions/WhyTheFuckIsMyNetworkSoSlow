@@ -959,7 +959,12 @@ namespace {
             if (d.fLocation) {
                 try {
                     using namespace IO::Network::Transfer;
-                    Connection::Ptr                     c          = Connection::New ();
+                    // this runs on the SSDP Listener's or Search's thread, which a network change and Stop () wait for - so a device
+                    // that has just gone must not hold it for minutes (as of Stroika 3.0d25, Windows' WinHTTP backend applies the
+                    // timeout only between reads of the body - not to the connect, or the wait for a response)
+                    static constexpr Time::DurationSeconds kFetchDescriptionTimeout_{5s};
+                    Connection::Ptr                        c = Connection::New ();
+                    c.SetTimeout (kFetchDescriptionTimeout_);
                     Response                            r          = c.GET (d.fLocation);
                     Frameworks::UPnP::DeviceDescription deviceInfo = DeSerialize (r.GetData ());
                     deviceFriendlyName                             = deviceInfo.fFriendlyName;
