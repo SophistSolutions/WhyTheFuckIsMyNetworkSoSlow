@@ -321,13 +321,15 @@ optional<IntegratedModel::Network> IntegratedModel::Mgr::GetNetwork (const GUID&
         if (result) {
             result->fIDPersistent = true;
             result->fAggregatedBy = networkRollupsCache.MapAggregatedID2ItsRollupID (id);
-            auto everSeen         = result->fSeen;
-            // This isn't a super-reliable way to check - find a better more reliable way to set the ttl
-            if (everSeen.GetUpperBound () >= (DateTime::Now () - 1h)) {
-                *ttl = kTTLForActiveObjectsReturned_;
-            }
-            else {
-                *ttl = kTTLForHistroicalDBObjectsReturned_;
+            if (ttl != nullptr) {
+                auto everSeen = result->fSeen;
+                // This isn't a super-reliable way to check - find a better more reliable way to set the ttl
+                if (not everSeen.empty () and everSeen.GetUpperBound () >= (DateTime::Now () - 1h)) {
+                    *ttl = kTTLForActiveObjectsReturned_;
+                }
+                else {
+                    *ttl = kTTLForHistroicalDBObjectsReturned_;
+                }
             }
         }
     }
@@ -381,8 +383,10 @@ optional<IntegratedModel::NetworkInterface> IntegratedModel::Mgr::GetNetworkInte
             result->fIDPersistent      = true;
             result->fAggregatedBy      = networkInterfacesCache.MapAggregatedID2ItsRollupID (id);
             result->fAttachedToDevices = networkInterfacesCache.GetAttachedToDeviceIDs (id);
-            // @todo MUST FIX THIS - sometimes need more info to tell if its a recent one or ancient
-            *ttl = kTTLForActiveObjectsReturned_;
+            if (ttl != nullptr) {
+                // @todo MUST FIX THIS - sometimes need more info to tell if its a recent one or ancient
+                *ttl = kTTLForActiveObjectsReturned_;
+            }
         }
     }
     return result;
