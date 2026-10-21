@@ -35,7 +35,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common {
             optional<bool>        ToSysLog;
             static constexpr bool kToSysLog_Default = true;
 #endif
-#if qStroika_Foundation_Common_Platform_Windows
+#if qStroika_Platform_Windows
             optional<bool>        ToWindowsEventLog;
             static constexpr bool kToWindowsEventLog_Default = true;
 #endif

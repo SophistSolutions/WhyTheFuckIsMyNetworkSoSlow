@@ -161,7 +161,7 @@ Discovery::NetworksMgr::Activator::~Activator ()
     Require (sActive_);
     sActive_ = false;
     Execution::Thread::SuppressInterruptionInContext suppressInterruption; // must complete this abort and wait for done - this cannot abort/throw
-    sIntervalTimerAdder_.release ();
+    sIntervalTimerAdder_.reset ();
 }
 
 /*

@@ -851,16 +851,14 @@ namespace {
     /*
      *  When constructed, push data as discovered into sDiscoveredDevices_
      * 
-     *  Network connections can come and go, so this class must watch for changes and
-     *  periodically restart the listener/searchers.
+     *  Stroika's SSDP Listener and Search follow networks as they come and go; the timer only retries constructing
+     *  one that failed (e.g. its socket could not be created or bound).
      */
     class SSDPDeviceDiscoverer_ {
     public:
         SSDPDeviceDiscoverer_ ()
             : fIntervalTimerAdder_{[this] () {
                                        Debug::TraceContextBumper ctx{"SSDPDeviceDiscoverer_ TIMER HANDLER"}; // to debug https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/78
-                                       // @todo must be able to detect nework change, or reason to make this change
-                                       // for now - just do if missing
                                        if (fListener_ == nullptr or fSearcher_ == nullptr) {
                                            IgnoreExceptionsExceptThreadAbortForCall (ConstructSearcherAndListener_ (true));
                                        }
@@ -969,11 +967,16 @@ namespace {
                     manufactureName                                = deviceInfo.fManufactureName;
                     manufacturerURL                                = deviceInfo.fManufacturingURL;
                     presentationURL                                = deviceInfo.fPresentationURL;
+                    // a description's relative URLs are relative to its URLBase, if it has one, else to where it was read from
+                    const URI baseURL = deviceInfo.fURLBase.value_or (d.fLocation);
                     if (deviceInfo.fIcons.has_value () and not deviceInfo.fIcons->empty ()) {
-                        deviceIconURL = d.fLocation.Combine (deviceInfo.fIcons->Nth (0).fURL);
+                        deviceIconURL = baseURL.Combine (deviceInfo.fIcons->Nth (0).fURL);
                     }
                     if (manufacturerURL.has_value ()) {
-                        manufacturerURL = d.fLocation.Combine (*manufacturerURL);
+                        manufacturerURL = baseURL.Combine (*manufacturerURL);
+                    }
+                    if (presentationURL.has_value ()) {
+                        presentationURL = baseURL.Combine (*presentationURL);
                     }
                     DbgTrace ("Found device description = {}"_f, deviceInfo);
                 }

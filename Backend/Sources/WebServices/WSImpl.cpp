@@ -115,7 +115,7 @@ About WSImpl::GetAbout () const
     using APIEndpoint    = APIServerInfo::APIEndpoint;
     using Database       = APIServerInfo::Database;
     static const Sequence<ComponentInfo> kAPIServerComponents_{initializer_list<ComponentInfo>{
-        ComponentInfo{"Stroika"sv, Common::Version{kStroika_Version_FullVersion}.AsPrettyVersionString (), URI{"https://github.com/SophistSolutions/Stroika"}}
+        ComponentInfo{"Stroika"sv, Common::Version{qStroika_Version_FullVersion}.AsPrettyVersionString (), URI{"https://github.com/SophistSolutions/Stroika"}}
 #if qHasFeature_OpenSSL
         ,
         ComponentInfo{"OpenSSL"sv, OPENSSL_VERSION_TEXT, URI{"https://www.openssl.org/"}}
