@@ -23,9 +23,14 @@ in its own docker volume (`TEST_CONTAINER_DATA_VOLUME`, default wtf-test-data), 
 `make test-deb-install DEB=<path to a .deb>` installs a built .deb in a clean ubuntu:26.04 container, and runs it - to
 catch a missing package dependency.
 
-## Create and setup for ssh WTF-Dev images
+## WTF-Dev containers, to work in over ssh
 
 (used for LGP development - very optional)
 
-- `make dev-containers`
-- `make start-dev-containers` (WTF-Dev-2204, WTF-Dev-2404 and WTF-Dev-2604; ssh on ports 11223, 11224 and 11225)
+Long-lived containers on a Linux host, made as Stroika's Stroika-Dev ones are: WTF's build image plus Stroika's dev layer
+(sshd, dev tools), mounting the host's /Sandbox. Connect with ssh or VS Code Remote-SSH, as the host's user.
+
+- `make dev-containers` (or one: `make dev-container-2604`) - WTF-Dev-2204, WTF-Dev-2404 and WTF-Dev-2604, ssh on ports
+  11223, 11224 and 11225. They restart with the host; their sshd host keys are kept in
+  `~/.local/state/wtf-dev-containers/`, so recreating one (`docker rm -f` it, then make it again) keeps its keys.
+- `make start-dev-containers` - starts them again after a `docker stop`.

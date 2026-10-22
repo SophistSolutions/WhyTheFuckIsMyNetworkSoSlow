@@ -18,12 +18,6 @@ help:
 	@echo "make test-deb-install DEB=... to install a built .deb in a clean ubuntu:26.04 container and run it"
 
 
-# You may want to comment these in to build WTF-Dev environment
-## @todo maybe cleaner to remove these build args and do WTF-DEV Dockerfile and have it import different bases and just add this stuff?
-DOCKER_BUILD_EXTRAS_FOR_DEV_=\
-	--build-arg INCLUDE_OPENSSH=true \
-	--build-arg INCLUDE_HANDY_DEV_TOOLS=true \
-
 DOCKER_BUILD_EXTRAS_?=\
 
 DEFAULT_IMAGES_?=
@@ -81,16 +75,33 @@ push-images:
 # endif
 
 
+# WTF-Dev-NNNN: long-lived containers to work and debug in (ssh, VS Code Remote-SSH), made as Stroika's
+# stroika-dev-containers makes its Stroika-Dev-NNNN: each is WTF's build image NNNN plus Stroika's dev layer
+# (Build/Docker/Stroika-Dev/Dockerfile - sshd, dev tools, and the entrypoint that starts sshd and keeps the container's
+# host keys), and mounts the host's /Sandbox. make dev-containers makes all three, make dev-container-2604 one; to
+# recreate one, docker rm -f it first. (Run by hand, without a terminal: TERM=xterm CMD2RUN=true STOP_AT_END=0 make ...)
+WTF_DEV_PORT_2204=11223
+WTF_DEV_PORT_2404=11224
+WTF_DEV_PORT_2604=11225
+# Their sshd host keys, kept on the host so a recreated container keeps them - not under /Sandbox, which every container
+# mounts (as Stroika's STROIKA_DEV_HOST_KEYS_DIR)
+WTF_DEV_HOST_KEYS_DIR?=${HOME}/.local/state/wtf-dev-containers
+
 dev-containers:
 ifeq (${DETECTED_HOST_OS},Linux)
-	DOCKER_BUILD_EXTRAS_="$(DOCKER_BUILD_EXTRAS_FOR_DEV_)" make build-images
-	cd ${StroikaRoot} && SANDBOX_FROM=/Sandbox CONTAINER_NAME=WTF-Dev-2204 CONTAINER_IMAGE=sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204 INCLUDE_EXTRA_PERSONAL_MOUNT_FILES=1 EXTRA_DOCKER_ARGS="--publish 11223:22" ECHO_DOCKER_COMMANDS=1 Build/Scripts/RunInDockerEnvironment
-	cd ${StroikaRoot} && SANDBOX_FROM=/Sandbox CONTAINER_NAME=WTF-Dev-2404 CONTAINER_IMAGE=sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2404 INCLUDE_EXTRA_PERSONAL_MOUNT_FILES=1 EXTRA_DOCKER_ARGS="--publish 11224:22" ECHO_DOCKER_COMMANDS=1 Build/Scripts/RunInDockerEnvironment
-	cd ${StroikaRoot} && SANDBOX_FROM=/Sandbox CONTAINER_NAME=WTF-Dev-2604 CONTAINER_IMAGE=sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2604 INCLUDE_EXTRA_PERSONAL_MOUNT_FILES=1 EXTRA_DOCKER_ARGS="--publish 11225:22" ECHO_DOCKER_COMMANDS=1 Build/Scripts/RunInDockerEnvironment
+	for v in 2204 2404 2604; do $(MAKE) --no-print-directory dev-container-$$v || exit $$?; done
 endif
 
+# --init: Docker's init as PID 1 reaps what is orphaned into it (the entrypoint ends exec'ing sshd -D), as in Stroika's
+dev-container-%: sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-%
+	cd ${StroikaRoot}Build/Docker && docker build -f Stroika-Dev/Dockerfile --build-arg BASED_ON_IMAGE=sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-$* -t sophistsolutionsinc/whythefuckismynetworksoslow-dev-$* .
+	mkdir -p ${WTF_DEV_HOST_KEYS_DIR}/WTF-Dev-$* && chmod 700 ${WTF_DEV_HOST_KEYS_DIR}/WTF-Dev-$*
+	cd ${StroikaRoot} && SANDBOX_FROM=/Sandbox CONTAINER_NAME=WTF-Dev-$* CONTAINER_IMAGE=sophistsolutionsinc/whythefuckismynetworksoslow-dev-$* INCLUDE_EXTRA_PERSONAL_MOUNT_FILES=1 EXTRA_DOCKER_ARGS="--init --publish ${WTF_DEV_PORT_$*}:22 --restart=unless-stopped -v ${WTF_DEV_HOST_KEYS_DIR}/WTF-Dev-$*:/etc/ssh/persistent-host-keys" ECHO_DOCKER_COMMANDS=1 ACTUAL_RUN_CMD="/usr/local/bin/stroika-dev-entrypoint.sh" Build/Scripts/RunInDockerEnvironment
+
 start-dev-containers:
-	for i in WTF-Dev-2204 WTF-Dev-2404 WTF-Dev-2604; do docker start $$i; docker exec -it $$i sudo service ssh start; done
+ifeq (${DETECTED_HOST_OS},Linux)
+	for i in WTF-Dev-2204 WTF-Dev-2404 WTF-Dev-2604; do docker start $$i; done
+endif
 
 
 # Run a WTF build from a tree on this host, on the host network - so discovery sees the real LAN - side by side with an
