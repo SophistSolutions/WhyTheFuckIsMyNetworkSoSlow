@@ -119,12 +119,14 @@ endif
 	@cat $(BASIC_NAME_LC).control.static >> $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/DEBIAN/control
 	@echo "Architecture: `$(StroikaRoot)Build/Scripts/MapArch2DebFileArchitecture ${ARCH}`" >> $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/DEBIAN/control
 
-	@echo "command -v systemd > /dev/null 2>&1; if [ \$$? -eq 0 ] ; then systemctl enable $(BASIC_NAME_LC) ; else echo \"Skipping systemd because not supported on target system\"; fi" >> $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/DEBIAN/postinst
-	@echo "command -v systemd > /dev/null 2>&1; if [ \$$? -eq 0 ] ; then systemctl start $(BASIC_NAME_LC) ; fi" >> $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/DEBIAN/postinst
+	@#systemd runs the system if /run/systemd/system exists (the test dh_installsystemd uses) - no "systemd" need be on
+	@#the PATH (Ubuntu 26.04 has none). restart, not start: an upgrade runs the new binary, even if the old prerm left it running
+	@echo "if [ -d /run/systemd/system ] ; then systemctl daemon-reload ; systemctl enable $(BASIC_NAME_LC) ; else echo \"Skipping systemd because not supported on target system\"; fi" >> $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/DEBIAN/postinst
+	@echo "if [ -d /run/systemd/system ] ; then systemctl restart $(BASIC_NAME_LC) ; fi" >> $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/DEBIAN/postinst
 	@chmod 755 $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/DEBIAN/postinst
 
-	@echo "command -v systemd > /dev/null 2>&1; if [ \$$? -eq 0 ] ; then ((systemctl stop $(BASIC_NAME_LC)) || true); fi" >> $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/DEBIAN/prerm
-	@echo "command -v systemd > /dev/null 2>&1; if [ \$$? -eq 0 ] ; then ((systemctl disable $(BASIC_NAME_LC)) || true); fi" >> $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/DEBIAN/prerm
+	@echo "if [ -d /run/systemd/system ] ; then ((systemctl stop $(BASIC_NAME_LC)) || true); fi" >> $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/DEBIAN/prerm
+	@echo "if [ -d /run/systemd/system ] ; then ((systemctl disable $(BASIC_NAME_LC)) || true); fi" >> $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/DEBIAN/prerm
 	@chmod 755 $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/DEBIAN/prerm
 
 	@#List files to actually install and where

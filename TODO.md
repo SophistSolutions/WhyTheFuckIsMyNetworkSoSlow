@@ -15,14 +15,6 @@ done.
   images build only on medusa-windows-dev, and only at night until Stroika's 3.0d25 release is done. (Goes with the VS
   2026 solution, below.)
 
-- **Replace the WTF running on medusa** (2026-10-21) with a current build: LGP thinks the one there is broken - perhaps
-  badly - probably by a Stroika WebServer bug fixed around 2026-09 (one candidate: the ConnectionManager teardown hang,
-  https://github.com/SophistSolutions/Stroika/issues/1165, closed 2026-09-10). There now (2026-10-21): 1.0d20 on
-  Stroika 3.0d23, installed from its .deb (systemd), `WebServerPort` 8080; its API answers normally (up 7 days, 150 MB),
-  and its database holds 6180 devices. Still to find out: what is broken, and whether that database is to be kept. Then
-  build Release and its .deb in WTF-Dev-2604 (Debug is built and run-checked there - `make run-test-container`), check
-  it with `make test-deb-install`, and install it on medusa.
-
 - **SSDP discovery, `RecieveSSDPAdvertisement_`** (Discovery/Devices.cpp:929-1085), the callback of both the SSDP
   Listener and the Search, runs on Stroika's shared SSDP thread - which, since Stroika 3.0d25, a network change and
   shutdown (`Stop ()`, destruction) wait for. It holds that thread far too long (protagoras traces, 2026-10-21):

@@ -6,7 +6,7 @@ After=syslog.target
 
 [Service]
 Type=forking
-PIDFile=/var/run/WhyTheFuckIsMyNetworkSoSlow-Service.pid
+PIDFile=/run/WhyTheFuckIsMyNetworkSoSlow-Service.pid
 ExecStart=/opt/WhyTheFuckIsMyNetworkSoSlow/WhyTheFuckIsMyNetworkSoSlow-Backend --start
 ExecReload=/opt/WhyTheFuckIsMyNetworkSoSlow/WhyTheFuckIsMyNetworkSoSlow-Backend --restart
 ExecStop=/opt/WhyTheFuckIsMyNetworkSoSlow/WhyTheFuckIsMyNetworkSoSlow-Backend --stop
