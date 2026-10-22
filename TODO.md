@@ -7,18 +7,6 @@ done.
 
 ## Open
 
-- **Linux builds, in docker** (2026-10-21; LGP wants to talk it over before anything builds on a remote machine). So
-  far WTF is built and checked only on protagoras (MSVC). To decide and set up:
-  - Where: a stroika-dev container on medusa (stroika-dev-2604 has the newest g++), in a clone of WTF's own under
-    `/Sandbox/claude/`, synced from the Windows workspace by `git diff | ssh ... git apply`; or WTF's own build images
-    (`DockerBuildContainers/`: Ubuntu 22.04 and 24.04 - none for 26.04 yet).
-  - Configure inside the container (`make default-configurations`); build Debug, then Release and the .deb.
-  - Running it: the stroika-dev containers are on docker's bridge network (only ssh is published), so discovery there
-    sees no LAN - a run needs `--network host`, and raw sockets for ping and ARP. Port 80 and
-    `/var/opt/WhyTheFuckIsMyNetworkSoSlow/` need root, unless `WebServerPort` is above 1024.
-  - Then the one Stroika 3.0d25 upgrade note to check on Linux: the interface listing now has IPv6 addresses, and
-    interfaces with no IPv4 - look at which Networks appear.
-
 - **Windows: move from VS2k22 to VS2k26** (LGP 2026-10-21): DockerBuildContainers has only Windows-VS2k22 (on Stroika's
   `stroika-buildvm-windows-msys-vs2k22:v3`), and CI builds Windows only in it. Stroika publishes
   `stroika-buildvm-windows-msys-vs2k26` (and `-cygwin-vs2k26`). Add Windows-VS2k26 - Dockerfile, Makefile target, the
@@ -29,9 +17,11 @@ done.
 
 - **Replace the WTF running on medusa** (2026-10-21) with a current build: LGP thinks the one there is broken - perhaps
   badly - probably by a Stroika WebServer bug fixed around 2026-09 (one candidate: the ConnectionManager teardown hang,
-  https://github.com/SophistSolutions/Stroika/issues/1165, closed 2026-09-10). Needs the Linux build above (its .deb).
-  First find out: how it runs there (the .deb's systemd unit, or docker), its version (`/api/v1/about`), what is
-  broken, and whether its database is to be kept.
+  https://github.com/SophistSolutions/Stroika/issues/1165, closed 2026-09-10). There now (2026-10-21): 1.0d20 on
+  Stroika 3.0d23, installed from its .deb (systemd), `WebServerPort` 8080; its API answers normally (up 7 days, 150 MB),
+  and its database holds 6180 devices. Still to find out: what is broken, and whether that database is to be kept. Then
+  build Release and its .deb in WTF-Dev-2604 (Debug is built and run-checked there - `make run-test-container`), check
+  it with `make test-deb-install`, and install it on medusa.
 
 - **SSDP discovery, `RecieveSSDPAdvertisement_`** (Discovery/Devices.cpp:929-1085), the callback of both the SSDP
   Listener and the Search, runs on Stroika's shared SSDP thread - which, since Stroika 3.0d25, a network change and
@@ -39,10 +29,10 @@ done.
   - Its lock-retry loop (Devices.cpp:999-1083) has no cap - each round waits up to 5 s to upgrade the lock, then sleeps
     1 s, 2 s, ... - so near startup, callbacks took 24-41 s.
   - The description GET has a 5 s timeout, but on Windows Stroika's WinHTTP backend applies it only to reading the body
-    (Stroika issue to come). There, a LOCATION that never accepts the connection takes Windows' 21 s TCP give-up: Windows'
-    own UPnP host advertises `http://[fe80::...]:2869/...` on the Tailscale interface, whose (Public) firewall profile
-    drops it - and it is refetched on every NOTIFY, so the thread was busy 21 s of every 22. The DNS lookup of a LOCATION
-    host name has no timeout at all.
+    (https://github.com/SophistSolutions/Stroika/issues/1246). There, a LOCATION that never accepts the connection takes
+    Windows' 21 s TCP give-up: Windows' own UPnP host advertises `http://[fe80::...]:2869/...` on the Tailscale
+    interface, whose (Public) firewall profile drops it - and it is refetched on every NOTIFY, so the thread was busy
+    21 s of every 22. The DNS lookup of a LOCATION host name has no timeout at all.
   - It drops every ssdp:byebye: a byebye has no LOCATION, so `locAddrs` is empty (a WeakAssert in Debug) and the merge,
     `fAlive` included, is skipped - https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/93.
   - Fix for all: Stroika 3.0d25's `SSDP::Client::CachingListener` (state per device, one call per change, removals

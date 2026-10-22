@@ -18,7 +18,8 @@ build-Dev-Docker-Containers workflow (run by hand) publishes them.
 `make run-test-container WTF_TREE=/Sandbox/... CONFIGURATION=Debug` (Linux) runs that tree's build on the host network,
 so discovery sees the real LAN - side by side with an installed WTF service: it keeps its AppSettings.json and database
 in its own docker volume (`TEST_CONTAINER_DATA_VOLUME`, default wtf-test-data), and listens on `TEST_CONTAINER_PORT`
-(default 8080), not the service's 80.
+(default 18080), not the service's (80 by default; 8080 on medusa). `TEST_CONTAINER_DOCKER_ARGS` (default `-it`) can run
+it in the background instead, and cap it: `"-d --name wtf-test --cpus=2"`.
 
 `make test-deb-install DEB=<path to a .deb>` installs a built .deb in a clean ubuntu:26.04 container, and runs it - to
 catch a missing package dependency.

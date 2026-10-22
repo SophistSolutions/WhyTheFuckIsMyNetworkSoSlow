@@ -106,19 +106,22 @@ endif
 
 # Run a WTF build from a tree on this host, on the host network - so discovery sees the real LAN - side by side with an
 # installed WTF service: its own data volume (AppSettings.json and the database), seeded with a WebServerPort other
-# than the service's 80. Ctrl+C stops it. The tree is mounted at its own path, so its links still resolve.
+# than the service's (80 by default; 8080 on medusa). Ctrl+C stops it. The tree is mounted at its own path, so its links
+# still resolve. TEST_CONTAINER_DOCKER_ARGS replaces -it: e.g. "-d --name wtf-test --cpus=2" runs it in the background,
+# capped at 2 CPUs (docker stop wtf-test ends it).
 #	make run-test-container WTF_TREE=/Sandbox/claude/WTF-protagoras-2604 CONFIGURATION=Debug
 WTF_TREE?=$(abspath ..)
 CONFIGURATION?=Debug
 TEST_CONTAINER_IMAGE?=sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2604
 TEST_CONTAINER_DATA_VOLUME?=wtf-test-data
-TEST_CONTAINER_PORT?=8080
+TEST_CONTAINER_PORT?=18080
+TEST_CONTAINER_DOCKER_ARGS?=-it
 
 run-test-container:
 ifneq (${DETECTED_HOST_OS},Linux)
 	$(error run-test-container needs a Linux host - docker's host network)
 endif
-	docker run --rm -it --network host \
+	docker run --rm ${TEST_CONTAINER_DOCKER_ARGS} --network host \
 		-v ${WTF_TREE}:${WTF_TREE} \
 		-v ${TEST_CONTAINER_DATA_VOLUME}:/var/opt/WhyTheFuckIsMyNetworkSoSlow \
 		${TEST_CONTAINER_IMAGE} \
