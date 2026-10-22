@@ -103,13 +103,15 @@ Stroika's build section applies. The WTF-specific parts:
 
 Between Stroika releases the submodule tracks Stroika's `v3-Dev`. To upgrade:
 1. `git status` - note what is local, the submodule pointer especially.
-2. Move the submodule: `git -C ThirdPartyComponents/Stroika/StroikaRoot checkout <tag-or-commit>`.
+2. Move the submodule, from WTF's root: `make latest-submodules STROIKA_COMMIT=v3-Dev` (a checkout and pull in
+   StroikaRoot; `STROIKA_COMMIT=<tag>` for a release).
 3. Read Stroika's `Release-Notes.md`, "Upgrade Notes (X to Y)", for every release passed (`git describe` in the
    submodule, before and after). For each note, search WTF (excluding `ThirdPartyComponents/`); and compare WTF's
    Skel-derived files - the top `Makefile`, `Workspaces/`, `Installers/Makefile`, `html/` - with Stroika's
    `Build/Shared/Skel-Templates/`.
-4. Rebuild from clean - `make distclean`, `make default-configurations`, then build: with `QUICK_BUILD=1` and no header
-   dependencies, an incremental build compiles WTF against the new headers and links the old libraries.
+4. Rebuild from clean - `make distclean`, then `make all CONFIGURATION=Debug` (it makes the default configurations
+   again): with `QUICK_BUILD=1` and no header dependencies, an incremental build compiles WTF against the new headers
+   and links the old libraries.
 5. Fix the errors, and the deprecation warnings too: deprecated Stroika names go away at v3.0a1.
 6. Build Debug and Release, with MSVC and g++ at least; run and check as above.
 7. Report every change WTF needed that the upgrade notes do not mention, and every note that was wrong or unclear, so

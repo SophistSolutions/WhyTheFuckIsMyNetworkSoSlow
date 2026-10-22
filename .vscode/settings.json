@@ -48,7 +48,7 @@
   },
   "C_Cpp.files.exclude": {
     "**/node_modules/**": true,
-    "IntermediateFiles/**": true,
+    "**/IntermediateFiles/**": true,
     "ThirdPartyComponents/Stroika/StroikaRoot/Archive/**": true
   },
   "git.ignoreLimitWarning": true

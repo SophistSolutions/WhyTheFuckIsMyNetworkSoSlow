@@ -966,22 +966,14 @@ namespace {
                     Connection::Ptr                        c = Connection::New ();
                     c.SetTimeout (kFetchDescriptionTimeout_);
                     Response                            r          = c.GET (d.fLocation);
-                    Frameworks::UPnP::DeviceDescription deviceInfo = DeSerialize (r.GetData ());
+                    Frameworks::UPnP::DeviceDescription deviceInfo = DeSerialize (r.GetData ()).Resolve (d.fLocation); // its URLs absolute
                     deviceFriendlyName                             = deviceInfo.fFriendlyName;
                     deviceType                                     = deviceInfo.fDeviceType;
                     manufactureName                                = deviceInfo.fManufactureName;
                     manufacturerURL                                = deviceInfo.fManufacturingURL;
                     presentationURL                                = deviceInfo.fPresentationURL;
-                    // a description's relative URLs are relative to its URLBase, if it has one, else to where it was read from
-                    const URI baseURL = deviceInfo.fURLBase.value_or (d.fLocation);
                     if (deviceInfo.fIcons.has_value () and not deviceInfo.fIcons->empty ()) {
-                        deviceIconURL = baseURL.Combine (deviceInfo.fIcons->Nth (0).fURL);
-                    }
-                    if (manufacturerURL.has_value ()) {
-                        manufacturerURL = baseURL.Combine (*manufacturerURL);
-                    }
-                    if (presentationURL.has_value ()) {
-                        presentationURL = baseURL.Combine (*presentationURL);
+                        deviceIconURL = deviceInfo.fIcons->Nth (0).fURL;
                     }
                     DbgTrace ("Found device description = {}"_f, deviceInfo);
                 }

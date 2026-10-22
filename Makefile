@@ -143,7 +143,7 @@ clean clobber:
 ifeq ($(CONFIGURATION),)
 	@$(StroikaRoot)/Build/Scripts/PrintProgressLine $(MAKE_INDENT_LEVEL) "WhyTheFuckIsMyNetworkSoSlow $(call FUNCTION_CAPITALIZE_WORD,$@):"
 ifeq ($(CONFIGURATION_TAGS),)
-	@if [ "$@"=="clobber" ] ; then \
+	@if [ "$@" = "clobber" ] ; then \
 		rm -rf IntermediateFiles/* Builds/*;\
 	fi
 	@if [ "$@" = "clean" ] ; then \
