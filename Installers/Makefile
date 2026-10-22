@@ -137,7 +137,8 @@ endif
 	@cp -r $(BUILT_DATA_DIR) $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/opt/$(BASIC_NAME)/data
 	@cp -r $(BUILT_HTML_DIR) $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/opt/$(BASIC_NAME)/html
 
-	@dpkg --build $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION) 2>&1 > $(DEB_BUILD_OUT)
+	@#--root-owner-group: the package's files belong to root, whoever builds it
+	@dpkg-deb --root-owner-group --build $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION) 2>&1 > $(DEB_BUILD_OUT)
 	@cp $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION).deb $(TARGET_OUT_INSTALLER_DEB)
 	
 	@rm -rf $(DEB_WORKDIR)
