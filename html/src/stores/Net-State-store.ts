@@ -26,6 +26,21 @@ interface ILoading {
   numberOfOutstandingLoadRequests: number;
 }
 
+// The device fetches fetchDevicesQueued has queued. Not store state: nothing displays it, and it holds every device ID.
+// Fetching thousands at once fails most of them in the browser (Chrome: ERR_INSUFFICIENT_RESOURCES); and over HTTP/1.1
+// a browser opens at most 6 connections to a host, so more in flight would only wait inside it.
+const kMaxQueuedDeviceFetchesInFlight_ = 6;
+const queuedDeviceFetches_ = new Set<string>();
+let numberOfDeviceFetchWorkers_ = 0;
+
+function takeFirst_(s: Set<string>): string | undefined {
+  for (const i of s) {
+    s.delete(i);
+    return i;
+  }
+  return undefined;
+}
+
 /// DRAFT new WTF app data store  - maybe should be called cached-network-state-store?
 
 export const useNetStateStore = defineStore('Net-State-Store', {
@@ -181,7 +196,7 @@ export const useNetStateStore = defineStore('Net-State-Store', {
       }
       //  %todo reconsider - no need to fetch these just cuz we fetched devices ids - many need if NEW ones (maybe track those) - but otherwise let soemting
       // exlse express interest in that id, and fetch it --LGP 2023-03-02
-      this.fetchDevices(devices); // after reset numberOutstanding...
+      this.fetchDevicesQueued(devices); // after reset numberOutstanding...
     },
     async fetchDevice(i: string) {
       if (this.loadingDeviceDetailsForID.has(i)) {
@@ -208,6 +223,35 @@ export const useNetStateStore = defineStore('Net-State-Store', {
     },
     async fetchDevices(ids: Array<string>) {
       ids.forEach(async (i) => this.fetchDevice(i));
+    },
+    // Like fetchDevices, but for a list of any length: kMaxQueuedDeviceFetchesInFlight_ workers each start the next
+    // fetch as one completes. An ID already queued keeps its place, so a poll that comes before the last one's queue
+    // has drained (a slow link) starves none. Fetches outside the queue (fetchDevice, fetchDevices) do not wait behind it.
+    fetchDevicesQueued(ids: Array<string>) {
+      ids.forEach((i) => queuedDeviceFetches_.add(i));
+      while (
+        numberOfDeviceFetchWorkers_ < kMaxQueuedDeviceFetchesInFlight_ &&
+        queuedDeviceFetches_.size > 0
+      ) {
+        ++numberOfDeviceFetchWorkers_;
+        (async () => {
+          try {
+            for (
+              let i = takeFirst_(queuedDeviceFetches_);
+              i !== undefined;
+              i = takeFirst_(queuedDeviceFetches_)
+            ) {
+              try {
+                await this.fetchDevice(i);
+              } catch {
+                // fetchDevice has logged it
+              }
+            }
+          } finally {
+            --numberOfDeviceFetchWorkers_;
+          }
+        })();
+      }
     },
   },
 });

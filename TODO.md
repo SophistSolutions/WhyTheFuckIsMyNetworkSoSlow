@@ -25,12 +25,15 @@ done.
     host, once Stroika #1248 says which networks those are (as #94); (4) by default, show the devices seen recently
     (#57, #61). Related: #58 (design doc for IDs), #67, #53.
 
-- **The UI fires one request per device, all at once** (2026-10-22: Chrome on Linux showed medusa's WTF, then went
-  blank - ERR_INSUFFICIENT_RESOURCES): `fetchActiveDevices` (html/src/stores/Net-State-store.ts:165-211), on every
-  HomePage and DevicesPage poll, fetches the device IDs, then each device separately - 6180 at once on medusa (a fresh
-  headless Chrome logged 12874 failed fetches). Probably what looked broken before the upgrade too (1.0d20 listed the
-  same 6180). Fix: one `/api/v1/devices?recurse=true` (0.2 s for all 6180), or a small concurrency cap; the rollup
-  entry above would also cut the count to about 450.
+- **The Devices page loads about 10 devices a second, slower as it goes** (2026-10-22, headless Chrome on protagoras
+  against medusa's 6180 devices, over Tailscale): the page's main thread is 100% busy, and the device fetches wait on
+  it (fewer than the 6 allowed in flight). Probably each device's arrival recomputes `getDevices`
+  (html/src/stores/Net-State-store.ts) over every ID and re-renders the table - profile it first (CDP `Profiler`).
+  The poll's device fetches run 6 at a time (`fetchDevicesQueued`; all at once before, when Chrome failed 4795 of 6180
+  with ERR_INSUFFICIENT_RESOURCES). Discussed, not chosen (2026-10-22): a version per device in the ID list, so a poll
+  fetches only the changed ones - the per-device GETs are 304 for ~99%, but each still costs a round trip (~62 ms over
+  Tailscale), and the server builds the device and its MD5 anyway; HTTP/2 (planned for Stroika's WebServer; browsers
+  use it only over HTTPS). The rollup entry above would cut the count to about 450.
 
 - HTTP caching (checked 2026-10-22 - not the cause of the blank page): hashed /assets/ files are immutable - right; but
   index.html is `public, max-age=300` - make it `no-cache` (304s work), so an upgrade is seen at once. A missing file is
