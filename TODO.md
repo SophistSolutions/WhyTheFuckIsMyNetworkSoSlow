@@ -9,10 +9,14 @@ done.
 
 - **Device rollup: survey and analyze it before fixing** (LGP 2026-10-22: "That logic is crap" - medusa's UI lists over
   1000 devices, and counting). medusa's `/api/v1/devices` on 2026-10-22 (1.0d21x, on its kept database): 6180 devices -
-  - 5734 empty (no network, no MAC, never seen). `MergeInNew_` (IntegratedModel/Private_/RolledUpDevices.cpp:234-258)
+  - **First (LGP 2026-10-23): the 5734 empty records.** Each is 173 bytes of JSON - an ID and a user setting holding
+    one MAC (`userOverrides.aggregateDeviceHardwareAddresses`); no network, no ports, never seen. Between them they hold
+    only 24 distinct MACs (21 randomized): 26:a2:62:0b:df:df and e2:dc:30:1b:25:23 have 1468 records each,
+    92:e7:c9:41:39:66 1460, four more 305-372; 17 of the 24 are also on a real device (counted 2026-10-23 - still 6180
+    devices). So a known MAC keeps getting a new ID: `MergeInNew_` (IntegratedModel/Private_/RolledUpDevices.cpp:234-258)
     gives each new rollup a new ID, and `GenNewDeviceID` (Private_/DBAccess.cpp:128-140) stores it as a user setting
-    holding its MAC, so the ID survives restarts. Nothing removes one, and one whose MAC is no longer seen is still
-    listed (#90). Some MACs have two (26:a2:62:0b:df:df).
+    holding its MAC, so the ID survives restarts - and nothing finds the one already stored for that MAC, or removes
+    one. One whose MAC is no longer seen is still listed (#90).
   - 176 docker containers (docker0 133, the second bridge 43): a new random MAC per container start, so a new device.
   - 274 on the LAN: 83 with a global MAC (83 distinct - fine); 191 with only randomized ("locally administered") MACs -
     phones, laptops, watches with private Wi-Fi addresses: "Mac.lan" is 8 devices, "iPhone.lan" 5, "Watch.lan" 4.
@@ -39,13 +43,6 @@ done.
   on every reload (WTF's moved to /run). And (2026-10-23) Build/Scripts/FormatCode expands its `EXCLUDES` unquoted, so
   bash globs `*/node_modules/*` against the current directory: run from WTF's root it matches html/node_modules/... and
   find fails ("paths must precede expression"); `-name $filePattern` is unquoted the same way.
-
-- **Windows: move from VS2k22 to VS2k26** (LGP 2026-10-21): `make default-configurations` makes VS2k26 configurations
-  only, and DockerBuildContainers has a Windows-VS2k26 image (2026-10-23). Left: publish it (the
-  build-Dev-Docker-Containers workflow, run by hand - on GitHub's windows-latest runner), then move
-  build-N-test-Matrix.json's Windows entries to `whythefuckismynetworksoslow-windows-vs2k26:v1`, and retire VS2k22 - its
-  Dockerfile, DockerBuildContainers/Makefile target and workflow matrix entry (WTF is an app, so it targets the newest
-  Visual Studio only - see AGENTS.md).
 
 - **SSDP discovery, `RecieveSSDPAdvertisement_`** (Discovery/Devices.cpp:929-1085), the callback of both the SSDP
   Listener and the Search, runs on Stroika's shared SSDP thread - which, since Stroika 3.0d25, a network change and

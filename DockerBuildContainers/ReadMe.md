@@ -9,9 +9,9 @@ Just create one or more of these docker images, and run them as in:
   - then inside the docker container find Getting-Started.md, and follow its instructions to build (basically clone
     WhyTheFuckIsMyNetworkSoSlow and type make)
 
-The images are Ubuntu 22.04, 24.04 and 26.04 (and Windows/VS2k22 and VS2k26), each on the matching Stroika build image,
-plus a g++, an ARM (raspberrypi) cross compiler, and Node for the html. CI builds in them (build-N-test-Matrix.json), and
-the build-Dev-Docker-Containers workflow (run by hand) publishes them.
+The images are Ubuntu 22.04, 24.04 and 26.04 (and Windows/VS2k26), each on the matching Stroika build image, plus a
+g++, an ARM (raspberrypi) cross compiler, and Node for the html. CI builds in them (build-N-test-Matrix.json), and the
+build-Dev-Docker-Containers workflow (run by hand) publishes them.
 
 ## Run a build on the host network
 

@@ -26,12 +26,6 @@
     },
     {
         "build_job": "Windows",
-        "displayTargetName": "whythefuckismynetworksoslow-buildvm-windows-vs2k22",
-        "runs_on": "windows-latest",
-        "container_images": "sophistsolutionsinc/whythefuckismynetworksoslow-windows-vs2k22"
-    },
-    {
-        "build_job": "Windows",
         "displayTargetName": "whythefuckismynetworksoslow-buildvm-windows-vs2k26",
         "runs_on": "windows-latest",
         "container_images": "sophistsolutionsinc/whythefuckismynetworksoslow-windows-vs2k26"

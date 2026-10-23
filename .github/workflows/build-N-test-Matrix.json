@@ -54,18 +54,18 @@
     },
     {
         "build_job": "Windows",
-        "displayTargetName": "windows-vs2k22-x86_64-Debug",
+        "displayTargetName": "windows-vs2k26-x86_64-Debug",
         "runs_on": "windows-2025",
-        "container_image": "sophistsolutionsinc/whythefuckismynetworksoslow-windows-vs2k22:v1",
+        "container_image": "sophistsolutionsinc/whythefuckismynetworksoslow-windows-vs2k26:v1",
         "config_name": "Debug",
         "extra_config_args": "--arch x86_64 --apply-default-debug-flags",
         "run_on_branch": "v1-Release"
     },
     {
         "build_job": "Windows",
-        "displayTargetName": "windows-vs2k22-x86_64-Release",
+        "displayTargetName": "windows-vs2k26-x86_64-Release",
         "runs_on": "windows-2025",
-        "container_image": "sophistsolutionsinc/whythefuckismynetworksoslow-windows-vs2k22:v1",
+        "container_image": "sophistsolutionsinc/whythefuckismynetworksoslow-windows-vs2k26:v1",
         "config_name": "Release",
         "extra_config_args": "--arch x86_64 --apply-default-release-flags",
         "run_on_branch": "always"

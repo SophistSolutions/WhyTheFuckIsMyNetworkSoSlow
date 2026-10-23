@@ -19,8 +19,8 @@ installs as a Windows service or a systemd unit. Version in `VERSION`; branches 
 README is out of date in places (it puts the API on port 8080) - trust the code.
 
 **Platforms** (LGP, 2026-10-21): on Linux, keep building for the older Ubuntu LTS releases as well as the newest - that
-is platform support, the reach of the .deb. On Windows, target the newest Visual Studio only: WTF is an application, not
-a library, so once it builds with VS2k26, VS2k22 goes.
+is platform support, the reach of the .deb. On Windows, target the newest Visual Studio only (VS2k26): WTF is an
+application, not a library.
 
 ## Layout
 
