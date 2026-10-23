@@ -30,6 +30,7 @@ DEFAULT_IMAGES_+= sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2604
 endif
 ifneq ($(findstring $(DETECTED_HOST_OS),MSYS-Cygwin),)
 DEFAULT_IMAGES_+= sophistsolutionsinc/whythefuckismynetworksoslow-windows-vs2k22
+DEFAULT_IMAGES_+= sophistsolutionsinc/whythefuckismynetworksoslow-windows-vs2k26
 endif
 
 IMAGES?=${DEFAULT_IMAGES_}
@@ -40,6 +41,9 @@ build-images:
 
 sophistsolutionsinc/whythefuckismynetworksoslow-windows-vs2k22:
 	docker build -f Windows-VS2k22/Dockerfile -t $@ -m 2G .
+
+sophistsolutionsinc/whythefuckismynetworksoslow-windows-vs2k26:
+	docker build -f Windows-VS2k26/Dockerfile -t $@ -m 2G .
 
 sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204:
 	docker build -f Ubuntu-2204/Dockerfile -t $@ ${DOCKER_BUILD_EXTRAS_} .

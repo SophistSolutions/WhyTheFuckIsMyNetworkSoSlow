@@ -39,13 +39,11 @@ done.
   on every reload (WTF's moved to /run).
 
 - **Windows: move from VS2k22 to VS2k26** (LGP 2026-10-21): `make default-configurations` makes VS2k26 configurations
-  only (2026-10-23). Left: DockerBuildContainers has only Windows-VS2k22 (on Stroika's
-  `stroika-buildvm-windows-msys-vs2k22:v3`), and CI builds Windows only in it. Stroika publishes
-  `stroika-buildvm-windows-msys-vs2k26` (and `-cygwin-vs2k26`). Add Windows-VS2k26 - Dockerfile, Makefile target, the
-  build-Dev-Docker-Containers matrix - and once the image is published, move build-N-test-Matrix.json's Windows entries
-  to it; then retire VS2k22 (WTF is an app, so it targets the newest Visual Studio only - see AGENTS.md). Windows
-  images build only on medusa-windows-dev, and only at night until Stroika's 3.0d25 release is done. (Goes with the VS
-  2026 solution, below.)
+  only, and DockerBuildContainers has a Windows-VS2k26 image (2026-10-23). Left: publish it (the
+  build-Dev-Docker-Containers workflow, run by hand - on GitHub's windows-latest runner), then move
+  build-N-test-Matrix.json's Windows entries to `whythefuckismynetworksoslow-windows-vs2k26:v1`, and retire VS2k22 - its
+  Dockerfile, DockerBuildContainers/Makefile target and workflow matrix entry (WTF is an app, so it targets the newest
+  Visual Studio only - see AGENTS.md). (Goes with the VS 2026 solution, below.)
 
 - **SSDP discovery, `RecieveSSDPAdvertisement_`** (Discovery/Devices.cpp:929-1085), the callback of both the SSDP
   Listener and the Search, runs on Stroika's shared SSDP thread - which, since Stroika 3.0d25, a network change and
