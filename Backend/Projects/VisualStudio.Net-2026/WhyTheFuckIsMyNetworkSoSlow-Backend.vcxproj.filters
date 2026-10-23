@@ -171,6 +171,9 @@
     <ClCompile Include="..\..\Sources\Common\OperationalStatistics.cpp">
       <Filter>Sources\Common</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Sources\Common\PrioritizedName.cpp">
+      <Filter>Sources\Common</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Sources\IntegratedModel\Private_\FromDiscovery.cpp">
       <Filter>Sources\IntegratedModel\Private_</Filter>
     </ClCompile>

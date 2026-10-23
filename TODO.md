@@ -43,7 +43,7 @@ done.
   build-Dev-Docker-Containers workflow, run by hand - on GitHub's windows-latest runner), then move
   build-N-test-Matrix.json's Windows entries to `whythefuckismynetworksoslow-windows-vs2k26:v1`, and retire VS2k22 - its
   Dockerfile, DockerBuildContainers/Makefile target and workflow matrix entry (WTF is an app, so it targets the newest
-  Visual Studio only - see AGENTS.md). (Goes with the VS 2026 solution, below.)
+  Visual Studio only - see AGENTS.md).
 
 - **SSDP discovery, `RecieveSSDPAdvertisement_`** (Discovery/Devices.cpp:929-1085), the callback of both the SSDP
   Listener and the Search, runs on Stroika's shared SSDP thread - which, since Stroika 3.0d25, a network change and
@@ -73,10 +73,6 @@ done.
   and 190-201, Common/BLOBMgr.cpp:184-185). Fine with today's recursive default; a deadlock if
   https://github.com/SophistSolutions/Stroika/issues/1206 makes the default non-recursive.
 
-- Visual Studio: `Workspaces/VisualStudio.net-2019` refers to Stroika's VS2019 projects, which no longer exist, and there
-  is no VS2026 solution (Skel now makes 2022 and 2026 ones). Add the 2026 one, drop 2019 - and probably 2022 too, as
-  WTF targets the newest Visual Studio only.
-
 - **A Debug build's .deb loads every core for over a minute** (2026-10-22, medusa's load 24 -> 51): dpkg-deb compresses
   the 2 GB unstripped (ASan) Debug binary to 216 MB on 33 threads, about 80 s. Cap it (`--threads-max`, in
   Installers/Makefile), or make no .deb for Debug. That run's DEB-Installer-Build.Out also said "dpkg-deb: error: tar
@@ -98,7 +94,7 @@ done.
     significant bits cannot contain one with fewer) - and, made to fire, it removes from the Set it is iterating.
   - html/src/pages/AboutPage.vue imports `pretty-bytes`, which html/package.json does not list.
   - Every Backend Makefile's `SrcDir` names `BackendApp/...`, and two name the wrong module - unused, but misleading.
-  - .vscode/launch.json: the natvis path says `ThirdPartyComponets`; the lldb entry runs `phred123/phred123`.
+  - .vscode/launch.json: the lldb entry runs `phred123/phred123`.
   - README.md puts the API on port 8080 (UI and API share one port, default 80).
 
 ## Watching
