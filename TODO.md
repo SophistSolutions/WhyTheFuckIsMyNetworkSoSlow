@@ -36,7 +36,9 @@ done.
 - For Stroika (pass on to its session; found 2026-10-22): FileSystemRequestHandler's fallback file takes the cache rule
   of the URL asked for, not of the file it serves (FileSystemRequestHandler.cpp:66-86 - above); and its Samples' unit
   files (Samples/HTMLUI/Installers, Samples/Service/Installers) say `PIDFile=/var/run/...`, which systemd warns about
-  on every reload (WTF's moved to /run).
+  on every reload (WTF's moved to /run). And (2026-10-23) Build/Scripts/FormatCode expands its `EXCLUDES` unquoted, so
+  bash globs `*/node_modules/*` against the current directory: run from WTF's root it matches html/node_modules/... and
+  find fails ("paths must precede expression"); `-name $filePattern` is unquoted the same way.
 
 - **Windows: move from VS2k22 to VS2k26** (LGP 2026-10-21): `make default-configurations` makes VS2k26 configurations
   only, and DockerBuildContainers has a Windows-VS2k26 image (2026-10-23). Left: publish it (the
@@ -81,11 +83,6 @@ done.
 - Linux: the top Makefile's default-configurations try only g++, g++-12..14 and armhf g++-12..14 - no g++-15/16
   (Ubuntu 26.04 has g++-15), and no raspberrypi with armhf g++-15. build-N-test-Matrix.json has no Ubuntu 26.04 entry
   yet (add one once build-Dev-Docker-Containers has published the image).
-
-- Every Debug start logs a WeakAssert: WebServices/Model.cpp:305-332 maps `NetworkInterface::fBindings` twice on purpose
-  (`boundAddressRanges`, `boundAddresses`), which Stroika's duplicate-field check flags. A fix with no JSON change:
-  write and read those two keys in the class's `fAfterFrom`/`fAfterTo` options, as the fingerprint does
-  (Model.cpp:343-349).
 
 - Small bugs found reading the code (2026-10-20):
   - WebServices/WebServer.cpp:483 records `fNumberOfActiveConnections` with `RecordActiveRunningTasksCount`, mixing two

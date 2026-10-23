@@ -237,8 +237,6 @@ auto NetworkInterface::GenerateFingerprintFromProperties () const -> Fingerprint
 const ObjectVariantMapper NetworkInterface::kMapper = [] () {
     ObjectVariantMapper mapper;
 
-    using TypeMappingDetails = ObjectVariantMapper::TypeMappingDetails;
-
     mapper.AddCommonType<NetworkInterface::Type> ();
     mapper.AddCommonType<optional<NetworkInterface::Type>> ();
     mapper.AddCommonType<InternetAddress> ();
@@ -286,60 +284,51 @@ const ObjectVariantMapper NetworkInterface::kMapper = [] () {
     mapper.AddCommonType<Set<GUID>> ();
     mapper.AddCommonType<optional<Set<GUID>>> ();
 
-    mapper.AddClass<NetworkInterface> ({
-        {"platformInterfaceID"sv, &NetworkInterface::fInternalInterfaceID},
-        {"id"sv, &NetworkInterface::fID},
-        {"aggregatedBy"sv, &NetworkInterface::fAggregatedBy},
-        {"attachedToDevices"sv, &NetworkInterface::fAttachedToDevices},
-        {"friendlyName"sv, &NetworkInterface::fFriendlyName},
-        {"description"sv, &NetworkInterface::fDescription},
-        {"type"sv, &NetworkInterface::fType},
-        {"hardwareAddress"sv, &NetworkInterface::fHardwareAddress},
-        {"transmitSpeedBaud"sv, &NetworkInterface::fTransmitSpeedBaud},
-        {"receiveLinkSpeedBaud"sv, &NetworkInterface::fReceiveLinkSpeedBaud},
-        {"wirelessInformation"sv, &NetworkInterface::fWirelessInfo},
-        //SEE OVERRIDE BELOW {"boundAddressRanges", &NetworkInterface::fBindings.fAddressRanges},
-        //SEE OVERRIDE BELOW {"boundAddresses", &NetworkInterface::fBindings.fAddresses},
-        // StructFieldMetaInfo{} doesn't work with nested members - https://stackoverflow.com/questions/1929887/is-pointer-to-inner-struct-member-forbidden
-        // So override type mappers manually to select right sub-element of Bindings
-        {"boundAddressRanges"sv, &NetworkInterface::fBindings,
-         TypeMappingDetails{ObjectVariantMapper::FromObjectMapperType<NetworkInterface::Bindings> (
-                                [] (const ObjectVariantMapper& mapper, const NetworkInterface::Bindings* objOfType) -> VariantValue {
-                                    if (not objOfType->fAddressRanges.empty ()) {
-                                        return mapper.FromObject (objOfType->fAddressRanges);
-                                    }
-                                    return VariantValue{};
-                                }),
-                            ObjectVariantMapper::ToObjectMapperType<NetworkInterface::Bindings> (
-                                [=] (const ObjectVariantMapper& mapper, const VariantValue& d, NetworkInterface::Bindings* intoObj) -> void {
-                                    if (d != VariantValue{}) {
-                                        intoObj->fAddressRanges = mapper.ToObject<Containers::Collection<CIDR>> (d);
-                                    }
-                                })}},
-        {"boundAddresses"sv, &NetworkInterface::fBindings,
-         TypeMappingDetails{ObjectVariantMapper::FromObjectMapperType<NetworkInterface::Bindings> (
-                                [] (const ObjectVariantMapper& mapper, const NetworkInterface::Bindings* objOfType) -> VariantValue {
-                                    if (not objOfType->fAddresses.empty ()) {
-                                        return mapper.FromObject (objOfType->fAddresses);
-                                    }
-                                    return VariantValue{};
-                                }),
-                            ObjectVariantMapper::ToObjectMapperType<NetworkInterface::Bindings> (
-                                [=] (const ObjectVariantMapper& mapper, const VariantValue& d, NetworkInterface::Bindings* intoObj) -> void {
-                                    if (d != VariantValue{}) {
-                                        intoObj->fAddresses = mapper.ToObject<Containers::Collection<InternetAddress>> (d);
-                                    }
-                                })}},
-        {"gateways"sv, &NetworkInterface::fGateways},
-        {"DNSServers"sv, &NetworkInterface::fDNSServers},
-        {"status"sv, &NetworkInterface::fStatus},
-        {"aggregatesReversibly"sv, &NetworkInterface::fAggregatesReversibly},
-        {"aggregatesIrreversibly"sv, &NetworkInterface::fAggregatesIrreversibly},
-        {"idIsPersistent"sv, &NetworkInterface::fIDPersistent},
+    // fBindings is two keys, boundAddressRanges and boundAddresses - each present only when not empty - mapped in fAfterFrom
+    // and fAfterTo: a StructFieldInfo names a member of the class, not a member of one (fBindings.fAddressRanges), and two
+    // StructFieldInfos for the one fBindings fail Stroika's duplicate-field check (a WeakAssert)
+    mapper.AddClass<NetworkInterface> (
+        {
+            {"platformInterfaceID"sv, &NetworkInterface::fInternalInterfaceID},
+            {"id"sv, &NetworkInterface::fID},
+            {"aggregatedBy"sv, &NetworkInterface::fAggregatedBy},
+            {"attachedToDevices"sv, &NetworkInterface::fAttachedToDevices},
+            {"friendlyName"sv, &NetworkInterface::fFriendlyName},
+            {"description"sv, &NetworkInterface::fDescription},
+            {"type"sv, &NetworkInterface::fType},
+            {"hardwareAddress"sv, &NetworkInterface::fHardwareAddress},
+            {"transmitSpeedBaud"sv, &NetworkInterface::fTransmitSpeedBaud},
+            {"receiveLinkSpeedBaud"sv, &NetworkInterface::fReceiveLinkSpeedBaud},
+            {"wirelessInformation"sv, &NetworkInterface::fWirelessInfo},
+            {"gateways"sv, &NetworkInterface::fGateways},
+            {"DNSServers"sv, &NetworkInterface::fDNSServers},
+            {"status"sv, &NetworkInterface::fStatus},
+            {"aggregatesReversibly"sv, &NetworkInterface::fAggregatesReversibly},
+            {"aggregatesIrreversibly"sv, &NetworkInterface::fAggregatesIrreversibly},
+            {"idIsPersistent"sv, &NetworkInterface::fIDPersistent},
 #if qDebug
-        {"debugProps"sv, &NetworkInterface::fDebugProps},
+            {"debugProps"sv, &NetworkInterface::fDebugProps},
 #endif
-    });
+        },
+        {.fAfterFrom = [] (const ObjectVariantMapper& mapper, const NetworkInterface* objOfType, VariantValue* updateResult) -> void {
+             Mapping<String, VariantValue> m = updateResult->As<Mapping<String, VariantValue>> ();
+             if (not objOfType->fBindings.fAddressRanges.empty ()) {
+                 m.Add ("boundAddressRanges"sv, mapper.FromObject (objOfType->fBindings.fAddressRanges));
+             }
+             if (not objOfType->fBindings.fAddresses.empty ()) {
+                 m.Add ("boundAddresses"sv, mapper.FromObject (objOfType->fBindings.fAddresses));
+             }
+             *updateResult = VariantValue{m};
+         },
+         .fAfterTo = [] (const ObjectVariantMapper& mapper, const VariantValue& d, NetworkInterface* intoObj) -> void {
+             Mapping<String, VariantValue> m = d.As<Mapping<String, VariantValue>> ();
+             if (optional<VariantValue> o = m.Lookup ("boundAddressRanges"sv); o and *o != VariantValue{}) {
+                 intoObj->fBindings.fAddressRanges = mapper.ToObject<Collection<CIDR>> (*o);
+             }
+             if (optional<VariantValue> o = m.Lookup ("boundAddresses"sv); o and *o != VariantValue{}) {
+                 intoObj->fBindings.fAddresses = mapper.ToObject<Collection<InternetAddress>> (*o);
+             }
+         }});
     if constexpr (kIncludeFingerprintsInOutputTMP2Test_) {
         mapper.AddSubClass<NetworkInterface, NetworkInterface> (
             {}, {.fAfterFrom = [] (const ObjectVariantMapper&, const NetworkInterface* objOfType, VariantValue* updateResult) -> void {
