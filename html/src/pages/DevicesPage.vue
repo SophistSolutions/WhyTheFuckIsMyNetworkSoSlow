@@ -456,9 +456,11 @@ const pagination = ref({
     <q-card class="pageCard listCard col-11">
       <q-card-section style="border: none">
         <div class="row text-h5">Devices</div>
+        <!-- virtual-scroll: render only the rows on screen - otherwise every change to any device re-renders every row,
+          and there may be thousands; its target is the page, so the table still scrolls with the page, unpaginated -->
         <q-table dense table-class="itemList " :rows="filteredExtendedDevices" :columns="tableHeaders" separator="none"
           row-key="id" :visible-columns="pageUserOptions.VisibleColumns" :pagination.sync="pagination" hide-bottom flat
-          :loading="loading">
+          :loading="loading" virtual-scroll virtual-scroll-target="body">
           <template v-slot:body="props">
             <q-tr :props="props">
               <q-td :props="props" key="name">
@@ -512,7 +514,7 @@ const pagination = ref({
                 </div>
               </q-td>
             </q-tr>
-            <q-tr v-if="props.expand" :props="props">
+            <q-tr v-if="props.expand" :props="props" class="q-virtual-scroll--with-prev">
               <q-td :colspan="pageUserOptions.VisibleColumns.length">
                 <DeviceDetails class="detailsSection z-top" :deviceId="props.row.id" :includeLinkToDetailsPage="true" />
               </q-td>

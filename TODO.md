@@ -25,20 +25,6 @@ done.
     host, once Stroika #1248 says which networks those are (as #94); (4) by default, show the devices seen recently
     (#57, #61). Related: #58 (design doc for IDs), #67, #53.
 
-- **The Devices page loads about 10 devices a second, slower as it goes** (2026-10-22, headless Chrome on protagoras
-  against medusa's 6180 devices, over Tailscale): the page's main thread is 100% busy, and the device fetches wait on
-  it (fewer than the 6 allowed in flight). Profiled (unminified build): each device that arrives re-renders every row
-  of the table (pagination is off, DevicesPage.vue:394) - about 0.17 ms per row, so 105 ms an arrival at ~600 rows,
-  206 ms at ~1200: two thirds in Vue patching the table, ~14% in the Last Seen cell's luxon `toRelative()` (:475),
-  ~12% recomputing `filteredExtendedDevices` (:270), ~5% `getDevices`. At 6180 rows that is ~1 s an arrival - an hour
-  to load, and more than a poll's worth of main thread for the ~50 devices that change per poll. Fix ideas: QTable's
-  `virtual-scroll` (render the visible rows only); apply arrivals in batches (one re-render per batch).
-  The poll's device fetches run 6 at a time (`fetchDevicesQueued`; all at once before, when Chrome failed 4795 of 6180
-  with ERR_INSUFFICIENT_RESOURCES). Discussed, not chosen (2026-10-22): a version per device in the ID list, so a poll
-  fetches only the changed ones - the per-device GETs are 304 for ~99%, but each still costs a round trip (~62 ms over
-  Tailscale), and the server builds the device and its MD5 anyway; HTTP/2 (planned for Stroika's WebServer; browsers
-  use it only over HTTPS). The rollup entry above would cut the count to about 450.
-
 - HTTP caching (checked 2026-10-22 - not the cause of the blank page): hashed /assets/ files are immutable - right; but
   index.html is `public, max-age=300` - make it `no-cache` (304s work), so an upgrade is seen at once. A missing file is
   answered with index.html (200, text/html) - under /assets/ marked immutable for 68 years, as Stroika's

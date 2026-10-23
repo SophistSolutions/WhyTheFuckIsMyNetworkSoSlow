@@ -27,11 +27,19 @@ interface ILoading {
 }
 
 // The device fetches fetchDevicesQueued has queued. Not store state: nothing displays it, and it holds every device ID.
-// Fetching thousands at once fails most of them in the browser (Chrome: ERR_INSUFFICIENT_RESOURCES); and over HTTP/1.1
-// a browser opens at most 6 connections to a host, so more in flight would only wait inside it.
-const kMaxQueuedDeviceFetchesInFlight_ = 6;
+// Fetching thousands at once fails most of them in the browser (Chrome: ERR_INSUFFICIENT_RESOURCES). Over HTTP/1.1 a
+// browser opens at most 6 connections to a host; 8 keeps a spare request or two waiting in the browser, so a connection
+// whose response just arrived starts its next at once, not after this code has handled that response. Over HTTP/2 (one
+// connection, many streams) a higher limit would do better.
+const kMaxQueuedDeviceFetchesInFlight_ = 8;
 const queuedDeviceFetches_ = new Set<string>();
 let numberOfDeviceFetchWorkers_ = 0;
+
+// What the queued fetches found changed, stored together every kQueuedDeviceUpdatesInterval_ ms: each store of a
+// device recomputes and re-renders what lists devices, at a cost that grows with the number of devices.
+const kQueuedDeviceUpdatesInterval_ = 500;
+const pendingDeviceUpdates_ = new Map<string, IDevice>();
+let pendingDeviceUpdatesTimer_: ReturnType<typeof setTimeout> | undefined;
 
 function takeFirst_(s: Set<string>): string | undefined {
   for (const i of s) {
@@ -198,7 +206,8 @@ export const useNetStateStore = defineStore('Net-State-Store', {
       // exlse express interest in that id, and fetch it --LGP 2023-03-02
       this.fetchDevicesQueued(devices); // after reset numberOutstanding...
     },
-    async fetchDevice(i: string) {
+    // storeInBatch: store a change with the other queued fetches' (kQueuedDeviceUpdatesInterval_), not at once
+    async fetchDevice(i: string, storeInBatch = false) {
       if (this.loadingDeviceDetailsForID.has(i)) {
         console.log(
           `Suppressing fetchDevice ${i} since in progress (throttling)`
@@ -209,12 +218,25 @@ export const useNetStateStore = defineStore('Net-State-Store', {
           // Suprising and disapointing that Equals optimization helps so much
           // I would have expected Pinia to do this check
           const r = await fetchDevice(i);
-          if (!Equals(r, this.deviceDetails[i])) {
+          if (
+            !Equals(r, pendingDeviceUpdates_.get(i) ?? this.deviceDetails[i])
+          ) {
             if (kCompileTimeConfiguration.DEBUG_MODE) {
               console.log('new device value: named=', r.name);
             }
-            this.deviceDetails[i] = r;
-            this.lastSuccessfulAPICall = new Date();
+            if (storeInBatch) {
+              pendingDeviceUpdates_.set(i, r);
+              if (pendingDeviceUpdatesTimer_ === undefined) {
+                pendingDeviceUpdatesTimer_ = setTimeout(
+                  () => this.storePendingDeviceUpdates(),
+                  kQueuedDeviceUpdatesInterval_
+                );
+              }
+            } else {
+              pendingDeviceUpdates_.delete(i); // older than r
+              this.deviceDetails[i] = r;
+              this.lastSuccessfulAPICall = new Date();
+            }
           }
         } finally {
           this.loadingDeviceDetailsForID.delete(i);
@@ -242,7 +264,7 @@ export const useNetStateStore = defineStore('Net-State-Store', {
               i = takeFirst_(queuedDeviceFetches_)
             ) {
               try {
-                await this.fetchDevice(i);
+                await this.fetchDevice(i, true);
               } catch {
                 // fetchDevice has logged it
               }
@@ -251,6 +273,14 @@ export const useNetStateStore = defineStore('Net-State-Store', {
             --numberOfDeviceFetchWorkers_;
           }
         })();
+      }
+    },
+    storePendingDeviceUpdates() {
+      pendingDeviceUpdatesTimer_ = undefined;
+      if (pendingDeviceUpdates_.size > 0) {
+        pendingDeviceUpdates_.forEach((d, i) => (this.deviceDetails[i] = d));
+        pendingDeviceUpdates_.clear();
+        this.lastSuccessfulAPICall = new Date();
       }
     },
   },
