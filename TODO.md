@@ -38,7 +38,8 @@ done.
   files (Samples/HTMLUI/Installers, Samples/Service/Installers) say `PIDFile=/var/run/...`, which systemd warns about
   on every reload (WTF's moved to /run).
 
-- **Windows: move from VS2k22 to VS2k26** (LGP 2026-10-21): DockerBuildContainers has only Windows-VS2k22 (on Stroika's
+- **Windows: move from VS2k22 to VS2k26** (LGP 2026-10-21): `make default-configurations` makes VS2k26 configurations
+  only (2026-10-23). Left: DockerBuildContainers has only Windows-VS2k22 (on Stroika's
   `stroika-buildvm-windows-msys-vs2k22:v3`), and CI builds Windows only in it. Stroika publishes
   `stroika-buildvm-windows-msys-vs2k26` (and `-cygwin-vs2k26`). Add Windows-VS2k26 - Dockerfile, Makefile target, the
   build-Dev-Docker-Containers matrix - and once the image is published, move build-N-test-Matrix.json's Windows entries

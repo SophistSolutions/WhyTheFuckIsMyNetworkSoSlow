@@ -62,6 +62,9 @@ ifneq ($(findstring $(DETECTED_HOST_OS),MSYS-Cygwin),)
 ###		with TONS of spurrious nonsense, so best to leave disabled.
 ### 		-- LGP 2021-07-08
 STROIKA_CONFIG_PARAMS_DEBUG += --sanitize none
+### WTF is an application, not a library, so it targets only the newest Visual Studio: fail if it is missing, rather
+### than build with an older one
+STROIKA_CONFIG_PARAMS_COMMON += --build-platform VisualStudio.Net-2026
 endif
 
 
