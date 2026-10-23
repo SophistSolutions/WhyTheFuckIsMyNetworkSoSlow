@@ -118,7 +118,7 @@ namespace {
         newDev.fManufacturer    = d.fManufacturer;
         newDev.fIcon            = TransformURL2LocalStorage_ (d.fIcon);
         newDev.fOperatingSystem = d.fOperatingSystem;
-#if qDebug
+#if qStroika_Foundation_Debug_AssertionsChecked
         if (not d.fDebugProps.empty ()) {
             newDev.fDebugProps = d.fDebugProps;
         }
@@ -157,7 +157,7 @@ namespace {
         nw.fGEOLocInformation        = n.fGEOLocInfo;
         nw.fInternetServiceProvider  = n.fISP;
         nw.fSeen                     = n.fSeen;
-#if qDebug
+#if qStroika_Foundation_Debug_AssertionsChecked
         if (not n.fDebugProps.empty ()) {
             nw.fDebugProps = n.fDebugProps;
         }
@@ -181,7 +181,7 @@ namespace {
         nwi.fDNSServers           = n.fDNSServers;
         nwi.fStatus               = n.fStatus;
         nwi.fID                   = n.fGUID;
-#if qDebug
+#if qStroika_Foundation_Debug_AssertionsChecked
         if (not n.fDebugProps.empty ()) {
             nwi.fDebugProps = n.fDebugProps;
         }

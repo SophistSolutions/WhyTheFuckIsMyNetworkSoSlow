@@ -39,7 +39,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
          */
         GUID fGUID;
 
-#if qDebug
+#if qStroika_Foundation_Debug_AssertionsChecked
         Mapping<String, DataExchange::VariantValue> fDebugProps;
 #endif
 

@@ -145,7 +145,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
         optional<Manufacturer>    fManufacturer;
         optional<URI>             fPresentationURL;
         optional<OperatingSystem> fOperatingSystem;
-#if qDebug
+#if qStroika_Foundation_Debug_AssertionsChecked
         Mapping<String, DataExchange::VariantValue> fDebugProps;
 #endif
 
@@ -206,7 +206,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
             if (fOperatingSystem != rhs.fOperatingSystem) {
                 return false;
             }
-#if qDebug
+#if qStroika_Foundation_Debug_AssertionsChecked
             if (fDebugProps != rhs.fDebugProps) {
                 return false;
             }

@@ -104,7 +104,7 @@ String Discovery::Network::ToString () const
     sb << "GatewayHardwareAddresses: "sv << fGatewayHardwareAddresses << ", "sv;
     sb << "DNS-Servers: "sv << fDNSServers << ", "sv;
     sb << "Attached-Network-Interfaces: "sv << fAttachedNetworkInterfaces << ", "sv;
-#if qDebug
+#if qStroika_Foundation_Debug_AssertionsChecked
     sb << "DebugProps: "sv << fDebugProps;
 #endif
     sb << "}"sv;
@@ -290,7 +290,7 @@ namespace {
 
                     nw.fNames.Add (i.fFriendlyName, 25); // unsure how to sort out priorities and/or dups if same net on multiple interfaces...
 
-#if qDebug
+#if qStroika_Foundation_Debug_AssertionsChecked
                     // nothing useful to add yet
                     nw.fDebugProps.Add (
                         "test"sv, VariantValue{Mapping<String, VariantValue>{pair<String, VariantValue>{"updatedAt"sv, Time::DateTime::Now ()}}});

@@ -176,7 +176,7 @@ Database::Document::Connection::Ptr WhyTheFuckIsMyNetworkSoSlow::BackendApp::Com
         LocalDocumentDB::Options options;
         options = LocalDocumentDB::Options{.fInternallySynchronizedLetter = Execution::eInternallySynchronized,
                                            .fStorage                      = LocalDocumentDB::Options::SingleFileStorage{
-                                                                    .fFile = f, .fForceCreateNew = loadFromStartupFile.has_value (), .fFlushOnEachWrite = true}};
+                                               .fFile = f, .fForceCreateNew = loadFromStartupFile.has_value (), .fFlushOnEachWrite = true}};
 #if qStroika_Platform_Windows
         // Could avoid the need for this by excluding the location of the DB from antivirus tools, but this is more
         // general and shouldn't cause any problems if the user does that.

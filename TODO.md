@@ -61,13 +61,6 @@ done.
     included), with the description fetch and the merge on a thread of WTF's own - as Stroika's SSDPClient sample does
     (its fetch has no timeout; WTF's keeps one) - and not refetching soon a description that just failed.
 
-- Discovery/Devices.cpp:660 tests `qDefaultTracingOn`, which Stroika never defines for readers, so that block (lock
-  debugging, `qLOCK_DEBUGGING_`) has never compiled.
-
-- Deprecated Stroika names WTF still uses (they go away at Stroika 3.0a1): `qDebug` ->
-  `qStroika_Foundation_Debug_AssertionsChecked` (41 uses, 13 files); `qHasFeature_*` -> `qStroika_HasComponent_*`
-  (WebServices/WSImpl.cpp, 8 uses; deprecated since Stroika 3.0d11).
-
 - Before Stroika 3.0a1: WTF re-locks `Synchronized` objects it already holds (IntegratedModel/Private_/DBAccess.cpp:170-181
   and 190-201, Common/BLOBMgr.cpp:184-185). Fine with today's recursive default; a deadlock if
   https://github.com/SophistSolutions/Stroika/issues/1206 makes the default non-recursive.

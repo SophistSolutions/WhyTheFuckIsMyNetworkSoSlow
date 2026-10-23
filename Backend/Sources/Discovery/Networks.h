@@ -84,7 +84,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::Discovery {
 
         optional<InternetServiceProvider> fISP;
 
-#if qDebug
+#if qStroika_Foundation_Debug_AssertionsChecked
         Mapping<String, DataExchange::VariantValue> fDebugProps;
 #endif
 

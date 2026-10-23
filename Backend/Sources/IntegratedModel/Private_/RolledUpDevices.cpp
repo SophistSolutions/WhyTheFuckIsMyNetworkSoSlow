@@ -83,7 +83,7 @@ auto RolledUpDevices::MapAggregatedID2ItsRollupID (const GUID& aggregatedDeviceI
     }
     // shouldn't get past here - debug if/why this happens - see comments below
     DbgTrace ("MapAggregatedID2ItsRollupID failed to find netID={}"_f, aggregatedDeviceID);
-    if constexpr (qDebug) {
+    if constexpr (qStroika_Foundation_Debug_AssertionsChecked) {
         for ([[maybe_unused]] const auto& i : fRolledUpDevices) {
             DbgTrace ("rolledupDevice={}"_f, i);
         }
@@ -147,7 +147,7 @@ RolledUpDevices RolledUpDevices::GetCached (DBAccess::Mgr* dbAccessMgr, Time::Du
         auto rolledUpNetworks = RolledUpNetworks::GetCached (dbAccessMgr, allowedStaleness * 3.0); // longer allowedStaleness cuz we dont care much about this and the parts
                                                                                                    // we look at really dont change
         auto rolledUpNetworkInterfacess = RolledUpNetworkInterfaces::GetCached (dbAccessMgr, allowedStaleness * 3.0); // longer allowedStaleness cuz we dont care much about this and the parts
-            // we look at really dont change
+        // we look at really dont change
 
         // Start with the existing rolled up objects
         // and merge in any more recent discovery changes
@@ -160,10 +160,10 @@ RolledUpDevices RolledUpDevices::GetCached (DBAccess::Mgr* dbAccessMgr, Time::Du
                 // maybe make CTOR for rolledupnetworks take in ital DB netwworks and rules, and have copyis CTOR taking orig networks and new rules?
                 RolledUpDevices initialDBDevices{dbAccessMgr, dbAccessMgr->GetRawDevices (), dbAccessMgr->GetDeviceUserSettings (),
                                                  rolledUpNetworks, rolledUpNetworkInterfacess};
-              return initialDBDevices;
+                return initialDBDevices;
             }
             else {
-                return *lk.cref();
+                return *lk.cref ();
             }
         }();
         // not sure we want to allow this? @todo consider throwing here or asserting out cuz nets rollup IDs would change after this

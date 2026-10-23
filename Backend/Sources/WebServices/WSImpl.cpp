@@ -3,17 +3,17 @@
  */
 #include "Stroika/Frameworks/StroikaPreComp.h"
 
-#if qHasFeature_boost
+#if qStroika_HasComponent_boost
 #include <boost/version.hpp>
 #endif
-#if qHasFeature_LibCurl
+#if qStroika_HasComponent_libcurl
 // For CURLCode define
 #include <curl/curl.h>
 #endif
-#if qHasFeature_sqlite
+#if qStroika_HasComponent_sqlite
 #include <sqlite/sqlite3.h>
 #endif
-#if qHasFeature_OpenSSL
+#if qStroika_HasComponent_OpenSSL
 #include <openssl/opensslv.h>
 #endif
 
@@ -116,19 +116,19 @@ About WSImpl::GetAbout () const
     using Database       = APIServerInfo::Database;
     static const Sequence<ComponentInfo> kAPIServerComponents_{initializer_list<ComponentInfo>{
         ComponentInfo{"Stroika"sv, Common::Version{qStroika_Version_FullVersion}.AsPrettyVersionString (), URI{"https://github.com/SophistSolutions/Stroika"}}
-#if qHasFeature_OpenSSL
+#if qStroika_HasComponent_OpenSSL
         ,
         ComponentInfo{"OpenSSL"sv, OPENSSL_VERSION_TEXT, URI{"https://www.openssl.org/"}}
 #endif
-#if qHasFeature_LibCurl
+#if qStroika_HasComponent_libcurl
         ,
         ComponentInfo{"libcurl"sv, LIBCURL_VERSION, URI{"https://curl.se/"}}
 #endif
-#if qHasFeature_boost
+#if qStroika_HasComponent_boost
         ,
         ComponentInfo{"boost"sv, String{BOOST_LIB_VERSION}}
 #endif
-#if qHasFeature_sqlite
+#if qStroika_HasComponent_sqlite
         ,
         ComponentInfo{"sqlite"sv, SQLITE_VERSION, URI{"https://www.sqlite.org"}}
 #endif
@@ -139,7 +139,7 @@ About WSImpl::GetAbout () const
     CurrentMachine machineInfo = [this, now, &measurements] () {
         CurrentMachine    result;
         static const auto kOS_  = OperatingSystem{GetSystemConfiguration_ActualOperatingSystem ().fTokenName,
-                                                 GetSystemConfiguration_ActualOperatingSystem ().fPrettyNameWithVersionDetails};
+                                                  GetSystemConfiguration_ActualOperatingSystem ().fPrettyNameWithVersionDetails};
         result.fOperatingSystem = kOS_;
         if (auto o = GetSystemConfiguration_BootInformation ().fBootedAt) {
             result.fMachineUptime = now - *o;

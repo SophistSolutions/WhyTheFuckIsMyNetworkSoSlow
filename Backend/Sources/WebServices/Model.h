@@ -265,7 +265,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
          */
         nonvirtual FingerprintType GenerateFingerprintFromProperties () const;
 
-#if qDebug
+#if qStroika_Foundation_Debug_AssertionsChecked
         optional<Mapping<String, DataExchange::VariantValue>> fDebugProps;
 #endif
 
@@ -462,7 +462,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
          */
         optional<UserOverridesType> fUserOverrides;
 
-#if qDebug
+#if qStroika_Foundation_Debug_AssertionsChecked
         optional<Mapping<String, DataExchange::VariantValue>> fDebugProps;
 #endif
 
@@ -671,7 +671,7 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::WebServices::Model {
          */
         optional<UserOverridesType> fUserOverrides;
 
-#if qDebug
+#if qStroika_Foundation_Debug_AssertionsChecked
         optional<Mapping<String, DataExchange::VariantValue>> fDebugProps;
 #endif
 

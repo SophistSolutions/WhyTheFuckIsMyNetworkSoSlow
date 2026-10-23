@@ -277,13 +277,13 @@ void Mgr::BackupDB2_ (const filesystem::path& backupFile)
 
         LocalDocumentDB::Options options{.fInternallySynchronizedLetter = Execution::eInternallySynchronized,
                                          .fStorage                      = LocalDocumentDB::Options::SingleFileStorage{
-                                                                  .fFile             = fullBackupFileName,
-                                                                  .fForceCreateNew   = true,
-                                                                  .fFlushOnEachWrite = false,
-                                                                  .fSerialization    = make_tuple (DataExchange::Variant::JSON::Reader{},
-                                                                                                   DataExchange::Variant::JSON::Writer{DataExchange::Variant::JSON::Writer::Options{
-                                                                                                       .fPrettyPrint = true, .fCanonicalize = true}})}};
-        auto                     db = LocalDocumentDB::New (options);
+                                             .fFile             = fullBackupFileName,
+                                             .fForceCreateNew   = true,
+                                             .fFlushOnEachWrite = false,
+                                             .fSerialization = make_tuple (DataExchange::Variant::JSON::Reader{},
+                                                                           DataExchange::Variant::JSON::Writer{DataExchange::Variant::JSON::Writer::Options{
+                                                                               .fPrettyPrint = true, .fCanonicalize = true}})}};
+        auto db = LocalDocumentDB::New (options);
 
         BackendApp::Common::BLOBMgr::sThe.BackupTo (db);
 
@@ -358,7 +358,7 @@ void Mgr::_OneTimeStartupLoadDB ()
         try {
             Debug::TimingTrace ttrc{"...initial load of fDBDevices_ from database ", 1s};
             auto               all = fDeviceTableConnection_.GetAll ();
-            if constexpr (qDebug) {
+            if constexpr (qStroika_Foundation_Debug_AssertionsChecked) {
                 all.Apply ([] ([[maybe_unused]] const Device& d) { Assert (!d.fUserOverrides); }); // tracked on rollup devices, not snapshot devices
             }
             fDBDevices_.store (DeviceCollection{all}); // pre-load in memory copy with whatever we had stored in the database

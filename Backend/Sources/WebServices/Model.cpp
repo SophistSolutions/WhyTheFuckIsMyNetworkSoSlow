@@ -306,7 +306,7 @@ const ObjectVariantMapper NetworkInterface::kMapper = [] () {
             {"aggregatesReversibly"sv, &NetworkInterface::fAggregatesReversibly},
             {"aggregatesIrreversibly"sv, &NetworkInterface::fAggregatesIrreversibly},
             {"idIsPersistent"sv, &NetworkInterface::fIDPersistent},
-#if qDebug
+#if qStroika_Foundation_Debug_AssertionsChecked
             {"debugProps"sv, &NetworkInterface::fDebugProps},
 #endif
         },
@@ -478,7 +478,7 @@ Network Network::Merge (const Network& baseNetwork, const Network& priorityNetwo
     Memory::AccumulateIf (&merged.fAggregatesFingerprints, priorityNetwork.fAggregatesFingerprints);
     Memory::CopyToIf (&merged.fIDPersistent, priorityNetwork.fIDPersistent);
     Memory::CopyToIf (&merged.fUserOverrides, priorityNetwork.fUserOverrides); // for now, no need to look inside and accumulate because only one place can generate user-overrides - some special TBD database record - LGP 2022-09-14
-#if qDebug
+#if qStroika_Foundation_Debug_AssertionsChecked
     if (priorityNetwork.fDebugProps) {
         // copy sub-elements of debug props
         Mapping<String, VariantValue> newProps = NullCoalesce (merged.fDebugProps);
@@ -696,7 +696,7 @@ const ObjectVariantMapper Network::kMapper = [] () {
         {"idIsPersistent"sv, &Network::fIDPersistent},
         {"userOverrides"sv, &Network::fUserOverrides},
     });
-#if qDebug
+#if qStroika_Foundation_Debug_AssertionsChecked
     mapper.AddSubClass<Network, Network> ({
         {"debugProps"sv, &Network::fDebugProps},
     });
@@ -910,7 +910,7 @@ const ObjectVariantMapper Device::kMapper = [] () {
         {"aggregatesIrreversibly"sv, &Device::fAggregatesIrreversibly},
         {"idIsPersistent"sv, &Device::fIDPersistent},
         {"userOverrides"sv, &Device::fUserOverrides},
-#if qDebug
+#if qStroika_Foundation_Debug_AssertionsChecked
         {"debugProps"sv, &Device::fDebugProps},
 #endif
     });
@@ -961,7 +961,7 @@ Device Device::Merge (const Device& baseDevice, const Device& priorityDevice)
     Memory::AccumulateIf (&merged.fAggregatesIrreversibly, priorityDevice.fAggregatesIrreversibly);
     Memory::CopyToIf (&merged.fIDPersistent, priorityDevice.fIDPersistent);
     Memory::CopyToIf (&merged.fUserOverrides, priorityDevice.fUserOverrides); // for now, no need to look inside and accumulate because only one place can generate user-overrides - some special TBD database record - LGP 2022-09-14
-#if qDebug
+#if qStroika_Foundation_Debug_AssertionsChecked
     if (priorityDevice.fDebugProps) {
         // copy sub-elements of debug props
         Mapping<String, VariantValue> newProps = NullCoalesce (merged.fDebugProps);

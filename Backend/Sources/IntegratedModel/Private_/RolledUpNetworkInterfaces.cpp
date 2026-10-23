@@ -103,7 +103,7 @@ nonvirtual auto RolledUpNetworkInterfaces::MapAggregatedID2ItsRollupID (const GU
     }
     // shouldn't get past here - debug if/why this hapepns - see comments below
     DbgTrace ("MapAggregatedID2ItsRollupID failed to find aggregatedNetInterfaceID={}"_f, aggregatedNetInterfaceID);
-    if constexpr (qDebug) {
+    if constexpr (qStroika_Foundation_Debug_AssertionsChecked) {
         for ([[maybe_unused]] const auto& i : fRolledUpNetworkInterfaces_) {
             DbgTrace ("rolledupNetInterface={}"_f, i);
         }
@@ -168,7 +168,7 @@ RolledUpNetworkInterfaces RolledUpNetworkInterfaces::GetCached (DBAccess::Mgr* d
                 RolledUpNetworkInterfaces rollup = RolledUpNetworkInterfaces{dbAccessMgr->GetRawDevices (), dbAccessMgr->GetRawNetworkInterfaces ()};
                 // handle orphaned network interfaces
                 {
-                    auto                      orphanedRawInterfaces =
+                    auto orphanedRawInterfaces =
                         rollup.GetRawNetworkInterfaces ().Where ([&] (auto ni) { return rollup.GetAttachedToDeviceIDs (ni.fID) == nullopt; });
                     if (not orphanedRawInterfaces.empty ()) {
                         DbgTrace ("Found: orphanedRawInterfaces={}"_f, orphanedRawInterfaces);
@@ -185,7 +185,7 @@ RolledUpNetworkInterfaces RolledUpNetworkInterfaces::GetCached (DBAccess::Mgr* d
                 return rollup;
             }
             else {
-                return *lk.cref();
+                return *lk.cref ();
             }
         }();
         // not sure we want to allow this? @todo consider throwing here or asserting out cuz nets rollup IDs would change after this

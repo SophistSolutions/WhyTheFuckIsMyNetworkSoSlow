@@ -125,7 +125,7 @@ namespace {
             NetworkInterface ni{i};
             {
                 ni.fGUID = MapCurrentProcessInternalInterfaceIDToReportedProcessLifetimeGUID_ (i.fInterfaceID);
-#if qDebug
+#if qStroika_Foundation_Debug_AssertionsChecked
                 // nothing useful to add yet
                 ni.fDebugProps.Add (
                     "test"sv, VariantValue{Mapping<String, VariantValue>{pair<String, VariantValue>{"updatedAt"sv, Time::DateTime::Now ()}}});
@@ -155,8 +155,8 @@ Collection<NetworkInterface> Discovery::NetworkInterfacesMgr::CollectAllNetworkI
     Require (sActive_);
     Collection<NetworkInterface> results;
     static Cache::TimedCache     sCache_ = Cache::SynchronizedTimedCache<void, Collection<NetworkInterface>>{};
-    results                              = sCache_.LookupValue (allowedStaleness.value_or (kDefaultItemCacheLifetime_),
-                                                                [] () -> Collection<NetworkInterface> { return CollectAllNetworkInterfaces_ (); });
+    results = sCache_.LookupValue (allowedStaleness.value_or (kDefaultItemCacheLifetime_),
+                                   [] () -> Collection<NetworkInterface> { return CollectAllNetworkInterfaces_ (); });
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
     DbgTrace ("returns: {}"_f, results);
 #endif

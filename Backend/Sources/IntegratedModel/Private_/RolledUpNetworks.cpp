@@ -95,7 +95,7 @@ auto RolledUpNetworks::MapAggregatedID2ItsRollupID (const GUID& netID) const -> 
     }
     // shouldn't get past here - debug if/why this hapepns - see comments below
     DbgTrace ("MapAggregatedID2ItsRollupID failed to find netID={}"_f, netID);
-    if constexpr (qDebug) {
+    if constexpr (qStroika_Foundation_Debug_AssertionsChecked) {
         for ([[maybe_unused]] const auto& i : fRolledUpNetworks_) {
             DbgTrace ("rolledupNet={}"_f, i);
         }

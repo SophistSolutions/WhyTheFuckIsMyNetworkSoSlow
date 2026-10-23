@@ -77,8 +77,8 @@ optional<tuple<GEOLocationInformation, InternetServiceProvider>> BackendApp::Com
             using namespace IO::Network::Transfer;
             Debug::TraceContextBumper ctx{"GEOLocAndISPLookup::{}... real lookup - cache miss"};
 
-            auto&&                        connection = Connection::New ();
-            Mapping<String, VariantValue> m          = Variant::JSON::Reader ()
+            auto&& connection = Connection::New ();
+            Mapping<String, VariantValue> m = Variant::JSON::Reader ()
                                                   .Read (connection.GET (URI{"http://ip-api.com/json/" + ia.ToString ()}).GetDataTextInputStream ())
                                                   .As<Mapping<String, VariantValue>> ();
             GEOLocationInformation geoloc{};

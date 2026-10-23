@@ -203,7 +203,7 @@ String Discovery::Device::ToString () const
     sb << "attachedInterfaces: "sv << fAttachedInterfaces << ", "sv;
     sb << "presentationURL: "sv << fPresentationURL << ", "sv;
     sb << "operatingSystem: "sv << fOperatingSystem << ", "sv;
-#if qDebug
+#if qStroika_Foundation_Debug_AssertionsChecked
     sb << "debugProps: "sv << fDebugProps;
 #endif
     sb << "}"sv;
@@ -298,7 +298,7 @@ namespace {
             Mapping<String, String> fDeviceType2FriendlyNameMap; //  http://upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v1.1.pdf - <deviceType> - Page 44
             optional<URI>  fPresentationURL;
             Time::DateTime fLastSSDPMessageRecievedAt{Time::DateTime::Now ()};
-#if qDebug
+#if qStroika_Foundation_Debug_AssertionsChecked
             optional<SSDP::Advertisement> fLastAdvertisement;
 #endif
 
@@ -332,7 +332,7 @@ namespace {
                 if (fLastSSDPMessageRecievedAt != rhs.fLastSSDPMessageRecievedAt) {
                     return false;
                 }
-#if qDebug
+#if qStroika_Foundation_Debug_AssertionsChecked
                 if (fLastAdvertisement != rhs.fLastAdvertisement) {
                     return false;
                 }
@@ -360,7 +360,7 @@ namespace {
                 sb << "Device-Type-2-Friendly-Name-Map: "sv << fDeviceType2FriendlyNameMap << ", "sv;
                 sb << "Presentation-URL: "sv << fPresentationURL << ", ";
                 sb << "Last-SSDP-Message-Recieved-At: "sv << fLastSSDPMessageRecievedAt << ", "sv;
-#if qDebug
+#if qStroika_Foundation_Debug_AssertionsChecked
                 sb << "Last-Advertisement: " << fLastAdvertisement;
 #endif
                 sb << "}"sv;
@@ -439,13 +439,13 @@ namespace {
                         if (speakerGroup.empty ()) {
                             Assert (m2->length () >= 3); // because matched SPACE-SPACE.*
                             fNames.Add (m2->SubString (3), 100);
-#if qDebug
+#if qStroika_Foundation_Debug_AssertionsChecked
                             fDebugProps.Add (L"SSDP-DeviceType2FriendlyName-SONOS-HACK-devicefriendlyname"sv, m2->SubString (3));
 #endif
                         }
                         else {
                             fNames.Add (speakerGroup + *m2, 99);
-#if qDebug
+#if qStroika_Foundation_Debug_AssertionsChecked
                             fDebugProps.Add ("SSDP-DeviceType2FriendlyName-SONOS-HACK-speakergroup"sv, speakerGroup + *m2);
 #endif
                         }
@@ -455,7 +455,7 @@ namespace {
                 // pick any one of the friendly names, or the server name if we must
                 if (not fSSDPInfo->fDeviceType2FriendlyNameMap.empty () and not fSSDPInfo->fDeviceType2FriendlyNameMap.Nth (0).fValue.empty ()) {
                     fNames.Add (fSSDPInfo->fDeviceType2FriendlyNameMap.Nth (0).fValue, 95);
-#if qDebug
+#if qStroika_Foundation_Debug_AssertionsChecked
                     fDebugProps.Add ("SSDP-DeviceType2FriendlyName"sv, fSSDPInfo->fDeviceType2FriendlyNameMap.Nth (0).fValue);
 #endif
                 }
@@ -466,7 +466,7 @@ namespace {
             for (const auto& i : GetInternetAddresses ()) {
                 if (auto o = ReverseDNSLookup_ (i)) {
                     fNames.Add (*o, 96);
-#if qDebug
+#if qStroika_Foundation_Debug_AssertionsChecked
                     fDebugProps.Add ("reverse-dns-name"sv, *o);
 #endif
                     break;
@@ -582,7 +582,7 @@ namespace {
 
             Assert (fSeen.fARP or fSeen.fCollector or fSeen.fICMP or fSeen.fTCP or fSeen.fUDP); // else confusing why this was added
 
-#if qDebug
+#if qStroika_Foundation_Debug_AssertionsChecked
             if (fSSDPInfo) {
                 fDebugProps.Add (L"SSDPInfo"sv, VariantValue{Mapping<String, VariantValue> {
                                      pair<String, VariantValue>{L"deviceType2FriendlyNameMap"sv,
@@ -657,9 +657,9 @@ namespace {
 #endif
 
 // turn on tracking of locks on sDiscoveredDevices_
-#if qDefaultTracingOn && qLOCK_DEBUGGING_
-    int ignored = [] () {
-        sDiscoveredDevices_.fDbgTraceLocksName = "DiscoveredDevices_";
+#if qStroika_Foundation_Debug_DefaultTracingOn && qLOCK_DEBUGGING_
+    int sDiscoveredDevicesLockNamed_ = [] () {
+        sDiscoveredDevices_.fDbgTraceLocksName = L"DiscoveredDevices_";
         return 0;
     }();
 #endif
@@ -733,14 +733,14 @@ namespace {
                                 tmp = *oo; // merge
                                 tmp.fAttachedNetworks += thisDevice->fAttachedNetworks;
                                 Memory::AccumulateIf (&tmp.fAttachedInterfaces, thisDevice->fAttachedInterfaces);
-#if qDebug
+#if qStroika_Foundation_Debug_AssertionsChecked
                                 tmp.fDebugProps.Add ("Updated-By-MyDeviceDiscoverer_-At", DateTime::Now ());
 #endif
                                 return tmp;
                             }
                             else {
                                 tmp.fGUID = GUID::GenerateNew ();
-#if qDebug
+#if qStroika_Foundation_Debug_AssertionsChecked
                                 tmp.fDebugProps.Add ("Created-By-MyDeviceDiscoverer-At", DateTime::Now ());
                                 tmp.fDebugProps.Add ("Created-By-MyDeviceDiscoverer-With-Networks", Characters::ToString (tmp.fAttachedNetworks));
                                 tmp.fDebugProps.Add ("Created-By-MyDeviceDiscoverer-With-Interfaces", Characters::ToString (tmp.fAttachedInterfaces));
@@ -998,13 +998,13 @@ namespace {
                     if (optional<DiscoveryInfo_> o = FindMatchingDevice_ (l, tmp)) {
                         tmp = *o; // then merge in possible additions
                         tmp.AddNetworkAddresses_ (locAddrs);
-#if qDebug
+#if qStroika_Foundation_Debug_AssertionsChecked
                         tmp.fDebugProps.Add ("Updated-By-SSDPDeviceDiscoverer_-At", DateTime::Now ());
 #endif
                         return tmp;
                     }
                     else {
-#if qDebug
+#if qStroika_Foundation_Debug_AssertionsChecked
                         tmp.fDebugProps.Add ("Found-By-SSDPDeviceDiscoverer_-At", DateTime::Now ());
 #endif
                         tmp.fGUID = GUID::GenerateNew ();
@@ -1044,7 +1044,7 @@ namespace {
                 di.fSSDPInfo->fLastSSDPMessageRecievedAt = Time::DateTime::Now (); // update each message, even if already created
                 di.fSeen.fUDP = Memory::NullCoalesce (di.fSeen.fUDP).Extend (di.fSSDPInfo->fLastSSDPMessageRecievedAt);
 
-#if qDebug
+#if qStroika_Foundation_Debug_AssertionsChecked
                 di.fSSDPInfo->fLastAdvertisement = d;
 #endif
 
@@ -1130,14 +1130,14 @@ namespace {
                             if (optional<DiscoveryInfo_> o = FindMatchingDevice_ (l, tmp)) {
                                 tmp = *o;
                                 tmp.AddNetworkAddresses_ (i.fInternetAddress, i.fHardwareAddress); // merge in additions
-#if qDebug
+#if qStroika_Foundation_Debug_AssertionsChecked
                                 tmp.fDebugProps.Add ("Updated-By-MyNeighborDiscoverer_-At", DateTime::Now ());
 #endif
                                 return tmp;
                             }
                             else {
                                 tmp.fGUID = GUID::GenerateNew ();
-#if qDebug
+#if qStroika_Foundation_Debug_AssertionsChecked
                                 tmp.fDebugProps.Add ("Found-By-MyNeighborDiscoverer_-At"sv, DateTime::Now ());
                                 tmp.fDebugProps.Add ("Found-By-MyNeighborDiscoverer_-I"sv, Characters::ToString (i)); // to debug why sometimes we add but has no network info
 #endif
@@ -1337,7 +1337,7 @@ namespace {
                                 PatchSeen_ (&tmp, scanResults);
                                 tmp.PatchDerivedFields ();
                                 Assert (tmp.fGUID != GUID{});
-#if qDebug
+#if qStroika_Foundation_Debug_AssertionsChecked
                                 tmp.fDebugProps.Add ("Updated-By-RandomWalkThroughSubnetDiscoverer_-At"sv, DateTime::Now ());
 #endif
                                 l.rwref ().Add (tmp);
@@ -1350,7 +1350,7 @@ namespace {
                                 PatchSeen_ (&tmp, scanResults);
                                 tmp.PatchDerivedFields ();
                                 // NOTE - at this point - we have no hardware address - could get from IO::Network::Neighbors API, but too costly, not worth while here
-#if qDebug
+#if qStroika_Foundation_Debug_AssertionsChecked
                                 tmp.fDebugProps.Add (L"Found-By-RandomWalkThroughSubnetDiscoverer_-At", DateTime::Now ());
 #endif
                                 Assert (tmp.fGUID != GUID{});
@@ -1472,7 +1472,7 @@ namespace {
                                 PatchSeen_ (&tmp, scanResults);
                                 tmp.PatchDerivedFields ();
                                 Assert (tmp.fGUID != GUID{});
-#if qDebug
+#if qStroika_Foundation_Debug_AssertionsChecked
                                 tmp.fDebugProps.Add (L"Updated-By-KnownDevicePortScanner_-At", DateTime::Now ());
 #endif
                                 l.rwref ().Add (tmp);
