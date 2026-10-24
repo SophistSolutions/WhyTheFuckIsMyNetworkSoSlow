@@ -169,16 +169,16 @@ bool Mgr::SetDeviceUserSettings (const GUID& id, const std::optional<Device::Use
     // @todo check if good id and throw if not...
     auto lk = fCachedDeviceUserSettings_.rwget ();
     if (settings) {
-        if (fCachedDeviceUserSettings_.cget ().cref ().Lookup (id) != settings) {
+        if (lk.cref ().Lookup (id) != settings) {
             fDeviceUserSettingsTableConnection_.rwget ().cref ().AddOrUpdate (ExternalDeviceUserSettingsElt_{id, *settings});
-            fCachedDeviceUserSettings_.rwget ().rwref ().Add (id, *settings);
+            lk.rwref ().Add (id, *settings);
             return true;
         }
         return false;
     }
     else {
         fDeviceUserSettingsTableConnection_.rwget ().cref ().Remove (id.As<String> ());
-        return fCachedDeviceUserSettings_.rwget ().rwref ().RemoveIf (id);
+        return lk.rwref ().RemoveIf (id);
     }
 }
 
@@ -189,16 +189,16 @@ bool Mgr::SetNetworkUserSettings (const GUID& id, const std::optional<Network::U
     // @todo check if good id and throw if not...
     auto lk = fCachedNetworkUserSettings_.rwget ();
     if (settings) {
-        if (fCachedNetworkUserSettings_.cget ().cref ().Lookup (id) != settings) {
+        if (lk.cref ().Lookup (id) != settings) {
             fNetworkUserSettingsTableConnection_.rwget ().cref ().AddOrUpdate (ExternalNetworkUserSettingsElt_{id, *settings});
-            fCachedNetworkUserSettings_.rwget ().rwref ().Add (id, *settings);
+            lk.rwref ().Add (id, *settings);
             return true;
         }
         return false;
     }
     else {
         fNetworkUserSettingsTableConnection_.rwget ().cref ().Remove (id.As<String> ());
-        return fCachedNetworkUserSettings_.rwget ().rwref ().RemoveIf (id);
+        return lk.rwref ().RemoveIf (id);
     }
 }
 

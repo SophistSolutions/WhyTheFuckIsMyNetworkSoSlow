@@ -124,6 +124,17 @@ namespace {
     // BLOBMgr::Activator CTOR/DTOR, and this is so fast, no need to allow multiple simultaneous readers
     static Synchronized<shared_ptr<DBConn_>> sConn_; // Set/Unset in  BLOBMgr::Activator CTOR/DTOR
 
+    // Called with sConn_ locked (lk), so the lookup and the add are one operation: a blob two threads add at once is stored once
+    GUID AddBLOB_ (decltype (sConn_)::WritableReference& lk, const BLOB& b, const optional<InternetMediaType>& ct)
+    {
+        if (optional<GUID> id = lk.cref ()->Lookup (b, ct)) {
+            return *id;
+        }
+        GUID g = GUID::GenerateNew ();
+        lk.rwref ()->fBLOBs.Add (DBRecs_::BLOB_{.fID = g, .fBLOB = b, .fContentType = ct});
+        return g;
+    }
+
 }
 
 /*
@@ -153,12 +164,8 @@ BLOBMgr::Activator::~Activator ()
  */
 GUID BLOBMgr::AddBLOB (const BLOB& b, const optional<InternetMediaType>& ct)
 {
-    if (auto id = sConn_.rwget ().rwref ()->Lookup (b, ct)) {
-        return *id;
-    }
-    GUID g = GUID::GenerateNew ();
-    sConn_.rwget ().rwref ()->fBLOBs.Add (DBRecs_::BLOB_{.fID = g, .fBLOB = b, .fContentType = ct});
-    return g;
+    auto lk = sConn_.rwget ();
+    return AddBLOB_ (lk, b, ct);
 }
 
 GUID BLOBMgr::AddBLOBFromURL (const URI& url, bool recheckIfExpired)
@@ -179,10 +186,11 @@ GUID BLOBMgr::AddBLOBFromURL (const URI& url, bool recheckIfExpired)
         auto&&                    response = conn.GET (url);
         return make_pair (response.GetData (), response.GetContentType ());
     };
-    auto       data = fetchData (url);
-    GUID       guid = AddBLOB (data.first, data.second);
-    lock_guard lock{sConn_};
-    sConn_.rwget ().rwref ()->fBLOBURLs.AddOrUpdate (DBRecs_::BLOBURL_{.fURI = url, .fBLOBID = guid});
+    auto data = fetchData (url); // the network GET - outside the lock
+    // the blob, and the URL's mapping to it, as one operation: the URL maps to the blob of the same fetch
+    auto lk   = sConn_.rwget ();
+    GUID guid = AddBLOB_ (lk, data.first, data.second);
+    lk.rwref ()->fBLOBURLs.AddOrUpdate (DBRecs_::BLOBURL_{.fURI = url, .fBLOBID = guid});
     DbgTrace ("Added blob mapping: {} maps to blobid {}"_f, url, guid);
     return guid;
 }
