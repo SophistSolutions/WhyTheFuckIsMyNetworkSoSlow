@@ -40,8 +40,8 @@
       "name": "(lldb-UNIX) Launch EXE",
       "type": "lldb",
       "request": "launch",
-      "program": "${workspaceFolder}/Builds/${command:cpptools.activeConfigName}/phred123/phred123",
-      "args": []
+      "program": "${workspaceFolder}/Builds/${command:cpptools.activeConfigName}/WhyTheFuckIsMyNetworkSoSlow/WhyTheFuckIsMyNetworkSoSlow-Backend",
+      "args": ["--run-directly"]
     },
     {
       "name": "(Windows) Launch VisualStudio",
