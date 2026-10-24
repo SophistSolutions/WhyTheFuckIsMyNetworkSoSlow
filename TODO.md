@@ -61,10 +61,8 @@ done.
     included), with the description fetch and the merge on a thread of WTF's own - as Stroika's SSDPClient sample does
     (its fetch has no timeout; WTF's keeps one) - and not refetching soon a description that just failed.
 
-- **A Debug build's .deb loads every core for over a minute** (2026-10-22, medusa's load 24 -> 51): dpkg-deb compresses
-  the 2 GB unstripped (ASan) Debug binary to 216 MB on 33 threads, about 80 s. Cap it (`--threads-max`, in
-  Installers/Makefile), or make no .deb for Debug. That run's DEB-Installer-Build.Out also said "dpkg-deb: error: tar
-  subprocess was killed by signal (Broken pipe)", though make succeeded and the .deb was complete; not reproduced.
+- A Debug .deb build on 2026-10-22 logged "dpkg-deb: error: tar subprocess was killed by signal (Broken pipe)" in
+  DEB-Installer-Build.Out, though make succeeded and the .deb was complete; not reproduced (three clean builds 10/23).
 
 - Small bugs found reading the code (2026-10-20):
   - WebServices/WebServer.cpp:483 records `fNumberOfActiveConnections` with `RecordActiveRunningTasksCount`, mixing two

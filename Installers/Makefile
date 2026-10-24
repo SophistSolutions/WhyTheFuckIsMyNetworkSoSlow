@@ -101,6 +101,15 @@ endif
 DEB_WORKDIR:=$(shell mktemp -d)/
 DEB_VERSION=$(MAJOR_DOT_MINOR_VERSION)$(INSTALLER_RELEASE_TAG)
 DEB_BUILD_OUT=$(ObjDir)DEB-Installer-Build.Out
+#
+# dpkg-deb compresses on one thread per CPU (in a docker container, every CPU of the host), whatever make's -j says - for
+# a Debug build's 2 GB binary, every core for over a minute. So hand it make's own -jN, which GNU make puts in MAKEFLAGS
+# (as Stroika's boost Makefile does for b2). Read at recipe time, since MAKEFLAGS is not reliable while makefiles are
+# parsed. No -jN (serial make, or a bare -j), or a dpkg-deb without --threads-max (before dpkg 1.21.13 - Ubuntu 22.04
+# has 1.21.1): dpkg-deb keeps its default.
+#
+DEB_JOBS_=$(patsubst -j%,%,$(filter -j%,$(MAKEFLAGS)))
+DEB_THREADS_ARG_=$(if $(DEB_JOBS_),$(shell dpkg-deb --help 2>/dev/null | grep -q -- --threads-max && echo --threads-max=$(DEB_JOBS_)))
 $(TARGET_OUT_INSTALLER_DEB): $(BUILT_SERVICE_EXE) Makefile ${BUILT_DATA_DIR} ${BUILT_HTML_DIR}
 	@$(StroikaRoot)/Build/Scripts/PrintProgressLine $(MAKE_INDENT_LEVEL) "Building DEB installer: "
 	@$(StroikaRoot)/Build/Scripts/PrintProgressLine $$(($(MAKE_INDENT_LEVEL)+1))  "temp files:" `$(StroikaRoot)/Build/Scripts/SubstituteBackVariables $(DEB_WORKDIR)`"; log:" `$(StroikaRoot)/Build/Scripts/SubstituteBackVariables $(DEB_BUILD_OUT)`
@@ -140,7 +149,7 @@ endif
 	@cp -r $(BUILT_HTML_DIR) $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION)/opt/$(BASIC_NAME)/html
 
 	@#--root-owner-group: the package's files belong to root, whoever builds it
-	@dpkg-deb --root-owner-group --build $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION) 2>&1 > $(DEB_BUILD_OUT)
+	@dpkg-deb --root-owner-group $(DEB_THREADS_ARG_) --build $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION) 2>&1 > $(DEB_BUILD_OUT)
 	@cp $(DEB_WORKDIR)$(BASIC_NAME_LC)-$(DEB_VERSION).deb $(TARGET_OUT_INSTALLER_DEB)
 	
 	@rm -rf $(DEB_WORKDIR)
