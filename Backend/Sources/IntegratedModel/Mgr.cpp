@@ -119,6 +119,9 @@ namespace {
                         }
                         return false;
                     }
+                    catch (const Thread::AbortException&) {
+                        Execution::ReThrow (); // a stop request must end the thread, not count as a bad network
+                    }
                     catch (...) {
                         WeakAssertNotReached (); // not expected, but handled (Release AssertNotReached is unreachable ())
                         return true;
@@ -136,6 +139,9 @@ namespace {
                         this->SetNetworkUserSettings (i, nullopt);
                     }
                 }
+            }
+            catch (const Thread::AbortException&) {
+                Execution::ReThrow ();
             }
             catch (...) {
                 WeakAssertNotReached (); // would be bad - but handled (see above)
