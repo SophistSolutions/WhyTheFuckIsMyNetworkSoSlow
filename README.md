@@ -9,7 +9,8 @@ diagnose their own personal networks, to indicate network issues and to provide 
 
   - Install (msi/deb/rpm installs in release section below)
 
-    installation starts background web-service, on port 80 for GUI, and 8080 for API-Server
+    installation starts a background web-service, serving the GUI and the API on one port - 80 by default (WebServerPort in
+    AppSettings.json)
 
   - In a browser, visit:
     - <http://localhost/> (web-gui)

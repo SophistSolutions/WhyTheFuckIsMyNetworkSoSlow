@@ -15,8 +15,8 @@ tables, its release milestones (`3.0dNN`), `UPGRADE NOTE:`s in commit messages (
 
 "Why The Fuck Is My Network So Slow" (WTF): a service that finds the networks and devices it can see, keeps their
 history in a local database, and serves a web UI and a JSON API about them (`http://<host>/`, `http://<host>/api`). It
-installs as a Windows service or a systemd unit. Version in `VERSION`; branches `v1-Dev` (work) and `v1-Release`. The
-README is out of date in places (it puts the API on port 8080) - trust the code.
+installs as a Windows service or a systemd unit. Version in `VERSION`; branches `v1-Dev` (work) and `v1-Release`. Where
+the README and the code disagree, trust the code.
 
 **Platforms** (LGP, 2026-10-21): on Linux, keep building for the older Ubuntu LTS releases as well as the newest - that
 is platform support, the reach of the .deb - each built with that distro's default g++ (and ARM cross g++), naming a

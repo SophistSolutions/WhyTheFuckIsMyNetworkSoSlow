@@ -56,9 +56,6 @@ done.
 - A Debug .deb build on 2026-10-22 logged "dpkg-deb: error: tar subprocess was killed by signal (Broken pipe)" in
   DEB-Installer-Build.Out, though make succeeded and the .deb was complete; not reproduced (three clean builds 10/23).
 
-- Small bugs found reading the code (2026-10-20):
-  - README.md puts the API on port 8080 (UI and API share one port, default 80).
-
 ## Watching
 
 Not work items: checks to run now and then, raised only when one finds something.
