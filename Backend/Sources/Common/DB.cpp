@@ -92,6 +92,8 @@ uintmax_t WhyTheFuckIsMyNetworkSoSlow::BackendApp::Common::DB::GetFileSize () co
 }
 
 namespace {
+    // Replace the whole database (copyTo) with loadFromStartupFile's - a JSON file, easier to edit or view, named by AppSettings'
+    // StartupLoadFrom - just once: that setting is cleared first, so the next start does not load it again
     void LoadFromStartupFile_ (const filesystem::path& loadFromStartupFile, Database::Document::Connection::Ptr copyTo)
     {
         IgnoreExceptionsExceptThreadAbortForCall ([&] () {
@@ -103,8 +105,8 @@ namespace {
             }
             gAppConfiguration.Set (appCfg);
         }());
-        static bool sTried_ = false;
-        Assert (not sTried_); // don't accidentally trigger twice
+        [[maybe_unused]] static bool sTried_ = false; // read only by the Assert
+        Assert (not sTried_);                         // don't accidentally trigger twice
         sTried_ = true;
         try {
             // load file as tmp DocumentDB (copyFrom)
