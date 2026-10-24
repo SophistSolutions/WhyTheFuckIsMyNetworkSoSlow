@@ -62,15 +62,17 @@ namespace {
         }
         catch (const std::system_error& e) {
             Logger::sThe.Log (Logger::eWarning, "Database update: ignoring exception in TransformURL2LocalStorage_: {}"_f, e);
-            Assert (e.code () == errc::device_or_resource_busy); // this can happen talking to database (SQLITE_BUSY or SQLITE_LOCKED)
-                                                                 // might be better to up timeout so more rare
+            // Expected: a busy database (SQLITE_BUSY or SQLITE_LOCKED) - might be better to up the timeout, so rarer. Any other
+            // error is handled the same way, so these WeakAsserts report one, not stop: a Release build's Assert/AssertNotReached
+            // is an assumption ([[assume]], unreachable ()), undefined behavior when wrong
+            WeakAssert (e.code () == errc::device_or_resource_busy);
         }
         catch (const Thread::AbortException&) {
             Execution::ReThrow ();
         }
         catch (...) {
             Logger::sThe.Log (Logger::eWarning, "Database update: ignoring exception in TransformURL2LocalStorage_: {}"_f, current_exception ());
-            AssertNotReached ();
+            WeakAssertNotReached ();
         }
         DbgTrace ("Failed to cache url ({}) - so returning original"_f, url);
         return url;

@@ -120,7 +120,7 @@ namespace {
                         return false;
                     }
                     catch (...) {
-                        AssertNotReached ();
+                        WeakAssertNotReached (); // not expected, but handled (Release AssertNotReached is unreachable ())
                         return true;
                     }
                 };
@@ -138,7 +138,7 @@ namespace {
                 }
             }
             catch (...) {
-                AssertNotReached (); // would be bad...
+                WeakAssertNotReached (); // would be bad - but handled (see above)
             }
         }
         bool GetFinishedInitialDBLoad () const
