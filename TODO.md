@@ -29,12 +29,12 @@ done.
     host, once Stroika #1248 says which networks those are (as #94); (4) by default, show the devices seen recently
     (#57, #61). Related: #58 (design doc for IDs), #67, #53.
 
-- For Stroika (pass on to its session; found 2026-10-22): FileSystemRequestHandler's fallback file takes the cache rule
-  of the URL asked for, not of the file it serves (FileSystemRequestHandler.cpp:66-86); and its Samples' unit
-  files (Samples/HTMLUI/Installers, Samples/Service/Installers) say `PIDFile=/var/run/...`, which systemd warns about
-  on every reload (WTF's moved to /run). And (2026-10-23) Build/Scripts/FormatCode expands its `EXCLUDES` unquoted, so
-  bash globs `*/node_modules/*` against the current directory: run from WTF's root it matches html/node_modules/... and
-  find fails ("paths must precede expression"); `-name $filePattern` is unquoted the same way.
+- For Stroika (pass on to its session; found 2026-10-22): its Samples' unit files (Samples/HTMLUI/Installers,
+  Samples/Service/Installers) say `PIDFile=/var/run/...`, which systemd warns about on every reload (WTF's moved to
+  /run). And (2026-10-23) Build/Scripts/FormatCode expands its `EXCLUDES` unquoted, so bash globs `*/node_modules/*`
+  against the current directory: run from WTF's root it matches html/node_modules/... and find fails ("paths must
+  precede expression"); `-name $filePattern` is unquoted the same way. FileSystemRequestHandler's fallback cache rule,
+  and the HTMLUI sample's caching and routing docs: https://github.com/SophistSolutions/Stroika/issues/1253.
 
 - **SSDP discovery, `RecieveSSDPAdvertisement_`** (Discovery/Devices.cpp:929-1085), the callback of both the SSDP
   Listener and the Search, runs on Stroika's shared SSDP thread - which, since Stroika 3.0d25, a network change and
