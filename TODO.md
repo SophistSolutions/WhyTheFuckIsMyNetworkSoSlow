@@ -57,8 +57,6 @@ done.
   DEB-Installer-Build.Out, though make succeeded and the .deb was complete; not reproduced (three clean builds 10/23).
 
 - Small bugs found reading the code (2026-10-20):
-  - Discovery/Networks.cpp `genCIDRsFromBindings`: the loop dropping subsumed CIDRs never fires (a CIDR with more
-    significant bits cannot contain one with fewer) - and, made to fire, it removes from the Set it is iterating.
   - html/src/pages/AboutPage.vue imports `pretty-bytes`, which html/package.json does not list.
   - Every Backend Makefile's `SrcDir` names `BackendApp/...`, and two name the wrong module - unused, but misleading.
   - .vscode/launch.json: the lldb entry runs `phred123/phred123`.

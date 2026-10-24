@@ -218,19 +218,17 @@ namespace {
                     cidrs += CIDR{nib.GetBaseInternetAddress (), nib.GetNumberOfSignificantBits ()};
                 }
             }
-            // You CAN generate two CIDRs, one which subsumes the other. If so, lose any subsumed CIDRs from the list
-            // Use simple quadradic algorithm, since we can never have very many CIDRs in a network
-            for (Iterator<CIDR> ci = cidrs.begin (); ci != cidrs.end (); ++ci) {
-                for (const CIDR& maybeSubsumerCIDR : cidrs) {
-                    if (maybeSubsumerCIDR.GetNumberOfSignificantBits () > ci->GetNumberOfSignificantBits ()) {
-                        if (maybeSubsumerCIDR.GetRange ().Contains (ci->GetRange ())) {
-                            DbgTrace ("Removing subsumed CIDR {} inside {}"_f, *ci, maybeSubsumerCIDR);
-                            cidrs.Remove (ci);
-                        }
-                    }
+            // One CIDR can lie inside another - an interface's own IPv6 /128 inside its /64 - so keep only those no other one
+            // contains: interfaces on one network then compare equal. Quadratic, as an interface has few CIDRs
+            return cidrs.Where ([&cidrs] (const CIDR& c) {
+                bool subsumed = cidrs.Any ([&c] (const CIDR& other) {
+                    return other.GetNumberOfSignificantBits () < c.GetNumberOfSignificantBits () and other.GetRange ().Contains (c.GetRange ());
+                });
+                if (subsumed) {
+                    DbgTrace ("Dropping CIDR {}, inside another of the interface's"_f, c);
                 }
-            }
-            return cidrs;
+                return not subsumed;
+            });
         };
 
         Collection<Network> accumResults;
