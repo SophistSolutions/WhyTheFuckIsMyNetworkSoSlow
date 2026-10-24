@@ -8,11 +8,8 @@ ARG INCLUDE_HANDY_DEV_TOOLS=false
 # (not sure why apt-get upgrade needed, but since around 2020-09-07 needed to make following installer work)
 RUN apt-get update && apt-get upgrade -y
 
-# g++-15 is 26.04's default g++ - what the top Makefile's 'g++' configurations pick up
-RUN apt-get install -y g++-15
-
-# Cross-compile for ARM - g++-14, the newest the top Makefile's raspberrypi configurations try
-RUN apt-get install -y g++-14-arm-linux-gnueabihf
+# each distro's default g++, and ARM cross g++ - what the top Makefile's configurations use
+RUN apt-get install -y g++ g++-arm-linux-gnueabihf
 
 # NPM: For html code - nodesource's Node, as Stroika's images use
 # Instructions from https://github.com/nodesource/distributions#readme

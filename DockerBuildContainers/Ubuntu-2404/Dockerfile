@@ -8,10 +8,8 @@ ARG INCLUDE_HANDY_DEV_TOOLS=false
 # (not sure why apt-get upgrade needed, but since around 2020-09-07 needed to make following installer work)
 RUN apt-get update && apt-get upgrade -y
 
-RUN apt-get install -y g++-14
-
-# Cross-compile for ARM
-RUN apt-get install -y g++-14-arm-linux-gnueabihf
+# each distro's default g++, and ARM cross g++ - what the top Makefile's configurations use
+RUN apt-get install -y g++ g++-arm-linux-gnueabihf
 
 # NPM: For html code
 #

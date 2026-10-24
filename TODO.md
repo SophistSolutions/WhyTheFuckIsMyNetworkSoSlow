@@ -66,10 +66,6 @@ done.
   Installers/Makefile), or make no .deb for Debug. That run's DEB-Installer-Build.Out also said "dpkg-deb: error: tar
   subprocess was killed by signal (Broken pipe)", though make succeeded and the .deb was complete; not reproduced.
 
-- Linux: the top Makefile's default-configurations try only g++, g++-12..14 and armhf g++-12..14 - no g++-15/16
-  (Ubuntu 26.04 has g++-15), and no raspberrypi with armhf g++-15. build-N-test-Matrix.json has no Ubuntu 26.04 entry
-  yet (add one once build-Dev-Docker-Containers has published the image).
-
 - Small bugs found reading the code (2026-10-20):
   - WebServices/WebServer.cpp:483 records `fNumberOfActiveConnections` with `RecordActiveRunningTasksCount`, mixing two
     statistics; `RecordProcessingConnectionCount`, never called, looks intended.
