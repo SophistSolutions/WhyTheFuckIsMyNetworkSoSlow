@@ -57,7 +57,6 @@ done.
   DEB-Installer-Build.Out, though make succeeded and the .deb was complete; not reproduced (three clean builds 10/23).
 
 - Small bugs found reading the code (2026-10-20):
-  - html/src/pages/AboutPage.vue imports `pretty-bytes`, which html/package.json does not list.
   - Every Backend Makefile's `SrcDir` names `BackendApp/...`, and two name the wrong module - unused, but misleading.
   - .vscode/launch.json: the lldb entry runs `phred123/phred123`.
   - README.md puts the API on port 8080 (UI and API share one port, default 80).

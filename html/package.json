@@ -19,6 +19,7 @@
     "dotenv": "^16.0.1",
     "luxon": "^3.0.1",
     "pinia": "^2.0.11",
+    "pretty-bytes": "^7.2.0",
     "quasar": "^2.11.0",
     "vue": "^3.2.0",
     "vue-json-viewer": "^3.0.4",
