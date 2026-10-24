@@ -1,6 +1,6 @@
 ﻿export TOP_ROOT	:=	$(abspath ../)/
 StroikaRoot		:=	$(TOP_ROOT)ThirdPartyComponents/Stroika/StroikaRoot/
-SrcDir			:=	$(TOP_ROOT)BackendApp/
+SrcDir			:=	$(TOP_ROOT)Backend/
 
 
 include $(StroikaRoot)Build/Lib/Make/SharedMakeVariables-Default.mk

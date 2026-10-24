@@ -1,6 +1,6 @@
 export TOP_ROOT:=$(abspath ../../../)/
 StroikaRoot	:=	$(TOP_ROOT)ThirdPartyComponents/Stroika/StroikaRoot/
-SrcDir		:=	$(TOP_ROOT)BackendApp/Sources/Discovery/
+SrcDir		:=	$(TOP_ROOT)Backend/Sources/WebServices/
 ObjDir		:=	$(TOP_ROOT)IntermediateFiles/$(CONFIGURATION)/WhyTheFuckIsMyNetworkSoSlow-Backend/WebServices/
 
 include $(StroikaRoot)Build/Lib/Make/SharedMakeVariables-Default.mk
