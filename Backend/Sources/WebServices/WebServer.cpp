@@ -158,14 +158,27 @@ namespace {
 namespace {
     const FileSystemRequestHandler::Options kStaticSiteHandlerOptions_{[] () {
         Sequence<pair<RegularExpression, CacheControl>> kFSCacheControlSettings_{
-            // Empirically, vite/quasar appears to put hash/immutable files into dist/spa/assets/AboutPage-BBsu2LrN.css, AboutPage-D6hvYwgY.js etc...
+            /*
+             *  vite/quasar names each built asset (dist/spa/assets/AboutPage-BBsu2LrN.css, AboutPage-D6hvYwgY.js, ...) by a hash of
+             *  its contents: a changed file gets a new name, so a browser can keep each one forever, never asking again.
+             */
             {RegularExpression{".*\\bassets\\/.+"sv, eCaseInsensitive}, CacheControl::kImmutable},
-            {RegularExpression::kAny, CacheControl{.fCacheability = CacheControl::ePublic, .fMaxAge = Duration{5min}.As<int32_t> ()}},
+            /*
+             *  Everything else (index.html, favicon.ico, ...) keeps its name across an upgrade, so a browser checks it before each
+             *  use (no-cache: store, but revalidate). That is cheap - Stroika's WebServer gives each response an ETag, and answers
+             *  a matching If-None-Match with a 304 and no body - and a reload sees an upgrade at once. A max-age instead lets a
+             *  reload soon after an upgrade use the old index.html, which names assets the upgrade removed: a blank page.
+             */
+            {RegularExpression::kAny, CacheControl{.fCacheability = CacheControl::eNoCache}},
         };
+        /*
+         *  No fFallbackFile: the UI uses hash routing (html/quasar.config.ts, vueRouterMode: 'hash' - URLs like /#/devices),
+         *  so the browser asks the server only for real files, and a missing one is a 404. Answering every unknown path with
+         *  index.html is for history routing (URLs like /devices, which a reload asks the server for), as in Stroika's HTMLUI
+         *  sample.
+         */
         return FileSystemRequestHandler::Options{.fDefaultIndexFileNames = Sequence<filesystem::path>{"index.html"sv},
-                                                 .fCacheControlSettings  = kFSCacheControlSettings_,
-                                                 // fallback needed for createWebHistory router mode
-                                                 .fFallbackFile = "index.html"sv};
+                                                 .fCacheControlSettings  = kFSCacheControlSettings_};
     }()};
 }
 

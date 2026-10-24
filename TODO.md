@@ -29,16 +29,8 @@ done.
     host, once Stroika #1248 says which networks those are (as #94); (4) by default, show the devices seen recently
     (#57, #61). Related: #58 (design doc for IDs), #67, #53.
 
-- HTTP caching (checked 2026-10-22 - not the cause of the blank page): hashed /assets/ files are immutable - right; but
-  index.html is `public, max-age=300` - make it `no-cache` (304s work), so an upgrade is seen at once. A missing file is
-  answered with index.html (200, text/html) - under /assets/ marked immutable for 68 years, as Stroika's
-  FileSystemRequestHandler picks the cache rule by the URL, not by the file it serves (a Stroika bug) - and unknown
-  /api/ paths get index.html too. That fallback (WebServices/WebServer.cpp:165-168) is "for createWebHistory router
-  mode", but the UI uses hash routing (html/quasar.config.ts:62): drop it, and a missing file is a 404. Single-object
-  API GETs are cached 10 s (active) or 24 hours (historical - IntegratedModel/Mgr.cpp:154-155).
-
 - For Stroika (pass on to its session; found 2026-10-22): FileSystemRequestHandler's fallback file takes the cache rule
-  of the URL asked for, not of the file it serves (FileSystemRequestHandler.cpp:66-86 - above); and its Samples' unit
+  of the URL asked for, not of the file it serves (FileSystemRequestHandler.cpp:66-86); and its Samples' unit
   files (Samples/HTMLUI/Installers, Samples/Service/Installers) say `PIDFile=/var/run/...`, which systemd warns about
   on every reload (WTF's moved to /run). And (2026-10-23) Build/Scripts/FormatCode expands its `EXCLUDES` unquoted, so
   bash globs `*/node_modules/*` against the current directory: run from WTF's root it matches html/node_modules/... and
