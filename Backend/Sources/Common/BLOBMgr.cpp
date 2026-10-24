@@ -5,9 +5,11 @@
 
 #include "Stroika/Foundation/Characters/ToString.h"
 #include "Stroika/Foundation/Common/StroikaVersion.h"
+#include "Stroika/Foundation/Containers/Mapping.h"
 #include "Stroika/Foundation/DataExchange/ObjectVariantMapper.h"
 #include "Stroika/Foundation/Execution/Synchronized.h"
 #include "Stroika/Foundation/IO/Network/Transfer/Connection.h"
+#include "Stroika/Foundation/Time/Realtime.h"
 
 #include "DB.h"
 
@@ -135,6 +137,21 @@ namespace {
         return g;
     }
 
+    // Selects url's BLOB-URLs records
+    Database::Document::Filter URLFilter_ (const URI& url)
+    {
+        using namespace Database::Document;
+        return Filter{{FilterElements::Equals{.fLHS = FilterElements::FieldName{"uri"sv}, .fRHS = FilterElements::Value{url.As<String> ()}}}};
+    }
+
+    // How long a URL's fetched content counts as current: the HTTP cache's lifetime for a resource that names none, and how soon
+    // AsyncAddBLOBFromURL fetches a URL again
+    constexpr Time::DurationSeconds kURLRecheckInterval_{60min};
+
+    // When AsyncAddBLOBFromURL last queued a fetch of each URL, in this run: it queues at most one per kURLRecheckInterval_ -
+    // so a failed fetch is not retried sooner either
+    Synchronized<Mapping<String, Time::TimePointSeconds>> sURLFetchQueuedAt_;
+
 }
 
 /*
@@ -171,17 +188,20 @@ GUID BLOBMgr::AddBLOB (const BLOB& b, const optional<InternetMediaType>& ct)
 GUID BLOBMgr::AddBLOBFromURL (const URI& url, bool recheckIfExpired)
 {
     using namespace IO::Network;
-    auto fetchData = [] (const URI& url) {
-        // fetch the data from the given URI, maintaining a cache, so we don't needlessly ping remote servers for icons etc.
+    auto fetchData = [recheckIfExpired] (const URI& url) {
+        // fetch the data from the given URI through a cache, so we don't needlessly ping remote servers for icons etc: within
+        // its lifetime a resource is not fetched at all, after it with a conditional GET. Not recheckIfExpired: no cache, a full GET
         static Transfer::Cache::Ptr sHttpCache_ = [] () {
             Transfer::Cache::DefaultOptions options;
             options.fCacheSize          = 25;
-            options.fDefaultResourceTTL = 60min;
+            options.fDefaultResourceTTL = kURLRecheckInterval_;
             return Transfer::Cache::CreateDefault (options);
         }();
         using IO::Network::Transfer::Connection::Options;
         Options options{};
-        options.fCache                     = sHttpCache_;
+        if (recheckIfExpired) {
+            options.fCache = sHttpCache_;
+        }
         Transfer::Connection::Ptr conn     = Transfer::Connection::New (options);
         auto&&                    response = conn.GET (url);
         return make_pair (response.GetData (), response.GetContentType ());
@@ -190,40 +210,48 @@ GUID BLOBMgr::AddBLOBFromURL (const URI& url, bool recheckIfExpired)
     // the blob, and the URL's mapping to it, as one operation: the URL maps to the blob of the same fetch
     auto lk   = sConn_.rwget ();
     GUID guid = AddBLOB_ (lk, data.first, data.second);
-    lk.rwref ()->fBLOBURLs.AddOrUpdate (DBRecs_::BLOBURL_{.fURI = url, .fBLOBID = guid});
+    // One BLOB-URLs record per URL: remove any it has, then add one - AddOrUpdate cannot replace a record, as BLOBURL_ has no
+    // document ID
+    const Database::Document::Collection::Ptr& urlRecords = lk.cref ()->fBLOBURLs;
+    for (const Database::Document::Document& d : urlRecords.GetAll (URLFilter_ (url))) {
+        if (optional<VariantValue> id = d.Lookup (Database::Document::kID)) {
+            urlRecords.Remove (id->As<String> ());
+        }
+    }
+    lk.rwref ()->fBLOBURLs.Add (DBRecs_::BLOBURL_{.fURI = url, .fBLOBID = guid});
     DbgTrace ("Added blob mapping: {} maps to blobid {}"_f, url, guid);
     return guid;
 }
 
 optional<GUID> BLOBMgr::AsyncAddBLOBFromURL (const URI& url, bool recheckIfExpired)
 {
-    // create mapping of URL to guid, and if not present, add task to threadpool to AddBLOBFromURL and store mapping into mapping object
-
-    // @todo add logic for checking if expired and refetch then too
-    // Use Stroika HTTP-Cache object support to handle age/etag stuff automatically
-    optional<GUID> storeGUID;
-    {
-        using Document::Filter;
-        using namespace Database::Document;
-        if (optional<DBRecs_::BLOBURL_> cachedURLObj = sConn_.rwget ().rwref ()->fBLOBURLs.Get (
-                Filter{{FilterElements::Equals{.fLHS = FilterElements::FieldName{"uri"sv}, .fRHS = FilterElements::Value{url.As<String> ()}}}})) {
-            storeGUID = cachedURLObj->fBLOBID;
+    // Return the blob stored for url, if any - even if out of date - and queue a fetch of url to the thread pool (AddBLOBFromURL):
+    // if recheckIfExpired, only when none was queued in the last kURLRecheckInterval_. Refetching unchanged content is cheap - the
+    // HTTP cache makes it a conditional GET, and AddBLOB_ reuses the stored blob - and a URL whose content changed (a device's new
+    // icon) is mapped to the new blob.
+    optional<GUID> storedGUID  = Lookup (url);
+    bool           shouldQueue = [&] () {
+        auto                   lk  = sURLFetchQueuedAt_.rwget ();
+        Time::TimePointSeconds now = Time::GetTickCount ();
+        if (recheckIfExpired) {
+            if (optional<Time::TimePointSeconds> queuedAt = lk.cref ().Lookup (url.As<String> ()); queuedAt and now - *queuedAt < kURLRecheckInterval_) {
+                return false;
+            }
         }
+        lk.rwref ().Add (url.As<String> (), now);
+        return true;
+    }();
+    if (shouldQueue) {
+        fThreadPool_.rwget ().rwref ()->AddTask ([url, recheckIfExpired, this] () { AddBLOBFromURL (url, recheckIfExpired); });
     }
-    if (not storeGUID.has_value ()) {
-        fThreadPool_.rwget ().rwref ()->AddTask ([url, recheckIfExpired, this] () {
-            AddBLOBFromURL (url, recheckIfExpired); // @todo if this fails (CATCH) - then negative cache, so we dont try too often
-        });
-    }
-    return storeGUID;
+    return storedGUID;
 }
 
 optional<GUID> BLOBMgr::Lookup (const URI& url)
 {
-    using Document::Filter;
-    using namespace Database::Document;
-    if (optional<DBRecs_::BLOBURL_> cachedURLObj = sConn_.rwget ().rwref ()->fBLOBURLs.Get (
-            Filter{{FilterElements::Equals{.fLHS = FilterElements::FieldName{"uri"sv}, .fRHS = FilterElements::Value{url.As<String> ()}}}})) {
+    // GetAll, not Get - which throws if more than one record matches: a database written before WTF 1.0d21 may hold several
+    // for a URL, each naming a fetch of its content, so any will do (the URL's next fetch leaves one)
+    if (optional<DBRecs_::BLOBURL_> cachedURLObj = sConn_.rwget ().rwref ()->fBLOBURLs.GetAll (URLFilter_ (url)).First ()) {
         return cachedURLObj->fBLOBID;
     }
     return nullopt;
