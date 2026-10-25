@@ -36,22 +36,16 @@ done.
   precede expression"); `-name $filePattern` is unquoted the same way. FileSystemRequestHandler's fallback cache rule,
   and the HTMLUI sample's caching and routing docs: https://github.com/SophistSolutions/Stroika/issues/1253.
 
-- **SSDP discovery, `RecieveSSDPAdvertisement_`** (Discovery/Devices.cpp:929-1085), the callback of both the SSDP
-  Listener and the Search, runs on Stroika's shared SSDP thread - which, since Stroika 3.0d25, a network change and
-  shutdown (`Stop ()`, destruction) wait for. It holds that thread far too long (protagoras traces, 2026-10-21):
-  - Its lock-retry loop (Devices.cpp:999-1083) has no cap - each round waits up to 5 s to upgrade the lock, then sleeps
-    1 s, 2 s, ... - so near startup, callbacks took 24-41 s.
-  - The description GET has a 5 s timeout, but on Windows Stroika's WinHTTP backend applies it only to reading the body
-    (https://github.com/SophistSolutions/Stroika/issues/1246). There, a LOCATION that never accepts the connection takes
-    Windows' 21 s TCP give-up: Windows' own UPnP host advertises `http://[fe80::...]:2869/...` on the Tailscale
-    interface, whose (Public) firewall profile drops it - and it is refetched on every NOTIFY, so the thread was busy
-    21 s of every 22. The DNS lookup of a LOCATION host name has no timeout at all.
-  - It drops every ssdp:byebye: a byebye has no LOCATION, so `locAddrs` is empty (a WeakAssert in Debug) and the merge,
-    `fAlive` included, is skipped - https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/93. (A
-    Debug run on medusa logged it 2224 times in 14 hours.)
-  - Fix for all: Stroika 3.0d25's `SSDP::Client::CachingListener` (state per device, one call per change, removals
-    included), with the description fetch and the merge on a thread of WTF's own - as Stroika's SSDPClient sample does
-    (its fetch has no timeout; WTF's keeps one) - and not refetching soon a description that just failed.
+- **Discovery: the merges into `sDiscoveredDevices_`** (Discovery/Devices.cpp - MyDeviceDiscoverer_,
+  SSDPDeviceDiscoverer_::Merge_, MyNeighborDiscoverer_, the port scanners) read under a shared lock, then upgrade it - and
+  on any write in between, or after 5 s, sleep 1 s, 2 s, ... and start over, with no limit (SSDP alone retried 27 times
+  in the first minutes of a protagoras run, 2026-10-24). Use the `UpgradeLockNonAtomicallyQuietly` overload told of an
+  intervening write, redoing the merge under the write lock; and perhaps warm the reverse-DNS cache (`PatchDerivedFields`)
+  before taking any lock. One commit, for all of them (LGP 2026-10-24).
+
+- **SSDP "last seen"**: once https://github.com/SophistSolutions/Stroika/issues/1256 gives `SSDP::Advertisement` the
+  time it was heard, `SSDPDeviceDiscoverer_::Refresh_` extends seen.UDP to when each advertisement was last heard, not to
+  now - today a device that leaves without a byebye looks seen until its max-age runs out (often 30 minutes).
 
 - A Debug .deb build on 2026-10-22 logged "dpkg-deb: error: tar subprocess was killed by signal (Broken pipe)" in
   DEB-Installer-Build.Out, though make succeeded and the .deb was complete; not reproduced (three clean builds 10/23).

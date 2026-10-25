@@ -24,6 +24,7 @@
 #include "Stroika/Foundation/Execution/Sleep.h"
 #include "Stroika/Foundation/Execution/Synchronized.h"
 #include "Stroika/Foundation/Execution/Thread.h"
+#include "Stroika/Foundation/Execution/ThreadPool.h"
 #include "Stroika/Foundation/IO/Network/DNS.h"
 #include "Stroika/Foundation/IO/Network/HTTP/ClientErrorException.h"
 #include "Stroika/Foundation/IO/Network/Interface.h"
@@ -34,8 +35,7 @@
 
 #include "Stroika/Frameworks/NetworkMonitor/Ping.h"
 #include "Stroika/Frameworks/UPnP/DeviceDescription.h"
-#include "Stroika/Frameworks/UPnP/SSDP/Client/Listener.h"
-#include "Stroika/Frameworks/UPnP/SSDP/Client/Search.h"
+#include "Stroika/Frameworks/UPnP/SSDP/Client/CachingListener.h"
 
 #include "../Common/EthernetMACAddressOUIPrefixes.h"
 
@@ -289,15 +289,15 @@ namespace {
     struct DiscoveryInfo_ : Discovery::Device {
 
         struct SSDPInfo {
-            optional<bool>   fAlive; // else Bye notification, or empty if neither -- probably replace with TIMINGS of last ALIVE, or Bye
-            Set<String>      fUSNs;
-            Set<URI>         fLocations;
+            optional<bool>   fAlive;     // true while any of its advertisements is in force, false once none is (@see SSDPDeviceDiscoverer_)
+            Set<String>      fUSNs;      // those in force
+            Set<URI>         fLocations; // those in force
             optional<String> fServer;
             optional<String> fManufacturer;
             optional<URI>    fManufacturerURI;
             Mapping<String, String> fDeviceType2FriendlyNameMap; //  http://upnp.org/specs/arch/UPnP-arch-DeviceArchitecture-v1.1.pdf - <deviceType> - Page 44
             optional<URI>  fPresentationURL;
-            Time::DateTime fLastSSDPMessageRecievedAt{Time::DateTime::Now ()};
+            Time::DateTime fLastSSDPMessageRecievedAt{Time::DateTime::Now ()}; // when last merged: just heard, or still in force
 #if qStroika_Foundation_Debug_AssertionsChecked
             optional<SSDP::Advertisement> fLastAdvertisement;
 #endif
@@ -589,6 +589,7 @@ namespace {
                                                                 Mapping<String, VariantValue> {
                                                                     fSSDPInfo->fDeviceType2FriendlyNameMap
                                                                 }},
+                                     pair<String, VariantValue>{"alive"sv, fSSDPInfo->fAlive},
                                      pair<String, VariantValue>{"USNs"sv, kMyMapper_.FromObject (fSSDPInfo->fUSNs)},
                                      pair<String, VariantValue>{"server"sv, fSSDPInfo->fServer},
                                      pair<String, VariantValue>{"manufacturer"sv, fSSDPInfo->fManufacturer},
@@ -850,231 +851,321 @@ namespace {
      */
     /*
      *  When constructed, push data as discovered into sDiscoveredDevices_
-     * 
-     *  Stroika's SSDP Listener and Search follow networks as they come and go; the timer only retries constructing
-     *  one that failed (e.g. its socket could not be created or bound).
+     *
+     *  Stroika's SSDP CachingListener listens and searches, following networks as they come and go, and keeps what is
+     *  advertised - telling us of each change: an advertisement added, or removed (by an ssdp:byebye, or its max-age running
+     *  out). Its callbacks run on its threads, which a network change and shutdown wait for, so they only queue the change:
+     *  fWorker_, a thread of our own, does the slow parts - resolving the LOCATION, fetching the device description, merging
+     *  into sDiscoveredDevices_ - one change at a time, in order.
+     *
+     *  It reports changes, not each advertisement heard, so each minute the timer has fWorker_ merge what is still in force
+     *  again (@see Refresh_), extending each device's fSeen.fUDP. The timer also retries constructing the listener, if that
+     *  failed (e.g. its socket could not be created or bound).
      */
     class SSDPDeviceDiscoverer_ {
     public:
         SSDPDeviceDiscoverer_ ()
             : fIntervalTimerAdder_{[this] () {
                                        Debug::TraceContextBumper ctx{"SSDPDeviceDiscoverer_ TIMER HANDLER"}; // to debug https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/78
-                                       if (fListener_ == nullptr or fSearcher_ == nullptr) {
-                                           IgnoreExceptionsExceptThreadAbortForCall (ConstructSearcherAndListener_ (true));
+                                       if (fListener_ == nullptr) {
+                                           IgnoreExceptionsExceptThreadAbortForCall (ConstructListener_ (true));
+                                       }
+                                       else {
+                                           fWorker_.AddTask ([this, inForce = fListener_->GetAdvertisements ()] () { Refresh_ (inForce); });
                                        }
                                    },
                                    1min}
         {
-            IgnoreExceptionsExceptThreadAbortForCall (ConstructSearcherAndListener_ (false));
+            IgnoreExceptionsExceptThreadAbortForCall (ConstructListener_ (false));
         }
 
     private:
-        nonvirtual void ConstructSearcherAndListener_ (bool notifyOfSuccess)
+        nonvirtual void ConstructListener_ (bool notifyOfSuccess)
         {
             // SSDP can fail due to lack of permissions to bind to the appropriate sockets, or for example under WSL where we get protocol unsupported.
             // WARN to syslog, but no need to stop app
-            optional<String> messageAboutFailedStartSSDPListener;
-            optional<String> messageAboutFailedStartSSDPSearcher;
-            if (fListener_ == nullptr) {
-                try {
-                    fListener_ = make_unique<SSDP::Client::Listener> (
-                        [this] (const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); }, SSDP::Client::Listener::eAutoStart);
-                    if (notifyOfSuccess) {
-                        Logger::sThe.Log (Logger::eInfo, "(Re-)Started SSDP Listener"_f);
-                    }
-                }
-                catch (...) {
-                    messageAboutFailedStartSSDPListener = "Problem starting SSDP Listener: {}"_f(current_exception ());
+            try {
+                static const Time::Duration kReSearchInterval_{10min}; // not sure what interval makes sense
+                fListener_ = make_unique<SSDP::Client::CachingListener> (
+                    [this] (const SSDP::Advertisement& a) { QueueChange_ (a); },
+                    SSDP::Client::CachingListener::Options{.fSearchFor = SSDP::kTarget_UPNPRootDevice, .fSearchRepeatInterval = kReSearchInterval_});
+                fListener_->Start (); // once fListener_ is set: QueueChange_ uses it
+                if (notifyOfSuccess) {
+                    Logger::sThe.Log (Logger::eInfo, "(Re-)Started SSDP Listener"_f);
                 }
             }
-            if (fSearcher_ == nullptr) {
-                try {
-                    static const Time::Duration kReSearchInterval_{10min}; // not sure what interval makes sense
-                    fSearcher_ =
-                        make_unique<SSDP::Client::Search> ([this] (const SSDP::Advertisement& d) { this->RecieveSSDPAdvertisement_ (d); },
-                                                           SSDP::Client::Search::kRootDevice, kReSearchInterval_);
-                    if (notifyOfSuccess) {
-                        Logger::sThe.Log (Logger::eInfo, "(Re-)Started SSDP Searcher"_f);
-                    }
-                }
-                catch (...) {
-                    // only warning because searcher much less important - just helpful at very start of discovery
-                    messageAboutFailedStartSSDPSearcher = "Problem starting SSDP Searcher: {}"_f(current_exception ());
-                }
+            catch (const Thread::AbortException&) {
+                fListener_.reset ();
+                Execution::ReThrow ();
             }
-            if (messageAboutFailedStartSSDPListener and messageAboutFailedStartSSDPSearcher) {
-                // more serious problem if both unavailable
-                Logger::sThe.Log (Logger::eWarning, "{}"_f, messageAboutFailedStartSSDPListener);
-                Logger::sThe.Log (Logger::eWarning, "{}"_f, messageAboutFailedStartSSDPSearcher);
-                Logger::sThe.Log (Logger::eWarning, "{}"_f,
-                                  "With both unavailable, a significant source of discovery will be missed - but connection to these services will be retried automatically"_k);
-            }
-            else {
-                // truly minor if only one unavailable
-                if (messageAboutFailedStartSSDPListener) {
-                    Logger::sThe.Log (Logger::eWarning, "{} (minor because SSDP Searcher is working)."_f, messageAboutFailedStartSSDPListener);
-                }
-                else if (messageAboutFailedStartSSDPSearcher) {
-                    Logger::sThe.Log (Logger::eWarning, "{} (minor because SSDP Listener is working)."_f, messageAboutFailedStartSSDPSearcher);
-                }
+            catch (...) {
+                fListener_.reset ();
+                Logger::sThe.Log (Logger::eWarning, "Problem starting SSDP Listener: {} - a significant source of discovery will be missed, but it will be retried automatically"_f,
+                                  current_exception ());
             }
         }
 
     private:
-        IntervalTimer::Adder               fIntervalTimerAdder_;
-        unique_ptr<SSDP::Client::Listener> fListener_;
-        unique_ptr<SSDP::Client::Search>   fSearcher_;
+        // on the listener's threads (@see CachingListener): only queue the change - a removal with what is still in force, which
+        // within a callback has that change made
+        void QueueChange_ (const SSDP::Advertisement& a)
+        {
+            if (a.fAlive == true) {
+                fWorker_.AddTask ([this, a] () { Merge_ (a); });
+            }
+            else {
+                fWorker_.AddTask ([this, a, inForce = fListener_->GetAdvertisements ()] () { Removed_ (a, inForce); });
+            }
+        }
 
     private:
-        void RecieveSSDPAdvertisement_ (const SSDP::Advertisement& d)
+        static Set<InternetAddress> LocationAddresses_ (const URI& location)
+        {
+            if (location.GetAuthority () and location.GetAuthority ()->GetHost ()) {
+                URI::Host h = *location.GetAuthority ()->GetHost ();
+                if (h.AsInternetAddress ()) {
+                    return Set<InternetAddress>{*h.AsInternetAddress ()};
+                }
+                return DNSLookup_ (*h.AsRegisteredName ());
+            }
+            return Set<InternetAddress>{};
+        }
+
+        // the CONFIGID.UPNP.ORG header: changed whenever the device's description is (UPnP Device Architecture 1.1, section 1.2.2)
+        static optional<String> ConfigID_ (const SSDP::Advertisement& a)
+        {
+            constexpr String::EqualsComparer kCaseInsensitive_{Characters::eCaseInsensitive};
+            if (auto h = a.fRawHeaders.First (
+                    [&] (const KeyValuePair<String, String>& i) { return kCaseInsensitive_ (i.fKey, "CONFIGID.UPNP.ORG"_k); })) {
+                return h->fValue;
+            }
+            return nullopt;
+        }
+
+    private:
+        /*
+         *  A LOCATION's device description is fetched as an advertisement there is added, and not again while any there is in
+         *  force (Removed_ forgets it once none is): UPnP Device Architecture 1.1, section 1.2.2, has it static until then -
+         *  unless its CONFIGID.UPNP.ORG changes, saying it changed. One that failed is tried again after kRetryFailedFetchAfter_.
+         */
+        struct Fetched_ {
+            Time::TimePointSeconds fAt;
+            bool                   fSucceeded;
+            optional<String>       fConfigID;
+        };
+        static constexpr Time::DurationSeconds kRetryFailedFetchAfter_{10min};
+
+        optional<Frameworks::UPnP::DeviceDescription> FetchDescriptionIfDue_ (const SSDP::Advertisement& a)
+        {
+            optional<String>       configID = ConfigID_ (a);
+            Time::TimePointSeconds now      = Time::GetTickCount ();
+            if (optional<Fetched_> f = fFetched_.Lookup (a.fLocation)) {
+                bool current = f->fSucceeded ? f->fConfigID == configID : now < f->fAt + kRetryFailedFetchAfter_;
+                if (current) {
+                    return nullopt;
+                }
+            }
+            try {
+                using namespace IO::Network::Transfer;
+                // as of Stroika 3.0d25, Windows' WinHTTP backend applies the timeout only between reads of the body - not to the
+                // connect, or the wait for a response (https://github.com/SophistSolutions/Stroika/issues/1246): there, a LOCATION
+                // that never accepts the connection takes Windows' own TCP give-up, about 21 seconds
+                static constexpr Time::DurationSeconds kFetchDescriptionTimeout_{5s};
+                Connection::Ptr                        c = Connection::New ();
+                c.SetTimeout (kFetchDescriptionTimeout_);
+                Response                            r      = c.GET (a.fLocation);
+                Frameworks::UPnP::DeviceDescription result = DeSerialize (r.GetData ()).Resolve (a.fLocation); // its URLs absolute
+                DbgTrace ("Found device description = {}"_f, result);
+                fFetched_.Add (a.fLocation, Fetched_{now, true, configID});
+                return result;
+            }
+            catch (const Thread::AbortException&) {
+                Execution::ReThrow ();
+            }
+            catch (...) {
+                DbgTrace ("Failed to fetch description: {}"_f, current_exception ());
+                fFetched_.Add (a.fLocation, Fetched_{now, false, configID});
+                return nullopt;
+            }
+        }
+
+    private:
+        // on fWorker_: an advertisement in force - just added, or still there (@see Refresh_) - merged into sDiscoveredDevices_
+        void Merge_ (const SSDP::Advertisement& a)
         {
             constexpr Activity        kInterprettingSSDPMessageRecieved_{"interpretting SSDP advertisement"sv};
-            Debug::TraceContextBumper ctx{"RecieveSSDPAdvertisement_", "d={}"_f, d};
+            Debug::TraceContextBumper ctx{"SSDPDeviceDiscoverer_::Merge_", "a={}"_f, a};
 
             DeclareActivity activity{&kInterprettingSSDPMessageRecieved_};
 
-            Set<InternetAddress> locAddrs;
-            if (d.fLocation.GetAuthority () and d.fLocation.GetAuthority ()->GetHost ()) {
-                URI::Host h = *d.fLocation.GetAuthority ()->GetHost ();
-                if (h.AsInternetAddress ()) {
-                    locAddrs = Set<InternetAddress>{*h.AsInternetAddress ()};
-                }
-                else {
-                    locAddrs = DNSLookup_ (*h.AsRegisteredName ());
+            Set<InternetAddress> locAddrs = LocationAddresses_ (a.fLocation);
+            {
+                // one at an address on none of our networks (link-local, with kIncludeLinkLocalAddressesInDiscovery false, say) makes
+                // no device, so its description is not worth fetching
+                DiscoveryInfo_ tmp{};
+                tmp.AddNetworkAddresses_ (locAddrs);
+                if (tmp.fAttachedNetworks.empty ()) {
+                    DbgTrace ("Ignoring SSDP advertisement for device on no network (possibly because of kIncludeLinkLocalAddressesInDiscovery etc suppression)"_f);
+                    return;
                 }
             }
 
-            // @todo - Maintain cache with age apx 60 minutes - mapping URL to UPnP::DeviceDescription objects
-
-            /// @todo - Add Search support (once at startup, and then every 10 minutes? - config) - because it maybe some devices dont properly
-            /// broadcast, and only respond to search, plus gives better immediate feedback when we first start up (at least helpful for debugging)
             optional<String> deviceFriendlyName;
             optional<String> deviceType;
             optional<String> manufactureName;
             optional<URI>    manufacturerURL;
             optional<URI>    presentationURL;
             optional<URI>    deviceIconURL;
-
-            unsigned int retriedLockCount = 0;
-            if (d.fLocation) {
-                try {
-                    using namespace IO::Network::Transfer;
-                    // this runs on the SSDP Listener's or Search's thread, which a network change and Stop () wait for - so a device
-                    // that has just gone must not hold it for minutes (as of Stroika 3.0d25, Windows' WinHTTP backend applies the
-                    // timeout only between reads of the body - not to the connect, or the wait for a response)
-                    static constexpr Time::DurationSeconds kFetchDescriptionTimeout_{5s};
-                    Connection::Ptr                        c = Connection::New ();
-                    c.SetTimeout (kFetchDescriptionTimeout_);
-                    Response                            r          = c.GET (d.fLocation);
-                    Frameworks::UPnP::DeviceDescription deviceInfo = DeSerialize (r.GetData ()).Resolve (d.fLocation); // its URLs absolute
-                    deviceFriendlyName                             = deviceInfo.fFriendlyName;
-                    deviceType                                     = deviceInfo.fDeviceType;
-                    manufactureName                                = deviceInfo.fManufactureName;
-                    manufacturerURL                                = deviceInfo.fManufacturingURL;
-                    presentationURL                                = deviceInfo.fPresentationURL;
-                    if (deviceInfo.fIcons.has_value () and not deviceInfo.fIcons->empty ()) {
-                        deviceIconURL = deviceInfo.fIcons->Nth (0).fURL;
-                    }
-                    DbgTrace ("Found device description = {}"_f, deviceInfo);
-                }
-                catch (...) {
-                    DbgTrace ("Failed to fetch description: {}"_f, current_exception ());
+            if (optional<Frameworks::UPnP::DeviceDescription> deviceInfo = FetchDescriptionIfDue_ (a)) {
+                deviceFriendlyName = deviceInfo->fFriendlyName;
+                deviceType         = deviceInfo->fDeviceType;
+                manufactureName    = deviceInfo->fManufactureName;
+                manufacturerURL    = deviceInfo->fManufacturingURL;
+                presentationURL    = deviceInfo->fPresentationURL;
+                if (deviceInfo->fIcons.has_value () and not deviceInfo->fIcons->empty ()) {
+                    deviceIconURL = deviceInfo->fIcons->Nth (0).fURL;
                 }
             }
-            else {
-                DbgTrace ("no location, so no fetched device description"_f);
-            }
 
-            WeakAssert (not locAddrs.empty ()); // CAN happen if dns name, and we cannot do dns lookup, but unsure we should include the device.
-            if (not locAddrs.empty ()) {
             // merge in data
-            again:
-                Execution::Sleep (retriedLockCount * 1s); // sleep without the lock, but not first time processing message - just on retries
-                auto           l  = sDiscoveredDevices_.cget ();
-                DiscoveryInfo_ di = [&] () {
-                    DiscoveryInfo_ tmp{};
+            unsigned int retriedLockCount = 0;
+        again:
+            Execution::Sleep (retriedLockCount * 1s); // sleep without the lock, but not first time processing message - just on retries
+            auto           l  = sDiscoveredDevices_.cget ();
+            DiscoveryInfo_ di = [&] () {
+                DiscoveryInfo_ tmp{};
+                tmp.AddNetworkAddresses_ (locAddrs);
+                // Note - we don't generally get hardware address from IPAddress
+                if (optional<DiscoveryInfo_> o = FindMatchingDevice_ (l, tmp)) {
+                    tmp = *o; // then merge in possible additions
                     tmp.AddNetworkAddresses_ (locAddrs);
-                    // Note - we don't generally get hardware address from IPAddress
-                    if (optional<DiscoveryInfo_> o = FindMatchingDevice_ (l, tmp)) {
-                        tmp = *o; // then merge in possible additions
-                        tmp.AddNetworkAddresses_ (locAddrs);
 #if qStroika_Foundation_Debug_AssertionsChecked
-                        tmp.fDebugProps.Add ("Updated-By-SSDPDeviceDiscoverer_-At", DateTime::Now ());
+                    tmp.fDebugProps.Add ("Updated-By-SSDPDeviceDiscoverer_-At", DateTime::Now ());
 #endif
-                        return tmp;
-                    }
-                    else {
+                    return tmp;
+                }
+                else {
 #if qStroika_Foundation_Debug_AssertionsChecked
-                        tmp.fDebugProps.Add ("Found-By-SSDPDeviceDiscoverer_-At", DateTime::Now ());
+                    tmp.fDebugProps.Add ("Found-By-SSDPDeviceDiscoverer_-At", DateTime::Now ());
 #endif
-                        tmp.fGUID = GUID::GenerateNew ();
-                        return tmp;
-                    }
-                }();
-                if (di.fAttachedNetworks.empty ()) {
-                    DbgTrace ("Ignoring SSDP message for device on no network (possibly because of kIncludeLinkLocalAddressesInDiscovery etc suppression): {}"_f,
-                              di);
-                    return;
+                    tmp.fGUID = GUID::GenerateNew ();
+                    return tmp;
                 }
-                Assert (not di.GetInternetAddresses ().empty ()); // can happen if we find address in tmp.AddIPAddress_() that's not bound to any adapter (but that shouldn't happen so investigate but is for now so ignore briefly)
+            }();
+            if (di.fAttachedNetworks.empty ()) {
+                DbgTrace ("Ignoring SSDP message for device on no network (possibly because of kIncludeLinkLocalAddressesInDiscovery etc suppression): {}"_f,
+                          di);
+                return;
+            }
+            Assert (not di.GetInternetAddresses ().empty ()); // can happen if we find address in tmp.AddIPAddress_() that's not bound to any adapter (but that shouldn't happen so investigate but is for now so ignore briefly)
 
-                if (not di.fSSDPInfo) {
-                    di.fSSDPInfo = DiscoveryInfo_::SSDPInfo{};
-                }
-                di.fSSDPInfo->fAlive = d.fAlive;
+            if (not di.fSSDPInfo) {
+                di.fSSDPInfo = DiscoveryInfo_::SSDPInfo{};
+            }
+            di.fSSDPInfo->fAlive = true;
 
-                Memory::CopyToIf (&di.fIcon, deviceIconURL);
-                Memory::CopyToIf (&di.fSSDPInfo->fManufacturerURI, manufacturerURL);
+            Memory::CopyToIf (&di.fIcon, deviceIconURL);
+            Memory::CopyToIf (&di.fSSDPInfo->fManufacturerURI, manufacturerURL);
 
-                di.fSSDPInfo->fLocations.Add (d.fLocation);
-                di.fSSDPInfo->fUSNs.Add (d.fUSN);
+            di.fSSDPInfo->fLocations.Add (a.fLocation);
+            di.fSSDPInfo->fUSNs.Add (a.fUSN);
 
-                Memory::CopyToIf (&di.fSSDPInfo->fPresentationURL, presentationURL); // consider if value already there - warn if changes - should we collect multiple
+            Memory::CopyToIf (&di.fSSDPInfo->fPresentationURL, presentationURL); // consider if value already there - warn if changes - should we collect multiple
 
-                if (di.fSSDPInfo->fServer.has_value () and di.fSSDPInfo->fServer != d.fServer) {
-                    DbgTrace ("Warning: different server IDs for same object: di.fSSDPInfo={}, d.fServer='{}"_f, di.fSSDPInfo, d.fServer);
-                }
-                di.fSSDPInfo->fServer = d.fServer;
+            if (di.fSSDPInfo->fServer.has_value () and di.fSSDPInfo->fServer != a.fServer) {
+                DbgTrace ("Warning: different server IDs for same object: di.fSSDPInfo={}, a.fServer='{}"_f, di.fSSDPInfo, a.fServer);
+            }
+            di.fSSDPInfo->fServer = a.fServer;
 
-                if (deviceType and deviceFriendlyName) {
-                    di.fSSDPInfo->fDeviceType2FriendlyNameMap.Add (*deviceType, *deviceFriendlyName);
-                }
-                Memory::CopyToIf (&di.fSSDPInfo->fManufacturer, manufactureName);
+            if (deviceType and deviceFriendlyName) {
+                di.fSSDPInfo->fDeviceType2FriendlyNameMap.Add (*deviceType, *deviceFriendlyName);
+            }
+            Memory::CopyToIf (&di.fSSDPInfo->fManufacturer, manufactureName);
 
-                di.fSSDPInfo->fLastSSDPMessageRecievedAt = Time::DateTime::Now (); // update each message, even if already created
-                di.fSeen.fUDP = Memory::NullCoalesce (di.fSeen.fUDP).Extend (di.fSSDPInfo->fLastSSDPMessageRecievedAt);
+            di.fSSDPInfo->fLastSSDPMessageRecievedAt = Time::DateTime::Now ();
+            di.fSeen.fUDP = Memory::NullCoalesce (di.fSeen.fUDP).Extend (di.fSSDPInfo->fLastSSDPMessageRecievedAt);
 
 #if qStroika_Foundation_Debug_AssertionsChecked
-                di.fSSDPInfo->fLastAdvertisement = d;
+            di.fSSDPInfo->fLastAdvertisement = a;
 #endif
 
-                if (not di.fOperatingSystem.has_value ()) {
-                    if (di.fSSDPInfo->fServer and di.fSSDPInfo->fServer->Contains ("Linux"_k)) {
-                        di.fOperatingSystem = Discovery::OperatingSystem{"Linux"_k};
-                    }
-                    else if (di.fSSDPInfo->fServer and di.fSSDPInfo->fServer->Contains ("POSIX"_k)) {
-                        di.fOperatingSystem = Discovery::OperatingSystem{"Unix"_k};
-                    }
+            if (not di.fOperatingSystem.has_value ()) {
+                if (di.fSSDPInfo->fServer and di.fSSDPInfo->fServer->Contains ("Linux"_k)) {
+                    di.fOperatingSystem = Discovery::OperatingSystem{"Linux"_k};
                 }
-                di.PatchDerivedFields ();
-                Assert (di.fGUID != GUID{});
-                if (not sDiscoveredDevices_.UpgradeLockNonAtomicallyQuietly (
-                        &l,
-                        [&] (auto&& writeLock) {
-                            writeLock.rwref ().Add (di);
+                else if (di.fSSDPInfo->fServer and di.fSSDPInfo->fServer->Contains ("POSIX"_k)) {
+                    di.fOperatingSystem = Discovery::OperatingSystem{"Unix"_k};
+                }
+            }
+            di.PatchDerivedFields ();
+            Assert (di.fGUID != GUID{});
+            if (not sDiscoveredDevices_.UpgradeLockNonAtomicallyQuietly (
+                    &l,
+                    [&] (auto&& writeLock) {
+                        writeLock.rwref ().Add (di);
 #if qLOCK_DEBUGGING_
-                            DbgTrace ("!!! succeeded  updating writelock ***RecieveSSDPAdvertisement_"_f);
+                        DbgTrace ("!!! succeeded  updating writelock ***SSDPDeviceDiscoverer_::Merge_"_f);
 #endif
-                        },
-                        5s)) {
-                    // Failed merge, so try the entire acquire/update; this should be fairly rare (except when alot of contention like when we first start),
-                    // and will cause a recomputation of the merge
-                    retriedLockCount++;
-                    DbgTrace ("RecieveSSDPAdvertisement_: failed to update RecieveSSDPAdvertisement_ so retrying (cnt={})"_f, retriedLockCount);
-                    goto again; // release the lock and try again
-                }
+                    },
+                    5s)) {
+                // Failed merge, so try the entire acquire/update; this should be fairly rare (except when alot of contention like when we first start),
+                // and will cause a recomputation of the merge
+                retriedLockCount++;
+                DbgTrace ("SSDPDeviceDiscoverer_::Merge_: failed to update sDiscoveredDevices_ so retrying (cnt={})"_f, retriedLockCount);
+                goto again; // release the lock and try again
             }
         }
+
+        // on fWorker_: an advertisement removed - by an ssdp:byebye, or its max-age running out - leaving inForce. What of it is no
+        // longer in force is no longer listed; and with nothing of its device in force, the device is no longer alive (and Refresh_
+        // no longer extends its fSeen.fUDP)
+        void Removed_ (const SSDP::Advertisement& a, const Collection<SSDP::Advertisement>& inForce)
+        {
+            Debug::TraceContextBumper ctx{"SSDPDeviceDiscoverer_::Removed_", "a={}"_f, a};
+            bool locationInForce = inForce.Any ([&] (const SSDP::Advertisement& i) { return i.fLocation == a.fLocation; });
+            if (not locationInForce) {
+                fFetched_.RemoveIf (a.fLocation); // so, added again, its description is fetched again
+            }
+            DiscoveryInfo_ tmp{};
+            tmp.AddNetworkAddresses_ (LocationAddresses_ (a.fLocation));
+            auto l = sDiscoveredDevices_.rwget ();
+            if (optional<DiscoveryInfo_> o = FindMatchingDevice_ (l, tmp); o and o->fSSDPInfo) {
+                DiscoveryInfo_ di = *o;
+                if (not inForce.Any ([&] (const SSDP::Advertisement& i) { return i.fUSN == a.fUSN; })) {
+                    di.fSSDPInfo->fUSNs.RemoveIf (a.fUSN);
+                }
+                if (not locationInForce) {
+                    di.fSSDPInfo->fLocations.RemoveIf (a.fLocation);
+                }
+                if (di.fSSDPInfo->fUSNs.empty ()) {
+                    di.fSSDPInfo->fAlive = false;
+                }
+                di.PatchDerivedFields (); // fDebugProps' SSDPInfo among them
+                l.rwref ().Add (di);
+            }
+        }
+
+        // on fWorker_, each minute: what is still in force, merged again - one advertisement per LOCATION - so each device's
+        // fSeen.fUDP is extended, and its description fetched again if due
+        void Refresh_ (const Collection<SSDP::Advertisement>& inForce)
+        {
+            Debug::TraceContextBumper         ctx{"SSDPDeviceDiscoverer_::Refresh_"};
+            Mapping<URI, SSDP::Advertisement> byLocation;
+            for (const SSDP::Advertisement& a : inForce) {
+                byLocation.Add (a.fLocation, a);
+            }
+            for (const KeyValuePair<URI, SSDP::Advertisement>& i : byLocation) {
+                IgnoreExceptionsExceptThreadAbortForCall (Merge_ (i.fValue));
+            }
+        }
+
+    private:
+        Mapping<URI, Fetched_> fFetched_; // only fWorker_ uses it
+        // destroyed in reverse order: the timer, then the listener - so nothing more is queued - then fWorker_, which aborts the
+        // change it is on, and waits for it
+        ThreadPool fWorker_{ThreadPool::Options{.fThreadCount = 1, .fThreadPoolName = "SSDPDeviceDiscoverer"_k}};
+        unique_ptr<SSDP::Client::CachingListener> fListener_;
+        IntervalTimer::Adder                      fIntervalTimerAdder_;
     };
 
     unique_ptr<SSDPDeviceDiscoverer_> sSSDPDeviceDiscoverer_;
