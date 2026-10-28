@@ -289,8 +289,8 @@ namespace {
     struct DiscoveryInfo_ : Discovery::Device {
 
         struct SSDPInfo {
-            optional<bool>   fAlive;     // true while any of its advertisements is in force, false once none is (@see SSDPDeviceDiscoverer_)
-            Set<String>      fUSNs;      // those in force
+            optional<bool>   fAlive; // true while any of its advertisements is in force, false once none is (@see SSDPDeviceDiscoverer_)
+            Set<String>      fUSNs;  // those in force
             Set<URI>         fLocations; // those in force
             optional<String> fServer;
             optional<String> fManufacturer;
@@ -678,6 +678,37 @@ namespace {
         }
         return nullopt;
     }
+
+    /*
+     *  Store in sDiscoveredDevices_ what a discoverer found, merged into the device it matches (@see FindMatchingDevice_):
+     *  merge makes the device to store from that match, or from nullopt (none - so a new device).
+     *
+     *  merge does the slow part - PatchDerivedFields' reverse DNS lookups, the network list's refresh - so it runs with no lock
+     *  held, and the write lock, which blocks every reader, is held only to check the match and store. If another writer
+     *  changed the match meanwhile, merge runs again, under the write lock - so it must not lock sDiscoveredDevices_ itself.
+     *
+     *  Returns the device as stored.
+     */
+    DiscoveryInfo_ StoreMerged_ (const DiscoveryInfo_& found, const function<DiscoveryInfo_ (const optional<DiscoveryInfo_>& match)>& merge)
+    {
+        optional<DiscoveryInfo_> match = [&] () {
+            auto l = sDiscoveredDevices_.cget ();
+            return FindMatchingDevice_ (l, found);
+        }();
+        DiscoveryInfo_     di = merge (match);
+        auto               l  = sDiscoveredDevices_.rwget ();
+        Debug::TimingTrace ttrc{"StoreMerged_ held sDiscoveredDevices_' write lock", 0.5s};
+        if (optional<DiscoveryInfo_> matchNow = FindMatchingDevice_ (l, found); matchNow != match) {
+            DbgTrace ("StoreMerged_: the matching device changed while merging, so merging again"_f);
+            match = matchNow;
+            di    = merge (match);
+        }
+        Assert (di.fGUID != GUID{});
+        if (match != di) { // else nothing changed, so no write
+            l.rwref ().Add (di);
+        }
+        return di;
+    }
 }
 
 namespace {
@@ -717,80 +748,42 @@ namespace {
         static void DiscoveryChecker_ ()
         {
             static constexpr Activity kDiscovering_This_Device_{"discovering this device"sv};
-            unsigned int              retriedLockCount = 0;
             while (true) {
                 try {
                     DeclareActivity da{&kDiscovering_This_Device_};
                     if (optional<DiscoveryInfo_> thisDevice = GetMyDevice_ ()) {
-                    again:
-                        Execution::Sleep (retriedLockCount * 1s); // sleep before retrying read-lock so readlock not held so long nobody can update
-                        auto           l  = sDiscoveredDevices_.cget ();
-                        DiscoveryInfo_ di = [&] () {
-                            DiscoveryInfo_ tmp{};
-                            tmp.fAttachedNetworks   = thisDevice->fAttachedNetworks;
-                            tmp.fAttachedInterfaces = thisDevice->fAttachedInterfaces;
-                            tmp.fNames              = thisDevice->fNames;
-                            if (optional<DiscoveryInfo_> oo = FindMatchingDevice_ (l, tmp)) {
-                                tmp = *oo; // merge
-                                tmp.fAttachedNetworks += thisDevice->fAttachedNetworks;
-                                Memory::AccumulateIf (&tmp.fAttachedInterfaces, thisDevice->fAttachedInterfaces);
+                        DiscoveryInfo_ found{};
+                        found.fAttachedNetworks   = thisDevice->fAttachedNetworks;
+                        found.fAttachedInterfaces = thisDevice->fAttachedInterfaces;
+                        found.fNames              = thisDevice->fNames;
+                        DiscoveryInfo_ stored     = StoreMerged_ (found, [&] (const optional<DiscoveryInfo_>& match) {
+                            DiscoveryInfo_ di = found;
+                            if (match) {
+                                di = *match; // merge
+                                di.fAttachedNetworks += thisDevice->fAttachedNetworks;
+                                Memory::AccumulateIf (&di.fAttachedInterfaces, thisDevice->fAttachedInterfaces);
 #if qStroika_Foundation_Debug_AssertionsChecked
-                                tmp.fDebugProps.Add ("Updated-By-MyDeviceDiscoverer_-At", DateTime::Now ());
+                                di.fDebugProps.Add ("Updated-By-MyDeviceDiscoverer_-At", DateTime::Now ());
 #endif
-                                return tmp;
                             }
                             else {
-                                tmp.fGUID = GUID::GenerateNew ();
+                                di.fGUID = GUID::GenerateNew ();
 #if qStroika_Foundation_Debug_AssertionsChecked
-                                tmp.fDebugProps.Add ("Created-By-MyDeviceDiscoverer-At", DateTime::Now ());
-                                tmp.fDebugProps.Add ("Created-By-MyDeviceDiscoverer-With-Networks", Characters::ToString (tmp.fAttachedNetworks));
-                                tmp.fDebugProps.Add ("Created-By-MyDeviceDiscoverer-With-Interfaces", Characters::ToString (tmp.fAttachedInterfaces));
+                                di.fDebugProps.Add ("Created-By-MyDeviceDiscoverer-At", DateTime::Now ());
+                                di.fDebugProps.Add ("Created-By-MyDeviceDiscoverer-With-Networks", Characters::ToString (di.fAttachedNetworks));
+                                di.fDebugProps.Add ("Created-By-MyDeviceDiscoverer-With-Interfaces", Characters::ToString (di.fAttachedInterfaces));
 #endif
-                                return tmp;
                             }
-                        }();
-                        sCachedValue_.store (di.fGUID);
-                        // copy most/all fields -- @todo cleanup - do more automatically - all but GUID??? Need merge??
-                        di.fTypes           = thisDevice->fTypes;
-                        di.fThisDevice      = thisDevice->fThisDevice;
-                        auto osInfo         = GetSystemConfiguration_ActualOperatingSystem ();
-                        di.fOperatingSystem = OperatingSystem{osInfo.fTokenName, osInfo.fPrettyNameWithVersionDetails};
-                        di.fSeen.fCollector = Memory::NullCoalesce (di.fSeen.fCollector).Extend (DateTime::Now ());
-                        di.PatchDerivedFields ();
-
-                        Assert (di.fGUID != GUID{});
-                        // Skip upgrade look to reduce the number of write locks we do, for the common case when there is no
-                        // actual change
-                        if (l->Lookup (di.fGUID) == di) {
-#if qLOCK_DEBUGGING_
-                            DbgTrace ("!!! no change in ***MyDeviceDiscoverer_***  so skipping "_f);
-#endif
-                            goto nextTry;
-                        }
-#if qLOCK_DEBUGGING_
-                        DbgTrace ("!!! have change in ***MyDeviceDiscoverer_ so waiting to update"_f);
-#endif
-
-                        Assert (di.fGUID != GUID{});
-                        if (not sDiscoveredDevices_.UpgradeLockNonAtomicallyQuietly (
-                                &l,
-                                [&] (auto&& writeLock) {
-                                    writeLock.rwref ().Add (di);
-                                    if (retriedLockCount > 0) {
-                                        DbgTrace ("MyDeviceDiscoverer_: sDiscoveredDevices_ succeeded so clearing retrying count (was cnt={})"_f,
-                                                  retriedLockCount);
-                                    }
-#if qLOCK_DEBUGGING_
-                                    DbgTrace ("!!! succeeded  updating writelock ***MyDeviceDiscoverer_"_f);
-#endif
-                                },
-                                5s)) {
-                            // Failed merge, so try the entire acquire/update; this should be fairly rare (except when alot of contention like when we first start),
-                            // and will cause a recomputation of the merge
-                            retriedLockCount++;
-                            DbgTrace ("MyDeviceDiscoverer_: failed to update sDiscoveredDevices_ so retrying (cnt={})"_f, retriedLockCount);
-                            goto again;
-                        }
+                            // copy most/all fields -- @todo cleanup - do more automatically - all but GUID??? Need merge??
+                            di.fTypes           = thisDevice->fTypes;
+                            di.fThisDevice      = thisDevice->fThisDevice;
+                            auto osInfo         = GetSystemConfiguration_ActualOperatingSystem ();
+                            di.fOperatingSystem = OperatingSystem{osInfo.fTokenName, osInfo.fPrettyNameWithVersionDetails};
+                            di.fSeen.fCollector = Memory::NullCoalesce (di.fSeen.fCollector).Extend (DateTime::Now ());
+                            di.PatchDerivedFields ();
+                            return di;
+                        });
+                        sCachedValue_.store (stored.fGUID); // only once it is in sDiscoveredDevices_
                     }
                 }
                 catch (const Thread::AbortException&) {
@@ -799,8 +792,6 @@ namespace {
                 catch (...) {
                     Logger::sThe.Log (Logger::eError, "{}"_f, current_exception ());
                 }
-
-            nextTry:
                 Execution::Sleep (30s); // @todo tmphack - really wait til change in network
             }
         }
@@ -999,15 +990,13 @@ namespace {
             DeclareActivity activity{&kInterprettingSSDPMessageRecieved_};
 
             Set<InternetAddress> locAddrs = LocationAddresses_ (a.fLocation);
-            {
+            DiscoveryInfo_       found{};
+            found.AddNetworkAddresses_ (locAddrs);
+            if (found.fAttachedNetworks.empty ()) {
                 // one at an address on none of our networks (link-local, with kIncludeLinkLocalAddressesInDiscovery false, say) makes
                 // no device, so its description is not worth fetching
-                DiscoveryInfo_ tmp{};
-                tmp.AddNetworkAddresses_ (locAddrs);
-                if (tmp.fAttachedNetworks.empty ()) {
-                    DbgTrace ("Ignoring SSDP advertisement for device on no network (possibly because of kIncludeLinkLocalAddressesInDiscovery etc suppression)"_f);
-                    return;
-                }
+                DbgTrace ("Ignoring SSDP advertisement for device on no network (possibly because of kIncludeLinkLocalAddressesInDiscovery etc suppression)"_f);
+                return;
             }
 
             optional<String> deviceFriendlyName;
@@ -1028,92 +1017,65 @@ namespace {
             }
 
             // merge in data
-            unsigned int retriedLockCount = 0;
-        again:
-            Execution::Sleep (retriedLockCount * 1s); // sleep without the lock, but not first time processing message - just on retries
-            auto           l  = sDiscoveredDevices_.cget ();
-            DiscoveryInfo_ di = [&] () {
-                DiscoveryInfo_ tmp{};
-                tmp.AddNetworkAddresses_ (locAddrs);
+            StoreMerged_ (found, [&] (const optional<DiscoveryInfo_>& match) {
+                DiscoveryInfo_ di = found;
                 // Note - we don't generally get hardware address from IPAddress
-                if (optional<DiscoveryInfo_> o = FindMatchingDevice_ (l, tmp)) {
-                    tmp = *o; // then merge in possible additions
-                    tmp.AddNetworkAddresses_ (locAddrs);
+                if (match) {
+                    di = *match; // then merge in possible additions
+                    di.AddNetworkAddresses_ (locAddrs);
 #if qStroika_Foundation_Debug_AssertionsChecked
-                    tmp.fDebugProps.Add ("Updated-By-SSDPDeviceDiscoverer_-At", DateTime::Now ());
+                    di.fDebugProps.Add ("Updated-By-SSDPDeviceDiscoverer_-At", DateTime::Now ());
 #endif
-                    return tmp;
                 }
                 else {
 #if qStroika_Foundation_Debug_AssertionsChecked
-                    tmp.fDebugProps.Add ("Found-By-SSDPDeviceDiscoverer_-At", DateTime::Now ());
+                    di.fDebugProps.Add ("Found-By-SSDPDeviceDiscoverer_-At", DateTime::Now ());
 #endif
-                    tmp.fGUID = GUID::GenerateNew ();
-                    return tmp;
+                    di.fGUID = GUID::GenerateNew ();
                 }
-            }();
-            if (di.fAttachedNetworks.empty ()) {
-                DbgTrace ("Ignoring SSDP message for device on no network (possibly because of kIncludeLinkLocalAddressesInDiscovery etc suppression): {}"_f,
-                          di);
-                return;
-            }
-            Assert (not di.GetInternetAddresses ().empty ()); // can happen if we find address in tmp.AddIPAddress_() that's not bound to any adapter (but that shouldn't happen so investigate but is for now so ignore briefly)
+                Assert (not di.GetInternetAddresses ().empty ()); // can happen if we find address in tmp.AddIPAddress_() that's not bound to any adapter (but that shouldn't happen so investigate but is for now so ignore briefly)
 
-            if (not di.fSSDPInfo) {
-                di.fSSDPInfo = DiscoveryInfo_::SSDPInfo{};
-            }
-            di.fSSDPInfo->fAlive = true;
+                if (not di.fSSDPInfo) {
+                    di.fSSDPInfo = DiscoveryInfo_::SSDPInfo{};
+                }
+                di.fSSDPInfo->fAlive = true;
 
-            Memory::CopyToIf (&di.fIcon, deviceIconURL);
-            Memory::CopyToIf (&di.fSSDPInfo->fManufacturerURI, manufacturerURL);
+                Memory::CopyToIf (&di.fIcon, deviceIconURL);
+                Memory::CopyToIf (&di.fSSDPInfo->fManufacturerURI, manufacturerURL);
 
-            di.fSSDPInfo->fLocations.Add (a.fLocation);
-            di.fSSDPInfo->fUSNs.Add (a.fUSN);
+                di.fSSDPInfo->fLocations.Add (a.fLocation);
+                di.fSSDPInfo->fUSNs.Add (a.fUSN);
 
-            Memory::CopyToIf (&di.fSSDPInfo->fPresentationURL, presentationURL); // consider if value already there - warn if changes - should we collect multiple
+                Memory::CopyToIf (&di.fSSDPInfo->fPresentationURL, presentationURL); // consider if value already there - warn if changes - should we collect multiple
 
-            if (di.fSSDPInfo->fServer.has_value () and di.fSSDPInfo->fServer != a.fServer) {
-                DbgTrace ("Warning: different server IDs for same object: di.fSSDPInfo={}, a.fServer='{}"_f, di.fSSDPInfo, a.fServer);
-            }
-            di.fSSDPInfo->fServer = a.fServer;
+                if (di.fSSDPInfo->fServer.has_value () and di.fSSDPInfo->fServer != a.fServer) {
+                    DbgTrace ("Warning: different server IDs for same object: di.fSSDPInfo={}, a.fServer='{}"_f, di.fSSDPInfo, a.fServer);
+                }
+                di.fSSDPInfo->fServer = a.fServer;
 
-            if (deviceType and deviceFriendlyName) {
-                di.fSSDPInfo->fDeviceType2FriendlyNameMap.Add (*deviceType, *deviceFriendlyName);
-            }
-            Memory::CopyToIf (&di.fSSDPInfo->fManufacturer, manufactureName);
+                if (deviceType and deviceFriendlyName) {
+                    di.fSSDPInfo->fDeviceType2FriendlyNameMap.Add (*deviceType, *deviceFriendlyName);
+                }
+                Memory::CopyToIf (&di.fSSDPInfo->fManufacturer, manufactureName);
 
-            di.fSSDPInfo->fLastSSDPMessageRecievedAt = Time::DateTime::Now ();
-            di.fSeen.fUDP = Memory::NullCoalesce (di.fSeen.fUDP).Extend (di.fSSDPInfo->fLastSSDPMessageRecievedAt);
+                di.fSSDPInfo->fLastSSDPMessageRecievedAt = Time::DateTime::Now ();
+                di.fSeen.fUDP = Memory::NullCoalesce (di.fSeen.fUDP).Extend (di.fSSDPInfo->fLastSSDPMessageRecievedAt);
 
 #if qStroika_Foundation_Debug_AssertionsChecked
-            di.fSSDPInfo->fLastAdvertisement = a;
+                di.fSSDPInfo->fLastAdvertisement = a;
 #endif
 
-            if (not di.fOperatingSystem.has_value ()) {
-                if (di.fSSDPInfo->fServer and di.fSSDPInfo->fServer->Contains ("Linux"_k)) {
-                    di.fOperatingSystem = Discovery::OperatingSystem{"Linux"_k};
+                if (not di.fOperatingSystem.has_value ()) {
+                    if (di.fSSDPInfo->fServer and di.fSSDPInfo->fServer->Contains ("Linux"_k)) {
+                        di.fOperatingSystem = Discovery::OperatingSystem{"Linux"_k};
+                    }
+                    else if (di.fSSDPInfo->fServer and di.fSSDPInfo->fServer->Contains ("POSIX"_k)) {
+                        di.fOperatingSystem = Discovery::OperatingSystem{"Unix"_k};
+                    }
                 }
-                else if (di.fSSDPInfo->fServer and di.fSSDPInfo->fServer->Contains ("POSIX"_k)) {
-                    di.fOperatingSystem = Discovery::OperatingSystem{"Unix"_k};
-                }
-            }
-            di.PatchDerivedFields ();
-            Assert (di.fGUID != GUID{});
-            if (not sDiscoveredDevices_.UpgradeLockNonAtomicallyQuietly (
-                    &l,
-                    [&] (auto&& writeLock) {
-                        writeLock.rwref ().Add (di);
-#if qLOCK_DEBUGGING_
-                        DbgTrace ("!!! succeeded  updating writelock ***SSDPDeviceDiscoverer_::Merge_"_f);
-#endif
-                    },
-                    5s)) {
-                // Failed merge, so try the entire acquire/update; this should be fairly rare (except when alot of contention like when we first start),
-                // and will cause a recomputation of the merge
-                retriedLockCount++;
-                DbgTrace ("SSDPDeviceDiscoverer_::Merge_: failed to update sDiscoveredDevices_ so retrying (cnt={})"_f, retriedLockCount);
-                goto again; // release the lock and try again
-            }
+                di.PatchDerivedFields ();
+                return di;
+            });
         }
 
         // on fWorker_: an advertisement removed - by an ssdp:byebye, or its max-age running out - leaving inForce. What of it is no
@@ -1206,78 +1168,41 @@ namespace {
                             continue;
                         }
 
-                        unsigned int retriedLockCount = 0;
-                    again:
-                        Execution::Sleep (retriedLockCount * 1s); // sleep without the lock, but not first time processing message - just on retries
+                        DiscoveryInfo_ found{};
+                        found.AddNetworkAddresses_ (i.fInternetAddress, i.fHardwareAddress);
+                        if (found.fAttachedNetworks.empty ()) {
+                            // so no hardware or internet address either - matching no device
+                            DbgTrace ("Ignoring MyNeighborDiscoverer_ neighbor {} because it was not on a known network"_f, i);
+                            continue;
+                        }
 #if qLOCK_DEBUGGING_
                         Debug::TraceContextBumper ctxLock1{"sDiscoveredDevices_ - discovering this network neighbors "};
 #endif
 
                         // merge in data
-                        auto           l  = sDiscoveredDevices_.cget ();
-                        DiscoveryInfo_ di = [&] () {
-                            DiscoveryInfo_ tmp{};
-                            tmp.AddNetworkAddresses_ (i.fInternetAddress, i.fHardwareAddress);
-                            if (optional<DiscoveryInfo_> o = FindMatchingDevice_ (l, tmp)) {
-                                tmp = *o;
-                                tmp.AddNetworkAddresses_ (i.fInternetAddress, i.fHardwareAddress); // merge in additions
+                        StoreMerged_ (found, [&] (const optional<DiscoveryInfo_>& match) {
+                            DiscoveryInfo_ di = found;
+                            if (match) {
+                                di = *match;
+                                di.AddNetworkAddresses_ (i.fInternetAddress, i.fHardwareAddress); // merge in additions
 #if qStroika_Foundation_Debug_AssertionsChecked
-                                tmp.fDebugProps.Add ("Updated-By-MyNeighborDiscoverer_-At", DateTime::Now ());
+                                di.fDebugProps.Add ("Updated-By-MyNeighborDiscoverer_-At", DateTime::Now ());
 #endif
-                                return tmp;
                             }
                             else {
-                                tmp.fGUID = GUID::GenerateNew ();
+                                di.fGUID = GUID::GenerateNew ();
 #if qStroika_Foundation_Debug_AssertionsChecked
-                                tmp.fDebugProps.Add ("Found-By-MyNeighborDiscoverer_-At"sv, DateTime::Now ());
-                                tmp.fDebugProps.Add ("Found-By-MyNeighborDiscoverer_-I"sv, Characters::ToString (i)); // to debug why sometimes we add but has no network info
+                                di.fDebugProps.Add ("Found-By-MyNeighborDiscoverer_-At"sv, DateTime::Now ());
+                                di.fDebugProps.Add ("Found-By-MyNeighborDiscoverer_-I"sv, Characters::ToString (i)); // to debug why sometimes we add but has no network info
 #endif
-                                return tmp;
                             }
-                        }();
+                            Assert (not di.GetInternetAddresses ().empty ()); // can happen if we find address in tmp.AddIPAddress_() that's not bound to any adapter (but that shouldn't happen so investigate but is for now so ignore breifly)
 
-                        if (di.fAttachedNetworks.empty ()) {
-                            DbgTrace ("Ignoring MyNeighborDiscoverer_ device {} because it was not on a known network (neighbor: {})"_f, di, i);
-                            continue;
-                        }
-                        Assert (not di.GetInternetAddresses ().empty ()); // can happen if we find address in tmp.AddIPAddress_() that's not bound to any adapter (but that shouldn't happen so investigate but is for now so ignore breifly)
+                            di.fSeen.fARP = Memory::NullCoalesce (di.fSeen.fARP).Extend (DateTime::Now ());
 
-                        di.fSeen.fARP = Memory::NullCoalesce (di.fSeen.fARP).Extend (DateTime::Now ());
-
-                        di.PatchDerivedFields ();
-
-                        // Skip upgrade look to reduce the number of write locks we do, for the common case when there is no
-                        // actual change
-                        if (l->Lookup (di.fGUID) == di) {
-#if qLOCK_DEBUGGING_
-                            DbgTrace ("!!! no change in ***MyNeighborDiscoverer_***  so skipping "_f);
-#endif
-                            continue;
-                        }
-#if qLOCK_DEBUGGING_
-                        DbgTrace ("have change in ***MyNeighborDiscoverer_*** so about to call UpgradeLockNonAtomicallyQuietly/1"_f);
-#endif
-
-                        Assert (di.fGUID != GUID{});
-                        if (not sDiscoveredDevices_.UpgradeLockNonAtomicallyQuietly (
-                                &l,
-                                [&] (auto&& writeLock) {
-                                    writeLock.rwref ().Add (di);
-                                    if (retriedLockCount > 0) {
-                                        DbgTrace ("MyNeighborDiscoverer_: sDiscoveredDevices_ succeeded so clearing retrying count (was cnt={})"_f,
-                                                  retriedLockCount);
-                                    }
-#if qLOCK_DEBUGGING_
-                                    DbgTrace ("!!! succeeded  updating with writelock ***MyNeighborDiscoverer_"_f);
-#endif
-                                },
-                                5s)) {
-                            // Failed merge, so try the entire acquire/update; this should be fairly rare (except when alot of contention like when we first start),
-                            // and will cause a recomputation of the merge
-                            retriedLockCount++;
-                            DbgTrace ("MyNeighborDiscoverer_: failed to update sDiscoveredDevices_ so retrying (cnt={})"_f, retriedLockCount);
-                            goto again;
-                        }
+                            di.PatchDerivedFields ();
+                            return di;
+                        });
                     }
                 }
                 catch (const Thread::AbortException&) {

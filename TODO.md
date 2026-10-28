@@ -36,13 +36,6 @@ done.
   precede expression"); `-name $filePattern` is unquoted the same way. FileSystemRequestHandler's fallback cache rule,
   and the HTMLUI sample's caching and routing docs: https://github.com/SophistSolutions/Stroika/issues/1253.
 
-- **Discovery: the merges into `sDiscoveredDevices_`** (Discovery/Devices.cpp - MyDeviceDiscoverer_,
-  SSDPDeviceDiscoverer_::Merge_, MyNeighborDiscoverer_, the port scanners) read under a shared lock, then upgrade it - and
-  on any write in between, or after 5 s, sleep 1 s, 2 s, ... and start over, with no limit (SSDP alone retried 27 times
-  in the first minutes of a protagoras run, 2026-10-24). Use the `UpgradeLockNonAtomicallyQuietly` overload told of an
-  intervening write, redoing the merge under the write lock; and perhaps warm the reverse-DNS cache (`PatchDerivedFields`)
-  before taking any lock. One commit, for all of them (LGP 2026-10-24).
-
 - **SSDP "last seen"**: once https://github.com/SophistSolutions/Stroika/issues/1256 gives `SSDP::Advertisement` the
   time it was heard, `SSDPDeviceDiscoverer_::Refresh_` extends seen.UDP to when each advertisement was last heard, not to
   now - today a device that leaves without a byebye looks seen until its max-age runs out (often 30 minutes).
