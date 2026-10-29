@@ -84,7 +84,12 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_::DB
         nonvirtual GUID FindOrCreateDeviceID (const Set<String>& hwAddresses);
 
     public:
-        nonvirtual GUID GenNewNetworkID ([[maybe_unused]] const Network& rollupNetwork, const Network& containedNetwork);
+        /**
+         *  Returns the ID of the network user settings record whose fAggregateFingerprints holds containedNetwork's fingerprint,
+         *  creating and storing one if none does. As FindOrCreateDeviceID, the lookup and the creation are one step, under the
+         *  user settings' lock, so rollups computed concurrently get the same ID - one record per fingerprint.
+         */
+        nonvirtual GUID FindOrCreateNetworkID ([[maybe_unused]] const Network& rollupNetwork, const Network& containedNetwork);
 
     public:
         nonvirtual Mapping<GUID, Device::UserOverridesType> GetDeviceUserSettings () const;

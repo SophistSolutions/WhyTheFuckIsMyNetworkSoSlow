@@ -14,16 +14,18 @@ done.
     only 24 distinct MACs (21 randomized): 26:a2:62:0b:df:df and e2:dc:30:1b:25:23 have 1468 records each,
     92:e7:c9:41:39:66 1460, four more 305-372; 17 of the 24 are also on a real device (counted 2026-10-23 - still 6180
     devices). The cause, fixed 2026-10-29 (`FindOrCreateDeviceID`): the first rollups at startup run in parallel (#23's
-    workaround), and each stored its own new ID for a MAC new to it - 6 records for one MAC in one protagoras run. Left:
-    the records already stored (protagoras 75 beyond one per MAC set) - fold them at load, or list no device with no
-    data; and `GenNewNetworkID` has the same shape. One whose MAC is no longer seen is still listed (#90).
+    workaround), and each stored its own new ID for a MAC new to it - 6 records for one MAC in one protagoras run. The
+    records already stored get no cleanup code (LGP 2026-10-29): once most of the rollup is fixed, start a new database
+    - bump its name's number (the default `db-localDBDir-v1` in Common/DB.cpp; protagoras' AppSettings names
+    `db-v18.db`) - and retest. Networks had the same bug (`FindOrCreateNetworkID`, 2026-10-29). One whose MAC is no
+    longer seen is still listed (#90).
   - 176 docker containers (docker0 133, the second bridge 43): a new random MAC per container start, so a new device.
   - 274 on the LAN: 83 with a global MAC (83 distinct - fine); 191 with only randomized ("locally administered") MACs -
     phones, laptops, watches with private Wi-Fi addresses: "Mac.lan" is 8 devices, "iPhone.lan" 5, "Watch.lan" 4.
   - The cause: `ShouldRollup_` (RolledUpDevices.cpp:282-312) identifies a device by its MAC alone (by IP when it has
     none).
   - Ideas, biggest payoff first: (1) list no device that has no data, expire the automatic records (those holding only
-    the MAC) not seen for N days, and fold the duplicate records - 6180 -> about 450; (2) for a randomized MAC, match
+    the MAC) not seen for N days - 6180 -> about 450; (2) for a randomized MAC, match
     on what is stable - host name with type, OS and open ports, the SSDP UDN, a new MAC on the IP a same-named device
     just left - and let the user merge and split (#59); (3) fold devices on a host-internal network (docker0) into the
     host, once Stroika #1248 says which networks those are (as #94); (4) by default, show the devices seen recently

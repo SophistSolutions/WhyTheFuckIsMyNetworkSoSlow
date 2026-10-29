@@ -145,12 +145,12 @@ GUID Mgr::FindOrCreateDeviceID (const Set<String>& hwAddresses)
     return newRes;
 }
 
-GUID Mgr::GenNewNetworkID ([[maybe_unused]] const Model::Network& rollupNetwork, const Model::Network& containedNetwork)
+GUID Mgr::FindOrCreateNetworkID ([[maybe_unused]] const Model::Network& rollupNetwork, const Model::Network& containedNetwork)
 {
-    Debug::TimingTrace                ttrc{"GenNewNetworkID", 1ms}; // sb very quick
-    GUID                              newRes = GUID::GenerateNew ();
+    Debug::TimingTrace                ttrc{"FindOrCreateNetworkID", 1ms}; // sb very quick
+    Network::FingerprintType          fingerprint = containedNetwork.GenerateFingerprintFromProperties ();
     Model::Network::UserOverridesType tmp;
-    tmp.fAggregateFingerprints = Set<GUID>{containedNetwork.GenerateFingerprintFromProperties ()};
+    tmp.fAggregateFingerprints = Set<GUID>{fingerprint};
     /*
      *  Automatically create rules to group 'internal device networks'
      */
@@ -164,7 +164,15 @@ GUID Mgr::GenNewNetworkID ([[maybe_unused]] const Model::Network& rollupNetwork,
             *tmp.fAggregateNetworkInterfacesMatching += NetworkInterfaceAggregateRule{*ni.fType, ni.GenerateFingerprintFromProperties ()};
         }
     }
-    SetNetworkUserSettings (newRes, tmp);
+    auto lk = fCachedNetworkUserSettings_.rwget ();
+    for (const KeyValuePair<GUID, Network::UserOverridesType>& i : lk.cref ()) {
+        if (i.fValue.fAggregateFingerprints and i.fValue.fAggregateFingerprints->Contains (fingerprint)) {
+            return i.fKey;
+        }
+    }
+    GUID newRes = GUID::GenerateNew ();
+    fNetworkUserSettingsTableConnection_.rwget ().cref ().AddOrUpdate (ExternalNetworkUserSettingsElt_{newRes, tmp});
+    lk.rwref ().Add (newRes, tmp);
     return newRes;
 }
 

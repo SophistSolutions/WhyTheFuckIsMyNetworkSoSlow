@@ -267,7 +267,7 @@ void RolledUpNetworks::AddNewIn_ (DBAccess::Mgr* dbAccessMgr, const Network& net
     newRolledUpNetwork.fAggregatesReversibly   = Set<GUID>{net2MergeIn.fID};
     newRolledUpNetwork.fAggregatesFingerprints = Set<Network::FingerprintType>{net2MergeInFingerprint};
     // @todo fix this code so each time through we UPDATE sDBAccessMgr_ with latest 'fingerprint' of each dynamic network
-    newRolledUpNetwork.fID = dbAccessMgr->GenNewNetworkID (newRolledUpNetwork, net2MergeIn);
+    newRolledUpNetwork.fID = dbAccessMgr->FindOrCreateNetworkID (newRolledUpNetwork, net2MergeIn);
     if (fRolledUpNetworks_.Contains (newRolledUpNetwork.fID)) {
         // Should probably never happen, but since depends on data in database, program defensively
 
