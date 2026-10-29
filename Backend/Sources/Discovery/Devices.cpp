@@ -679,35 +679,54 @@ namespace {
         return nullopt;
     }
 
+    using DeviceFinder_ = function<optional<DiscoveryInfo_> (decltype (sDiscoveredDevices_)::ReadableReference& rr)>;
+    using DeviceMerger_ = function<optional<DiscoveryInfo_> (const optional<DiscoveryInfo_>& match)>;
+
     /*
-     *  Store in sDiscoveredDevices_ what a discoverer found, merged into the device it matches (@see FindMatchingDevice_):
-     *  merge makes the device to store from that match, or from nullopt (none - so a new device).
+     *  Store in sDiscoveredDevices_ what merge makes of the device find finds there: merge gets that device, or nullopt (none -
+     *  so for a discoverer, a new device), and returns the device to store, or nullopt to store nothing. Returns the device as
+     *  stored (nullopt if merge stored nothing).
      *
-     *  merge does the slow part - PatchDerivedFields' reverse DNS lookups, the network list's refresh - so it runs with no lock
-     *  held, and the write lock, which blocks every reader, is held only to check the match and store. If another writer
-     *  changed the match meanwhile, merge runs again, under the write lock - so it must not lock sDiscoveredDevices_ itself.
+     *  The arguments:
+     *      - find (or found, or deviceID): only what identifies the device. FindMatchingDevice_ reads just found's hardware
+     *        and internet addresses; whatever else found holds reaches the store only when merge starts a new device from it -
+     *        on a match, merge starts from the stored device.
+     *      - merge: everything that depends on the stored device - what to add to it, and, last, PatchDerivedFields. Work that
+     *        needs nothing from the stored device (a port scan, a ping, an SSDP description's fetch) is done before the call,
+     *        and its results captured by merge.
      *
-     *  Returns the device as stored.
+     *  merge runs first with no lock held, so its slow part - PatchDerivedFields' reverse DNS lookups, the network list's
+     *  refresh - blocks no reader; the write lock is held only to find the device again and store. If another writer changed
+     *  it meanwhile, merge runs again, under the write lock: so it must not lock sDiscoveredDevices_ itself, and must change
+     *  nothing but what it returns.
      */
-    DiscoveryInfo_ StoreMerged_ (const DiscoveryInfo_& found, const function<DiscoveryInfo_ (const optional<DiscoveryInfo_>& match)>& merge)
+    optional<DiscoveryInfo_> StoreMerged_ (const DeviceFinder_& find, const DeviceMerger_& merge)
     {
         optional<DiscoveryInfo_> match = [&] () {
             auto l = sDiscoveredDevices_.cget ();
-            return FindMatchingDevice_ (l, found);
+            return find (l);
         }();
-        DiscoveryInfo_     di = merge (match);
-        auto               l  = sDiscoveredDevices_.rwget ();
-        Debug::TimingTrace ttrc{"StoreMerged_ held sDiscoveredDevices_' write lock", 0.5s};
-        if (optional<DiscoveryInfo_> matchNow = FindMatchingDevice_ (l, found); matchNow != match) {
+        optional<DiscoveryInfo_> di = merge (match);
+        auto                     l  = sDiscoveredDevices_.rwget ();
+        Debug::TimingTrace       ttrc{"StoreMerged_ held sDiscoveredDevices_' write lock", 0.5s};
+        if (optional<DiscoveryInfo_> matchNow = find (l); matchNow != match) {
             DbgTrace ("StoreMerged_: the matching device changed while merging, so merging again"_f);
             match = matchNow;
             di    = merge (match);
         }
-        Assert (di.fGUID != GUID{});
-        if (match != di) { // else nothing changed, so no write
-            l.rwref ().Add (di);
+        if (di and di != match) { // else nothing changed, so no write
+            Assert (di->fGUID != GUID{});
+            l.rwref ().Add (*di);
         }
         return di;
+    }
+    optional<DiscoveryInfo_> StoreMerged_ (const DiscoveryInfo_& found, const DeviceMerger_& merge) ///< \brief merge into the device matching what a discoverer found (@see FindMatchingDevice_)
+    {
+        return StoreMerged_ ([&] (decltype (sDiscoveredDevices_)::ReadableReference& rr) { return FindMatchingDevice_ (rr, found); }, merge);
+    }
+    optional<DiscoveryInfo_> StoreMerged_ (const GUID& deviceID, const DeviceMerger_& merge) ///< \brief merge into the device with this ID
+    {
+        return StoreMerged_ ([&] (decltype (sDiscoveredDevices_)::ReadableReference& rr) { return rr.cref ().Lookup (deviceID); }, merge);
     }
 }
 
@@ -753,10 +772,10 @@ namespace {
                     DeclareActivity da{&kDiscovering_This_Device_};
                     if (optional<DiscoveryInfo_> thisDevice = GetMyDevice_ ()) {
                         DiscoveryInfo_ found{};
-                        found.fAttachedNetworks   = thisDevice->fAttachedNetworks;
-                        found.fAttachedInterfaces = thisDevice->fAttachedInterfaces;
-                        found.fNames              = thisDevice->fNames;
-                        DiscoveryInfo_ stored     = StoreMerged_ (found, [&] (const optional<DiscoveryInfo_>& match) {
+                        found.fAttachedNetworks         = thisDevice->fAttachedNetworks;
+                        found.fAttachedInterfaces       = thisDevice->fAttachedInterfaces;
+                        found.fNames                    = thisDevice->fNames;
+                        optional<DiscoveryInfo_> stored = StoreMerged_ (found, [&] (const optional<DiscoveryInfo_>& match) {
                             DiscoveryInfo_ di = found;
                             if (match) {
                                 di = *match; // merge
@@ -783,7 +802,7 @@ namespace {
                             di.PatchDerivedFields ();
                             return di;
                         });
-                        sCachedValue_.store (stored.fGUID); // only once it is in sDiscoveredDevices_
+                        sCachedValue_.store (stored->fGUID); // only once it is in sDiscoveredDevices_
                     }
                 }
                 catch (const Thread::AbortException&) {
@@ -1088,11 +1107,13 @@ namespace {
             if (not locationInForce) {
                 fFetched_.RemoveIf (a.fLocation); // so, added again, its description is fetched again
             }
-            DiscoveryInfo_ tmp{};
-            tmp.AddNetworkAddresses_ (LocationAddresses_ (a.fLocation));
-            auto l = sDiscoveredDevices_.rwget ();
-            if (optional<DiscoveryInfo_> o = FindMatchingDevice_ (l, tmp); o and o->fSSDPInfo) {
-                DiscoveryInfo_ di = *o;
+            DiscoveryInfo_ found{};
+            found.AddNetworkAddresses_ (LocationAddresses_ (a.fLocation));
+            StoreMerged_ (found, [&] (const optional<DiscoveryInfo_>& match) -> optional<DiscoveryInfo_> {
+                if (not match or not match->fSSDPInfo) {
+                    return nullopt;
+                }
+                DiscoveryInfo_ di = *match;
                 if (not inForce.Any ([&] (const SSDP::Advertisement& i) { return i.fUSN == a.fUSN; })) {
                     di.fSSDPInfo->fUSNs.RemoveIf (a.fUSN);
                 }
@@ -1103,8 +1124,8 @@ namespace {
                     di.fSSDPInfo->fAlive = false;
                 }
                 di.PatchDerivedFields (); // fDebugProps' SSDPInfo among them
-                l.rwref ().Add (di);
-            }
+                return di;
+            });
         }
 
         // on fWorker_, each minute: what is still in force, merged again - one advertisement per LOCATION - so each device's
@@ -1339,41 +1360,37 @@ namespace {
                             DbgTrace ("No obvious device at ip {} because no scan results (ScanOptions::eQuick)"_f, ia);
                         }
                         else {
-                            DiscoveryInfo_ tmp{};
-                            tmp.AddNetworkAddresses_ (ia);
-
-                            auto l = sDiscoveredDevices_.rwget (); // grab write lock because almost assured of making changes (at least last seen)
-                            // @todo RECONSIDER - MAYBE DO READ AND UPGRADE CUZ OF CASE WHERE NO SCAN RESULTS - WANT TO NOT BOTHER LOCKING
-
-                            if (optional<DiscoveryInfo_> oo = FindMatchingDevice_ (l, tmp)) {
-                                WeakAssertNotReached (); // This case should basically never happen (maybe lose support) - because we check before running ping if its already in the list
-                                // if found, update to say what ports we found
-                                tmp = *oo;
-                                Memory::AccumulateIf (&tmp.fOpenPorts, scanResults.fDiscoveredOpenPorts);
-                                PatchSeen_ (&tmp, scanResults);
-                                tmp.PatchDerivedFields ();
-                                Assert (tmp.fGUID != GUID{});
+                            DiscoveryInfo_ found{};
+                            found.AddNetworkAddresses_ (ia);
+                            StoreMerged_ (found, [&] (const optional<DiscoveryInfo_>& match) {
+                                DiscoveryInfo_ di = found;
+                                if (match) {
+                                    WeakAssertNotReached (); // This case should basically never happen (maybe lose support) - because we check before running ping if its already in the list
+                                    // if found, update to say what ports we found
+                                    di = *match;
+                                    Memory::AccumulateIf (&di.fOpenPorts, scanResults.fDiscoveredOpenPorts);
+                                    PatchSeen_ (&di, scanResults);
+                                    di.PatchDerivedFields ();
 #if qStroika_Foundation_Debug_AssertionsChecked
-                                tmp.fDebugProps.Add ("Updated-By-RandomWalkThroughSubnetDiscoverer_-At"sv, DateTime::Now ());
+                                    di.fDebugProps.Add ("Updated-By-RandomWalkThroughSubnetDiscoverer_-At"sv, DateTime::Now ());
 #endif
-                                l.rwref ().Add (tmp);
-                                DbgTrace ("Updated device {} for fKnownOpenPorts: {}"_f, tmp.fGUID, scanResults.fDiscoveredOpenPorts);
-                            }
-                            else {
-                                tmp.fGUID = GUID::GenerateNew ();
-                                // only CREATE an entry for addresses where we found a port
-                                tmp.fOpenPorts = scanResults.fDiscoveredOpenPorts;
-                                PatchSeen_ (&tmp, scanResults);
-                                tmp.PatchDerivedFields ();
-                                // NOTE - at this point - we have no hardware address - could get from IO::Network::Neighbors API, but too costly, not worth while here
+                                    DbgTrace ("Updated device {} for fKnownOpenPorts: {}"_f, di.fGUID, scanResults.fDiscoveredOpenPorts);
+                                }
+                                else {
+                                    di.fGUID = GUID::GenerateNew ();
+                                    // only CREATE an entry for addresses where we found a port
+                                    di.fOpenPorts = scanResults.fDiscoveredOpenPorts;
+                                    PatchSeen_ (&di, scanResults);
+                                    di.PatchDerivedFields ();
+                                    // NOTE - at this point - we have no hardware address - could get from IO::Network::Neighbors API, but too costly, not worth while here
 #if qStroika_Foundation_Debug_AssertionsChecked
-                                tmp.fDebugProps.Add (L"Found-By-RandomWalkThroughSubnetDiscoverer_-At", DateTime::Now ());
+                                    di.fDebugProps.Add (L"Found-By-RandomWalkThroughSubnetDiscoverer_-At", DateTime::Now ());
 #endif
-                                Assert (tmp.fGUID != GUID{});
-                                l.rwref ().Add (tmp);
-                                DbgTrace ("Added device {} for fKnownOpenPorts: {}"_f, tmp.fGUID, scanResults.fDiscoveredOpenPorts);
-                            }
-                            Assert (not tmp.GetInternetAddresses ().empty ()); // shouldn't happen
+                                    DbgTrace ("Added device {} for fKnownOpenPorts: {}"_f, di.fGUID, scanResults.fDiscoveredOpenPorts);
+                                }
+                                Assert (not di.GetInternetAddresses ().empty ()); // shouldn't happen
+                                return di;
+                            });
                         }
                     };
 
@@ -1387,7 +1404,7 @@ namespace {
                          */
                         bool need2CheckAddr{true};
                         {
-                            auto l = sDiscoveredDevices_.cget (); // grab write lock because almost assured of making changes (at least last seen)
+                            auto           l = sDiscoveredDevices_.cget ();
                             DiscoveryInfo_ tmp{};
                             tmp.AddNetworkAddresses_ (ia);
                             if (optional<DiscoveryInfo_> oo = FindMatchingDevice_ (l, tmp)) {
@@ -1478,23 +1495,23 @@ namespace {
 
                         // then flag found device and when via random pings/portscan, and record portscan result.
                         if (not scanResults.fDiscoveredOpenPorts.empty ()) {
-                            auto           l = sDiscoveredDevices_.rwget ();
-                            DiscoveryInfo_ tmp{};
-                            tmp.AddNetworkAddresses_ (ia);
-                            if (optional<DiscoveryInfo_> oo = l.cref ().Lookup (deviceID)) {
-                                // if found, update to say what ports we found
-                                tmp = *oo;
-                                Memory::AccumulateIf (&tmp.fOpenPorts, scanResults.fDiscoveredOpenPorts);
-                                PatchSeen_ (&tmp, scanResults);
-                                tmp.PatchDerivedFields ();
-                                Assert (tmp.fGUID != GUID{});
+                            optional<DiscoveryInfo_> stored =
+                                StoreMerged_ (deviceID, [&] (const optional<DiscoveryInfo_>& match) -> optional<DiscoveryInfo_> {
+                                    if (not match) {
+                                        return nullopt;
+                                    }
+                                    // update to say what ports we found
+                                    DiscoveryInfo_ di = *match;
+                                    Memory::AccumulateIf (&di.fOpenPorts, scanResults.fDiscoveredOpenPorts);
+                                    PatchSeen_ (&di, scanResults);
+                                    di.PatchDerivedFields ();
 #if qStroika_Foundation_Debug_AssertionsChecked
-                                tmp.fDebugProps.Add (L"Updated-By-KnownDevicePortScanner_-At", DateTime::Now ());
+                                    di.fDebugProps.Add (L"Updated-By-KnownDevicePortScanner_-At", DateTime::Now ());
 #endif
-                                l.rwref ().Add (tmp);
-                                DbgTrace ("Updated device {} for fKnownOpenPorts: {}"_f, tmp.fGUID, scanResults.fDiscoveredOpenPorts);
-                            }
-                            else {
+                                    DbgTrace ("Updated device {} for fKnownOpenPorts: {}"_f, di.fGUID, scanResults.fDiscoveredOpenPorts);
+                                    return di;
+                                });
+                            if (not stored) {
                                 WeakAssertNotReached (); // objects CAN disappear from list of devices (eventually we will support expiring/deleting)
                             }
                         }
@@ -1652,31 +1669,35 @@ void Discovery::DevicesMgr::ReScan (const GUID& deviceID)
     DeclareActivity           da{&kRescanning_Device_};
 
     auto findDeviceInfoAndClearFoundPorts = [] (const GUID& deviceID) {
-        auto l = sDiscoveredDevices_.rwget ();
-        if (optional<DiscoveryInfo_> oo = l.rwref ().Lookup (deviceID)) {
-            DiscoveryInfo_ tmp{*oo};
-            tmp.PatchDerivedFields ();
-            Assert (tmp.fGUID != GUID{});
-            tmp.fOpenPorts = nullopt;
-            l.rwref ().Add (tmp);
-            return tmp;
+        optional<DiscoveryInfo_> stored = StoreMerged_ (deviceID, [] (const optional<DiscoveryInfo_>& match) -> optional<DiscoveryInfo_> {
+            if (not match) {
+                return nullopt;
+            }
+            DiscoveryInfo_ di = *match;
+            di.PatchDerivedFields ();
+            di.fOpenPorts = nullopt;
+            return di;
+        });
+        if (not stored) {
+            Execution::Throw (IO::Network::HTTP::ClientErrorException{"deviceID not recognized"sv});
         }
-        Execution::Throw (IO::Network::HTTP::ClientErrorException{"deviceID not recognized"sv});
+        return *stored;
     };
     auto addOpenPorts = [] (const GUID& deviceID, const PortScanResults& portScanResults) {
-        auto l = sDiscoveredDevices_.rwget ();
-        if (optional<DiscoveryInfo_> oo = l.rwref ().Lookup (deviceID)) {
-            DiscoveryInfo_ tmp{*oo};
-            for (const String& p : portScanResults.fDiscoveredOpenPorts) {
-                Memory::AccumulateIf (&tmp.fOpenPorts, p);
+        optional<DiscoveryInfo_> stored = StoreMerged_ (deviceID, [&] (const optional<DiscoveryInfo_>& match) -> optional<DiscoveryInfo_> {
+            if (not match) {
+                return nullopt;
             }
-            PatchSeen_ (&tmp, portScanResults);
-            tmp.PatchDerivedFields ();
-            Assert (tmp.fGUID != GUID{});
-            l.rwref ().Add (tmp);
-            DbgTrace ("Updated device {} for fKnownOpenPorts: {}"_f, tmp.fGUID, portScanResults.fDiscoveredOpenPorts);
-        }
-        else {
+            DiscoveryInfo_ di = *match;
+            for (const String& p : portScanResults.fDiscoveredOpenPorts) {
+                Memory::AccumulateIf (&di.fOpenPorts, p);
+            }
+            PatchSeen_ (&di, portScanResults);
+            di.PatchDerivedFields ();
+            DbgTrace ("Updated device {} for fKnownOpenPorts: {}"_f, di.fGUID, portScanResults.fDiscoveredOpenPorts);
+            return di;
+        });
+        if (not stored) {
             AssertNotReached ();
         }
     };
