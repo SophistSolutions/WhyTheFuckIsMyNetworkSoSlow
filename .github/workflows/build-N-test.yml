@@ -195,8 +195,8 @@ jobs:
     strategy:
       matrix: ${{fromJson(needs.WindowsMatrixPrep.outputs.matrix)}}
     env:
-      # vm has 2 virtual CPUs, but 8GB ram, so jobs=2 (empirical sometimes run out of RAM jobs=3), and QUICK_BUILD avoids some internal testing
-      MAKEFLAGS: "--jobs=2 QUICK_BUILD=1"
+      # see docker run for --cpus and --memory, and adjust --jobs accordingly (as Stroika's), and QUICK_BUILD avoids some internal testing
+      MAKEFLAGS: "--jobs=4 QUICK_BUILD=1"
       WTF_TOP_ROOT: "c:/WhyTheFuckIsMyNetworkSoSlow/"
       STROIKA_TOP_ROOT: "c:/WhyTheFuckIsMyNetworkSoSlow/ThirdPartyComponents/Stroika/StroikaRoot/"
       USE_DOCKER_ROOT: "D:/docker"
@@ -252,8 +252,9 @@ jobs:
         run: docker pull ${{ matrix.container_image }}
       - name: Start docker build environment
         shell: "bash"
+        # the windows-2025 runner has 4 virtual CPUs and 16GB (its systeminfo); the Release (LTCG) link of the backend needs more than 7GB (LNK1102)
         run: |
-          docker run --interactive --memory 7G --cpus 2 --storage-opt 'size=50GB' -v "${GITHUB_WORKSPACE}:c:\WhyTheFuckIsMyNetworkSoSlow" --detach --name buildContainer ${{ matrix.container_image }} bash
+          docker run --interactive --memory 15G --cpus 4 --storage-opt 'size=50GB' -v "${GITHUB_WORKSPACE}:c:\WhyTheFuckIsMyNetworkSoSlow" --detach --name buildContainer ${{ matrix.container_image }} bash
       - name: Print Info about docker system
         shell: "bash"
         run: |
