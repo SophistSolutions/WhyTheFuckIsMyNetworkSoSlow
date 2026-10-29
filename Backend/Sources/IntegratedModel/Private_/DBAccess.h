@@ -74,7 +74,14 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_::DB
         virtual ~Mgr ();
 
     public:
-        nonvirtual GUID GenNewDeviceID (const Set<String>& hwAddresses);
+        /**
+         *  Returns the ID of the device user settings record holding exactly these hardware addresses
+         *  (fAggregateDeviceHardwareAddresses), creating and storing one if none exists. The lookup and the creation are one step,
+         *  under the user settings' lock, so rollups computed concurrently get the same ID - one record per set of addresses.
+         *
+         *  With no hardware addresses, it returns a new ID and stores nothing.
+         */
+        nonvirtual GUID FindOrCreateDeviceID (const Set<String>& hwAddresses);
 
     public:
         nonvirtual GUID GenNewNetworkID ([[maybe_unused]] const Network& rollupNetwork, const Network& containedNetwork);

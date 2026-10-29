@@ -125,17 +125,23 @@ Mgr::~Mgr ()
     fDatabaseSyncThread_.AbortAndWaitForDone ();
 }
 
-GUID Mgr::GenNewDeviceID (const Set<String>& hwAddresses)
+GUID Mgr::FindOrCreateDeviceID (const Set<String>& hwAddresses)
 {
-    GUID newRes = GUID::GenerateNew ();
     if (hwAddresses.empty ()) {
         WeakAssert (false);
+        return GUID::GenerateNew ();
     }
-    else {
-        Model::Device::UserOverridesType tmp;
-        tmp.fAggregateDeviceHardwareAddresses = hwAddresses;
-        SetDeviceUserSettings (newRes, tmp);
+    auto lk = fCachedDeviceUserSettings_.rwget ();
+    for (const KeyValuePair<GUID, Device::UserOverridesType>& i : lk.cref ()) {
+        if (i.fValue.fAggregateDeviceHardwareAddresses == hwAddresses) {
+            return i.fKey;
+        }
     }
+    GUID                             newRes = GUID::GenerateNew ();
+    Model::Device::UserOverridesType tmp;
+    tmp.fAggregateDeviceHardwareAddresses = hwAddresses;
+    fDeviceUserSettingsTableConnection_.rwget ().cref ().AddOrUpdate (ExternalDeviceUserSettingsElt_{newRes, tmp});
+    lk.rwref ().Add (newRes, tmp);
     return newRes;
 }
 

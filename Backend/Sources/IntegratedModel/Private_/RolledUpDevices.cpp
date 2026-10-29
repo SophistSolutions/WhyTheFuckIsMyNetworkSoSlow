@@ -237,7 +237,7 @@ void RolledUpDevices::MergeInNew_ (DBAccess::Mgr* dbAccessMgr, const Device& d2M
     Assert (not d2MergeIn.fAggregatesReversibly.has_value ());
     Device newRolledUpDevice                = d2MergeIn;
     newRolledUpDevice.fAggregatesReversibly = Set<GUID>{d2MergeIn.fID};
-    newRolledUpDevice.fID                   = dbAccessMgr->GenNewDeviceID (d2MergeIn.GetHardwareAddresses ());
+    newRolledUpDevice.fID                   = dbAccessMgr->FindOrCreateDeviceID (d2MergeIn.GetHardwareAddresses ());
     if (GetDevices ().Contains (newRolledUpDevice.fID)) {
         // Should probably never happen, but since depends on data in database, program defensively
         Logger::sThe.Log (Logger::eWarning, "Got rollup device ID from cache that is already in use: {} (for hardware addresses {})"_f,
