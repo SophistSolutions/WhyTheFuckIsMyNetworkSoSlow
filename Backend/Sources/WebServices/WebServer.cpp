@@ -631,7 +631,7 @@ const WebServiceMethodDescription WebServer::Rep_::kOperations_{
         "curl http://localhost/api/v1/operations/dns/calculate-negative-lookup-time"sv,
         "curl http://localhost/api/v1/operations/dns/lookup?name=www.youtube.com"sv,
         "curl http://localhost/api/v1/operations/dns/calculate-score"sv,
-        "curl http://localhost/api/v1/operations/scan/FullRescan?device=ID"sv,
+        "curl http://localhost/api/v1/operations/scan/FullRescan?deviceID=ID"sv,
         "curl http://localhost/api/v1/operations/scan/Scan?addr=hostOrIPAddr"sv,
     },
     Sequence<String>{
@@ -641,8 +641,8 @@ const WebServiceMethodDescription WebServer::Rep_::kOperations_{
         "/operations/dns/calculate-negative-lookup-time[&samples=uint]?"sv,
         "/operations/dns/lookup[&name=string]"sv,
         "/operations/dns/calculate-score; returns number 0 (worst) to 1.0 (best)"sv,
-        "/operations/scan/FullRescan?device=ID; clears found ports for deviceID, and immediately rescans before returning; returns summary"sv,
-        "/operations/scan/operations/scan/Scan?addr=hostOrIPAddr; doesnt affect internal strucutres, and just runs scan process on given IP and returns result"sv,
+        "/operations/scan/FullRescan?deviceID=ID; clears found ports for deviceID, and immediately rescans before returning; returns summary"sv,
+        "/operations/scan/Scan?addr=hostOrIPAddr; doesn't affect internal structures, and just runs scan process on given IP and returns result"sv,
     },
 };
 
