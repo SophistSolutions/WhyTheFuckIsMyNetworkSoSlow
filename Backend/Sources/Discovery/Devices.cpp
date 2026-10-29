@@ -781,6 +781,9 @@ namespace {
                                 di = *match; // merge
                                 di.fAttachedNetworks += thisDevice->fAttachedNetworks;
                                 Memory::AccumulateIf (&di.fAttachedInterfaces, thisDevice->fAttachedInterfaces);
+                                for (const auto& n : thisDevice->fNames) {
+                                    di.fNames.Add (n.fName, n.fPriority);
+                                }
 #if qStroika_Foundation_Debug_AssertionsChecked
                                 di.fDebugProps.Add ("Updated-By-MyDeviceDiscoverer_-At", DateTime::Now ());
 #endif
