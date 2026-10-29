@@ -281,9 +281,9 @@ auto RolledUpDevices::MapAggregatedAttachments2Rollups_ (const Mapping<GUID, Net
 
 bool RolledUpDevices::ShouldRollup_ (const Device& exisingRolledUpDevice, const Device& d2PotentiallyMergeIn)
 {
-    if ((exisingRolledUpDevice.fAggregatesIrreversibly and exisingRolledUpDevice.fAggregatesIrreversibly->Contains (d2PotentiallyMergeIn.fID)) or
+    if ((exisingRolledUpDevice.fAggregatesReversibly and exisingRolledUpDevice.fAggregatesReversibly->Contains (d2PotentiallyMergeIn.fID)) or
         (exisingRolledUpDevice.fAggregatesIrreversibly and exisingRolledUpDevice.fAggregatesIrreversibly->Contains (d2PotentiallyMergeIn.fID))) {
-        // we retry the same 'discovered' networks repeatedly and re-roll them up.
+        // we retry the same 'discovered' devices repeatedly and re-roll them up.
         // mostly this is handled by having the same hardware addresses, but sometimes (like for main discovered device)
         // MAY not yet / always have network interface). And besides, this check cheaper/faster probably.
         return true;
