@@ -206,17 +206,15 @@ auto RolledUpNetworks::ShouldRollupInto_ (const Network& net2MergeIn, const Netw
         if (ShouldRollupInto_CheckIsCompatibleWithTarget_ (net2MergeIn, net2MergeInFingerprint, alreadyRolledUpNetwork)) {
             return make_tuple (alreadyRolledUpNetwork, PassFailType_::ePass);
         }
+        return make_tuple (nullopt, PassFailType_::eFail); // rolled into a different one before, so have to recompute anyhow
     }
-    // SEARCH FULL LIST of already rolled up networks to find the right network to roll into; if we already had rolled into a
-    // different one, don't bother cuz have to recompute anyhow
-    if (not formerRollupID.has_value ()) {
-        for (const auto& ri : fRolledUpNetworks_) {
-            if (ShouldRollupInto_CheckIsCompatibleWithTarget_ (net2MergeIn, net2MergeInFingerprint, ri)) {
-                return make_tuple (ri, PassFailType_::ePass);
-            }
+    // SEARCH FULL LIST of already rolled up networks to find the right network to roll into
+    for (const auto& ri : fRolledUpNetworks_) {
+        if (ShouldRollupInto_CheckIsCompatibleWithTarget_ (net2MergeIn, net2MergeInFingerprint, ri)) {
+            return make_tuple (ri, PassFailType_::ePass);
         }
     }
-    return make_tuple (nullopt, PassFailType_::eFail);
+    return make_tuple (nullopt, PassFailType_::ePass); // a network matching none: MergeIn_ adds a new rollup for it
 }
 
 bool RolledUpNetworks::ShouldRollupInto_CheckIsCompatibleWithTarget_ (const Network& net2MergeIn, const Network::FingerprintType& net2MergeInFingerprint,

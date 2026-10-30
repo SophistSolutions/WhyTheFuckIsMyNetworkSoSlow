@@ -98,15 +98,19 @@ namespace WhyTheFuckIsMyNetworkSoSlow::BackendApp::IntegratedModel::Private_ {
         };
         // if fails simple merge, returns false, so must call recomputeall
         PassFailType_ MergeIn_ (DBAccess::Mgr* dbAccessMgr, const Network& net2MergeIn);
-        // Find the appropriate network to merge net2MergeIn into from our existing networks (using whatever keys we have to make this often quicker)
-        // This can be slow for the case of a network change. And it can refer to a different rollup network than it used to.
-        // second part of tuple returned is 'revalidateAll' - force recompute of whole rollup
-
-        // @todo NOTE - a net COULD be directed to rollup into one network due to fingerprint and another due to matching gateway hardware ID
-        // RESOLVE this by agreeing that hardwareGatewayID takes PRECEDENCE.
-        //
-        // And consider it a DATA ERROR (need code to assure cannot happen) - for the same hardare ID to appear in two rollup networks match rules
-        // or the same (any type of rollup rule) to appear in differnt high level user settings)
+        /*
+         *  Find the appropriate network to merge net2MergeIn into from our existing networks (using whatever keys we have to make this often quicker)
+         *  This can be slow for the case of a network change. And it can refer to a different rollup network than it used to.
+         *  Returns the rollup to merge into and ePass; nullopt and ePass for a network matching none (MergeIn_ adds a new rollup
+         *  for it); or nullopt and eFail when it was rolled up elsewhere before and no longer belongs there - force recompute of
+         *  whole rollup
+         *
+         *  @todo NOTE - a net COULD be directed to rollup into one network due to fingerprint and another due to matching gateway hardware ID
+         *  RESOLVE this by agreeing that hardwareGatewayID takes PRECEDENCE.
+         *
+         *  And consider it a DATA ERROR (need code to assure cannot happen) - for the same hardware ID to appear in two rollup networks match rules
+         *  or the same (any type of rollup rule) to appear in different high level user settings)
+         */
         tuple<optional<Network>, PassFailType_> ShouldRollupInto_ (const Network& net2MergeIn, const Network::FingerprintType& net2MergeInFingerprint);
         bool ShouldRollupInto_CheckIsCompatibleWithTarget_ (const Network& net2MergeIn, const Network::FingerprintType& net2MergeInFingerprint,
                                                             const Network& targetRollup);
