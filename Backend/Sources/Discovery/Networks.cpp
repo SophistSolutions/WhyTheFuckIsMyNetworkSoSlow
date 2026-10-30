@@ -21,6 +21,9 @@
 #include "Stroika/Foundation/IO/Network/LinkMonitor.h"
 #include "Stroika/Foundation/IO/Network/Neighbors.h"
 #include "Stroika/Foundation/IO/Network/Transfer/Connection.h"
+#include "Stroika/Foundation/Time/Realtime.h"
+
+#include "Stroika/Frameworks/NetworkMonitor/Ping.h"
 
 #include "NetworkInterfaces.h"
 
@@ -124,14 +127,47 @@ namespace {
         }
     };
     KeepCachedMonitorsUpToDate_ sKeepCachedMonitorsUpToDate_;
-    optional<String>            LookupHardwareAddress_ (const InternetAddress& ia)
+    /*
+     *  A gateway's hardware address is part of its network's fingerprint - its identity - so a gateway missing from the cached
+     *  neighbors would make its network look new. So for an IPv4 address not there, read the neighbors again, and if it is still
+     *  missing, ping it - sending it anything makes the OS ARP for it - and read them once more. At most once a minute per
+     *  address (as often as the timer reads the neighbors anyway), so one that never answers costs no more than that. The
+     *  neighbors are ARP's, so IPv4 only: an IPv6 address is just looked up.
+     */
+    optional<String> LookupHardwareAddress_ (const InternetAddress& ia)
     {
-        for (auto i : sCachedNeighbors_.load ()) {
-            if (i.fInternetAddress == ia) {
-                return i.fHardwareAddress;
+        auto lookup = [&] () -> optional<String> {
+            for (const NeighborsMonitor::Neighbor& i : sCachedNeighbors_.load ()) {
+                if (i.fInternetAddress == ia) {
+                    return i.fHardwareAddress;
+                }
             }
+            return nullopt;
+        };
+        if (optional<String> r = lookup ()) {
+            return r;
         }
-        return nullopt;
+        if (ia.GetAddressFamily () != InternetAddress::AddressFamily::V4) {
+            return nullopt;
+        }
+        static Synchronized<Mapping<InternetAddress, Time::TimePointSeconds>> sLastForced_;
+        {
+            auto                   l   = sLastForced_.rwget ();
+            Time::TimePointSeconds now = Time::GetTickCount ();
+            if (optional<Time::TimePointSeconds> last = l->Lookup (ia); last and now - *last < 1min) {
+                return nullopt;
+            }
+            l->Add (ia, now);
+        }
+        DbgTrace ("LookupHardwareAddress_: {} not in the cached neighbors, so reading them again"_f, ia);
+        sKeepCachedMonitorsUpToDate_.DoOnce ();
+        if (optional<String> r = lookup ()) {
+            return r;
+        }
+        DbgTrace ("LookupHardwareAddress_: {} still not a neighbor, so pinging it"_f, ia);
+        IgnoreExceptionsExceptThreadAbortForCall (Stroika::Frameworks::NetworkMonitor::Ping::Pinger{ia}.RunOnce ());
+        sKeepCachedMonitorsUpToDate_.DoOnce ();
+        return lookup ();
     }
 }
 
