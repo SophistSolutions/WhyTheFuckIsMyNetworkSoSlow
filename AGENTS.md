@@ -52,6 +52,8 @@ version only when one is needed, a compiler bug say (LGP, 2026-10-23). On Window
   keeps the .deb and .msi installers; it runs nothing. As in Stroika, `v1-Dev` runs only the matrix entries marked
   `"always"`.
 - `Workspaces/` - the VS Code workspace and Visual Studio solutions (Visual Studio is for debugging; make builds).
+- `Documentation/Design.md` - where the data model is headed (snapshots, identity, aging, measurements, peers), and the
+  migration to it: read it before changing what Discovery stores or how the rollup identifies things.
 - `Release-Notes.md` - WTF's release notes. `TODO.txt` - LGP's long-range notes and ideas. `TODO.md` - short-term.
 
 ## Model.h is a contract

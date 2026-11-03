@@ -30,6 +30,7 @@ done.
     just left - and let the user merge and split (#59); (3) fold devices on a host-internal network (docker0) into the
     host, once Stroika #1248 says which networks those are (as #94); (4) by default, show the devices seen recently
     (#57, #61). Related: #58 (design doc for IDs), #67, #53.
+  - **The plan (2026-11-02): Documentation/Design.md**, its Migration section - to start when LGP picks the time.
 
 - For Stroika (pass on to its session; found 2026-10-22): its Samples' unit files (Samples/HTMLUI/Installers,
   Samples/Service/Installers) say `PIDFile=/var/run/...`, which systemd warns about on every reload (WTF's moved to
