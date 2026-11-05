@@ -96,15 +96,17 @@ namespace {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
         Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs ("{}::ReverseDNSLookup_", "inetAddr={}"_f, inetAddr)};
 #endif
-        // DNS::ReverseLookup can block for seconds (on Windows, an address with no PTR record), and is no interruption point - so a
-        // thread making many lookups (a pass over the ARP neighbors) would not stop until all were done. Once
-        // https://github.com/SophistSolutions/Stroika/issues/1277 makes it one, this check can go.
-        Thread::CheckForInterruption ();
         static constexpr auto                                                   kCacheTTL_{5min};
         static Cache::SynchronizedTimedCache<InternetAddress, optional<String>> sCache_{kCacheTTL_};
         //sCache_.fHoldWriteLockDuringCacheFill = true; // see random false positive - see if this affects -LGP 2022-11-21 - assertexternally...https://stroika.atlassian.net/browse/STK-956
         try {
-            return sCache_.LookupValue (inetAddr, [] (const InternetAddress& inetAddr) { return DNS::kThe.ReverseLookup (inetAddr); });
+            return sCache_.LookupValue (inetAddr, [] (const InternetAddress& inetAddr) {
+                // DNS::ReverseLookup can block for seconds (on Windows, an address with no PTR record), and is no interruption
+                // point - so a thread making many lookups (a pass over the ARP neighbors) would not stop until all were done.
+                // Once https://github.com/SophistSolutions/Stroika/issues/1277 makes it one, this check can go.
+                Thread::CheckForInterruption ();
+                return DNS::kThe.ReverseLookup (inetAddr);
+            });
         }
         catch (const Thread::AbortException&) {
             Execution::ReThrow ();
@@ -119,12 +121,12 @@ namespace {
 #if USE_NOISY_TRACE_IN_THIS_MODULE_
         Debug::TraceContextBumper ctx{Stroika_Foundation_Debug_OptionalizeTraceArgs ("{}::DNSLookup_", "hostOrIPAddress={}"_f, hostOrIPAddress)};
 #endif
-        // as in ReverseDNSLookup_: DNS::GetHostAddresses is no interruption point either
-        // (https://github.com/SophistSolutions/Stroika/issues/1277)
-        Thread::CheckForInterruption ();
         static constexpr auto                                              kCacheTTL_{5min};
         static Cache::SynchronizedTimedCache<String, Set<InternetAddress>> sCache_{kCacheTTL_};
         return sCache_.LookupValue (hostOrIPAddress, [] (const String& hostOrIPAddress) -> Set<InternetAddress> {
+            // as in ReverseDNSLookup_: DNS::GetHostAddresses is no interruption point either
+            // (https://github.com/SophistSolutions/Stroika/issues/1277)
+            Thread::CheckForInterruption ();
             return Set<InternetAddress>{DNS::kThe.GetHostAddresses (hostOrIPAddress)};
         });
     }
