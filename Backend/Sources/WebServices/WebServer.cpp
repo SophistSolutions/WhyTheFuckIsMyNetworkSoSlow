@@ -485,7 +485,12 @@ public:
             ConnectionManager::Options{
                 .fMaxConnections = kMaxWebServerConcurrentConnections_
                 , .fMaxConcurrentlyHandledConnections = kMaxThreads_
+#if not qStroika_Platform_Windows
+                // SO_REUSEADDR lets a restarted WTF bind its port at once (old connections in TIME_WAIT) - but on Windows it
+                // would also let WTF take over a port another program is listening on, silently. Once
+                // https://github.com/SophistSolutions/Stroika/issues/1275 is fixed, set it on every platform.
                 , .fBindFlags = Socket::BindFlags{.fSO_REUSEADDR = true}
+#endif
                 , .fDefaultResponseHeaders = kDefaultResponseHeadersStaticSite_
              ,.fCollectStatistics = true
             }}
