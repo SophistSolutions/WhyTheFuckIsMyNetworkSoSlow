@@ -93,8 +93,9 @@ Stroika's build section applies. The WTF-specific parts:
   (default 80 - on Linux that needs root, unless it is set above 1024; on Windows any user can listen on it, and
   without admin only the startup's firewall-rule setup fails, with a warning).
 - Its state is in `C:\ProgramData\WhyTheFuckIsMyNetworkSoSlow\` or `/var/opt/WhyTheFuckIsMyNetworkSoSlow/`:
-  `AppSettings.json`, and the database (by default the directory `db-localDBDir-v1`). Until the database has loaded,
-  the API answers 503.
+  `AppSettings.json`, and the database (by default the directory `db-localDBDir-v2`; an AppSettings naming an earlier
+  default, `-v1`, moves to it - `kEarlierDefaultDBRoots_` in Common/DB.cpp). Until the database has loaded, the API
+  answers 503.
 - There are no automated tests. A check is the build (with its warnings, as in Stroika), then a run: `curl` `/api/v1/about`,
   `/api/v1/healthcheck`, `/api/v1/devices?recurse=true`, `/api/v1/networks?recurse=true` and
   `/api/v1/network-interfaces?recurse=true`, and the UI's Devices and Networks pages. Discovery needs a real network

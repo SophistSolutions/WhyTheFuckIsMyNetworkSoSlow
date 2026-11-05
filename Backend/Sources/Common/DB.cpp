@@ -51,6 +51,14 @@ namespace {
         }
         return p;
     }
+
+    // The database used when AppSettings names none - and then written into AppSettings. Its number goes up when what an
+    // earlier version stored is not worth keeping.
+    const filesystem::path kDefaultDBRoot_{"db-localDBDir-v2"};
+
+    // Earlier versions' defaults: an AppSettings naming one of these got it by default, not by choice, so it moves to
+    // kDefaultDBRoot_ (the old database is left on disk). A database the user named is kept.
+    const filesystem::path kEarlierDefaultDBRoots_[] = {"db-localDBDir-v1"};
 }
 
 /*
@@ -149,9 +157,14 @@ Database::Document::Connection::Ptr WhyTheFuckIsMyNetworkSoSlow::BackendApp::Com
     using namespace Database::Document;
     DatabaseConfigurationType dbConfig{BackendApp::Common::gAppConfiguration->fDatabase};
 
+    if (const DirectoryJSONStorage* d = get_if<DirectoryJSONStorage> (&dbConfig);
+        d != nullptr and ranges::find (kEarlierDefaultDBRoots_, d->fRoot) != ranges::end (kEarlierDefaultDBRoots_)) {
+        Logger::sThe.Log (Logger::eWarning, "Database '{}' was an earlier version's default: starting a new one, '{}'"_f, d->fRoot, kDefaultDBRoot_);
+        dbConfig = monostate{};
+    }
     // For default configuration, if no db specified, fill in sensible default.
     if (get_if<monostate> (&dbConfig)) {
-        dbConfig = DirectoryJSONStorage{.fRoot = "db-localDBDir-v1"}; // @todo see if this is best or SQLITE
+        dbConfig = DirectoryJSONStorage{.fRoot = kDefaultDBRoot_}; // @todo see if this is best or SQLITE
         // update App Config
         AppConfigurationType appCfg = BackendApp::Common::gAppConfiguration.Get ();
         appCfg.fDatabase            = dbConfig;
