@@ -43,7 +43,8 @@ version only when one is needed, a compiler bug say (LGP, 2026-10-23). On Window
     `/config.json`, and the html files).
 - `html/` - the web UI: Vue 3, Quasar (app-vite), pinia, TypeScript. `src/proxy/API.ts` calls the API; `src/models/`
   mirrors `Model.h`.
-- `Installers/` - .deb and .rpm (each with a systemd unit), and the WiX .msi.
+- `Installers/` - .deb and .rpm (each with a systemd unit), and the WiX .msi. `Installers/Docker/` makes a Docker image
+  for Linux from the Release .deb, by hand (`make -C Installers/Docker image`, then `push`).
 - `ThirdPartyComponents/` - Stroika (git submodule, at `StroikaRoot`) and `EthernetMACAddressOUIPrefixes` (nmap's
   mac-prefixes file, downloaded by the build).
 - `DockerBuildContainers/` - WTF's build images (built on Stroika's), published as
