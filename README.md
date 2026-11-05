@@ -5,29 +5,26 @@ diagnose their own personal networks, to indicate network issues and to provide 
 
 > **_Note:_** - as of the current release, all you can really do effectively is to explore the devices present on your network (including history) (not doing much monitoring yet, except manually through the web API).
 
-- To test:
+## Try it
 
-  - Install (msi/deb/rpm installs in release section below)
+- **[Getting started](Documentation/Getting-Started.md)** - install it (Windows, Ubuntu, or Docker on Linux), what to
+  expect in the first minutes, settings, logs, uninstalling.
+- Installers: the [Releases page](https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/releases). The Windows
+  installer is not signed: if Windows says "Windows protected your PC", click More info, then Run anyway.
+- Once installed, WTF runs as a background service, serving its web page and its API on one port - 80 by default
+  (WebServerPort in AppSettings.json). In a browser, visit:
+  - <http://localhost/> (web-gui)
+  - <http://localhost/api> (web-api)
 
-    installation starts a background web-service, serving the GUI and the API on one port - 80 by default (WebServerPort in
-    AppSettings.json)
+## Issues and plans
 
-  - In a browser, visit:
-    - <http://localhost/> (web-gui)
-    - <http://localhost/api> (web-api)
-
-- TODO items
-  See <https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues>
-
-## Releases (and built installers)
-
-- [Github WhyTheFuckIsMyNetworkSoSlow Releases Page](https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/releases)
+- <https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues>
 
 ## CI System Integration
 
-- Github Actions
+- Github Actions - [.github/workflows/build-N-test.yml](.github/workflows/build-N-test.yml)
 
-  | [Branches](https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow) |                                                                                                                                              Status                                                                                                                                               |                                                                                                |
-  | :-------------------------------------------------------------------------- | :-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------- |
-  | **v1-Release**                                                              | [![build-N-test-v1-Release](https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/workflows/build-N-test-v1-Release/badge.svg?branch=v1-Release)](https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/actions?query=workflow%3Abuild-N-test-v1-Release+branch%3Av1-Release) | [.github/workflows/build-N-test-v1-Release.yml](.github/workflows/build-N-test-v1-Release.yml) |
-  | **v1-Dev**                                                                  |           [![build-N-test-v1-Dev](https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/workflows/build-N-test-v1-Dev/badge.svg?branch=v1-Dev)](https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/actions?query=workflow%3Abuild-N-test-v1-Dev+branch%3Av1-Dev)           | [.github/workflows/build-N-test-v1-Dev.yml](.github/workflows/build-N-test-v1-Dev.yml)         |
+  | [Branches](https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow) | Status |
+  | :-------------------------------------------------------------------------- | :----: |
+  | **v1-Release** | [![build-N-test](https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/actions/workflows/build-N-test.yml/badge.svg?branch=v1-Release)](https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/actions/workflows/build-N-test.yml?query=branch%3Av1-Release) |
+  | **v1-Dev** | [![build-N-test](https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/actions/workflows/build-N-test.yml/badge.svg?branch=v1-Dev)](https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/actions/workflows/build-N-test.yml?query=branch%3Av1-Dev) |

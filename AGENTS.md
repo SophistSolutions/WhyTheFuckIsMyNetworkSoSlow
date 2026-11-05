@@ -49,13 +49,16 @@ version only when one is needed, a compiler bug say (LGP, 2026-10-23). On Window
   mac-prefixes file, downloaded by the build).
 - `DockerBuildContainers/` - WTF's build images (built on Stroika's), published as
   `sophistsolutionsinc/whythefuckismynetworksoslow-*:v1` by the `build-Dev-Docker-Containers` workflow (run by hand).
-- `.github/workflows/build-N-test.yml` - CI on every push: builds on Ubuntu 22.04 and 24.04, macOS and Windows, and
-  keeps the .deb and .msi installers; it runs nothing. As in Stroika, `v1-Dev` runs only the matrix entries marked
-  `"always"`.
+- `.github/workflows/build-N-test.yml` - CI on every push: builds on Ubuntu 22.04, 24.04 and 26.04, macOS and
+  Windows, and keeps the .deb and .msi installers; it runs nothing. As in Stroika, `v1-Dev` runs only the matrix
+  entries marked `"always"`.
 - `Workspaces/` - the VS Code workspace and Visual Studio solutions (Visual Studio is for debugging; make builds).
 - `Documentation/Design.md` - where the data model is headed (snapshots, identity, aging, measurements, peers), and the
   migration to it: read it before changing what Discovery stores or how the rollup identifies things.
-- `Release-Notes.md` - WTF's release notes. `TODO.txt` - LGP's long-range notes and ideas. `TODO.md` - short-term.
+- `Documentation/Getting-Started.md` - for people trying WTF: installing it (.msi, .deb, Docker), settings, logs,
+  upgrading, uninstalling.
+- `Release-Notes.md` - WTF's release notes; `ReleaseScript.md` - how to make a release. `TODO.txt` - LGP's long-range
+  notes and ideas. `TODO.md` - short-term.
 
 ## Model.h is a contract
 
