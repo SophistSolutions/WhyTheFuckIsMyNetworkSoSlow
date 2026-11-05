@@ -103,7 +103,41 @@ jobs:
           name: ${{ matrix.displayTargetName }} Installers
           path: |
             Builds/${{ matrix.config_name }}/WhyTheFuckIsMyNetworkSoSlow/*.deb
-  
+
+  # WTF's Docker image (Installers/Docker), made from the ubuntu-26.04 Release .deb above, checked, and pushed to Docker
+  # Hub: from v1-Dev as :dev (the newest development build); from v1-Release as :<VERSION>, and :latest for a final one
+  docker-image:
+    needs: build-n-test-Linux
+    if: github.ref == 'refs/heads/v1-Dev' || github.ref == 'refs/heads/v1-Release'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+            submodules: true
+      - name: Get the ubuntu-26.04 Release .deb
+        uses: actions/download-artifact@v4
+        with:
+          name: ubuntu-26.04 (Release) Installers
+          path: Builds/Release/WhyTheFuckIsMyNetworkSoSlow
+      - name: Build the image
+        run: |
+          make -C Installers/Docker image
+      - name: Check it - its API answers, and docker stop stops it
+        run: |
+          make -C Installers/Docker check
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      - name: Push it
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/v1-Release" ]; then
+            make -C Installers/Docker push
+          else
+            make -C Installers/Docker push-dev
+          fi
+
   build-n-test-MacOS:
     needs: MacOSMatrixPrep
     runs-on: ${{ matrix.runs_on }}

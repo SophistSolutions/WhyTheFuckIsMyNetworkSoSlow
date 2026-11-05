@@ -36,6 +36,7 @@ docker run -d --name wtf --network host --restart unless-stopped \
 Then open `http://<that computer>:8080/`.
 
 - `--network host` is required: without it, WTF sees only Docker's own private network, not your LAN.
+- `<version>` is a release's (`1.0d21`, say); `latest` is the newest release, and `dev` the newest development build.
 - `WTF_PORT` sets the web page's port (WTF's own default is 80).
 - `wtf-data` is a Docker volume that holds the settings and the database across upgrades. Name a different volume for
   each WTF you run.

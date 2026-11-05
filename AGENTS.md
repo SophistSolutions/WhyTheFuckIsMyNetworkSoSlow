@@ -44,14 +44,14 @@ version only when one is needed, a compiler bug say (LGP, 2026-10-23). On Window
 - `html/` - the web UI: Vue 3, Quasar (app-vite), pinia, TypeScript. `src/proxy/API.ts` calls the API; `src/models/`
   mirrors `Model.h`.
 - `Installers/` - .deb and .rpm (each with a systemd unit), and the WiX .msi. `Installers/Docker/` makes a Docker image
-  for Linux from the Release .deb, by hand (`make -C Installers/Docker image`, then `push`).
+  for Linux from the Release .deb; CI publishes it (`:dev` from `v1-Dev`, `:<VERSION>` from `v1-Release`).
 - `ThirdPartyComponents/` - Stroika (git submodule, at `StroikaRoot`) and `EthernetMACAddressOUIPrefixes` (nmap's
   mac-prefixes file, downloaded by the build).
 - `DockerBuildContainers/` - WTF's build images (built on Stroika's), published as
   `sophistsolutionsinc/whythefuckismynetworksoslow-*:v1` by the `build-Dev-Docker-Containers` workflow (run by hand).
 - `.github/workflows/build-N-test.yml` - CI on every push: builds on Ubuntu 22.04, 24.04 and 26.04, macOS and
-  Windows, and keeps the .deb and .msi installers; it runs nothing. As in Stroika, `v1-Dev` runs only the matrix
-  entries marked `"always"`.
+  Windows, and keeps the .deb and .msi installers; it runs nothing, but checks and publishes the Docker image. As in
+  Stroika, `v1-Dev` runs only the matrix entries marked `"always"`.
 - `Workspaces/` - the VS Code workspace and Visual Studio solutions (Visual Studio is for debugging; make builds).
 - `Documentation/Design.md` - where the data model is headed (snapshots, identity, aging, measurements, peers), and the
   migration to it: read it before changing what Discovery stores or how the rollup identifies things.

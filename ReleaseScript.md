@@ -19,8 +19,9 @@ unzipped, one file per platform, named for it - so a tester downloads one file a
 2. Write the release's notes (below) to `notes.md`, then
    `gh release create $VER -R $R --target v1-Release --prerelease --title "$VER {<date>}" --notes-file notes.md *.msi *.deb`
 
-3. The Docker image: in WTF-Dev-2604, build Release, then `make -C Installers/Docker image push`
-   ([Installers/Docker/ReadMe.md](Installers/Docker/ReadMe.md)).
+3. The Docker image: CI pushed it with the release commit - check that run's `docker-image` job, and that Docker Hub has
+   `sophistsolutionsinc/whythefuckismynetworksoslow:$VER` (and `:latest`). By hand, if need be:
+   [Installers/Docker/ReadMe.md](Installers/Docker/ReadMe.md).
 
 ## The release's notes
 
