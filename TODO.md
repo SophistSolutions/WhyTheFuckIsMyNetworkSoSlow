@@ -7,13 +7,6 @@ done.
 
 ## Open
 
-- **Before the 1.0d21 release: the Interface.cpp:961 WeakAssert on Windows** (LGP 2026-11-05). Stroika's
-  `GetInterfaces_Windows_` (IO/Network/Interface.cpp:960-961) asserts that a Wi-Fi interface's transmit and receive
-  speeds from GetAdaptersAddresses equal the WLAN API's. The receive one failed in 8 of 30 Debug traces on protagoras
-  (10/24-10/29, 1-6 times each, at startup and later - 606 s, 753 s), not in the 15-minute run on 11/05. Likely: a Wi-Fi
-  link's rate changes from moment to moment and the two are read at different times, so the assert is wrong, not the
-  data - check, and if so a Stroika issue (drop the asserts, or say which source wins).
-
 - **Device rollup: survey and analyze it before fixing** (LGP 2026-10-22: "That logic is crap" - medusa's UI lists over
   1000 devices, and counting). medusa's `/api/v1/devices` on 2026-10-22 (1.0d21x, on its kept database): 6180 devices -
   - **First (LGP 2026-10-23): the 5734 empty records.** Each is 173 bytes of JSON - an ID and a user setting holding
