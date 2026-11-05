@@ -37,13 +37,6 @@ done.
     network so identified marked as such in the API and UI. Proposed: ties go to the oldest anchor; label each open
     question with the step that needs it settled.
 
-- For Stroika (pass on to its session; found 2026-10-22): its Samples' unit files (Samples/HTMLUI/Installers,
-  Samples/Service/Installers) say `PIDFile=/var/run/...`, which systemd warns about on every reload (WTF's moved to
-  /run). And (2026-10-23) Build/Scripts/FormatCode expands its `EXCLUDES` unquoted, so bash globs `*/node_modules/*`
-  against the current directory: run from WTF's root it matches html/node_modules/... and find fails ("paths must
-  precede expression"); `-name $filePattern` is unquoted the same way. FileSystemRequestHandler's fallback cache rule,
-  and the HTMLUI sample's caching and routing docs: https://github.com/SophistSolutions/Stroika/issues/1253.
-
 - **SSDP "last seen"**: once https://github.com/SophistSolutions/Stroika/issues/1256 gives `SSDP::Advertisement` the
   time it was heard, `SSDPDeviceDiscoverer_::Refresh_` extends seen.UDP to when each advertisement was last heard, not to
   now - today a device that leaves without a byebye looks seen until its max-age runs out (often 30 minutes).
