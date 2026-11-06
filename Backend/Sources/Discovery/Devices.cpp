@@ -971,7 +971,9 @@ namespace {
         /*
          *  A LOCATION's device description is fetched as an advertisement there is added, and not again while any there is in
          *  force (Removed_ forgets it once none is): UPnP Device Architecture 1.1, section 1.2.2, has it static until then -
-         *  unless its CONFIGID.UPNP.ORG changes, saying it changed. One that failed is tried again after kRetryFailedFetchAfter_.
+         *  unless its CONFIGID.UPNP.ORG changes, saying it changed. One that failed is tried again after kRetryFailedFetchAfter_,
+         *  and is remembered that long even with nothing there in force: a program run over and over, each run advertising a
+         *  new device at the same LOCATION, would otherwise have it fetched - and time out - on every run.
          */
         struct Fetched_ {
             Time::TimePointSeconds fAt;
@@ -1120,7 +1122,12 @@ namespace {
             Debug::TraceContextBumper ctx{"SSDPDeviceDiscoverer_::Removed_", "a={}"_f, a};
             bool locationInForce = inForce.Any ([&] (const SSDP::Advertisement& i) { return i.fLocation == a.fLocation; });
             if (not locationInForce) {
-                fFetched_.RemoveIf (a.fLocation); // so, added again, its description is fetched again
+                // so, added again, its description is fetched again - unless a fetch there failed lately; and failures no
+                // longer current, wherever they were, are dropped
+                Time::TimePointSeconds now = Time::GetTickCount ();
+                fFetched_.RemoveAll ([&] (const KeyValuePair<URI, Fetched_>& i) {
+                    return i.fValue.fSucceeded ? i.fKey == a.fLocation : now >= i.fValue.fAt + kRetryFailedFetchAfter_;
+                });
             }
             DiscoveryInfo_ found{};
             found.AddNetworkAddresses_ (LocationAddresses_ (a.fLocation));
