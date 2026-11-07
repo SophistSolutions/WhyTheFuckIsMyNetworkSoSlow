@@ -109,8 +109,7 @@ version's image with the same volume.
 - Ubuntu: `sudo apt remove whythefuckismynetworksoslow`
 - Docker: `docker stop wtf`, then `docker rm wtf` - and `docker volume rm wtf-data` to delete its data too.
 
-Uninstalling leaves the settings and database folder (above); delete it to remove everything. On Windows it also leaves
-the firewall rule "WhyTheFuckIsMyNetworkSoSlow Receive SSDP Notify UDP Access Allowed".
+Uninstalling leaves the settings and database folder (above); delete it to remove everything.
 
 ## 7. Report a problem
 

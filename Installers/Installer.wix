@@ -33,6 +33,8 @@
   <?endif ?>
   <?define serviceEXESourcePath = "..\IntermediateFiles\$(var.CONFIGURATION)\WhyTheFuckIsMyNetworkSoSlow\WIX_TMP\WhyTheFuckIsMyNetworkSoSlow-Backend.exe" ?>
   <?define serviceName = "WhyTheFuckIsMyNetworkSoSlow" ?>
+  <!-- The name of the firewall rule the service registers at startup (Backend/Sources/Main.cpp) -->
+  <?define ssdpFirewallRuleName = "WhyTheFuckIsMyNetworkSoSlow Receive SSDP Notify UDP Access Allowed" ?>
 
   <!--
       ====================================================================================
@@ -70,10 +72,21 @@
       <!-- Determine the install location after the install path has been validated by the installer -->
       <Custom Action="SetARPINSTALLLOCATION" After="InstallValidate"></Custom>
 
+      <!-- Not when an upgrade removes this version: the new version's service uses the rule -->
+      <Custom Action="RemoveSSDPFirewallRule" After="StopServices">REMOVE~="ALL" AND NOT UPGRADINGPRODUCTCODE</Custom>
+
     </InstallExecuteSequence>
 
     <!-- Set up ARPINSTALLLOCATION property (http://blogs.technet.com/b/alexshev/archive/2008/02/09/from-msi-to-wix-part-2.aspx) -->
     <CustomAction Id="SetARPINSTALLLOCATION" Property="ARPINSTALLLOCATION" Value="[INSTALLDIR]" />
+
+    <!--
+         The service registers the firewall rule SSDP listening needs, so Windows Installer does not know of it: uninstall
+         deletes it by name - every rule of that name, whatever exe path registered it. Return="ignore": netsh fails when
+         there is none.
+      -->
+    <SetProperty Id="RemoveSSDPFirewallRule" Value="&quot;[SystemFolder]netsh.exe&quot; advfirewall firewall delete rule name=&quot;$(var.ssdpFirewallRuleName)&quot;" Before="RemoveSSDPFirewallRule" Sequence="execute" />
+    <CustomAction Id="RemoveSSDPFirewallRule" BinaryKey="WixCA" DllEntry="WixQuietExec" Execute="deferred" Impersonate="no" Return="ignore" />
 
     <!-- 
          Launch conditions

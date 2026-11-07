@@ -166,7 +166,9 @@ int main (int argc, const char* argv[])
 
     /*
      *  Without this firewall rule, on windows, SSDP 'listen' discovery doesn't work. The messages
-     *  don't make it to this service. 
+     *  don't make it to this service.
+     *
+     *  The .msi's uninstall deletes the rule by this name (Installers/Installer.wix, ssdpFirewallRuleName): keep the two the same.
      *
      * Maybe best to do this with installer, not direct code here (see https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/13)
      */
