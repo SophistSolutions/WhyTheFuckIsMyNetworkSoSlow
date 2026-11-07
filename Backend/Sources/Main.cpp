@@ -168,9 +168,9 @@ int main (int argc, const char* argv[])
      *  Without this firewall rule, on windows, SSDP 'listen' discovery doesn't work. The messages
      *  don't make it to this service.
      *
-     *  The .msi's uninstall deletes the rule by this name (Installers/Installer.wix, ssdpFirewallRuleName): keep the two the same.
-     *
-     * Maybe best to do this with installer, not direct code here (see https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/13)
+     *  Made here, not by the installer: the service runs as LocalSystem, so it can always make it, and a --run-directly run
+     *  from a build, as administrator, gets it too. The .msi's uninstall deletes the rule by this name
+     *  (Installers/Installer.wix, ssdpFirewallRuleName): keep the two the same.
      */
 #if qStroika_Platform_Windows
     try {
