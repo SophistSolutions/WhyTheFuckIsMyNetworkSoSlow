@@ -327,6 +327,9 @@ void Mgr::BackupDB2_ (const filesystem::path& backupFile)
             Logger::sThe.Log (Logger::eInfo, "Backed up database to file {} (will repeat roughly every 30 seconds)"_f, fullBackupFileName);
         }
     }
+    catch (const Thread::AbortException&) {
+        Execution::ReThrow ();
+    }
     catch (...) {
         Logger::sThe.Log (Logger::eError, "Failed to backup database to file {}: {}"_f, backupFile, current_exception ());
     }
