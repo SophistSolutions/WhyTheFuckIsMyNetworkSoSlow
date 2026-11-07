@@ -49,8 +49,8 @@
   <ImportGroup Label="Shared">
   </ImportGroup>
   <ImportGroup Label="PropertySheets">
-    <Import Project="$(ProjectDir)\..\..\..\Workspaces\VisualStudio.net\Microsoft.Cpp.stroika.ConfigurationBased.props" Condition="exists('$(ProjectDir)\..\..\..\Workspaces\VisualStudio.net\Microsoft.Cpp.stroika.ConfigurationBased.props')" Label="Stroika-Configuration" />
-    <Import Project="$(ProjectDir)\..\..\..\Workspaces\VisualStudio.net\Microsoft.Cpp.stroika.user.props" Condition="exists('$(ProjectDir)\..\..\..\Workspaces\VisualStudio.net\Microsoft.Cpp.stroika.user.props')" Label="User-Editable-Properties" />
+    <Import Project="$(ProjectDir)\..\..\..\ThirdPartyComponents\Stroika\StroikaRoot\Workspaces\VisualStudio.Net\Microsoft.Cpp.stroika.ConfigurationBased.props" Condition="exists('$(ProjectDir)\..\..\..\ThirdPartyComponents\Stroika\StroikaRoot\Workspaces\VisualStudio.Net\Microsoft.Cpp.stroika.ConfigurationBased.props')" Label="Stroika-Configuration" />
+    <Import Project="$(ProjectDir)\..\..\..\ThirdPartyComponents\Stroika\StroikaRoot\Workspaces\VisualStudio.Net\Microsoft.Cpp.stroika.user.props" Condition="exists('$(ProjectDir)\..\..\..\ThirdPartyComponents\Stroika\StroikaRoot\Workspaces\VisualStudio.Net\Microsoft.Cpp.stroika.user.props')" Label="User-Editable-Properties" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros">
   </PropertyGroup>
@@ -60,7 +60,7 @@
     <OutDir>$(ProjectDir)..\..\..\Builds\$(Configuration)\WhyTheFuckIsMyNetworkSoSlow\</OutDir>
     <IntDir>$(ProjectDir)..\..\..\IntermediateFiles\$(Configuration)\WhyTheFuckIsMyNetworkSoSlow\</IntDir>
     <ExecutablePath>$(StroikaBuildToolsExtraPath);$(CommonExecutablePath)</ExecutablePath>
-    <NMakeIncludeSearchPath>$(ProjectDir)\..\..\;$(ProjectDir)\..\..\..\IntermediateFiles\$(Configuration)\WhyTheFuckIsMyNetworkSoSlow\;$(ProjectDir)\..\..\..\ThirdPartyComponents\Stroika\StroikaRoot\Library\Sources\</NMakeIncludeSearchPath>
+    <NMakeIncludeSearchPath>$(ProjectDir)\..\..\;$(ProjectDir)\..\..\..\IntermediateFiles\$(Configuration)\WhyTheFuckIsMyNetworkSoSlow\;$(ProjectDir)\..\..\..\ThirdPartyComponents\Stroika\StroikaRoot\Library\Sources\;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
     <AdditionalOptions>/std:c++latest</AdditionalOptions>
   </PropertyGroup>
   <ItemGroup>
