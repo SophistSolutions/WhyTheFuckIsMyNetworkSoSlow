@@ -117,11 +117,15 @@ Between Stroika releases the submodule tracks Stroika's `v3-Dev`. To upgrade:
    submodule, before and after). For each note, search WTF (excluding `ThirdPartyComponents/`); and compare WTF's
    Skel-derived files - the top `Makefile`, `Workspaces/`, `Installers/Makefile`, `html/` - with Stroika's
    `Build/Shared/Skel-Templates/`.
-4. Rebuild from clean - `make distclean`, then `make all CONFIGURATION=Debug` (it makes the default configurations
+4. Check each Stroika issue WTF cites - a workaround, or work waiting on a fix:
+   `git grep -n -E 'Stroika/issues/[0-9]+|Stroika #[0-9]+' -- ':!ThirdPartyComponents'` (TODO.md too; so cite one in
+   either form). One closed is fixed in its milestone's release - on `v3-Dev`, as soon as it closes: remove the
+   workaround, or do what waited on it.
+5. Rebuild from clean - `make distclean`, then `make all CONFIGURATION=Debug` (it makes the default configurations
    again): with `QUICK_BUILD=1` and no header dependencies, an incremental build compiles WTF against the new headers
    and links the old libraries.
-5. Fix the errors, and the deprecation warnings too: deprecated Stroika names go away at v3.0a1.
-6. Build Debug and Release, with MSVC and g++ at least; run and check as above.
-7. Report every change WTF needed that the upgrade notes do not mention, and every note that was wrong or unclear, so
+6. Fix the errors, and the deprecation warnings too: deprecated Stroika names go away at v3.0a1.
+7. Build Debug and Release, with MSVC and g++ at least; run and check as above.
+8. Report every change WTF needed that the upgrade notes do not mention, and every note that was wrong or unclear, so
    Stroika's Release-Notes can be fixed.
-8. The commit's headline names the Stroika version. (WTF's `Release-Notes.md` is written at release, not per commit.)
+9. The commit's headline names the Stroika version. (WTF's `Release-Notes.md` is written at release, not per commit.)
