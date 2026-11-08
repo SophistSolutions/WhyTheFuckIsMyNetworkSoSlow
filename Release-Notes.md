@@ -6,6 +6,91 @@ High level summary of changes in WhyTheFuckIsMyNetworkSoSlow.
 
 ## History
 
+### 1.0d21 {2026-11-08} -- DRAFT
+
+#### TLDR
+- **Upgrading from 1.0d20 starts a new, empty database** (`db-localDBDir-v2`): 1.0d20's filled up with empty duplicate
+  devices - thousands of them, on a busy network. The names, tags and notes you gave devices and networks stay in the
+  old one (`db-localDBDir-v1`, left on disk, unused). A database named by hand in AppSettings.json is kept.
+- Use Stroika 3.0d25
+- New: a Docker image for Linux (`sophistsolutionsinc/whythefuckismynetworksoslow`), a .deb for Ubuntu 26.04, and a
+  Getting started guide
+- Far fewer duplicate devices and networks; a rename (or tag, or note) no longer gets lost; the Devices page copes with
+  thousands of devices
+- Discovery: a device that says goodbye (ssdp:byebye) leaves the list, device icons are fetched again, WTF stops
+  promptly
+- Windows: uninstalling removes WTF's firewall rule; WTF no longer quietly takes over a port another program is using
+- Known: a phone or laptop with a private (randomized) Wi-Fi address, and each docker container start, still shows up
+  as a new device - the rollup rework (Documentation/Design.md) is next
+
+#### Change-Details
+
+- Backend
+  - Database
+    - A new default database, `db-localDBDir-v2`; an AppSettings.json naming 1.0d20's default (`db-localDBDir-v1`)
+      moves to it, with a warning
+    - Backup: a thread abort inside it is passed on, not logged as "Failed to backup database" and swallowed (latent)
+  - Rollups (IntegratedModel)
+    - The first rollups at startup run in parallel, and each stored its own new ID for a newly seen MAC - 1.0d20's empty
+      duplicate devices; networks did the same
+    - A rename, or any user setting of a device or network, was often lost - undone by a rollup refill running at the
+      same time
+    - Faster refills: a device already in a rollup is not judged again by its addresses, and a new MAC or a new network
+      no longer recomputes every rollup
+    - `/api/v1/networks?ids=[<raw network id>]` crashed the service
+    - An unexpected exception caching a device's icon stopped the request; a stop during the startup purge of network
+      settings was swallowed
+  - Discovery
+    - SSDP held Stroika's SSDP thread for seconds per packet, and dropped every ssdp:byebye
+      (https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/93); a device that never answered its
+      description request held it for minutes (now 5 s); a failing description was fetched again for every device
+      advertised there; description URLs ignored URLBase
+    - The port scanners, ssdp:byebye and rescans blocked every reader of the device list during their reverse DNS
+      lookups
+    - Merging into the device list could retry without limit, sleeping longer each time
+    - This machine's device lacked its host name when another discoverer found it first
+    - A gateway missing from the cached ARP neighbors left its network without a gateway MAC - so it looked like a new
+      network
+    - An interface's own IPv6 /128 stayed among its network's address ranges
+    - Stopping WTF could wait for a whole pass over the ARP neighbors; the networks timer leaked
+  - Device icons (BLOBMgr): a stored URL's icon was never fetched again
+    (https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/96); duplicate records broke its lookup;
+    adding one was not atomic
+  - Web server
+    - On Windows, WTF silently took over its port from another program listening there - now it fails, logging the
+      conflict, as on Linux
+    - index.html is no-cache, so a reload after an upgrade gets the new UI at once; a missing file is a 404, not
+      index.html
+    - The About page's median of running API tasks mixed in the active-connection count; the API help named
+      FullRescan's argument device (it is deviceID), and doubled Scan's path
+  - Model: the API's JSON and the stored documents are unchanged. NetworkInterface's mapper listed fBindings twice (a
+    WeakAssert at every Debug start)
+  - Stroika 3.0d23 -> 3.0d25; deprecated names replaced
+- HTMLUI
+  - With thousands of devices, most device fetches failed (ERR_INSUFFICIENT_RESOURCES), and the Devices page loaded
+    about 10 devices a second, slowing as it went
+- Installers
+  - Windows: uninstalling removes WTF's SSDP firewall rule
+    (https://github.com/SophistSolutions/WhyTheFuckIsMyNetworkSoSlow/issues/13)
+  - .deb: on Ubuntu 26.04 installing never stopped, started or restarted the service; a .deb built as a user (not root)
+    installed its files owned by that user
+  - Docker: an image for Linux, made from the Release .deb (Installers/Docker); CI publishes it - `:dev` from v1-Dev,
+    `:<version>` and `:latest` from v1-Release
+- Build, CI
+  - Windows: Visual Studio 2026 only - the default configurations, CI's build image, and the solution (VS2019's deleted)
+  - Linux: each Ubuntu's default g++ (and ARM cross g++), not a list of versions; CI builds Ubuntu 22.04, 24.04 and
+    26.04
+  - DockerBuildContainers: Ubuntu 26.04 and Windows VS2026 images; targets to build on the host network, test-install a
+    .deb, and run a test container
+  - make clean no longer deletes the built products; Visual Studio and VS Code IntelliSense fixes
+- Documentation
+  - Getting-Started.md: installing (.msi, .deb, Docker), the first minutes, settings and the port, logs, upgrading,
+    uninstalling
+  - Design.md (draft): where the data model is headed, and the migration to it
+  - AGENTS.md, for agents (and people) working on WTF; README: the UI and the API share one port, 80 by default
+
+----
+
 ### 1.0d20 {2026-05-01}
 
 #### TLDR
