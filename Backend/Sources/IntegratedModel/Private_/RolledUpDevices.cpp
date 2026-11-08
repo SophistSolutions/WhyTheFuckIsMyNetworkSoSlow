@@ -51,6 +51,12 @@ using WebServices::Model::NetworkInterfaceCollection;
 
 using IntegratedModel::Private_::RolledUpDevices;
 
+namespace {
+    // Counts InvalidateCache calls - changes of user settings - so a cache fill can tell one came while it ran; guarded by
+    // sRolledUpDevicesSoFar_'s lock
+    unsigned int sUserSettingsGeneration_{0};
+}
+
 /*
  ********************************************************************************
  ******************** IntegratedModel::Private_::RolledUpDevices ****************
@@ -151,8 +157,10 @@ RolledUpDevices RolledUpDevices::GetCached (DBAccess::Mgr* dbAccessMgr, Time::Du
 
         // Start with the existing rolled up objects
         // and merge in any more recent discovery changes
+        unsigned int    userSettingsGeneration{};
         RolledUpDevices result = [&] () {
-            auto lk = sRolledUpDevicesSoFar_.cget ();
+            auto lk                = sRolledUpDevicesSoFar_.cget ();
+            userSettingsGeneration = sUserSettingsGeneration_;
             if (lk.cref () == nullopt) {
                 dbAccessMgr->CheckDatabaseLoadCompleted ();
                 // @todo add more stuff here - empty preset rules from DB
@@ -168,7 +176,14 @@ RolledUpDevices RolledUpDevices::GetCached (DBAccess::Mgr* dbAccessMgr, Time::Du
         }();
         // not sure we want to allow this? @todo consider throwing here or asserting out cuz nets rollup IDs would change after this
         result.MergeIn (dbAccessMgr, IntegratedModel::Private_::FromDiscovery::GetDevices ());
-        sRolledUpDevicesSoFar_.store (result); // save here so we can update rollup networks instead of creating anew each time
+        {
+            auto lk = sRolledUpDevicesSoFar_.rwget ();
+            // An InvalidateCache since the copy above changed the stored rollup's user settings: storing result as is would undo it
+            if (userSettingsGeneration != sUserSettingsGeneration_) {
+                result.ResetUserOverrides (dbAccessMgr, dbAccessMgr->GetDeviceUserSettings ());
+            }
+            lk.store (result); // save here so we can update rollup networks instead of creating anew each time
+        }
         return result;
     });
 }
@@ -177,6 +192,7 @@ void RolledUpDevices::InvalidateCache (DBAccess::Mgr* dbAccessMgr)
 {
     RequireNotNull (dbAccessMgr);
     auto lk = sRolledUpDevicesSoFar_.rwget ();
+    ++sUserSettingsGeneration_;
     if (lk->has_value ()) {
         lk.rwref ()->ResetUserOverrides (dbAccessMgr, dbAccessMgr->GetDeviceUserSettings ());
     }

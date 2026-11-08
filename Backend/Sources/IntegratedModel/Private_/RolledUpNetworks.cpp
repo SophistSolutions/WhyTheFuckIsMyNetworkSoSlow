@@ -51,6 +51,12 @@ using WebServices::Model::NetworkInterfaceCollection;
 
 using IntegratedModel::Private_::RolledUpNetworks;
 
+namespace {
+    // Counts InvalidateCache calls - changes of user settings - so a cache fill can tell one came while it ran; guarded by
+    // sRolledUpNetworks_'s lock
+    unsigned int sUserSettingsGeneration_{0};
+}
+
 /*
  ********************************************************************************
  ******************** IntegratedModel::Private_::RolledUpNetworks ***************
@@ -146,10 +152,12 @@ RolledUpNetworks RolledUpNetworks::GetCached (DBAccess::Mgr* dbAccessMgr, Time::
 
         // Start with the existing rolled up objects
         // and merge in any more recent discovery changes
-        RolledUpNetworks result = [allowedStaleness, dbAccessMgr] () {
+        unsigned int     userSettingsGeneration{};
+        RolledUpNetworks result = [allowedStaleness, dbAccessMgr, &userSettingsGeneration] () {
             auto rolledUpNetworkInterfacess = RolledUpNetworkInterfaces::GetCached (dbAccessMgr, allowedStaleness * 3.0); // longer allowedStaleness cuz we dont care much about this and the parts
             // we look at really dont change
-            auto lk = sRolledUpNetworks_.cget ();
+            auto lk                = sRolledUpNetworks_.cget ();
+            userSettingsGeneration = sUserSettingsGeneration_;
             if (lk.cref () == nullopt) {
                 // first time through, so load from database lazily
                 dbAccessMgr->CheckDatabaseLoadCompleted ();
@@ -163,7 +171,14 @@ RolledUpNetworks RolledUpNetworks::GetCached (DBAccess::Mgr* dbAccessMgr, Time::
             }
         }();
         result.MergeIn (dbAccessMgr, IntegratedModel::Private_::FromDiscovery::GetNetworks ());
-        sRolledUpNetworks_.store (result); // save here so we can update rollup networks instead of creating anew each time
+        {
+            auto lk = sRolledUpNetworks_.rwget ();
+            // An InvalidateCache since the copy above changed the stored rollup's user settings: storing result as is would undo it
+            if (userSettingsGeneration != sUserSettingsGeneration_) {
+                result.ResetUserOverrides (dbAccessMgr, dbAccessMgr->GetNetworkUserSettings ());
+            }
+            lk.store (result); // save here so we can update rollup networks instead of creating anew each time
+        }
         return result;
     });
 }
@@ -172,6 +187,7 @@ void RolledUpNetworks::InvalidateCache (DBAccess::Mgr* dbAccessMgr)
 {
     RequireNotNull (dbAccessMgr);
     auto lk = sRolledUpNetworks_.rwget ();
+    ++sUserSettingsGeneration_;
     if (lk->has_value ()) {
         lk.rwref ()->ResetUserOverrides (dbAccessMgr, dbAccessMgr->GetNetworkUserSettings ());
     }
