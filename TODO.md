@@ -41,6 +41,11 @@ done.
   time it was heard, `SSDPDeviceDiscoverer_::Refresh_` extends seen.UDP to when each advertisement was last heard, not to
   now - today a device that leaves without a byebye looks seen until its max-age runs out (often 30 minutes).
 
+- **Windows, SQLite database: a Debug run exiting after an error asserts** `winMutex_isInit==1` (sqlite3.c) and hangs in
+  the assert dialog: `DB::sConn_` (Common/DB.h), a static, closes after Stroika's `sqlite3_shutdown`, itself run at
+  static destruction - https://github.com/SophistSolutions/Stroika/issues/1276 (3.0d26). Once it is fixed, re-test with
+  protagoras' `db-v19.db`; WTF should need no change.
+
 - A Debug .deb build on 2026-10-22 logged "dpkg-deb: error: tar subprocess was killed by signal (Broken pipe)" in
   DEB-Installer-Build.Out, though make succeeded and the .deb was complete; not reproduced (three clean builds 10/23).
 
