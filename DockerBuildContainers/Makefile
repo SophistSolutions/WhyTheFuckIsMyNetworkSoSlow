@@ -7,6 +7,13 @@ VERSION=$(shell dos2unix < ../VERSION | xargs echo -n)
 VERSION_Final=$(shell $(StroikaRoot)Build/Scripts/ExtractVersionInformation ../VERSION FinalBuild)
 DETECTED_HOST_OS=$(shell $(StroikaRoot)Build/Scripts/DetectedHostOS)
 
+# The tag of the Stroika build images WTF's are built on (each Dockerfile's BASE_IMAGE): the Stroika release WTF's
+# submodule is (3.0d25), or for a development version the release before it (3.0d26x -> 3.0d25; by decrementing the
+# number, so not across stages - 3.0a1x). A release's images stay put, while v3 moves with every rebuild of Stroika's.
+# When the submodule needs newer images than that release's (an upgrade note says they changed), set this to v3 until
+# that release ships.
+STROIKA_BUILD_IMAGE_TAG?=$(shell v=$$(tr -d '\r\n' < $(StroikaRoot)STROIKA_VERSION); if [ "$${v%x}" != "$$v" ]; then v=$${v%x}; n=$${v##*[!0-9]}; v=$${v%$$n}$$((n-1)); fi; echo $$v)
+
 
 help:
 	@echo "make build-images to create the docker images on your computer"
@@ -39,16 +46,16 @@ build-images:
 
 
 sophistsolutionsinc/whythefuckismynetworksoslow-windows-vs2k26:
-	docker build -f Windows-VS2k26/Dockerfile -t $@ -m 2G .
+	docker build -f Windows-VS2k26/Dockerfile --build-arg BASE_IMAGE=sophistsolutionsinc/stroika-buildvm-windows-msys-vs2k26:${STROIKA_BUILD_IMAGE_TAG} -t $@ -m 2G .
 
 sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2204:
-	docker build -f Ubuntu-2204/Dockerfile -t $@ ${DOCKER_BUILD_EXTRAS_} .
+	docker build -f Ubuntu-2204/Dockerfile --build-arg BASE_IMAGE=sophistsolutionsinc/stroika-buildvm-ubuntu2204-small:${STROIKA_BUILD_IMAGE_TAG} -t $@ ${DOCKER_BUILD_EXTRAS_} .
 
 sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2404:
-	docker build -f Ubuntu-2404/Dockerfile -t $@ ${DOCKER_BUILD_EXTRAS_} .
+	docker build -f Ubuntu-2404/Dockerfile --build-arg BASE_IMAGE=sophistsolutionsinc/stroika-buildvm-ubuntu2404-small:${STROIKA_BUILD_IMAGE_TAG} -t $@ ${DOCKER_BUILD_EXTRAS_} .
 
 sophistsolutionsinc/whythefuckismynetworksoslow-ubuntu-2604:
-	docker build -f Ubuntu-2604/Dockerfile -t $@ ${DOCKER_BUILD_EXTRAS_} .
+	docker build -f Ubuntu-2604/Dockerfile --build-arg BASE_IMAGE=sophistsolutionsinc/stroika-buildvm-ubuntu2604-small:${STROIKA_BUILD_IMAGE_TAG} -t $@ ${DOCKER_BUILD_EXTRAS_} .
 
 
 tag-images:

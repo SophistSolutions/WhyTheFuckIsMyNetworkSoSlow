@@ -47,9 +47,11 @@ jobs:
     strategy:
       matrix: ${{fromJson(needs.LinuxMatrixPrep.outputs.matrix)}}
     env:
-      "BUILD_DEV_IMAGES": "0" 
+      "BUILD_DEV_IMAGES": "0"
     steps:
       - uses: actions/checkout@v4
+        with:
+            submodules: true
       - name: Build System Info
         shell: "bash"
         run: |
@@ -91,6 +93,8 @@ jobs:
             base-devel
             make
       - uses: actions/checkout@v4
+        with:
+            submodules: true
       - name: Build System Info
         shell: "bash"
         run: |

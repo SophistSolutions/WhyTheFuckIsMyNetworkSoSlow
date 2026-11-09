@@ -13,6 +13,9 @@ The images are Ubuntu 22.04, 24.04 and 26.04 (and Windows/VS2k26), each on the m
 g++, an ARM (raspberrypi) cross compiler, and Node for the html. CI builds in them (build-N-test-Matrix.json), and the
 build-Dev-Docker-Containers workflow (run by hand) publishes them.
 
+The Stroika images are those of the Stroika release WTF's submodule is, or follows (3.0d26x -> 3.0d25): the Makefile's
+`STROIKA_BUILD_IMAGE_TAG`, which make can override (`STROIKA_BUILD_IMAGE_TAG=v3` for Stroika's latest).
+
 ## Run a build on the host network
 
 `make run-test-container WTF_TREE=/Sandbox/... CONFIGURATION=Debug` (Linux) runs that tree's build on the host network,

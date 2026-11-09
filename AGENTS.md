@@ -126,6 +126,11 @@ Between Stroika releases the submodule tracks Stroika's `v3-Dev`. To upgrade:
    and links the old libraries.
 6. Fix the errors, and the deprecation warnings too: deprecated Stroika names go away at v3.0a1.
 7. Build Debug and Release, with MSVC and g++ at least; run and check as above.
-8. Report every change WTF needed that the upgrade notes do not mention, and every note that was wrong or unclear, so
+8. WTF's build images (`DockerBuildContainers/`, which CI builds in) are on Stroika's images of the release the
+   submodule is, or follows - its Makefile's `STROIKA_BUILD_IMAGE_TAG` (3.0d26x -> 3.0d25). If an upgrade note since
+   that release says Stroika's docker images changed (on `v3-Dev`, in its commit messages:
+   `git log --grep='UPGRADE NOTE' <tag>..`), set it to `v3` until the next release. When the tag changes, rebuild WTF's
+   images: the `build-Dev-Docker-Containers` workflow.
+9. Report every change WTF needed that the upgrade notes do not mention, and every note that was wrong or unclear, so
    Stroika's Release-Notes can be fixed.
-9. The commit's headline names the Stroika version. (WTF's `Release-Notes.md` is written at release, not per commit.)
+10. The commit's headline names the Stroika version. (WTF's `Release-Notes.md` is written at release, not per commit.)

@@ -12,10 +12,14 @@ unzipped, one file per platform, named for it - so a tester downloads one file a
    executable and the installers' names, and CI tags the Docker image with it - and `:latest` for a version without an
    `x` - so it must be right before the push to `v1-Release`.
 
-3. **Push**: push `v1-Dev`, then fast-forward `v1-Release` to it (`git push origin v1-Dev:v1-Release` - `v1-Release`
+3. **Build images**: CI builds the release in WTF's build images, so `DockerBuildContainers/Makefile`'s
+   `STROIKA_BUILD_IMAGE_TAG` must name a Stroika release, not `v3`, and the images must be rebuilt since it last changed
+   (the `build-Dev-Docker-Containers` workflow, on `v1-Dev`).
+
+4. **Push**: push `v1-Dev`, then fast-forward `v1-Release` to it (`git push origin v1-Dev:v1-Release` - `v1-Release`
    has no commits of its own). Wait for that build-N-test run to go green.
 
-4. Take the green run's ID (`gh run list -R SophistSolutions/WhyTheFuckIsMyNetworkSoSlow -b v1-Release -L 3`), and in an
+5. Take the green run's ID (`gh run list -R SophistSolutions/WhyTheFuckIsMyNetworkSoSlow -b v1-Release -L 3`), and in an
    empty directory:
 
    ```bash
@@ -28,14 +32,14 @@ unzipped, one file per platform, named for it - so a tester downloads one file a
    done
    ```
 
-5. Write the release's notes (below) to `notes.md`, then
+6. Write the release's notes (below) to `notes.md`, then
    `gh release create $VER -R $R --target v1-Release --prerelease --title "$VER {<date>}" --notes-file notes.md *.msi *.deb`
 
-6. The Docker image: CI pushed it with the release commit - check that run's `docker-image` job, and that Docker Hub has
+7. The Docker image: CI pushed it with the release commit - check that run's `docker-image` job, and that Docker Hub has
    `sophistsolutionsinc/whythefuckismynetworksoslow:$VER` (and `:latest`). By hand, if need be:
    [Installers/Docker/ReadMe.md](Installers/Docker/ReadMe.md).
 
-7. **Start the next version** on `v1-Dev`: VERSION `1.0d22x` ("start 1.0d22x").
+8. **Start the next version** on `v1-Dev`: VERSION `1.0d22x` ("start 1.0d22x").
 
 ## The release's notes
 

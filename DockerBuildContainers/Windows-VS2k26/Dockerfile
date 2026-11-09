@@ -1,4 +1,6 @@
-﻿FROM sophistsolutionsinc/stroika-buildvm-windows-msys-vs2k26:v3
+﻿# The Makefile sets this: Stroika's image at its STROIKA_BUILD_IMAGE_TAG (the default is for a docker build by hand)
+ARG BASE_IMAGE=sophistsolutionsinc/stroika-buildvm-windows-msys-vs2k26:v3
+FROM ${BASE_IMAGE}
 
 SHELL ["cmd", "/S", "/C"]
 

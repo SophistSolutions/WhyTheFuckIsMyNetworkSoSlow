@@ -1,5 +1,7 @@
 # Start with basic set of tools from Stroika build environment
-FROM ${BASE_IMAGE:-sophistsolutionsinc/stroika-buildvm-ubuntu2204-small:v3}
+# The Makefile sets this: Stroika's image at its STROIKA_BUILD_IMAGE_TAG (the default is for a docker build by hand)
+ARG BASE_IMAGE=sophistsolutionsinc/stroika-buildvm-ubuntu2204-small:v3
+FROM ${BASE_IMAGE}
 
 ARG INCLUDE_OPENSSH=false
 ARG INCLUDE_HANDY_DEV_TOOLS=false
