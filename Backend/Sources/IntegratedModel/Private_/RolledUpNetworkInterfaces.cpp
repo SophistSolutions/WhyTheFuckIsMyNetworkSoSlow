@@ -64,8 +64,15 @@ RolledUpNetworkInterfaces::RolledUpNetworkInterfaces (const Iterable<Device>& de
     for (const Device& d : devices) {
         if (d.fAttachedNetworkInterfaces) {
             d.fAttachedNetworkInterfaces->Apply ([&] (const GUID& netInterfaceID) {
-                netsAdded.Add (netInterfaceID);
-                MergeIn_ (d.fID, Memory::ValueOf (nets2MergeInCollected.Lookup (netInterfaceID)));
+                // the database stores devices and interfaces separately, so a stored device can name an interface it has no record of
+                if (optional<NetworkInterface> ni = nets2MergeInCollected.Lookup (netInterfaceID)) {
+                    netsAdded.Add (netInterfaceID);
+                    MergeIn_ (d.fID, *ni);
+                }
+                else {
+                    Logger::sThe.Log (Logger::eWarning, "Device {} names network interface {}, which the database has no record of: ignored"_f,
+                                      d.fID, netInterfaceID);
+                }
             });
         }
     }

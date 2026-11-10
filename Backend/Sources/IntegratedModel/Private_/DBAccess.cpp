@@ -156,12 +156,17 @@ GUID Mgr::FindOrCreateNetworkID ([[maybe_unused]] const Model::Network& rollupNe
      */
     using NetworkInterfaceAggregateRule = Model::Network::UserOverridesType::NetworkInterfaceAggregateRule;
     for (const GUID& i : containedNetwork.fAttachedInterfaces) {
-        auto ni = Memory::ValueOf (GetRawNetworkInterfaces ().Lookup (i));
-        if (ni.fType == IO::Network::Interface::Type::eDeviceVirtualInternalNetwork) {
+        // an interface discovered since the background thread last stored them is not among the database's yet; and one the
+        // database never stored (see RolledUpNetworkInterfaces's constructor), that discovery no longer sees, makes no rule
+        optional<NetworkInterface> ni = GetRawNetworkInterfaces ().Lookup (i);
+        if (not ni) {
+            ni = FromDiscovery::GetNetworkInterfaces ().First ([&] (const NetworkInterface& n) { return n.fID == i; });
+        }
+        if (ni and ni->fType == IO::Network::Interface::Type::eDeviceVirtualInternalNetwork) {
             if (tmp.fAggregateNetworkInterfacesMatching == nullopt) {
                 tmp.fAggregateNetworkInterfacesMatching = Sequence<NetworkInterfaceAggregateRule>{};
             }
-            *tmp.fAggregateNetworkInterfacesMatching += NetworkInterfaceAggregateRule{*ni.fType, ni.GenerateFingerprintFromProperties ()};
+            *tmp.fAggregateNetworkInterfacesMatching += NetworkInterfaceAggregateRule{*ni->fType, ni->GenerateFingerprintFromProperties ()};
         }
     }
     auto lk = fCachedNetworkUserSettings_.rwget ();
