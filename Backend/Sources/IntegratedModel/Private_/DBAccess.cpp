@@ -243,20 +243,32 @@ void Mgr::BackgroundDatabaseThread_ ()
                 fDBNetworkInterfaces_.rwget ()->Add (ni);
             });
 
+            // discovery's networks and devices can name an interface not stored above, new since or gone before it was ever stored:
+            // each is cached separately, and this device keeps every interface it has had. So each is stored naming only the
+            // interfaces the database has a record of; a new one is named in the next pass, once stored.
+            NetworkInterfaceCollection dbNetworkInterfaces  = fDBNetworkInterfaces_.load ();
+            auto                       storedInterfacesOnly = [&] (const Set<GUID>& ids) {
+                return ids.Where ([&] (const GUID& i) { return dbNetworkInterfaces.Contains (i); });
+            };
+
             // UPDATE fDBNetworks_ INCREMENTALLY to reflect reflect these merges
-            FromDiscovery::GetNetworks ().Apply ([this] (const Model::Network& n) {
+            FromDiscovery::GetNetworks ().Apply ([&] (Model::Network n) {
                 Assert (n.fSeen);                            // don't track/write items which have never been seen
                 Assert (n.fAggregatesReversibly == nullopt); // dont write these summary values
+                n.fAttachedInterfaces = storedInterfacesOnly (n.fAttachedInterfaces);
                 fNetworkTableConnection_.AddOrUpdate (n);
                 fDBNetworks_.rwget ()->Add (n);
             });
 
             // UPDATE fDBDevices_ INCREMENTALLY to reflect reflect these merges
-            FromDiscovery::GetDevices ().Apply ([this] (const Model::Device& d) {
+            FromDiscovery::GetDevices ().Apply ([&] (Model::Device d) {
                 Assert (d.fSeen.EverSeen ());
                 Assert (d.fSeen.EverSeen ());                // don't track/write items which have never been seen
                 Assert (d.fUserOverrides == nullopt);        // tracked on rollup devices, not snapshot devices
                 Assert (d.fAggregatesReversibly == nullopt); // dont write these summary values
+                if (d.fAttachedNetworkInterfaces) {
+                    d.fAttachedNetworkInterfaces = storedInterfacesOnly (*d.fAttachedNetworkInterfaces);
+                }
                 auto rec2Update = fDB_.AddOrMergeUpdate (fDeviceTableConnection_, d);
                 fDBDevices_.rwget ()->Add (rec2Update);
             });
