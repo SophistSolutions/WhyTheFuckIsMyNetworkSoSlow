@@ -22,6 +22,8 @@ High level summary of changes in WhyTheFuckIsMyNetworkSoSlow.
 - Windows: uninstalling removes WTF's firewall rule; WTF no longer quietly takes over a port another program is using
 - Known: a phone or laptop with a private (randomized) Wi-Fi address, and each docker container start, still shows up
   as a new device - the rollup rework (Documentation/Design.md) is next
+- Known: on Windows, only that computer can open WTF's page until you allow its port in Windows Firewall
+  (Getting-Started.md says how) - neither WTF nor its installer opens it, in 1.0d20 either
 
 #### Change-Details
 
@@ -84,8 +86,8 @@ High level summary of changes in WhyTheFuckIsMyNetworkSoSlow.
     .deb, and run a test container
   - make clean no longer deletes the built products; Visual Studio and VS Code IntelliSense fixes
 - Documentation
-  - Getting-Started.md: installing (.msi, .deb, Docker), the first minutes, settings and the port, logs, upgrading,
-    uninstalling
+  - Getting-Started.md: installing (.msi, .deb, Docker) - on Windows, allowing the port in Windows Firewall - the first
+    minutes, settings and the port, logs, upgrading, uninstalling
   - Design.md (draft): where the data model is headed, and the migration to it
   - AGENTS.md, for agents (and people) working on WTF; README: the UI and the API share one port, 80 by default
 

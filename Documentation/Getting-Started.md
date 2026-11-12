@@ -15,6 +15,13 @@ top.
 1. Download `WhyTheFuckIsMyNetworkSoSlow-Windows-<version>-x86_64.msi`, and run it.
 2. Windows may say "Windows protected your PC": the installer is not signed. Click **More info**, then **Run anyway**.
 3. It installs a Windows service, which starts at once and with Windows. Open <http://localhost/>.
+4. Only this computer can open the page: Windows Firewall blocks WTF's port to the others, and neither WTF nor its
+   installer opens it. To open it to your network - one Windows calls Private (Settings > Network & internet) - run this
+   in an administrator PowerShell, with your `WebServerPort` in place of 80 if you set one:
+   ```powershell
+   New-NetFirewallRule -DisplayName "WhyTheFuckIsMyNetworkSoSlow Web Page" -Direction Inbound -Protocol TCP -LocalPort 80 -Action Allow -Profile Private,Domain
+   ```
+   Then open `http://<that computer's name or address>/` from another computer.
 
 ### Ubuntu 22.04, 24.04 or 26.04 (64-bit Intel/AMD)
 
@@ -85,7 +92,9 @@ WTF serves its web page and API on one port, 80 unless `WebServerPort` says othe
 ```
 
 (keep the other settings in the file as they are). Pick a port nothing else on that computer uses - a web server, say.
-To see what is using a port: `netstat -ano | findstr :80` on Windows, `sudo ss -ltnp | grep :80` on Linux.
+To see what is using a port: `netstat -ano | findstr :80` on Windows, `sudo ss -ltnp | grep :80` on Linux. On Windows,
+move a firewall rule you added (Install, above) to the new port, in an administrator PowerShell:
+`Set-NetFirewallRule -DisplayName "WhyTheFuckIsMyNetworkSoSlow Web Page" -LocalPort 8080`
 
 If the port is taken, WTF logs an error ending "while binding to INADDR_ANY:80, while constructing webserver" - "Address
 already in use" on Linux, "Only one usage of each socket address ..." on Windows - and stops, within a minute; on Linux,
@@ -109,7 +118,9 @@ version's image with the same volume.
 - Ubuntu: `sudo apt remove whythefuckismynetworksoslow`
 - Docker: `docker stop wtf`, then `docker rm wtf` - and `docker volume rm wtf-data` to delete its data too.
 
-Uninstalling leaves the settings and database folder (above); delete it to remove everything.
+Uninstalling leaves the settings and database folder (above); delete it to remove everything. On Windows it also leaves
+a firewall rule you added (Install, above): `Remove-NetFirewallRule -DisplayName "WhyTheFuckIsMyNetworkSoSlow Web Page"`,
+in an administrator PowerShell, removes it.
 
 ## 7. Report a problem
 
